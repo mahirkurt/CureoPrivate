@@ -1,12 +1,12 @@
 {
-  "name": "cureonics-pharma-marketplace",
+  "name": "cureonics-marketplace",
   "owner": {
-    "name": "Mahir",
-    "url": "https://cureonics.com"
+    "name": "Mahir Kurt",
+    "url": "https://github.com/mahirkurt"
   },
   "metadata": {
-    "description": "Mahir farmasötik zekâ skill ekosistemi marketplace'i. rxpraxis süitini ve ilişkili tekil skill'leri barındırır.",
-    "version": "1.1.0"
+    "description": "Cureonics Claude Code plugin marketplace'i — Mahir Kurt tarafından geliştirilen Claude plugin'lerinin yayın deposu. İlk plugin: rxpraxis (Türkiye farmasötik fırsat tarama süiti). Yeni plugin'ler eklendikçe genişler.",
+    "version": "1.0.0"
   },
   "plugins": [
     {

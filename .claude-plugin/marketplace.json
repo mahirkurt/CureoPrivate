@@ -1,0 +1,38 @@
+{
+  "name": "cureonics-pharma-marketplace",
+  "owner": {
+    "name": "Mahir",
+    "url": "https://cureonics.com"
+  },
+  "metadata": {
+    "description": "Mahir farmasötik zekâ skill ekosistemi marketplace'i. rxpraxis süitini ve ilişkili tekil skill'leri barındırır.",
+    "version": "1.1.0"
+  },
+  "plugins": [
+    {
+      "name": "rxpraxis",
+      "source": "./plugins/rxpraxis",
+      "version": "1.1.0",
+      "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md) ve kanonik-artefakt önbelleği. v1.1: TİTCK Cache proxy ile kod-düzeyi tek-sefer zorlaması. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı.",
+      "author": {
+        "name": "Mahir",
+        "url": "https://cureonics.com"
+      },
+      "category": "pharma-intelligence",
+      "keywords": [
+        "pharma-intelligence",
+        "generic-feasibility",
+        "biosimilar-feasibility",
+        "turkiye-urun-gelistirme",
+        "iqvia-midas",
+        "titck",
+        "titck-cache-proxy",
+        "patent-fto",
+        "market-access",
+        "deterministic-orchestration",
+        "smp-v1.0"
+      ],
+      "strict": false
+    }
+  ]
+}

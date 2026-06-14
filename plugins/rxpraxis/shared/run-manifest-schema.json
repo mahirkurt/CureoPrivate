@@ -1,0 +1,226 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cureonics.com/rxpraxis/run-manifest-schema.json",
+  "title": "rxpraxis Run Manifest",
+  "description": "rxos orkestrasyonunun her çalıştırması için üretilen kayıt. Kanonik artefakt önbelleğini ve connector call ledger'ı içerir (CONNECTORS.md + canonical-cache-contract.md ile normatif).",
+  "type": "object",
+  "required": [
+    "run_id",
+    "started_at",
+    "brief_snapshot",
+    "skill_invocations",
+    "quality_gates",
+    "artifacts",
+    "cached_artifacts",
+    "connector_call_ledger"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^RxOS-[0-9]{8}-[A-Z]+-[A-Za-z0-9]+-v[0-9]+$",
+      "description": "RxOS-YYYYMMDD-<TA>-<SUBTOPIC>-v<N>"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "brief_snapshot": {
+      "type": "object"
+    },
+    "skill_invocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "stage",
+          "skill",
+          "version",
+          "status"
+        ],
+        "properties": {
+          "stage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "skill": {
+            "enum": [
+              "medical-research",
+              "pharmaintel",
+              "pharmapatent",
+              "thoughtspot-roche",
+              "rxos"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "started": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ended": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "DEGRADED",
+              "SKIPPED"
+            ]
+          }
+        }
+      }
+    },
+    "quality_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gate",
+          "status"
+        ],
+        "properties": {
+          "gate": {
+            "type": "string",
+            "pattern": "^G[0-6](\\.[0-9]+)?$"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "WARN",
+              "SKIPPED"
+            ]
+          },
+          "checks": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "brief.json, treatment_landscape.json, regulatory_matrix.json, gap_candidates.json, feasibility_matrix.json, commercial_opportunity.json, pilot_report.md"
+    },
+    "cached_artifacts": {
+      "type": "array",
+      "description": "Kanonik artefakt önbelleği — tek-sefer çıkarım kanıtı (canonical-cache-contract.md).",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "scope_hash",
+          "produced_stage",
+          "consumed_by",
+          "status"
+        ],
+        "properties": {
+          "type": {
+            "enum": [
+              "titck_canonical",
+              "midas_extract",
+              "adis_pipeline"
+            ]
+          },
+          "scope_hash": {
+            "type": "string"
+          },
+          "produced_stage": {
+            "type": "integer"
+          },
+          "consumed_by": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "caveat": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "connector_call_ledger": {
+      "type": "object",
+      "description": "Connector çağrı sayacı — çift-sorgu yasağı denetimi.",
+      "properties": {
+        "titck_mcp": {
+          "type": "object",
+          "properties": {
+            "calls": {
+              "type": "integer"
+            },
+            "single_shot_enforced": {
+              "type": "boolean",
+              "description": "false ise G2 WARN. v1.1: verified_by_worker=true iken /ledger değişmezi upstream_calls<=distinct_scopes ile ölçülür."
+            },
+            "connector": {
+              "type": "string",
+              "description": "v1.1: kanonik yol 'TİTCK Cache MCP (primary)'; fallback'te 'TİTCK MCP (direct upstream)'."
+            },
+            "verified_by_worker": {
+              "type": "boolean",
+              "description": "v1.1: true ise single_shot_enforced Worker /ledger ucundan ölçülerek doğrulandı (model beyanı değil)."
+            },
+            "ledger_endpoint": {
+              "type": "string",
+              "description": "v1.1: ör. https://titck-cache-mcp.cureonics.workers.dev/ledger?session=<Mcp-Session-Id>"
+            },
+            "upstream_calls": {
+              "type": "integer",
+              "description": "v1.1: ham TİTCK upstream'e giden gerçek çağrı sayısı (/ledger)."
+            },
+            "distinct_scopes": {
+              "type": "integer",
+              "description": "v1.1: görülen benzersiz scope_key sayısı. single_shot_enforced = (upstream_calls <= distinct_scopes)."
+            }
+          }
+        },
+        "thoughtspot": {
+          "type": "object",
+          "properties": {
+            "waves": {
+              "type": "integer"
+            },
+            "path_b_rest": {
+              "type": "boolean"
+            }
+          }
+        },
+        "adisinsight": {
+          "type": "object",
+          "properties": {
+            "calls": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "caveats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deliverable_path": {
+      "type": "string"
+    }
+  }
+}

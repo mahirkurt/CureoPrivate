@@ -1,0 +1,153 @@
+# ============================================================================
+# thoughtspot-roche — Datasource Registry
+# ============================================================================
+# Maintains the canonical catalog of validated MIDAS-class data cubes
+# accessible via Roche EMEA ThoughtSpot MCP. Each entry must be empirically
+# tested (check_connectivity -> create_analysis_session -> send_session_message ->
+# get_session_updates round-trip) before being marked production-ready.
+#
+# Add new cubes by appending to the `datasources:` list. Required fields
+# per entry: guid, name, type, characteristic_attributes, characteristic_metrics,
+# nlg_maturity, last_validated.
+# ============================================================================
+
+registry_version: "2.0"
+last_updated: "2026-06-13"
+maintainer: "Mahir Kurt (kurtm1)"
+
+# CONNECTOR CHANGE (v2.0): Live MCP is now the session-based Spotter
+# (check_connectivity / create_analysis_session / send_session_message /
+# get_session_updates / create_dashboard). The MCP does NOT return raw cell
+# values; quantitative extraction goes through REST searchdata (see
+# references/rest-getanswer-guide.md). GUIDs below are accepted by the
+# session tool's optional data_source_id, but for the REST path the GUID must
+# be re-resolved via /api/rest/2.0/metadata/search.
+
+datasources:
+  - guid: "210eb567-3d53-4f62-a41a-c8c38d3fe00d"
+    name: "MIDAS Monthly"
+    type: "audited_sales"
+    description: >
+      IQVIA MIDAS-class audited sales data: monthly granularity,
+      manufacturer × product × geography × period dimensions. Provides
+      ATC-level revenue and volume aggregates suitable for cross-country
+      sizing, manufacturer competitive intelligence, and molecule-level
+      trend analysis.
+    characteristic_attributes:
+      - "Country (36 markets)"
+      - "ATC2 / ATC2 Description"
+      - "ATC3 / ATC3 Description"
+      - "ATC4 / ATC4 Description"
+      - "Molecule List / Molecule Count"
+      - "Product / International Product / International Brand / Pack / International Pack"
+      - "Manufacturer / International Manufacturer / Corporation"
+      - "Date / Month / Quarter / Year / Period"
+      - "Generic Product Classification / Product Launch Date / Pack Launch Date"
+    coverage:
+      countries: 36
+      history_years: 12
+      granularity: "monthly"
+    atc_code_case: "lowercase (e.g., antineoplastics = 'l1', not 'L01')"
+    characteristic_metrics:
+      - name: "Swiss Franc"
+        unit: "CHF"
+        notes: "Audited sales, ex-manufacturer, current exchange rates (primary metric)"
+      - name: "Local Currency Swiss Franc"
+        unit: "CHF"
+        notes: "Local currency -> CHF at constant rates"
+      - name: "Euros"
+        unit: "EUR"
+        notes: "Current exchange rates"
+      - name: "US Dollars"
+        unit: "USD"
+        notes: "Current exchange rates"
+      - name: "Local Currency Dollar"
+        unit: "USD"
+        notes: "Local currency -> USD at constant rates"
+      - name: "Units / Standard Units / Counting Units"
+        unit: "volume"
+        notes: "Packages, doses, tablets/ml"
+      - name: "KG / International Units"
+        unit: "active substance"
+        notes: "Active-substance quantity metrics"
+    nlg_maturity: "mature"
+    nlg_notes: "Sage NLG produces concrete suggestions on abstract analytical prompts (e.g., 'top performers by metric, trend over time, breakdown by category')"
+    nlu_status: "stable"
+    last_validated: "2026-05-02"
+    validation_query_log:
+      - question: "What is the breakdown of Swiss Franc sales by ATC1 Description (category)?"
+        result: "16 ATC1 rows returned; magnitudes plauzibl multi-year-cumulative all-manufacturer market"
+        validated_on: "2026-05-02"
+
+  - guid: "7e0a9470-f4d6-427d-88ae-54434c2085d0"
+    name: "MIDAS Disease Monthly"
+    type: "disease_panel"
+    description: >
+      IQVIA MIDAS-class disease/indication-linked panel data. Maps
+      pharmaceutical revenue/volume to disease taxonomy rather than
+      ATC classification. Suitable for indication-level landscape,
+      therapy class share, and disease-level competitive intelligence.
+    characteristic_attributes:
+      - "Disease"
+      - "Time (monthly)"
+      - "Manufacturer"
+      - "Product"
+      - "Country"
+      - "Therapy Class"
+    characteristic_metrics:
+      - name: "Total Swiss Franc"
+        unit: "CHF"
+        notes: "Disease-level revenue aggregates; Unclassified bucket carries meaningful share (~17% in production validation)"
+      - name: "Standard Units"
+        unit: "SU"
+        notes: "Volume metric; not yet validated in production queries"
+    nlg_maturity: "weak"
+    nlg_notes: "Sage NLG reflects abstract analytical prompts back without producing concrete suggestions. Worksheet/Model layer Sage discovery metadata (synonym dictionary, sample questions) appears less mature than MIDAS Monthly. Operational consequence: skip getRelevantQuestions step and route directly to getAnswer."
+    nlu_status: "stable"
+    last_validated: "2026-05-02"
+    validation_query_log:
+      - question: "What are the top 15 diseases by Swiss Franc sales?"
+        result: "15 disease rows returned including Unclassified bucket at rank #2 (~17% share); top therapeutic franchise: DIABETES at ~22%"
+        validated_on: "2026-05-02"
+    known_data_quirks:
+      - "Unclassified bucket consistently appears as second-largest segment; reflects either unmapped multi-indication products or taxonomy-mapping incompleteness; should be flagged in user-facing output per G6"
+
+  - guid: null  # re-resolve via REST metadata/search when needed
+    name: "MIDAS Quarterly"
+    type: "audited_sales"
+    description: >
+      IQVIA MIDAS-class quarterly audited sales. Coverage limited to Taiwan
+      only; 12-year history. Use when quarterly Taiwan-specific cuts are
+      required; otherwise prefer MIDAS Monthly.
+    coverage:
+      countries: 1
+      country_scope: "Taiwan only"
+      history_years: 12
+      granularity: "quarterly"
+    characteristic_metrics:
+      - name: "Swiss Franc"
+        unit: "CHF"
+        notes: "Audited sales, ex-manufacturer"
+    nlg_maturity: "untested"
+    nlu_status: "untested"
+    last_validated: "2026-06-13 (discovery only; not query-validated)"
+
+# ============================================================================
+# Adding New Datasources
+# ============================================================================
+#
+# When a new cube is identified in the Roche ThoughtSpot tenant:
+#
+# 1. Obtain GUID from ThoughtSpot UI (Worksheets/Models page → Properties)
+# 2. Run check_connectivity -> create_analysis_session -> send_session_message ->
+#    get_session_updates validation cycle (MCP). For raw values, REST searchdata.
+# 3. Document NLG maturity: "mature" if abstract prompts produce concrete
+#    suggestions; "weak" if reflection observed; "untested" if no NLG attempt
+# 4. Document characteristic attributes empirically discovered through 5–6
+#    exploratory queries
+# 5. Document characteristic metrics with units and magnitude interpretation
+# 6. Append validation_query_log entry with the actual NL question used
+# 7. Increment registry_version (1.0 → 1.1 for additions; 2.0 for breaking changes)
+# 8. Update SKILL.md §3 "Datasource Registry" table to reflect the addition
+#
+# ============================================================================

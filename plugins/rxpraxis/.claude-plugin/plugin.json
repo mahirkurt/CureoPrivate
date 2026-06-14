@@ -1,0 +1,69 @@
+{
+  "name": "rxpraxis",
+  "version": "1.1.0",
+  "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) ile medical-research, pharmaintel, pharmapatent ve thoughtspot-roche kaynak-tipi skill'lerini tek bir paylaşılan connector sözleşmesi ve kanonik-artefakt önbelleği altında birleştirir. Retail/topluluk-eczanesi kanalı, oral + topikal küçük molekül, tüm terapötik alanlar. Hospital/IV kapsam dışı.",
+  "author": {
+    "name": "Mahir",
+    "url": "https://cureonics.com"
+  },
+  "license": "Internal skill asset, not for external redistribution",
+  "homepage": "https://cureonics.com",
+  "keywords": [
+    "pharma-intelligence",
+    "generic-feasibility",
+    "biosimilar-feasibility",
+    "turkiye-urun-gelistirme",
+    "rxopportunityscanner",
+    "iqvia-midas",
+    "titck",
+    "patent-fto",
+    "market-access",
+    "reliance-procedure",
+    "smp-v1.0",
+    "deterministic-orchestration",
+    "titck-cache-proxy"
+  ],
+  "commands": "./commands",
+  "skills": "./skills",
+  "mcp": {
+    "note": "rxpraxis canlı MCP sunucusu PAKETLEMEZ. Tüm connector'lar kullanıcının Claude.ai bağlantıları üzerinden tüketilir. Connector envanteri, skill-eşlemesi, fallback zincirleri ve provenance standardı için ./CONNECTORS.md tek doğruluk kaynağıdır.",
+    "connector_contract": "./CONNECTORS.md"
+  },
+  "smp": {
+    "manifest_version": "1.0",
+    "role": "capability-cluster",
+    "orchestrator_skill": "rxos",
+    "source_skills": [
+      "medical-research",
+      "pharmaintel",
+      "pharmapatent",
+      "thoughtspot-roche"
+    ],
+    "router_skill": "start",
+    "shared_contracts": [
+      "./shared/canonical-cache-contract.md",
+      "./shared/provenance-standard.md",
+      "./shared/run-manifest-schema.json"
+    ],
+    "composes_with_external": [
+      "carbon-html-report",
+      "carbon-pptx",
+      "lex-sanitas",
+      "lex-mercator",
+      "onko-erisim",
+      "rxos"
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-06-14",
+      "summary": "R1 kod-düzeyi çözümü: TİTCK Cache proxy (titck-cache-mcp.cureonics.workers.dev) bağlandı; tek-sefer TİTCK artık SingleFlight DO + KV TTL ile deterministik. CONNECTORS.md §1.A/§3/§6, run-manifest şeması, BUILD.md §4-R1/§7 güncellendi."
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-06-14",
+      "summary": "İlk süit: rxos orkestratör + 4 vendored skill + start router + 6 komut + paylaşılan sözleşmeler (CONNECTORS/canonical-cache/provenance/run-manifest)."
+    }
+  ]
+}

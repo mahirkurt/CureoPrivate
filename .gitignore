@@ -1,0 +1,14 @@
+# OS / editör
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+# Gizli anahtarlar — ASLA commit edilmez
+.env
+.env.*
+.dev.vars
+*.token
+*.secret
+# Geçici
+*.log
+node_modules/

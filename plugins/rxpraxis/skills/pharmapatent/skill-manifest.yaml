@@ -1,0 +1,652 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — pharmapatent
+# ============================================================================
+# Declares pharmapatent's composability contract for SMP-compliant discovery.
+# Enables smp-orchestrator to auto-suggest composition pipelines with
+# medsearch + pharmaintel (upstream) and carbon-html-report / carbon-pptx /
+# docx / lex-mercator / onko-erisim (downstream).
+# ============================================================================
+
+manifest_version: "1.0"
+protocol_reference: "./SMP-v1.0"
+
+# --- Skill Identity ----------------------------------------------------------
+skill:
+  name: pharmapatent
+  version: "2.0.2"
+  title: "Pharmaceutical Patent + Regulatory + Litigation Expertise Protocol"
+  description: >
+    Orchestrates **thirteen** operational modes (FTO, Invalidity, Landscape,
+    Lifecycle, Regulatory, Litigation, Due Diligence, Opposition, Biosimilar
+    Pathway, Licensing, Landscape Forecast, Expert Witness, **TR Regulatory
+    Flow**) for pharmaceutical and medical device patent work in the Turkish
+    + global context. **v2.0.1 patch** — Mevzuat MCP inventory confirmed;
+    Türkiye triangle now fully active: **TİTCK MCP** (56 tools), **Türk
+    Patent MCP** (6 tools), **Mevzuat MCP** (12 tools, revision
+    `mevzuat-mcp-00017-668`, MCP SDK 1.27.0, protocolVersion 2024-11-05).
+    Root cause of v2.0.0 PENDING state was content-negotiation incompatibility
+    (FastMCP defaulted to text/event-stream Accept; JSON-only Claude.ai
+    clients received 406); resolved by enabling JSON response mode in the
+    server. Integrates SMK 6769, TRIPS, Doha Declaration, Customs Union 1/95,
+    the Human Medicinal Products Regulation with its 6-year data exclusivity
+    regime, the Medical Devices Regulation + ÜTS + CE + ISO 13485 device
+    stack, TÜRKPATENT's 2024 Nice classification update (classes 09/39/44),
+    Yargıtay 11. HD + FSHHM case law, and EPO G-decisions as interpretive
+    authority. Search layer combines IPC/CPC taxonomy (A61K, A61M, A61B,
+    B01D, C07D/C07K, C12N, G16H), Markush topology, multi-database
+    triangulation (Orange Book, Purple Book, Espacenet, USPTO Public Search,
+    TÜRKPATENT EPAAT via MCP, WIPO PATENTSCOPE, STN SciFinder, SureChEMBL),
+    and BERT-based early-warning classifiers. Outputs thirteen
+    provenance-stamped report types with strong/moderate/weak confidence
+    grading and explicit residual-risk statements.
+  author: "Mahir (internal skill)"
+  license: "Internal skill asset, not for external redistribution"
+  entry_point: "./SKILL.md"
+  homepage: null
+
+# --- Classification ----------------------------------------------------------
+classification:
+  primary_category: "intellectual-property-law"
+  secondary_categories:
+    - "pharmaceutical-regulatory"
+    - "patent-search"
+    - "freedom-to-operate"
+    - "patent-invalidity"
+    - "patent-landscape"
+    - "patent-lifecycle-management"
+    - "medical-device-regulation"
+    - "litigation-support"
+    - "commercial-intelligence"
+  tags:
+    - "pharmapatent"
+    - "FTO"
+    - "freedom-to-operate"
+    - "invalidity"
+    - "hükümsüzlük"
+    - "patent-landscape"
+    - "lifecycle"
+    - "second-medical-use"
+    - "ikinci-tıbbi-kullanım"
+    - "Markush"
+    - "SMK-6769"
+    - "TRIPS"
+    - "Doha"
+    - "Bolar-exception"
+    - "data-exclusivity"
+    - "veri-imtiyazı"
+    - "compulsory-license"
+    - "zorunlu-lisans"
+    - "TÜRKPATENT"
+    - "TİTCK"
+    - "ÜTS"
+    - "CE"
+    - "ISO-13485"
+    - "FSHHM"
+    - "Yargıtay-11-HD"
+    - "EPO"
+    - "Orange-Book"
+    - "Purple-Book"
+    - "Espacenet"
+    - "USPTO"
+    - "WIPO-PATENTSCOPE"
+    - "SciFinder"
+    - "SureChEMBL"
+    - "CPC-A61K"
+    - "CPC-A61M"
+    - "CPC-A61B"
+    - "CPC-C07D"
+    - "CPC-C07K"
+    - "CPC-C12N"
+    - "CPC-G16H"
+    - "ADC"
+    - "CAR-T"
+    - "mRNA-LNP"
+    - "biyobenzer"
+    - "biosimilar"
+    - "design-around"
+    - "ihtiyati-tedbir"
+    - "kısmi-hükümsüzlük"
+    - "üçüncü-kişi-görüşü"
+    - "TİTCK-MCP"
+    - "Türk-Patent-MCP"
+    - "Mevzuat-MCP"
+    - "MCP-first"
+    - "TR-regulatory-flow"
+    - "holder-portfolio"
+    - "SNOMED-CT-substance"
+    - "biyobenzer-grup"
+    - "fiyat-tavanı"
+    - "Madde-23"
+    - "off-label-onko"
+    - "withdrawal-trend"
+    - "batch-release"
+    - "supply-tracked"
+    - "additional-monitoring"
+    - "foreign-active-ingredient"
+    - "eşdeğer-grup"
+    - "ATC-class-summary"
+    - "first-in-class"
+    - "Locarno-28-03"
+    - "Nice-5-10-35-44"
+
+# --- Inputs ------------------------------------------------------------------
+inputs:
+  natural_language_query:
+    description: "User query in Turkish or English, typically specifying a drug, a device, a patent, a modality, or a strategic question (pazara giriş, FTO, hükümsüzlük, landscape vb.)."
+    type: "string"
+    required: true
+    examples:
+      - "Atorvastatin için FTO raporu hazırla"
+      - "EP3123456 patentinin Türkiye'de hükümsüzlüğü mümkün mü?"
+      - "Anti-HER2 ADC modalitesinde patent peyzajı çıkar"
+      - "Jenerik semaglutide ne zaman Türkiye'de piyasaya girebilir?"
+      - "Roche'un Türkiye patent portföyünü analiz et"
+
+  product_profile:
+    description: "Optional structured input for FTO/Invalidity/Lifecycle modes — INN, SMILES, formulation, device, endikasyon."
+    type: "object"
+    required: false
+
+  target_patent:
+    description: "Optional target patent number (TR/EP/US/WO) for Invalidity or Landscape starting point."
+    type: "string"
+    required: false
+
+# --- Outputs -----------------------------------------------------------------
+outputs:
+  format: "markdown | carbon-html | docx | pptx"
+  structure: "Six standardized report templates per references/rapor-sablonlari.md"
+  types:
+    - "FTO Raporu (§1)"
+    - "Invalidity Briefing (§2)"
+    - "Landscape Raporu (§3)"
+    - "Lifecycle Yol Haritası (§4)"
+    - "Pazara Giriş Takvimi (§5)"
+    - "Litigation Briefing (§6)"
+    - "Due Diligence Report (§7)"
+    - "Opposition Briefing (§8)"
+    - "Biosimilar Pathway Briefing (§9)"
+    - "Expert Witness Report Draft (§10)"
+    - "TR Regulator + IP Dossier (§11) [v2.0.0]"
+  provenance: "Per-claim citation with source + access date + confidence grade (strong / moderate / weak / speculative)"
+  residual_risk: "Mandatory section declaring epistemic limits and undetected risks"
+
+# --- Dependencies ------------------------------------------------------------
+dependencies:
+  required_skills: []
+  recommended_upstream_skills:
+    - name: "medsearch"
+      purpose: "Non-patent literature prior art, clinical evidence synthesis for Invalidity and Landscape modes"
+      composition_pattern: "medsearch → pharmapatent"
+    - name: "pharmaintel"
+      purpose: "Orange/Purple Book rapid lookup, competitor pipeline, SEC 10-K / EDGAR, catalyst tracking"
+      composition_pattern: "pharmaintel → pharmapatent"
+  recommended_downstream_skills:
+    - name: "carbon-html-report"
+      purpose: "FTO / Landscape / Lifecycle report rendering in IBM Carbon Design System HTML"
+      composition_pattern: "pharmapatent → carbon-html-report"
+    - name: "carbon-pptx"
+      purpose: "Executive briefing deck for board / management"
+      composition_pattern: "pharmapatent → carbon-pptx"
+    - name: "docx"
+      purpose: "Formal court documents (hükümsüzlük dilekçesi, tedbir talebi, delil listesi) — Word formatting"
+      composition_pattern: "pharmapatent → docx"
+    - name: "lex-mercator"
+      purpose: "License agreement drafting / review for portfolio monetization or tech-transfer"
+      composition_pattern: "pharmapatent → lex-mercator"
+    - name: "onko-erisim"
+      purpose: "SGK geri ödeme workflow post-LOE pricing intersection"
+      composition_pattern: "pharmapatent → onko-erisim"
+
+# --- MCP Connectors (v2.0.0) -------------------------------------------------
+# Türk regülatör + IP üçgeni. Mod 13 (TR_REGULATORY_FLOW) için kanonik;
+# Mod 1 / 4 / 5 / 7 / 9 / 10 / 12 için opsiyonel. Detay:
+# references/turk-mcp-entegrasyonu.md
+mcp_connectors:
+  - id: "titck-mcp"
+    name: "TİTCK MCP"
+    server_url: "https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+    status: "active"
+    tool_count: 56
+    scope: >
+      TR human medicinal products master dataset (master::barcode), holders
+      canonical store with alias normalization, SNOMED CT substance map,
+      ATC hierarchy + summary, price chain (FSF / depot / pharmacy / retail),
+      reference prices, institutional fees, biosimilar group (oldest-first),
+      shared-substance peers, equivalent products, first-in-class detection,
+      regulation Article 23 applications, off-label oncology list (organ
+      sheet filter), supply-tracked ingredients, additional monitoring (black
+      triangle), authorization cancellations + withdrawal trend, batch
+      release certificates, foreign / import ingredients, scheduling list,
+      indexed PDF/DOCX documents (doctor information letters, label changes).
+    canonical_for:
+      - "TR product card (master record + SNOMED + ATC)"
+      - "Holder portfolio (with alias normalization)"
+      - "Equivalence + biosimilar cluster detection"
+      - "Price chain + reference prices"
+      - "Madde 23 application history"
+      - "Off-label SUT-extension records"
+      - "Withdrawal / authorization cancellation tracking"
+      - "Batch release certificates (biologics)"
+    required_in_modes: ["mode-5-regulatory", "mode-9-biosimilar", "mode-13-tr-regulatory-flow"]
+    optional_in_modes: ["mode-1-fto", "mode-4-lifecycle", "mode-7-due-diligence", "mode-10-licensing", "mode-12-expert-witness"]
+
+  - id: "turkpatent-mcp"
+    name: "Türk Patent MCP"
+    server_url: "https://markapatent-mcp.fastmcp.app/mcp"
+    status: "active"
+    tool_count: 6
+    scope: >
+      TÜRKPATENT search + detail across three asset classes — patents
+      (national TR + EP validations, IPC/CPC + applicant + abstract +
+      attorney filters), industrial designs (Locarno classification),
+      trademarks (Nice classes including 5/10/35/44 critical for pharma).
+    canonical_for:
+      - "TR patent search by applicant / IPC / CPC / abstract"
+      - "Patent bibliographic detail (filing/grant/status)"
+      - "Trademark conflict analysis (generic similar marks)"
+      - "Industrial design search (medical devices Locarno 28-03)"
+    limitations:
+      - "Claim text NOT included in get_patent_details (bibliographic only) — EPAAT web fallback for claim-by-claim analysis"
+      - "FER (First Examination Report) content not exposed"
+      - "Annual fee history limited"
+      - "Citation network (forward/backward) not exposed — Espacenet INPADOC required"
+    required_in_modes: ["mode-1-fto", "mode-4-lifecycle", "mode-13-tr-regulatory-flow"]
+    optional_in_modes: ["mode-2-invalidity", "mode-3-landscape", "mode-6-litigation", "mode-7-due-diligence", "mode-12-expert-witness"]
+
+  - id: "mevzuat-mcp"
+    name: "Mevzuat MCP"
+    server_url: "https://mevzuat-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+    cloud_run_revision: "mevzuat-mcp-00017-668"
+    mcp_sdk_version: "1.27.0"
+    protocol_version: "2024-11-05"
+    status: "active"
+    tool_count: 12
+    activated_in_version: "2.0.1"
+    scope: >
+      mevzuat.gov.tr — kanun / yönetmelik / tebliğ / genelge full text search
+      and retrieval. SMK 6769, BTÜ Ruhsatlandırma Yönetmeliği, TİTCK
+      guidelines, Cumhurbaşkanlığı kararları, Resmî Gazete entries.
+      Repealed-version comparison (551 KHK ↔ SMK 6769 transitions).
+    canonical_for:
+      - "Statute full text retrieval (SMK 6769, TBK, TTK)"
+      - "Article-level text (e.g. SMK m.85 Bolar, m.138 invalidity)"
+      - "Regulation full text (BTÜ Yönetmeliği, Tıbbi Cihaz Yönetmeliği)"
+      - "Communiqué + circular search (SUT tebliğleri, TİTCK kılavuzları)"
+      - "Repealed-version comparison"
+      - "Resmî Gazete entry retrieval"
+    out_of_scope:
+      - "Yargıtay/Danıştay/AYM case law (use UYAP web fallback per references/ictihat-emsal.md §1)"
+    required_in_modes: ["mode-5-regulatory", "mode-6-litigation", "mode-13-tr-regulatory-flow"]
+    optional_in_modes: ["mode-1-fto", "mode-2-invalidity", "mode-7-due-diligence", "mode-12-expert-witness"]
+    tools_inventory:
+      version: "2.0.2"
+      total_tools: 12
+      categories:
+        - id: "A"
+          name: "Arama"
+          tool_count: 3
+          tools:
+            - description: "mevzuat.gov.tr'de ara"
+              expected_function: "search_mevzuat"
+              role: "General full-text search across mevzuat.gov.tr; primary entry point"
+            - description: "Mevzuat fihristinde ara"
+              expected_function: "search_legislation_index | search_fihrist"
+              role: "Hierarchical/structural search via the legislation table-of-contents"
+            - description: "Mülga mevzuatta ara"
+              expected_function: "search_repealed_legislation"
+              role: "Search repealed legislation (e.g., 551 KHK, old TTK/TBK) for historical comparison"
+        - id: "B"
+          name: "Detay erişim"
+          tool_count: 4
+          tools:
+            - description: "Ham mevzuat dosyası indir"
+              expected_function: "download_raw_legislation_file"
+              role: "Original PDF/DOCX download for archival + audit-trail"
+            - description: "Mevzuat HTML içeriği"
+              expected_function: "get_legislation_html"
+              role: "Structured HTML preserving heading/article structure; preferred for report quotation"
+            - description: "Mevzuat meta bilgisi"
+              expected_function: "get_legislation_metadata"
+              role: "Date, official gazette ref, issuing authority, repeal status, last amendment date — provenance-stamp essential"
+            - description: "Mevzuat metni (PDF → text)"
+              expected_function: "get_legislation_text"
+              role: "Extracted plain text — best for search/quotation/cross-reference"
+        - id: "C"
+          name: "Tarih"
+          tool_count: 1
+          tools:
+            - description: "Önceki mevzuat metinleri"
+              expected_function: "get_previous_legislation_versions | get_amendment_history"
+              role: "Version chain for amendment history (e.g., SMK 6769 article-by-article evolution; BTÜ Yönetmeliği pre/post 2022)"
+        - id: "D"
+          name: "Listeleme/Referans"
+          tool_count: 2
+          tools:
+            - description: "Mevzuatı türe göre listele"
+              expected_function: "list_legislation_by_type"
+              role: "List all legislation under a given type code"
+            - description: "Mevzuat tür kodları"
+              expected_function: "get_legislation_type_codes"
+              role: "All legislation type codes (kanun/KHK/yönetmelik/tebliğ/genelge); typically called once per session and cached"
+        - id: "E"
+          name: "Kompozit/Özel"
+          tool_count: 2
+          tools:
+            - description: "Kapsamlı mevzuat semantik kanıt paketi"
+              expected_function: "get_semantic_evidence_package"
+              role: "High-level aggregator: collects all related legislation pieces semantically (e.g., 'Bolar' → SMK m.85 + BTÜ articles + TİTCK guideline)"
+            - description: "1982 Anayasası"
+              expected_function: "query_constitution_1982"
+              role: "Constitution-specific specialized query support (Md. 17/56/90/35 critical for AYM individual application drug-access cases)"
+      function_name_confirmation_status: >
+        Expected snake_case function names above are inferred from standard
+        FastMCP naming conventions and the Turkish tool descriptions provided
+        by the skill owner. Canonical names will be confirmed via tool_search
+        after Claude.ai connector index re-sync; if any differ, a v2.0.3
+        cosmetic patch will replace placeholders with confirmed atoms.
+        Behavior is unchanged — usage patterns in
+        references/turk-mcp-entegrasyonu.md §4.4 are written category-first
+        and remain stable.
+    activation_post_mortem: >
+      v2.0.0 reported PENDING because of content-negotiation incompatibility,
+      not tool registry. FastMCP server defaulted to text/event-stream
+      Accept; Claude.ai sends Accept: application/json (JSON-only) and
+      received 406 Not Acceptable, surfaced silently as empty tools/list.
+      Resolution: enabled JSON response mode in server.py:107 (FastMCP
+      json_response flag). Regression tests added (test_http_app.py:48
+      fresh-app helper + test_http_app.py:173 JSON-only initialize/tools/list
+      test); 22 tests passed; deployed Cloud Run revision 00017-668. Public
+      smoke confirmed: OAuth discovery 200, unauthorized mcp 401 challenge
+      (expected), JSON-only initialize 200 application/json, tools/list 200
+      application/json with tools_count=12, tools_empty=false. claude mcp
+      list shows connector connected. No FastMCP decorator or Pydantic
+      schema fix was needed; MCP SDK version verified at 1.27.0; transport
+      was already streamable-http (not stdio) per http_app.py:545,547.
+      Side-quest: gcloud context initially pointed to wrong project; correct
+      deploy project per gcp-deploy.mjs:16 is cureonics-ai-hub.
+    lessons_learned:
+      - "FastMCP servers MUST enable json_response mode for Claude.ai compatibility"
+      - "Empty tools/list with valid registry = check Accept header negotiation"
+      - "Smoke test for new MCP connectors must verify tools_count > 0"
+      - "Multi-project GCP organizations: verify gcloud context matches deploy target"
+
+# --- External Resources ------------------------------------------------------
+external_resources:
+  regulatory_databases:
+    - "https://www.accessdata.fda.gov/scripts/cder/ob/  (FDA Orange Book)"
+    - "https://purplebooksearch.fda.gov/  (FDA Purple Book)"
+    - "https://www.ema.europa.eu/  (EMA EPAR)"
+    - "https://www.titck.gov.tr/  (TİTCK)"
+  patent_databases:
+    - "https://ppubs.uspto.gov/  (USPTO Patent Public Search)"
+    - "https://worldwide.espacenet.com/  (Espacenet)"
+    - "https://online.turkpatent.gov.tr/EPATT/  (TÜRKPATENT EPAAT)"
+    - "https://patentscope.wipo.int/  (WIPO PATENTSCOPE)"
+    - "https://www.surechembl.org/  (SureChEMBL)"
+    - "https://patents.google.com/  (Google Patents)"
+  legal_databases:
+    - "https://www.mevzuat.gov.tr/  (UYAP Mevzuat)"
+    - "https://karararama.yargitay.gov.tr/  (Yargıtay Karar Arama)"
+    - "https://www.danistay.gov.tr/  (Danıştay)"
+    - "https://kararlarbilgibankasi.anayasa.gov.tr/  (AYM)"
+  scientific_literature:
+    - "https://pubmed.ncbi.nlm.nih.gov/"
+    - "https://scholar.google.com/"
+    - "https://www.biorxiv.org/ + https://www.medrxiv.org/"
+    - "https://tez.yok.gov.tr/  (YÖK Tez)"
+    - "https://clinicaltrials.gov/"
+
+# --- Modes -------------------------------------------------------------------
+operational_modes:
+  - id: "mode-1-fto"
+    name: "FTO (Faaliyet Serbestisi / Freedom to Operate)"
+    description: "Assess whether a planned product can be marketed without infringing third-party active patents"
+    steps: 9
+    reference: "references/fto-invalidity-protokol.md §1"
+
+  - id: "mode-2-invalidity"
+    name: "Invalidity (Hükümsüzlük)"
+    description: "Systematic prior art search to invalidate a competitor's patent"
+    steps: 11
+    reference: "references/fto-invalidity-protokol.md §2"
+
+  - id: "mode-3-landscape"
+    name: "Landscape (Patent Peyzajı)"
+    description: "Full patent geography of a molecular target, modality, indication, or technology"
+    reference: "references/rapor-sablonlari.md §3"
+
+  - id: "mode-4-lifecycle"
+    name: "Lifecycle (Portföy Yönetimi)"
+    description: "Maximize or dismantle product lifecycle protection within legal bounds"
+    reference: "references/rapor-sablonlari.md §4"
+
+  - id: "mode-5-regulatory"
+    name: "Regulatory (Ruhsat-Patent Entegrasyonu)"
+    description: "Calculate market entry date integrating patent, data exclusivity, Bolar, device approvals"
+    reference: "references/rapor-sablonlari.md §5"
+
+  - id: "mode-6-litigation"
+    name: "Litigation (Dava Savunusu)"
+    description: "Build party arguments for FSHHM infringement, invalidity, interim injunctions"
+    reference: "references/rapor-sablonlari.md §6"
+
+  - id: "mode-7-due-diligence"
+    name: "Due Diligence (M&A + Licensing DD)"
+    description: "Target firm/asset patent portfolio DD — inventory, validity, coverage, FTO, valuation, red flags"
+    reference: "references/rapor-sablonlari.md §7"
+    since_version: "1.2.0"
+
+  - id: "mode-8-opposition"
+    name: "Opposition (EPO 9-month Opposition + TÜRKPATENT 3rd-Party Observation)"
+    description: "Pre-grant or post-grant formal administrative/quasi-judicial challenge to patent validity"
+    reference: "references/rapor-sablonlari.md §8"
+    since_version: "1.2.0"
+
+  - id: "mode-9-biosimilar-pathway"
+    name: "Biosimilar Pathway (Biyobenzer Yol Haritası)"
+    description: "Biosimilar development strategy — comparability, patent wall, regulatory, extrapolation, device, market"
+    reference: "references/rapor-sablonlari.md §9"
+    since_version: "1.2.0"
+
+  - id: "mode-10-licensing"
+    name: "Licensing (Lisans Müzakere)"
+    description: "In/out-licensing financial modelling + legal framework — NPV+IRR+RFR, comparable transactions, BATNA/ZOPA, lex-mercator downstream integration"
+    reference: "references/rapor-sablonlari.md (License Negotiation Memo)"
+    since_version: "1.4.0"
+
+  - id: "mode-11-landscape-forecast"
+    name: "Landscape Forecast (BERT/NLP Patent Trend Öngörüsü)"
+    description: "Advanced landscape analysis — emerging signals, competitor portfolio forecasting, white space analysis, semantic clustering via BERT/transformer NLP"
+    reference: "references/rapor-sablonlari.md (Landscape Forecast Report)"
+    since_version: "1.4.0"
+
+  - id: "mode-12-expert-witness"
+    name: "Expert Witness (FSHHM Bilirkişi Rapor Taslağı)"
+    description: "Draft expert witness report for FSHHM — HMK m.266 compliant, independence declaration, claim construction, infringement/invalidity analysis, damage calculation (SMK m.151)"
+    reference: "references/rapor-sablonlari.md §10"
+    since_version: "1.4.0"
+
+  - id: "mode-13-tr-regulatory-flow"
+    name: "TR Regulatory Flow (Türk Regülatör + IP Akış Otomasyonu)"
+    description: "MCP-first orchestration of the TR regulator + IP triangle — TİTCK MCP (56 tools) + Türk Patent MCP (6 tools) + Mevzuat MCP (PENDING). 13-step protocol producing the canonical TR Regulator + IP Dossier (master record + holder portfolio + equivalence/biosimilar cluster + ATC landscape + price chain + pipeline & exceptions + patent/trademark/design layer + legislation citations + cross-validation). Acts as the TR-input pre-processing layer for Modes 1, 4, 5, 6, 7, 9, 10, 12; also runs standalone."
+    steps: 13
+    reference: "references/turk-mcp-entegrasyonu.md"
+    since_version: "2.0.0"
+    primary_mcp_dependencies: ["titck-mcp", "turkpatent-mcp"]
+    pending_mcp_dependencies: ["mevzuat-mcp"]
+
+# --- Quality Gates -----------------------------------------------------------
+quality_gates:
+  - id: "G1"
+    name: "Source provenance"
+    description: "Every factual claim cited to primary source (patent office, TİTCK, EMA, FDA, Yargıtay) with access date"
+
+  - id: "G2"
+    name: "Priority date discipline"
+    description: "Prior art searches anchored to target patent priority date; application date / publication date clearly distinguished"
+
+  - id: "G3"
+    name: "Geographic specificity"
+    description: "Patent status stated per jurisdiction; 'patent is active' claims scoped to Turkey / EU / US / RoW separately"
+
+  - id: "G4"
+    name: "Annual fee verification"
+    description: "For every TR patent cited as active, TÜRKPATENT EPAAT annual fee status confirmed"
+
+  - id: "G5"
+    name: "Markush scope analysis"
+    description: "For small molecule FTO/Invalidity, Markush coverage analysis performed or its absence explicitly declared as an epistemic limit"
+
+  - id: "G6"
+    name: "Residual risk statement"
+    description: "Report concludes with explicit residual risk / epistemic limits section"
+
+  - id: "G7"
+    name: "Confidence grading"
+    description: "Strong / Moderate / Weak / Speculative grading applied to every argument family"
+
+  - id: "G8"
+    name: "Legal responsibility note"
+    description: "Every output closes with a disclaimer requiring licensed counsel for final decisions"
+
+# --- Versioning --------------------------------------------------------------
+version_history:
+  - version: "2.0.2"
+    date: "2026-05-01"
+    changes:
+      - "Patch — Mevzuat MCP 12-tool inventory fully tabulated. Skill owner provided the canonical Turkish tool descriptions; tools categorized into 5 functional groups (A. Arama×3 / B. Detay erişim×4 / C. Tarih×1 / D. Listeleme×2 / E. Kompozit/Özel×2)."
+      - "skill-manifest.yaml mcp_connectors[mevzuat-mcp]: new tools_inventory block with 12 tools, each with description + expected_function (snake_case inferred from FastMCP convention) + role. inventory_discovery_pending block removed."
+      - "references/turk-mcp-entegrasyonu.md §4 fully rewritten: §4.2 Discovery placeholder replaced with the 12-tool table organized by 5 categories; §4.4 added 5 standard usage patterns (M1 single article, M2 repealed comparison, M3 cross-type scan, M4 constitution citation, M5 semantic aggregation); §4.5 explicit note on function-name confirmation status (v2.0.3 cosmetic patch reserved if canonical names differ)."
+      - "SKILL.md §4 Mode 13 step 11 expanded with the 5-category breakdown + typical category-combination patterns (A→B for article quotation, C for version comparison, A→B for regulation, E for composite)."
+      - "SKILL.md §5.5 status table Mevzuat row enriched with 5-category summary."
+      - "SKILL.md §10 v2.0.2 changelog entry added; frontmatter version bumped 2.0.1 → 2.0.2."
+      - "Function name placeholders (search_mevzuat, get_legislation_text, etc.) labeled as 'expected' until tool_search confirms canonical snake_case atoms; behavior is category-first so usage patterns remain stable through any future cosmetic naming patch."
+      - "Net effect: Mevzuat MCP integration fully grounded in actual server inventory — no PENDING placeholders, no speculative tooling, all 12 tools mapped to real-world skill modes."
+
+  - version: "2.0.1"
+    date: "2026-05-01"
+    changes:
+      - "Patch — Mevzuat MCP inventory confirmed and connector activated. Türkiye triangle now fully active (TİTCK 56 + Türk Patent 6 + Mevzuat 12)."
+      - "Mevzuat MCP status: pending → active. tool_count: 0 → 12. Cloud Run revision: mevzuat-mcp-00017-668. MCP SDK: 1.27.0. protocolVersion: 2024-11-05."
+      - "Root cause of v2.0.0 PENDING state was content-negotiation incompatibility, not tool registry. FastMCP server defaulted to text/event-stream Accept; Claude.ai (JSON-only) received 406. Fix: enabled JSON response mode in server.py:107. Regression tests added (test_http_app.py:48 + test_http_app.py:173); 22 tests passed."
+      - "Composability matrix updated: Mevzuat MCP optional → required in Modes 5 (Regulatory), 6 (Litigation), 13 (TR_REGULATORY_FLOW)."
+      - "Removed PENDING fallback protocol and inventory_completion_actions from Mevzuat connector spec; replaced with activation_post_mortem + lessons_learned + inventory_discovery_pending (specific 12 tool names to be tabulated in v2.0.2 after Claude.ai connector index re-sync)."
+      - "SKILL.md frontmatter description: Mevzuat MCP (PENDING) → Mevzuat MCP (12)."
+      - "SKILL.md §5.5 status table refreshed; §6.2 composability matrix Mevzuat required column populated; §4 Mode 13 step 11 PENDING language replaced with canonical MCP call pattern; §9 operational discipline temporary-fallback wording removed; §10 v2.0.1 changelog entry added."
+      - "references/turk-mcp-entegrasyonu.md: §1.1 status table updated; §4 PENDING block replaced with active-state section + content-negotiation post-mortem (§4.3 Lessons Learned) + 12-tool discovery placeholder (§4.4); §5 flow diagram updated; §6 provenance stamps revised; §7 T-12 PENDING tuzak rewritten as content-negotiation lesson + new T-12b içtihat scope-boundary tuzak; §8 end-to-end example Mevzuat call activated."
+      - "references/ictihat-emsal.md §1: Mevzuat MCP block lifted from PENDING to active; clarified that case law (Yargıtay/Danıştay/AYM) remains out of Mevzuat MCP scope and uses UYAP web fallback as primary (not just temporary)."
+      - "Open work: specific 12 Mevzuat MCP tool names + parameter schemas to be discovered via tool_search after Claude.ai connector index re-sync (typically within 24h of new MCP deploy). Doctrine and mode-level mandatory wiring finalized in v2.0.1; concrete tool tabulation deferred to v2.0.2 patch."
+
+  - version: "2.0.0"
+    date: "2026-05-01"
+    changes:
+      - "Major release — TR Regulator MCP-first internalization"
+      - "New Mode 13: TR_REGULATORY_FLOW (Türk Regülatör + IP Akış Otomasyonu) — 13-step protocol orchestrating TİTCK MCP (56 tools) + Türk Patent MCP (6 tools) + Mevzuat MCP (PENDING). Acts as TR-input pre-processing layer for Modes 1, 4, 5, 6, 7, 9, 10, 12; also runs standalone."
+      - "New reference: references/turk-mcp-entegrasyonu.md — unified guide covering all three MCPs: tool inventory, parameter contracts, return shapes, holder normalization pattern, SNOMED CT atom usage, FTS5 smart/raw query mode, price chain extraction, biosimilar group detection, off-label tracking, Madde 23 monitoring, cross-validation, Mevzuat fallback, audit-trail with provenance stamps."
+      - "SKILL.md §5: new sub-section §5.5 Türk Regülatör MCP-First Doktrini (5 mandatory rules — canonical source, provenance stamp, holder normalization, SNOMED atom, FTS5 query mode). Previous §5.5 → §5.6."
+      - "SKILL.md §6: split into §6.1 (skill ecosystem) + §6.2 (MCP connectors with required/optional mode matrix per MCP)."
+      - "SKILL.md §9: added MCP-first rule + holder normalization + SNOMED atom rules to operational discipline."
+      - "Frontmatter description: 13 modes + MCP-first signals + TR-specific keywords (TR ürün dosyası, eşdeğer grup, fiyat tavanı, holder portföyü, Madde 23, biyobenzer kümesi, ürün geri çekme, TR patent başvurusu, marka, endüstriyel tasarım)."
+      - "§2 explicit triggers: 11 new TR regulator + MCP-first triggers added."
+      - "skill-manifest.yaml: new mcp_connectors block (3 connectors with full metadata, scope, required/optional modes, fallback protocols); composability_chain reflects TR flow chain; tags expanded with MCP and TR-regulatory keywords."
+      - "Updated reference cross-links: veritabani-stratejileri.md §1.4 + §2.3 now point to MCP-first via turk-mcp-entegrasyonu.md (web sections retained as failure fallback only); ictihat-emsal.md §1 has Mevzuat MCP PENDING block + provenance stamp template."
+      - "Mevzuat MCP inventory PENDING — Cloud Run deployment returning empty tools/list (likely transport='streamable-http' missing or FastMCP decorators unregistered). Diagnostic + fix command set provided to skill owner. Inventory completion will fill turk-mcp-entegrasyonu.md §4 + add Mevzuat steps to Mode 13 flow + update ictihat-emsal.md §1 search pattern + lift composability optional → required for Mevzuat in Modes 5/6/13."
+      - "New report template §11 TR Regulator + IP Dossier (output_artifacts.types) — to be drafted in rapor-sablonlari.md as part of v2.0.x patch."
+
+  - version: "1.8.0"
+    date: "2026-04-24"
+    changes:
+      - "Four new cross-functional executable scripts: patent-language-translator.py (rule-based NLP: claim technical language → plain Turkish + infringement test + design-around, 40+ pharma term dictionary, Markush extraction, 9 categories), health-economics-qaly.py (QALY + ICER + 12 HTA thresholds NICE/ICER/WHO/Turkey-informal/IQWiG/HAS/CDE/MHLW, 3 cases pembro/CAR-T/resmetirom), realworld-evidence-harvester.py (13 RWE sources consolidation including SGK Medula + IMS + FAERS + EudraVigilance + FiercePharma + Endpoints + Evaluate + PubMed + SEER + GARDP, 3 packages including glofitamab-tr for Roche portfolio), compliance-checker.py (7 frameworks FCPA + UKBA + MASAK + KVKK/GDPR + EFPIA + IFPMA + Roche Group Audit internal, 4 scenario evaluators, risk scoring 0-100, 6 example scenarios)"
+      - "Description refactored: added QALY, ICER, HTA, RWE, SGK, FCPA, UKBA, MASAK, KVKK, EFPIA, compliance keywords; removed lower-signal terms (lisans, HMK 266, extrapolation, anti-amiloid, psikedelik, CE/ISO 13485, USPTO+EPAAT listings) to make room"
+      - "Script ecosystem total: 14 → 18 scripts. No new domains/references — horizontal capability expansion only."
+
+  - version: "1.7.0"
+    date: "2026-04-24"
+    changes:
+      - "One new domain depth file: psikiyatri-ip.md (Cobenfy M1/M4 muscarinic 60-year first new mechanism, Caplyta + emraclidine — $37B psychiatry consolidation 2023-2024, rapid-onset MDD Spravato/Zurzuvae/AXS-05, psychedelic renaissance MDMA-PTSD + psilocybin Phase III, Alzheimer agitation Rexulti 2023, LAI 6-month, pediatric ADHD + autism, digital therapeutics, gene therapy CNS, neurosteroids, TAAR1)"
+      - "Four new executable scripts: fto-grid.py (patent × country × product risk matrix, 3 examples HCV/obesity/Humira biosimilar), regulatory-timeline.py (authorization + SGK + Bolar Gantt, 3 product types), kol-graph.py (KOL network + weighted centrality, 3 examples TR MS/TR onco/global GLP-1), evidence-ranker.py (GRADE + Oxford CEBM automatic classification, 6 examples)"
+      - "One new filled example: litigation-ornek-fshhm.md (Mode 6 — hypothetical Novo vs Generic semaglutide İstanbul 2. FSHHM case + SMK m.151 damages calculation + 4 settlement scenarios + 45-month timeline)"
+      - "One new showcase artifact: examples/showcase/monte-carlo-widget.md (interactive HTML NPV simulator with 6 sliders + real-time histogram + 10K simulations, royalty-calculator.py --montecarlo web version)"
+      - "Description updated: litigation, FSHHM, GRADE, KOL graph, psikiyatri, Cobenfy, psikedelik keywords added; A61K, patent değerleme, IRR removed for space"
+
+  - version: "1.6.0"
+    date: "2026-04-24"
+    changes:
+      - "Four new domain depth files: kardiyoloji-ip.md (PCSK9 + Factor XI + SGLT-2 + Lp(a) + ATTR + VERVE), metabolik-ip.md (GLP-1 blockbuster + obezity + MASH + KOAH), oftalmoloji-ip.md (anti-VEGF + Roche Vabysmo + retinal gene therapy), dermatoloji-ip.md (psoriasis cross-ref + JAK alopecia + vitiligo + HS)"
+      - "Two new executable scripts: report-builder.py (11-report orchestrator with visualize + carbon-html integration) + biosimilar-comparator.py (CQA similarity scoring per ICH Q5E + FDA/EMA)"
+      - "Two new filled examples: landscape-ornek-adc-2030.md (Mode 11 Landscape Forecast — ADC 2015-2030 projection + white space matrix) + ddreport-ornek-ma.md (Mode 7 M&A DD — hypothetical anti-PSMA ADC acquisition with Monte Carlo + tornado)"
+      - "React interactive showcase artifact: examples/showcase/pharmapatent-showcase.jsx — IBM Carbon Design System, 6-tab interactive dashboard"
+      - "Description updated: kardiyoloji, metabolik, oftalmoloji, dermatoloji keywords + PCSK9, GLP-1, anti-VEGF, JAK additions"
+      - "Roche Türkiye strategic emphasis extended (Vabysmo ophthalmology, Ocrevus neurology, glofitamab hematology, Actemra immunology)"
+      - "Mahir's regulatory work cross-references: ADACLIN Era Pharma (dermatology), Glofitamab STARGLO defense (hematology)"
+
+  - version: "1.5.0"
+    date: "2026-04-24"
+    changes:
+      - "Three new domain depth files: immunoloji-ip.md (TNF-α + IL family + JAK/TYK2), noroloji-ip.md (MS + Alzheimer anti-amyloid + CGRP), enfeksiyon-ip.md (antibiotic crisis + HIV + HCV + mRNA vaccines)"
+      - "New executable script: spc-calculator.py — EU Supplementary Protection Certificate under Reg. EC 469/2009 Art. 13 with TR comparison"
+      - "Two new filled examples: licensing-ornek-adc.md (Mode 10 — anti-TROP2 ADC in-license deal), opposition-ornek-epo.md (Mode 8 — pembrolizumab formulation EPO opposition)"
+      - "New reference: visualize-widget-kutuphanesi.md — 33 ready SVG/Mermaid/HTML templates for visualize:show_widget, IBM Carbon + IBM Plex compliant, covers all 10 report types"
+      - "Description updated with new keywords: SPC, immunoloji, nöroloji, enfeksiyon, anti-amiloid, JAK, TYK2, CGRP"
+      - "Emphasized: Turkey has no SPC equivalent (only 20-year patent + 6-year data exclusivity)"
+      - "Roche products highlighted in immunology + neurology domains (ocrelizumab, tocilizumab, crovalimab)"
+
+  - version: "1.4.0"
+    date: "2026-04-24"
+    changes:
+      - "Two new domain depth files: domains/onkoloji-ip.md + domains/hematoloji-ip.md (Mahir's expertise areas)"
+      - "Three new operational modes: Mode 10 Licensing, Mode 11 Landscape Forecast, Mode 12 Expert Witness"
+      - "Three new executable scripts: cpc-recommender.py (CPC/IPC suggestion), family-tracer.py (INPADOC family mapping + Mermaid), priority-date-matrix.py (Paris + PCT compliance)"
+      - "New report template: §10 Expert Witness Report (FSHHM bilirkişi draft, HMK m.266 compliant)"
+      - "Licensing mode with lex-mercator contract drafting integration (BATNA/ZOPA negotiation)"
+      - "Landscape Forecast with BERT/NLP-based competitor portfolio prediction"
+      - "Expert Witness mode with independence declaration + claim construction + infringement/invalidity/damage analysis"
+      - "Oncology domain: ICI + ADC + CAR-T + bispecific + RLT detail"
+      - "Hematology domain: Roche malignant hematology integration (glofitamab, emicizumab, BCMA bispecifics, CAR-T)"
+      - "Description updated to reflect 12 operational modes"
+
+  - version: "1.3.0"
+    date: "2026-04-24"
+    changes:
+      - "Two new reference files: gorsel-standartlari.md (standard visual sets per template), compliance-beyanlari.md (GPP3/MDR-IVDR/KVKK/GDPR/attorney-client privilege)"
+      - "Two new executable scripts: royalty-calculator.py (NPV+IRR+RFR+industry benchmarks), patent-expiry-monitor.py (portfolio tracking + alerts)"
+      - "Standard visual sets defined for all 9 report templates (Gantt, heatmap, choropleth, citation network, radar, Monte Carlo)"
+      - "Compliance disclosure matrix per report type"
+      - "IBM Carbon color palette + typography + SVG size standards"
+      - "Ready-to-use compliance footer block template"
+      - "7 industry licensing benchmark categories for royalty calculator"
+      - "180-day recovery window tracking for missed annual fees"
+
+  - version: "1.2.0"
+    date: "2026-04-23"
+    changes:
+      - "Three new operational modes added: Mode 7 Due Diligence, Mode 8 Opposition, Mode 9 Biosimilar Pathway"
+      - "Three new reference files: patent-degerleme.md (valuation methodology), biyobenzer-yol.md (biosimilar pathway), yeni-modaliteler.md (ADC/CAR-T/mRNA-LNP/gene therapy)"
+      - "Three new report templates: §7 Due Diligence Report, §8 Opposition Briefing, §9 Biosimilar Pathway Briefing"
+      - "Patent valuation methodology integrated: Cost/Market/Income approaches, DCF+rNPV+Monte Carlo, Relief-from-Royalty, modality-specific royalty stacks"
+      - "Biosimilar comparability package workflow (CQA + analytical + nonclinical + clinical)"
+      - "EPO Opposition workflow with EPC Article 100 grounds (100(a)/100(b)/100(c))"
+      - "New modalities coverage: ADC, CAR-T, mRNA-LNP, siRNA/ASO, gene therapy, xenotransplantation, SaMD/AI diagnostics"
+      - "Description updated to reflect 9 operational modes"
+
+  - version: "1.1.0"
+    date: "2026-04-23"
+    changes:
+      - "Three filled example reports added: atorvastatin FTO, trastuzumab invalidity, semaglutide regulatory (examples/)"
+      - "Audience variants defined: Technical / Executive / Legal (rapor-sablonlari.md)"
+      - "Executable scripts added: loe-calculator.py, claim-parser.py, scripts/README.md"
+      - "Inter-reference cross-linking density increased to 38 edges (from 1)"
+      - "examples/ and scripts/ directories added to skill structure"
+      - "Version history entry for forward traceability"
+
+  - version: "1.0.0"
+    date: "2026-04-23"
+    changes:
+      - "Initial full release"
+      - "SMK 6769 + TRIPS + Doha + TÜRKPATENT 2024 Nice + Beşeri Tıbbi Ürünler Ruhsatlandırma Yönetmeliği 2022 revision integrated"
+      - "BERT-based landscape forecasting layer incorporated"
+      - "Six operational modes (FTO, Invalidity, Landscape, Lifecycle, Regulatory, Litigation)"
+      - "Nine reference files: cpc-ipc-kodlari, markush-protokol, veritabani-stratejileri, smk-6769-ilac, ruhsat-veri-imtiyazi, tibbi-cihaz-uts, ictihat-emsal, fto-invalidity-protokol, rapor-sablonlari"
+      - "Composability chains defined: medsearch + pharmaintel (upstream); carbon-html-report + carbon-pptx + docx + lex-mercator + onko-erisim (downstream)"
+      - "Eight quality gates (G1-G8) for output discipline"

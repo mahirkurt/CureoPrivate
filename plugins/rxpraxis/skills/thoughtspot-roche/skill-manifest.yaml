@@ -1,0 +1,459 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — thoughtspot-roche
+# ============================================================================
+# Declares thoughtspot-roche's composability contract for SMP-compliant
+# discovery. Enables smp-orchestrator to auto-suggest composition pipelines
+# with pharmaintel (upstream — Türkiye Ürün Geliştirme query origination),
+# medical-research (upstream — disease prevalence cross-validation), and
+# carbon-html-report / carbon-pptx (downstream — publication-grade rendering).
+# ============================================================================
+
+manifest_version: "1.0"
+protocol_reference: "./SMP-v1.0"  # See smp-orchestrator/examples/SKILL_MANIFEST_PROTOCOL.md
+
+# --- Skill Identity ----------------------------------------------------------
+skill:
+  name: thoughtspot-roche
+  version: "2.0.0"
+  title: "Roche EMEA ThoughtSpot MCP — IQVIA MIDAS Operational Protocol (Session-based Spotter)"
+  description: >
+    Operational protocol skill for Roche EMEA ThoughtSpot MCP integration,
+    routing natural-language queries to IQVIA MIDAS-class cubes (MIDAS
+    Monthly, MIDAS Disease Monthly, extensible Roche internal datasources).
+    Enforces a ten-gate verification discipline (G1–G10) covering
+    check_connectivity, datasource registry, prompt pattern, Sage NLG
+    fallback, CSV normalization, confidential data handling, cross-cube
+    triangulation, currency unit verification, no-fabrication, and the
+    MCP raw-cell asymmetry that routes quantitative needs to REST searchdata.
+    Composes upstream with pharmaintel (Türkiye Ürün Geliştirme cross-country
+    sizing) and medical-research (prevalence ground-truth cross-validation);
+    composes downstream with pharmaintel (Commercial & Payer Context),
+    pharmapatent (eşdeğer-grup market sizing), carbon-html-report
+    (publication-grade HTML/PDF), and carbon-pptx (senior leadership decks).
+    Authenticated via emea.thoughtspot.roche.com session. Roche confidential.
+  author: "Mahir (internal skill)"
+  license: "Internal skill asset, not for external redistribution; Roche confidential data handling applies"
+  entry_point: "./SKILL.md"
+  homepage: null
+
+# --- Classification ----------------------------------------------------------
+classification:
+  primary_category: "commercial-intelligence"
+  secondary_categories:
+    - "data-orchestration"
+    - "pharmaceutical-market-analytics"
+    - "competitive-intelligence"
+    - "regulatory-intelligence-support"
+    - "business-intelligence"
+  tags:
+    - thoughtspot
+    - mcp-orchestrator
+    - iqvia-midas
+    - roche-internal
+    - pharma-sales-data
+    - audited-sales
+    - panel-data
+    - atc-classification
+    - disease-landscape
+    - cross-country-sizing
+    - manufacturer-intelligence
+    - molecule-trend
+    - sage-nlu
+    - liveboard
+    - confidential-data
+
+# --- Supported Content Domains -----------------------------------------------
+# Aligns with carbon-html-report's SEMANTIC_ICON_MAP domains for downstream
+# composition.
+domains:
+  - medical_pharmaceutical
+  - financial_commercial
+  - regulatory_intelligence
+
+# --- Input Contract ----------------------------------------------------------
+inputs:
+  - id: query_specification
+    required: true
+    description: >
+      Natural-language analytical query targeting one of the registered
+      MIDAS-class data cubes. Must follow validated prompt patterns (see
+      SKILL.md §4.3): WH-question form, concrete metric name (Swiss Franc,
+      Standard Units), explicit attribute or top-N qualifier. English
+      strongly preferred; Turkish behavior unverified on EMEA tenant.
+    mime_types:
+      - "text/plain"
+    language_hints:
+      - en
+    semantic_requirements:
+      - "Must specify analytical intent — breakdown, top-N, trend, comparison"
+      - "Must reference at least one cube-supported attribute (e.g., ATC1, Disease, Manufacturer, Country) OR be unambiguous from prior context"
+      - "Should use validated prompt templates from references/query-templates.md when available"
+
+  - id: datasource_id
+    required: false
+    description: >
+      Optional GUID override of the auto-selected datasource. When
+      omitted, skill routes to the appropriate cube based on query intent
+      (ATC-level → MIDAS Monthly; disease-level → MIDAS Disease Monthly).
+      Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
+    mime_types:
+      - "text/plain"
+    schema:
+      datasource_guid: "string (UUID format)"
+      datasource_alias: "string (optional human-readable name)"
+
+  - id: pharmaintel_query_context
+    required: false
+    description: >
+      Optional upstream context from pharmaintel — typically the cross-country
+      sizing or fiyat tavanı sub-task of pharmaintel's Türkiye Ürün Geliştirme
+      module (v8+). Provides query intent, target reference markets, and
+      desired metric resolution. When provided, thoughtspot-roche tailors
+      its CSV normalization output for direct consumption by pharmaintel's
+      report-template.md §Cross-Country Sizing block.
+    mime_types:
+      - "text/markdown"
+      - "application/json"
+    schema:
+      query_intent: "enum [generic_feasibility, fiyat_tavanı_calibration, cross_country_sizing, esdeger_grup_market_size, biowaiver_target_id, withdrawal_pattern]"
+      target_molecules: "list of INN/brand names"
+      reference_markets: "list of ISO country codes"
+      time_window: "string (MAT/YTD/explicit range)"
+
+  - id: medical_research_evidence_context
+    required: false
+    description: >
+      Optional upstream context from medical-research — typically disease
+      prevalence/incidence figures from peer-reviewed literature that
+      require cross-validation against MIDAS Disease Monthly's actual
+      market size. When provided, thoughtspot-roche generates a
+      triangulation block comparing literature estimates to MIDAS-derived
+      market reality.
+    mime_types:
+      - "text/markdown"
+    schema:
+      disease_terms: "list of disease names (free text + ICD if available)"
+      literature_prevalence: "list of {source, value, units, geography}"
+      validation_target: "string (e.g., 'global', 'Türkiye', 'EU5')"
+
+  - id: prior_session_context
+    required: false
+    description: >
+      Optional list of previously-produced answer artifacts from earlier
+      send_session_message / get_session_updates cycles in the same
+      analytical thread. Used by the create_dashboard workflow (Step 9)
+      to materialize multiple ad-hoc answers into a persistent dashboard.
+    mime_types:
+      - "application/json"
+    schema:
+      session_artifacts:
+        - analytical_session_id: "string"
+          answer_id: "string (JSON-encoded session_id + gen_no)"
+          answer_query: "string (TS search expression)"
+          question_label: "string (human-readable)"
+
+# --- Output Contract ---------------------------------------------------------
+outputs:
+  - id: analytics_response_markdown
+    description: >
+      Provenance-stamped Markdown response containing (a) Türkçe-formatted
+      result table with units converted from scientific notation, (b)
+      data source interpretation block (which cube, attribute used, magnitude
+      verification), (c) limitations/caveats block (Unclassified bucket
+      shares, time-span uncertainties, currency-mertebe alarms), and
+      (d) provenance footer (analytical_session_id + answer_id +
+      extract timestamp + Roche confidential etiketi). Downstream-composable
+      for pharmaintel, carbon-html-report, carbon-pptx ingestion.
+    mime_type: "text/markdown"
+    features:
+      - "Türkçe table headers with milyar/trilyon CHF formatting"
+      - "Yüzde payı sütunu added to top-N tables"
+      - "Unclassified/Various/Other buckets explicitly flagged"
+      - "Currency mertebe sanity check note"
+      - "Provenance stamp (analytical_session_id + answer_id + iframe_url + extract timestamp)"
+      - "Roche confidential etiketi preserved"
+      - "Cross-cube triangulation block when multiple cubes queried (G7)"
+
+  - id: thoughtspot_session_artifacts
+    description: >
+      Structured JSON listing the (analytical_session_id, answer_id,
+      answer_query, question_label) tuples for every answer produced in the
+      current analytical thread. Consumable by the create_dashboard workflow
+      (Step 9) to materialize a persistent dashboard from accumulated answers.
+    mime_type: "application/json"
+    optional: true
+    features:
+      - "Per-answer analytical_session_id"
+      - "Per-answer answer_id (JSON-encoded session_id + gen_no)"
+      - "Per-answer answer_query (TS search expression)"
+      - "Per-answer question_label (human-readable)"
+      - "Per-answer iframe_url (authenticated-session iframe URL)"
+      - "Per-answer extract_timestamp (UTC ISO 8601)"
+
+  - id: country_breakdown_csv
+    description: >
+      Long-format country breakdown CSV produced by the REST geographic
+      extractor (ts_getanswer_country_extractor.py): molecule,country,chf,
+      pct_of_molecule_total. Paired with a summary CSV carrying derived
+      n_countries, top_country, top_country_share_pct, hhi_country.
+    mime_type: "text/csv"
+    optional: true
+    features:
+      - "Per-molecule per-country audited sales (positive-only)"
+      - "Derived n_countries geographic footprint"
+      - "Top-country concentration + HHI"
+      - "Figures sourced live from REST searchdata (no fabrication, G9)"
+
+  - id: pharma_market_data_csv
+    description: >
+      Raw normalized CSV output from getAnswer with header rows skipped
+      and scientific notation preserved. Intended for downstream
+      programmatic consumers (analytics scripts, pharmapatent's
+      esdeger-grup market sizing layer, ad-hoc Excel ingestion). Not the
+      primary user-facing artifact.
+    mime_type: "text/csv"
+    optional: true
+    features:
+      - "Roche confidential header rows stripped"
+      - "Original scientific notation preserved (downstream conversion at consumer's discretion)"
+      - "Original column names from cube preserved"
+      - "Provenance metadata embedded as YAML frontmatter comment"
+
+# --- Composition — Upstream Compatibility ------------------------------------
+composition:
+  pipe_from:
+    - skill: pharmaintel
+      version_constraint: ">=8.0"
+      rationale: >
+        pharmaintel v8.0.0 introduced the Türkiye Ürün Geliştirme module
+        with a 4-channel data stack (TİTCK MCP + IQVIA MIDAS + AdisInsight
+        + openFDA). thoughtspot-roche provides the live MIDAS layer of
+        that stack: when pharmaintel needs cross-country market sizing,
+        fiyat tavanı calibration via reference markets, eşdeğer grup
+        market boyutu, or biowaiver target identification, it pipes the
+        query intent + target molecules + reference market list to
+        thoughtspot-roche which executes the underlying ThoughtSpot
+        queries and returns normalized cross-country tables.
+      intermediate_format: "text/markdown"
+
+    - skill: medical-research
+      version_constraint: ">=1.0"
+      rationale: >
+        medical-research produces disease prevalence/incidence estimates
+        from peer-reviewed literature, registries, and HTA bodies. These
+        epidemiological figures often need cross-validation against
+        actual market reality (drug volume × penetration × treated
+        population back-calculation). thoughtspot-roche queries MIDAS
+        Disease Monthly to provide the empirical market-size anchor
+        against which literature estimates are triangulated.
+      intermediate_format: "text/markdown"
+
+  # --- Downstream compatibility ---
+  pipe_to:
+    - skill: pharmaintel
+      version_constraint: ">=8.0"
+      rationale: >
+        Most pharmaintel report types (T1 company deep-dive, T2 asset
+        profile, T3 modality landscape, T6 head-to-head, T8 pipeline
+        inventory) include a Commercial & Payer Context section
+        (per gate G16). thoughtspot-roche's MIDAS-derived analytics
+        provide the empirical foundation for that section: revenue
+        magnitudes, manufacturer share dynamics, geographic distribution,
+        time-trend trajectories. pharmaintel ingests thoughtspot-roche's
+        markdown output and incorporates it into its triangulation pyramid.
+      intermediate_format: "text/markdown"
+
+    - skill: pharmapatent
+      version_constraint: ">=2.0"
+      rationale: >
+        pharmapatent's biosimilar feasibility, generic feasibility,
+        and lifecycle modules (especially the Türkiye-specific
+        eşdeğer grup market sizing analysis) require quantitative
+        market reality grounding. thoughtspot-roche supplies the
+        MIDAS-derived market boyutu, manufacturer landscape, and
+        molecule-level trend that pharmapatent uses as the niceliksel
+        layer of its FTO + invalidity + landscape analysis.
+      intermediate_format: "text/markdown"
+
+    - skill: carbon-html-report
+      version_constraint: ">=6.0"
+      rationale: >
+        thoughtspot-roche's markdown output uses domain
+        'medical_pharmaceutical' + 'financial_commercial' which align
+        with carbon-html-report's SEMANTIC_ICON_MAP. Market analysis
+        reports, KOL pre-meeting market briefings, and BU stakeholder
+        memos benefit from publication-grade Carbon Design System
+        HTML/PDF rendering with IBM Plex typography and A4 paginated
+        print layout via Paged.js.
+      intermediate_format: "text/markdown"
+
+    - skill: carbon-pptx
+      version_constraint: ">=1.9"
+      rationale: >
+        Senior leadership briefings, BU strategic review decks (cf.
+        Abbott Nutrition ANI EMEA review pattern, Roche WiOOP malignant
+        hematology pillar review), and KOL pre-meeting decks benefit
+        from carbon-pptx's Marp-based 16:9 deck generation with
+        IBM Carbon v11 design system + 18 pattern handlers. thoughtspot-roche's
+        normalized tables map cleanly to carbon-pptx's data_table and
+        bento_3x2 patterns.
+      intermediate_format: "text/markdown"
+
+# --- Runtime Requirements ----------------------------------------------------
+runtime:
+  mcp_connectors:
+    required:
+      - name: "ThoughtSpot Spotter"
+        purpose: "Primary data source for MIDAS-class cube queries; session-based tools: check_connectivity, create_analysis_session, send_session_message, get_session_updates, create_dashboard. NOTE: MCP does NOT return raw cell values — quantitative extraction uses REST searchdata."
+    optional: []
+  rest_api:
+    base: "https://<TS_HOST>/api/rest/2.0"
+    endpoints:
+      - "auth/token/full (or auth/token/custom for row-level entitlement)"
+      - "metadata/search (resolve LOGICAL_TABLE GUID)"
+      - "searchdata (raw cell extraction; data_format=COMPACT, record_size=-1)"
+    purpose: "Raw numeric extraction path; the MCP getAnswer-equivalent does not expose cell data"
+  authentication:
+    type: "session-based (MCP) + token-based (REST)"
+    tenant: "emea.thoughtspot.roche.com"
+    user: "Mahir Kurt (kurtm1)"
+    note: "MCP auth hidrated via existing session. REST path uses /auth/token/full with secret_key (env-driven; never hardcoded)."
+  python:
+    version: ">=3.8"
+    packages:
+      - "requests  # REST extractors (ts_getanswer_extractor.py, ts_getanswer_country_extractor.py)"
+    note: "normalize_csv.py uses stdlib only; REST extractors require requests"
+
+# --- Verification Contract ---------------------------------------------------
+# thoughtspot-roche's quality gates are process-level, enforced by the
+# skill's Mandatory Execution Protocol in SKILL.md §4.
+verification:
+  process_gates:
+    - id: G1
+      name: "Pre-flight check_connectivity successful (success:true)"
+      mandatory: true
+      rationale: >
+        Auth and endpoint health verified before any analytical query.
+        Failure halts the flow and surfaces endpoint health issue to user.
+
+    - id: G2
+      name: "Datasource GUID is registry-known or user-explicitly-confirmed"
+      mandatory: true
+      rationale: >
+        Prevents accidental queries against unknown or unauthorized cubes.
+        Registry maintained at assets/datasource-registry.yaml.
+
+    - id: G3
+      name: "Query prompt matches validated pattern (WH-form + concrete metric + attribute/top-N)"
+      mandatory: true
+      rationale: >
+        Sage NLU is most stable on validated prompt patterns. Off-pattern
+        queries can yield reflection behavior or low-quality answers.
+        Pattern catalog at references/query-templates.md.
+
+    - id: G4
+      name: "Sage NLG reflection fallback discipline applied (NLG reflection → fall through to getAnswer directly)"
+      mandatory: true
+      rationale: >
+        Observed asymmetry across MIDAS Monthly (NLG mature) and MIDAS
+        Disease Monthly (NLG reflects query). When reflection occurs,
+        the discovery probe is skipped and a direct send_session_message query is used.
+
+    - id: G5
+      name: "CSV header skip + scientific notation conversion applied to user-facing output"
+      mandatory: true
+      rationale: >
+        Every getAnswer payload starts with three header rows (extract
+        note + confidential label + blank) that must be skipped during
+        parsing. Numeric values arrive in scientific notation (e.g., 2.82E12)
+        and must be converted to Türkçe-formatted milyar/trilyon CHF for
+        readability.
+
+    - id: G6
+      name: "Confidential data handling — Roche internal etiketi reflected in user-facing response"
+      mandatory: true
+      rationale: >
+        Every getAnswer output is labeled 'Roche confidential material'.
+        This classification must be preserved in skill output to remind
+        the user of data handling obligations and external-share constraints.
+
+    - id: G7
+      name: "Cross-cube triangulation applied when multiple cubes queried"
+      mandatory: true
+      conditional: "Only fires when two or more cubes are queried in the same analytical thread"
+      rationale: >
+        MIDAS Monthly's ATC1 totals and MIDAS Disease Monthly's
+        disease-level totals should reconcile to similar magnitudes
+        for overlapping therapeutic territories (e.g., ATC1 ANTINEOPLAST+
+        IMMUNOMODUL ≈ sum of oncology disease rows). Triangulation
+        catches data extraction errors and cube-misalignment.
+
+    - id: G8
+      name: "Currency unit verification — CHF magnitude cross-checked against known sponsor/market scale"
+      mandatory: true
+      rationale: >
+        Roche's annual global revenue is ~65 billion CHF. Trillion-CHF
+        magnitudes in single-cube totals indicate multi-year cumulative
+        or all-manufacturer market views, not single-sponsor single-year.
+        Unit-verification block surfaces this interpretation to the user
+        to prevent magnitude misreading.
+
+    - id: G9
+      name: "No fabrication — numbers not readable from the rendered answer are never invented"
+      mandatory: true
+      rationale: >
+        The MCP does not expose raw result cells. When quantitative figures
+        are required, they MUST be pulled via REST searchdata or native
+        export — never fabricated. If the data is unreachable, the skill
+        states this explicitly rather than guessing. The REST extractors fail
+        loudly on API errors instead of emitting invented values.
+
+    - id: G10
+      name: "MCP raw-cell asymmetry acknowledged — quantitative needs route to REST (Path B)"
+      mandatory: true
+      rationale: >
+        get_session_updates returns only NLG text + an answer meta object
+        (answer_id, answer_query, iframe_url); it does NOT return cell data.
+        Structure/schema/ranking validation can use the MCP answer; any
+        report containing real figures must use the REST getAnswer-first
+        path documented in references/rest-getanswer-guide.md.
+
+# --- Asset Manifest ----------------------------------------------------------
+assets:
+  references:
+    - "./references/query-templates.md"           # Validated prompt patterns + anti-patterns + ATC2 lowercase rule
+    - "./references/rest-getanswer-guide.md"       # REST getAnswer-first flow, request bodies, n_countries derivation
+    - "./references/csv-normalization-guide.md"    # Scientific notation -> Türkçe number format conversion table
+    - "./references/changelog.md"                  # Version history
+  scripts:
+    - "./scripts/ts_getanswer_extractor.py"        # REST top-N CHF extractor (vendor-neutral)
+    - "./scripts/ts_getanswer_country_extractor.py" # REST country breakdown + n_countries extractor
+    - "./scripts/normalize_csv.py"                 # Native/preamble CSV normalizer
+  registries:
+    - "./assets/datasource-registry.yaml"          # Cube GUID + dimension catalog (3 cubes)
+
+# --- Build Metadata ----------------------------------------------------------
+build:
+  version: "2.0.0"
+  release_date: "2026-06-13"
+  release_name: "Session-based Spotter Migration + REST getAnswer-First Extraction + n_countries Geographic Layer"
+  changelog_location: "./references/changelog.md"
+  compatibility:
+    smp_protocol: "1.0"
+    skill_creator_framework: "compatible"
+    smp_orchestrator: ">=2.1"
+  changelog:
+    notable_changes_v2_0_0:
+      - "BREAKING: Tool surface migrated from ping/getRelevantQuestions/getAnswer/createLiveboard to the live session-based Spotter five-tool set (check_connectivity, create_analysis_session, send_session_message, get_session_updates, create_dashboard). Migration map added to SKILL.md §2.3."
+      - "CRITICAL FINDING: MCP does NOT return raw cell values; get_session_updates yields only NLG text + answer meta (answer_id, answer_query, iframe_url). Documented in SKILL.md §2.4."
+      - "Added REST getAnswer-first extraction path (auth/token/full -> metadata/search -> searchdata) with verified request bodies, grounded in ThoughtSpot Developer docs (2026-06). New reference: references/rest-getanswer-guide.md."
+      - "Added geographic layer: per-molecule country breakdown with derived n_countries, top_country, top_country_share_pct, hhi_country. New script: scripts/ts_getanswer_country_extractor.py."
+      - "Added vendor-neutral REST extractors: ts_getanswer_extractor.py (top-N) and ts_getanswer_country_extractor.py (country + n_countries), env-driven, no hardcoded secrets."
+      - "Registry v2.0: added third cube MIDAS Quarterly (Taiwan only, 12y); expanded MIDAS Monthly dimensional inventory (ATC2/3/4 hierarchy, Molecule List, Manufacturer/Corporation, 7 measures); documented lowercase ATC code rule (l1 not L01)."
+      - "Added gates G9 (no fabrication) and G10 (MCP raw-cell asymmetry -> route to REST). G1 renamed to check_connectivity."
+      - "query-templates.md: promoted 'last 12 months' to validated; documented validated single-attribute ATC2 filter with lowercase code rule."
+    notable_additions_v1_0_0:
+      - "Initial skill release. ThoughtSpot MCP integration validated against Roche EMEA tenant under Mahir Kurt (kurtm1) authentication."
+      - "Datasource registry seeded with MIDAS Monthly and MIDAS Disease Monthly."
+      - "Eight-gate verification contract (G1–G8) and Mandatory Execution Protocol (Steps 1–8)."
+      - "Composability contract: pipe_from pharmaintel + medical-research; pipe_to pharmaintel, pharmapatent, carbon-html-report, carbon-pptx."

@@ -1,0 +1,159 @@
+{
+  "plugin_name": "rxpraxis",
+  "skill_name": "rxpraxis",
+  "version": "0.1",
+  "description": "rxpraxis SÜİT-DÜZEYİ ENTEGRASYON eval'leri. Tekil skill davranışını DEĞİL, beş skill'in tek connector sözleşmesi + kanonik-artefakt önbelleği altında birleştiğinde ortaya çıkan emergent davranışı test eder: tek-sefer TİTCK disiplini, kanonik önbellek yeniden-kullanımı, MIDAS degrade modu, provenance damgası bütünlüğü, scope guard ve router doğru yönlendirme. Tekil skill eval'leri ilgili skills/<skill>/evals/ altındadır.",
+  "evals": [
+    {
+      "id": "eval-1-single-shot-titck",
+      "title": "Tam Tarama Sırasında Tek-Sefer TİTCK Disiplini",
+      "prompt": "Türkiye retail kanalında dapagliflozin 10 mg film tablet için tam jenerik fırsat taraması yap. Tüm aşamaları çalıştır ve sonunda hangi connector'ları kaç kez çağırdığını raporla.",
+      "expected_response_criteria": [
+        "rxos 7-aşamalı boru hattı (G0-G6) çalıştırılır; aşamalar atlanmaz",
+        "Aşama 2'de TİTCK MCP çağrılır ve titck_canonical artefaktı üretilir (canonical-cache-contract.md §3.1)",
+        "Aşama 4 (patent) ve Aşama 5 (pazar) TİTCK verisine ihtiyaç duyduğunda titck_canonical'ı YENİDEN ÇIKARMAZ, ÖNBELLEKTEN OKUR",
+        "Üç sibling skill (medical-research, pharmaintel, pharmapatent) aynı TİTCK MCP'yi bağımsız çağırmaz — tek kanonik dosya paylaşılır",
+        "run_manifest.json üretilir ve connector_call_ledger.titck_mcp.single_shot_enforced = true işaretlenir",
+        "Connector çağrı sayısı raporunda TİTCK MCP çağrı sayısı = 1 (çift sorgu yok)",
+        "Hospital/IV değil retail/oral olduğu G0'da doğrulanır",
+        "İki katmanlı çıktı: Katman A temiz rapor + Katman B İç Denetim Kaydı"
+      ],
+      "min_word_count": 900,
+      "integration_assertions": [
+        "titck_mcp_call_count == 1",
+        "titck_canonical_reused_in_later_stages == true",
+        "single_shot_enforced_flag_present == true"
+      ]
+    },
+    {
+      "id": "eval-2-canonical-cache-reuse",
+      "title": "Kanonik Önbellek Yeniden-Kullanımı (validate → scan zinciri)",
+      "prompt": "Önce dapagliflozin 10 mg için hızlı doğrulama (validate) çalıştır. Sonra aynı molekül için tam taramaya (scan) geç. İkinci çalıştırmada TİTCK'yi tekrar sorguladın mı?",
+      "expected_response_criteria": [
+        "İlk çalıştırma /rxpraxis-validate fast-path: titck_canonical artefaktı üretilir + scope_hash anahtarı atanır (canonical-cache-contract.md §2)",
+        "Karar kartı (GO/NO-GO/KOŞULLU) üretilir + sınırlılık beyanı (tam fizibilite değil)",
+        "İkinci çalıştırma /rxpraxis-scan: aynı scope_hash için titck_canonical ZATEN MEVCUT — yeniden çıkarılmaz, okunur (§3.2)",
+        "Model, ikinci çalıştırmada TİTCK'yi tekrar sorgulamadığını ve önbellekten okuduğunu açıkça belirtir",
+        "Önbellek geçerliliği kontrol edilir (§6 yaşam döngüsü); aynı oturum/scope içinde geçerli",
+        "scan, validate'in atladığı aşamaları (epidemiyoloji Aşama 1, MIDAS Aşama 5b, biowaiver) EK olarak çalıştırır",
+        "İçerik-adresli anahtar mantığı doğru uygulanır (aynı girdi → aynı hash → önbellek isabeti)"
+      ],
+      "min_word_count": 700,
+      "integration_assertions": [
+        "second_run_titck_recomputed == false",
+        "scope_hash_match == true",
+        "scan_adds_stages_absent_in_validate == true"
+      ]
+    },
+    {
+      "id": "eval-3-midas-degraded-mode",
+      "title": "ThoughtSpot Bağlı Değilken MIDAS Degrade Modu",
+      "prompt": "Topikal kalsinörin inhibitörü segmenti için Türkiye fırsat taraması yap. (Not: bu senaryoda ThoughtSpot/MIDAS connector'ı bağlı DEĞİL.)",
+      "expected_response_criteria": [
+        "Pre-flight (CONNECTORS.md §8) ThoughtSpot check_connectivity başarısız → degrade mod TESPİT edilir",
+        "Kullanıcıya Aşama 5 Bölüm B'nin (36-ülke MIDAS cross-country) ATLANACAĞI AÇIKÇA bildirilir — sessiz atlama yok",
+        "midas_extract artefaktı üretilmez; pre-flight degradasyonu (canonical-cache-contract.md §4.5) uygulanır",
+        "Boru hattının geri kalanı (Aşama 1-4, Aşama 5a) NORMAL çalışır — tek connector eksikliği tüm taramayı durdurmaz",
+        "Fiyat tavanı, MIDAS yerine TİTCK referans fiyatından türetilir (fallback)",
+        "Konsolide rapor, hangi analizin degrade çalıştığını Katman B İç Denetim Kaydı'nda kaydeder",
+        "Cross-country boyutlandırma eksikliği bir SINIRLILIK olarak rapor sonunda belirtilir",
+        "Model MIDAS sayısı UYDURMAZ (no-fabrication) — eksik veriyi eksik olarak işaretler"
+      ],
+      "min_word_count": 800,
+      "integration_assertions": [
+        "thoughtspot_degraded_flag == true",
+        "midas_numbers_fabricated == false",
+        "pipeline_continued_despite_missing_connector == true"
+      ]
+    },
+    {
+      "id": "eval-4-scope-guard-rejection",
+      "title": "Scope Guard — Hospital/IV Reddi",
+      "prompt": "İntravenöz daratumumab (hastane kanalı, infüzyon) için Türkiye jenerik/biyobenzer fırsat taraması yapar mısın?",
+      "expected_response_criteria": [
+        "G0 scope guard devreye girer: hospital/IV kanal KAPSAM DIŞI olarak tespit edilir",
+        "Tarama ÇALIŞTIRILMAZ — boru hattı başlatılmadan reddedilir",
+        "Red gerekçesi açıkça verilir: rxpraxis kapsamı retail/topluluk-eczanesi + oral/topikal küçük molekül",
+        "Daratumumab'ın hem IV/hastane kanalı hem de biyolojik (küçük molekül değil) olduğu doğru teşhis edilir",
+        "Kullanıcı uygun bir alternatife yönlendirilir (kapsam içi bir soru önerilir veya ilgili başka skill belirtilir)",
+        "Bireysel geri ödeme/dava bağlamı sorulursa onko-erisim'e yönlendirme notu",
+        "Model nazik ama net reddeder; kapsam dışı analizi zorlamaz"
+      ],
+      "min_word_count": 350,
+      "integration_assertions": [
+        "scan_executed == false",
+        "scope_rejection_reason_given == true",
+        "redirect_offered == true"
+      ]
+    },
+    {
+      "id": "eval-5-provenance-integrity",
+      "title": "Birleşik Provenance Damgası Bütünlüğü",
+      "prompt": "Dapagliflozin için TR regülatuar snapshot çıkar (regulatory komutu). Her veri noktasının kaynağını nasıl damgaladığını göster.",
+      "expected_response_criteria": [
+        "TİTCK MCP verisi [TİTCK MCP / <tool> / <ISO-tarih>] formatında damgalanır (provenance-standard.md §1.1)",
+        "Mevzuat verisi kullanılırsa mevzuat kimliği zorunlu damgalanır (§1.2)",
+        "MIDAS verisi (varsa) yapısal provenance ile alana gömülür, serbest alıntı yapılmaz (§1.3)",
+        "Akademik kaynak Vancouver formatında (§1.4)",
+        "Birincil web yalnız URL keşfi sonrası doğrulamayla kullanılır (§1.5)",
+        "Damgalama grameri beş skill genelinde TUTARLI — her skill kendi farklı formatını kullanmaz",
+        "Güven derecelendirmesi (pharmaintel mirası §2) uygulanır",
+        "İki katmanlı çıktı: Katman A okuyucu-yüzlü + Katman B render-dışı denetim (§3)",
+        "Veriye ulaşılamayan nokta 'doğrulanamadı' olarak işaretlenir, uydurulmaz"
+      ],
+      "min_word_count": 600,
+      "integration_assertions": [
+        "provenance_format_consistent_across_skills == true",
+        "unverified_points_flagged == true",
+        "two_layer_output_present == true"
+      ]
+    },
+    {
+      "id": "eval-6-router-disambiguation",
+      "title": "Router — Niyet→Yüzey Doğru Yönlendirme",
+      "prompt": "rxpraxis nedir ve oftalmoloji alanında bir jenerik fırsatı araştırmak istesem nereden başlamalıyım?",
+      "expected_response_criteria": [
+        "start (router) skill mantığı çalışır: süit tanıtımı + connector kontrolü + yönlendirme",
+        "Beş skill ve altı komut kısaca tanıtılır",
+        "Oftalmoloji + jenerik fırsat → TAM TARAMA niyeti doğru teşhis edilir → /rxpraxis-scan'a yönlendirilir",
+        "Tek molekül doğrulaması ile TA taraması arasındaki ayrım açıklanır (validate vs scan)",
+        "Bağlı connector'ların kontrol edileceği belirtilir (CONNECTORS.md §8)",
+        "Oftalmoloji topikal/oral küçük molekül ise kapsam içi olduğu doğrulanır (retina/IV değilse)",
+        "Komut (kullanıcı-yüzlü giriş) ile skill (motor) ayrımı netleştirilir (R4 azaltımı)",
+        "Yanıt yönlendirici ve özlü; tam tarama gövdesini burada çalıştırmaz"
+      ],
+      "min_word_count": 400,
+      "integration_assertions": [
+        "correct_command_recommended == true",
+        "validate_vs_scan_distinction_explained == true",
+        "scope_check_mentioned == true"
+      ]
+    }
+  ],
+  "scoring_rubric": {
+    "single_shot_connector_discipline": {
+      "weight": 0.30,
+      "criteria": "TİTCK MCP tam tarama boyunca tek kez çağrılır; kanonik artefaktlar (titck_canonical/midas_extract/adis_pipeline) yeniden çıkarılmaz, önbellekten okunur; run_manifest connector_call_ledger çift-sorgu yokluğunu kanıtlar"
+    },
+    "graceful_degradation": {
+      "weight": 0.20,
+      "criteria": "Eksik connector (özellikle ThoughtSpot) tespit edilir, açıkça bildirilir, boru hattı durmadan degrade çalışır, eksik veri uydurulmaz (no-fabrication)"
+    },
+    "provenance_consistency": {
+      "weight": 0.20,
+      "criteria": "provenance-standard.md grameri beş skill genelinde tutarlı uygulanır; iki katmanlı çıktı bütün; doğrulanamayan noktalar işaretli"
+    },
+    "scope_governance": {
+      "weight": 0.15,
+      "criteria": "Hospital/IV ve küçük-molekül-dışı girdiler G0'da reddedilir; uygun yönlendirme yapılır; kapsam dışı analiz zorlanmaz"
+    },
+    "router_accuracy": {
+      "weight": 0.15,
+      "criteria": "Kullanıcı niyeti doğru komuta/skill'e eşlenir; validate↔scan ayrımı ve komut↔skill ayrımı netleşir"
+    }
+  },
+  "baseline_comparison": {
+    "expected_baseline_behavior": "Tek bir skill veya bağlamsız LLM, dört kaynak skill'i koordine ETMEZ: TİTCK'yi (gerekirse) birden çok kez sorgular, kanonik önbellek kavramı yoktur, eksik connector'ı sessizce atlar veya sayı uydurur, provenance damgası tutarsız/eksiktir, scope guard yoktur.",
+    "expected_suite_lift": "Tek-sefer connector disiplini (TİTCK çağrısı N→1), kanonik önbellek yeniden-kullanımı (%100 ikinci-çıkarım yok), açık degrade mod (sessiz atlama→bildirimli), tutarlı provenance (%100 birleşik gramer), aktif scope guard (kapsam dışı %100 reddi)."
+  }
+}

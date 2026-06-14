@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>figma-forge importer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+      font-size: 12px;
+      margin: 0;
+      padding: 16px;
+      color: #1F2937;
+      background: #FFFFFF;
+    }
+    h1 {
+      font-size: 14px;
+      margin: 0 0 4px 0;
+      color: #0F172A;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #6B7280;
+      margin-bottom: 16px;
+    }
+    .panel {
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #F9FAFB;
+    }
+    .panel h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 8px 0;
+      color: #4B5563;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+    .row .label { color: #6B7280; }
+    .row .value { font-weight: 500; }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #18A0FB;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #0F8FE0; }
+    button:disabled { background: #9CA3AF; cursor: not-allowed; }
+    button.secondary {
+      background: transparent;
+      color: #4B5563;
+      border: 1px solid #E5E7EB;
+    }
+    button.secondary:hover { background: #F3F4F6; }
+    .progress {
+      display: none;
+      background: #EEF2FF;
+      color: #4338CA;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 11px;
+    }
+    .success {
+      display: none;
+      background: #ECFDF5;
+      color: #047857;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .error {
+      display: none;
+      background: #FEF2F2;
+      color: #B91C1C;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      word-break: break-word;
+    }
+    .warn-list {
+      margin-top: 8px;
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 11px;
+      color: #92400E;
+      padding-left: 16px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .actions button { flex: 1; }
+  </style>
+</head>
+<body>
+  <h1>figma-forge importer</h1>
+  <p class="subtitle">Channel 3 fallback. Writes tokens to Figma Variables + Styles.</p>
+
+  <div id="progress" class="progress">⏳ Importing — please wait. Large libraries take 10–60 seconds.</div>
+  <div id="error" class="error"></div>
+  <div id="success" class="success"></div>
+
+  <div class="panel">
+    <h2>What will be imported</h2>
+    <div class="row"><span class="label">Source</span><span class="value">DTCG token JSON (embedded)</span></div>
+    <div class="row"><span class="label">Collections</span><span class="value">Primitives + Semantic + Dimension + Font</span></div>
+    <div class="row"><span class="label">Modes</span><span class="value">Light + Dark (where present)</span></div>
+    <div class="row"><span class="label">Styles</span><span class="value">Paint + Text + Effect</span></div>
+  </div>
+
+  <div class="panel">
+    <h2>Notes</h2>
+    <p style="margin:0;font-size:11px;line-height:1.5;color:#4B5563;">
+      This plugin reads bundled tokens and writes Variables, paint styles, text styles, and effect styles to the current Figma file. The library will not be auto-published — you must run Assets → Publish Library manually afterward.
+    </p>
+  </div>
+
+  <button id="run">Run import</button>
+
+  <div class="actions">
+    <button class="secondary" id="close">Close</button>
+  </div>
+
+  <script>
+    const runBtn = document.getElementById("run");
+    const closeBtn = document.getElementById("close");
+    const progress = document.getElementById("progress");
+    const success = document.getElementById("success");
+    const error = document.getElementById("error");
+
+    runBtn.addEventListener("click", () => {
+      runBtn.disabled = true;
+      progress.style.display = "block";
+      success.style.display = "none";
+      error.style.display = "none";
+      parent.postMessage({ pluginMessage: { type: "run-import" } }, "*");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      parent.postMessage({ pluginMessage: { type: "close" } }, "*");
+    });
+
+    window.addEventListener("message", (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      progress.style.display = "none";
+      runBtn.disabled = false;
+      if (msg.type === "import-complete") {
+        const s = msg.stats;
+        let html = `
+          <strong>✓ Import complete (${(s.durationMs / 1000).toFixed(1)}s)</strong>
+          <div style="margin-top:8px;font-size:11px;line-height:1.6;">
+            ${s.collectionsCreated} collections · ${s.modesCreated} modes<br>
+            ${s.variablesCreated} variables · ${s.paintStylesCreated} paint styles<br>
+            ${s.textStylesCreated} text styles · ${s.effectStylesCreated} effect styles
+          </div>`;
+        if (s.warnings && s.warnings.length > 0) {
+          html += `<details style="margin-top:8px;"><summary style="font-size:11px;cursor:pointer;color:#92400E;">${s.warnings.length} warnings</summary>`;
+          html += `<ul class="warn-list">`;
+          for (const w of s.warnings.slice(0, 50)) {
+            html += `<li>${escapeHTML(w)}</li>`;
+          }
+          if (s.warnings.length > 50) html += `<li>… and ${s.warnings.length - 50} more</li>`;
+          html += `</ul></details>`;
+        }
+        success.innerHTML = html;
+        success.style.display = "block";
+      } else if (msg.type === "import-failed") {
+        error.textContent = "Import failed: " + msg.error;
+        error.style.display = "block";
+      }
+    });
+
+    function escapeHTML(s) {
+      return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+  </script>
+</body>
+</html>

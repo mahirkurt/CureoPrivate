@@ -1,0 +1,21 @@
+{
+  "$schema": "https://figma-forge.io/schemas/component-spec.schema.json",
+  "component": {
+    "id": "filled-button",
+    "name": "Filled Button",
+    "name_carbon": "FilledButton",
+    "category": "actions"
+  },
+  "variants": {
+    "axes": {
+      "State": ["enabled", "hovered", "focused", "pressed", "disabled"],
+      "HasIcon": ["false", "true"]
+    },
+    "expected_count": 10,
+    "disabled_combinations": []
+  },
+  "tokens": {
+    "background": "{color.semantic.primary}",
+    "foreground": "{color.semantic.on-primary}"
+  }
+}

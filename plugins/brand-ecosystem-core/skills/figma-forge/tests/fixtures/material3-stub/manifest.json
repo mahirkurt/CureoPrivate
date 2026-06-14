@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mahirkurt/figma-forge/main/schemas/bundle-manifest.schema.json",
+  "bundle_name": "material3-stub",
+  "bundle_version": "0.1.0",
+  "source_design_system": {
+    "name": "Material 3 Stub",
+    "version": "0.1.0",
+    "url": "https://m3.material.io/"
+  },
+  "generated_at": "2026-05-27T04:48:07.885488Z",
+  "generator": {
+    "tool": "figma-forge bundle-manifest",
+    "version": "0.3.0-rc.1"
+  },
+  "file_count": 5,
+  "total_size_bytes": 3310,
+  "summary_by_category": {
+    "code-connect.mapping": 1,
+    "components.spec": 1,
+    "icons.tier-svg": 1,
+    "root": 1,
+    "tokens.merged": 1
+  },
+  "files": [
+    {
+      "path": "code-connect/filled-button.json",
+      "size": 366,
+      "sha256": "260dd2b7c2bc1f9035d88fc81f6c683135546ca54d10c96ba338464348043316",
+      "category": "code-connect.mapping"
+    },
+    {
+      "path": "components/01-filled-button.json",
+      "size": 537,
+      "sha256": "60607474bf7c20698f001052d693e2c1c9c098e28a159779d3e543f23b2a90ad",
+      "category": "components.spec"
+    },
+    {
+      "path": "icons/svg/tier/m3-mark.svg",
+      "size": 211,
+      "sha256": "245a12160ff729e6c53f1794e80f7c5b05ee581ba9858c576137c5726c5c50b0",
+      "category": "icons.tier-svg"
+    },
+    {
+      "path": "library-registry.json",
+      "size": 449,
+      "sha256": "766832fdbe753261e152385fd50897d08be4172813d4bf5b233dcb74dd6876a0",
+      "category": "root"
+    },
+    {
+      "path": "tokens/m3.tokens.json",
+      "size": 1747,
+      "sha256": "cea9e8b1bac0932599cfd3495bdc08371a6ffb802544aecfe831c1cdf596f387",
+      "category": "tokens.merged"
+    }
+  ]
+}

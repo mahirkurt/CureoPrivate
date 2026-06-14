@@ -1,0 +1,12 @@
+{
+  "component_id": "filled-button",
+  "carbon_class_name": "FilledButton",
+  "react": {
+    "import_statement": "import { FilledButton } from '@material/web/button/filled-button.js';",
+    "code_example": "<FilledButton>Click me</FilledButton>"
+  },
+  "props_mapping": {
+    "State=enabled":  {"disabled": "false"},
+    "State=disabled": {"disabled": "true"}
+  }
+}

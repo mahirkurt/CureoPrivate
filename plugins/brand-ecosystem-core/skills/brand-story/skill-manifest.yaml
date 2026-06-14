@@ -1,0 +1,78 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — migrated to canonical list-form by
+# `smp migrate`
+# Coercions applied: 4 (dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list)
+# Original preserved as <manifest>.bak (unless --no-backup was used)
+# ============================================================================
+
+manifest_version: '1.0'
+skill:
+  name: brand-story
+  version: 1.1.0
+  title: Customer-Centric Brand Narrative Protocol
+  description: 'Customer-centric brand narrative: Miller SB7 (Character-Problem-Guide-Plan-CTA-Failure-Success)
+    plus Rodriguez IMC diffusion into a single-page BrandScript, three-layer problem analysis,
+    villain framework and Robin-to-Batman check. Reads brand-platform handoff.'
+  entry_point: ./SKILL.md
+  author: Brand Ecosystem Studio v1.0
+  license: Internal skill asset
+domains:
+- marketing-design
+- brand-strategy
+classification:
+  primary_category: brand-strategy
+  secondary_categories:
+  - brand-narrative
+  - messaging
+  tags:
+  - storybrand
+  - sb7
+  - brandscript
+  - message pillars
+  - narrative
+inputs:
+- id: brand_platform_handoff
+  required: true
+  description: Output of brand-platform skill
+  mime_types:
+  - application/yaml
+  schema: ../brand-platform/references/output-template.md#handoff-schema
+- id: brand_audit_handoff
+  required: false
+  description: Optional brand-audit handoff
+  mime_types:
+  - application/yaml
+  schema: ../brand-audit/references/output-template.md#handoff-schema
+outputs:
+- id: brandscript_document
+  description: Single-page BrandScript plus supporting three-layer analysis
+  mime_type: text/markdown
+- id: handoff
+  description: Structured handoff artifact for downstream skill consumption
+  mime_type: application/yaml
+composition:
+  pipe_from:
+  - skill: brand-platform
+    version_constraint: '>=1.1.0'
+    rationale: Platform values + personality anchor the narrative.
+    intermediate_format: application/yaml
+  - skill: brand-audit
+    version_constraint: '>=1.1.0'
+    rationale: Optional audit context.
+    intermediate_format: application/yaml
+  pipe_to:
+  - brand-maker
+  - brand-visual
+  - brand-touchpoint
+  - brand-launch
+  - guideline-generation
+  - brand-voice-enforcement
+
+verification:
+  trigger_test_prompts:
+  - Build me a BrandScript using StoryBrand SB7
+  - Marka hikayemi kurgulayalim
+  - I need a brand narrative for customer-as-hero positioning
+  - Brand storytelling framework for B2B SaaS
+  - Robin-to-Batman test my brand story
+  expected_activation_rate: 0.94

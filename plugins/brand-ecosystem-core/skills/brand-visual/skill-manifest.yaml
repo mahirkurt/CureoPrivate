@@ -1,0 +1,701 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — brand-visual
+# ============================================================================
+# Bu dosya brand-visual skill'inin SMP v1.0 composability sözleşmesini
+# deklare eder. smp-orchestrator discover/validate/graph komutları tarafından
+# otomatik olarak çözümlenir.
+# ============================================================================
+
+# --- Protocol Metadata -------------------------------------------------------
+manifest_version: "1.0"
+protocol_reference: "../smp-orchestrator/examples/SKILL_MANIFEST_PROTOCOL.md"
+
+# --- Skill Identity ----------------------------------------------------------
+skill:
+  name: brand-visual
+  version: "1.3.0"
+  title: "Visionary Brand Identity System Protocol — Genesis (2026 Adaptive Era)"
+  description: >
+    Pentagram / Koto / Wolff Olins seviyesinde vizyoner bir Marka Stratejisti +
+    Sanat Yönetmeni + Tasarım Sistemleri Mimarı protokolü. Marka adından veya
+    brand-maker verbal identity çıktısından başlayarak, interaktif 4-adım
+    akışla stratejik ve zamansız bir Visual Identity System üretir.
+    v1.3 Genesis (2026 Adaptive Era) önemli yenilikler:
+    (1) 4 stratejik route — Tipografik / Geometrik Gestalt / Radikal
+    Farklılaşma + YENİ Route 4 Adaptive/Living Identity (spine + variable shell
+    sistemi; Nike/Adobe/Coca-Cola doktrini);
+    (2) UNIFIED MULTI-MODEL PROMPT (UMMP) — tek prompt Nano Banana 2 (Gemini
+    3.1 Flash Image, 26 Şubat 2026, $0.067/2K) + Grok Imagine Aurora-2 (Ocak
+    2026) için paralel çalışır; 7-element grammar (subject framing / form
+    construction / style anchor / technical spec / composition / semantic
+    positive-constraint color / 2026 trend anchor);
+    (3) 2026 TREND LIBRARY — 14 curated trend (warm neo-minimalism,
+    hyperfunctional editorial overlay, earthmark organic, kinetic typography,
+    tactile dimensional refinement, Pantone Cloud Dancer 2026 COY, generative
+    morphing, coauthored open canvas, AI discoverability, v.b.);
+    (4) AI DISCOVERABILITY LAYER — agent-era branding (ChatGPT/Claude/Gemini/
+    Grok brand recognition), 20-word brand description prompt, Schema.org
+    entity knowledge card, logo alt text + pronunciation guide, brand
+    manifesto template;
+    (5) C2PA CONTENT CREDENTIALS — EU AI Act uyumu, provenance chain
+    dokümantasyonu, USPTO 2025 + SMK 6769 trademark strategy;
+    (6) SONIC IDENTITY BRIEF — voice-first UI çağı için sonic logo brief,
+    earcon library spec, voice persona parameters;
+    (7) NEURO-INCLUSIVE DESIGN — CVD simulation, APCA Lc ≥75 enforcement,
+    2026 accessibility ekstansiyonu.
+    Radix 12-step matematiksel renk sistemi (light/dark, WCAG + APCA,
+    Cloud Dancer neutral alternatif), Variable Font tipografi, W3C Design
+    Tokens, favicon-grade 16px ölçeklenebilirlik korunur.
+  author: "Mahir (internal skill)"
+  license: "Internal skill asset, not for external redistribution"
+  entry_point: "./SKILL.md"
+  homepage: null
+
+# --- Classification ----------------------------------------------------------
+classification:
+  primary_category: "brand-identity"
+  secondary_categories:
+    - "visual-design"
+    - "design-system-architecture"
+    - "creative-direction"
+    - "ai-prompt-engineering"
+    - "adaptive-identity"
+    - "ai-discoverability"
+    - "sonic-identity"
+    - "content-provenance"
+  tags:
+    - brand-identity
+    - logo-design
+    - visual-identity
+    - design-system
+    - adaptive-identity
+    - living-identity
+    - fluid-identity
+    - generative-morphing
+    - radix-colors
+    - variable-fonts
+    - design-tokens
+    - ai-art-direction
+    - nano-banana-2
+    - gemini-3.1-flash-image
+    - grok-imagine
+    - aurora-2
+    - midjourney
+    - niji
+    - ummp
+    - unified-multi-model-prompt
+    - pentagram-tradition
+    - gestalt-principles
+    - wcag-aa
+    - apca-contrast
+    - neuro-inclusive
+    - cvd-simulation
+    - cloud-dancer-2026-coy
+    - warm-neo-minimalism
+    - hyperfunctional-editorial
+    - earthmark-organic
+    - kinetic-typography
+    - tactile-dimensional
+    - ai-discoverability
+    - agent-era-branding
+    - schema-org-entity
+    - c2pa-content-credentials
+    - eu-ai-act
+    - sonic-identity
+    - sonic-logo
+    - voice-persona
+    - earcon-library
+
+# --- Supported Content Domains -----------------------------------------------
+# Bu skill belirli bir "document domain" üzerinde çalışmaz — tüm sektörler
+# için visual identity protokolü sunar. Ancak sektör-spesifik red-line
+# negative listesi scripts/prompt_composer.py'deki SECTOR_NEGATIVES'ten
+# çekilir.
+domains:
+  - brand-identity-general
+  - technology-saas-ai
+  - fintech-payments
+  - healthcare-pharma
+  - education-edtech
+  - real-estate
+  - food-beverage-coffee
+  - beauty-cosmetics-wellness
+  - luxury-fashion
+  - sustainability-eco
+  - pediatrics-child-parenting
+  - gaming-entertainment
+
+# --- Input Contract ----------------------------------------------------------
+# brand-visual çıplak bir brief'i veya brand-maker verbal identity çıktısını
+# alır. Her iki formatla da composable.
+inputs:
+  - id: brand_brief
+    required: true
+    description: >
+      Marka brief'i: isim + sektör + ya brand-maker'dan gelen tam verbal
+      identity raporu ya da kısa brief (marka adı + vizyon cümlesi).
+    mime_types:
+      - "text/plain"
+      - "text/markdown"
+    language_hints:
+      - tr
+      - en
+    semantic_requirements:
+      - "Marka adı belirtilmiş olmalı (brand-maker final name veya kullanıcının adlandırdığı marka)"
+      - "Sektör/kategori belirtilmiş veya brief'ten çıkarılabilir olmalı"
+      - "Brief brand-maker çıktısıysa, verbal identity rationale bölümü korunmalı"
+
+  - id: brand_maker_report
+    required: false
+    description: >
+      Opsiyonel: brand-maker'ın Global Sözel Kimlik Raporu output'u.
+      Varsa Adım 2 sokratik sorularından önemli bölümü atlanır; arketip,
+      pazar, ton çıkarsanır.
+    mime_types:
+      - "text/markdown"
+    schema:
+      final_name: "string (1 finalist)"
+      strategic_anchor: "string (single word/emotion sahiplenilen kavram)"
+      archetype: "enum [12 Jung archetypes] (varsa)"
+      target_market: "string (pazar coğrafyası)"
+      category: "string (sektör/kategori)"
+      taboo_list: "string[] (kullanıcının istemediği görsel motifler)"
+
+  - id: user_preferences_signal
+    required: false
+    description: >
+      Kullanıcının tonalite ve route tercihleri (opsiyonel).
+      Brief yeterince zenginse interaktif soruların kısaltılmasına yardım.
+    mime_types:
+      - "text/plain"
+    schema:
+      preferred_route: "enum [typographic, geometric, disruptor, adaptive, hybrid]"
+      tonality: "string[] (cesur/sakin/premium/erişilebilir/minimal vb.)"
+      primary_stage: "enum [mobile-app, web, packaging, b2b-dashboard, signage]"
+
+# --- Output Contract ---------------------------------------------------------
+outputs:
+  - id: brand_identity_report
+    description: >
+      Tam Visual Identity System raporu: Executive summary, strategy anchor,
+      logomark spec + AI-generated reference, Radix 12-step color system
+      (light+dark), typography system (variable fonts), design tokens
+      (CSS/Tailwind/JSON), favicon tests, application mockup briefs,
+      forbidden variations, bibliography, implementation checklist.
+    mime_type: "text/markdown"
+    features:
+      - "2500-4000 kelimelik agency-grade report"
+      - "CSS custom properties (light + dark mode)"
+      - "Tailwind config snippet"
+      - "W3C Design Tokens JSON export"
+      - "WCAG AA + APCA compliance verified"
+      - "16px favicon scalability tested"
+      - "Bibliography with 13+ canonical sources cited"
+
+  - id: ai_prompt_bundle
+    description: >
+      UNIFIED MULTI-MODEL PROMPT (UMMP) v1.3: Tek prompt Nano Banana 2
+      (Gemini 3.1 Flash Image) + Grok Imagine Aurora-2 için paralel
+      çalışacak şekilde 7-element grammar'da üretilir (subject framing /
+      form construction / style anchor / technical spec / composition /
+      semantic positive-constraint color / 2026 trend anchor). Parameter
+      flag yok; narrative paragraph olarak kullanıcıya teslim edilir.
+      Model-specific execution notes Nano Banana 2 (Gemini app/AI Studio/
+      Vertex, Thinking mode, $0.067/2K), Grok Imagine (grok.com/imagine,
+      Quality mode, X Premium+ $16/ay veya SuperGrok), Nano Banana Pro
+      (premium hero asset $0.134/2K), Midjourney V7/V8 (legacy fallback,
+      parametre addenda ile), Niji 7 (mascot only). Paralel dual-model
+      execution matrisi route-based.
+    mime_type: "text/plain"
+    optional: true
+
+  - id: adaptive_identity_spec
+    description: >
+      v1.3 Route 4 ÇIKTI: Adaptive/Living Identity system specification.
+      Core spine (immutable DNA) + Variable shell (context-responsive)
+      architecture. 2-4 variable parameter, 5-12 variant library,
+      transition rules (instant/animated/morph/generative/stateful),
+      constraint system (%60 minimum visual consistency), design tokens
+      (W3C DTCG), implementation brief (CSS+SVG / Figma Variants / 
+      Programmatic), governance workflow.
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: ai_discoverability_spec
+    description: >
+      v1.3 Adım 5.10 ÇIKTI: Agent-era branding layer. 20-word canonical
+      brand description prompt, Schema.org Organization JSON-LD entity
+      knowledge card, logo alt text + voice description + pronunciation
+      (IPA/ARPABET), agent-era brand manifesto (/brand/manifesto.md),
+      5-test AI-SEO audit protocol (Direct Recognition / Contextual
+      Recommendation / Comparative Accuracy / Visual Description / 
+      Voice UI Readability).
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: c2pa_provenance_spec
+    description: >
+      v1.3 Adım 5.11 ÇIKTI: C2PA Content Credentials & AI Provenance
+      chain. Generation / Transformation / Publication katmanları, 
+      C2PA manifest JSON, vector conversion metadata preservation
+      workflow (--preserve-c2pa flag), EU AI Act disclosure templates
+      (Tier 1/2/3), trademark application package (USPTO 2025 human
+      authorship record, EUIPO, TÜRKPATENT SMK 6769), metadata stripping
+      warnings for social platforms.
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: sonic_identity_brief
+    description: >
+      v1.3 Adım 5.9 ÇIKTI: Voice-first era sonic identity brief.
+      Archetype-driven sonic personality mapping, core motif design
+      (length, notes, contour, intervals, rhythm, key/mode, tempo,
+      envelope), sonic anchor references, timbre/instrumentation brief,
+      use case variations, earcon library spec (7 standard earcons),
+      voice persona parameters (pitch/tempo/warmth/formality/accent),
+      AI voice model parameters (ElevenLabs/OpenAI TTS/Play.ht),
+      production handoff package, licensing framework.
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: design_tokens_json
+    description: >
+      W3C Design Tokens Format Module spec'ine uyumlu JSON export,
+      Style Dictionary / Figma Variables / Tailwind sync için kullanılır.
+    mime_type: "application/json"
+    optional: true
+
+  - id: favicon_test_bundle
+    description: >
+      Logo rendering 16/32/64/192/512 + monochrome variants +
+      scalability checklist (mental simulation).
+    mime_type: "application/octet-stream"
+    optional: true
+
+  - id: production_vector_svg
+    description: >
+      AI-generated raster (PNG) → production-grade SVG conversion via vtracer
+      backend (or Inkscape/Potrace fallback). Includes diagnostic report
+      (path count, file size, complexity heuristic) and post-processing
+      recommendations for designer manual cleanup.
+    mime_type: "image/svg+xml"
+    optional: true
+
+  - id: pantone_matching_report
+    description: >
+      Per brand color: nearest Pantone PMS Coated/Uncoated match via ΔE
+      CIEDE2000 algorithm + CMYK approximation (GRACoL profile) + tolerance
+      classification (within Pantone resmi ≤2.0 ΔE00 hedefi or fail).
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: print_production_spec
+    description: >
+      Comprehensive print production specification: Pantone PMS callouts,
+      CMYK conversion, recommended paper stocks (GSM + coated/uncoated),
+      print methods (offset/digital/letterpress), finishing options
+      (foil/emboss/spot UV), proofing protocol.
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: motion_language_spec
+    description: >
+      Brand motion personality spec derived from archetype + tonality:
+      duration ladder (4-tier), easing palette (cubic-bezier curves),
+      animation primitives (allowed vocabulary + no-go zones), Lottie
+      JSON skeleton stub for After Effects designer hand-off.
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: lottie_skeleton
+    description: >
+      Lottie Specification v1.0 compliant JSON skeleton for logo entry
+      animation. Designer fills shape data in After Effects, exports via
+      Bodymovin/LottieFiles plugin to maintain Lottie compatibility.
+    mime_type: "application/json"
+    optional: true
+
+# --- Composition — Upstream Compatibility ------------------------------------
+# brand-maker'dan gelen verbal identity rapor'unu doğrudan kabul eder.
+# Bu composition, kullanıcının brand naming → brand visual flow'unu
+# otomatik orchestrate etmesini sağlar.
+composition:
+  pipe_from:
+    - skill: brand-maker
+      version_constraint: ">=1.0"
+      rationale: >
+        brand-maker, final marka adı + arketip + stratejik çıpa + hedef pazar
+        içeren Global Sözel Kimlik Raporu üretir. brand-visual bu raporu
+        girdi olarak alır, sokratik sorulardan interview kısmını atlar ve
+        doğrudan Adım 3'te 3 stratejik route üretmeye başlar. Composability
+        bu skill ekosisteminin "naming → identity" canonical pipeline'ıdır.
+      intermediate_format: "text/markdown"
+
+  # brand-visual outputs flow into downstream skills (medmarketing for
+  # healthcare campaigns, alegria-prompt-engine for illustration prompts,
+  # carbon-pptx for brand guidelines presentations)
+  pipe_to:
+    - skill: carbon-pptx
+      version_constraint: ">=1.0"
+      rationale: >
+        brand-visual'ın brand_identity_report output'u, carbon-pptx ile
+        brand guidelines sunumuna dönüştürülebilir. Color tokens ve
+        typography spec'leri direkt slide'lara aktarılır.
+      intermediate_format: "text/markdown"
+
+    - skill: carbon-html-report
+      version_constraint: ">=1.0"
+      rationale: >
+        brand-visual raporu, carbon-html-report ile Paged.js A4 print-ready
+        brand book'a dönüştürülebilir (paper brand guidelines document).
+      intermediate_format: "text/markdown"
+
+    - skill: medmarketing
+      version_constraint: ">=1.0"
+      rationale: >
+        brand-visual'dan color system + typography + logo brief, medmarketing
+        skill'ine healthcare practice identity setup için aktarılır
+        (GBP banner design, ad creative templating).
+      intermediate_format: "application/json"
+
+    - skill: alegria-prompt-engine
+      version_constraint: ">=1.0"
+      rationale: >
+        brand-visual'ın brand palette ve archetype bilgisi alegria-prompt-engine'e
+        illustration prompt generation için aktarılır (pediatric clinic
+        ozlemmurzoglu.com tarzı Corporate Memphis asset üretimi).
+      intermediate_format: "application/json"
+
+# --- Runtime Requirements ----------------------------------------------------
+runtime:
+  python:
+    version: ">=3.8"
+    packages: []  # Standard library only for core scripts
+    optional_packages:
+      - name: "Pillow"
+        purpose: "favicon_simulator.py raster resampling + monochrome conversion"
+        install: "pip install Pillow"
+      - name: "cairosvg"
+        purpose: "favicon_simulator.py SVG → PNG rasterization"
+        install: "pip install cairosvg"
+        alternatives:
+          - "apt install librsvg2-bin  # rsvg-convert system binary"
+          - "apt install imagemagick    # magick system binary"
+      - name: "vtracer"
+        purpose: "vector_trace.py raster→SVG conversion (recommended backend)"
+        install: "pip install vtracer"
+        alternatives:
+          - "cargo install vtracer  # Rust CLI binary"
+          - "apt install inkscape   # Inkscape Trace Bitmap fallback"
+          - "apt install potrace    # Potrace B/W-only fallback"
+
+  external_tools:
+    - name: "Nano Banana 2 (Gemini 3.1 Flash Image)"
+      required_for: "v1.3 PRIMARY 2026 — UMMP target model #1. Wordmark + monogram + mockup + Route 4 adaptive variants. 14 reference image, 5 character consistency, 131K context, native C2PA + SynthID, konuşmasal iterasyon."
+      version: "gemini-3.1-flash-image-preview (26 Şubat 2026)"
+      access: "Gemini app 'Create images' (free tier with watermark) / Google AI Studio (API key) / Vertex AI enterprise / API model ID: gemini-3.1-flash-image-preview, $0.067/2K img (Pro'nun %50'si), $0.12/4K"
+    - name: "Grok Imagine Aurora-2"
+      required_for: "v1.3 PRIMARY 2026 — UMMP target model #2. Route 3 Disruptor + Route 4 adaptive motion + rapid iteration + image-to-video logo stinger chain. Best-in-class instruction following, contextual material rendering."
+      version: "Aurora-2 engine (3 Nisan 2026 update — Speed/Quality/Pro modes)"
+      access: "grok.com/imagine (X Premium+ $16/ay) / SuperGrok $30/ay (Pro mode, 1080p) / xAI API (model: grok-imagine-image, endpoint: api.x.ai/v1/images/generations) / GenAIntel partner platform"
+    - name: "Nano Banana Pro (Gemini 3 Pro Image)"
+      required_for: "v1.3 PREMIUM FALLBACK — Hero asset max fidelity, advanced Thinking mode reasoning, studio-quality text rendering"
+      version: "gemini-3-pro-image-preview (2026)"
+      access: "Gemini app Pro tier (free tier limited) / AI Studio / Vertex AI / API $0.134/2K img (NB2'nin 2 katı), $0.24/4K"
+    - name: "Midjourney V7 / V8 Alpha"
+      required_for: "v1.3 LEGACY FALLBACK — Route 2 geometric refinement, --sref consistency. Parametre flag workflow (--ar --s --v --style raw --no)."
+      version: ">=7.0 (V8.1 stable Mayıs 2026 bekleniyor)"
+      access: "https://www.midjourney.com (Pro $30/ay commercial use)"
+    - name: "Niji Journey 7 (via Midjourney)"
+      required_for: "Illustrated/character logo mascot (Route 3 mascot variant)"
+      version: ">=7.0"
+      access: "Midjourney Pro + --niji 7 flag"
+    - name: "Adobe Firefly 3"
+      required_for: "Enterprise IP-indemnified legal-safe generation"
+      access: "Adobe Creative Cloud subscription"
+      optional: true
+    - name: "Flux.1 Dev / Schnell"
+      required_for: "Open-source alternative rapid moodboarding + ComfyUI local runs"
+      access: "fal.ai / Replicate / ComfyUI local"
+      optional: true
+    - name: "Stable Diffusion 3.5"
+      required_for: "Full-control local generation, power-user workflows"
+      access: "Local install via ComfyUI / Automatic1111"
+      optional: true
+    - name: "DALL-E 3"
+      required_for: "Legacy — DEPRECATED 2026 (Nano Banana 2 üstün)"
+      access: "ChatGPT Plus / OpenAI API"
+      optional: true
+    - name: "Ideogram 2.0"
+      required_for: "Legacy — DEPRECATED 2026 (text rendering'de NB2 üstün)"
+      access: "ideogram.ai"
+      optional: true
+    - name: "Adobe Illustrator 2026 (C2PA native)"
+      required_for: "Manual vector cleanup + C2PA Content Credentials preservation (2026 native support)"
+      access: "Adobe Creative Cloud"
+      optional: true
+    - name: "Adobe Photoshop 2026 (C2PA native)"
+      required_for: "Raster-level retouching with C2PA assertion chain preservation"
+      access: "Adobe Creative Cloud"
+      optional: true
+    - name: "c2patool (CLI)"
+      required_for: "C2PA manifest extract/embed/verify (CI/CD pipelines)"
+      access: "https://github.com/contentauth/c2patool (open source)"
+      optional: true
+    - name: "Content Credentials Cloud"
+      required_for: "Public C2PA verification URL"
+      access: "https://contentcredentials.org (Adobe-hosted public service)"
+      optional: true
+    - name: "Adobe After Effects + Bodymovin/LottieFiles plugin"
+      required_for: "Motion designer fills Lottie skeleton with actual animation"
+      access: "Adobe CC + free plugin"
+      optional: true
+    - name: "ElevenLabs / OpenAI TTS / Play.ht"
+      required_for: "v1.3 Sonic identity — AI voice persona rapid prototyping"
+      access: "Subscription (ElevenLabs commercial tier from $22/ay) / OpenAI API / Play.ht subscription"
+      optional: true
+    - name: "Pantone Connect"
+      required_for: "Production-grade Pantone matching (vs. tool's heuristic)"
+      access: "https://www.pantone.com/pantone-connect (subscription)"
+      optional: true
+
+# --- Verification Contract ---------------------------------------------------
+verification:
+  runner: null  # Skill has no automated verify.py (subjective creative output)
+  quality_gates:
+    - id: G1
+      name: "3-Test Doktrini (Chermayeff & Geismar & Haviv)"
+      checks:
+        - "Appropriateness: Marka arketipi ile uyum var mı?"
+        - "Distinctiveness: Sektördeki top 5 rakibe göre belirgin mi?"
+        - "Memorability: 5-saniye test + 1-dakika hafıza test geçilir mi?"
+      mandatory: true
+    - id: G2
+      name: "Timelessness (Sagi Haviv extension)"
+      checks:
+        - "Trend-bağımlı element yok"
+        - "50 yıl sonra aynı güçte durabilir"
+      mandatory: true
+    - id: G3
+      name: "Favicon-grade scalability"
+      checks:
+        - "16px'te silhouette tanınır"
+        - "Monokrom varyant çalışır"
+        - "Phone-call test geçer"
+      mandatory: true
+    - id: G4
+      name: "Red Lines compliance (sektör klişe reddi)"
+      checks:
+        - "Literal design klişeleri yok (çatı/stetoskop/çark/diş/kalp vb.)"
+        - "AI prompt'larda spesifik marka referansı yok (trademark safety)"
+      mandatory: true
+    - id: G5
+      name: "Color system WCAG + APCA compliance"
+      checks:
+        - "Step 11 text vs Step 1 bg: APCA Lc ≥ 60"
+        - "Step 12 text vs Step 1 bg: APCA Lc ≥ 90"
+        - "WCAG AA normal text ratio ≥ 4.5"
+      mandatory: true
+    - id: G6
+      name: "Typography system modernity"
+      checks:
+        - "Variable font kullanılıyor (veya variable-supporting pair)"
+        - "Google Fonts / SIL OFL / commercial license netleştirilmiş"
+        - "Logotype lock-up specification (kerning pairs, tracking) verilmiş"
+      mandatory: true
+    - id: G7
+      name: "Design tokens (W3C spec compliance)"
+      checks:
+        - "CSS custom properties light + dark mode ile export"
+        - "JSON W3C Design Tokens Format Module uyumlu"
+        - "Tailwind config snippet hazır"
+      mandatory: false
+    - id: G8
+      name: "Vector conversion production-readiness"
+      checks:
+        - "AI raster output → SVG via vtracer (or fallback) tracked"
+        - "Path count + node count + file size diagnostic provided"
+        - "Designer manual cleanup recommendation explicit (telif + production-grade için)"
+      mandatory: true
+    - id: G9
+      name: "Pantone PMS matching coverage"
+      checks:
+        - "Her brand color için en yakın PMS Coated + Uncoated match listed"
+        - "ΔE CIEDE2000 < 2.0 ise 'within Pantone tolerance' işareti"
+        - "ΔE > 5.0 ise 'no good PMS match — consider custom spot ink' uyarısı"
+        - "CMYK approximation (GRACoL) sağlanmış"
+      mandatory: true
+    - id: G10
+      name: "Motion language specification"
+      checks:
+        - "Archetype-derived motion personality statement (1 paragraf)"
+        - "4-tier duration ladder (micro / ui / transition / logo-stinger)"
+        - "Primary + secondary easing curves (cubic-bezier values)"
+        - "Logo-stinger ≤ 2.5s (All In Motion 2026 enterprise ceiling)"
+        - "Light + dark mode variants belirtilmiş"
+      mandatory: false
+    - id: G11
+      name: "v1.3 Adaptive Identity compliance (Route 4 seçildiyse)"
+      checks:
+        - "Core spine immutable DNA tanımlanmış (1-3 primitive form)"
+        - "Variable shell parameters 2-4 arası (time/geo/persona/content/ar/state/interaction)"
+        - "Transition rules specified (instant/animated/morph/generative/stateful)"
+        - "Minimum 3, optimum 5-12 varyant dokümante"
+        - "Favicon 16px core spine-only test geçer"
+        - "Core visual consistency ≥60% across all variants"
+        - "Primary brand color mandatory in all variants"
+      mandatory: false
+    - id: G12
+      name: "v1.3 UMMP (Unified Multi-Model Prompt) compliance"
+      checks:
+        - "Prompt narrative paragraph (keyword listesi değil)"
+        - "'A professional studio composition of...' ile başlıyor"
+        - "7 element tümü var (subject/form/style anchor/tech/composition/color/trend anchor)"
+        - "Semantic positive-constraint color direction ('absolutely flat single-tone fill... no color transitions, no luminous gradients...')"
+        - "Aspect ratio cümle içinde ('within a square 1:1 frame')"
+        - "Favicon scalability ifadesi ('designed for favicon scalability at 16 pixels')"
+        - "Style anchor cümle içinde ('rendered in the tradition of X')"
+        - "2026 trend anchor sonda ('The visual sensibility is...')"
+        - "Parameter flag YOK (NB2 + Grok için)"
+        - "Marka adı YOK (Route 1 Kinetic Wordmark hariç)"
+        - "Sektör-spesifik negative semantic bank uygulanmış"
+      mandatory: true
+    - id: G13
+      name: "v1.3 AI Discoverability layer (Adım 5.10)"
+      checks:
+        - "20-word canonical brand description prompt üretildi (10-20 kelime)"
+        - "Schema.org Organization JSON-LD entity knowledge card"
+        - "Logo alt text (≤125 char) + voice description (1-2 sentence)"
+        - "Pronunciation guide (IPA + plain + voice alias)"
+        - "Agent-era brand manifesto template (30-line public markdown)"
+        - "5-test AI-SEO audit protocol baseline"
+      mandatory: true
+    - id: G14
+      name: "v1.3 C2PA Content Credentials & AI Provenance (Adım 5.11)"
+      checks:
+        - "Generation layer dokümante (model, date, UMMP prompt, iterations, SynthID ✓, C2PA manifest ✓)"
+        - "Transformation layer dokümante (vector conversion, manual cleanup, metadata preservation)"
+        - "Publication layer dokümante (primary asset + secondary assets, viewer URL)"
+        - "EU AI Act disclosure statement (Tier 1/2/3 appropriate)"
+        - "Trademark strategy package (jurisdiction, Nice class, human authorship record)"
+        - "AI disclosure in brand book (website footer + press boilerplate)"
+      mandatory: true
+    - id: G15
+      name: "v1.3 Neuro-Inclusive Design audit"
+      checks:
+        - "CVD (Protanopia/Deuteranopia/Tritanopia) simulation pass"
+        - "APCA Lc ≥ 75 primary action"
+        - "Minimum complexity — favicon-grade simplification"
+        - "Predictable motion patterns (reduced-motion preference honored)"
+        - "Alt text spec ready"
+      mandatory: false
+    - id: G16
+      name: "v1.3 Sonic Identity Brief (Adım 5.9, opsiyonel)"
+      checks:
+        - "Brand archetype → sonic personality mapping"
+        - "Core motif spec (length, notes, contour, intervals, key/mode, tempo, envelope)"
+        - "2-3 sonic anchor references"
+        - "Timbre/instrumentation brief"
+        - "Use case variations (full/chime/micro)"
+        - "Earcon library (minimum 7 earcons)"
+        - "Voice persona parameters (pitch/tempo/warmth/formality/accent/register)"
+        - "AI voice model parameters (ElevenLabs/OpenAI TTS/Play.ht)"
+        - "Licensing framework"
+      mandatory: false
+
+# --- References --------------------------------------------------------------
+references:
+  primary: "./SKILL.md"
+  installation: "./INSTALL.md"
+  methodology_canon:
+    - "./references/route-strategies.md"
+    - "./references/archetypes.md"
+    - "./references/logo-taxonomy.md"
+  red_lines: "./references/red-lines.md"
+  output_template: "./references/output-template.md"
+  ai_prompt_engineering: "./references/ai-prompt-engineering.md"
+  color_system: "./references/color-system.md"
+  typography_system: "./references/typography-system.md"
+  gestalt_principles: "./references/gestalt-principles.md"
+  design_system_tokens: "./references/design-system-tokens.md"
+  vector_conversion: "./references/vector-conversion.md"
+  print_production: "./references/print-production.md"
+  motion_language: "./references/motion-language.md"
+  # v1.3 YENİ referans dosyaları
+  trends_2026: "./references/2026-trends.md"                      # Mandatory Adım 0 yüklenme
+  adaptive_identity: "./references/adaptive-identity.md"          # Route 4 dayanak
+  ai_discoverability: "./references/ai-discoverability.md"        # Adım 5.10 zorunlu
+  c2pa_provenance: "./references/c2pa-provenance.md"              # Adım 5.11 zorunlu
+  sonic_identity: "./references/sonic-identity.md"                # Adım 5.9 opsiyonel
+  bibliography: "./references/bibliography.md"
+
+  external:
+    radix_colors: "https://www.radix-ui.com/colors"
+    design_tokens_spec: "https://tr.designtokens.org/"
+    wcag: "https://www.w3.org/TR/WCAG22/"
+    apca: "https://git.apcacontrast.com/documentation/APCAeasyIntro"
+    midjourney_docs: "https://docs.midjourney.com/"
+    gemini_api_docs: "https://ai.google.dev/gemini-api/docs/image-generation"
+    nano_banana_2_model: "https://blog.google/technology/google-deepmind/nano-banana-2/"
+    grok_imagine_docs: "https://docs.x.ai/docs/guides/image-generations"
+    grok_imagine_portal: "https://grok.com/imagine"
+    inter_font: "https://rsms.me/inter/"
+    variable_fonts: "https://variablefonts.io/"
+    vtracer: "https://github.com/visioncortex/vtracer"
+    pantone_connect: "https://www.pantone.com/pantone-connect"
+    pantone_2026_coy: "https://www.pantone.com/color-of-the-year-2026"
+    lottie_spec: "https://github.com/lottie/lottie-spec"
+    lottiefiles: "https://lottiefiles.com"
+    # v1.3 YENİ eksternal referanslar
+    c2pa_standard: "https://c2pa.org/specifications/specifications/2.1/index.html"
+    c2patool: "https://github.com/contentauth/c2patool"
+    content_credentials: "https://contentcredentials.org"
+    eu_ai_act: "https://artificialintelligenceact.eu"
+    schema_org_organization: "https://schema.org/Organization"
+    apca_w3c: "https://www.w3.org/WAI/GL/task-forces/silver/wiki/Visual_Contrast_of_Text_Subgroup/APCA"
+    elevenlabs_api: "https://elevenlabs.io/docs"
+    openai_tts: "https://platform.openai.com/docs/guides/text-to-speech"
+
+# --- Build Metadata ----------------------------------------------------------
+build:
+  version: "1.3.0"
+  release_date: "2026-04-24"
+  release_name: "Genesis — 2026 Adaptive Era"
+  changelog_location: "./INSTALL.md#changelog"
+  compatibility:
+    backward_compatible_with: ["1.0.0", "1.1.0", "1.2.0"]
+    breaking_changes:
+      - "AI prompt output architecture 5-variant (A-E) → 1 Unified Multi-Model Prompt (UMMP) + model notes. Eski A-E variant format artık üretilmiyor; route-based dual-model paralel execution yeni default."
+    additions:
+      - "NEW Route 4: Adaptive / Living Identity (Nike/Adobe/Coca-Cola doctrine)"
+      - "NEW UMMP (Unified Multi-Model Prompt) 7-element grammar"
+      - "NEW mandatory reference: references/2026-trends.md (Adım 0 yükleme — 14 trend library)"
+      - "NEW reference: references/adaptive-identity.md (Route 4 dayanak)"
+      - "NEW reference: references/ai-discoverability.md (Adım 5.10 zorunlu)"
+      - "NEW reference: references/c2pa-provenance.md (Adım 5.11 zorunlu — EU AI Act)"
+      - "NEW reference: references/sonic-identity.md (Adım 5.9 opsiyonel — voice-first era)"
+      - "NEW output: adaptive_identity_spec (Route 4 brief)"
+      - "NEW output: ai_discoverability_spec (agent-era branding)"
+      - "NEW output: c2pa_provenance_spec (content credentials + trademark)"
+      - "NEW output: sonic_identity_brief (sonic logo + earcon + voice)"
+      - "NEW quality gate G11: Adaptive Identity compliance"
+      - "NEW quality gate G12: UMMP grammar compliance (mandatory)"
+      - "NEW quality gate G13: AI Discoverability layer (mandatory)"
+      - "NEW quality gate G14: C2PA Content Credentials (mandatory)"
+      - "NEW quality gate G15: Neuro-Inclusive Design audit (optional)"
+      - "NEW quality gate G16: Sonic Identity Brief (optional)"
+      - "UPDATED external_tools: Nano Banana 2 (gemini-3.1-flash-image, 26 Feb 2026, $0.067/2K) primary; Grok Imagine Aurora-2 (Apr 2026 Speed/Quality/Pro modes) primary"
+      - "UPDATED references/ai-prompt-engineering.md: Complete rewrite with UMMP architecture, 5 full example prompts, model-specific execution notes, prompt quality checklist"
+      - "UPDATED SKILL.md: 3-route → 4-route system, 10-step workflow expanded, 4-test decision framework (added Timelessness × Adaptability), 6 red lines (added AI Provenance violation)"
+      - "NEW tag set: adaptive-identity, ai-discoverability, c2pa-provenance, sonic-identity, ummp, nano-banana-2, grok-imagine, aurora-2, warm-neo-minimalism, hyperfunctional-editorial, earthmark-organic, kinetic-typography, tactile-dimensional, cloud-dancer-2026-coy, neuro-inclusive"
+    v1_3_0_release_notes: >
+      Genesis sürümü 2026 "Adaptive Era" paradigma değişimine yanıt verir.
+      Markalar artık tek statik logo + görsel sistem değil, AI agent'larla
+      konuşan + adaptif contextlere evrilen + voice-first UI'larda duyulan +
+      regulatuar provenance içeren **çok katmanlı kimlik sistemleri**.
+      v1.3 bu dört katmanı (adaptive, discoverability, provenance, sonic)
+      skill protokolüne entegre eder. Geriye dönük uyum tam (v1.0/1.1/1.2
+      çıktıları hâlâ produce edilebilir — skill yeni adımları opsiyonel
+      bırakabilir). UMMP arşitektüral değişiklik: eski 5-variant output
+      deprecated (Nano Banana 2 + Grok Aurora-2 paralel aynı prompt'u kabul
+      ediyor; model-spesifik execution notes ile teslim edilir).

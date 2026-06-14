@@ -1,0 +1,199 @@
+{
+  "$schema": "https://schemas.figma-forge.dev/dtcg/v1.0.0.json",
+  "$comment": "W3C DTCG-shaped design token JSON. Use this as the canonical intermediate format. Edit and supply to figma-forge in TOKENS_IMPORT mode.",
+
+  "color": {
+    "primitive": {
+      "$comment": "Raw color swatches. These are never used directly by components; semantic tokens alias to these.",
+      "blue": {
+        "50":  { "$value": "#EFF6FF", "$type": "color" },
+        "100": { "$value": "#DBEAFE", "$type": "color" },
+        "200": { "$value": "#BFDBFE", "$type": "color" },
+        "300": { "$value": "#93C5FD", "$type": "color" },
+        "400": { "$value": "#60A5FA", "$type": "color" },
+        "500": { "$value": "#3B82F6", "$type": "color", "$description": "Primary brand blue" },
+        "600": { "$value": "#2563EB", "$type": "color" },
+        "700": { "$value": "#1D4ED8", "$type": "color" },
+        "800": { "$value": "#1E40AF", "$type": "color" },
+        "900": { "$value": "#1E3A8A", "$type": "color" }
+      },
+      "gray": {
+        "50":  { "$value": "#F9FAFB", "$type": "color" },
+        "100": { "$value": "#F3F4F6", "$type": "color" },
+        "200": { "$value": "#E5E7EB", "$type": "color" },
+        "300": { "$value": "#D1D5DB", "$type": "color" },
+        "400": { "$value": "#9CA3AF", "$type": "color" },
+        "500": { "$value": "#6B7280", "$type": "color" },
+        "600": { "$value": "#4B5563", "$type": "color" },
+        "700": { "$value": "#374151", "$type": "color" },
+        "800": { "$value": "#1F2937", "$type": "color" },
+        "900": { "$value": "#111827", "$type": "color" }
+      },
+      "white": { "$value": "#FFFFFF", "$type": "color" },
+      "black": { "$value": "#000000", "$type": "color" }
+    },
+    "semantic": {
+      "$comment": "Role-based tokens that alias to primitives. Light/Dark mode shape uses object-with-mode-keys; figma-forge generates two Figma modes.",
+      "background": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.white}",
+          "dark": "{color.primitive.gray.900}"
+        }
+      },
+      "surface": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.gray.50}",
+          "dark": "{color.primitive.gray.800}"
+        }
+      },
+      "text-primary": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.gray.900}",
+          "dark": "{color.primitive.gray.50}"
+        }
+      },
+      "text-secondary": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.gray.600}",
+          "dark": "{color.primitive.gray.400}"
+        }
+      },
+      "border-subtle": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.gray.200}",
+          "dark": "{color.primitive.gray.700}"
+        }
+      },
+      "action-primary": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.blue.500}",
+          "dark": "{color.primitive.blue.400}"
+        }
+      },
+      "action-primary-hover": {
+        "$type": "color",
+        "$value": {
+          "light": "{color.primitive.blue.600}",
+          "dark": "{color.primitive.blue.300}"
+        }
+      }
+    }
+  },
+
+  "dimension": {
+    "spacing": {
+      "$comment": "Pixel-based spacing scale; align to 4/8 grid.",
+      "0":  { "$value": "0px",  "$type": "dimension" },
+      "1":  { "$value": "4px",  "$type": "dimension" },
+      "2":  { "$value": "8px",  "$type": "dimension" },
+      "3":  { "$value": "12px", "$type": "dimension" },
+      "4":  { "$value": "16px", "$type": "dimension" },
+      "5":  { "$value": "20px", "$type": "dimension" },
+      "6":  { "$value": "24px", "$type": "dimension" },
+      "8":  { "$value": "32px", "$type": "dimension" },
+      "10": { "$value": "40px", "$type": "dimension" },
+      "12": { "$value": "48px", "$type": "dimension" },
+      "16": { "$value": "64px", "$type": "dimension" },
+      "20": { "$value": "80px", "$type": "dimension" }
+    },
+    "radius": {
+      "none": { "$value": "0px",  "$type": "dimension" },
+      "sm":   { "$value": "2px",  "$type": "dimension" },
+      "md":   { "$value": "6px",  "$type": "dimension" },
+      "lg":   { "$value": "12px", "$type": "dimension" },
+      "full": { "$value": "9999px", "$type": "dimension" }
+    }
+  },
+
+  "font": {
+    "family": {
+      "sans": { "$value": "Inter",       "$type": "fontFamily", "$description": "Primary UI sans-serif" },
+      "mono": { "$value": "JetBrains Mono", "$type": "fontFamily" }
+    },
+    "weight": {
+      "regular":  { "$value": 400, "$type": "fontWeight" },
+      "medium":   { "$value": 500, "$type": "fontWeight" },
+      "semibold": { "$value": 600, "$type": "fontWeight" },
+      "bold":     { "$value": 700, "$type": "fontWeight" }
+    },
+    "size": {
+      "xs":   { "$value": "12px", "$type": "dimension" },
+      "sm":   { "$value": "14px", "$type": "dimension" },
+      "base": { "$value": "16px", "$type": "dimension" },
+      "lg":   { "$value": "18px", "$type": "dimension" },
+      "xl":   { "$value": "20px", "$type": "dimension" },
+      "2xl":  { "$value": "24px", "$type": "dimension" },
+      "3xl":  { "$value": "30px", "$type": "dimension" }
+    },
+    "lineHeight": {
+      "tight":   { "$value": 1.2, "$type": "number" },
+      "normal":  { "$value": 1.5, "$type": "number" },
+      "relaxed": { "$value": 1.75, "$type": "number" }
+    }
+  },
+
+  "typography": {
+    "body": {
+      "md": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily":   "{font.family.sans}",
+          "fontSize":     "{font.size.base}",
+          "fontWeight":   "{font.weight.regular}",
+          "lineHeight":   "{font.lineHeight.normal}",
+          "letterSpacing": "0px"
+        }
+      }
+    },
+    "heading": {
+      "lg": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily":   "{font.family.sans}",
+          "fontSize":     "{font.size.2xl}",
+          "fontWeight":   "{font.weight.bold}",
+          "lineHeight":   "{font.lineHeight.tight}",
+          "letterSpacing": "-0.025em"
+        }
+      }
+    }
+  },
+
+  "shadow": {
+    "sm": {
+      "$type": "shadow",
+      "$value": [
+        { "color": "#0000000F", "offsetX": "0px", "offsetY": "1px", "blur": "2px",  "spread": "0px" }
+      ]
+    },
+    "md": {
+      "$type": "shadow",
+      "$value": [
+        { "color": "#0000001A", "offsetX": "0px", "offsetY": "4px", "blur": "6px",  "spread": "-1px" },
+        { "color": "#0000000F", "offsetX": "0px", "offsetY": "2px", "blur": "4px",  "spread": "-2px" }
+      ]
+    },
+    "lg": {
+      "$type": "shadow",
+      "$value": [
+        { "color": "#0000001A", "offsetX": "0px", "offsetY": "10px", "blur": "15px", "spread": "-3px" },
+        { "color": "#0000000F", "offsetX": "0px", "offsetY": "4px",  "blur": "6px",  "spread": "-4px" }
+      ]
+    }
+  },
+
+  "$extensions": {
+    "com.figma-forge": {
+      "version": "0.1.0",
+      "generatedAt": "<ISO-8601 timestamp>",
+      "source": "<carbon|material3|tailwind|custom>",
+      "publishOrder": ["icons", "foundations", "components", "patterns"]
+    }
+  }
+}

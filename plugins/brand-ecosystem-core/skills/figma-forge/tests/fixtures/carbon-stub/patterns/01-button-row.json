@@ -1,0 +1,5 @@
+{
+  "$schema": "https://figma-forge.io/schemas/pattern-spec.schema.json",
+  "pattern": {"id": "button-row", "name": "Button Row", "category": "layout"},
+  "composition": {"uses_components": ["Button"], "layout": "horizontal"}
+}

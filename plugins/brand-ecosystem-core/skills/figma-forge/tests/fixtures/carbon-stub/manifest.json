@@ -1,0 +1,75 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mahirkurt/figma-forge/main/schemas/bundle-manifest.schema.json",
+  "bundle_name": "carbon-stub",
+  "bundle_version": "0.1.0",
+  "source_design_system": {
+    "name": "IBM Carbon Stub",
+    "version": "11.0.0",
+    "url": "https://carbondesignsystem.com/"
+  },
+  "generated_at": "2026-05-27T04:48:08.049063Z",
+  "generator": {
+    "tool": "figma-forge bundle-manifest",
+    "version": "0.3.0-rc.1"
+  },
+  "file_count": 8,
+  "total_size_bytes": 3779,
+  "summary_by_category": {
+    "code-connect.mapping": 2,
+    "components.spec": 2,
+    "icons.tier-svg": 1,
+    "patterns.spec": 1,
+    "root": 1,
+    "tokens.merged": 1
+  },
+  "files": [
+    {
+      "path": "code-connect/button.json",
+      "size": 212,
+      "sha256": "4cc3faa6d1bdcfe8a6ed84b3a522de89e07fd6b47287282b4ef166943170694b",
+      "category": "code-connect.mapping"
+    },
+    {
+      "path": "code-connect/tag.json",
+      "size": 193,
+      "sha256": "97f6b54a0750e6fd17b2502a68a75e10c3b76b0cf83418e332497677a03e4bd3",
+      "category": "code-connect.mapping"
+    },
+    {
+      "path": "components/01-button.json",
+      "size": 591,
+      "sha256": "67a3f7e977e0c5ec0a235123be394c8511f2511b91050f1db814ae2951288494",
+      "category": "components.spec"
+    },
+    {
+      "path": "components/02-tag.json",
+      "size": 463,
+      "sha256": "0b45dee075eaf7cac017b9c3b945e9ea1bb3a79b95fa7465e9d12fd69787b6e2",
+      "category": "components.spec"
+    },
+    {
+      "path": "icons/svg/tier/carbon-mark.svg",
+      "size": 199,
+      "sha256": "4acf457663c72e8c8d8e2efa96868ccde4b0ea63e6027448e80cc6219f627299",
+      "category": "icons.tier-svg"
+    },
+    {
+      "path": "library-registry.json",
+      "size": 443,
+      "sha256": "753c5c92f2243bbda906202108fbab23d23d9cdf107abef31dc468f53ab8b2e4",
+      "category": "root"
+    },
+    {
+      "path": "patterns/01-button-row.json",
+      "size": 228,
+      "sha256": "8fe3bfc41fce0888597a1428bec762448cb50e8698e82418c58112c93646e8fa",
+      "category": "patterns.spec"
+    },
+    {
+      "path": "tokens/carbon.tokens.json",
+      "size": 1450,
+      "sha256": "e18eaa1a54dca2fcf65e1d4022494156e98d09733c284ae2bcd986fc92683fa1",
+      "category": "tokens.merged"
+    }
+  ]
+}

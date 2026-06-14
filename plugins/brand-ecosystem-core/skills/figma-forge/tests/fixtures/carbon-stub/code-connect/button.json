@@ -1,0 +1,8 @@
+{
+  "component_id": "button",
+  "carbon_class_name": "Button",
+  "react": {
+    "import_statement": "import { Button } from '@carbon/react';",
+    "code_example": "<Button kind=\"primary\">Submit</Button>"
+  }
+}

@@ -1,0 +1,84 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — migrated to canonical list-form by
+# `smp migrate`
+# Coercions applied: 5 (dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list)
+# Original preserved as <manifest>.bak (unless --no-backup was used)
+# ============================================================================
+
+manifest_version: '1.0'
+skill:
+  name: brand-audit
+  version: 1.1.0
+  title: Diagnostic Brand Audit Protocol
+  description: 'Diagnostic brand audit for rebrand, refresh, M&A integration and post-launch
+    assessment: brand asset inventory, competitive + IP/trademark audit, process audit, gap
+    analysis and opportunity statement (Wheeler 5th+6th eds.).'
+  entry_point: ./SKILL.md
+  author: Brand Ecosystem Studio v1.0
+  license: Internal skill asset
+domains:
+- marketing-design
+- brand-strategy
+classification:
+  primary_category: brand-strategy
+  secondary_categories:
+  - brand-audit
+  - competitive-analysis
+  tags:
+  - brand audit
+  - rebrand
+  - competitive landscape
+  - IP audit
+  - gap analysis
+inputs:
+- id: audit_brief
+  required: true
+  description: Free-form brief stating audit purpose plus scope
+  mime_types:
+  - text/plain
+- id: existing_brand_assets
+  required: false
+  description: Existing brand asset files for inventory and analysis
+  mime_types:
+  - application/pdf
+  - image/png
+  - image/jpeg
+  - image/svg+xml
+  - application/vnd.adobe.illustrator
+- id: existing_brand_guidelines
+  required: false
+  description: Existing brand guidelines documents
+  mime_types:
+  - application/pdf
+  - text/markdown
+outputs:
+- id: findings_report
+  description: Comprehensive audit findings report across all in-scope dimensions
+  mime_type: text/markdown
+- id: handoff
+  description: Structured handoff artifact for downstream skill consumption
+  mime_type: application/yaml
+composition:
+  pipe_from:
+  - skill: discover-brand
+    version_constraint: '>=1.0.0'
+    rationale: discover-brand automates the Wheeler Phase-1 brand asset inventory.
+    intermediate_format: application/yaml
+  pipe_to:
+  - brand-platform
+  - brand-story
+  - brand-visual
+  - brand-touchpoint
+  - brand-launch
+  - guideline-generation
+
+verification:
+  trigger_test_prompts:
+  - Audit our current brand
+  - Marka denetimi yapmamiz lazim
+  - Competitive landscape analysis for our category
+  - We are planning a rebrand, audit first
+  - Marka varlik envanteri olusturalim
+  - Post-launch brand assessment
+  - M&A marka butunlesmesi denetimi
+  expected_activation_rate: 0.92

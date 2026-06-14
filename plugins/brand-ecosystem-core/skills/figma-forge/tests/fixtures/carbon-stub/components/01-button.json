@@ -1,0 +1,22 @@
+{
+  "$schema": "https://figma-forge.io/schemas/component-spec.schema.json",
+  "component": {
+    "id": "button",
+    "name": "Button",
+    "name_carbon": "Button",
+    "category": "actions"
+  },
+  "variants": {
+    "axes": {
+      "Kind": ["primary", "secondary", "tertiary", "danger", "ghost"],
+      "Size": ["sm", "md", "lg"],
+      "State": ["enabled", "hovered", "focused", "active", "disabled"]
+    },
+    "expected_count": 75,
+    "disabled_combinations": []
+  },
+  "tokens": {
+    "background": "{color.semantic.interactive}",
+    "foreground": "{color.semantic.text-primary}"
+  }
+}

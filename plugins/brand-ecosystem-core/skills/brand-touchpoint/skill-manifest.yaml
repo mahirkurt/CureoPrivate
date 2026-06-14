@@ -1,0 +1,88 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — migrated to canonical list-form by
+# `smp migrate`
+# Coercions applied: 5 (dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list)
+# Original preserved as <manifest>.bak (unless --no-backup was used)
+# ============================================================================
+
+manifest_version: '1.0'
+skill:
+  name: brand-touchpoint
+  version: 1.1.0
+  title: Touchpoint Application Specification Protocol
+  description: 'Touchpoint application protocol: transforms a locked visual identity into
+    specifications for every customer-facing surface — stationery, signage, livery, packaging,
+    retail/hospitality, booth, digital, uniforms, ephemera (Wheeler Phase 4 + Geyrhalter).'
+  entry_point: ./SKILL.md
+  author: Brand Ecosystem Studio v1.0
+  license: Internal skill asset
+domains:
+- marketing-design
+- brand-design
+classification:
+  primary_category: brand-design
+  secondary_categories:
+  - brand-application
+  - touchpoints
+  tags:
+  - packaging
+  - signage
+  - retail
+  - digital touchpoints
+  - brand atmosphere
+inputs:
+- id: brand_visual_handoff
+  required: true
+  description: Output of brand-visual with locked identity system
+  mime_types:
+  - application/yaml
+  schema: ../brand-visual-ecosystem/references/handoff-schema.md#handoff-schema
+- id: brand_platform_handoff
+  required: false
+  description: Optional brand-platform handoff
+  mime_types:
+  - application/yaml
+- id: brand_story_handoff
+  required: false
+  description: Optional brand-story handoff
+  mime_types:
+  - application/yaml
+outputs:
+- id: touchpoint_specifications_document
+  description: Per-touchpoint specification document with production partner briefs
+  mime_type: text/markdown
+- id: handoff
+  description: Structured handoff artifact for downstream skill consumption
+  mime_type: application/yaml
+composition:
+  pipe_from:
+  - skill: brand-visual
+    version_constraint: '>=1.3.0'
+    rationale: Locked visual identity is the input to surface specs.
+    intermediate_format: application/yaml
+  - skill: brand-platform
+    version_constraint: '>=1.1.0'
+    rationale: Optional strategic context.
+    intermediate_format: application/yaml
+  - skill: brand-story
+    version_constraint: '>=1.1.0'
+    rationale: Optional narrative context.
+    intermediate_format: application/yaml
+  - skill: guideline-generation
+    version_constraint: '>=1.0.0'
+    rationale: Voice spec for digital-surface copy slots.
+    intermediate_format: text/markdown
+  pipe_to:
+  - brand-launch
+  - brand-voice-enforcement
+
+verification:
+  trigger_test_prompts:
+  - Design our touchpoints
+  - Temas noktalari spesifikasyonu hazirla
+  - Packaging and retail interior for our brand
+  - Ambalaj ve perakende ic mekan tasarimi
+  - Brand application across stationery and signage
+  - How should our brand show up in retail
+  - Marka atmosferi tum temas noktalarinda
+  expected_activation_rate: 0.93

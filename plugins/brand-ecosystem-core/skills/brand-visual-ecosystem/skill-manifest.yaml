@@ -1,0 +1,91 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — migrated to canonical list-form by
+# `smp migrate`
+# Coercions applied: 6 (dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list)
+# Original preserved as <manifest>.bak (unless --no-backup was used)
+# ============================================================================
+
+manifest_version: '1.0'
+skill:
+  name: brand-visual-ecosystem
+  version: 1.1.0
+  title: Ecosystem-Aware Visual Identity Companion for brand-visual
+  description: 'Ecosystem-aware reference layer for brand-visual: touchpoint atmosphere system,
+    corporate brand signature (Foroudi/Olins), sensory neuromarketing, competitive visual
+    audit and Phase-5 asset management. Activates alongside brand-visual.'
+  entry_point: ./SKILL.md
+  author: Brand Ecosystem Studio v1.0
+  license: Internal skill asset
+domains:
+- marketing-design
+- brand-design
+classification:
+  primary_category: brand-design
+  secondary_categories:
+  - visual-identity-companion
+  tags:
+  - visual identity
+  - touchpoint atmosphere
+  - sensory branding
+  - design tokens
+  - asset management
+inputs:
+- id: visual_brief
+  required: true
+  description: Brief about visual identity context (passed through from brand-visual)
+  mime_types:
+  - text/plain
+- id: brand_platform_handoff
+  required: false
+  description: Optional brand-platform handoff
+  mime_types:
+  - application/yaml
+- id: brand_audit_handoff
+  required: false
+  description: Optional brand-audit handoff
+  mime_types:
+  - application/yaml
+- id: brand_story_handoff
+  required: false
+  description: Optional brand-story handoff
+  mime_types:
+  - application/yaml
+outputs:
+- id: visual_context_enrichment
+  description: Structured enrichment for brand-visual consumption
+  mime_type: application/yaml
+- id: handoff
+  description: Structured handoff artifact
+  mime_type: application/yaml
+composition:
+  pipe_from:
+  - skill: brand-platform
+    version_constraint: '>=1.1.0'
+    rationale: Platform personality biases visual direction.
+    intermediate_format: application/yaml
+  - skill: brand-audit
+    version_constraint: '>=1.1.0'
+    rationale: Audit visual white-space context.
+    intermediate_format: application/yaml
+  - skill: brand-story
+    version_constraint: '>=1.1.0'
+    rationale: Narrative context.
+    intermediate_format: application/yaml
+  - skill: brand-visual
+    version_constraint: '>=1.3.0'
+    rationale: Companion/peer of brand-visual.
+    intermediate_format: application/yaml
+  pipe_to:
+  - brand-visual
+  - brand-touchpoint
+  - brand-launch
+
+verification:
+  trigger_test_prompts:
+  - Visual identity with ecosystem context
+  - Gorsel kimlik ekosistem entegrasyonu
+  - Touchpoint-aware visual design
+  - Multi-sensory branding for hospitality
+  - Corporate visual signature for B2B
+  - Brand center asset preparation
+  expected_activation_rate: 0.87

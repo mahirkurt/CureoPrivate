@@ -1,0 +1,428 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — brand-maker
+# ============================================================================
+# Declares brand-maker's composability contract for SMP-compliant discovery.
+# Enables smp-orchestrator to auto-suggest composition pipelines with medsearch
+# and pharmaintel (upstream context intelligence), lex-mercator (upstream
+# trademark pre-clearance + downstream licensing), pharmapatent (downstream
+# SMK/TRIPS patent & trademark strategy), brand-visual (downstream verbal-to-
+# visual handover), and carbon-html-report / carbon-pptx / docx (downstream
+# deliverable formatting).
+# ============================================================================
+
+manifest_version: "1.0"
+protocol_reference: "./SMP-v1.0"
+
+# --- Skill Identity ----------------------------------------------------------
+skill:
+  name: brand-maker
+  version: "2.0.1"
+  title: "Global Verbal Identity Protocol — AI-Era Brand Naming & Validation"
+  description: >
+    Agency-grade verbal identity protocol producing 3–5 globally pronounceable,
+    trademark-defensible, LLM-discoverable, voice-first-ready, and (where
+    applicable) pharmaceutical-regulation-compliant brand name finalists for
+    companies, products, sub-brands, and rebrands — Fortune 500 to born-global.
+    Five-step agency methodology: Strategic Decoding → Five-Category
+    Brainstorming → Linguistic Lab & SCRATCH Filter → Live Domain Verification
+    (GoDaddy MCP) → Post-Digital Validation (6-axis LLM/voice/entity/INN/
+    dilution/morpheme screen) → Agency Presentation. Each finalist ships with
+    EN+TR rationale, .com/.ai/.io domain status, WIPO/Madrid trademark strategy,
+    FDA/EMA/TİTCK brand-name review pre-screen (pharma only), and a Post-
+    Digital Readiness score (0–12). Eighteen reference files and ten Python
+    scripts anchor every decision to canonical naming literature spanning
+    1981–2026. Free-tier, claude.ai-native, MCP-first where applicable.
+  author: "Mahir (internal skill)"
+  license: "Internal skill asset. Verbal identity methodology knowledge base."
+  entry_point: "./SKILL.md"
+  homepage: null
+
+# --- Classification ----------------------------------------------------------
+classification:
+  primary_category: "brand-identity"
+  secondary_categories:
+    - "verbal-identity"
+    - "naming-strategy"
+    - "trademark-pre-clearance"
+    - "pharmaceutical-brand-naming"
+    - "ai-era-brand-discoverability"
+    - "voice-first-identity"
+    - "linguistic-analysis"
+  tags:
+    - brand-naming
+    - verbal-identity
+    - smile-scratch
+    - smile-plus-m
+    - portmanteau
+    - coined-name
+    - metaphor-naming
+    - mythological-naming
+    - contrarian-naming
+    - trademark-defensibility
+    - wipo-madrid
+    - uspto-euipo
+    - turkpatent
+    - godaddy-mcp
+    - llm-discoverability
+    - generative-engine-optimization
+    - algorithmic-genericism-detection
+    - voice-first-naming
+    - asr-compatibility
+    - entity-disambiguation
+    - inn-usan-compliance
+    - fda-brand-name-review
+    - ema-invented-name-group
+    - titck-naming-rules
+    - famous-mark-dilution
+    - motion-kinetic-readiness
+    - multi-language-disaster-check
+    - turkish-semantic-layer
+    - bouba-kiki
+    - pharma-naming
+    - biotech-naming
+    - medtech-naming
+    - saas-naming
+    - fintech-naming
+    - web3-naming
+    - consumer-naming
+
+# --- Supported Content Domains -----------------------------------------------
+domains:
+  - brand_strategy
+  - verbal_identity
+  - trademark_strategy
+  - pharmaceutical_regulatory
+  - commercial_law
+  - linguistic_analysis
+  - ai_era_discoverability
+  - voice_ux_design
+
+# --- Input Contract ----------------------------------------------------------
+inputs:
+  - id: naming_brief
+    required: true
+    description: >
+      Natural-language naming brief. Minimum four dimensions expected:
+      (1) sector/category, (2) target market geography, (3) brand personality
+      / positioning anchor, (4) taboos/constraints. If any dimension missing,
+      skill invokes a single consolidated interview message.
+    mime_types:
+      - "text/plain"
+      - "text/markdown"
+    schema:
+      sector: "string — primary category"
+      geography: "string — target market(s)"
+      personality: "string — positioning anchor"
+      constraints: "list of strings — taboos / hard rules"
+      optional_competitors: "list — for competitor word-map seeding"
+
+  - id: upstream_context
+    required: false
+    description: >
+      Optional upstream intelligence output from medsearch, pharmaintel, or
+      lex-mercator. When present, brand-maker integrates this context into
+      Step 3.1 Strategic Decoding and Step 3.4 Live Domain Verification.
+    mime_types:
+      - "text/markdown"
+      - "application/json"
+
+  - id: existing_brand_corpus
+    required: false
+    description: >
+      Optional input for rebrand/renaming briefs: existing brand name list,
+      prior naming explorations rejected, competitor brand corpus. Feeds
+      morpheme_saturation_check.py and famous_mark_dilution screens with
+      higher-precision parameters.
+    mime_types:
+      - "text/plain"
+      - "text/markdown"
+      - "application/json"
+
+# --- Output Contract ---------------------------------------------------------
+outputs:
+  - id: verbal_identity_report
+    description: >
+      Canonical "Global Sözel Kimlik Raporu" in Markdown. Seven-section
+      structure: Strategic Decoding, Five-Category Candidate Pool, Linguistic
+      Laboratory Finalist Analysis, Domain & Trademark Strategy, Post-Digital
+      Validation Scorecard, Strategic Recommendation Matrix, Next Steps &
+      Methodological Notes. Each finalist scored on SMILE+M (6 criteria),
+      SCRATCH clean, domain tier, trademark tier, Post-Digital Readiness
+      Score (0–12), and pharma-regulatory tier (if applicable). Bilingual
+      EN+TR rationales. Report length 2,000–4,500 words.
+    mime_type: "text/markdown"
+    features:
+      - "Five-category candidate pool (A/B/C/D/E)"
+      - "SMILE+M 6-criterion filter disclosed per finalist"
+      - "SCRATCH 3-layer dilution clean per finalist"
+      - "GoDaddy MCP live .com verification or heuristic fallback"
+      - "Post-Digital Readiness Score 0–12 with per-axis breakdown"
+      - "Bilingual EN+TR rationales"
+      - "WIPO Madrid class suggestions + pre-search URLs"
+      - "Pharma-regulatory pre-screen when applicable"
+      - "Modular sub-brand projection (Legs) per finalist"
+      - "Downstream-composable to brand-visual, carbon-html-report, pharmapatent"
+
+  - id: post_digital_readiness_scorecard
+    description: >
+      Structured 6-axis evaluation per finalist. Machine-readable JSON subset
+      available for downstream dashboards. Each axis 0–2 points, total 0–12.
+    mime_type: "application/json"
+    optional: true
+
+  - id: trademark_prescreen_package
+    description: >
+      Optional output for legal-readiness briefs: WIPO Madrid class mapping,
+      USPTO TESS URLs, EUIPO eSearch+ URLs, TÜRKPATENT URLs, FDA Drugs@FDA
+      pre-screen notes. Pipes to pharmapatent or lex-mercator.
+    mime_type: "text/markdown"
+    optional: true
+
+  - id: brand_visual_handover_brief
+    description: >
+      Optional handover brief for downstream brand-visual: finalist name,
+      positioning anchor, personality vectors, phonetic profile, cultural
+      references, sonic-extension sketch.
+    mime_type: "text/markdown"
+    optional: true
+
+# --- Composition — Upstream Compatibility ------------------------------------
+composition:
+  pipe_from:
+    - skill: medsearch
+      version_constraint: ">=5.0"
+      rationale: >
+        medsearch produces scientific literature intelligence calibrating
+        brand-maker's pharma/biotech naming authenticity. Critical for
+        oncology/hematology/rare-disease naming where nomenclature resonance
+        with prescriber community directly affects adoption.
+      intermediate_format: "text/markdown"
+
+    - skill: pharmaintel
+      version_constraint: ">=7.0"
+      rationale: >
+        pharmaintel produces commercial / regulatory / pipeline intelligence
+        calibrating brand-maker's competitor word-map and white-space
+        detection. Strategic Decoding (Step 3.1) and Post-Digital Validation
+        Axis 6 (famous-mark dilution) use this landscape to avoid naming
+        convention collision.
+      intermediate_format: "text/markdown"
+
+    - skill: lex-mercator
+      version_constraint: ">=1.0"
+      rationale: >
+        lex-mercator produces preliminary trademark clearance analysis and
+        jurisdiction strategy. brand-maker integrates this upstream analysis
+        into Domain & Trademark Strategy section, producing jurisdiction-
+        aware finalist selections.
+      intermediate_format: "text/markdown"
+
+  pipe_to:
+    - skill: brand-visual
+      version_constraint: ">=1.1"
+      rationale: >
+        brand-maker produces verbal identity (name + positioning anchor +
+        personality vectors + phonetic profile). brand-visual consumes this
+        as handover brief to produce complementary visual identity system.
+        Canonical verbal→visual sequence.
+      intermediate_format: "text/markdown"
+
+    - skill: carbon-html-report
+      version_constraint: ">=6.0"
+      rationale: >
+        brand-maker produces long-form Markdown with domain='brand_strategy'
+        + 'verbal_identity' + 'trademark_strategy'. carbon-html-report
+        formats this into print-ready IBM Carbon Design System HTML/PDF for
+        executive committee distribution, board presentations, external
+        client handover.
+      intermediate_format: "text/markdown"
+
+    - skill: carbon-pptx
+      version_constraint: ">=1.6"
+      rationale: >
+        brand-maker output can be condensed into executive presentation deck
+        via carbon-pptx. Use cases: founder team brief on finalist selection,
+        board approval deck for rebrand, launch announcement deck.
+      intermediate_format: "text/markdown"
+
+    - skill: pharmapatent
+      version_constraint: ">=1.0"
+      rationale: >
+        When brand-maker is used for pharmaceutical brand naming, its output
+        includes WIPO Madrid class recommendations and FDA/EMA/TİTCK pre-
+        screen notes. pharmapatent extends this into full SMK 6769 + TRIPS
+        + Beşeri Tıbbi Ürünler Ruhsatlandırma Yönetmeliği analysis.
+      intermediate_format: "text/markdown"
+
+    - skill: lex-mercator
+      version_constraint: ">=1.0"
+      rationale: >
+        After final name selection, lex-mercator handles trademark licensing
+        agreements, distribution contracts, brand co-existence agreements,
+        and jurisdiction-spesifik trademark filing execution.
+      intermediate_format: "text/markdown"
+
+    - skill: docx
+      version_constraint: ">=1.0"
+      rationale: >
+        Alternative to carbon-html-report when deliverable must be a Word
+        document (external counsel consumption, signature-required formats,
+        tracked-changes review).
+      intermediate_format: "text/markdown"
+
+# --- Runtime Requirements ----------------------------------------------------
+runtime:
+  mcp_connectors:
+    required: []
+    optional:
+      - name: "GoDaddy"
+        purpose: >
+          Live domain availability verification (primary path for Step 3.4).
+          .com absolute priority rule enforced.
+      - name: "Fetch"
+        purpose: >
+          Web retrieval for Axis 1 (LLM namespace probe proxy) and Axis 4
+          (entity_disambiguation.py Wikipedia/Wikidata lookup).
+      - name: "Tavily"
+        purpose: >
+          Alternative real-time web search for Axis 6 famous-mark dilution
+          recency check.
+      - name: "Exa"
+        purpose: >
+          Semantic neural search for upstream rebrand briefs.
+  python:
+    version: ">=3.8"
+    packages: []  # Pure stdlib; no external dependencies.
+
+# --- Verification Contract ---------------------------------------------------
+verification:
+  process_gates:
+    - id: G1
+      name: "Strategic anchor word explicitly declared before candidate generation"
+      mandatory: true
+      rationale: "Per Ries & Trout (1981) mental-ladder doctrine."
+
+    - id: G2
+      name: "Minimum 2 of 5 categories represented in candidate pool"
+      mandatory: true
+      rationale: "Single-category pools insufficient for client optionality."
+
+    - id: G3
+      name: "SCRATCH filter applied; no finalist with hard SCRATCH flag"
+      mandatory: true
+      rationale: "Per Watkins (2014) — Copycat L2, Hard-to-pronounce, Tame non-compensable."
+
+    - id: G4
+      name: "SMILE+M 6-criterion disclosed per finalist"
+      mandatory: true
+      rationale: "Objectivity discipline. Client cannot challenge on unknown criteria."
+
+    - id: G5
+      name: "Live .com verification attempted (GoDaddy MCP or heuristic)"
+      mandatory: true
+      rationale: "Step 3.4 binding rule. .com absolute priority."
+
+    - id: G6
+      name: "Post-Digital Readiness Score computed for every finalist"
+      mandatory: true
+      rationale: "v2.0 hard requirement. 6-axis scorecard always produced."
+
+    - id: G7
+      name: "LLM namespace probe executed for every finalist"
+      mandatory: true
+      rationale: "Axis 1 of Post-Digital Validation."
+
+    - id: G8
+      name: "Morpheme saturation risk assessed against last-24-month corpus"
+      mandatory: true
+      rationale: "Axis 2. Prevents algorithmic-genericism traps."
+
+    - id: G9
+      name: "Turkish semantic check for TR-market or TR+EU dual-launch briefs"
+      mandatory: true
+      rationale: "Existing v1.2 requirement preserved."
+
+    - id: G10
+      name: "Disaster check 9-language clean confirmed per finalist"
+      mandatory: true
+      rationale: "Existing v1.2 requirement preserved."
+
+    - id: G11
+      name: "INN/USAN stem collision check for pharma briefs"
+      mandatory: true
+      conditional: "Only when brief signals pharma/biotech/medtech sector."
+      rationale: "Axis 5. Prevents FDA/EMA/TİTCK rejection."
+
+    - id: G12
+      name: "Famous-mark 3-layer dilution screen executed"
+      mandatory: true
+      rationale: "Axis 6. Prevents Lanham Act dilution exposure."
+
+    - id: G13
+      name: "Bilingual EN+TR rationale provided for every finalist"
+      mandatory: true
+      rationale: "Agency-standard bilingual discipline preserved from v1.2."
+
+    - id: G14
+      name: "Trademark pre-screening URLs generated for every finalist"
+      mandatory: true
+      rationale: "Wheeler (2013) Protectable criterion."
+
+    - id: G15
+      name: "Legal disclaimer — output is NOT formal trademark advice"
+      mandatory: true
+      rationale: "Skill output explicit limitation statement."
+
+    - id: G16
+      name: "Motion/kinetic readiness assessed when brief signals motion-first"
+      mandatory: false
+      conditional: "Only when brief includes motion/kinetic/animated signals."
+      rationale: "SMILE+M sixth criterion context-specific activation."
+
+    - id: G17
+      name: "Purpose-axis matrix coordinate declared for purpose-driven briefs"
+      mandatory: false
+      conditional: "Only when brief signals purpose/sustainability/ESG/impact."
+      rationale: "Purpose-native brands require meaning-axis coordinate."
+
+# --- References --------------------------------------------------------------
+references:
+  primary: "./SKILL.md"
+  positioning_foundation: "./references/positioning-foundation.md"
+  smile_scratch_filter: "./references/smile-scratch-filter.md"
+  output_template: "./references/output-template.md"
+  creation_techniques: "./references/creation-techniques.md"
+  phonetic_laws: "./references/phonetic-laws.md"
+  disaster_check: "./references/disaster-check.md"
+  domain_trademark_strategy: "./references/domain-trademark-strategy.md"
+  godaddy_mcp_integration: "./references/godaddy-mcp-integration.md"
+  naming_categories: "./references/naming-categories.md"
+  exemplar_catalog: "./references/exemplar-catalog.md"
+  geo_llm_readiness: "./references/geo-llm-readiness.md"
+  voice_first_naming: "./references/voice-first-naming.md"
+  pharma_naming_constraints: "./references/pharma-naming-constraints.md"
+  motion_kinetic_readiness: "./references/motion-kinetic-readiness.md"
+  ai_fingerprint_avoidance: "./references/ai-fingerprint-avoidance.md"
+  purpose_axis_matrix: "./references/purpose-axis-matrix.md"
+  modern_canon_2022_2026: "./references/modern-canon-2022-2026.md"
+  category_creator_protocol: "./references/category-creator-protocol.md"
+
+# --- Build Metadata ----------------------------------------------------------
+build:
+  version: "2.0.1"
+  release_date: "2026-04-24"
+  release_name: "Post-Digital Era upgrade + Sector-Agnostic Positioning Correction —
+                 5-category brainstorm, SMILE+M, 6-axis Post-Digital Validation,
+                 opt-in regulated-sector modules (pharma pilot), SMP v1.0 manifest,
+                 2022–2026 canon integration"
+  compatibility:
+    backward_compatible_with:
+      - "1.2.x"
+    breaking_changes:
+      - "Adım 3 now 5-step (was 4-step); Step 3.5 Post-Digital Validation inserted"
+      - "Naming category count 5 (was 4); E. Contrarian/Sezgisel added"
+      - "SMILE is now SMILE+M (6 criteria); legacy 5/5 preserved, +M optional stack"
+  semantic_versioning_commitment: >
+    brand-maker adheres to semantic versioning 2.0.0. Major bumps indicate
+    architectural changes. Minor bumps extend coverage. Patch bumps correct
+    typos, citation errors, routing refinements.

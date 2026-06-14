@@ -22,6 +22,7 @@ Claude Code oturumunda (REPL):
 | Plugin | Sürüm | Açıklama |
 |---|---|---|
 | **rxpraxis** | 1.1.0 | Türkiye-merkezli farmasötik jenerik/biyobenzer fırsat tarama süiti (`rxos` orkestratörü + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; 6 komut). Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı. |
+| **brand-ecosystem-core** | 1.0.0 | Brand Ecosystem v1.0'ın stratejik + sözel + görsel katmanları: 10 skill (brand-audit, brand-platform, brand-story, brand-maker(-ecosystem), brand-visual(-ecosystem), figma-forge, brand-touchpoint, brand-launch) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa opsiyonel. Ses katmanı için `brand-voice` plugin'i ile kompoze olur. |
 
 ## Yapı
 
@@ -30,11 +31,29 @@ marketplace/                              ← marketplace kökü (Claude Code'a 
 ├── .claude-plugin/
 │   └── marketplace.json                  ← katalog (plugin → ./plugins/<plugin>)
 └── plugins/
-    └── rxpraxis/                         ← ilk plugin
+    ├── rxpraxis/                         ← ilk plugin
+    │   ├── .claude-plugin/plugin.json
+    │   ├── commands/   skills/   shared/   evals/
+    │   └── CONNECTORS.md · BUILD.md · README.md
+    └── brand-ecosystem-core/             ← marka ekosistemi plugin'i
         ├── .claude-plugin/plugin.json
-        ├── commands/   skills/   shared/   evals/
-        └── CONNECTORS.md · BUILD.md · README.md
+        ├── commands/pipeline.md
+        ├── skills/   (10 skill: brand-audit … figma-forge)
+        └── mcp.optional.json · README.md · CHANGELOG.md
 ```
+
+## brand-ecosystem-core — hızlı başlangıç
+
+```
+/plugin install brand-ecosystem-core@cureonics-marketplace
+/help                                      # /brand-ecosystem-core:pipeline görünmeli
+```
+
+Uçtan uca kanonik kurulum sırası için `/brand-ecosystem-core:pipeline`; her skill tek
+başına da çağrılabilir (örn. `brand-ecosystem-core:brand-platform`). Skill'ler
+Claude.ai-native (`mcp_servers_required: []`); Figma / GoDaddy / Exa zenginleştiricileri
+opsiyoneldir (`plugins/brand-ecosystem-core/mcp.optional.json`). Ses & ton katmanı ayrı
+`brand-voice` plugin'ine aittir.
 
 ## rxpraxis — hızlı başlangıç
 

@@ -1,0 +1,19 @@
+{
+  "name": "figma-forge importer",
+  "id": "com.figma-forge.importer",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "permissions": ["currentuser"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "reasoning": "All token data is bundled into code.js at build time; no runtime network access required."
+  },
+  "menu": [
+    { "name": "Import tokens (DTCG)", "command": "import-dtcg" },
+    { "name": "Generate variant component sets", "command": "generate-variants" },
+    { "name": "Show run log", "command": "show-log" }
+  ]
+}

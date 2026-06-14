@@ -1,0 +1,325 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — production manifest for figma-forge
+# Source: SKILL.md  ·  Generated: 2026-05-26  ·  v0.1.0 initial release
+# ============================================================================
+
+manifest_version: '1.0'
+
+skill:
+  name: figma-forge
+  version: 0.2.1
+  title: 'Design-System-to-Figma Library Operationalization Protocol'
+  description: >-
+    DS-to-Figma library operationalization protocol. Takes W3C DTCG JSON,
+    Style Dictionary, or built-in mapper (Carbon v11, Material 3, Tailwind
+    v3/v4) and forges production-ready Figma libraries — Variables, paint/
+    text/effect styles, multi-file architecture, variant components, and
+    Code Connect mappings. Three channels — MCP-first, REST (Variables API,
+    Enterprise), TypeScript Plugin (any plan). Seven modes — SCAFFOLD,
+    TOKENS_IMPORT, FOUNDATIONS_BUILD, COMPONENTS_BUILD, MIGRATE,
+    CODE_CONNECT, PUBLISH_AUDIT — plus 19-gate publish checklist.
+  entry_point: ./SKILL.md
+  authors:
+    - name: Mahir
+      role: maintainer
+  maintainer: Mahir
+
+# --- Classification ----------------------------------------------------------
+classification:
+  primary_category: "design-system-operationalization"
+  secondary_categories:
+    - "figma-library-generation"
+    - "design-token-systems"
+    - "code-connect-bootstrap"
+    - "publish-audit"
+    - "design-engineering"
+  tags:
+    - figma
+    - dtcg
+    - w3c-design-tokens
+    - carbon-v11
+    - material3
+    - tailwind
+    - style-dictionary
+    - figma-variables-api
+    - figma-mcp
+    - code-connect
+    - design-tokens
+    - design-system
+    - multi-file-library
+    - variant-components
+    - publish-audit
+    - hct-tonal-palette
+    - smp-v1.0
+  triggers:
+    - "Figma kütüphanesi kur"
+    - "Carbon Figma'ya aktar"
+    - "DTCG to Figma"
+    - "design system Figma'ya çek"
+    - "Variables API import"
+    - "Code Connect bootstrap"
+    - "Material 3 Figma library"
+    - "Tailwind tokens to Figma"
+    - "style dictionary to Figma"
+    - "publish audit Figma"
+
+# --- Runtime -----------------------------------------------------------------
+runtime:
+  python_min_version: "3.10"
+  required_dependencies: []
+  optional_dependencies:
+    - name: "@figma/code-connect"
+      reason: "Code Connect CLI for publishing mappings (CODE_CONNECT mode, Channel 1)"
+    - name: "typescript"
+      reason: "Compiling the Channel 3 plugin code.ts → code.js (any TypeScript 5.x)"
+  external_apis:
+    - name: "Figma REST API"
+      base_url: "https://api.figma.com/v1"
+      auth: "X-Figma-Token header (PAT or OAuth)"
+      rate_limit: "varies by plan; Variables API write requires Enterprise"
+    - name: "Figma Plugin API"
+      docs_url: "https://www.figma.com/plugin-docs/"
+
+# --- Protocol Reference ------------------------------------------------------
+protocol_reference:
+  smp_version: "1.0"
+  authority_basis:
+    - "W3C Design Tokens Community Group draft (designtokens.org)"
+    - "Figma Variables API documentation"
+    - "Figma Plugin API documentation"
+    - "IBM Carbon Design System v11"
+    - "Material 3 token specification (m3.material.io)"
+    - "Tailwind CSS v3/v4 default theme"
+    - "Amazon Style Dictionary token schema"
+
+# --- References (downstream skill consumers) ---------------------------------
+references:
+  - path: "./SKILL.md"
+    role: "Primary protocol authority"
+  - path: "./README.md"
+    role: "Operator quick-start guide"
+  - path: "./references/w3c-dtcg-tokens.md"
+    role: "DTCG schema canonical reference"
+  - path: "./references/publish-checklist.md"
+    role: "19-gate audit checklist"
+
+domains:
+  - design-system
+  - frontend
+  - figma
+  - tokens
+  - publishing
+
+inputs:
+  - id: design_system_spec
+    required: true
+    description: >-
+      The design-system specification to operationalize in Figma. Three
+      acceptable shapes: (a) W3C DTCG JSON conforming to the Design Tokens
+      Community Group draft schema, (b) Style Dictionary export (any standard
+      $value/$type JSON layout from Amazon Style Dictionary), or (c) the name
+      of a built-in reference DS — `carbon`, `material3`, or `tailwind` —
+      optionally with a brand-overlay specification.
+    mime_types:
+      - application/json
+      - text/plain
+      - text/markdown
+
+  - id: brand_overlay
+    required: false
+    description: >-
+      For MIGRATE mode only — a delta specification overriding specific
+      tokens from a reference DS while preserving structure. Typical
+      contents: brand primary color, font family override, density tier.
+    mime_types:
+      - application/json
+      - text/markdown
+
+  - id: figma_pat
+    required: false
+    description: >-
+      Figma Personal Access Token for Channel 2 (REST API) usage. Required
+      only when the user wants the Variables API path on an Enterprise tenant.
+      Never persisted by the skill.
+    mime_types:
+      - text/plain
+
+  - id: target_repo_path
+    required: false
+    description: >-
+      For CODE_CONNECT mode only — the local path or URL of the code
+      repository where Code Connect stubs should be generated.
+    mime_types:
+      - text/plain
+
+outputs:
+  - id: figma_library_files
+    description: >-
+      One or more Figma file URLs created or modified by the skill. The
+      multi-file architecture (Foundations / Components / Patterns / Icons)
+      is the default layout; smaller systems may collapse to 2-file or
+      1-file.
+    mime_type: text/plain
+
+  - id: dtcg_intermediate
+    description: >-
+      Canonical W3C DTCG token JSON, normalized from whatever input format
+      was provided. Saved for round-tripping and audit.
+    mime_type: application/json
+
+  - id: library_registry
+    description: >-
+      JSON file mapping library layer → file_key → URL. Includes linked-
+      library declarations.
+    mime_type: application/json
+
+  - id: run_report
+    description: >-
+      Markdown run report summarizing what was done, which channel(s) were
+      used, what succeeded, what failed, and what the user must do manually.
+    mime_type: text/markdown
+
+  - id: figma_plugin_bundle
+    description: >-
+      For Channel 3 (Plugin) runs — a ZIP archive containing manifest.json,
+      code.ts, ui.html ready to import into Figma via Plugins → Development
+      → Import plugin from manifest.
+    mime_type: application/zip
+
+  - id: publish_audit_report
+    description: >-
+      For PUBLISH_AUDIT mode only — 19-gate publish-readiness Markdown
+      report with gate-by-gate diagnosis and remediation guidance.
+    mime_type: text/markdown
+
+  - id: code_connect_stubs
+    description: >-
+      For CODE_CONNECT mode only — .figma.tsx / .figma.ts / .figma.html stub
+      files mapping Figma nodes to code components in the target repo.
+    mime_type: text/plain
+
+composition:
+  pipe_from:
+    - skill: brand-visual
+      version_constraint: '>=1.0'
+      rationale: >-
+        brand-visual produces the visual identity (palette, type ramp,
+        archetype). figma-forge takes those tokens as input and
+        operationalizes them in Figma.
+      intermediate_format: application/json
+    - skill: brand-platform
+      version_constraint: '>=1.0'
+      rationale: >-
+        brand-platform outputs brand voice/personality which informs
+        component description copy and naming flavor.
+      intermediate_format: text/markdown
+    - skill: brand-maker
+      version_constraint: '>=1.0'
+      rationale: >-
+        brand-maker produces the verbal identity — the DS name and naming
+        conventions that figma-forge uses for file titles, library naming,
+        and token paths.
+      intermediate_format: text/markdown
+    - skill: brand-audit
+      version_constraint: '>=1.0'
+      rationale: >-
+        brand-audit outputs competitive landscape and IP audit which inform
+        differentiation in DS token + component design.
+      intermediate_format: text/markdown
+
+  pipe_to:
+    - skill: roche-design
+      version_constraint: '>=2.0'
+      rationale: >-
+        Once a Roche-adjacent library is forged, roche-design consumes it
+        for Marp/Paged.js deliverable production with RDS branding.
+      intermediate_format: text/plain
+    - skill: brand-touchpoint
+      version_constraint: '>=1.0'
+      rationale: >-
+        brand-touchpoint cites the published Figma library when specifying
+        how the brand appears across stationery, packaging, signage, etc.
+      intermediate_format: text/plain
+    - skill: frontend-design
+      version_constraint: '>=1.0'
+      rationale: >-
+        Frontend code generation uses Code Connect mappings emitted by
+        figma-forge as ground truth for Figma↔code wiring.
+      intermediate_format: text/plain
+    - skill: carbon-html-report
+      version_constraint: '>=3.0'
+      rationale: >-
+        When Carbon-derived tokens are forged via MIGRATE mode, downstream
+        report generation can consume the resulting Carbon-flavored library.
+      intermediate_format: text/markdown
+    - skill: carbon-pptx
+      version_constraint: '>=1.5'
+      rationale: >-
+        Same as carbon-html-report — slide-deck generation can consume the
+        forged Carbon-flavored library.
+      intermediate_format: text/markdown
+    - skill: smp-orchestrator
+      version_constraint: '>=2.0'
+      rationale: >-
+        SMP orchestrator audits the resulting library skill's manifest and
+        discovers composition graphs.
+      intermediate_format: text/markdown
+
+build:
+  version: 0.2.1
+  release_date: '2026-05-26'
+
+verification:
+  runner: ./tests/run_tests.py
+  gate_count: 8
+  gates:
+    - id: G1-INT
+      description: >-
+        File integrity — SKILL.md, README, references/, templates/,
+        scripts/, evals/, tests/ all present
+      severity: error
+    - id: G2-CONT
+      description: >-
+        Content validation — mode names, Figma MCP tool references,
+        DTCG schema keywords ($value, $type), correct version strings
+      severity: error
+    - id: G3-TPL
+      description: >-
+        Template validation — DTCG JSON template, Figma plugin
+        manifest.json + code.ts, Code Connect templates structural integrity
+      severity: error
+    - id: G4-CONS
+      description: >-
+        Cross-file consistency — mode names referenced from SKILL.md exist
+        in references/; mapper names match scripts/; token type table
+        consistent
+      severity: error
+    - id: G5-PROC
+      description: >-
+        Procedural completeness — every mode has a precondition/workflow/
+        postcondition; three-channel strategy documented end-to-end
+      severity: error
+    - id: G6-ANTI
+      description: >-
+        Anti-pattern detection — no hard-coded Figma file keys, no PAT
+        leakage, no forbidden patterns
+      severity: warning
+    - id: G7-DESC
+      description: >-
+        Description validation — SKILL.md frontmatter description under
+        1024 chars (SMP v1.0 hard limit), trigger keywords present
+      severity: error
+    - id: G8-MAPPER
+      description: >-
+        Mapper coverage — Carbon v11, Material 3, Tailwind v3+v4 mapping
+        references present and have minimum token coverage
+      severity: error
+
+  invocation:
+    cli: 'python3 tests/run_tests.py'
+    cli_strict: 'python3 tests/run_tests.py --strict'
+    cli_json: 'python3 tests/run_tests.py --json'
+    exit_codes:
+      0: 'all gates passed'
+      1: 'at least one error-severity gate failed'
+      2: 'warning-only failures (still shippable)'

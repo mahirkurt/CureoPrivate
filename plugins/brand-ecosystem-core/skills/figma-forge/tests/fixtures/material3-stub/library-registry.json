@@ -1,0 +1,18 @@
+{
+  "ds_name": "Material 3 Stub",
+  "ds_version": "0.1.0",
+  "bundle_version": "0.1.0",
+  "ds_url": "https://m3.material.io/",
+  "accessibility": {
+    "wcag_target": "AAA",
+    "apca_enabled": true,
+    "tr_diacritics_audit": ["Ç", "Ğ", "İ", "Ö", "Ş", "Ü"]
+  },
+  "color_families": [
+    {"name": "primary", "expected_steps": 12},
+    {"name": "neutral", "expected_steps": 12}
+  ],
+  "icon_size_grid": {
+    "icons/svg/tier/": [24, 48]
+  }
+}

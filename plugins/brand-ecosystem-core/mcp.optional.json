@@ -1,0 +1,20 @@
+{
+  "_comment": "OPTIONAL connectors that enhance brand-ecosystem-core skills. None are required: every bundled skill declares mcp_servers_required: [] and runs Claude.ai-native on the free tier. Enable only the ones you use. To activate, merge the desired entries into the plugin's .mcp.json (create it) or connect them in Claude.ai.",
+  "mcpServers": {
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp",
+      "_use": "figma-forge (DS-to-Figma libraries, variables, Code Connect) and brand-visual (visual identity handoff to Figma)."
+    },
+    "godaddy": {
+      "type": "http",
+      "url": "https://api.godaddy.com/v1/domains/mcp",
+      "_use": "brand-maker — live domain availability checks during naming validation."
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp",
+      "_use": "brand-audit — competitive landscape and IP/web research."
+    }
+  }
+}

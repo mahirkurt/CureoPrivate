@@ -1,0 +1,83 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — migrated to canonical list-form by
+# `smp migrate`
+# Coercions applied: 6 (dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list)
+# Original preserved as <manifest>.bak (unless --no-backup was used)
+# ============================================================================
+
+manifest_version: '1.0'
+skill:
+  name: brand-platform
+  version: 1.1.0
+  title: Foundation Brand Platform Document Protocol
+  description: 'Foundation document protocol: vision, mission, values, brand personality (Jung
+    + Aaker 5-D), persona (4Cs + Maslow), Ries-Trout positioning, promise, competitive landscape
+    and brand voice principles. The strategic bedrock for downstream brand work.'
+  entry_point: ./SKILL.md
+  author: Brand Ecosystem Studio v1.0
+  license: Internal skill asset
+domains:
+- marketing-design
+- brand-strategy
+classification:
+  primary_category: brand-strategy
+  secondary_categories:
+  - brand-foundation
+  - positioning
+  tags:
+  - vision
+  - mission
+  - values
+  - positioning
+  - persona
+  - brand personality
+inputs:
+- id: business_brief
+  required: true
+  description: 'Free-form brief: category, geography, founder intent, competition, constraints'
+  mime_types:
+  - text/plain
+- id: brand_audit_handoff
+  required: false
+  description: Output of brand-audit when a rebrand/refresh path is active
+  mime_types:
+  - application/yaml
+  schema: ../brand-audit/references/output-template.md#handoff-schema
+- id: founder_interview_transcripts
+  required: false
+  description: Optional founder/leadership interview content for deeper voice signal
+  mime_types:
+  - text/plain
+outputs:
+- id: platform_document
+  description: 8-15 page Brand Platform document covering eight foundational elements
+  mime_type: text/markdown
+- id: handoff
+  description: Structured handoff artifact for downstream skill consumption
+  mime_type: application/yaml
+- id: executive_summary
+  description: Single-page stakeholder summary
+  mime_type: text/markdown
+  optional: true
+composition:
+  pipe_from:
+  - skill: brand-audit
+    version_constraint: '>=1.1.0'
+    rationale: Audit findings inform a rebrand/refresh platform.
+    intermediate_format: application/yaml
+  pipe_to:
+  - brand-story
+  - brand-maker
+  - brand-visual
+  - brand-touchpoint
+  - brand-launch
+  - guideline-generation
+
+verification:
+  trigger_test_prompts:
+  - Help me build a brand platform for my new venture
+  - Marka stratejisi olusturmak istiyorum
+  - I need positioning for a B2B SaaS startup
+  - Vision, mission, values dokumani hazirla
+  - Luxury watch brand foundation document
+  expected_activation_rate: 0.95

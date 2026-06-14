@@ -1,0 +1,20 @@
+{
+  "$schema": "https://figma-forge.io/schemas/component-spec.schema.json",
+  "component": {
+    "id": "tag",
+    "name": "Tag",
+    "name_carbon": "Tag",
+    "category": "data-display"
+  },
+  "variants": {
+    "axes": {
+      "Type": ["red", "green", "blue", "cyan", "gray", "outline", "filter"],
+      "Size": ["sm", "md"]
+    },
+    "expected_count": 14,
+    "disabled_combinations": []
+  },
+  "tokens": {
+    "background": "{color.semantic.background}"
+  }
+}

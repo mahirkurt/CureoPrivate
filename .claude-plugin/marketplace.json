@@ -33,6 +33,30 @@
         "smp-v1.0"
       ],
       "strict": false
+    },
+    {
+      "name": "brand-ecosystem-core",
+      "source": "./plugins/brand-ecosystem-core",
+      "version": "1.0.0",
+      "description": "Brand Ecosystem v1.0'ın stratejik, sözel ve görsel katmanları tek modül olarak: brand-audit, brand-platform, brand-story, brand-touchpoint, brand-launch + brand-maker/brand-visual ekosistem yoldaşları + brand-maker (isimlendirme), brand-visual (görsel kimlik) ve figma-forge (tasarım sistemi → Figma). On skill + /pipeline komutu kanonik kurulum sırasını uçtan uca işletir. brand-voice plugin'i ile ses katmanı için kompoze olur. Her skill Claude.ai-native (mcp_servers_required: []); Figma/GoDaddy/Exa opsiyonel zenginleştiricidir.",
+      "author": {
+        "name": "Brand Ecosystem Studio (Mahir edition)",
+        "url": "https://cureonics.com"
+      },
+      "category": "brand-design",
+      "keywords": [
+        "brand-strategy",
+        "brand-identity",
+        "brand-audit",
+        "positioning",
+        "storybrand",
+        "naming",
+        "visual-identity",
+        "design-system",
+        "figma",
+        "smp"
+      ],
+      "strict": false
     }
   ]
 }

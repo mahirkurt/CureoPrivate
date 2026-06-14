@@ -1,0 +1,128 @@
+# ============================================================================
+# Skill Manifest Protocol v1.0 — migrated to canonical list-form by
+# `smp migrate`
+# Coercions applied: 11 (dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list; dict-form-to-list)
+# Original preserved as <manifest>.bak (unless --no-backup was used)
+# ============================================================================
+
+manifest_version: '1.0'
+skill:
+  name: brand-launch
+  version: 1.1.0
+  title: Brand Launch and Governance Protocol
+  description: 'Brand launch and governance protocol: internal-first rollout, brand champion
+    program, online brand center spec, brand guidelines anatomy, onboarding brief, trademark/domain/handle
+    checklist and KPI dashboard. The final skill in the ecosystem.'
+  entry_point: ./SKILL.md
+  author: Brand Ecosystem Studio v1.0
+  license: Internal skill asset
+domains:
+- marketing-design
+- brand-operations
+classification:
+  primary_category: brand-operations
+  secondary_categories:
+  - brand-launch
+  - governance
+  tags:
+  - launch
+  - brand center
+  - brand guidelines
+  - trademark
+  - KPI
+inputs:
+- id: brand_platform_handoff
+  required: true
+  description: Output of brand-platform
+  mime_types:
+  - application/yaml
+  schema: ../brand-platform/references/output-template.md#handoff-schema
+- id: brand_touchpoint_handoff
+  required: true
+  description: Output of brand-touchpoint
+  mime_types:
+  - application/yaml
+  schema: ../brand-touchpoint/references/output-template.md#handoff-schema
+- id: brand_story_handoff
+  required: false
+  description: Optional brand-story handoff
+  mime_types:
+  - application/yaml
+- id: brand_maker_handoff
+  required: false
+  description: Optional brand-maker handoff
+  mime_types:
+  - application/yaml
+- id: brand_visual_handoff
+  required: false
+  description: Optional brand-visual handoff
+  mime_types:
+  - application/yaml
+- id: brand_audit_handoff
+  required: false
+  description: Optional brand-audit handoff
+  mime_types:
+  - application/yaml
+outputs:
+- id: launch_plan_document
+  description: 15-30 page launch plan with internal-first sequencing plus KPI dashboard
+  mime_type: text/markdown
+- id: trademark_domain_handle_checklist
+  description: IP and digital identity securing checklist
+  mime_type: text/markdown
+- id: brand_guidelines_outline
+  description: Brand guidelines anatomy and content outline
+  mime_type: text/markdown
+- id: brand_center_specification
+  description: Online brand center build specification
+  mime_type: text/markdown
+- id: handoff
+  description: Structured handoff artifact
+  mime_type: application/yaml
+composition:
+  pipe_from:
+  - skill: brand-platform
+    version_constraint: '>=1.1.0'
+    rationale: Platform feeds the guidelines anatomy.
+    intermediate_format: application/yaml
+  - skill: brand-touchpoint
+    version_constraint: '>=1.1.0'
+    rationale: Touchpoint specs feed the launch plan.
+    intermediate_format: application/yaml
+  - skill: brand-story
+    version_constraint: '>=1.1.0'
+    rationale: Narrative context.
+    intermediate_format: application/yaml
+  - skill: brand-maker
+    version_constraint: '>=2.0.0'
+    rationale: Verbal identity context.
+    intermediate_format: application/yaml
+  - skill: brand-visual
+    version_constraint: '>=1.3.0'
+    rationale: Visual identity context.
+    intermediate_format: application/yaml
+  - skill: brand-audit
+    version_constraint: '>=1.1.0'
+    rationale: Audit context.
+    intermediate_format: application/yaml
+  - skill: guideline-generation
+    version_constraint: '>=1.0.0'
+    rationale: Voice section of the brand-guidelines anatomy + onboarding.
+    intermediate_format: text/markdown
+  - skill: brand-voice-enforcement
+    version_constraint: '>=1.0.0'
+    rationale: On-brand onboarding / launch-comms copy.
+    intermediate_format: text/markdown
+  pipe_to:
+  - brand-voice-enforcement
+
+verification:
+  trigger_test_prompts:
+  - We are ready to launch our rebrand
+  - Marka lansman plani hazirla
+  - Build us a brand center
+  - Marka rehberi yazalim
+  - Internal launch plus brand champions program
+  - Trademark plus domain plus social handle securing
+  - Brand KPI dashboard awareness through advocacy
+  expected_activation_rate: 0.91

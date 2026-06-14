@@ -1,0 +1,8 @@
+{
+  "component_id": "tag",
+  "carbon_class_name": "Tag",
+  "react": {
+    "import_statement": "import { Tag } from '@carbon/react';",
+    "code_example": "<Tag type=\"blue\">Label</Tag>"
+  }
+}

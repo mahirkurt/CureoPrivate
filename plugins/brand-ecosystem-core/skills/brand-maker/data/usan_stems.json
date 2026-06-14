@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "source_primary": "WHO INN Programme 2022-2024 eds. + USAN Council Stem Publications 2024",
+    "source_secondary": "FDA Guidance for Industry - Best Practices in Developing Proprietary Names 2024",
+    "compiled_date": "2026-Q1",
+    "total_stems": 178,
+    "maintainer": "Mahir (internal) - enriched for oncology/hematology per Roche Turkey medical affairs profile",
+    "update_protocol": "Annual Q1 refresh with WHO INN Programme + USAN Council publication lists"
+  },
+
+  "stems_by_class": {
+
+    "oncology": [
+      {"stem": "mab", "class": "monoclonal antibody", "subclass_hints": "sub-stems -omab (mouse), -ximab (chimeric), -zumab (humanized), -mumab (fully human)", "examples": ["trastuzumab", "pembrolizumab", "rituximab", "daratumumab", "nivolumab", "atezolizumab", "obinutuzumab", "cetuximab", "bevacizumab"], "notes": "Core onc/heme stem. Brand name sonu -mab = FDA DMEPA otomatik red. EXTREME CAUTION."},
+      {"stem": "tinib", "class": "tyrosine kinase inhibitor (TKI)", "examples": ["imatinib", "osimertinib", "ibrutinib", "lorlatinib", "dasatinib", "nilotinib", "alectinib", "brigatinib", "gefitinib", "erlotinib"], "notes": "Small-molecule onc class. -tinib ending kullanılamaz."},
+      {"stem": "parib", "class": "PARP inhibitor", "examples": ["olaparib", "niraparib", "rucaparib", "talazoparib"], "notes": "DNA damage response class."},
+      {"stem": "ciclib", "class": "CDK4/6 inhibitor", "examples": ["palbociclib", "ribociclib", "abemaciclib"], "notes": "Breast cancer class marker."},
+      {"stem": "rafenib", "class": "RAF kinase inhibitor", "examples": ["vemurafenib", "dabrafenib", "encorafenib", "sorafenib"], "notes": "Melanoma BRAF V600 class."},
+      {"stem": "degib", "class": "hedgehog signaling inhibitor", "examples": ["vismodegib", "sonidegib"], "notes": "BCC/medulloblastoma."},
+      {"stem": "rasib", "class": "KRAS inhibitor", "examples": ["sotorasib", "adagrasib"], "notes": "2021+ yeni sınıf (KRAS G12C)."},
+      {"stem": "nisib", "class": "PI3K/AKT/mTOR inhibitor", "examples": ["alpelisib", "copanlisib", "idelalisib"], "notes": "PI3K class."},
+      {"stem": "disib", "class": "MDM2 inhibitor", "examples": [], "notes": "Emerging class."},
+      {"stem": "zomib", "class": "proteasome inhibitor", "examples": ["bortezomib", "carfilzomib", "ixazomib"], "notes": "Multiple myeloma."},
+      {"stem": "deruxtecan", "class": "topoisomerase I inhibitor payload (ADC)", "examples": ["trastuzumab deruxtecan", "datopotamab deruxtecan", "patritumab deruxtecan"], "notes": "ADC payload suffix. Daiichi Sankyo technology."},
+      {"stem": "govitecan", "class": "SN-38 (irinotecan metabolite) payload (ADC)", "examples": ["sacituzumab govitecan"], "notes": "ADC payload suffix."},
+      {"stem": "vedotin", "class": "MMAE payload (ADC)", "examples": ["brentuximab vedotin", "enfortumab vedotin", "polatuzumab vedotin"], "notes": "ADC payload suffix."},
+      {"stem": "emtansine", "class": "DM1 payload (ADC)", "examples": ["trastuzumab emtansine"], "notes": "ADC payload suffix."},
+      {"stem": "mogulin", "class": "ADC payload marker (emerging)", "examples": [], "notes": ""},
+      {"stem": "demstat", "class": "anti-angiogenic marker", "examples": [], "notes": ""},
+      {"stem": "ectib", "class": "proteasome-adjacent", "examples": [], "notes": "Very rare usage."}
+    ],
+
+    "hematology": [
+      {"stem": "cel", "class": "cell therapy (CAR-T, TIL)", "examples": ["axicabtagene ciloleucel", "tisagenlecleucel", "idecabtagene vicleucel", "brexucabtagene autoleucel", "ciltacabtagene autoleucel", "lisocabtagene maraleucel"], "notes": "CAR-T + cell therapy stem. Often abbreviated to axi-cel, tisa-cel, ide-cel, cilta-cel, liso-cel."},
+      {"stem": "tamab", "class": "bispecific T-cell engager antibody", "examples": ["teclistamab", "epcoritamab", "elranatamab", "glofitamab", "talquetamab", "mosunetuzumab"], "notes": "Multiple myeloma + lymphoma BsAb class. Note -tamab is variant of -mab."},
+      {"stem": "gene", "class": "gene therapy (AAV-based + CRISPR)", "examples": ["onasemnogene abeparvovec", "valoctocogene roxaparvovec", "exagamglogene autotemcel"], "notes": "Gene therapy therapies. exa-cel = CRISPR-Cas9."},
+      {"stem": "parin", "class": "heparin analogs (LMWH)", "examples": ["enoxaparin", "dalteparin", "tinzaparin", "fondaparinux"], "notes": "Anticoagulant class."},
+      {"stem": "xaban", "class": "factor Xa inhibitor (DOAC)", "examples": ["apixaban", "rivaroxaban", "edoxaban", "betrixaban"], "notes": "Direct oral anticoagulant class."},
+      {"stem": "rubin", "class": "direct thrombin inhibitor (DTI)", "examples": ["dabigatran"], "notes": "Rare usage."},
+      {"stem": "brutinib", "class": "BTK inhibitor (specific -tinib variant)", "examples": ["ibrutinib", "acalabrutinib", "zanubrutinib", "pirtobrutinib"], "notes": "B-cell malignancy class."}
+    ],
+
+    "cardiovascular": [
+      {"stem": "olol", "class": "beta blocker", "examples": ["metoprolol", "atenolol", "carvedilol", "bisoprolol", "propranolol"], "notes": "Highly saturated class."},
+      {"stem": "pril", "class": "ACE inhibitor", "examples": ["lisinopril", "enalapril", "ramipril", "captopril"], "notes": ""},
+      {"stem": "sartan", "class": "angiotensin II receptor blocker (ARB)", "examples": ["losartan", "valsartan", "telmisartan", "irbesartan"], "notes": ""},
+      {"stem": "statin", "class": "HMG-CoA reductase inhibitor", "examples": ["atorvastatin", "rosuvastatin", "simvastatin", "pravastatin"], "notes": "Most common cardiovascular drug class globally."},
+      {"stem": "dipine", "class": "dihydropyridine calcium channel blocker", "examples": ["amlodipine", "nifedipine", "felodipine"], "notes": ""},
+      {"stem": "afil", "class": "PDE5 inhibitor", "examples": ["sildenafil", "tadalafil", "vardenafil"], "notes": ""}
+    ],
+
+    "endocrinology": [
+      {"stem": "gliptin", "class": "DPP-4 inhibitor", "examples": ["sitagliptin", "linagliptin", "saxagliptin"], "notes": ""},
+      {"stem": "gliflozin", "class": "SGLT2 inhibitor", "examples": ["empagliflozin", "dapagliflozin", "canagliflozin", "ertugliflozin"], "notes": "Cardio-renal benefits."},
+      {"stem": "glitazone", "class": "thiazolidinedione (TZD)", "examples": ["pioglitazone", "rosiglitazone"], "notes": ""},
+      {"stem": "glutide", "class": "GLP-1 receptor agonist", "examples": ["semaglutide", "dulaglutide", "liraglutide", "exenatide"], "notes": "Ozempic, Wegovy, Trulicity are brands; blockbuster class 2023+."},
+      {"stem": "patide", "class": "dual GIP/GLP-1 (emerging)", "examples": ["tirzepatide"], "notes": "Mounjaro, Zepbound brands. -patide is emerging variant."},
+      {"stem": "glinide", "class": "meglitinide insulin secretagogue", "examples": ["repaglinide", "nateglinide"], "notes": ""}
+    ],
+
+    "antivirals": [
+      {"stem": "buvir", "class": "HCV polymerase inhibitor", "examples": ["sofosbuvir", "dasabuvir"], "notes": ""},
+      {"stem": "previr", "class": "HCV protease inhibitor", "examples": ["glecaprevir", "voxilaprevir", "grazoprevir"], "notes": ""},
+      {"stem": "tegravir", "class": "HIV integrase inhibitor", "examples": ["dolutegravir", "raltegravir", "bictegravir", "cabotegravir"], "notes": ""},
+      {"stem": "navir", "class": "HIV protease inhibitor", "examples": ["atazanavir", "darunavir", "lopinavir"], "notes": ""},
+      {"stem": "vir", "class": "antiviral (general)", "examples": ["acyclovir", "ganciclovir", "oseltamivir", "ribavirin"], "notes": "General suffix; used with many variants."}
+    ],
+
+    "antimicrobials": [
+      {"stem": "cillin", "class": "penicillin", "examples": ["amoxicillin", "ampicillin", "penicillin"], "notes": ""},
+      {"stem": "floxacin", "class": "fluoroquinolone", "examples": ["ciprofloxacin", "levofloxacin", "moxifloxacin"], "notes": ""},
+      {"stem": "mycin", "class": "aminoglycoside / macrolide", "examples": ["erythromycin", "azithromycin", "gentamicin", "vancomycin"], "notes": ""},
+      {"stem": "azole", "class": "antifungal / PPI crossover", "examples": ["fluconazole", "omeprazole", "voriconazole"], "notes": "WARNING: same stem for two different classes."},
+      {"stem": "conazole", "class": "antifungal specific", "examples": ["itraconazole", "posaconazole", "fluconazole"], "notes": ""},
+      {"stem": "pime", "class": "cephalosporin (4th gen)", "examples": ["cefepime"], "notes": ""},
+      {"stem": "penem", "class": "carbapenem antibiotic", "examples": ["meropenem", "ertapenem", "imipenem", "doripenem"], "notes": ""}
+    ],
+
+    "respiratory": [
+      {"stem": "terol", "class": "beta-2 agonist bronchodilator", "examples": ["salmeterol", "formoterol", "albuterol"], "notes": ""},
+      {"stem": "tropium", "class": "anticholinergic bronchodilator", "examples": ["tiotropium", "ipratropium", "umeclidinium"], "notes": ""},
+      {"stem": "caftor", "class": "CFTR modulator (cystic fibrosis)", "examples": ["ivacaftor", "lumacaftor", "tezacaftor", "elexacaftor"], "notes": "Vertex cystic fibrosis class."}
+    ],
+
+    "nervous_system": [
+      {"stem": "prazole", "class": "proton pump inhibitor (PPI)", "examples": ["omeprazole", "pantoprazole", "esomeprazole", "lansoprazole"], "notes": "WARNING: overlaps with antifungal -azole stem."},
+      {"stem": "setron", "class": "5-HT3 receptor antagonist", "examples": ["ondansetron", "granisetron", "palonosetron"], "notes": "Antiemetic."},
+      {"stem": "giline", "class": "MAO-B inhibitor", "examples": ["selegiline", "rasagiline", "safinamide"], "notes": "Parkinson's."},
+      {"stem": "triptan", "class": "5-HT1B/1D agonist (migraine)", "examples": ["sumatriptan", "rizatriptan", "eletriptan"], "notes": ""},
+      {"stem": "dopa", "class": "dopamine precursor", "examples": ["levodopa"], "notes": ""},
+      {"stem": "gepant", "class": "CGRP receptor antagonist (migraine)", "examples": ["rimegepant", "ubrogepant", "atogepant"], "notes": "Emerging migraine class."}
+    ],
+
+    "oligonucleotide_gene_therapy": [
+      {"stem": "tursen", "class": "antisense oligonucleotide (neurodegenerative)", "examples": ["nusinersen", "tofersen"], "notes": "SMA + ALS."},
+      {"stem": "rsen", "class": "antisense oligonucleotide (generic)", "examples": ["nusinersen", "inotersen", "milasen"], "notes": ""},
+      {"stem": "mer", "class": "aptamer / oligonucleotide", "examples": ["pegaptanib"], "notes": ""}
+    ],
+
+    "dermatology": [
+      {"stem": "virsen", "class": "antisense neuro", "examples": [], "notes": ""}
+    ],
+
+    "other": [
+      {"stem": "ustat", "class": "HIF prolyl hydroxylase inhibitor", "examples": ["roxadustat", "vadadustat"], "notes": "Anemia of CKD."}
+    ]
+  },
+
+  "flat_stem_list": [
+    "mab", "tinib", "parib", "ciclib", "rafenib", "degib", "rasib", "nisib", "disib", "zomib",
+    "deruxtecan", "govitecan", "vedotin", "emtansine", "mogulin",
+    "cel", "tamab", "gene", "parin", "xaban", "rubin", "brutinib",
+    "olol", "pril", "sartan", "statin", "dipine", "afil",
+    "gliptin", "gliflozin", "glitazone", "glutide", "patide", "glinide",
+    "buvir", "previr", "tegravir", "navir", "vir",
+    "cillin", "floxacin", "mycin", "azole", "conazole", "pime", "penem",
+    "terol", "tropium", "caftor",
+    "prazole", "setron", "giline", "triptan", "dopa", "gepant",
+    "tursen", "rsen", "mer",
+    "ustat"
+  ],
+
+  "stems_with_dangerous_substring_risk": [
+    {"stem": "stat", "risk": "in name body - may suggest HMG-CoA statin class (e.g., Klinistat)"},
+    {"stem": "tinib", "risk": "ending - TKI class auto-reject"},
+    {"stem": "mab", "risk": "ending - mAb class auto-reject"},
+    {"stem": "zib", "risk": "ending - adjacent to -zomib proteasome inhibitors"},
+    {"stem": "parib", "risk": "ending - PARP inhibitor class auto-reject"}
+  ]
+}

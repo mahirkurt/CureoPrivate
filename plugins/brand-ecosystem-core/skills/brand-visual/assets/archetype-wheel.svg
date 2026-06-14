@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" font-family="ui-sans-serif, system-ui, sans-serif">
+  <rect width="800" height="800" fill="#FCFCFD"/>
+  <text x="400" y="40" text-anchor="middle" font-size="20" font-weight="600" fill="#1B1757">The 12 Brand Archetypes — Pearson &amp; Mark</text>
+  <text x="400" y="62" text-anchor="middle" font-size="11" fill="#5B5BD6">A visual reference for brand-visual skill — Adım 3 route mapping</text>
+  <path d="M 400.0,100.0 A 320,320 0 0 1 560.0,142.9 L 440.0,350.7 A 80,80 0 0 0 400.0,340.0 Z" fill="#F4E1D7" opacity="0.65" stroke="#8B4513" stroke-width="1.2"/>
+  <path d="M 560.0,142.9 A 320,320 0 0 1 677.1,260.0 L 469.3,380.0 A 80,80 0 0 0 440.0,350.7 Z" fill="#E8D5A8" opacity="0.65" stroke="#7A5C2E" stroke-width="1.2"/>
+  <path d="M 677.1,260.0 A 320,320 0 0 1 720.0,420.0 L 480.0,420.0 A 80,80 0 0 0 469.3,380.0 Z" fill="#F0E2BD" opacity="0.65" stroke="#7A5C2E" stroke-width="1.2"/>
+  <path d="M 720.0,420.0 A 320,320 0 0 1 677.1,580.0 L 469.3,460.0 A 80,80 0 0 0 480.0,420.0 Z" fill="#F5C9C0" opacity="0.65" stroke="#A1352A" stroke-width="1.2"/>
+  <path d="M 677.1,580.0 A 320,320 0 0 1 560.0,697.1 L 440.0,489.3 A 80,80 0 0 0 469.3,460.0 Z" fill="#E8B8B0" opacity="0.65" stroke="#7A1F15" stroke-width="1.2"/>
+  <path d="M 560.0,697.1 A 320,320 0 0 1 400.0,740.0 L 400.0,500.0 A 80,80 0 0 0 440.0,489.3 Z" fill="#D9C5E5" opacity="0.65" stroke="#4B2D6B" stroke-width="1.2"/>
+  <path d="M 400.0,740.0 A 320,320 0 0 1 240.0,697.1 L 360.0,489.3 A 80,80 0 0 0 400.0,500.0 Z" fill="#F5D5DA" opacity="0.65" stroke="#8B2D40" stroke-width="1.2"/>
+  <path d="M 240.0,697.1 A 320,320 0 0 1 122.9,580.0 L 330.7,460.0 A 80,80 0 0 0 360.0,489.3 Z" fill="#FAE8B0" opacity="0.65" stroke="#8B6B12" stroke-width="1.2"/>
+  <path d="M 122.9,580.0 A 320,320 0 0 1 80.0,420.0 L 320.0,420.0 A 80,80 0 0 0 330.7,460.0 Z" fill="#E8DDC8" opacity="0.65" stroke="#5C4823" stroke-width="1.2"/>
+  <path d="M 80.0,420.0 A 320,320 0 0 1 122.9,260.0 L 330.7,380.0 A 80,80 0 0 0 320.0,420.0 Z" fill="#E0EBF8" opacity="0.65" stroke="#3D5A8C" stroke-width="1.2"/>
+  <path d="M 122.9,260.0 A 320,320 0 0 1 240.0,142.9 L 360.0,350.7 A 80,80 0 0 0 330.7,380.0 Z" fill="#D5E0F0" opacity="0.65" stroke="#1F3D70" stroke-width="1.2"/>
+  <path d="M 240.0,142.9 A 320,320 0 0 1 400.0,100.0 L 400.0,340.0 A 80,80 0 0 0 360.0,350.7 Z" fill="#D0E5DC" opacity="0.65" stroke="#3F7A66" stroke-width="1.2"/>
+  <g transform="translate(463.4 183.3)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#8B4513">CAREGIVER</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#8B4513" font-style="italic">"Sevdiğine bak"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#8B4513" opacity="0.85">J&amp;J · Volvo · UNICEF</text>
+  </g>
+  <g transform="translate(573.2 246.8)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#7A5C2E">RULER</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#7A5C2E" font-style="italic">"Güç sorumluluk getirir"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#7A5C2E" opacity="0.85">Mercedes · Rolex</text>
+  </g>
+  <g transform="translate(636.7 356.6)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#7A5C2E">CREATOR</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#7A5C2E" font-style="italic">"Hayal edilen yaratılır"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#7A5C2E" opacity="0.85">Apple · Lego · Adobe</text>
+  </g>
+  <g transform="translate(636.7 483.4)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#A1352A">HERO</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#A1352A" font-style="italic">"Cesaret zafer kazanır"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#A1352A" opacity="0.85">Nike · BMW · Marvel</text>
+  </g>
+  <g transform="translate(573.2 593.2)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#7A1F15">OUTLAW</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#7A1F15" font-style="italic">"Kurallar yıkılmak içindir"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#7A1F15" opacity="0.85">Harley · Liquid Death</text>
+  </g>
+  <g transform="translate(463.4 656.7)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#4B2D6B">MAGICIAN</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#4B2D6B" font-style="italic">"Düşler gerçek olur"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#4B2D6B" opacity="0.85">Disney · Tesla · Polaroid</text>
+  </g>
+  <g transform="translate(336.6 656.7)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#8B2D40">LOVER</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#8B2D40" font-style="italic">"Sevdiğinin yanında"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#8B2D40" opacity="0.85">Chanel · Magnum</text>
+  </g>
+  <g transform="translate(226.8 593.2)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#8B6B12">JESTER</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#8B6B12" font-style="italic">"Yaşam eğlencelidir"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#8B6B12" opacity="0.85">M&amp;M's · Skittles</text>
+  </g>
+  <g transform="translate(163.3 483.4)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#5C4823">EVERYMAN</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#5C4823" font-style="italic">"Aittiğin yer burası"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#5C4823" opacity="0.85">IKEA · Levi's · Target</text>
+  </g>
+  <g transform="translate(163.3 356.6)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#3D5A8C">INNOCENT</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#3D5A8C" font-style="italic">"Cennet hâlâ mümkündür"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#3D5A8C" opacity="0.85">Coca-Cola · Dove</text>
+  </g>
+  <g transform="translate(226.8 246.8)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#1F3D70">SAGE</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#1F3D70" font-style="italic">"Gerçek özgürleştirir"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#1F3D70" opacity="0.85">Google · MIT · NYT</text>
+  </g>
+  <g transform="translate(336.6 183.3)">
+    <text text-anchor="middle" font-size="12" font-weight="700" fill="#3F7A66">EXPLORER</text>
+    <text text-anchor="middle" font-size="8" y="14" fill="#3F7A66" font-style="italic">"Sınır yoktur"</text>
+    <text text-anchor="middle" font-size="7.5" y="26" fill="#3F7A66" opacity="0.85">Patagonia · Jeep · Nat Geo</text>
+  </g>
+  <text x="647.5" y="172.5" text-anchor="middle" font-size="10" font-weight="600" fill="#7A5C2E" letter-spacing="2" opacity="0.9">PROVIDE STRUCTURE</text>
+  <text x="647.5" y="667.5" text-anchor="middle" font-size="10" font-weight="600" fill="#A1352A" letter-spacing="2" opacity="0.9">PURSUE MASTERY</text>
+  <text x="152.5" y="667.5" text-anchor="middle" font-size="10" font-weight="600" fill="#8B2D40" letter-spacing="2" opacity="0.9">CONNECT WITH OTHERS</text>
+  <text x="152.5" y="172.5" text-anchor="middle" font-size="10" font-weight="600" fill="#3D5A8C" letter-spacing="2" opacity="0.9">SEEK INDEPENDENCE</text>
+  <circle cx="400" cy="420" r="80" fill="#1B1757"/>
+  <text x="400" y="412" text-anchor="middle" font-size="13" font-weight="700" fill="#FCFCFD">JUNG'S</text>
+  <text x="400" y="430" text-anchor="middle" font-size="11" fill="#FCFCFD">12 ARCHETYPES</text>
+  <text x="400" y="446" text-anchor="middle" font-size="9" fill="#9AA3FF" font-style="italic">Brand DNA</text>
+  <text x="400" y="775" text-anchor="middle" font-size="9" fill="#5B5BD6" opacity="0.7">Reference: Pearson, C. &amp; Mark, M. (2001). The Hero and the Outlaw. McGraw-Hill.</text>
+  <text x="400" y="788" text-anchor="middle" font-size="8" fill="#7C7C8E">For full visual grammar mapping, see brand-visual/references/archetypes.md</text>
+</svg>

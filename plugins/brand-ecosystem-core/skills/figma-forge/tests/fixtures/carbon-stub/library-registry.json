@@ -1,0 +1,16 @@
+{
+  "ds_name": "IBM Carbon Stub",
+  "ds_version": "11.0.0",
+  "bundle_version": "0.1.0",
+  "ds_url": "https://carbondesignsystem.com/",
+  "accessibility": {
+    "wcag_target": "AA",
+    "apca_enabled": true,
+    "tr_diacritics_audit": ["Ç", "Ğ", "İ", "Ö", "Ş", "Ü"]
+  },
+  "color_families": [
+    {"name": "gray", "expected_steps": 10},
+    {"name": "blue", "expected_steps": 10}
+  ],
+  "icon_size_grid": {"icons/svg/tier/": [24, 48]}
+}

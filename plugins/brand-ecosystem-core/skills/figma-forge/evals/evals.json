@@ -1,0 +1,188 @@
+{
+  "$schema": "https://schemas.figma-forge.dev/evals/v1.0.0.json",
+  "skill": "figma-forge",
+  "version": "0.1.0",
+
+  "test_cases": [
+    {
+      "id": "TC01-carbon-g100",
+      "title": "Carbon v11 g100 dark theme — Foundations + 3 components",
+      "description": "Verify that figma-forge can take a built-in Carbon DS reference, target g100 (dark) theme, and produce DTCG tokens + Figma scaffold plan for Foundations + Button + Tag + Modal.",
+      "mode_chain": ["SCAFFOLD", "TOKENS_IMPORT", "FOUNDATIONS_BUILD", "COMPONENTS_BUILD"],
+      "input": {
+        "user_prompt": "Carbon Design System v11 için g100 dark theme'i hedefleyen bir Figma kütüphanesi kur. IBM Plex Sans tipografisi, Carbon canonical spacing scale, ve şu üç bileşeni dahil et: Button (primary/secondary/danger × sm/md/lg × default/hover/disabled), Tag (gray/blue/red × sm/md), Modal (default + with-footer). Tek mode (g100) yeterli, ek tema gerekmiyor. Hedef: publish-ready Foundations + Components dosyaları.",
+        "ds_source": "carbon",
+        "ds_variant": "g100",
+        "components_required": ["Button", "Tag", "Modal"]
+      },
+      "expected_outputs": {
+        "dtcg_intermediate": {
+          "must_contain": [
+            "color.primitive.gray",
+            "color.primitive.blue",
+            "color.semantic.background",
+            "color.semantic.text-primary",
+            "typography.body-01",
+            "typography.heading-03",
+            "dimension.spacing"
+          ],
+          "primitive_color_count_min": 90,
+          "semantic_color_count_min": 25,
+          "typography_token_count_min": 14
+        },
+        "scaffold_plan": {
+          "files_planned": ["Foundations", "Components"],
+          "channel_strategy": "Channel 2 (REST) if Enterprise else Channel 3 (Plugin)"
+        },
+        "components_plan": {
+          "Button": {
+            "variants_keys": ["variant", "size", "state"],
+            "min_variant_combinations": 45
+          },
+          "Tag": {
+            "variants_keys": ["color", "size"]
+          },
+          "Modal": {
+            "variants_keys": ["hasFooter"]
+          }
+        },
+        "must_not_contain_warnings": [
+          "Unknown type"
+        ]
+      },
+      "grading_rubric": {
+        "criteria": [
+          {"id": "G1", "weight": 25, "description": "DTCG output structurally valid and Carbon-faithful"},
+          {"id": "G2", "weight": 20, "description": "g100 mode correctly identified and propagated"},
+          {"id": "G3", "weight": 20, "description": "Component variant axes match Carbon component spec"},
+          {"id": "G4", "weight": 15, "description": "Channel selection logic correctly explained"},
+          {"id": "G5", "weight": 10, "description": "Run report clear and actionable"},
+          {"id": "G6", "weight": 10, "description": "Library registry properly structured"}
+        ]
+      }
+    },
+
+    {
+      "id": "TC02-dtcg-hemantix",
+      "title": "Custom DTCG input — Hemantix DS",
+      "description": "Verify that figma-forge can accept a custom DTCG JSON for the Hemantix hematology DS, scaffold the library, and emit a Figma plugin bundle ready for Channel 3 import.",
+      "mode_chain": ["SCAFFOLD", "TOKENS_IMPORT", "FOUNDATIONS_BUILD"],
+      "input": {
+        "user_prompt": "Aşağıdaki DTCG token'larını kullanarak Hemantix DS için Figma kütüphanesi forge'la. Light + Dark modlar lazım. Foundations seviyesi + Button + Card + Badge component'leri yeter. User Enterprise plan'da değil; Channel 3 (Plugin) yolunu üret.",
+        "ds_name": "Hemantix",
+        "user_plan": "professional",
+        "dtcg_tokens": {
+          "color": {
+            "primitive": {
+              "red": {
+                "50":  {"$value": "#FFE5E5", "$type": "color"},
+                "500": {"$value": "#C8102E", "$type": "color"},
+                "900": {"$value": "#5C0813", "$type": "color"}
+              },
+              "gray": {
+                "50":  {"$value": "#F8F9FA", "$type": "color"},
+                "500": {"$value": "#6C757D", "$type": "color"},
+                "900": {"$value": "#1A1D20", "$type": "color"}
+              }
+            },
+            "semantic": {
+              "background": {
+                "$type": "color",
+                "$value": {"light": "#FFFFFF", "dark": "{color.primitive.gray.900}"}
+              },
+              "action-primary": {
+                "$type": "color",
+                "$value": {"light": "{color.primitive.red.500}", "dark": "{color.primitive.red.500}"}
+              }
+            }
+          },
+          "font": {
+            "family": {"sans": {"$value": "Inter", "$type": "fontFamily"}}
+          }
+        }
+      },
+      "expected_outputs": {
+        "channel_selection": "Channel 3 (Plugin)",
+        "deliverables": [
+          "figma-forge-plugin/manifest.json",
+          "figma-forge-plugin/code.js",
+          "figma-forge-plugin/ui.html",
+          "tokens.dtcg.json",
+          "library-registry.json",
+          "run-report.md"
+        ],
+        "alias_resolution": {
+          "must_resolve": [
+            "{color.primitive.gray.900}",
+            "{color.primitive.red.500}"
+          ]
+        },
+        "modes_per_collection": {
+          "Semantic — Color": ["Light", "Dark"]
+        }
+      },
+      "grading_rubric": {
+        "criteria": [
+          {"id": "G1", "weight": 25, "description": "DTCG input correctly parsed and validated"},
+          {"id": "G2", "weight": 20, "description": "Channel 3 selected (correct path for non-Enterprise)"},
+          {"id": "G3", "weight": 20, "description": "Plugin bundle complete and importable"},
+          {"id": "G4", "weight": 15, "description": "Aliases resolved with correct topological order"},
+          {"id": "G5", "weight": 10, "description": "Light/Dark modes correctly modeled"},
+          {"id": "G6", "weight": 10, "description": "User walkthrough for plugin import clearly written"}
+        ]
+      }
+    },
+
+    {
+      "id": "TC03-m3-roche-migrate",
+      "title": "Migration — Material 3 baseline → Roche-branded fork (Foundations only)",
+      "description": "Verify the MIGRATE mode: take Material 3 baseline tokens, apply Roche brand overlay (primary teal #0066CC, font Roche Sans), and produce a branded Foundations file. Components not required.",
+      "mode_chain": ["MIGRATE", "TOKENS_IMPORT", "FOUNDATIONS_BUILD"],
+      "input": {
+        "user_prompt": "Material 3 baseline tokens'ı Roche brand overlay ile customize et: primary teal #0066CC olsun, font family 'Roche Sans' olsun, neutral baseline'dan değişmesin. Sadece Foundations seviyesinde Figma kütüphanesi forge'la. Component üretmeye gerek yok. Bir 'migration delta report' da üret — Material 3 baseline'a göre neyi değiştirdiğimizi göstersin.",
+        "reference_ds": "material3",
+        "brand_overlay": {
+          "primary_seed": "#0066CC",
+          "font_family_sans": "Roche Sans",
+          "neutrals": "baseline"
+        },
+        "scope": "foundations_only"
+      },
+      "expected_outputs": {
+        "primary_tonal_palette": {
+          "tone_40_must_equal": "#0066CC",
+          "tone_50_must_be_between": [["#0066CC", "#5599DD"]],
+          "stop_count": 15
+        },
+        "semantic_colors": {
+          "primary": {
+            "light_aliases_tone": 40,
+            "dark_aliases_tone": 80
+          }
+        },
+        "neutral_palette_unchanged": true,
+        "migration_delta_report": {
+          "must_include": [
+            "primary palette regenerated from seed #0066CC",
+            "font.family.sans overridden to 'Roche Sans'",
+            "neutral palette inherited from M3 baseline (unchanged)"
+          ]
+        }
+      },
+      "grading_rubric": {
+        "criteria": [
+          {"id": "G1", "weight": 30, "description": "Tonal palette correctly generated from custom seed"},
+          {"id": "G2", "weight": 20, "description": "Neutral baseline preserved exactly"},
+          {"id": "G3", "weight": 20, "description": "Font family override propagates to type ramp"},
+          {"id": "G4", "weight": 15, "description": "Migration delta report comprehensive and actionable"},
+          {"id": "G5", "weight": 15, "description": "Scope discipline — no components produced when not requested"}
+        ]
+      }
+    }
+  ],
+
+  "viewer_config": {
+    "mode": "inline_chat",
+    "notes": "Running in Claude.ai chat environment — no subagent parallelism, no browser HTML viewer. Results presented inline as Markdown. Each test case run sequentially; grading by self-evaluation against the rubric; user feedback solicited inline."
+  }
+}

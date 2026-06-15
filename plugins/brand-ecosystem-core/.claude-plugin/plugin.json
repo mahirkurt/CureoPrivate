@@ -1,11 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "brand-ecosystem-core",
-  "displayName": "Brand Ecosystem Core",
+  "displayName": "Brand Ecosystem",
   "version": "1.0.0",
   "description": "The strategic, verbal and visual layers of the Brand Ecosystem v1.0 as one module: brand-audit, brand-platform, brand-story, brand-touchpoint and brand-launch, the brand-maker and brand-visual ecosystem companions, plus brand-maker (naming), brand-visual (visual identity) and figma-forge (design-system to Figma). Composes with the brand-voice plugin for the voice layer.",
   "author": {
-    "name": "Brand Ecosystem Studio (Mahir edition)"
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
   },
   "license": "LicenseRef-Internal",
   "homepage": "https://cureonics.com",

@@ -1,9 +1,10 @@
 {
   "name": "rxpraxis",
+  "displayName": "Rx Analyzer",
   "version": "1.1.0",
   "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) ile medical-research, pharmaintel, pharmapatent ve thoughtspot-roche kaynak-tipi skill'lerini tek bir paylaşılan connector sözleşmesi ve kanonik-artefakt önbelleği altında birleştirir. Retail/topluluk-eczanesi kanalı, oral + topikal küçük molekül, tüm terapötik alanlar. Hospital/IV kapsam dışı.",
   "author": {
-    "name": "Mahir",
+    "name": "Cureonics",
     "url": "https://cureonics.com"
   },
   "license": "Internal skill asset, not for external redistribution",

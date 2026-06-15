@@ -1,8 +1,9 @@
 {
   "name": "cureonics-marketplace",
+  "description": "Cureonics Marketplace — Cureonics tarafından geliştirilen Claude Code plugin'lerinin resmî yayın deposu.",
   "owner": {
-    "name": "Mahir Kurt",
-    "url": "https://github.com/mahirkurt"
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
   },
   "metadata": {
     "description": "Cureonics Claude Code plugin marketplace'i — Mahir Kurt tarafından geliştirilen Claude plugin'lerinin yayın deposu. İlk plugin: rxpraxis (Türkiye farmasötik fırsat tarama süiti). Yeni plugin'ler eklendikçe genişler.",
@@ -11,11 +12,12 @@
   "plugins": [
     {
       "name": "rxpraxis",
+      "displayName": "Rx Analyzer",
       "source": "./plugins/rxpraxis",
       "version": "1.1.0",
       "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md) ve kanonik-artefakt önbelleği. v1.1: TİTCK Cache proxy ile kod-düzeyi tek-sefer zorlaması. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı.",
       "author": {
-        "name": "Mahir",
+        "name": "Cureonics",
         "url": "https://cureonics.com"
       },
       "category": "pharma-intelligence",
@@ -36,11 +38,12 @@
     },
     {
       "name": "brand-ecosystem-core",
+      "displayName": "Brand Ecosystem",
       "source": "./plugins/brand-ecosystem-core",
       "version": "1.0.0",
       "description": "Brand Ecosystem v1.0'ın stratejik, sözel ve görsel katmanları tek modül olarak: brand-audit, brand-platform, brand-story, brand-touchpoint, brand-launch + brand-maker/brand-visual ekosistem yoldaşları + brand-maker (isimlendirme), brand-visual (görsel kimlik) ve figma-forge (tasarım sistemi → Figma). On skill + /pipeline komutu kanonik kurulum sırasını uçtan uca işletir. brand-voice plugin'i ile ses katmanı için kompoze olur. Her skill Claude.ai-native (mcp_servers_required: []); Figma/GoDaddy/Exa opsiyonel zenginleştiricidir.",
       "author": {
-        "name": "Brand Ecosystem Studio (Mahir edition)",
+        "name": "Cureonics",
         "url": "https://cureonics.com"
       },
       "category": "brand-design",

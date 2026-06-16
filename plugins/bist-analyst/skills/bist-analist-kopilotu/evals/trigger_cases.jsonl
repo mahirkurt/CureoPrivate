@@ -1,0 +1,22 @@
+{"input": "GARAN'ı analiz et", "expected_mode": 1, "note": "Tek sembol + analiz → derin analiz"}
+{"input": "THYAO için teknik ve temel görünüm nedir?", "expected_mode": 1, "note": "Tek sembol derin analiz"}
+{"input": "ASELS hissesini yorumlar mısın, seviyeler dahil", "expected_mode": 1, "note": "Tek sembol + seviye talebi"}
+{"input": "EREGL'de durum ne, bilanço ve grafik birlikte", "expected_mode": 1, "note": "Teknik+temel tek hisse"}
+{"input": "Bu hafta hangi BIST hisseleri momentum kazanıyor?", "expected_mode": 2, "note": "Haftalık aday evreni"}
+{"input": "Yüksek hacimli ve RSI'si toparlanan hisseleri tara", "expected_mode": 2, "note": "Tarama kriterli aday listesi"}
+{"input": "XU030 içinde aşırı satım bölgesindekiler hangileri?", "expected_mode": 2, "note": "Endeks içi tarama"}
+{"input": "Haftalık izleme listesi için fikir ver", "expected_mode": 2, "note": "Araştırma gündemi üretimi"}
+{"input": "Şu KAP açıklaması ne anlama geliyor: bedelsiz sermaye artırımı kararı", "expected_mode": 3, "note": "Tek KAP olayı yorumu"}
+{"input": "FROTO temettü kararını açıkladı, etkisi ne olur?", "expected_mode": 3, "note": "Temettü açıklaması materyalite"}
+{"input": "Bu şirket büyük bir ihale kazandı, hisseye yansıması?", "expected_mode": 3, "note": "Sözleşme/ihale olayı"}
+{"input": "Sert düşüşün arkasında hangi haber var, yorumla", "expected_mode": 3, "note": "Fiyat/hacim + olay yorumu"}
+{"input": "İzleme listemi gözden geçir: GARAN, AKBNK, THYAO, ASELS", "expected_mode": 4, "note": "Verili listede gözetim"}
+{"input": "Dün verdiğim 6 sembolde ne değişti?", "expected_mode": 4, "note": "Snapshot-arası değişim"}
+{"input": "Watchlist'imdeki teknik duruş değişimlerini özetle", "expected_mode": 4, "note": "Duruş değişimi gözetimi"}
+{"input": "Apple (AAPL) hissesini analiz et", "expected_mode": "out_of_scope", "note": "ABD hissesi — kapsam dışı"}
+{"input": "Bitcoin alır mıyım şimdi?", "expected_mode": "out_of_scope", "note": "Kripto + tavsiye — çift kapsam dışı"}
+{"input": "AKBNK'ı kesin al mı diyorsun, net söyle", "expected_mode": "out_of_scope", "note": "Kişiye özel al/sat talebi — karar-destek diline çevrilir"}
+{"input": "GARAN'da gün içi scalping için 5 dakikalık sinyal ver", "expected_mode": "out_of_scope", "note": "Gün-içi mikro-yapı — EOD kapsamı dışı"}
+{"input": "TEFAS'ta hangi fonu alayım?", "expected_mode": "out_of_scope", "note": "Fon + tavsiye — kapsam dışı"}
+{"input": "BIST hakkında bir şeyler söyle", "expected_mode": "clarify", "note": "Belirsiz — tek hisse mi tarama mı, netleştir"}
+{"input": "Bunlara bak", "expected_mode": "clarify", "note": "Sembol/bağlam yok — netleştir"}

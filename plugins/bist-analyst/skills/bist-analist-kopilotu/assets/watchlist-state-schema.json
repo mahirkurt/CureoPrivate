@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cureonics.com/schemas/bist-analyst/watchlist-state.json",
+  "title": "BIST Uzmanı — İzleme listesi durum anlık görüntüsü",
+  "description": "Mod 4 (izleme listesi gözetimi) için sembol-bazlı durum anlık görüntüsü. watchlist_diff.py iki snapshot'ı karşılaştırırken bu şemayı varsayar. Tüm fiyat/seviye alanları gün sonu (EOD) bazlıdır. Karar-destek amaçlıdır; yatırım tavsiyesi değildir.",
+  "type": "object",
+  "required": ["generated_at", "symbols"],
+  "additionalProperties": false,
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "description": "Anlık görüntünün üretildiği an (ISO 8601 veya GG.AA.YYYY)."
+    },
+    "basis": {
+      "type": "string",
+      "description": "Veri temeli notu.",
+      "default": "EOD/gün sonu, gecikmeli olabilir"
+    },
+    "symbols": {
+      "type": "array",
+      "description": "İzlenen sembollerin durum kayıtları.",
+      "items": { "$ref": "#/$defs/symbolState" }
+    }
+  },
+  "$defs": {
+    "symbolState": {
+      "type": "object",
+      "required": ["symbol"],
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "BIST sembolü (örn. GARAN, THYAO)."
+        },
+        "last_close": {
+          "type": ["number", "null"],
+          "description": "Son gün sonu (EOD) kapanış fiyatı (TL)."
+        },
+        "as_of": {
+          "type": ["string", "null"],
+          "description": "Kapanış tarihi (GG.AA.YYYY)."
+        },
+        "technical_posture": {
+          "type": ["string", "null"],
+          "description": "technical_plus.trend_posture çıktısı.",
+          "enum": ["Güçlü Yukarı", "Zayıf Yukarı", "Nötr", "Zayıf Aşağı", "Güçlü Aşağı", null]
+        },
+        "rsi": {
+          "type": ["number", "null"],
+          "description": "RSI(14) değeri (0-100)."
+        },
+        "macd_hist": {
+          "type": ["number", "null"],
+          "description": "MACD histogram son değeri."
+        },
+        "key_levels": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "İzlenen gün sonu destek/direnç seviyeleri (TL).",
+          "properties": {
+            "support": { "type": "array", "items": { "type": "number" } },
+            "resistance": { "type": "array", "items": { "type": "number" } }
+          }
+        },
+        "open_kap": {
+          "type": "array",
+          "description": "Açık/yeni KAP açıklamaları.",
+          "items": {
+            "type": "object",
+            "required": ["title"],
+            "additionalProperties": false,
+            "properties": {
+              "date": { "type": ["string", "null"] },
+              "title": { "type": "string" },
+              "materiality_tier": {
+                "type": ["string", "null"],
+                "enum": ["Yüksek", "Orta", "Düşük", null]
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "description": "Serbest not (karar-destek bağlamı)."
+        }
+      }
+    }
+  }
+}

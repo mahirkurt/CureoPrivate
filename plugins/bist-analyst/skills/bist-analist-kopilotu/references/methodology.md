@@ -1,0 +1,177 @@
+# BIST Analist Kopilotu — Analitik Metodoloji
+
+Bu belge, `bist-analist-kopilotu` becerisinin temel akıl yürütme yöntemini tanımlar. Beceri, dört çalışma kipinde (tek-hisse derin analiz, haftalık tarama, KAP olay yorumu, izleme listesi gözetimi) **tek bir gerekçelendirilmiş brifing** üretir. Bu metodoloji, brifingin nasıl kurulduğunu, kanıtların nasıl zincirlendiğini ve sonuçların güven düzeyiyle nasıl çerçevelendiğini düzenler.
+
+> **Sınır (değişmez):** Bu beceri **karar-destek** üretir, **yatırım tavsiyesi vermez.** Kişiselleştirilmiş al/sat yönlendirmesi, kişiye özel hedef fiyat veya portföy tahsisi önerisi üretilmez. Her sonuç bir **güven düzeyi** ve bir **karşıt senaryo** ile birlikte sunulur.
+
+---
+
+## 1. Kanıt-zinciri disiplini (evidence-chain discipline)
+
+Brifingteki her vargı, izlenebilir bir kanıt zincirine dayanmalıdır. Hiçbir sayısal iddia, kaynağı ve zamanı belirtilmeden metne girmez.
+
+### 1.1 Zincir kuralı
+
+Her sonuç şu üçlüye geri izlenebilir olmalıdır:
+
+| Bileşen | Açıklama |
+|---|---|
+| **Veri çağrısı** | Değerin alındığı `borsa` veri kaynağı / fonksiyon (ör. teknik tarayıcı, finansal oranlar, sektör karşılaştırması, KAP/haber akışı). |
+| **Değer** | Alınan ham büyüklük; birimiyle birlikte (TL, %, kat, adet). |
+| **Zaman damgası** | Verinin geçerlilik anı (*as-of* tarihi). Fiyat verisi **gün-sonu (EOD)/gecikmeli** olduğundan ilgili işlem gününü taşır. |
+
+Bir iddiayı destekleyecek kanıt yoksa, iddia brifinge **girmez**; bunun yerine "veri mevcut değil / doğrulanamadı" notu düşülür.
+
+### 1.2 Üçüncü-taraf hedefleri
+
+`get_analyst_data` üzerinden gelen üçüncü-taraf analist hedef fiyatları ve tavsiyeleri **"doğrulanmamış bağlam"** statüsündedir. Bunlar:
+
+- Becerinin kendi vargısı olarak sunulamaz,
+- Hedef fiyat türetmek için kullanılamaz,
+- Yalnızca "piyasa beklentisi/konsensüs şu yönde, doğrulanmadı" çerçevesiyle aktarılabilir.
+
+### 1.3 Determinist yardımcılar
+
+Sayısal türetmelerin yeniden-üretilebilir olması için beceri, paketlenmiş Python yardımcılarını çağırır. Bu betikler, ham veriyi deterministik biçimde işler; serbest yorum yapmaz:
+
+| Betik | Görev |
+|---|---|
+| `scripts/technical_helpers.py` | RSI, MACD, hareketli ortalamalar (SMA/EMA), Bollinger bantları, Supertrend, T3, ATR. |
+| `scripts/technical_plus.py` | Çok-zaman-dilimli teyit (confluence), pivot seviyeleri, ileri teknik birleştirme. |
+| `scripts/financial_quality_score.py` | Temel kalite kompoziti (bkz. fundamental-methodology.md). |
+| `scripts/macro_context.py` | Makro rejim sınıflandırması. |
+| `scripts/sentiment_score.py` | KAP/haber duyarlılık skoru. |
+| `scripts/kap_materiality.py` | KAP bildiriminin önemlilik (materiality) derecesi. |
+| `scripts/brief_lint.py` | Nihai brifingin uyumluluk ve biçim denetimi. |
+| `scripts/watchlist_diff.py` | İzleme listesi değişim çıkarımı (4. kip). |
+
+---
+
+## 2. Çok-zaman-dilimli teknik okuma
+
+Teknik görünüm tek bir grafikten değil, **zaman dilimleri hiyerarşisinden** okunur. Mevcut veri **gün-sonu/gecikmeli** olduğundan, gün-içi mikro-yapı (emir defteri, tik-tik akış) **kapsam dışıdır**; ufuk günlük/haftalıktır.
+
+### 2.1 Hiyerarşik okuma sırası
+
+1. **Haftalık (1W) → ana eğilim (trend):** Birincil yön belirlenir. SMA200/SMA50 dizilimi ve Supertrend yönü haftalık çerçevede ana rejimi verir.
+2. **Günlük (1d) → kurulum (setup):** Haftalık eğilim içinde günlük momentum, geri çekilme/kırılım ve oynaklık değerlendirilir.
+3. **Teyit (confluence):** 4h/1h dilimler yalnızca **günlük kurulumu teyit** amacıyla okunur; bağımsız sinyal kaynağı değildir. Diller arası uyum arttıkça güven artar.
+
+> Zaman dilimleri arasında **çelişki** varsa (ör. 1W yukarı, 1d aşağı), bu bir "ayrışma" notu olarak işaretlenir ve teknik duruş **nötr/zayıf** tarafına çekilir; uyum varmış gibi gösterilemez.
+
+### 2.2 Dört teknik boyut
+
+Mevcut tarayıcı göstergeleri (RSI, macd, close, change, volume, market_cap, sma_5/20/50/200, ema_20, bb_upper, bb_lower, supertrend_direction [1/-1], t3) dört boyuta eşlenir:
+
+| Boyut | Göstergeler | Okuma |
+|---|---|---|
+| **Eğilim (trend)** | SMA dizilimi (5>20>50>200 = yukarı diziliş), Supertrend yönü, T3 eğimi | Fiyatın hangi yönde yapısal olduğunu verir. |
+| **Momentum** | RSI, MACD | Hareketin gücü/hızı; aşırı alım-satım. |
+| **Oynaklık (volatilite)** | Bollinger bant genişliği (bb_upper/bb_lower), ATR | Bant daralması = sıkışma; genişleme = hareket. |
+| **Hacim (volume)** | volume, hacim-fiyat uyumu | Hareketin teyidi; düşük hacimli kırılım zayıftır. |
+
+### 2.3 Göstergelerin "teknik duruşa" birleştirilmesi
+
+Göstergeler tek tek değil, **istif (stack)** olarak okunur. `technical_plus.py` çoklu-dilim teyidini hesaplar; nihai etiket beş kademelidir:
+
+| Teknik duruş | Tipik istif örüntüsü |
+|---|---|
+| **Güçlü yukarı** | SMA yukarı dizilişi + Supertrend +1 (1W ve 1d) + RSI sağlıklı (50–70) + MACD pozitif + hacim teyitli |
+| **Zayıf yukarı** | Yukarı diziliş var fakat momentum yavaşlıyor (RSI düşüyor / MACD tepe yapıyor) veya hacim teyitsiz |
+| **Nötr** | Karışık sinyaller; SMA'lar iç içe, Supertrend dilimler arası çelişkili, Bollinger sıkışması |
+| **Zayıf aşağı** | Aşağı eğilim başlangıcı; SMA dizilişi bozuluyor, Supertrend −1'e dönüyor, RSI 50 altına sarkıyor |
+| **Güçlü aşağı** | SMA aşağı dizilişi + Supertrend −1 (1W ve 1d) + MACD negatif + RSI zayıf + satış hacmi teyitli |
+
+İstifteki göstergeler **çelişiyorsa**, duruş otomatik olarak orta kademeye (nötr veya zayıf) çekilir ve güven düzeyi düşürülür.
+
+### 2.4 Ayrışma (divergence) ve yanlış sinyal tespiti — EOD sınırı
+
+Gün-sonu veriyle çalışırken:
+
+- **Ayrışma:** Fiyat yeni zirve/dip yaparken RSI veya MACD teyit etmiyorsa (negatif/pozitif uyumsuzluk) işaretlenir. EOD veride ayrışma yalnızca **kapanış serileri** üzerinden okunabilir; gün-içi salınımlar görülmez, bu açıkça belirtilir.
+- **Yanlış kırılım (false breakout):** Bollinger bandı veya seviye kırılımı **hacim teyidi olmadan** gerçekleşmişse, "teyitsiz kırılım — tek günlük EOD kapanışıyla doğrulanmadı" notu eklenir.
+- **Tek-bar riski:** EOD veride tek bir günün uç kapanışı yanıltıcı olabilir; çok-dilim teyidi olmadan tek bara dayalı vargı kurulmaz.
+
+---
+
+## 3. Katmanların ağırlıklandırılması ve uzlaştırılması
+
+Brifing dört kanıt katmanını **tek bir duruşa** indirger: teknik, temel, KAP-duyarlılık, makro. Bunlar **körlemesine ortalanmaz**; uzlaştırılır.
+
+### 3.1 Katman rolleri
+
+| Katman | Kaynak | Birincil rolü |
+|---|---|---|
+| **Teknik** | Tarayıcı + `technical_helpers/plus` | Zamanlama ve mevcut momentum/yapı. |
+| **Temel** | Finansal oranlar + sektör karşılaştırması + `financial_quality_score` | Değer ve finansal sağlık zemini. |
+| **KAP-duyarlılık** | KAP/haber akışı + `sentiment_score`/`kap_materiality` | Yeni bilgi şokları, önemli olaylar. |
+| **Makro** | `macro_context` + endeks/sektör verisi | Rejim çerçevesi (risk-açık/risk-kapalı, faiz, kur). |
+
+### 3.2 Uzlaştırma kuralları
+
+- Katmanlar **aynı yönü** gösteriyorsa duruş güçlenir ve güven düzeyi yükselir.
+- Katmanlar **çelişiyorsa**, çelişki **görünür kılınır**, ortalama alınmaz. Örnekler:
+  - **Güçlü teknik + zayıf temel:** "Teknik momentum güçlü görünüyor ancak finansal kalite zayıf; bu, spekülatif/dayanaksız bir hareket olabilir" diye **işaretlenir.** İki sinyal aritmetik olarak ortalanıp "orta" denmez.
+  - **Güçlü temel + zayıf teknik:** "Finansal zemin sağlam fakat fiyat yapısı zayıf; zamanlama elverişsiz olabilir" notu düşülür.
+  - **Önemli KAP olayı, teknik/temelle uyumsuz:** KAP olayı taze ve önemliyse (yüksek materiality), diğer katmanları **geçersiz kılabilir** ve duruş yeniden değerlendirilir.
+- **Makro**, çoğunlukla bir **çarpan/çerçeve** katmanıdır: risk-kapalı rejimde tekil hisse teknik gücü bağlamlandırılır, güven düzeyine dikkat çekilir.
+
+### 3.3 Karar dışı çıktı
+
+Uzlaştırma sonucu **yön içeren bir tavsiye değil**, gerekçelendirilmiş bir **gözlem ve senaryo setidir.** "Şu koşullar şu yönde; şu koşullar karşıt yönde" biçiminde sunulur.
+
+---
+
+## 4. Güven düzeyi puanlaması (Yüksek / Orta / Düşük)
+
+Her vargı bir güven düzeyi taşır. Güven, üç eksenin birleşik değerlendirmesidir:
+
+| Eksen | Yüksek güven | Düşük güven |
+|---|---|---|
+| **Veri uyumu (agreement)** | Katmanlar ve zaman dilimleri aynı yönü gösteriyor | Katmanlar/dilimler çelişiyor |
+| **Tazelik (freshness)** | Veri güncel işlem gününe ait | Veri eski; bilanço dönemi geçmiş, fiyat birkaç gün gecikmeli |
+| **Örneklem (sample)** | Yeterli geçmiş gözlem, dolu oran seti, çoklu teyit | Az gözlem, eksik oran, tek kaynak |
+
+Bantlama:
+
+- **Yüksek:** Üç eksende de güçlü; çoklu bağımsız teyit.
+- **Orta:** Bir eksende zayıflık ya da kısmi çelişki.
+- **Düşük:** Birden fazla eksende zayıflık; eksik/eski veri veya katmanlar arası belirgin çelişki.
+
+> Tazelik kuralı: Fiyat verisi EOD/gecikmeli olduğundan, hiçbir vargı "gün-içi/anlık" güven seviyesine yükseltilemez. En yüksek geçerli ufuk günlük/haftalıktır.
+
+---
+
+## 5. Zorunlu senaryo matrisi
+
+Her brifing, üç senaryolu bir matris içerir. Bu, tek-noktalı tahmin yerine **koşullu akıl yürütme** dayatır.
+
+| Senaryo | İçerik | Tetikleyici | Geçersizleşme (invalidation) |
+|---|---|---|---|
+| **Baz** | En olası temel patika | Mevcut katman dengesi sürerse | Hangi gözlem bu patikayı bozar |
+| **Boğa** | Yukarı yönlü koşullu senaryo | Hangi teyit/seviye/olay yukarıyı açar | Yukarı tezi hangi seviye/veri altında geçersizdir |
+| **Ayı** | Aşağı yönlü koşullu senaryo | Hangi kırılım/bozulma aşağıyı açar | Aşağı tezi hangi seviye/veri üstünde geçersizdir |
+
+Kurallar:
+
+- Her senaryonun **somut tetikleyicisi** ve **geçersizleşme seviyesi/koşulu** olmalıdır (ör. "günlük kapanış SMA50 altına sarkarsa", "RSI 70 üstünde teyitli kalırsa"). Seviyeler EOD kapanış bazlıdır.
+- Senaryolar **olasılık dağılımı** olarak nitel sunulur ("baz daha olası, ayı kuyruk riski"); kesin yüzde atfı yapılmaz.
+- Senaryolar **kişiye özel pozisyon önerisi değildir**; "şu olursa tez şuraya kayar" çerçevesindedir.
+
+---
+
+## 6. Belirsizlik ve EOD sınırlarının açık beyanı
+
+Her brifing, sınırlarını açıkça beyan eder:
+
+- **Veri ufku:** Fiyat verisi **gün-sonu/gecikmeli**dir. Gün-içi mikro-yapı, anlık emir defteri ve seans-içi hareketler **kapsam dışıdır.** Geçerli ufuk **günlük/haftalık**tır.
+- **Gecikme etkisi:** En güncel fiyat işlem günü kapanışını yansıtabilir; çok hızlı gelişen olaylarda brifing geride kalabilir.
+- **Veri boşlukları:** Eksik oran, eksik dönem veya alınamayan veri **gizlenmez**; ilgili vargı "veri yetersiz" notuyla düşürülür.
+- **Üçüncü-taraf belirsizliği:** Analist hedefleri/tavsiyeleri doğrulanmamış bağlamdır.
+- **Model değil, gözlem:** Üretilen çıktı bir fiyat tahmini modeli değil, mevcut kanıtın yorumudur.
+
+Nihai brifing, yayımdan önce `scripts/brief_lint.py` ile denetlenir: yatırım tavsiyesi dili, kaynaksız sayı, eksik güven düzeyi veya eksik karşıt senaryo varsa işaretlenir.
+
+---
+
+*Karar-destek hatırlatması: Bu metodoloji gözlem ve senaryo üretir; yatırım tavsiyesi vermez. Her vargı güven düzeyi ve karşıt senaryo ile okunmalıdır.*

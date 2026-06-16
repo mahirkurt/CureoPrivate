@@ -1,0 +1,23 @@
+# Changelog — BIST Uzmanı
+
+Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
+
+## [1.0.0] — 2026-06-15
+
+### Eklendi
+- İlk yayın. `bist-analist-kopilotu` analist becerisi (4 mod) eklenti olarak paketlendi.
+- **Borsa MCP** veri omurgası `.mcp.json` ile remote (HTTP) bağlayıcı olarak
+  pakete dahil edildi (`https://borsamcp.fastmcp.app/mcp`).
+- `start` oryantasyon/yönlendirme becerisi: Scope Guard, Borsa MCP sağlık
+  kontrolü (Adım 0) ve dört moda yönlendirme.
+- Deterministik yardımcı script'ler (duygu skoru, KAP materyalite, finansal
+  kalite skoru, makro rejim, teknik yardımcılar, brief lint, watchlist diff).
+- Referans dokümanları (veri kaynakları, MCP tool şeması, EVDS makro, metodoloji,
+  rapor stili, temel analiz metodolojisi, KAP taksonomisi/reaksiyon, uyum).
+- Eklenti dokümantasyonu (README), uyum/feragat ilkeleri ve composability haritası.
+
+### Notlar
+- Çıktılar karar destek niteliğindedir; yatırım danışmanlığı/tavsiyesi değildir.
+- Fiyat verisi gün sonu (EOD) ağırlıklıdır; gün-içi mikro-yapı kapsam dışıdır.
+- TCMB EVDS makro katmanı sunucu-tarafı anahtarla çalışır; kullanıcı kurulumu
+  gerektirmez.

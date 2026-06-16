@@ -1,0 +1,9 @@
+# bist-analist-kopilotu — yardımcı script bağımlılıkları
+#
+# Tüm script'ler yalnızca Python 3 standart kütüphanesini kullanır
+# (json, re, sys, math, argparse, statistics, datetime, unicodedata).
+# Harici bağımlılık YOKTUR; bu beceri herhangi bir Python 3.8+ ortamında
+# ek kurulum olmadan çalışır.
+#
+# Veri, Borsa MCP bağlayıcısı üzerinden gelir; script'ler ağ çağrısı yapmaz,
+# yalnızca getirilen veriyi deterministik biçimde işler.

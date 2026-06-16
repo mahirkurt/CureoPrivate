@@ -2,6 +2,23 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.2.0] — 2026-06-16
+
+Skill-denetim (FULL_AUDIT) iyileştirme sürümü — rapor: 0 CRITICAL / 0 MAJOR; 6/7 skill EXEMPLARY.
+
+### Eklendi
+- 8 skill'in tümünde frontmatter `version` + `changelog` beyanı (süit sürüm uyumu; denetim D1/D10).
+- Her SKILL.md'ye açık **## Kapsam Dışı** bölümü (denetim D4 gerçek payı).
+
+### Değişti (quant teknik-borç refaktörü — denetim D5)
+- `fund_monitor.change_points` (CC≈25) → delta-dedektör fonksiyonlarına bölündü (CC≈5);
+  `concentration.analyze` (CC≈16) → düzleştirildi + `_concentration_block` (CC≈8). Docstring'ler eklendi.
+- **Davranış değişmedi:** 12/12 quant self-test + rapor_lint yeşil; çıktı şemaları aynı.
+
+### Not
+- §3.2 (denetçi TENTATIVE): CONNECTORS.md + shared/ + evals/ kanonik kökte MEVCUT — kırık görünüm
+  yalnız düzleştirilmiş-mount artefaktıydı, defekt değil.
+
 ## [1.1.0] — 2026-06-16
 
 ### Değişti

@@ -10,6 +10,10 @@ description: >-
   çekilme, volatilite, beta, riske göre düzeltilmiş getiri, Monte Carlo, faktör analizi,
   stil sapması, VaR, portföy optimizasyonu, fon kalite skoru. EN — risk-adjusted returns,
   drawdown, VaR, factor/style, portfolio optimization, fund quality score. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # quant-analiz — Deterministik Risk/Getiri Motoru
@@ -59,3 +63,6 @@ Artefakttan JSON girdi hazırla → `python3 scripts/<betik>.py --file <girdi>.j
 - `references/drawdown-volatility.md`, `references/factor-style.md`, `references/monte-carlo.md`
 - `references/methodology.md` (yıllıklama, reel getiri, edge-case doktrini)
 - `requirements.txt` (zero-dep; numpy yalnız portfolio_opt opsiyonel)
+
+## Kapsam Dışı
+Veri ÇEKMEZ (artefakttan okur); piyasa yönü/fiyat tahmini veya al-sat sinyali üretmez; gün-içi mikro-yapı; vergi-sonrası getiri.

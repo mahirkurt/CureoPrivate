@@ -8,6 +8,10 @@ description: >-
   odaklı. USE for — fon izle, izleme listesi, gözetim, rejim değişimi, stil sapması, geri
   çekilme alarmı, periyodik snapshot, "ne değişti", portföy takibi. EN — fund watchlist,
   monitoring, regime shift, style drift, drawdown alert. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # izleme — İzleme Listesi & Sürekli Gözetim
@@ -48,3 +52,6 @@ parametreleri: `thresholds` (mdd_breach, vol_spike_k, rank_drop).
 ## Referanslar
 - `references/monitoring-doctrine.md` (alarm eşikleri + gramer)
 - `assets/fund-state-schema.json` (durum şeması)
+
+## Kapsam Dışı
+Gerçek-zamanlı uyarı/push bildirimi; tam yeniden-analiz (→ /fon-analiz); gün-içi tetikleme. (Yalnız snapshot-arası delta.)

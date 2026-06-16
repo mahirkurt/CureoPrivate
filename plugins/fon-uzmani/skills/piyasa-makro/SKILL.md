@@ -8,6 +8,10 @@ description: >-
   quant-analiz beta/alfa/aktif-getiri için buradan okur. USE for — benchmark karşılaştırma,
   gösterge endeks, risksiz oran, TCMB rejim, faiz/kur/enflasyon ortamı, rejim değişimi,
   makro bağlam. EN — benchmark, risk-free rate, TCMB macro regime, regime shift. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # piyasa-makro — Benchmark + Risksiz Oran + Makro Rejim
@@ -47,3 +51,6 @@ drivers}, fx:{usdtry_change}}. Provenance: `[Borsa MCP / get_index_data / <as-of
 - `references/benchmark-selection.md` (kategori→benchmark eşlemesi)
 - `references/risk-free-doctrine.md` (TCMB gösterge tahvil / O-N seçimi)
 - `references/macro-regime.md` (rejim sınıflandırma + kategori duyarlılığı)
+
+## Kapsam Dışı
+Bireysel menkul fiyat tahmini; gün-içi veri; makroekonomik forecast (yalnız mevcut rejim etiketi, öngörü değil).

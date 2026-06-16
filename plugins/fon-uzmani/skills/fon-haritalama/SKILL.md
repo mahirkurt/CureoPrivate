@@ -8,6 +8,10 @@ description: >-
   USE for — fon dağılımı, portföy içeriği, TER/gider, fon büyüklüğü değişimi, yönetici kim,
   EMK fon yapısı, fon kategorisi, fon tara, fon kimliği. EN — fund holdings, allocation,
   expense ratio, fund flows, manager, fund registry. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # fon-haritalama — Fon Kimlik & Yapı Katmanı
@@ -63,3 +67,6 @@ Provenance damgaları (provenance-standard §1) her sayıya eklenir.
 - `references/fund-taxonomy.md` (YAT+EMK SPK kategorileri)
 - `references/holdings-mapping.md` (look-through, TER ayrıştırma)
 - `references/data-sources.md` (TEFAS/KAP/Borsa veri-güven merdiveni)
+
+## Kapsam Dışı
+ISIN/strateji/tam tüzel ünvan (KAP gerekir); menkul-bazlı (line-item) holdings — yalnız varlık-sınıfı düzeyi; gerçek-zamanlı/gün-içi NAV.

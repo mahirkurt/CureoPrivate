@@ -106,28 +106,32 @@ def allocation_drift(history):
     return {"by_class": by_class, "turnover_pct": turnover}
 
 
+def _concentration_block(fund_w, total):
+    """Yoğunlaşma bloğu: HHI + etkin-N + top-N + (normalize notu)."""
+    block = {"concentration": {**(hhi(fund_w) or {}), **top_n(fund_w)}, "holdings_count": len(fund_w)}
+    if abs(total - 100.0) > 5 and abs(total - 1.0) > 0.05:
+        block["note"] = f"ağırlık toplamı ~{round(total, 1)} (normalize edildi)"
+    return block
+
+
 def analyze(payload):
+    """holdings/benchmark/other/allocation_history girdisinden yoğunlaşma+overlap+drift raporu."""
     if not isinstance(payload, dict):
         return {"error": "geçersiz girdi", "disclaimer": DISCLAIMER}
-    fund_w, total = _to_weights(payload.get("holdings"))
     out = {"basis": "TEFAS holdings / allocation", "disclaimer": DISCLAIMER}
+    fund_w, total = _to_weights(payload.get("holdings"))
     if fund_w:
-        out["concentration"] = {**(hhi(fund_w) or {}), **top_n(fund_w)}
-        out["holdings_count"] = len(fund_w)
-        if abs(total - 100.0) > 5 and abs(total - 1.0) > 0.05:
-            out["note"] = f"ağırlık toplamı ~{round(total, 1)} (normalize edildi)"
-    if payload.get("benchmark_holdings"):
-        bench_w, _ = _to_weights(payload["benchmark_holdings"])
-        if fund_w and bench_w:
-            out["active_share"] = active_share(fund_w, bench_w)
-    if payload.get("other_fund_holdings"):
-        other_w, _ = _to_weights(payload["other_fund_holdings"])
-        if fund_w and other_w:
-            out["overlap_with_other"] = overlap(fund_w, other_w)
-    if payload.get("allocation_history"):
-        drift = allocation_drift(payload["allocation_history"])
-        if drift:
-            out["allocation_drift"] = drift
+        out.update(_concentration_block(fund_w, total))
+    # _to_weights(None) → ({}, 0.0), bu yüzden ayrı 'if payload.get(...)' guard'ı gereksiz.
+    bench_w = _to_weights(payload.get("benchmark_holdings"))[0]
+    if fund_w and bench_w:
+        out["active_share"] = active_share(fund_w, bench_w)
+    other_w = _to_weights(payload.get("other_fund_holdings"))[0]
+    if fund_w and other_w:
+        out["overlap_with_other"] = overlap(fund_w, other_w)
+    drift = allocation_drift(payload.get("allocation_history") or [])
+    if drift:
+        out["allocation_drift"] = drift
     if "concentration" not in out and "allocation_drift" not in out:
         out["error"] = "holdings veya allocation_history gerekli"
     return out

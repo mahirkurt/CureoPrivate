@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "fon-uzmani",
   "displayName": "Fon Uzmanı",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) ile fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa ve izleme kaynak-tipi skill'lerini tek paylaşılan connector sözleşmesi, kanonik-artefakt önbelleği ve deterministik saf-Python kuant betik kütüphanesi altında birleştirir. İki MCP omurgası: Borsa MCP (getiri/NAV/AUM/tarama/benchmark/makro) + fon-mcp (tam portföy dağılımı/TER/fon akışı/yönetici/EMK). Beş mod: tek-fon analiz · tarama · karşılaştırma · portföy inşası · sürekli izleme. Karar-destek; SPK yatırım danışmanlığı değildir.",
   "author": { "name": "Cureonics", "url": "https://cureonics.com" },
   "license": "Internal skill asset, not for external redistribution",
@@ -55,6 +55,11 @@
     ]
   },
   "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-06-16",
+      "summary": "Skill-denetim iyileştirme sürümü (FULL_AUDIT 0 CRITICAL/0 MAJOR). 8 skill frontmatter'ına version+changelog (D1/D10 + süit sürüm uyumu); her skill'e açık 'Kapsam Dışı' bölümü (D4); quant refaktörü: fund_monitor.change_points CC25→~5 (delta-dedektörleri) + concentration.analyze CC16→~8 + docstring (D5). Davranış/self-test değişmedi (12/12 + lint)."
+    },
     {
       "version": "1.1.0",
       "date": "2026-06-16",

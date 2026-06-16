@@ -13,6 +13,10 @@ description: >-
   portföy kur, fon izle, AFA analiz, emeklilik fonu seç, Sharpe/Sortino/maxDD, risk-getiri,
   fon dağılımı, TER karşılaştırma, "hangi fon". EN — analyze a Turkish mutual/pension fund,
   screen funds, compare funds, build a fund portfolio, monitor a fund watchlist. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # fon-analiz-orkestratoru — TEFAS Fon Analiz Orkestratörü
@@ -156,3 +160,6 @@ itibar sinyali).
 - Plugin-düzeyi: `../../CONNECTORS.md`, `../../shared/*`.
 - Kuant betikleri: `../quant-analiz/scripts/`. Uyum: `../regulasyon-uyum/references/compliance.md`
   + `../regulasyon-uyum/scripts/rapor_lint.py`.
+
+## Kapsam Dışı
+Tekil hisse/tahvil analizi (→ bist-analyst); mevzuat reformu (→ lex-sanitas); bireysel vergi/SGK; gün-içi/scalping (veri EOD); kişiselleştirilmiş kesin al/sat tutarı/emri.

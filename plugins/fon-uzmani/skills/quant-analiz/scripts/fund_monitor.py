@@ -89,39 +89,74 @@ _PRIORITY = {"drawdown_esigi": 4, "stil_sapmasi": 3, "rejim_degisimi": 3,
              "yeni_eklendi": 1}
 
 
+# Tek-tip delta dedektörleri: her biri (oq, nq, old, cur, th) → change|None.
+# Bağımsız ve düşük-karmaşıklıklı; change_points üzerlerinde döner (CC düşük tutulur).
+def _delta_drawdown(oq, nq, old, cur, th):
+    """maxDD eşiği aşıldı mı?"""
+    mdd = fm.to_float(nq.get("max_drawdown"))
+    if mdd is not None and mdd <= th["mdd_breach"]:
+        return {"type": "drawdown_esigi", "detail": f"maxDD {mdd} ≤ eşik {th['mdd_breach']}"}
+    return None
+
+
+def _delta_vol(oq, nq, old, cur, th):
+    """Volatilite, eski değerin vol_spike_k katına sıçradı mı?"""
+    ov, nv = fm.to_float(oq.get("volatility")), fm.to_float(nq.get("volatility"))
+    if ov and nv and nv >= ov * th["vol_spike_k"]:
+        return {"type": "vol_sicramasi", "detail": f"vol {ov}→{nv} (×{round(nv / ov, 2)})"}
+    return None
+
+
+def _delta_style(oq, nq, old, cur, th):
+    """Stil/holdings parmak izi ≥0.10 kaydı mı (stil sapması)?"""
+    osd, nsd = old.get("style_fingerprint"), cur.get("style_fingerprint")
+    if isinstance(osd, dict) and isinstance(nsd, dict):
+        keys = set(osd) | set(nsd)
+        mag = 0.5 * sum(abs((fm.to_float(nsd.get(k, 0)) or 0) - (fm.to_float(osd.get(k, 0)) or 0)) for k in keys)
+        if mag >= 0.10:
+            return {"type": "stil_sapmasi", "detail": f"stil drift {round(mag, 3)}"}
+    return None
+
+
+def _delta_ter(oq, nq, old, cur, th):
+    """TER (gider oranı) arttı mı?"""
+    ort, nrt = fm.to_float(old.get("ter")), fm.to_float(cur.get("ter"))
+    if ort and nrt and nrt > ort:
+        return {"type": "ter_artisi", "detail": f"TER {ort}→{nrt}"}
+    return None
+
+
+def _delta_regime(oq, nq, old, cur, th):
+    """Makro rejim etiketi değişti mi?"""
+    org, nrg = old.get("regime_tag"), cur.get("regime_tag")
+    if org and nrg and org != nrg:
+        return {"type": "rejim_degisimi", "detail": f"{org}→{nrg}"}
+    return None
+
+
+_DELTA_DETECTORS = (_delta_drawdown, _delta_vol, _delta_style, _delta_ter, _delta_regime)
+
+
+def _fund_changes(old, cur, th):
+    """Tek fonun eski→yeni snapshot deltalarını (alarm listesi) döndürür."""
+    if old is None:
+        changes = [{"type": "yeni_eklendi", "detail": "izleme listesine yeni eklendi"}]
+    else:
+        oq = old.get("quant_snapshot", {}) or {}
+        nq = cur.get("quant_snapshot", {}) or {}
+        changes = [ch for det in _DELTA_DETECTORS if (ch := det(oq, nq, old, cur, th))]
+    for k in cur.get("open_kap", []) or []:
+        changes.append({"type": "kap_duyurusu", "detail": k.get("title", "duyuru")})
+    return changes
+
+
 def change_points(prev, curr, thresholds=None):
+    """İki izleme snapshot'ını karşılaştırır; fon-bazlı öncelikli değişim raporu döndürür."""
     th = {"mdd_breach": -0.20, "vol_spike_k": 1.5, "rank_drop": 1, **(thresholds or {})}
     p, c = _index(prev), _index(curr)
     items = []
     for fid, cur in c.items():
-        changes = []
-        old = p.get(fid)
-        q = cur.get("quant_snapshot", {}) or {}
-        if old is None:
-            changes.append({"type": "yeni_eklendi", "detail": "izleme listesine yeni eklendi"})
-        else:
-            oq = old.get("quant_snapshot", {}) or {}
-            mdd = fm.to_float(q.get("max_drawdown"))
-            if mdd is not None and mdd <= th["mdd_breach"]:
-                changes.append({"type": "drawdown_esigi", "detail": f"maxDD {mdd} ≤ eşik {th['mdd_breach']}"})
-            ov, nv = fm.to_float(oq.get("volatility")), fm.to_float(q.get("volatility"))
-            if ov and nv and nv >= ov * th["vol_spike_k"]:
-                changes.append({"type": "vol_sicramasi", "detail": f"vol {ov}→{nv} (×{round(nv/ov,2)})"})
-            osd, nsd = old.get("style_fingerprint"), cur.get("style_fingerprint")
-            if isinstance(osd, dict) and isinstance(nsd, dict):
-                keys = set(osd) | set(nsd)
-                mag = 0.5 * sum(abs((fm.to_float(nsd.get(k, 0)) or 0) - (fm.to_float(osd.get(k, 0)) or 0)) for k in keys)
-                if mag >= 0.10:
-                    changes.append({"type": "stil_sapmasi", "detail": f"stil drift {round(mag,3)}"})
-            ort, nrt = fm.to_float(old.get("ter")), fm.to_float(cur.get("ter"))
-            if ort and nrt and nrt > ort:
-                changes.append({"type": "ter_artisi", "detail": f"TER {ort}→{nrt}"})
-            org, nrg = old.get("regime_tag"), cur.get("regime_tag")
-            if org and nrg and org != nrg:
-                changes.append({"type": "rejim_degisimi", "detail": f"{org}→{nrg}"})
-        # açık KAP duyuruları
-        for k in cur.get("open_kap", []) or []:
-            changes.append({"type": "kap_duyurusu", "detail": k.get("title", "duyuru")})
+        changes = _fund_changes(p.get(fid), cur, th)
         if changes:
             priority = max(_PRIORITY.get(ch["type"], 1) for ch in changes)
             items.append({"fund_id": fid, "priority": priority, "changes": changes})

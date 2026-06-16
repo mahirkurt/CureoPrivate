@@ -8,6 +8,10 @@ description: >-
   health-check for the TEFAS fund-analysis suite; routes to the correct mode/skill.
   Tetikler — Fon Uzmanı başlat, fon analizi nereden başlayayım, "ne yapabilirsin",
   Borsa/fon-mcp bağlı mı, connector kontrolü, kurulum doğrulama.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # start — Fon Uzmanı oryantasyon & yönlendirme
@@ -53,3 +57,6 @@ kategori tarama, çoklu-fon karşılaştırma, portföy inşası (öneri) ve sü
 **Scope dışı:** Tekil hisse/tahvil analizi → `bist-analyst`. Mevzuat reformu → `lex-sanitas`.
 Bireysel vergi/SGK → kapsam dışı. Kişiselleştirilmiş "şu kadar al" → karar-destek diline
 çevir (regulasyon-uyum). Gün-içi/scalping → kapsam dışı (veri EOD).
+
+## Kapsam Dışı
+Analiz YAPMAZ (yalnız oryantasyon + connector sağlık-kontrolü + yönlendirme); connector kurulumu/anahtarı kullanıcı tarafındadır.

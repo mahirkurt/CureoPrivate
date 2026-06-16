@@ -8,6 +8,10 @@ description: >-
   kapı). USE for — SPK uyumu, feragat, yatırım danışmanlığı sınırı, KAP fon duyurusu, içtüzük
   değişikliği, fon dönüşümü, uyum denetimi, rapor lint. EN — SPK compliance, disclaimer, fund
   disclosure, advisory boundary, report lint. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # regulasyon-uyum — SPK Uyum & KAP Duyuru Katmanı
@@ -51,3 +55,6 @@ Kullanım: `python3 scripts/rapor_lint.py --file rapor.md` → `{passed, errors[
 - `references/report-style.md` (house style: bilimsel Türkçe, sayı disiplini, "tavsiye
   diline çevirme" rehberi)
 - `references/kap-fund-disclosures.md` (duyuru taksonomisi + önem derecesi)
+
+## Kapsam Dışı
+Hukuki görüş / SPK lisanslı yatırım danışmanlığı; kişiye özel al/sat; vergi danışmanlığı. (Yalnız uyum-kapısı + feragat.)

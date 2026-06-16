@@ -91,7 +91,7 @@
       "name": "fon-uzmani",
       "displayName": "Fon Uzmanı",
       "source": "./plugins/fon-uzmani",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için çok-skill karar-destek süiti. fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) + fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa, izleme kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md), kanonik-artefakt önbelleği ve 12-modüllük deterministik saf-Python kuant kütüphanesi. Beş mod: tek-fon analiz, tarama, karşılaştırma, portföy inşası, sürekli izleme. İki MCP omurgası: Borsa MCP + fon-mcp (yeni TEFAS/KAP detay sunucusu). Karar destek niteliğindedir; SPK yatırım danışmanlığı/tavsiyesi değildir.",
       "author": {
         "name": "Cureonics",

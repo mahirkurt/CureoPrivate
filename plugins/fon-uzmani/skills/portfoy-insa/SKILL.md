@@ -8,6 +8,10 @@ description: >-
   Her öneri SPK feragati + karşıt-senaryo taşır. USE for — portföy kur, fon tahsisi,
   ağırlıklandırma, çeşitlendirme, risk-parity, optimizasyon, EMK portföyü, emeklilik tahsisi,
   varlık dağılımı. EN — fund portfolio construction, allocation, diversification, optimization. When in doubt USE.
+version: 1.2.0
+last_updated: 2026-06-16
+changelog:
+  - "1.2.0 (2026-06-16): Fon Uzmanı süiti — frontmatter sürüm/changelog beyanı (denetim D1/D10), açık Kapsam Dışı bölümü (D4), quant yüksek-CC fonksiyon refaktörü + docstring (D5). Connector'lar .mcp.json ile paketli (borsa + fon-mcp)."
 ---
 
 # portfoy-insa — Çoklu-Fon Tahsis & Portföy İnşası
@@ -55,3 +59,6 @@ scenarios}. Provenance: `[quant-analiz / portfolio_opt / HRP-v1]`.
 - `references/portfolio-construction.md` (MVO/risk-parity/HRP + EMK özgü kurallar)
 - `references/allocation-doctrine.md` (risk profili→hedef tahsis)
 - `assets/scenario-matrix-template.md`
+
+## Kapsam Dışı
+Kişiselleştirilmiş kesin tutar/emir; vergi optimizasyonu; kaldıraçlı/türev stratejiler; garanti getiri vaadi. (Yalnız % tahsis çerçevesi + senaryo.)

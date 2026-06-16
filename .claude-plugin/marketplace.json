@@ -14,8 +14,8 @@
       "name": "rxpraxis",
       "displayName": "Rx Analyzer",
       "source": "./plugins/rxpraxis",
-      "version": "1.2.0",
-      "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md) ve kanonik-artefakt önbelleği. v1.2: 13 connector .mcp.json ile paketli (tanımlı), L1 tool-manifest pin-load, §9 devre-kesici + extract-then-evict bağlam disiplini. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı.",
+      "version": "1.2.1",
+      "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md) ve kanonik-artefakt önbelleği. v1.2: 7 no-auth çekirdek connector .mcp.json ile paketli, L1 tool-manifest pin-load, §9 devre-kesici + extract-then-evict bağlam disiplini (auth'lu connector'lar kullanıcı bağlantılarından). Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı.",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"
@@ -86,6 +86,34 @@
         "mcp"
       ],
       "strict": true
+    },
+    {
+      "name": "tefas-analist",
+      "displayName": "TEFAS Uzmanı",
+      "source": "./plugins/tefas-analist",
+      "version": "1.0.0",
+      "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için çok-skill karar-destek süiti. fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) + fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa, izleme kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md), kanonik-artefakt önbelleği ve 12-modüllük deterministik saf-Python kuant kütüphanesi. Beş mod: tek-fon analiz, tarama, karşılaştırma, portföy inşası, sürekli izleme. İki MCP omurgası: Borsa MCP + fon-mcp (yeni TEFAS/KAP detay sunucusu). Karar destek niteliğindedir; SPK yatırım danışmanlığı/tavsiyesi değildir.",
+      "author": {
+        "name": "Cureonics",
+        "url": "https://cureonics.com"
+      },
+      "category": "finance",
+      "keywords": [
+        "tefas",
+        "yatirim-fonu",
+        "emeklilik-fonu",
+        "yat",
+        "emk",
+        "fund-analysis",
+        "portfolio-construction",
+        "risk-adjusted-returns",
+        "fund-screener",
+        "watchlist-monitoring",
+        "spk-uyum",
+        "deterministic-orchestration",
+        "smp-v1.0"
+      ],
+      "strict": false
     }
   ]
 }

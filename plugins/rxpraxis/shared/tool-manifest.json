@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cureonics.com/rxpraxis/tool-manifest.json",
+  "title": "rxpraxis Tool Manifest (L1 pin-load sözleşmesi)",
+  "version": "1.0.0",
+  "description": "Komut-başına araç pin-yükleme manifesti. Her rxpraxis komutu, çalışmanın BAŞINDA kendi 'commands.<komut>' bloğundaki tam-nitelikli araçları (L1) tek seferde pin-yükler; boru hattı ORTASINDA tool_search YAPMAZ. Bağlam-eviction olursa yalnız 'eviction_recovery' sorgularıyla yeniden yükler. CONNECTORS.md (connector envanteri) + canonical-cache-contract.md §8/§9 (extract-then-evict) ile normatiftir.",
+
+  "doctrine": {
+    "L1_pin_load": "Komut girişinde commands.<komut>.pin_load listesindeki araçları tek seferde yükle. Adlar tam-niteliklidir: '<Connector display name>:<tool>'.",
+    "no_mid_pipeline_tool_search": "Boru hattı ortasında dinamik tool_search/keşif YAPMA — araç seti baştan sabittir; deterministik yürütme + token disiplini için.",
+    "eviction_recovery": "Uzun koşumda bir araç bağlamdan düşerse (evicted), commands.<komut>.eviction_recovery[<connector>] sorgusuyla SADECE o connector'ın araçlarını yeniden yükle.",
+    "collision_resolution": "Birden çok connector aynı tool adını (ör. search_drugs, get_drug) sunduğunda commands.<komut>.collision_resolution kuralı bağlamı çözer; yanlış connector'ı ASLA çağırma.",
+    "fully_qualified_names": "Çakışmayı önlemek için araçlar daima '<Connector>:<tool>' biçiminde anılır (çıplak 'search_drugs' belirsizdir)."
+  },
+
+  "connector_display_names": {
+    "titck_cache": "TİTCK Cache",
+    "titck_raw": "TİTCK",
+    "adisinsight": "AdisInsight",
+    "turk_patent": "Türk Patent",
+    "mevzuat": "Mevzuat",
+    "midas_rest": "MIDAS",
+    "thoughtspot": "ThoughtSpot Spotter",
+    "pubmed": "PubMed",
+    "clinical_trials": "Clinical Trials",
+    "biorxiv": "bioRxiv",
+    "consensus": "Consensus",
+    "exa": "Exa",
+    "yoktez": "YokTez MCP"
+  },
+
+  "global_collision_resolution": {
+    "search_drugs": {
+      "conflict": ["TİTCK Cache", "AdisInsight"],
+      "rule": "TİTCK-kanonik bağlam (validate / regulatory / scan-Aşama2) → 'TİTCK Cache:search_drugs' (Cache approval-gate'te raw failover 'TİTCK:search_drugs', CONNECTORS.md §9). Pipeline/originatör bağlam (evidence / scan-Aşama1) → 'AdisInsight:search_drugs'. Bağlam-dışı connector'ı ASLA çağırma."
+    },
+    "get_drug": {
+      "conflict": ["TİTCK Cache", "AdisInsight"],
+      "rule": "TR ürün master kaydı → 'TİTCK Cache:get_drug'. ATC/originatör/pipeline çözümü → 'AdisInsight:get_drug'. ATC'yi TAHMİN ETME; önce AdisInsight:get_drug ile gerçek WHO ATC'yi çöz (CONNECTORS.md §0)."
+    }
+  },
+
+  "commands": {
+    "rxpraxis-validate": {
+      "summary": "Tek-aday fast-path: TİTCK kanonik + eşdeğer doygunluk + patent/veri imtiyazı sinyali + fiyat tavanı.",
+      "pin_load": [
+        "TİTCK Cache:search_drugs",
+        "TİTCK Cache:get_drug",
+        "TİTCK Cache:get_drug_snomed_profile",
+        "TİTCK Cache:get_holder_portfolio",
+        "TİTCK Cache:get_atc_class_summary",
+        "TİTCK Cache:find_equivalent_products_by_substance",
+        "TİTCK Cache:find_reference_prices_for_drug",
+        "AdisInsight:get_drug",
+        "AdisInsight:search_drugs",
+        "Türk Patent:search_patents"
+      ],
+      "collision_resolution": {
+        "search_drugs": "TİTCK Cache kanonik; AdisInsight yalnız ATC/originatör çözümü için.",
+        "get_drug": "TR kayıt = TİTCK Cache:get_drug; ATC-çözüm = AdisInsight:get_drug."
+      },
+      "eviction_recovery": {
+        "TİTCK Cache": "search 'TİTCK Cache search_drugs get_drug holder atc equivalent'",
+        "AdisInsight": "search 'AdisInsight get_drug ATC originator'",
+        "Türk Patent": "search 'Türk Patent search_patents'"
+      }
+    },
+
+    "rxpraxis-regulatory": {
+      "summary": "TR regülatuar snapshot: TİTCK kanonik dosya + ATC sınıf + fiyat + eşdeğer grup + üç-otorite durumu.",
+      "pin_load": [
+        "TİTCK Cache:search_drugs",
+        "TİTCK Cache:get_drug",
+        "TİTCK Cache:get_drug_snomed_profile",
+        "TİTCK Cache:get_holder_portfolio",
+        "TİTCK Cache:get_atc_class_summary",
+        "TİTCK Cache:find_first_in_class",
+        "TİTCK Cache:find_equivalent_products_by_substance",
+        "TİTCK Cache:find_reference_prices_for_drug",
+        "AdisInsight:get_drug",
+        "Mevzuat:search_mevzuat"
+      ],
+      "collision_resolution": {
+        "search_drugs": "DAİMA 'TİTCK Cache:search_drugs' (raw failover 'TİTCK:search_drugs'); ASLA AdisInsight'ınki.",
+        "get_drug": "TR kayıt = TİTCK Cache:get_drug; ATC-ÇÖZ (D01AE22≠D01AC vb.) = AdisInsight:get_drug — sonra get_atc_class_summary'yi DOĞRU kodla çağır."
+      },
+      "eviction_recovery": {
+        "TİTCK Cache": "search 'TİTCK Cache search_drugs get_atc_class_summary reference_prices equivalent'",
+        "AdisInsight": "search 'AdisInsight get_drug ATC'",
+        "Mevzuat": "search 'Mevzuat search_mevzuat SMK yönetmelik'"
+      }
+    },
+
+    "rxpraxis-patent": {
+      "summary": "Patent FTO + LOE + Bolar + SPC; Türk Patent MCP + Espacenet/Orange Book fallback.",
+      "pin_load": [
+        "Türk Patent:search_patents",
+        "Türk Patent:get_patent_details",
+        "Türk Patent:search_trademarks",
+        "Türk Patent:search_designs",
+        "TİTCK Cache:find_first_in_class",
+        "TİTCK Cache:get_atc_class_summary"
+      ],
+      "collision_resolution": {
+        "get_drug": "Patent komutunda TİTCK get_drug çağrılmaz; titck_canonical artefaktından OKU (canonical-cache §3)."
+      },
+      "eviction_recovery": {
+        "Türk Patent": "search 'Türk Patent search_patents get_patent_details designs trademarks'",
+        "TİTCK Cache": "search 'TİTCK Cache first_in_class atc_class_summary'"
+      }
+    },
+
+    "rxpraxis-midas": {
+      "summary": "IQVIA MIDAS 36-ülke cross-country pazar boyutu + fiyat koridoru + LOE erozyonu (ham değer Path B).",
+      "pin_load": [
+        "ThoughtSpot Spotter:check_connectivity",
+        "ThoughtSpot Spotter:create_analysis_session",
+        "ThoughtSpot Spotter:send_session_message",
+        "ThoughtSpot Spotter:get_session_updates",
+        "MIDAS:midas_health",
+        "MIDAS:midas_metadata_search",
+        "MIDAS:midas_searchdata"
+      ],
+      "collision_resolution": {
+        "note": "MIDAS REST (ham hücre, Path B) ile ThoughtSpot Spotter (NLG/şema, ham hücre YOK) ayrı rollerdir — CONNECTORS.md §4. Gerçek rakam yalnız MIDAS:midas_searchdata'dan."
+      },
+      "eviction_recovery": {
+        "MIDAS": "search 'MIDAS midas_searchdata midas_metadata_search midas_health'",
+        "ThoughtSpot Spotter": "search 'ThoughtSpot Spotter check_connectivity create_analysis_session send_session_message get_session_updates'"
+      }
+    },
+
+    "rxpraxis-evidence": {
+      "summary": "Saf bilimsel/klinik kanıt sentezi: akademik çekirdek + trial + AdisInsight pipeline + TR epidemiyoloji.",
+      "pin_load": [
+        "PubMed:search_articles",
+        "Clinical Trials:search_trials",
+        "bioRxiv:search_preprints",
+        "Consensus:search",
+        "AdisInsight:search_drugs",
+        "AdisInsight:get_drug",
+        "Exa:web_search_exa",
+        "YokTez MCP:search_yok_tez_detailed"
+      ],
+      "collision_resolution": {
+        "search_drugs": "Evidence bağlamında 'AdisInsight:search_drugs' (pipeline/originatör); TİTCK'inki bu komutta çağrılmaz.",
+        "get_drug": "'AdisInsight:get_drug' (kanıt/pipeline); TR kaydı bu komutun kapsamı dışı."
+      },
+      "eviction_recovery": {
+        "PubMed": "search 'PubMed search_articles'",
+        "Clinical Trials": "search 'Clinical Trials search_trials'",
+        "AdisInsight": "search 'AdisInsight search_drugs get_drug'",
+        "Exa": "search 'Exa web_search_exa'"
+      },
+      "context_warning": "En yüksek bağlam-riskli komut: akademik tam-metin dump'ları büyüktür. Her geri çağırma extract-then-evict (canonical-cache §9); sub-agent izolasyonu (canonical-cache §8) önerilir."
+    },
+
+    "rxpraxis-scan": {
+      "summary": "Tam 7-aşamalı tarama (rxos orkestratörü); aşama-başına alt-skill'ler kendi commands bloğunu pin-yükler.",
+      "pin_load": [
+        "TİTCK Cache:search_drugs",
+        "TİTCK Cache:get_drug",
+        "AdisInsight:get_drug",
+        "Türk Patent:search_patents",
+        "MIDAS:midas_searchdata",
+        "ThoughtSpot Spotter:check_connectivity",
+        "PubMed:search_articles",
+        "Clinical Trials:search_trials"
+      ],
+      "collision_resolution": {
+        "search_drugs": "Aşama 1 (originatör) → AdisInsight; Aşama 2 (TR kanonik) → TİTCK Cache. global_collision_resolution kuralı geçerli.",
+        "note": "rxos her aşamada ilgili alt-komutun (validate/regulatory/patent/midas/evidence) commands bloğunu devreder; çift connector çağrısı CONNECTORS.md §2 + §3 ile engellenir."
+      },
+      "eviction_recovery": {
+        "per_stage": "Her aşamada o aşamanın kanonik sahip skill'inin commands bloğundaki eviction_recovery sorgularını kullan."
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "mcpServers": {
+    "titck-cache": {
+      "type": "http",
+      "url": "https://titck-cache-mcp.cureonics.workers.dev/mcp"
+    },
+    "titck": {
+      "type": "http",
+      "url": "https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+    },
+    "mevzuat": {
+      "type": "http",
+      "url": "https://mevzuat-mcp-864144140896.europe-west1.run.app/mcp"
+    },
+    "turk-patent": {
+      "type": "http",
+      "url": "https://markapatent-mcp.fastmcp.app/mcp"
+    },
+    "yoktez": {
+      "type": "http",
+      "url": "https://yoktezmcp.fastmcp.app/mcp"
+    },
+    "thoughtspot-spotter": {
+      "type": "http",
+      "url": "https://agent.thoughtspot.app/mcp"
+    },
+    "midas": {
+      "type": "http",
+      "url": "https://midas-mcp.cureonics.workers.dev/mcp"
+    },
+    "adisinsight": {
+      "type": "http",
+      "url": "https://adisinsight-mcp.springer.com/mcp"
+    },
+    "pubmed": {
+      "type": "http",
+      "url": "https://pubmed.mcp.claude.com/mcp"
+    },
+    "clinical-trials": {
+      "type": "http",
+      "url": "https://hcls.mcp.claude.com/clinical_trials/mcp"
+    },
+    "biorxiv": {
+      "type": "http",
+      "url": "https://hcls.mcp.claude.com/biorxiv/mcp"
+    },
+    "consensus": {
+      "type": "http",
+      "url": "https://mcp.consensus.app/mcp"
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
+    }
+  }
+}

@@ -1,8 +1,8 @@
 # rxpraxis — Kanonik Artefakt Önbellek Sözleşmesi
 
 **Belge sınıfı:** Normatif orkestrasyon sözleşmesi — plugin-düzeyi
-**Sürüm:** 1.0.0
-**Birlikte normatif:** `../CONNECTORS.md` §3 (tek-sefer TİTCK) + §5 (MIDAS annualizasyon)
+**Sürüm:** 1.1.0 *(v1.1 — §8 sub-agent izolasyonu + §9 extract-then-evict bağlam disiplini)*
+**Birlikte normatif:** `../CONNECTORS.md` §3 (tek-sefer TİTCK) + §5 (MIDAS annualizasyon) + §9 (devre-kesici) · `./scan-ledger-schema.json`
 
 > **Sözleşmenin amacı.** rxos'un §0.B.3 "tek-sefer TİTCK kuralı" tek bir connector için
 > tanımlanmıştı. Bu sözleşme, deseni **üç pahalı kanonik artefakta** genelleştirir ve
@@ -231,3 +231,67 @@ adis_pipeline:
 
 `connector_call_ledger.titck_mcp.single_shot_enforced: true` — tek-sefer kuralının
 denetlenebilir kanıtı. `false` ise G2 kalite kapısı uyarı verir.
+
+---
+
+## 8. Sub-Agent İzolasyonu (bağlam koruma sözleşmesi)
+
+Bazı aşamalar — özellikle **kanıt sentezi** (medical-research / `rxpraxis-evidence`) ve
+**MIDAS ham çıkarım** — büyük ham yük (akademik tam-metin dump'ları, dizi-içinde-dizi MIDAS
+satırları) üretir. Bu yük orkestratörün ana bağlamına taşınırsa boru hattı ortasında bağlam
+eviction'ı ve token taşması olur. Sözleşme:
+
+- **İzole context:** Yüksek-yük aşamalar bir **sub-agent** (izole context) içinde koşar; ham
+  geri çağırmalar orada kalır.
+- **Yalnız distilat döner:** Sub-agent orkestratöre **≤1-sayfa sentez** + **Vancouver atıf
+  listesi** (PMID/DOI/NCT) döndürür — ham tam-metin DEĞİL. MIDAS için: distile `midas_extract`
+  artefaktı (annualized değerler + provenance), ham hücre dizileri değil.
+- **Kanonik artefakt köprüsü:** Sub-agent çıktısı bir kanonik artefakta (`adis_pipeline`,
+  `midas_extract`) yazılır; downstream aşamalar artefaktı okur (§1-§5), sub-agent'ı yeniden
+  çağırmaz.
+
+| Aşama / komut | Sub-agent? | Orkestratöre dönen |
+|---|---|---|
+| `rxpraxis-evidence` / medical-research kanıt | **Evet** (en yüksek bağlam-riski) | ≤1-sayfa sentez + Vancouver atıflar |
+| `rxpraxis-midas` / thoughtspot-roche ham | **Evet** (dizi-içinde-dizi yük) | `midas_extract` (annualized) + provenance |
+| `rxpraxis-validate` / fast-path | Hayır (tek-aday, dar yük) | doğrudan karar kartı |
+
+> **Kural:** Bir aşama ham tam-metni orkestratöre taşırsa bu bir **bağlam-disiplini ihlalidir**;
+> distilat + atıf döndür, ham yükü §9 ile evict et.
+
+---
+
+## 9. Extract-Then-Evict (ham yük yaşam döngüsü)
+
+Her ham connector geri çağırması (TİTCK raw kayıtları, AdisInsight tam kaydı, MIDAS satırları,
+akademik tam-metin) **çıkar → düşür → diske yaz** döngüsünden geçer:
+
+1. **Extract (distile):** Karar için gerekli alanları çıkar (ör. TİTCK: barcode/INN/ATC/holder;
+   MIDAS: annualized_chf/standard_units; akademik: özet + atıf). Kanonik artefakt şemasına yaz
+   (§3/§4/§5).
+2. **Evict (düşür):** Ham yükü **bağlamdan düşür** — tam JSON kayıt, dizi-içinde-dizi satırlar,
+   tam-metin gövdesi context'te **tutulmaz**.
+3. **Persist (diske yaz):** Ham yük denetim/provenance için `<RUN_ID>/raw/` altına yazılır
+   (context'e değil, diske). Distilat artefakt context'te kalır.
+4. **Checkpoint:** `scan-ledger` checkpoint güncellenir (hangi artefakt üretildi, hangi ham
+   evict edildi, hangi devre açık) — kesinti/eviction sonrası **yeniden yükleme** için.
+
+```yaml
+# scan-ledger checkpoint örneği (shared/scan-ledger-schema.json)
+checkpoint:
+  stage: 2
+  produced: ["titck_canonical:ab12cd34ef56"]
+  evicted_raw: ["titck_raw_search_drugs", "titck_raw_get_drug"]
+  persisted_to: "<RUN_ID>/raw/titck/"
+  next: "stage_4_patent"
+```
+
+**MIDAS özel akışı:** `midas_searchdata` FULL satırları **dizi-içinde-dizi** (positional)
+gelir → `skills/thoughtspot-roche/scripts/ts_getanswer_extractor.py` (Top-N) /
+`ts_getanswer_country_extractor.py` (ülke kırılımı) ile çıkar → distile → ham satırları düşür →
+diske yaz. `record_size`'ı sınırla (asla `-1`); `meta` bloğunu (`returned/total/truncated/
+exact/sampling`) oku ve bilinçli sayfala.
+
+> **Neden:** En pahalı bağlam sızıntısı, distilattan sonra ham yükün context'te kalmasıdır.
+> Extract-then-evict, uzun (7-aşamalı) koşumun bağlam bütçesi içinde tamamlanmasını sağlar ve
+> §8 sub-agent izolasyonunu tamamlar.

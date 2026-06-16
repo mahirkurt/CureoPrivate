@@ -1,7 +1,7 @@
 {
   "name": "rxpraxis",
   "displayName": "Rx Analyzer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) ile medical-research, pharmaintel, pharmapatent ve thoughtspot-roche kaynak-tipi skill'lerini tek bir paylaşılan connector sözleşmesi ve kanonik-artefakt önbelleği altında birleştirir. Retail/topluluk-eczanesi kanalı, oral + topikal küçük molekül, tüm terapötik alanlar. Hospital/IV kapsam dışı.",
   "author": {
     "name": "Cureonics",
@@ -27,8 +27,10 @@
   "commands": "./commands",
   "skills": "./skills",
   "mcp": {
-    "note": "rxpraxis canlı MCP sunucusu PAKETLEMEZ. Tüm connector'lar kullanıcının Claude.ai bağlantıları üzerinden tüketilir. Connector envanteri, skill-eşlemesi, fallback zincirleri ve provenance standardı için ./CONNECTORS.md tek doğruluk kaynağıdır.",
-    "connector_contract": "./CONNECTORS.md"
+    "note": "v1.2: rxpraxis connector TANIMLARINI ./.mcp.json içinde paketler (13 remote HTTP MCP); kurulumda Claude Code bunları otomatik kaydeder. Canlı MCP SUNUCUSU paketlemez — yalnız uzak uç tanımları. Auth gerektiren connector'lar (ThoughtSpot/MIDAS/AdisInsight/Consensus/Exa) kullanıcı-tarafı OAuth/anahtar ister. Connector envanteri, skill-eşlemesi, fallback zincirleri (§6), devre-kesici (§9) ve provenance standardı için ./CONNECTORS.md tek doğruluk kaynağıdır.",
+    "bundled_servers": "./.mcp.json",
+    "connector_contract": "./CONNECTORS.md",
+    "tool_manifest": "./shared/tool-manifest.json"
   },
   "smp": {
     "manifest_version": "1.0",

@@ -14,8 +14,8 @@
       "name": "rxpraxis",
       "displayName": "Rx Analyzer",
       "source": "./plugins/rxpraxis",
-      "version": "1.1.0",
-      "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md) ve kanonik-artefakt önbelleği. v1.1: TİTCK Cache proxy ile kod-düzeyi tek-sefer zorlaması. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı.",
+      "version": "1.2.0",
+      "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md) ve kanonik-artefakt önbelleği. v1.2: 13 connector .mcp.json ile paketli (tanımlı), L1 tool-manifest pin-load, §9 devre-kesici + extract-then-evict bağlam disiplini. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı.",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"

@@ -23,9 +23,19 @@ Girdi tek bir adlandırılmış aday değilse (TA taraması, "fırsatları bul" 
 
 ## Yürütme protokolü (rxos fast-path)
 
-1. **Pre-flight (CONNECTORS.md §8):** TİTCK MCP + Türk Patent MCP canlılığını doğrula.
-   ThoughtSpot bu komutta zorunlu değildir (fiyat tavanı TİTCK referans fiyatından türetilir;
-   MIDAS cross-country yalnız opsiyonel zenginleştirme).
+> Bu fast-path, rxos **§3.0 triyaj preludünün** mantığını bir tek aday için karar kartına
+> kadar koşar (TR gap testi → AdisInsight profil → patent sinyali). **AdisInsight-erken**
+> kuralı geçerli: ATC'yi TAHMİN etme, `AdisInsight:get_drug` ile ÇÖZ; AB referans-sepet
+> varlığını da burada işaretle. tool-manifest + bağlam disiplini + scan-ledger aynen uygulanır.
+
+0. **Araç yükleme (tool-manifest.json — L1):** `shared/tool-manifest.json`
+   `commands.rxpraxis-validate` bloğunu pin-yükle (tam-nitelikli adlar; `search_drugs`
+   TİTCK↔AdisInsight çakışması `collision_resolution` ile çözülür). Boru hattı ortasında
+   `tool_search` YAPMA; eviction olursa `eviction_recovery` sorgularıyla yeniden yükle.
+
+1. **Pre-flight (CONNECTORS.md §8 + §9):** TİTCK + Türk Patent canlılığını doğrula; başarısızlar
+   için §9 devre durumunu `scan-ledger.circuit_breakers`'a yaz. ThoughtSpot bu komutta zorunlu
+   değildir (fiyat tavanı TİTCK referans fiyatından türetilir; MIDAS yalnız opsiyonel zenginleştirme).
 
 2. **G0 — mini brief:** Adayı `skills/rxos/assets/brief-schema.json`'ın asgari alanlarına
    oturt (molekül + form + kanal). Kanal hospital/IV ise → reddet (scope guard). Form
@@ -64,6 +74,9 @@ Bu hızlı yol **tam fizibilite kararı değildir**: epidemiyoloji/funnel boyutl
 **çalıştırılmaz**. KOŞULLU/GO çıkan adaylar için tam `/rxpraxis-scan` önerilir. Bu sınır
 çıktıda açıkça belirtilmelidir.
 
-## Fallback
-TİTCK MCP timeout → CONNECTORS.md §6 zinciri, caveat damgası. Türk Patent MCP erişilemezse
-patent engeli "doğrulanamadı" olarak işaretlenir — sessizce "engel yok" varsayma.
+## Fallback (CONNECTORS.md §6 zincirleri + §9 devre-kesici)
+TİTCK Cache "No approval received" / 5xx → ham `TİTCK:*` raw'a **anında failover** (§9; veri
+bayt-aynı, karar etkilenmez). Türk Patent §9 ile 2-başarısızlıkta OPEN → Espacenet/WIPO
+dokümante-public-fact + patent **yön-yalnız** (sayısal LOE tarihi eksik) damgası; net karar
+`CONDITIONAL` caveat taşır. Sessizce "engel yok" **varsayma**. Tüm açık devreler
+`scan-ledger.circuit_breakers`'a ve Katman B İç Denetim Kaydı'na yazılır.

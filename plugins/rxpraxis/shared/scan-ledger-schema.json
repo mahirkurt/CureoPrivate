@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cureonics.com/rxpraxis/scan-ledger-schema.json",
+  "title": "rxpraxis Scan Ledger",
+  "version": "1.0.0",
+  "description": "Koşum-içi canlı defter (checkpoint ledger): devre-kesici durumları (CONNECTORS.md §9), extract-then-evict checkpoint'leri (canonical-cache-contract.md §8/§9) ve triyaj-preludü kanonik artefakt referansları. run_manifest.json'un koşum-İÇİ karşılığıdır — kesinti/eviction sonrası yeniden yükleme ve karar kartının Katman B (İç Denetim Kaydı) kaynağıdır; koşum sonunda özeti run_manifest'e taşınır. Komutların Adım 0 + Pre-flight (§8+§9) + Fallback bölümleri bu deftere yazar.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "circuit_breakers",
+    "checkpoints"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^RxOS-[0-9]{8}-[A-Z]+-[A-Za-z0-9]+-v[0-9]+$",
+      "description": "run_manifest.json ile aynı run_id."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "circuit_breakers": {
+      "type": "array",
+      "description": "Açık/yarı-açık connector devreleri. Her OPEN/HALF_OPEN olayı buraya yazılır (CONNECTORS.md §9).",
+      "items": {
+        "type": "object",
+        "required": ["connector", "state"],
+        "properties": {
+          "connector": {
+            "type": "string",
+            "description": "Display name — ör. 'TİTCK Cache', 'Türk Patent', 'MIDAS', 'ThoughtSpot Spotter', 'PubMed'."
+          },
+          "state": {
+            "enum": ["CLOSED", "HALF_OPEN", "OPEN"]
+          },
+          "opened_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trigger": {
+            "type": "string",
+            "description": "ör. 'no_approval_received', '5xx', 'service_balance', 'capsolver', 'timeout', 'ratelimit', 'cold_start', 'pong_missing'."
+          },
+          "retries": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "HALF_OPEN denemeleri (cold-start için tipik 1)."
+          },
+          "failover": {
+            "type": "string",
+            "description": "Uygulanan §6 zinciri / degrade — ör. 'raw TİTCK (byte-identical)', 'Espacenet+OrangeBook (direction-only)', 'attribute_swap', 'Exa→ScholarGateway'."
+          },
+          "decision_impact": {
+            "type": "string",
+            "description": "Karara etkisi — ör. 'none (transparent failover)', 'patent_section=VIABLE_WITH_CAVEAT', 'N/36 data-redacted', 'CONDITIONAL'."
+          },
+          "caveat": {
+            "type": "string",
+            "description": "Rapora ve Katman B'ye taşınacak caveat metni."
+          }
+        }
+      }
+    },
+
+    "checkpoints": {
+      "type": "array",
+      "description": "Extract-then-evict checkpoint'leri (canonical-cache-contract.md §9). Her aşama sonunda hangi artefaktın üretildiği, hangi ham yükün evict edildiği ve nereye persist edildiği.",
+      "items": {
+        "type": "object",
+        "required": ["stage", "produced"],
+        "properties": {
+          "stage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "produced": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Üretilen kanonik artefakt scope_hash'leri — ör. ['titck_canonical:ab12cd34ef56']."
+          },
+          "evicted_raw": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Bağlamdan düşürülen ham yük etiketleri — ör. ['titck_raw_search_drugs','midas_full_rows']."
+          },
+          "persisted_to": {
+            "type": "string",
+            "description": "Ham yükün diske yazıldığı yol — ör. '<RUN_ID>/raw/titck/'."
+          },
+          "next": {
+            "type": "string",
+            "description": "Sonraki adım anahtarı — yeniden yükleme için."
+          }
+        }
+      }
+    },
+
+    "triage_prelude": {
+      "type": "object",
+      "description": "rxos §3.0 triyaj preludü çıktısı; tek-aday komutları (özellikle rxpraxis-validate / rxpraxis-evidence) bu artefaktları OKUR, yeniden çekmez (AdisInsight-erken / tek-sefer disiplini).",
+      "properties": {
+        "adis_pipeline_ref": {
+          "type": "string",
+          "description": "Triyajda üretilmiş adis_pipeline scope_hash'i (varsa); evidence/validate yeniden çekmez."
+        },
+        "tr_gap": {
+          "type": "string",
+          "description": "TR gap testi sonucu (ör. 'present_saturated', 'absent_opportunity')."
+        },
+        "resolved_atc": {
+          "type": "string",
+          "description": "AdisInsight:get_drug ile çözülmüş gerçek WHO ATC (TAHMİN edilmemiş)."
+        },
+        "eu_reference_basket": {
+          "type": "boolean",
+          "description": "AB referans-sepet varlığı (Reliance sinyali)."
+        }
+      }
+    },
+
+    "tool_manifest_loaded": {
+      "type": "object",
+      "description": "Adım 0 L1 pin-load kanıtı (shared/tool-manifest.json).",
+      "properties": {
+        "command": { "type": "string" },
+        "pinned_count": { "type": "integer" },
+        "mid_pipeline_tool_search": {
+          "type": "boolean",
+          "description": "false OLMALI — true ise tool-manifest disiplini ihlali (G2 WARN)."
+        },
+        "evictions_recovered": { "type": "integer" }
+      }
+    }
+  }
+}

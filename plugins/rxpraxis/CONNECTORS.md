@@ -1,7 +1,7 @@
 # rxpraxis — Paylaşılan Connector Sözleşmesi (CONNECTORS.md)
 
 **Belge sınıfı:** Normatif connector envanteri — plugin-düzeyi tek doğruluk kaynağı
-**Sürüm:** 1.1.0 *(v1.1 — TİTCK Cache proxy kod-düzeyi tek-sefer zorlaması; §1.A + §3 + §6)*
+**Sürüm:** 1.2.0 *(v1.2 — §9 devre-kesici + approval-gate raw failover; L1 tool-manifest pin-load → shared/tool-manifest.json)*
 **Kapsam:** rxpraxis süitinin beş skill'inin (rxos · medical-research · pharmaintel · pharmapatent · thoughtspot-roche) tükettiği TÜM MCP connector'ları ve REST kaynakları.
 
 > **Neden bu dosya var.** Süit öncesi, aynı connector envanteri beş ayrı `SKILL.md`
@@ -204,3 +204,66 @@ canlı olduğunu raporlar. Pre-flight zorunluları:
 - **TİTCK MCP:** `server_info` veya `list_datasets` → 20 modül yanıtı.
 - **Türk Patent MCP:** servis bakiyesi kontrolü.
 - **RegulatoryMCP:** latency-prone; skippable olarak işaretle.
+
+---
+
+## 9. Devre-Kesici Protokolü (Circuit Breaker — kritik dayanıklılık disiplini)
+
+§6 fallback zincirleri *hangi* alternatife düşüleceğini tanımlar; **§9** ise *ne zaman*
+bir connector'ın "açık" (devre dışı) sayılacağını, kaç deneme yapılacağını ve durumun nereye
+yazılacağını tanımlar. Komutların **Adım 0** pin-load'ı ve **Pre-flight (§8 + §9)** adımı bu
+protokolü uygular. Her devre durumu `scan-ledger.circuit_breakers` (bkz. `shared/scan-ledger-schema.json`)
+ve karar kartının **Katman B İç Denetim Kaydı**'na yazılır.
+
+### 9.1 Devre durumları
+
+| Durum | Anlam | Geçiş |
+|---|---|---|
+| **CLOSED** | Connector sağlıklı; çağrılar normal akar. | 2 ardışık başarısızlık → OPEN |
+| **HALF_OPEN** | Soğuk-başlangıç şüphesi; **1 retry** denenir. | retry OK → CLOSED · retry FAIL → OPEN |
+| **OPEN** | Connector devre dışı; çağrı yapılmaz, fallback (§6) veya degrade. | Sonraki çağrı kümesinde tek HALF_OPEN prob ile sınanabilir |
+
+**Eşik:** **2 ardışık başarısızlık → OPEN** (tek geçici hata devreyi açmaz). **Soğuk-başlangıç
+istisnası:** serverless/Worker tabanlı connector'larda (MIDAS, TİTCK Cache, ThoughtSpot) ilk
+çağrıda araç-keşfedilemezlik/`tools-list` boşluğu genelde cold-start'tır → doğrudan OPEN değil,
+**HALF_OPEN + 1 retry** (deploy/soğuk başlangıç toparlanır).
+
+### 9.2 Connector-özel devre davranışı
+
+| Connector | OPEN tetikleyici | Açıkken davranış | Karar etkisi |
+|---|---|---|---|
+| **TİTCK Cache** | `"No approval received"` (per-call approval-gate) **veya** 5xx | **Anında** ham `TİTCK:*` raw'a failover (veri **bayt-aynı**); devre "approval-gated", bug değil. Worker tamamen erişilemezse §6 zinciri. | Karar **etkilenmez** (failover şeffaf); `single_shot_enforced` raw modda caveat-damgalı. |
+| **Türk Patent** | service balance / Capsolver / timeout, 2 başarısızlık | Espacenet → Patentscope WIPO → USPTO → Google Patents + (ABD) Orange/Purple Book **dokümante-public-fact**. Patent **yön-yalnız** (sayısal LOE tarihi YOK). | `feasibility_matrix.patent_section = VIABLE_WITH_CAVEAT`; net karar **CONDITIONAL** caveat taşır. **Sessizce "engel yok/var" VARSAYMA.** |
+| **MIDAS / ThoughtSpot** | `midas_health` ≠ `{"ok":true}` / `check_connectivity` Pong yok | Önce **HALF_OPEN + 1 retry** (cold-start). Kalıcıysa OPEN → Aşama 5b degrade; §6 attribute/country/cube swap. | Rapor `"N/36 data-redacted"` caveat'ı; TR-iç katman ile degrade. |
+| **PubMed / akademik** | ratelimit / timeout, 2 başarısızlık | §6: Exa → Scholar Gateway → bioRxiv → Paper Search cascade. | Kanıt sentezi degrade; caveat damgası. |
+| **openFDA / Regulatory** | latency stall | tekil çağrı + 1 retry → skippable (zaten §8). | Atlanabilir; üç-otorite matrisi eksik-alanlı. |
+
+### 9.3 Approval-gate ↔ raw failover (TİTCK'e özgü)
+
+TİTCK Cache Worker'ı **per-call approval-gate** uygular; `"No approval received"` **beklenen**
+bir durumdur (hata değil). Doğru davranış: ham `TİTCK:search_drugs` / `TİTCK:get_drug` raw'a
+**anında** geç — veri bayt-aynıdır, karar değişmez. Bu, `tool-manifest.json` `collision_resolution`
+ile uyumludur: `search_drugs` kanonik bağlamda TİTCK Cache; approval-gate'te raw TİTCK. Bu
+failover bir caveat olarak (`"TİTCK Cache approval-gate; ham upstream <ISO>"`) raporlanır ama
+**devreyi kalıcı OPEN saymaz**.
+
+### 9.4 Ledger entegrasyonu (zorunlu)
+
+Her devre olayı şuraya yazılır:
+
+```yaml
+scan-ledger.circuit_breakers:
+  - connector: "Türk Patent"
+    state: OPEN
+    opened_at: "<ISO>"
+    trigger: "service_balance"
+    failover: "Espacenet+OrangeBook (direction-only)"
+    decision_impact: "patent_section=VIABLE_WITH_CAVEAT"
+```
+
+ve karar kartının **Katman B (İç Denetim Kaydı)**'na özetlenir. Açık devre içeren hiçbir koşum
+"temiz" işaretlenmez; etkilenen karar bölümü ilgili caveat'ı taşır.
+
+> **Altın kural:** Bir connector OPEN olduğunda **sessiz varsayım yasaktır.** Patent için
+> "engel yok" varsayma; MIDAS için "pazar küçük" varsayma; eksik veriyi açıkça caveat olarak
+> beyan et ve kararı `CONDITIONAL`/`degraded` damgalar.

@@ -1,0 +1,14 @@
+{"input": "AFA fonunu analiz et", "expected_mode": 1, "note": "Tek fon + analiz → derin analiz"}
+{"input": "TI2'nin Sharpe ve maxDD'sine bak", "expected_mode": 1, "note": "Tek fon + risk metrikleri"}
+{"input": "İş Portföy Hisse Fonu'nun risk-getiri profili nedir?", "expected_mode": 1, "note": "Tek fon, ad ile"}
+{"input": "Düşük TER'li hisse senedi fonları", "expected_mode": 2, "note": "Kategori + maliyet kriteri → tarama"}
+{"input": "Bu yıl en iyi para piyasası fonları hangileri?", "expected_mode": 2, "note": "Kategori tarama"}
+{"input": "AFA, TI2 ve IPB'yi karşılaştır", "expected_mode": 3, "note": "3 fon → karşılaştırma"}
+{"input": "Bu iki emeklilik fonundan hangisi daha iyi?", "expected_mode": 3, "note": "Çoklu-fon karşılaştırma"}
+{"input": "Dengeli risk profili için 5 yıllık fon portföyü kur", "expected_mode": 4, "note": "Risk profili + ufuk → portföy inşası"}
+{"input": "AFA, IPB, TTE ile agresif bir portföy oluştur", "expected_mode": 4, "note": "Aday küme + profil → tahsis"}
+{"input": "Portföyümdeki fonlarda ne değişti?", "expected_mode": 5, "note": "Delta/izleme"}
+{"input": "AFA, TI2 fonlarımı izlemeye al ve drawdown alarmı ver", "expected_mode": 5, "note": "Watchlist + alarm"}
+{"input": "Apple hisse fonu alır mıyım?", "expected_mode": "out_of_scope", "note": "ABD fonu / kişisel al-sat → kapsam dışı; karar-destek diline çevir"}
+{"input": "THYAO hissesini analiz et", "expected_mode": "out_of_scope", "note": "Tekil hisse → bist-analyst'e yönlendir"}
+{"input": "Bugün gün-içi fon fiyatı kaç?", "expected_mode": "out_of_scope", "note": "Gün-içi → kapsam dışı (veri EOD)"}

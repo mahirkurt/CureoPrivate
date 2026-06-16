@@ -38,7 +38,7 @@ Bu skill bu artefaktları **bir kez** üretir; diğer skiller önbellekten okur.
 - `get_fund_taxonomy(fund_type, code)` → kategori/alt-kategori.
 - `get_allocation_snapshot(code)` + `get_allocation_history(code, start, end)` → varlık-sınıfı
   dağılımı (anlık + zaman-serili).
-- `get_fund_holdings(code)` → line-item/asset-class ağırlıkları → **`holdings`**.
+- `get_fund_holdings(code)` → **varlık-sınıfı** ağırlıkları → **`holdings`** (line-item yok; KAP PDF).
 - `get_fund_costs(code)` → TER/yönetim ücreti.
 - `get_fund_flows(code, start, end)` → net giriş/çıkış + AUM/yatırımcı trendi.
 

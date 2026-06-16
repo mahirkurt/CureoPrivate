@@ -1,9 +1,10 @@
 # holdings-mapping.md — Holdings & TER Haritalama
 
 ## Holdings kaynakları (öncelik sırası)
-1. `fon-mcp get_fund_holdings(code)` — line-item/asset-class ağırlıkları (birincil).
-2. `fon-mcp get_allocation_snapshot/history` — varlık-sınıfı dağılımı (zaman-serili).
-3. Borsa `get_fund_data(include_portfolio=true)` — asset-class düzeyi (fallback; line-item yok).
+1. `fon-mcp get_fund_holdings(code)` — **varlık-sınıfı** düzeyi ağırlıklar (birincil). Menkul-bazlı
+   (line-item) holdings TEFAS public API'sinde YOK; yalnız KAP aylık portföy raporu PDF'inde.
+2. `fon-mcp get_allocation_snapshot/history` — varlık-sınıfı dağılımı (anlık + zaman-serili).
+3. Borsa `get_fund_data(include_portfolio=true)` — asset-class düzeyi (fallback).
 
 ## Normalizasyon
 - Ağırlıklar %/ondalık otomatik algılanır; toplam ~%100'e normalize edilir, sapma caveat'lanır.

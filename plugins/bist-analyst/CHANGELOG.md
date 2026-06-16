@@ -2,6 +2,19 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.0.1] — 2026-06-16
+
+### Değişti (davranış korunarak — bakım/kalite)
+- **Kod kalitesi (D5):** Yüksek siklomatik-karmaşıklıklı altı fonksiyon odaklı
+  yardımcılara bölündü (`macro_context.classify_regime`, `technical_plus.trend_posture`
+  + `confluence`, `financial_quality_score.quality_score`, `brief_lint.lint`,
+  `watchlist_diff._compare_symbol`). Tüm script'ler için self-test çıktısı bayt-bayt
+  korundu; harici davranış değişikliği yoktur.
+- **Temizlik:** Kullanılmayan `import sys` üç script'ten kaldırıldı.
+- **Dokümantasyon (D4):** `bist-analist-kopilotu` gövdesine açık "Kapsam / Sınır
+  (Scope Guard)" ve "Tetikleyiciler" H2 bölümleri eklendi.
+- **Sürümleme (D10):** Her iki beceri frontmatter'ına `version` + `changelog` eklendi.
+
 ## [1.0.0] — 2026-06-15
 
 ### Eklendi

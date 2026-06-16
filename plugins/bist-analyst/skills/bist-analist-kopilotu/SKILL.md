@@ -1,5 +1,13 @@
 ---
 name: bist-analist-kopilotu
+version: 1.0.1
+changelog: |
+  1.0.1 (2026-06-16) — Bakım/kalite: yüksek-CC betik fonksiyonları davranış
+  korunarak parçalandı, kullanılmayan import'lar temizlendi, gövdeye Scope Guard +
+  Tetikleyiciler H2'leri eklendi.
+  1.0.0 (2026-06-16) — İlk yayın. 4 mod (tek hisse / haftalık tarama / KAP-olay /
+  izleme listesi), 9 referans, 9 deterministik betik, asset + eval seti. Borsa MCP
+  omurgalı; karar-destek sınırı ve kanonik feragat gömülü.
 description: >-
   Borsa İstanbul (BIST) hisseleri için tek, gerekçeli karar-destek brifingi üretir:
   çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro
@@ -24,6 +32,21 @@ zorunlu feragatle kapatır.
 > **Sınır (asla ihlal etme):** Çıktılar **karar destek** niteliğindedir;
 > **yatırım danışmanlığı/tavsiyesi değildir.** Kişiye özel "al/sat/topla"
 > yönlendirmesi yapılmaz. Ayrıntı için `references/compliance.md`.
+
+---
+
+## Kapsam / Sınır (Scope Guard)
+
+- **Kapsam:** Yalnızca **BIST hisseleri** ve gerektiğinde BIST endeksleri / TCMB makro bağlamı.
+- **Kapsam dışı:** ABD hisseleri, kripto varlıklar, TEFAS fonları, gün-içi scalping/emir defteri/derinlik. Bunlar sorulursa kapsam dışı olduğu kibarca bildirilir.
+- **Veri sınırı:** Fiyat verisi gün sonu (EOD) ve gecikmelidir; gün-içi mikro-yapı iddiası üretilmez.
+- **Uyum sınırı:** Karar-destek; yatırım danışmanlığı/tavsiyesi değil. Kişiye özel "al/sat/topla" yönlendirmesi yapılmaz; üçüncü-taraf analist hedefleri yalnız "doğrulanmamış" bağlam olarak anılır. Tam ilke: `references/compliance.md`.
+
+## Tetikleyiciler
+
+- **TR:** "GARAN analiz et", "THYAO yorumla", "ASELS teknik+temel durum"; "bu hafta hangi hisseler", "haftalık tarama"; "şu KAP açıklaması ne anlama geliyor", "bedelsiz/temettü kararını yorumla"; "izleme listemi gözden geçir".
+- **EN:** analyze a BIST stock · weekly BIST scan · interpret a KAP disclosure · review a BIST watchlist.
+- **Yönlendirme detayları ve kapsam-dışı sapmalar:** `evals/triggers.md` (mod yönlendirme tablosu + disambiguasyon + 22 örnek vaka).
 
 ---
 

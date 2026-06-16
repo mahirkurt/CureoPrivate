@@ -240,34 +240,8 @@ def pivot_points(high, low, close, method="classic"):
 _POSTURE_LEVELS = ["Güçlü Aşağı", "Zayıf Aşağı", "Nötr", "Zayıf Yukarı", "Güçlü Yukarı"]
 
 
-def trend_posture(snapshot):
-    """
-    indicator_snapshot çıktısını (+ ops. supertrend/t3) 5 seviyeli teknik duruşa indirger.
-
-    Puan sistemi (her bileşen -2..+2 ölçeğinde katkı verir, şeffaf):
-      - MA dizilimi (close vs sma20/50/200, sma dizilim sırası)
-      - RSI bölgesi
-      - MACD histogram işareti
-      - Supertrend yönü (snapshot'ta varsa)
-      - T3 eğimi/konumu (snapshot'ta varsa)
-      - Bollinger %B konumu
-
-    Dönen: {"posture":.., "score":.., "score_norm":.., "contributions":{...}, "note":..}
-    """
-    ind = snapshot.get("indicators", {}) if isinstance(snapshot, dict) else {}
-    flags = snapshot.get("flags", {}) if isinstance(snapshot, dict) else {}
-
-    contributions = {}
-    score = 0.0
-    max_score = 0.0
-    notes = []
-
-    close = ind.get("close")
-    sma20 = ind.get("sma_20")
-    sma50 = ind.get("sma_50")
-    sma200 = ind.get("sma_200")
-
-    # 1) MA dizilimi (ağırlık 2)
+def _score_ma_stack(close, sma20, sma50, sma200):
+    """MA dizilimi katkısı (ağırlık 2). (pts|None, available) döner."""
     ma_pts = 0.0
     ma_avail = False
     if close is not None and sma20 is not None:
@@ -286,7 +260,108 @@ def trend_posture(snapshot):
         elif sma20 < sma50 < sma200:
             ma_pts -= 0.5
     if ma_avail:
-        ma_pts = max(-2.0, min(2.0, ma_pts))
+        return max(-2.0, min(2.0, ma_pts)), True
+    return None, False
+
+
+def _score_rsi_zone(rsi_v):
+    """RSI bölgesi katkısı (ağırlık 1). pts|None döner."""
+    if rsi_v is None:
+        return None
+    if rsi_v >= 60:
+        return 1.0
+    elif rsi_v > 50:
+        return 0.5
+    elif rsi_v > 40:
+        return -0.5
+    elif rsi_v <= 30:
+        return -1.0  # aşırı satım: zayıflık (kontra okuma yapan ayrı not düşülür)
+    return -0.75
+
+
+def _score_macd_hist(hist):
+    """MACD histogram işaret katkısı (ağırlık 1). pts|None döner."""
+    if hist is None:
+        return None
+    return 1.0 if hist > 0 else (-1.0 if hist < 0 else 0.0)
+
+
+def _score_supertrend(snapshot):
+    """Supertrend yönü katkısı (ağırlık 2). pts|None döner."""
+    st = snapshot.get("supertrend") if isinstance(snapshot, dict) else None
+    st_dir = st.get("direction") if isinstance(st, dict) else None
+    if st_dir in (1, -1):
+        return 2.0 if st_dir == 1 else -2.0
+    return None
+
+
+def _score_t3(snapshot, close):
+    """T3 konumu katkısı (ağırlık 1) — close vs T3. pts|None döner."""
+    t3d = snapshot.get("t3") if isinstance(snapshot, dict) else None
+    if isinstance(t3d, dict):
+        t3_v = t3d.get("last")
+    elif isinstance(t3d, (int, float)):
+        t3_v = t3d
+    else:
+        t3_v = None
+    if t3_v is not None and close is not None:
+        return 1.0 if close > t3_v else (-1.0 if close < t3_v else 0.0)
+    return None
+
+
+def _score_bollinger(pctb):
+    """Bollinger %B konumu katkısı (ağırlık 1). pts|None döner."""
+    if pctb is None:
+        return None
+    if pctb >= 1.0:
+        return 1.0
+    elif pctb > 0.5:
+        return 0.5
+    elif pctb <= 0.0:
+        return -1.0
+    return -0.5
+
+
+def _posture_from_norm(score_norm):
+    """Normalize edilmiş skoru (-1..+1) 5 seviyeli duruş etiketine eşler."""
+    if score_norm >= 0.5:
+        return "Güçlü Yukarı"
+    elif score_norm >= 0.15:
+        return "Zayıf Yukarı"
+    elif score_norm > -0.15:
+        return "Nötr"
+    elif score_norm > -0.5:
+        return "Zayıf Aşağı"
+    return "Güçlü Aşağı"
+
+
+def trend_posture(snapshot):
+    """
+    indicator_snapshot çıktısını (+ ops. supertrend/t3) 5 seviyeli teknik duruşa indirger.
+
+    Puan sistemi (her bileşen -2..+2 ölçeğinde katkı verir, şeffaf):
+      - MA dizilimi (close vs sma20/50/200, sma dizilim sırası)
+      - RSI bölgesi
+      - MACD histogram işareti
+      - Supertrend yönü (snapshot'ta varsa)
+      - T3 eğimi/konumu (snapshot'ta varsa)
+      - Bollinger %B konumu
+
+    Dönen: {"posture":.., "score":.., "score_norm":.., "contributions":{...}, "note":..}
+    """
+    ind = snapshot.get("indicators", {}) if isinstance(snapshot, dict) else {}
+
+    contributions = {}
+    score = 0.0
+    max_score = 0.0
+    notes = []
+
+    close = ind.get("close")
+
+    # 1) MA dizilimi (ağırlık 2)
+    ma_pts, ma_avail = _score_ma_stack(
+        close, ind.get("sma_20"), ind.get("sma_50"), ind.get("sma_200"))
+    if ma_avail:
         contributions["ma_stack"] = round(ma_pts, 2)
         score += ma_pts
         max_score += 2.0
@@ -295,18 +370,8 @@ def trend_posture(snapshot):
         notes.append("MA dizilimi yok")
 
     # 2) RSI bölgesi (ağırlık 1)
-    rsi_v = ind.get("rsi_14")
-    if rsi_v is not None:
-        if rsi_v >= 60:
-            rp = 1.0
-        elif rsi_v > 50:
-            rp = 0.5
-        elif rsi_v > 40:
-            rp = -0.5
-        elif rsi_v <= 30:
-            rp = -1.0  # aşırı satım: zayıflık (kontra okuma yapan ayrı not düşülür)
-        else:
-            rp = -0.75
+    rp = _score_rsi_zone(ind.get("rsi_14"))
+    if rp is not None:
         contributions["rsi"] = round(rp, 2)
         score += rp
         max_score += 1.0
@@ -315,9 +380,8 @@ def trend_posture(snapshot):
         notes.append("RSI yok")
 
     # 3) MACD histogram (ağırlık 1)
-    hist = ind.get("macd_hist")
-    if hist is not None:
-        mp = 1.0 if hist > 0 else (-1.0 if hist < 0 else 0.0)
+    mp = _score_macd_hist(ind.get("macd_hist"))
+    if mp is not None:
         contributions["macd_hist"] = round(mp, 2)
         score += mp
         max_score += 1.0
@@ -326,12 +390,8 @@ def trend_posture(snapshot):
         notes.append("MACD yok")
 
     # 4) Supertrend yönü (ağırlık 2) — snapshot içinde varsa
-    st_dir = None
-    st = snapshot.get("supertrend") if isinstance(snapshot, dict) else None
-    if isinstance(st, dict):
-        st_dir = st.get("direction")
-    if st_dir in (1, -1):
-        sp = 2.0 if st_dir == 1 else -2.0
+    sp = _score_supertrend(snapshot)
+    if sp is not None:
         contributions["supertrend"] = round(sp, 2)
         score += sp
         max_score += 2.0
@@ -339,14 +399,8 @@ def trend_posture(snapshot):
         contributions["supertrend"] = None
 
     # 5) T3 konumu (ağırlık 1) — close vs T3
-    t3_v = None
-    t3d = snapshot.get("t3") if isinstance(snapshot, dict) else None
-    if isinstance(t3d, dict):
-        t3_v = t3d.get("last")
-    elif isinstance(t3d, (int, float)):
-        t3_v = t3d
-    if t3_v is not None and close is not None:
-        tp = 1.0 if close > t3_v else (-1.0 if close < t3_v else 0.0)
+    tp = _score_t3(snapshot, close)
+    if tp is not None:
         contributions["t3"] = round(tp, 2)
         score += tp
         max_score += 1.0
@@ -354,16 +408,8 @@ def trend_posture(snapshot):
         contributions["t3"] = None
 
     # 6) Bollinger %B (ağırlık 1)
-    pctb = ind.get("bb_pctb")
-    if pctb is not None:
-        if pctb >= 1.0:
-            bp = 1.0
-        elif pctb > 0.5:
-            bp = 0.5
-        elif pctb <= 0.0:
-            bp = -1.0
-        else:
-            bp = -0.5
+    bp = _score_bollinger(ind.get("bb_pctb"))
+    if bp is not None:
         contributions["bollinger_pctb"] = round(bp, 2)
         score += bp
         max_score += 1.0
@@ -378,16 +424,7 @@ def trend_posture(snapshot):
         notes.append("hesaplanabilir gösterge yok → varsayılan Nötr")
     else:
         score_norm = score / max_score  # -1..+1
-        if score_norm >= 0.5:
-            posture = "Güçlü Yukarı"
-        elif score_norm >= 0.15:
-            posture = "Zayıf Yukarı"
-        elif score_norm > -0.15:
-            posture = "Nötr"
-        elif score_norm > -0.5:
-            posture = "Zayıf Aşağı"
-        else:
-            posture = "Güçlü Aşağı"
+        posture = _posture_from_norm(score_norm)
 
     return {
         "posture": posture,
@@ -493,6 +530,107 @@ def _tf_weight(tf):
     return 1.0  # bilinmeyen dilim → nötr ağırlık
 
 
+def _frame_posture(val):
+    """
+    Tek bir frame değerinden duruş etiketini normalize eder.
+
+    val ya doğrudan duruş etiketi (str), ya trend_posture çıktısı, ya
+    {"posture": "..."} ya da {"posture": {...}} (dict-şekilli posture), ya da
+    ham indicator_snapshot olabilir. Geçerli duruş etiketi veya None döner.
+    """
+    posture = None
+    if isinstance(val, str):
+        posture = val  # doğrudan duruş etiketi
+    elif isinstance(val, dict):
+        pv = val.get("posture")
+        if isinstance(pv, dict):
+            # posture alanı tam trend_posture çıktısını taşıyor olabilir
+            pv = pv.get("posture")
+        if isinstance(pv, str) and pv in _POSTURE_SCORE:
+            posture = pv
+        elif "indicators" in val or "close" in val:  # ham snapshot
+            posture = trend_posture(val).get("posture")
+    if posture is None or posture not in _POSTURE_SCORE:
+        return None
+    return posture
+
+
+def _accumulate_frames(frames):
+    """
+    Frame'leri duruşa çevirir ve ağırlıklı toplamları biriktirir.
+
+    Dönen: (by_tf, notes, weights) — weights bir dict:
+      {total, weighted_sum, bull, bear, neutral}
+    """
+    by_tf = {}
+    notes = []
+    w_total = 0.0
+    weighted_sum = 0.0
+    bull_w = 0.0
+    bear_w = 0.0
+    neutral_w = 0.0
+
+    for tf, val in frames.items():
+        posture = _frame_posture(val)
+        if posture is None:
+            notes.append(f"{tf}: duruş çıkarılamadı")
+            by_tf[tf] = None
+            continue
+
+        by_tf[tf] = posture
+        w = _tf_weight(tf)
+        ps = _POSTURE_SCORE[posture]
+        w_total += w
+        weighted_sum += w * ps
+        if ps > 0:
+            bull_w += w
+        elif ps < 0:
+            bear_w += w
+        else:
+            neutral_w += w
+
+    weights = {"total": w_total, "weighted_sum": weighted_sum,
+               "bull": bull_w, "bear": bear_w, "neutral": neutral_w}
+    return by_tf, notes, weights
+
+
+def _agreement_level(bull_w, bear_w, dominant_w, total_w):
+    """Baskın yöndeki ağırlık oranından uyum seviyesi etiketi üretir."""
+    directional = bull_w + bear_w
+    if directional == 0:
+        return "nötr"
+    if bull_w > 0 and bear_w > 0:
+        # her iki yönde de ağırlık var
+        return "baskın" if dominant_w / total_w >= 0.8 else "çatışma"
+    # tek yönlü (sadece boğa veya sadece ayı + nötrler)
+    return "tam uyum" if (dominant_w / total_w) >= 0.99 else "baskın"
+
+
+def _confluence_summary(anchor, anchor_posture, weighted_score, agreement,
+                        alignment_pct):
+    """Confluence için kısa Türkçe özet metnini birleştirir."""
+    if weighted_score >= 0.5:
+        direction_tr = "yukarı yönlü"
+    elif weighted_score > -0.5:
+        direction_tr = "yatay/kararsız"
+    else:
+        direction_tr = "aşağı yönlü"
+
+    parts = []
+    parts.append(f"Çapa ({anchor}) duruşu: {anchor_posture or 'belirsiz'}.")
+    parts.append(f"Ağırlıklı genel görünüm {direction_tr} "
+                 f"(skor {round(weighted_score, 2)}/2).")
+    if agreement == "tam uyum":
+        parts.append("Tüm zaman dilimleri aynı yönde — yüksek güven.")
+    elif agreement == "baskın":
+        parts.append(f"Zaman dilimleri büyük ölçüde uyumlu (%{alignment_pct}).")
+    elif agreement == "çatışma":
+        parts.append("Zaman dilimleri çatışıyor — sinyal zayıf, temkinli ol.")
+    else:
+        parts.append("Belirgin yön yok; nötr.")
+    return " ".join(parts)
+
+
 def confluence(frames):
     """
     Çoklu-zaman-dilimi confluence.
@@ -518,43 +656,8 @@ def confluence(frames):
                 "by_timeframe": {}, "summary": "Zaman dilimi verisi yok.",
                 "note": "empty frames"}
 
-    by_tf = {}
-    notes = []
-    total_w = 0.0
-    weighted_sum = 0.0
-    bull_w = 0.0
-    bear_w = 0.0
-    neutral_w = 0.0
-
-    for tf, val in frames.items():
-        posture = None
-        if isinstance(val, str):
-            posture = val  # doğrudan duruş etiketi
-        elif isinstance(val, dict):
-            pv = val.get("posture")
-            if isinstance(pv, dict):
-                # posture alanı tam trend_posture çıktısını taşıyor olabilir
-                pv = pv.get("posture")
-            if isinstance(pv, str) and pv in _POSTURE_SCORE:
-                posture = pv
-            elif "indicators" in val or "close" in val:  # ham snapshot
-                posture = trend_posture(val).get("posture")
-        if posture is None or posture not in _POSTURE_SCORE:
-            notes.append(f"{tf}: duruş çıkarılamadı")
-            by_tf[tf] = None
-            continue
-
-        by_tf[tf] = posture
-        w = _tf_weight(tf)
-        ps = _POSTURE_SCORE[posture]
-        total_w += w
-        weighted_sum += w * ps
-        if ps > 0:
-            bull_w += w
-        elif ps < 0:
-            bear_w += w
-        else:
-            neutral_w += w
+    by_tf, notes, weights = _accumulate_frames(frames)
+    total_w = weights["total"]
 
     if total_w == 0:
         return {"anchor": None, "weighted_score": None, "agreement": None,
@@ -562,52 +665,20 @@ def confluence(frames):
                 "summary": "Hiçbir zaman diliminde duruş hesaplanamadı.",
                 "note": "; ".join(notes) if notes else None}
 
-    weighted_score = weighted_sum / total_w  # -2..+2
+    bull_w = weights["bull"]
+    bear_w = weights["bear"]
+    neutral_w = weights["neutral"]
+    weighted_score = weights["weighted_sum"] / total_w  # -2..+2
     anchor = max(frames.keys(), key=_tf_weight)
     anchor_posture = by_tf.get(anchor)
 
     # Uyum seviyesi: baskın yöndeki ağırlık oranı
-    directional = bull_w + bear_w
     dominant_w = max(bull_w, bear_w)
     alignment_pct = round((dominant_w / total_w) * 100, 1)
+    agreement = _agreement_level(bull_w, bear_w, dominant_w, total_w)
 
-    if directional == 0:
-        agreement = "nötr"
-    elif bull_w > 0 and bear_w > 0:
-        # her iki yönde de ağırlık var
-        if dominant_w / total_w >= 0.8:
-            agreement = "baskın"
-        else:
-            agreement = "çatışma"
-    else:
-        # tek yönlü (sadece boğa veya sadece ayı + nötrler)
-        if (dominant_w / total_w) >= 0.99:
-            agreement = "tam uyum"
-        else:
-            agreement = "baskın"
-
-    # Yön etiketi
-    if weighted_score >= 0.5:
-        direction_tr = "yukarı yönlü"
-    elif weighted_score > -0.5:
-        direction_tr = "yatay/kararsız"
-    else:
-        direction_tr = "aşağı yönlü"
-
-    # Kısa Türkçe özet
-    parts = []
-    parts.append(f"Çapa ({anchor}) duruşu: {anchor_posture or 'belirsiz'}.")
-    parts.append(f"Ağırlıklı genel görünüm {direction_tr} "
-                 f"(skor {round(weighted_score, 2)}/2).")
-    if agreement == "tam uyum":
-        parts.append("Tüm zaman dilimleri aynı yönde — yüksek güven.")
-    elif agreement == "baskın":
-        parts.append(f"Zaman dilimleri büyük ölçüde uyumlu (%{alignment_pct}).")
-    elif agreement == "çatışma":
-        parts.append("Zaman dilimleri çatışıyor — sinyal zayıf, temkinli ol.")
-    else:
-        parts.append("Belirgin yön yok; nötr.")
-    summary = " ".join(parts)
+    summary = _confluence_summary(
+        anchor, anchor_posture, weighted_score, agreement, alignment_pct)
 
     return {
         "anchor": anchor,

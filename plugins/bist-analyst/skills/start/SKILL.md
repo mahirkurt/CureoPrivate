@@ -1,5 +1,9 @@
 ---
 name: start
+version: 1.0.0
+changelog: |
+  1.0.0 (2026-06-16) — İlk yayın. Oryantasyon + Borsa bağlayıcı sağlık kontrolü
+  (Adım 0) + dört moda yönlendirme.
 description: >-
   BIST Analyst eklentisine giriş, bağlayıcı (Borsa MCP) sağlık kontrolü ve doğru
   moda yönlendirme. İlk kez eklentiyle çalışırken, "BIST Analyst nedir / nereden

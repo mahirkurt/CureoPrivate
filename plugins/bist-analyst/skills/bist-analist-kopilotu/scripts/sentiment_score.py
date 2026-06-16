@@ -18,7 +18,6 @@ CLI:
 import argparse
 import json
 import re
-import sys
 
 # --- Türkçe finans sözlüğü -------------------------------------------------
 # Her terim normalize edilmiş (diyakritiksiz, küçük harf) biçimde tutulur.

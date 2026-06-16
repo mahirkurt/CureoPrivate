@@ -139,42 +139,35 @@ def _fx_pace(usdtry, usdtry_prev=None, usdtry_history=None):
     return pct, cur
 
 
-def classify_regime(
-    policy_rate=None, policy_rate_prev=None, policy_rate_history=None,
-    cpi_yoy=None, cpi_prev=None, cpi_history=None,
-    usdtry=None, usdtry_prev=None, usdtry_history=None,
-    bond_yield_10y=None, bond_yield_2y=None,
-    reer=None, reer_prev=None,
-    **extra,
-):
-    """Makro sinyallerden BIST rejimini sınıflandır.
+def _resolve_level(value, history):
+    """Güncel seviyeyi doğrudan değerden VEYA history son-elemanından çöz."""
+    level = _to_float(value)
+    if level is None:
+        hist = _as_history(history)
+        level = hist[-1] if hist else None
+    return level
 
-    Tüm girdiler opsiyoneldir; mevcut olanlardan hesaplanır, eksikler listelenir
-    ve güven düşürülür. Trend yardımcıları prev değeri VEYA history listesi kabul
-    eder.
 
-    Returns:
-        {regime, real_rate, signals_resolved, equity_implications,
-         confidence, missing_signals, note}
-        Çıktı karar-destek; yatırım tavsiyesi değildir.
-    """
-    missing = []
-
-    pr = _to_float(policy_rate)
-    if pr is None:
-        ph = _as_history(policy_rate_history)
-        pr = ph[-1] if ph else None
-    cpi = _to_float(cpi_yoy)
-    if cpi is None:
-        ch = _as_history(cpi_history)
-        cpi = ch[-1] if ch else None
-
-    # Reel faiz = politika faizi − cari/beklenen TÜFE yıllık
-    real_rate = None
+def _compute_real_rate(pr, cpi, missing):
+    """Reel faiz = politika faizi − cari/beklenen TÜFE yıllık."""
     if pr is not None and cpi is not None:
-        real_rate = round(pr - cpi, 2)
-    else:
-        missing.append("real_rate (politika faizi veya TÜFE eksik)")
+        return round(pr - cpi, 2)
+    missing.append("real_rate (politika faizi veya TÜFE eksik)")
+    return None
+
+
+def _resolve_signals(
+    policy_rate, policy_rate_prev, policy_rate_history,
+    cpi_yoy, cpi_prev, cpi_history,
+    usdtry, usdtry_prev, usdtry_history,
+    bond_yield_10y, bond_yield_2y, reer,
+    missing,
+):
+    """Ham girdileri çözülmüş sinyal sözlüğüne indirger; eksikleri kaydeder."""
+    pr = _resolve_level(policy_rate, policy_rate_history)
+    cpi = _resolve_level(cpi_yoy, cpi_history)
+
+    real_rate = _compute_real_rate(pr, cpi, missing)
 
     # Trendler
     rate_delta, _ = _trend(policy_rate, policy_rate_prev, policy_rate_history)
@@ -208,8 +201,11 @@ def classify_regime(
         "bond_yield_2y": _to_float(bond_yield_2y),
         "reer": _to_float(reer),
     }
+    return signals, real_rate, rate_trend, cpi_trend, fx_pct
 
-    # ---- Stres bayrağı ----
+
+def _detect_stress(fx_pct, real_rate):
+    """Stres bayrağı + gerekçeleri (keskin TL kaybı / derin negatif reel faiz)."""
     stress = False
     stress_reasons = []
     if fx_pct is not None and fx_pct >= _FX_STRESS_PACE:
@@ -218,9 +214,11 @@ def classify_regime(
     if real_rate is not None and real_rate <= _REAL_RATE_DEEP_NEG:
         stress = True
         stress_reasons.append(f"derin negatif reel faiz ({real_rate}pp)")
+    return stress, stress_reasons
 
-    # ---- Rejim kararı ----
-    # Sinyalleri yönlü oy olarak topla: +1 sıkılaştırıcı, -1 gevşetici.
+
+def _tally_votes(rate_trend, real_rate, cpi_trend):
+    """Sinyalleri yönlü oya çevir: +1 sıkılaştırıcı, -1 gevşetici."""
     tighten = 0
     loosen = 0
     resolved = 0
@@ -246,46 +244,38 @@ def classify_regime(
     elif cpi_trend == "flat":
         resolved += 1
 
-    fx_sharp = fx_pct is not None and fx_pct >= _FX_SHARP_PACE
+    return tighten, loosen, resolved
 
-    # Karar mantığı (evds-macro §2 ile hizalı)
+
+def _decide_regime(tighten, loosen, resolved, stress, stress_reasons,
+                   fx_pct, fx_sharp, rate_trend, cpi_trend):
+    """Oy/stres/kur durumundan rejim etiketi + gerekçesi (evds-macro §2 ile hizalı)."""
     if resolved == 0:
-        regime = "Belirsizlik/Stres"
-        regime_reason = "Hiçbir yönlü sinyal çözülemedi (veri yetersiz)."
-    elif stress:
-        regime = "Belirsizlik/Stres"
-        regime_reason = "Stres bayrağı: " + "; ".join(stress_reasons) + "."
-    elif fx_sharp and tighten <= loosen:
+        return "Belirsizlik/Stres", "Hiçbir yönlü sinyal çözülemedi (veri yetersiz)."
+    if stress:
+        return "Belirsizlik/Stres", "Stres bayrağı: " + "; ".join(stress_reasons) + "."
+    if fx_sharp and tighten <= loosen:
         # Kur hızlanırken net sıkılaştırma yoksa → belirsizlik/stres eğilimi
-        regime = "Belirsizlik/Stres"
-        regime_reason = (
+        return "Belirsizlik/Stres", (
             f"Kur hızlanıyor (%{round(fx_pct,1)}) ancak net sıkılaştırma yok; "
             "sinyaller çelişkili."
         )
-    elif tighten - loosen >= 2:
-        regime = "Sıkılaştırma"
-        regime_reason = "Sıkılaştırıcı sinyaller baskın (faiz↑ / reel faiz+ / TÜFE zirve-düşüş)."
-    elif loosen - tighten >= 2:
-        regime = "Gevşeme"
-        regime_reason = "Gevşetici sinyaller baskın (faiz↓ / reel faiz− / dezenflasyon)."
-    elif tighten > loosen:
-        regime = "Sıkılaştırma"
-        regime_reason = "Hafif sıkılaştırıcı eğilim (zayıf çoğunluk)."
-    elif loosen > tighten:
-        regime = "Gevşeme"
-        regime_reason = "Hafif gevşetici eğilim (zayıf çoğunluk)."
-    else:
-        # Eşit oy: sinyaller çelişkili mi yoksa gerçekten yatay mı?
-        if rate_trend == "flat" and cpi_trend in ("flat", None) and not fx_sharp:
-            regime = "Nötr/Yatay"
-            regime_reason = "Sinyaller dengeli ve durağan; belirgin yön yok."
-        else:
-            regime = "Belirsizlik/Stres"
-            regime_reason = "Sinyaller çelişkili; tek yön ilan edilemiyor."
+    if tighten - loosen >= 2:
+        return "Sıkılaştırma", "Sıkılaştırıcı sinyaller baskın (faiz↑ / reel faiz+ / TÜFE zirve-düşüş)."
+    if loosen - tighten >= 2:
+        return "Gevşeme", "Gevşetici sinyaller baskın (faiz↓ / reel faiz− / dezenflasyon)."
+    if tighten > loosen:
+        return "Sıkılaştırma", "Hafif sıkılaştırıcı eğilim (zayıf çoğunluk)."
+    if loosen > tighten:
+        return "Gevşeme", "Hafif gevşetici eğilim (zayıf çoğunluk)."
+    # Eşit oy: sinyaller çelişkili mi yoksa gerçekten yatay mı?
+    if rate_trend == "flat" and cpi_trend in ("flat", None) and not fx_sharp:
+        return "Nötr/Yatay", "Sinyaller dengeli ve durağan; belirgin yön yok."
+    return "Belirsizlik/Stres", "Sinyaller çelişkili; tek yön ilan edilemiyor."
 
-    implications = _equity_implications(regime, signals, stress)
 
-    # Güven: çözülen sinyal sayısı + reel faiz varlığı
+def _grade_confidence(resolved, real_rate, stress):
+    """Güven: çözülen sinyal sayısı + reel faiz varlığı."""
     if resolved >= 3 and real_rate is not None:
         confidence = "yüksek"
     elif resolved >= 2:
@@ -294,13 +284,65 @@ def classify_regime(
         confidence = "düşük"
     if stress and resolved < 2:
         confidence = "düşük"
+    return confidence
 
+
+def _build_note(missing):
+    """Karar-destek notu + eksik sinyal eki."""
     note = (
         "Karar-destek; yatırım tavsiyesi değildir. Sektör eğilimleri genel "
         "bağlamdır, otomatik hisse seçimi değildir. "
     )
     if missing:
         note += "Eksik sinyaller güveni düşürdü: " + ", ".join(missing) + "."
+    return note
+
+
+def classify_regime(
+    policy_rate=None, policy_rate_prev=None, policy_rate_history=None,
+    cpi_yoy=None, cpi_prev=None, cpi_history=None,
+    usdtry=None, usdtry_prev=None, usdtry_history=None,
+    bond_yield_10y=None, bond_yield_2y=None,
+    reer=None, reer_prev=None,
+    **extra,
+):
+    """Makro sinyallerden BIST rejimini sınıflandır.
+
+    Tüm girdiler opsiyoneldir; mevcut olanlardan hesaplanır, eksikler listelenir
+    ve güven düşürülür. Trend yardımcıları prev değeri VEYA history listesi kabul
+    eder.
+
+    Returns:
+        {regime, real_rate, signals_resolved, equity_implications,
+         confidence, missing_signals, note}
+        Çıktı karar-destek; yatırım tavsiyesi değildir.
+    """
+    missing = []
+
+    signals, real_rate, rate_trend, cpi_trend, fx_pct = _resolve_signals(
+        policy_rate, policy_rate_prev, policy_rate_history,
+        cpi_yoy, cpi_prev, cpi_history,
+        usdtry, usdtry_prev, usdtry_history,
+        bond_yield_10y, bond_yield_2y, reer,
+        missing,
+    )
+
+    stress, stress_reasons = _detect_stress(fx_pct, real_rate)
+
+    tighten, loosen, resolved = _tally_votes(rate_trend, real_rate, cpi_trend)
+
+    fx_sharp = fx_pct is not None and fx_pct >= _FX_SHARP_PACE
+
+    regime, regime_reason = _decide_regime(
+        tighten, loosen, resolved, stress, stress_reasons,
+        fx_pct, fx_sharp, rate_trend, cpi_trend,
+    )
+
+    implications = _equity_implications(regime, signals, stress)
+
+    confidence = _grade_confidence(resolved, real_rate, stress)
+
+    note = _build_note(missing)
 
     return {
         "regime": regime,

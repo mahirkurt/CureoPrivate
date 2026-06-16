@@ -136,102 +136,129 @@ def _new_high_materiality_kap(prev_kap_keys: set, curr_rec: dict) -> bool:
     return False
 
 
+def _detect_posture_flip(prev: dict, curr: dict):
+    """Teknik duruş çevrimini saptar; (changes, priority) döner."""
+    pv = _posture_value(prev.get("technical_posture"))
+    cv = _posture_value(curr.get("technical_posture"))
+    if pv is None or cv is None or pv == cv:
+        return [], 0
+    crossed_zero = (pv > 0 and cv < 0) or (pv < 0 and cv > 0)
+    change = {
+        "type": "teknik duruş değişti",
+        "detail": f"{prev.get('technical_posture')} -> "
+                  f"{curr.get('technical_posture')}",
+        "yon_cevrimi": crossed_zero,
+    }
+    base = _CHANGE_PRIORITY["teknik duruş değişti"]
+    return [change], base + (1 if crossed_zero else 0)
+
+
+def _detect_level_break(prev: dict, curr: dict):
+    """Önceki destek/direnç setine göre seviye kırılmasını saptar."""
+    prev_close = _as_float(prev.get("last_close"))
+    curr_close = _as_float(curr.get("last_close"))
+    if curr_close is None or prev_close is None:
+        return [], 0
+    prev_levels = prev.get("key_levels") or {}
+    prev_support = _level_set(prev_levels.get("support"))
+    prev_resistance = _level_set(prev_levels.get("resistance"))
+    broken = []
+    for r in sorted(prev_resistance):
+        if prev_close <= r < curr_close:
+            broken.append(f"direnç {r} yukarı kırıldı")
+    for s in sorted(prev_support, reverse=True):
+        if curr_close < s <= prev_close:
+            broken.append(f"destek {s} aşağı kırıldı")
+    if not broken:
+        return [], 0
+    return (
+        [{"type": "seviye kırıldı", "detail": "; ".join(broken)}],
+        _CHANGE_PRIORITY["seviye kırıldı"],
+    )
+
+
+def _detect_rsi_zone_change(prev: dict, curr: dict):
+    """RSI bölge değişimini saptar."""
+    pz = _rsi_zone(prev.get("rsi"))
+    cz = _rsi_zone(curr.get("rsi"))
+    if pz is None or cz is None or pz == cz:
+        return [], 0
+    return (
+        [{"type": "RSI bölge değişti", "detail": f"{pz} -> {cz}"}],
+        _CHANGE_PRIORITY["RSI bölge değişti"],
+    )
+
+
+def _detect_macd_sign_change(prev: dict, curr: dict):
+    """MACD histogram işaret değişimini saptar (teknik duruşa katkı)."""
+    ph = _as_float(prev.get("macd_hist"))
+    ch = _as_float(curr.get("macd_hist"))
+    if ph is None or ch is None or (ph >= 0) == (ch >= 0):
+        return [], 0
+    change = {
+        "type": "teknik duruş değişti",
+        "detail": f"MACD histogram işaret değişti ({ph} -> {ch})",
+        "yon_cevrimi": True,
+    }
+    return [change], _CHANGE_PRIORITY["teknik duruş değişti"]
+
+
+def _detect_new_kap(prev: dict, curr: dict):
+    """Yeni KAP bildirimlerini saptar."""
+    prev_kap = _kap_keys(prev.get("open_kap"))
+    curr_kap = _kap_keys(curr.get("open_kap"))
+    new_kap = curr_kap - prev_kap
+    if not new_kap:
+        return [], 0
+    hi = _new_high_materiality_kap(prev_kap, curr)
+    change = {
+        "type": "yeni KAP",
+        "detail": f"{len(new_kap)} yeni bildirim",
+        "yuksek_materyalite": hi,
+    }
+    base = _CHANGE_PRIORITY["yeni KAP"]
+    return [change], base + (1 if hi else 0)
+
+
+# Her ikisi de mevcut olduğunda çalışan boyut-saptayıcılar (sıra çıktıyı belirler).
+_BOTH_PRESENT_DETECTORS = (
+    _detect_posture_flip,
+    _detect_level_break,
+    _detect_rsi_zone_change,
+    _detect_macd_sign_change,
+    _detect_new_kap,
+)
+
+
 def _compare_symbol(symbol: str, prev: dict | None, curr: dict | None) -> dict:
     """Tek sembol için değişiklik listesi ve öncelik puanı üretir."""
-    changes: list[dict] = []
-    priority = 0
-
-    # Yeni eklenen / çıkarılan
+    # Yeni eklenen
     if prev is None and curr is not None:
-        changes.append({"type": "yeni eklenen", "detail": "Sembol listeye eklendi."})
-        priority = max(priority, _CHANGE_PRIORITY["yeni eklenen"])
+        changes = [{"type": "yeni eklenen", "detail": "Sembol listeye eklendi."}]
+        priority = _CHANGE_PRIORITY["yeni eklenen"]
         # Eklenirken yüksek materyaliteli KAP varsa öne çıkar
         if _new_high_materiality_kap(set(), curr):
             changes.append({"type": "yeni KAP", "detail": "Yüksek materyaliteli açık KAP."})
             priority = max(priority, _CHANGE_PRIORITY["yeni KAP"])
         return {"symbol": symbol, "priority": priority, "changes": changes}
 
+    # Çıkarılan
     if prev is not None and curr is None:
-        changes.append({"type": "çıkarıldı", "detail": "Sembol listeden çıkarıldı."})
         return {
             "symbol": symbol,
             "priority": _CHANGE_PRIORITY["çıkarıldı"],
-            "changes": changes,
+            "changes": [{"type": "çıkarıldı", "detail": "Sembol listeden çıkarıldı."}],
         }
 
-    # Her ikisi de mevcut: alan alan karşılaştır.
+    # Her ikisi de mevcut: boyut boyut karşılaştır.
     prev = prev or {}
     curr = curr or {}
-
-    # Teknik duruş çevrimi
-    pv = _posture_value(prev.get("technical_posture"))
-    cv = _posture_value(curr.get("technical_posture"))
-    if pv is not None and cv is not None and pv != cv:
-        crossed_zero = (pv > 0 and cv < 0) or (pv < 0 and cv > 0)
-        changes.append({
-            "type": "teknik duruş değişti",
-            "detail": f"{prev.get('technical_posture')} -> "
-                      f"{curr.get('technical_posture')}",
-            "yon_cevrimi": crossed_zero,
-        })
-        base = _CHANGE_PRIORITY["teknik duruş değişti"]
-        priority = max(priority, base + (1 if crossed_zero else 0))
-
-    # Seviye kırılması: önceki destek/direnç seti ile fiyat hareketi
-    prev_close = _as_float(prev.get("last_close"))
-    curr_close = _as_float(curr.get("last_close"))
-    prev_levels = prev.get("key_levels") or {}
-    prev_support = _level_set(prev_levels.get("support"))
-    prev_resistance = _level_set(prev_levels.get("resistance"))
-    if curr_close is not None and prev_close is not None:
-        broken = []
-        for r in sorted(prev_resistance):
-            if prev_close <= r < curr_close:
-                broken.append(f"direnç {r} yukarı kırıldı")
-        for s in sorted(prev_support, reverse=True):
-            if curr_close < s <= prev_close:
-                broken.append(f"destek {s} aşağı kırıldı")
-        if broken:
-            changes.append({
-                "type": "seviye kırıldı",
-                "detail": "; ".join(broken),
-            })
-            priority = max(priority, _CHANGE_PRIORITY["seviye kırıldı"])
-
-    # RSI bölge değişimi
-    pz = _rsi_zone(prev.get("rsi"))
-    cz = _rsi_zone(curr.get("rsi"))
-    if pz is not None and cz is not None and pz != cz:
-        changes.append({
-            "type": "RSI bölge değişti",
-            "detail": f"{pz} -> {cz}",
-        })
-        priority = max(priority, _CHANGE_PRIORITY["RSI bölge değişti"])
-
-    # MACD histogram işaret değişimi (bilgi amaçlı; teknik duruşa katkı)
-    ph = _as_float(prev.get("macd_hist"))
-    ch = _as_float(curr.get("macd_hist"))
-    if ph is not None and ch is not None and (ph >= 0) != (ch >= 0):
-        changes.append({
-            "type": "teknik duruş değişti",
-            "detail": f"MACD histogram işaret değişti ({ph} -> {ch})",
-            "yon_cevrimi": True,
-        })
-        priority = max(priority, _CHANGE_PRIORITY["teknik duruş değişti"])
-
-    # Yeni KAP bildirimleri
-    prev_kap = _kap_keys(prev.get("open_kap"))
-    curr_kap = _kap_keys(curr.get("open_kap"))
-    new_kap = curr_kap - prev_kap
-    if new_kap:
-        hi = _new_high_materiality_kap(prev_kap, curr)
-        changes.append({
-            "type": "yeni KAP",
-            "detail": f"{len(new_kap)} yeni bildirim",
-            "yuksek_materyalite": hi,
-        })
-        base = _CHANGE_PRIORITY["yeni KAP"]
-        priority = max(priority, base + (1 if hi else 0))
+    changes: list[dict] = []
+    priority = 0
+    for detector in _BOTH_PRESENT_DETECTORS:
+        ch, pr = detector(prev, curr)
+        changes.extend(ch)
+        priority = max(priority, pr)
 
     if not changes:
         changes.append({"type": "değişiklik yok", "detail": ""})

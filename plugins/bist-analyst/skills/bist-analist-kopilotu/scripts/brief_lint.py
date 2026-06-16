@@ -113,44 +113,36 @@ def _has_price_level(text: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# Çekirdek lint
+# Tekil kontroller (her kural bir fonksiyon)
 # --------------------------------------------------------------------------- #
+#
+# Her kontrol fonksiyonu (passed, errors, warnings) üçlüsü döner; `lint` bunları
+# toplayıp {passed, errors, warnings, checks} sözlüğünü kurar.
 
 
-def lint(text: str) -> dict:
-    """Bir brifing metnini denetler ve sonuç sözlüğü döner.
-
-    Asla istisna fırlatmaz; geçersiz girdi boş/başarısız rapora indirgenir.
-    """
-    errors: list[str] = []
-    warnings: list[str] = []
-    checks: dict[str, bool] = {}
-
-    if not isinstance(text, str):
-        try:
-            text = str(text)
-        except Exception:
-            text = ""
-
-    norm_full = _norm(text)
-    body = _strip_code_fences(text)
-    norm_body = _norm(body)
-
-    # --- 1) disclaimer_present (ERROR) ------------------------------------- #
+def _check_disclaimer_present(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """1) disclaimer_present (ERROR): kanonik feragat var mı."""
     disclaimer_ok = (
         "yatirim danismanligi" in norm_full
         and "karar-destek" in norm_full
         and "gecmis performans" in norm_full
     )
-    checks["disclaimer_present"] = disclaimer_ok
+    errors: list[str] = []
     if not disclaimer_ok:
         errors.append(
             "Kanonik feragat eksik veya bozuk: 'yatırım danışmanlığı', "
             "'karar-destek' ve 'Geçmiş performans' ifadelerinin tümü "
             "bulunmalıdır."
         )
+    return disclaimer_ok, errors, []
 
-    # --- 2) no_imperative_advice (ERROR) ----------------------------------- #
+
+def _check_no_imperative_advice(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """2) no_imperative_advice (ERROR): kişiselleştirilmiş al/sat emri yok mu."""
     # Satır satır tara; feragat satırlarını ve allowlist içeren satırları atla.
     imperative_hits: list[str] = []
     for raw_line in body.splitlines():
@@ -170,14 +162,19 @@ def lint(text: str) -> dict:
                 imperative_hits.append(snippet[:120])
                 break
     imperative_ok = len(imperative_hits) == 0
-    checks["no_imperative_advice"] = imperative_ok
+    errors: list[str] = []
     if not imperative_ok:
         errors.append(
             "Kişiselleştirilmiş al/sat emri tespit edildi (karar-destek "
             "çerçevesi ihlali): " + " | ".join(imperative_hits[:3])
         )
+    return imperative_ok, errors, []
 
-    # --- 3) no_machine_leakage (ERROR) ------------------------------------- #
+
+def _check_no_machine_leakage(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """3) no_machine_leakage (ERROR): ham JSON / araç adı / MCP sızıntısı yok mu."""
     leakage_hits: list[str] = []
     if "```json" in text.lower():
         leakage_hits.append("```json kod bloğu")
@@ -191,7 +188,7 @@ def lint(text: str) -> dict:
     if re.search(r"\bmcp\b", norm_body):
         leakage_hits.append("MCP")
     leakage_ok = len(leakage_hits) == 0
-    checks["no_machine_leakage"] = leakage_ok
+    errors: list[str] = []
     if not leakage_ok:
         # Tekilleştir, sırayı koru
         seen = []
@@ -202,44 +199,110 @@ def lint(text: str) -> dict:
             "Makine/araç sızıntısı (kullanıcıya gösterilmemeli): "
             + ", ".join(seen[:6])
         )
+    return leakage_ok, errors, []
 
-    # --- 4) sources_dated (WARN) ------------------------------------------- #
+
+def _check_sources_dated(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """4) sources_dated (WARN): sayı/alıntılar as-of tarihiyle anılmış mı."""
     has_numbers = bool(re.search(r"\d", body))
     dated = _date_nearby(text)
     sources_dated_ok = (not has_numbers) or dated
-    checks["sources_dated"] = sources_dated_ok
+    warnings: list[str] = []
     if not sources_dated_ok:
         warnings.append(
             "Sayısal veri/alıntı var ancak yakınında as-of tarih/dönem "
             "(örn. 15.06.2026, 'kapanış', 'gün sonu') işareti bulunamadı."
         )
+    return sources_dated_ok, [], warnings
 
-    # --- 5) eod_ack (WARN) ------------------------------------------------- #
+
+def _check_eod_ack(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """5) eod_ack (WARN): fiyat seviyesi varsa EOD/gün sonu kaydı var mı."""
     has_levels = _has_price_level(text)
     eod_ack = bool(re.search(r"\b(eod|gun\s*sonu|gecikmeli|kapanis)\b", norm_full))
     eod_ok = (not has_levels) or eod_ack
-    checks["eod_ack"] = eod_ok
+    warnings: list[str] = []
     if not eod_ok:
         warnings.append(
             "Fiyat/seviye atfı var ancak hiçbir yerde EOD / gün sonu / "
             "gecikmeli veri kaydı bulunamadı."
         )
+    return eod_ok, [], warnings
 
-    # --- 6) has_scenario_matrix (WARN) ------------------------------------- #
+
+def _check_has_scenario_matrix(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """6) has_scenario_matrix (WARN): senaryo matrisi bölümü var mı."""
     scenario_ok = "senaryo" in norm_full
-    checks["has_scenario_matrix"] = scenario_ok
+    warnings: list[str] = []
     if not scenario_ok:
         warnings.append(
             "Senaryo matrisi/bölümü bulunamadı ('senaryo' ifadesi yok)."
         )
+    return scenario_ok, [], warnings
 
-    # --- 7) has_confidence (WARN) ------------------------------------------ #
+
+def _check_has_confidence(
+    text: str, norm_full: str, body: str, norm_body: str
+) -> tuple[bool, list[str], list[str]]:
+    """7) has_confidence (WARN): güven göstergesi var mı."""
     confidence_ok = bool(re.search(r"\bguven\b|\bguven\w*", norm_full))
-    checks["has_confidence"] = confidence_ok
+    warnings: list[str] = []
     if not confidence_ok:
         warnings.append(
             "Güven göstergesi bulunamadı ('güven' işareti yok)."
         )
+    return confidence_ok, [], warnings
+
+
+# (check_key, checker_fn) sırası çıktıdaki checks/errors/warnings sırasını korur.
+_CHECKS = [
+    ("disclaimer_present", _check_disclaimer_present),
+    ("no_imperative_advice", _check_no_imperative_advice),
+    ("no_machine_leakage", _check_no_machine_leakage),
+    ("sources_dated", _check_sources_dated),
+    ("eod_ack", _check_eod_ack),
+    ("has_scenario_matrix", _check_has_scenario_matrix),
+    ("has_confidence", _check_has_confidence),
+]
+
+
+# --------------------------------------------------------------------------- #
+# Çekirdek lint
+# --------------------------------------------------------------------------- #
+
+
+def lint(text: str) -> dict:
+    """Bir brifing metnini denetler ve sonuç sözlüğü döner.
+
+    Asla istisna fırlatmaz; geçersiz girdi boş/başarısız rapora indirgenir.
+    Her kural ayrı bir `_check_*` fonksiyonunda; bu fonksiyon yalnız
+    orkestratördür.
+    """
+    if not isinstance(text, str):
+        try:
+            text = str(text)
+        except Exception:
+            text = ""
+
+    norm_full = _norm(text)
+    body = _strip_code_fences(text)
+    norm_body = _norm(body)
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    checks: dict[str, bool] = {}
+
+    for key, checker in _CHECKS:
+        ok, errs, warns = checker(text, norm_full, body, norm_body)
+        checks[key] = ok
+        errors.extend(errs)
+        warnings.extend(warns)
 
     passed = len(errors) == 0
     return {

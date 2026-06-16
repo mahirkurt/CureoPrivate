@@ -19,7 +19,6 @@ CLI:
 import argparse
 import json
 import re
-import sys
 
 # --- Kategori taksonomisi ---------------------------------------------------
 # Her kategori: anahtar kelimeler (normalize), varsayılan tier ([0,1] öncelenmiş

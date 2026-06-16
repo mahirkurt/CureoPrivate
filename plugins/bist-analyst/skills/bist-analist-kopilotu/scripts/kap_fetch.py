@@ -19,7 +19,6 @@ CLI:
 import argparse
 import json
 import re
-import sys
 from datetime import datetime, date
 
 # Olası alan adı eşlemeleri (öncelik sırasıyla).

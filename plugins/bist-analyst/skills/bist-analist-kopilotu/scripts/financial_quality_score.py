@@ -334,6 +334,106 @@ def _weighted(parts):
 
 
 # ---------------------------------------------------------------------------
+# Kompozit yardımcıları
+# ---------------------------------------------------------------------------
+def _coverage(r):
+    """Beklenen tüm girdilerin ne kadarı mevcut (0-1, 3 hane yuvarlı)."""
+    present = sum(1 for k in _ALL_KEYS if k in r)
+    return round(present / len(_ALL_KEYS), 3)
+
+
+def _compute_subscores(r, is_bank, peers):
+    """Dört alt-skoru hesapla ve None korunarak 1 haneye yuvarla."""
+    subscores = {
+        "profitability": _sub_profitability(r, is_bank),
+        "solvency": _sub_solvency(r, is_bank),
+        "growth": _sub_growth(r),
+        "valuation_reasonableness": _sub_valuation(r, is_bank, peers),
+    }
+    # Yuvarla (None koru)
+    return {k: (round(v, 1) if v is not None else None) for k, v in subscores.items()}
+
+
+def _select_weights(is_bank):
+    """Sektör merceğine göre kompozit ağırlık setini seç."""
+    return _BANK_WEIGHTS if is_bank else _DEFAULT_WEIGHTS
+
+
+def _bank_lens_caveat():
+    return (
+        "Banka/finansal kuruluş merceği uygulandı: FD/FAVÖK ve cari oran "
+        "anlamsız sayıldı; ROE, PD/DD ve net-faiz-marjı vekili öne çıkarıldı."
+    )
+
+
+def _partial_caveat(subscores):
+    """Boş alt-skor(lar) varsa kısmi-skor caveat'i; yoksa None."""
+    missing_subs = [k for k, v in subscores.items() if v is None]
+    if not missing_subs:
+        return None
+    return (
+        "Kısmi skor: şu alt-boyut(lar) veri yetersizliğinden boş — "
+        + ", ".join(missing_subs) + " (uydurma değerle doldurulmadı)."
+    )
+
+
+def _growth_caveat(r):
+    """Pozitif büyüme varsa nominal/TL (enflasyon) uyarısı; yoksa None."""
+    rg = _percent_scale(r.get("revenue_growth"))
+    eg = _percent_scale(r.get("earnings_growth"))
+    if (rg is not None and rg > 0) or (eg is not None and eg > 0):
+        return (
+            "Büyüme nominal TL bazlı olabilir; yüksek enflasyon ortamında reel "
+            "büyüme abartılır. Reel/marj teyidi olmadan büyüme alt-skoru ihtiyatlı "
+            "okunmalı (bkz. fundamental-methodology §5)."
+        )
+    return None
+
+
+def _negative_multiple_caveats(r):
+    """Negatif/sıfır değerleme çarpanları için uyarı listesi."""
+    out = []
+    for key, label in (("pe_ratio", "F/K"), ("ev_ebitda", "FD/FAVÖK")):
+        v = r.get(key)
+        if v is not None and v <= 0:
+            out.append(
+                f"{label} negatif/sıfır → zarar veya anlamsız; düşük çarpan "
+                f"'ucuzluk' sayılmadı."
+            )
+    return out
+
+
+def _confidence(coverage, partial, caveats):
+    """Kapsam/kısmi duruma göre güven etiketi; düşük güvende caveat ekler."""
+    if coverage < 0.4:
+        caveats.append(
+            "Düşük güven: girdi kapsamı %40'ın altında; kompozit yalnızca sınırlı "
+            "bir görünüm sunar."
+        )
+        return "düşük"
+    if coverage < 0.65 or partial:
+        return "orta"
+    return "yüksek"
+
+
+def _contributions(subscores, weights):
+    """Kompozite katkı dökümü (ağırlık*skor), katkıya göre azalan sıralı."""
+    contribs = []
+    for k in weights:
+        s = subscores[k]
+        if s is not None:
+            contribs.append({
+                "subscore": k,
+                "value": s,
+                "weight": weights[k],
+                "contribution": round(s * weights[k], 2),
+                "direction": "olumlu" if s >= 55 else ("nötr" if s >= 45 else "olumsuz"),
+            })
+    contribs.sort(key=lambda c: c["contribution"], reverse=True)
+    return contribs
+
+
+# ---------------------------------------------------------------------------
 # Ana giriş
 # ---------------------------------------------------------------------------
 def quality_score(ratios, sector=None, peers=None):
@@ -354,66 +454,28 @@ def quality_score(ratios, sector=None, peers=None):
         peers = None
     is_bank = _is_bank(sector)
 
-    # Coverage: beklenen tüm girdilerin ne kadarı mevcut
-    present = sum(1 for k in _ALL_KEYS if k in r)
-    coverage = round(present / len(_ALL_KEYS), 3)
-
-    subscores = {
-        "profitability": _sub_profitability(r, is_bank),
-        "solvency": _sub_solvency(r, is_bank),
-        "growth": _sub_growth(r),
-        "valuation_reasonableness": _sub_valuation(r, is_bank, peers),
-    }
-    # Yuvarla (None koru)
-    subscores = {k: (round(v, 1) if v is not None else None) for k, v in subscores.items()}
-
-    weights = _BANK_WEIGHTS if is_bank else _DEFAULT_WEIGHTS
+    coverage = _coverage(r)
+    subscores = _compute_subscores(r, is_bank, peers)
+    weights = _select_weights(is_bank)
     if is_bank:
-        caveats.append(
-            "Banka/finansal kuruluş merceği uygulandı: FD/FAVÖK ve cari oran "
-            "anlamsız sayıldı; ROE, PD/DD ve net-faiz-marjı vekili öne çıkarıldı."
-        )
+        caveats.append(_bank_lens_caveat())
 
     # Kompozit: mevcut alt-skorların ağırlıklı ortalaması
     comp_parts = [(subscores[k], weights[k]) for k in weights]
     composite = _weighted(comp_parts)
 
     partial = any(v is None for v in subscores.values())
-    if partial:
-        missing_subs = [k for k, v in subscores.items() if v is None]
-        caveats.append(
-            "Kısmi skor: şu alt-boyut(lar) veri yetersizliğinden boş — "
-            + ", ".join(missing_subs) + " (uydurma değerle doldurulmadı)."
-        )
+    partial_note = _partial_caveat(subscores)
+    if partial_note is not None:
+        caveats.append(partial_note)
 
-    # Büyüme nominal/TL uyarısı (enflasyon caveat)
-    rg = _percent_scale(r.get("revenue_growth"))
-    eg = _percent_scale(r.get("earnings_growth"))
-    if (rg is not None and rg > 0) or (eg is not None and eg > 0):
-        caveats.append(
-            "Büyüme nominal TL bazlı olabilir; yüksek enflasyon ortamında reel "
-            "büyüme abartılır. Reel/marj teyidi olmadan büyüme alt-skoru ihtiyatlı "
-            "okunmalı (bkz. fundamental-methodology §5)."
-        )
+    growth_note = _growth_caveat(r)
+    if growth_note is not None:
+        caveats.append(growth_note)
 
-    # Negatif değerleme çarpanı uyarısı
-    for key, label in (("pe_ratio", "F/K"), ("ev_ebitda", "FD/FAVÖK")):
-        v = r.get(key)
-        if v is not None and v <= 0:
-            caveats.append(
-                f"{label} negatif/sıfır → zarar veya anlamsız; düşük çarpan "
-                f"'ucuzluk' sayılmadı."
-            )
+    caveats.extend(_negative_multiple_caveats(r))
 
-    confidence = "yüksek"
-    if coverage < 0.4:
-        confidence = "düşük"
-        caveats.append(
-            "Düşük güven: girdi kapsamı %40'ın altında; kompozit yalnızca sınırlı "
-            "bir görünüm sunar."
-        )
-    elif coverage < 0.65 or partial:
-        confidence = "orta"
+    confidence = _confidence(coverage, partial, caveats)
 
     if composite is None:
         return {
@@ -431,20 +493,7 @@ def quality_score(ratios, sector=None, peers=None):
 
     composite = round(composite, 1)
     band = _band(composite)
-
-    # Drivers: kompozite en çok katkı yapan alt-skorlar (ağırlık*skor)
-    contribs = []
-    for k in weights:
-        s = subscores[k]
-        if s is not None:
-            contribs.append({
-                "subscore": k,
-                "value": s,
-                "weight": weights[k],
-                "contribution": round(s * weights[k], 2),
-                "direction": "olumlu" if s >= 55 else ("nötr" if s >= 45 else "olumsuz"),
-            })
-    contribs.sort(key=lambda c: c["contribution"], reverse=True)
+    contribs = _contributions(subscores, weights)
 
     return {
         "composite": composite,

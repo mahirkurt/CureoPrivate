@@ -1,0 +1,13 @@
+# quant-analiz — kuant betik bağımlılıkları
+#
+# Tüm betikler yalnızca Python 3 standart kütüphanesini kullanır
+# (argparse, json, math, statistics, sys, re, unicodedata, datetime, random).
+# Harici bağımlılık YOKTUR; herhangi bir Python 3.8+ ortamında ek kurulum
+# olmadan çalışır.
+#
+# TEK İSTİSNA: portfolio_opt.py için `--engine numpy` opsiyonel hızlandırma
+# sunar. numpy KURULU DEĞİLSE betik sessizce saf-stdlib motoruna düşer
+# (engine_used="stdlib"), dolayısıyla numpy GEREKLİ DEĞİLDİR — kurulu ise
+# yalnız büyük N'de hız/sayısal sağlamlık sağlar:
+#
+#   numpy>=1.24   # opsiyonel; yalnız portfolio_opt.py --engine numpy

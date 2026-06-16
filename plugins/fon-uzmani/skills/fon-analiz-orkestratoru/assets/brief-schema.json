@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cureonics.com/schemas/fon-uzmani/brief.json",
+  "title": "Fon Uzmanı — Aşama 0 brief şeması",
+  "description": "Kullanıcının doğal-dil briefinin oturtulduğu deterministik girdi. Karar-destek; SPK yatırım danışmanlığı değildir.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "universe"],
+  "properties": {
+    "mode": { "type": "integer", "minimum": 1, "maximum": 5,
+      "description": "1 tek-fon · 2 tarama · 3 karşılaştırma · 4 portföy · 5 izleme" },
+    "universe": { "enum": ["YAT", "EMK", "MIX"] },
+    "fund_ids": { "type": "array", "items": { "type": "string" },
+      "description": "TEFAS fon kodları (Mod 1/3/4/5)" },
+    "category": { "type": ["string", "null"],
+      "description": "Kategori filtresi (Mod 2), örn. 'Hisse Senedi Fonu'" },
+    "risk_profile": { "enum": ["conservative", "moderate", "aggressive", null],
+      "description": "Mod 4 zorunlu" },
+    "horizon_months": { "type": ["integer", "null"], "minimum": 1 },
+    "benchmark": { "type": ["string", "null"], "description": "örn. XU100, BIST-TÜM, KYD-OST" },
+    "constraints": {
+      "type": ["object", "null"],
+      "description": "Mod 4 tahsis kısıtları",
+      "additionalProperties": false,
+      "properties": {
+        "max_weight_per_fund": { "type": ["number", "null"] },
+        "min_funds": { "type": ["integer", "null"] },
+        "max_ter": { "type": ["number", "null"] }
+      }
+    },
+    "exclusion": { "type": "array", "items": { "type": "string" },
+      "description": "dışlanan tür/özellik (örn. kaldıraçlı, serbest fon)" }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "borsa": {
+      "type": "http",
+      "url": "https://borsamcp.fastmcp.app/mcp"
+    },
+    "fon-mcp": {
+      "type": "http",
+      "url": "https://fon-mcp.cureonics.workers.dev/mcp"
+    }
+  }
+}

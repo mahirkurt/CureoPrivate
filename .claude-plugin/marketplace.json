@@ -114,6 +114,32 @@
         "smp-v1.0"
       ],
       "strict": false
+    },
+    {
+      "name": "vekayinuvis",
+      "displayName": "Vekayinüvis",
+      "source": "./plugins/vekayinuvis",
+      "version": "1.0.0",
+      "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives (33 kaynak — BOA, Süleymaniye, İSAM, BCA, Topkapı, TDV İA + Gallica/BL/BSB/LoC/IIIF) + YÖK Tez çekirdek MCP katmanını eScriptorium HTR, Hicrî-Rumî-Miladî çevirici, ebced ve akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ile birleştirir. IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu: kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi. Birincil → ikincil → tertier kaynak triangülasyonu.",
+      "author": {
+        "name": "Cureonics",
+        "url": "https://cureonics.com"
+      },
+      "category": "research",
+      "keywords": [
+        "ottoman-history",
+        "turkish-history",
+        "osmanli-arsiv",
+        "archival",
+        "htr",
+        "ebced",
+        "prosopography",
+        "legislative-history",
+        "academic-research",
+        "yoktez",
+        "ijmes-transliteration"
+      ],
+      "strict": false
     }
   ]
 }

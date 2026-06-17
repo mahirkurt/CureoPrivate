@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "vekayinuvis",
+  "displayName": "Vekayinüvis — Osmanlı/Türk Tarih Araştırma Protokolü",
+  "version": "1.0.0",
+  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + YÖK Tez çekirdek MCP katmanını akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ile birleştirir; IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu (kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi) sunar.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://github.com/mahirkurt/marketplace/tree/main/plugins/vekayinuvis",
+  "repository": "https://github.com/mahirkurt/marketplace",
+  "license": "UNLICENSED",
+  "keywords": [
+    "ottoman-history",
+    "turkish-history",
+    "osmanli-arsiv",
+    "boa",
+    "vakfiye",
+    "muhimme",
+    "tahrir",
+    "seriye-sicili",
+    "salname",
+    "htr",
+    "escriptorium",
+    "ebced",
+    "hicri-rumi-miladi",
+    "prosopografi",
+    "kanun-gerekcesi",
+    "academic-research",
+    "yoktez",
+    "ijmes-transliteration"
+  ],
+  "defaultEnabled": false
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ottoman-archives": {
+      "type": "http",
+      "url": "https://ottoman-archives-to7lqjgdkq-ew.a.run.app/mcp"
+    },
+    "yoktez": {
+      "type": "http",
+      "url": "https://yoktezmcp.fastmcp.app/mcp"
+    }
+  }
+}

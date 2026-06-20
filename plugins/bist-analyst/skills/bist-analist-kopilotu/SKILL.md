@@ -1,7 +1,14 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.2
+version: 1.1.3
 changelog: |
+  1.1.3 (2026-06-20) — Yeni `scripts/stitch_daily.py` (günlük-veri toplayıcı:
+  Borsa ≤30g dilimlerini birleştirir → günlük frames). Kalibrasyon günlük katmanda
+  (8 hisse + XU100, 101 günlük bar, SMA50 tanımlı, motor-ufku 5/10 gün) yeniden
+  koşuldu: varsayılan 3/13 hiçbir kesitte yenilmedi (eş-en-iyi/en-iyi) → KORUNDU.
+  Dürüst çerçeve: bu "doğrulama" değil non-inferiority bulgusudur (örtüşen pencere,
+  SE>ızgara-açıklığı); tüm ρ negatif → motorun mutlak skilline dair AYRI uyarı.
+  Varsayılan/davranış değişmedi.
   1.1.2 (2026-06-20) — Yeni `scripts/walkforward_calibrate.py`: RSI eğim penceresi ×
   RS lookback ızgarasını ({2,3,5}×{8,13,21}) sızıntısız, çok-rejimli tarar
   (backtest_posture'a delege; --smoke/--windows/--multi). Çok-rejim kalibrasyonu

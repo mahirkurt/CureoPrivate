@@ -1,7 +1,14 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.5
+version: 1.1.6
 changelog: |
+  1.1.6 (2026-06-20) — Çok-dönem (zaman-bağımsız) BIST kesin koşumu: 8 hisse + XU100,
+  615 günlük bar (2,5 yıl), SMA200 tam, h=5'te K=83 GERÇEKTEN bağımsız blok. Hiçbir
+  ufukta skill yok (p≥0.38; Šidák≥0.76; isabet ~0.49-0.50). Önceki hafif-negatif eğilim
+  KAYBOLDU (h=5 ρ̄=+0.02) → gürültüydü. En sıkı sınır sıfırda merkezli: h=5 %95 GA
+  [−0.07,+0.11] → yokluğun-kanıtına yakın (anlamlı |ρ| her iki yönde dışlandı). Net:
+  duruşun kısa-ufuk kesitsel getiriyle ilişkisi sıfırdan ayırt edilemez → kesinlikle
+  betimsel/yapısal. Belge güncellemesi; kod/davranış/varsayılan değişmedi.
   1.1.5 (2026-06-20) — `skill_study.py --pool`: birden çok bağımsız örneği
   (dönem/piyasa) havuzlar (güç ↑). Çapraz-piyasa koşum (9 BIST + 9 ABD, ~286-288
   günlük bar): hiçbir ufukta pozitif skill kanıtı yok (h=5 ρ̄=−0.11 p=0.09 anlamsız;

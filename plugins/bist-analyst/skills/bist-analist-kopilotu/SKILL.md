@@ -1,7 +1,10 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.0
+version: 1.1.1
 changelog: |
+  1.1.1 (2026-06-20) — RSI eğim penceresi ve RS lookback enrich_snapshot imzasına
+  opsiyonel parametre olarak açıldı (kalibrasyon için; varsayılanlar 3/13 korunur,
+  davranış değişmez).
   1.1.0 (2026-06-20) — Teknik-duruş motoru yükseltmesi; geriye-dönük backtest
   bulgularına dayalı, look-ahead'siz öz-denetimle (scripts/backtest_posture.py)
   önce/sonra doğrulandı. (B/CRITICAL) RSI/fiyat ayrışması artık duruş puanına

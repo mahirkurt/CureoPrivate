@@ -117,6 +117,8 @@ Teknik duruş, `trend_posture` içinde **şeffaf, gerekçeli bir puan istifinden
 
 **Kapsam-güven bağı.** Etkin ağırlık çekirdek 8.0'ın belirgin altındaysa (ör. kısa seride MACD/T3 düşerse) duruş az göstergeye dayanır; `low_coverage` bayrağı kalkar ve **güven bir kademe düşürülür**. Bu yüzden Adım 0'daki uzun-aralık haftalık çekim (≈52 bar) önemlidir.
 
+**Kalibrasyon erişimi (v1.1.1).** RSI eğim penceresi ve RS lookback `enrich_snapshot` imzasına opsiyonel parametre olarak açıldı (walk-forward kalibrasyonu için; varsayılanlar 3/13 korunur, davranış değişmez).
+
 > **Ufuk uyarısı (ampirik).** Look-ahead'siz öz-denetim (`backtest_posture.py`), haftalık duruşun **tek-haftalık** ufukta düşük sinyal taşıdığını (düşük IC) gösterebilir — özellikle getirinin çoğu seans-arası boşluktan geldiğinde. Haftalık duruş **çok-haftalık eğilim** için anlamlıdır; tek-hafta yön tahmininde güven tavanı düşük tutulmalıdır (bkz. §4).
 
 ---

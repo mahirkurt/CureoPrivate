@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "bist-analyst",
   "displayName": "BIST Uzmanı",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "BIST (Borsa İstanbul) analyst co-pilot. Produces a single reasoned briefing — technical + fundamental + KAP-disclosure sentiment + TCMB macro regime — for a stock, a weekly scan, a KAP event, or a watchlist. Bundles the Borsa MCP data backbone (KAP, EOD price/technical, scanner, FX, TEFAS, TCMB EVDS). Decision support, never investment advice.",
   "author": {
     "name": "Cureonics",

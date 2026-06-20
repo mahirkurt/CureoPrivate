@@ -2,6 +2,18 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.1] — 2026-06-20
+
+### Değişti (geriye-uyumlu yama)
+- `technical_plus.enrich_snapshot` imzasına iki opsiyonel parametre eklendi:
+  `rsi_slope_window=3` (RSI eğim penceresi) ve `rs_lookback=13` (göreli güç lookback).
+  Bunlar `_series_slope(window=...)` ve `relative_strength(lookback=...)` çağrılarına
+  geçirilir. **Varsayılanlar gömülü sabitlerle birebir aynıdır (3/13)** → varsayılan
+  `enrich_snapshot(ohlc)` ve `(ohlc, index_closes=...)` çıktısı v1.1.0 ile **bit
+  düzeyinde özdeştir**. Skorlama mantığı, eşikler, varsayılan davranış veya alanlar
+  değişmedi. Amaç: ayrı bir `walkforward_calibrate.py`'nin RSI eğim penceresini
+  {2,3,5} ve RS lookback'ini {8,13,21} ızgarasında taramasını mümkün kılmak.
+
 ## [1.1.0] — 2026-06-20
 
 Teknik-duruş motoru yükseltmesi. Look-ahead'siz geriye-dönük backtest ile önce/sonra

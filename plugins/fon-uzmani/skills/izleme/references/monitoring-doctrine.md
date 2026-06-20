@@ -9,8 +9,10 @@
 | `vol_sicramasi` | yeni vol ≥ 1.5 × eski | volatilite sıçraması |
 | `stil_sapmasi` | stil/holdings drift ≥ 0.10 | strateji kayması |
 | `rejim_degisimi` | regime_tag değişti | makro/benchmark rejim kayması |
-| `ter_artisi` | yeni TER > eski | maliyet artışı |
-| `kap_duyurusu` | açık duyuru | kurucu/yönetici/içtüzük |
+| `ter_ust_sinir_artisi` | yeni `ter_ceiling_pct` > eski (fon-mcp `get_fund_costs`) | azami gider sınırı artışı (genel kurul/tebliğ tetiklidir; gün-içi değişmez — DÜŞÜK frekanslı sinyal) |
+| `yonetim_ucreti_artisi` | yeni `management_fee_pct` > eski | yönetim ücreti revize |
+| `gerceklesen_ter_artisi` | KAP KIID yıllık TER > önceki yıl | KAP KIID gerekir; fon-mcp kapsam dışı |
+| `kap_duyurusu` | açık duyuru | kurucu/PYŞ/içtüzük |
 | `yeni_eklendi` | — | listeye yeni giren |
 
 Eşikler `thresholds` (mdd_breach, vol_spike_k, rank_drop) ile özelleştirilebilir.

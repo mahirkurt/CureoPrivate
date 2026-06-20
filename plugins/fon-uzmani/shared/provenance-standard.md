@@ -10,11 +10,13 @@ Her sayısal iddia bir kaynağa damgalanır; uydurma/atıfsız iddia yasaktır.
 
 | Kaynak | Gramer | Örnek |
 |---|---|---|
-| Borsa MCP | `[Borsa MCP / <tool> / <as-of ISO>]` | `[Borsa MCP / get_fund_data / 2026-06-16]` |
-| fon-mcp | `[fon-mcp / <tool> / <as-of ISO>]` | `[fon-mcp / get_fund_holdings / 2026-06-16]` |
+| Borsa MCP | `[Borsa MCP / <tool> / <as-of ISO>]` | `[Borsa MCP / get_fund_data / 2026-06-20]` |
+| fon-mcp | `[fon-mcp / <tool> / <as-of ISO>]` | `[fon-mcp / get_fund_holdings / 2026-06-20]` |
+| fon-mcp · TER üst-sınır | `[fon-mcp / fonYonetimBazliBilgiGetir / <as-of>] (üst-sınır)` | `[fon-mcp / fonYonetimBazliBilgiGetir / 2026-06-20] (üst-sınır)` |
+| KAP · gerçekleşen TER | `[KAP / KIID / <kod> / <tarih>] (gerçekleşen TER)` | `[KAP / KIID / TI2 / 2025-12-31] (gerçekleşen TER)` |
 | KAP | `[KAP / <belge> / <fon kodu> / <tarih>]` | `[KAP / fon duyurusu / AFA / 2026-05-30]` |
 | Kuant betiği | `[quant-analiz / <script> / <formül-vN>]` | `[quant-analiz / risk_adjusted / Sharpe-v1]` |
-| Web (yalnız URL keşfi sonrası) | kaynak + erişim tarihi | `(tefas.gov.tr, erişim 2026-06-16)` |
+| Web (yalnız URL keşfi sonrası) | kaynak + erişim tarihi | `(tefas.gov.tr, erişim 2026-06-20)` |
 
 **EOD beyanı:** her NAV/fiyat/metrik `(EOD/gün-sonu, as-of <tarih>)` damgası taşır.
 

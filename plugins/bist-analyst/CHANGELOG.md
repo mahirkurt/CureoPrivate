@@ -2,6 +2,25 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.6] — 2026-06-20
+
+Çok-dönem (zaman-bağımsız) BIST kesin skill koşumu. Belge güncellemesi; kod/davranış değişmedi.
+
+### Bulgu (kesin, en-yüksek-güç)
+- Metodolojik olarak doğru tasarım — tek, **derin** sürekli günlük seri → bloklar
+  farklı takvim zamanlarında olduğundan **gerçekten bağımsız** (çapraz-piyasa
+  aynı-pencere tuzağı YOK). 8 BIST hissesi + XU100, **615 günlük bölünme-düzeltmeli
+  bar** (2024-01…2026-06, ~2,5 yıl), SMA200 tam kapsamlı, h=5'te **K=83 bağımsız blok**.
+- **Hiçbir ufukta skill yok** (tüm p≥0,38; Šidák×3 ≥0,76; isabet ~0,49-0,50 = yazı-tura).
+- **Önceki hafif-negatif eğilim KAYBOLDU** (h=5 artık ρ̄=+0,02; işaret ufuklar arası
+  değişiyor) → gürültü olduğu doğrulandı.
+- **En sıkı sınır, sıfırda merkezli:** h=5 %95 GA **[−0,07, +0,11]** → *yokluğun-kanıtı*na
+  yakın (anlamlı |ρ|>~0,11 hem pozitif hem negatif dışlandı).
+- **Net (kesin):** duruşun kısa-ufuk kesitsel getiriyle ilişkisi sıfırdan ayırt
+  edilemez, küçük banta (|ρ|<~0,11) sınırlı → **kesinlikle betimsel/yapısal**;
+  karar-destek (tahmin değil) ilkesi sağlamca pekişir. Artık: çok-zayıf |ρ|<~0,1 kesin
+  dışlanmaz, tek ~2,5-yıllık BIST dönemi.
+
 ## [1.1.5] — 2026-06-20
 
 Çok-örnek havuz modu + çapraz-piyasa skill koşumu. Davranış/varsayılanlar değişmedi.

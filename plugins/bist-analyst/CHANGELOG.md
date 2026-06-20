@@ -2,6 +2,35 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.4] — 2026-06-20
+
+Motor-skill çalışması: duruşun MUTLAK öngörü gücü. Davranış/varsayılanlar değişmedi.
+
+### Eklendi
+- **`scripts/skill_study.py`** — teknik-duruşun mutlak kesitsel öngörü gücünü
+  **örtüşmeyen (bağımsız) bloklarda** ölçer (anlık-zaman ufuk kadar adımlanır →
+  ardışık ileri-getiri pencereleri çakışmaz), sabit varsayılan (3/13) ile, ve
+  **Student-t (df=K−1)** anlamlılık testiyle (küçük-K kalın kuyruk doğru hesaplanır;
+  normal-yaklaşım değil). Toplu binom isabet testi İYİMSER olarak işaretlenir ve
+  ASLA verdict'i sürüklemez (birincil ölçüt korumalı blok t-testi). `backtest_posture`'a
+  delege eder (skorlama mantığı çoğaltılmaz); harici bağımlılık yok.
+
+### Bulgu (kanıta dayalı, çekişmeli kalibreli)
+- Koşum: 12 BIST hissesi + XU100, **286 günlük bölünme-düzeltmeli bar** (SMA200
+  kapsamlı), ufuk 5/10/20 işlem günü → **hiçbir ufukta sıfırdan ayırt edilebilir
+  skill yok** (ρ̄ −0,12/−0,16/−0,02; tüm **p≥0,20**); RS açık ≈ kapalı.
+- **Dürüst çerçeve — kanıt-yokluğu, yokluğun-kanıtı DEĞİL:** *güçlü* skill
+  (|ρ|≳0,20, h=5; %95 GA ≈ [−0,32,+0,07]) **dışlanır**; *zayıf* skill sıfırdan
+  ayrılamaz (h=10/20 düşük güç). Hafif-negatif eğilim gürültüde — hipotez, sinyal değil.
+- **Çıkarım:** duruş skoru **betimsel/yapısal** (şeffaf teknik-durum + senaryo),
+  kanıtlanmış getiri-sıralama üstünlüğü DEĞİL → eklentinin karar-destek (tahmin
+  değil) ilkesini pekiştirir.
+
+### Harness disiplini
+- skill_study.py çekişmeli denetlendi; 4 onaylı bulgu düzeltildi (MAJOR: Student-t
+  yerine normal-CDF; pooled-binom korelasyon-caveat'ı JSON'a; MINOR: sıfır-varyans;
+  NIT: isabet sayımını satırdan tam say). Student-t bilinen değerlere karşı doğrulandı.
+
 ## [1.1.3] — 2026-06-20
 
 Günlük-veri toplayıcı + günlük katman kalibrasyonu. Davranış/varsayılanlar değişmedi.

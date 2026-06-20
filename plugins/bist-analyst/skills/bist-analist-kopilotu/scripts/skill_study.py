@@ -176,15 +176,12 @@ def _slice(frames, end_idx):
 # Tek ufuk için skill ölçümü
 # --------------------------------------------------------------------------- #
 
-def study_horizon(frames, horizon, min_setup=200, include_relative_strength=True,
-                  bt_min_setup=50):
-    """Bir ufuk için örtüşmeyen bloklarda skill metriklerini toplar + test eder."""
+def _collect_blocks(frames, horizon, min_setup, include_relative_strength,
+                    bt_min_setup=50):
+    """Bir frames örneğinde örtüşmeyen blokların HAM metriklerini toplar."""
     ts = nonoverlap_times(frames, horizon, min_setup)
-    block_rho = []
-    block_ic = []
-    block_hit = []            # blok-içi mutlak isabet oranı (cross-sectional)
-    pooled_hits = 0           # tüm bloklarda (sembol,blok) pozitif-hizalama sayısı
-    pooled_total = 0
+    block_rho, block_ic, block_hit = [], [], []
+    pooled_hits = pooled_total = 0
     for t in ts:
         sliced = _slice(frames, t + horizon)
         res = backtest_posture(
@@ -205,10 +202,20 @@ def study_horizon(frames, horizon, min_setup=200, include_relative_strength=True
                 pooled_total += 1
                 if (r["score_norm"] > 0) == (r["realized_ret_pct"] > 0):
                     pooled_hits += 1
+    return {"block_rho": block_rho, "block_ic": block_ic, "block_hit": block_hit,
+            "pooled_hits": pooled_hits, "pooled_total": pooled_total,
+            "n_blocks": len(block_rho)}
 
+
+def _finalize(horizon, min_setup, include_relative_strength,
+              block_rho, block_ic, block_hit, pooled_hits, pooled_total,
+              per_sample=None):
+    """Toplanmış bloklardan istatistik + verdict üretir (TEK kaynak — tek/havuz ortak)."""
     K = len(block_rho)
     out = {"horizon": horizon, "n_blocks": K, "min_setup": min_setup,
            "include_relative_strength": include_relative_strength}
+    if per_sample is not None:
+        out["per_sample_blocks"] = per_sample
 
     # --- Blok-düzeyi ρ ortalaması t-testi (H0: ortalama=0), Student-t df=K-1 ---
     if K >= 2:
@@ -217,7 +224,6 @@ def study_horizon(frames, horizon, min_setup=200, include_relative_strength=True
         out["mean_rho"] = round(m_rho, 4)
         out["std_rho"] = round(sd, 4) if sd is not None else None
         if sd is None or sd == 0.0:
-            # Dejenere: tüm bloklar özdeş → varyans sıfır, t-testi tanımsız.
             out.update({"se_rho": 0.0, "t_stat": None, "p_rho": None,
                         "note": "sıfır varyans — t-testi tanımsız (tüm bloklar özdeş)"})
         else:
@@ -234,19 +240,15 @@ def study_horizon(frames, horizon, min_setup=200, include_relative_strength=True
     out["mean_ic"] = round(_mean(block_ic), 4) if block_ic else None
     out["mean_block_hit"] = round(_mean(block_hit), 4) if block_hit else None
 
-    # --- Toplu isabet binom testi (İYİMSER: kesitsel korelasyonu yok sayar) ---
     if pooled_total > 0:
         out["pooled_hit_rate"] = round(pooled_hits / pooled_total, 4)
         out["pooled_n"] = pooled_total
         out["pooled_hit_p"] = round(_binom_two_sided_p(pooled_hits, pooled_total), 4)
-        # Makine-okur tüketici için caveat JSON'a da taşınır (sadece render'da değil).
         out["pooled_hit_p_note"] = ("İYİMSER: blok-içi kesitsel korelasyonu yok sayar; "
                                     "etkin N≪pooled_n. Birincil ölçüt blok t-testidir.")
     else:
         out["pooled_hit_rate"] = None
 
-    # --- Yorum: Student-t p tabanlı + küçük-K kapısı (verdict yalnız korumalı
-    #     blok t-testinden türer; pooled binom ASLA verdict'i sürüklemez) ---
     p = out.get("p_rho")
     t = out.get("t_stat")
     if K < 4:
@@ -263,12 +265,62 @@ def study_horizon(frames, horizon, min_setup=200, include_relative_strength=True
     return out
 
 
+def study_horizon(frames, horizon, min_setup=200, include_relative_strength=True,
+                  bt_min_setup=50):
+    """Tek örnekte bir ufuk için örtüşmeyen-blok skill testi."""
+    b = _collect_blocks(frames, horizon, min_setup, include_relative_strength,
+                        bt_min_setup)
+    return _finalize(horizon, min_setup, include_relative_strength,
+                     b["block_rho"], b["block_ic"], b["block_hit"],
+                     b["pooled_hits"], b["pooled_total"])
+
+
+def study_horizon_pooled(frames_list, horizon, min_setup=200,
+                         include_relative_strength=True, sample_names=None):
+    """Birden çok örneği havuzlar (blok-ρ listelerini birleştirir → K büyür).
+
+    UYARI — BAĞIMSIZLIK VARSAYIMI: t-testi blokların bağımsız olduğunu varsayar.
+    Bu YALNIZCA örnekler zaman-bağımsızsa (farklı, örtüşmeyen DÖNEMLER) geçerlidir.
+    Aynı takvim penceresindeki farklı PİYASALARI havuzlamak bağımsızlık vermez:
+    ortak küresel risk faktörü blokları çağdaş olarak ilişkilendirir → etkin K
+    şişirilir, SE küçümsenir, p iyimser çıkar. Çapraz-PİYASA aynı pencerede
+    havuzlanırsa sonucu "betimsel" yorumla, anlamlılığı OLDUĞUNDAN GÜÇLÜ okuma.
+    Güç için doğru yol: çağdaş-olmayan (farklı dönem) bağımsız örnekler.
+    `per_sample_blocks` her örneğin K ve ρ̄'sini ayrı raporlar.
+    """
+    rho, ic, hit = [], [], []
+    ph = pt = 0
+    per_sample = {}
+    for i, frames in enumerate(frames_list):
+        b = _collect_blocks(frames, horizon, min_setup, include_relative_strength)
+        rho += b["block_rho"]; ic += b["block_ic"]; hit += b["block_hit"]
+        ph += b["pooled_hits"]; pt += b["pooled_total"]
+        name = (sample_names[i] if sample_names and i < len(sample_names)
+                else f"örnek{i + 1}")
+        per_sample[name] = {
+            "n_blocks": b["n_blocks"],
+            "mean_rho": (round(_mean(b["block_rho"]), 4) if b["block_rho"] else None)}
+    return _finalize(horizon, min_setup, include_relative_strength,
+                     rho, ic, hit, ph, pt, per_sample=per_sample)
+
+
 def skill_study(frames, horizons=(5, 10, 20), min_setup=200,
                 include_relative_strength=True):
     return {
         "horizons": [study_horizon(frames, h, min_setup, include_relative_strength)
                      for h in horizons],
         "basis": "EOD günlük; örtüşmeyen bloklar; sabit varsayılan parametre (3/13)",
+        "disclaimer": "karar-destek; yatırım tavsiyesi değildir",
+    }
+
+
+def pooled_study(frames_list, horizons=(5, 10, 20), min_setup=200,
+                 include_relative_strength=True, sample_names=None):
+    return {
+        "horizons": [study_horizon_pooled(frames_list, h, min_setup,
+                                          include_relative_strength, sample_names)
+                     for h in horizons],
+        "basis": "EOD günlük; ÇOK-ÖRNEK havuzlanmış (bağımsız dönem/piyasa OOS); sabit (3/13)",
         "disclaimer": "karar-destek; yatırım tavsiyesi değildir",
     }
 
@@ -295,6 +347,19 @@ def render(result):
     lines.append("Not: p<0.05 → anlamlı (Student-t, küçük-K kalın kuyruk hesaba katılır; "
                  "K<4 → yetersiz güç). Toplu binom İYİMSER (blok-içi korelasyonu yok sayar); "
                  "birincil ölçüt korumalı blok t-testidir.")
+    # Havuz modunda örnek-bazlı kırılım (çapraz-dönem/piyasa genelleme görünür olsun).
+    ps = next((h.get("per_sample_blocks") for h in result["horizons"]
+               if h.get("per_sample_blocks")), None)
+    if ps:
+        lines.append("")
+        lines.append("Havuz örnekleri (ilk ufuk için K | ρ̄):")
+        h0 = result["horizons"][0].get("per_sample_blocks", {})
+        for name, s in h0.items():
+            lines.append(f"  {name}: K={s['n_blocks']} | ρ̄={s['mean_rho']}")
+        lines.append("UYARI: t-testi blok bağımsızlığı varsayar. Örnekler AYNI takvim "
+                     "penceresindeki farklı PİYASALAR ise bağımsız DEĞİLDİR (ortak küresel "
+                     "faktör) → p OLDUĞUNDAN GÜÇLÜ; gerçek SE/CI daha geniştir. Çoklu-ufuk "
+                     "testinde multiplisite de düzeltilmeli.")
     lines.append("Karar-destek; yatırım tavsiyesi değildir.")
     return "\n".join(lines)
 
@@ -328,7 +393,10 @@ def _run_selftest():
 def main(argv=None):
     p = argparse.ArgumentParser(
         description="Teknik-duruş mutlak skill çalışması (karar-destek).")
-    p.add_argument("--file", help="günlük frames.json (≥250 bar/sembol önerilir)")
+    p.add_argument("--file", help="tek günlük frames.json (≥250 bar/sembol önerilir)")
+    p.add_argument("--pool", nargs="+",
+                   help="ÇOK bağımsız örnek (dönem/piyasa) frames.json — havuzla (güç ↑)")
+    p.add_argument("--names", help="--pool örnek adları (virgüllü; sırayla)")
     p.add_argument("--horizons", default="5,10,20",
                    help="virgüllü ufuk listesi (işlem günü)")
     p.add_argument("--min-setup", type=int, default=200,
@@ -337,14 +405,28 @@ def main(argv=None):
     p.add_argument("--json", action="store_true")
     args = p.parse_args(argv)
 
-    if not args.file:
+    if not args.file and not args.pool:
         out = _run_selftest()
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0 if out["ok"] else 1
 
+    horizons = tuple(int(x) for x in args.horizons.split(",") if x.strip())
+    if args.pool:
+        frames_list = []
+        for path in args.pool:
+            with open(path, "r", encoding="utf-8") as f:
+                frames_list.append(json.load(f))
+        names = ([s.strip() for s in args.names.split(",")] if args.names else None)
+        res = pooled_study(frames_list, horizons=horizons, min_setup=args.min_setup,
+                           include_relative_strength=not args.no_rs, sample_names=names)
+        if args.json:
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        else:
+            print(render(res))
+        return 0
+
     with open(args.file, "r", encoding="utf-8") as f:
         frames = json.load(f)
-    horizons = tuple(int(x) for x in args.horizons.split(",") if x.strip())
     res = skill_study(frames, horizons=horizons, min_setup=args.min_setup,
                       include_relative_strength=not args.no_rs)
     if args.json:

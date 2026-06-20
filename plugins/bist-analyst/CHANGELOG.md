@@ -2,6 +2,30 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.5] — 2026-06-20
+
+Çok-örnek havuz modu + çapraz-piyasa skill koşumu. Davranış/varsayılanlar değişmedi.
+
+### Eklendi
+- **`skill_study.py --pool file1 file2 …`** (+`--names`) — birden çok bağımsız
+  örneğin (farklı dönem/piyasa) örtüşmeyen bloklarını havuzlar → K (güç) artar;
+  `per_sample_blocks` ile örnek-bazlı kırılım. Ortak `_collect_blocks`/`_finalize`
+  refaktörü (tek/havuz aynı korumalı Student-t testi). `pooled_study` docstring'i ve
+  çıktısı **bağımsızlık tuzağını** uyarır (aşağı).
+
+### Bulgu (çapraz-piyasa, çekişmeli kalibreli)
+- Koşum: 9 BIST + 9 ABD hissesi, ~286-288 günlük (bölünme-düzeltmeli) bar, aynı
+  ~14-ay penceresi, ufuk 5/10/20 → **hiçbir ufukta pozitif kesitsel skill kanıtı
+  yok** (h=5 ρ̄=−0,11, p=0,09 anlamsız; isabet 0,493 = yazı-tura).
+- **Metodolojik DERS:** aynı takvim penceresindeki farklı PİYASALARI havuzlamak
+  bağımsızlık VERMEZ — ortak küresel risk faktörü blokları çağdaş ilişkilendirir,
+  **etkin K≈17 (34 değil)**, SE küçümsenir, gerçek p büyür (çoklu-ufuk multiplisitesiyle
+  ≈0,25). Hafif-negatif eğilim "tekrarlanmış sinyal" DEĞİL, gürültü; pozitif skill
+  "dışlanmış" da denemez. Güç için doğru yol: **çağdaş-olmayan** (farklı dönem)
+  bağımsız örnekler + multiplisite düzeltmesi.
+- **Net konum:** duruşun kısa-ufuk getiriyle ilişkisi sıfırdan ayırt edilemez →
+  **betimsel/yapısal**; karar-destek (tahmin değil) ilkesi pekişir.
+
 ## [1.1.4] — 2026-06-20
 
 Motor-skill çalışması: duruşun MUTLAK öngörü gücü. Davranış/varsayılanlar değişmedi.

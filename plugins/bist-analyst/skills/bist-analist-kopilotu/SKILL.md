@@ -1,7 +1,14 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.3
+version: 1.1.4
 changelog: |
+  1.1.4 (2026-06-20) — Yeni `scripts/skill_study.py`: duruşun MUTLAK kesitsel
+  öngörü gücünü ÖRTÜŞMEYEN (bağımsız) bloklarda, SMA200-kapsamlı veride, Student-t
+  ile sınar (negatif-ρ uyarısını bağımsız incelemek için). Koşum (12 hisse + XU100,
+  286 günlük bar, ufuk 5/10/20): hiçbir ufukta sıfırdan ayırt edilebilir skill yok
+  (tüm p≥0.20). Dürüst çerçeve: kanıt-yokluğu (güçlü |ρ|≳0.2 DIŞLANIR; zayıf skill
+  sıfırdan ayrılamaz) → duruş betimsel/yapısaldır, kanıtlanmış getiri-sıralama
+  üstünlüğü değil; karar-destek ilkesini pekiştirir. Davranış/varsayılan değişmedi.
   1.1.3 (2026-06-20) — Yeni `scripts/stitch_daily.py` (günlük-veri toplayıcı:
   Borsa ≤30g dilimlerini birleştirir → günlük frames). Kalibrasyon günlük katmanda
   (8 hisse + XU100, 101 günlük bar, SMA50 tanımlı, motor-ufku 5/10 gün) yeniden

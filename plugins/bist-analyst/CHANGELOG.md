@@ -2,6 +2,33 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.2] — 2026-06-20
+
+Walk-forward kalibrasyon aracı + çok-rejim kanıtı. Davranış geriye-uyumlu; varsayılanlar değişmedi.
+
+### Eklendi
+- **`scripts/walkforward_calibrate.py`** — teknik-duruş motorunun iki kalibrasyon
+  parametresini (RSI eğim penceresi × göreli güç lookback, ızgara {2,3,5}×{8,13,21})
+  **sızıntısız** ve **çok-rejimli** tarayan araç. Her cell'i `backtest_posture`'a
+  delege eder (skorlama mantığı çoğaltılmaz). Modlar: `--smoke` (hızlı errors=0
+  doğrulaması), tek-rejim ızgara (`--file`), çok-rejim (`--multi` dosyalar / `--windows N`
+  ile tek seriyi rejim pencerelerine dilimleme). Sıra-kararlılığı için min-competition
+  (beraberlik-duyarlı) sıralama; rejimler arası ρ̄/medyan/σ + top-1/top-3.
+
+### Değişti (geriye-uyumlu)
+- `backtest_posture.backtest_posture` imzasına opsiyonel `rsi_slope_window=3`,
+  `rs_lookback=13` pass-through (enrich_snapshot'a iletilir). Varsayılan çıktı
+  **bit-özdeş** (öz-denetim ρ=0.949 korunur).
+
+### Karar (kanıta dayalı)
+- İlk çok-rejim kalibrasyon (14 BIST hissesi + XU100, 36 aylık bölünme-düzeltmeli bar,
+  12 rejim) **varsayılan 3/13'ü değiştirmek için gerekçe bulamadı**: en-iyi↔varsayılan
+  ortalama-ρ farkı (~0,04) rejim-içi gürültünün (σ≈0,29) çok altında (z≈0,5); en-iyi
+  cell kesitler arası kayıyor (aşırı-uyum imzası); mutlak isabet her yerde ≤ yazı-tura.
+  Çok-mercekli + çekişmeli sentez (3 mercek + reddiye) yüksek-güvenle "varsayılanı koru"
+  dedi. **Sınır:** aylık bar/1-aylık ufuk motoru eksik-test eder; nihai kalibrasyon
+  günlük/haftalık tam-kapsam veri + out-of-sample bölme gerektirir.
+
 ## [1.1.1] — 2026-06-20
 
 ### Değişti (geriye-uyumlu yama)

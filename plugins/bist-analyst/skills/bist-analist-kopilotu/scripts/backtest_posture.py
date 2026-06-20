@@ -98,7 +98,8 @@ def _bars_field(bars, field):
 
 
 def backtest_posture(symbols_bars, horizon=1, index_bars=None,
-                     include_relative_strength=True, min_setup_bars=20):
+                     include_relative_strength=True, min_setup_bars=20,
+                     rsi_slope_window=3, rs_lookback=13):
     """
     Sembol bazında sızıntısız duruş-vs-getiri denetimi.
 
@@ -112,6 +113,9 @@ def backtest_posture(symbols_bars, horizon=1, index_bars=None,
     include_relative_strength : duruş hesaplanırken endeks serisi enrich_snapshot'a
                    verilsin mi (göreli-güç katkısı dahil/hariç A/B testi için).
     min_setup_bars : duruş için gereken asgari kurulum-barı; altındakiler atlanır.
+    rsi_slope_window, rs_lookback : enrich_snapshot'a geçirilir (walk-forward
+                   kalibrasyonu için). Varsayılanlar (3/13) gömülü değerlerle
+                   birebir aynıdır — varsayılan çağrı davranışı değişmez.
 
     Dönen: {rows, metrics, benchmark, params, disclaimer}.
     """
@@ -143,7 +147,9 @@ def backtest_posture(symbols_bars, horizon=1, index_bars=None,
         intra = ((c_final / o_next - 1.0) * 100.0) if o_next else None
 
         idx_for_rs = idx_close[:-horizon] if (idx_close and include_relative_strength) else None
-        snap = enrich_snapshot(setup, index_closes=idx_for_rs)
+        snap = enrich_snapshot(setup, index_closes=idx_for_rs,
+                               rsi_slope_window=rsi_slope_window,
+                               rs_lookback=rs_lookback)
         post = snap.get("posture", {})
         sn = post.get("score_norm")
 

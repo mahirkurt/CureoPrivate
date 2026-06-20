@@ -1,7 +1,14 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.1
+version: 1.1.2
 changelog: |
+  1.1.2 (2026-06-20) — Yeni `scripts/walkforward_calibrate.py`: RSI eğim penceresi ×
+  RS lookback ızgarasını ({2,3,5}×{8,13,21}) sızıntısız, çok-rejimli tarar
+  (backtest_posture'a delege; --smoke/--windows/--multi). Çok-rejim kalibrasyonu
+  varsayılan 3/13'ü DEĞİŞTİRMEK için gerekçe bulamadı (fark gürültü içinde, en-iyi
+  cell kesitler arası kayıyor) → varsayılan kanıta dayalı korundu. backtest_posture
+  imzasına geriye-uyumlu rsi_slope_window/rs_lookback pass-through (varsayılan
+  çıktı bit-özdeş, ρ=0.949). Davranış değişmedi.
   1.1.1 (2026-06-20) — RSI eğim penceresi ve RS lookback enrich_snapshot imzasına
   opsiyonel parametre olarak açıldı (kalibrasyon için; varsayılanlar 3/13 korunur,
   davranış değişmez).

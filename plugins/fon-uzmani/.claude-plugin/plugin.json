@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "fon-uzmani",
   "displayName": "Fon Uzmanı",
-  "version": "1.2.0",
-  "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) ile fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa ve izleme kaynak-tipi skill'lerini tek paylaşılan connector sözleşmesi, kanonik-artefakt önbelleği ve deterministik saf-Python kuant betik kütüphanesi altında birleştirir. İki MCP omurgası: Borsa MCP (getiri/NAV/AUM/tarama/benchmark/makro) + fon-mcp (tam portföy dağılımı/TER/fon akışı/yönetici/EMK). Beş mod: tek-fon analiz · tarama · karşılaştırma · portföy inşası · sürekli izleme. Karar-destek; SPK yatırım danışmanlığı değildir.",
+  "version": "1.3.0",
+  "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) ile fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa ve izleme kaynak-tipi skill'lerini tek paylaşılan connector sözleşmesi, kanonik-artefakt önbelleği ve deterministik saf-Python kuant betik kütüphanesi altında birleştirir. İki MCP omurgası: Borsa MCP (getiri/NAV/AUM/tarama/benchmark/makro) + fon-mcp (yeni resmî TEFAS API; varlık-sınıfı dağılımı + TER azami sınır + yönetim ücreti + fon akışı + EMK evreni — 12 araç). Beş mod: tek-fon analiz · tarama · karşılaştırma · portföy inşası · sürekli izleme. Karar-destek; SPK yatırım danışmanlığı değildir.",
   "author": { "name": "Cureonics", "url": "https://cureonics.com" },
   "license": "Internal skill asset, not for external redistribution",
   "homepage": "https://cureonics.com",
@@ -55,6 +55,11 @@
     ]
   },
   "changelog": [
+    {
+      "version": "1.3.0",
+      "date": "2026-06-20",
+      "summary": "fon-mcp canlı tool yüzeyiyle hizalama. CONNECTORS.md §1.A tablosu gerçek dönüş şemalarına göre yeniden yazıldı (resolve_fund=code/name/aum; get_fund_registry=founder türetilmiş + ISIN/strategy=null; get_fund_costs=management_fee_pct + ter_ceiling_pct ÜST-SINIR; get_fund_holdings=varlık-sınıfı). Fallback matrisi (§6) TER üst-sınır vs gerçekleşen ayrımıyla, provenance gramer (§7) fonYonetimBazliBilgiGetir damgasıyla, health-check (§8) yeni `api`/`cache_namespace: fon:v4` beklentisiyle güncellendi. fon-haritalama SKILL.md / holdings-mapping.md / data-sources.md aynı hizada. izleme doktrini: ter_artisi → ter_ust_sinir_artisi (DÜŞÜK frekanslı) + yonetim_ucreti_artisi + gerceklesen_ter_artisi (KAP KIID). evals/mcp_smoke_test.md canlı tools/list assertion'larıyla yenilendi."
+    },
     {
       "version": "1.2.0",
       "date": "2026-06-16",

@@ -1,7 +1,7 @@
 # fon-uzmani — Paylaşılan Connector Sözleşmesi (CONNECTORS.md)
 
 **Belge sınıfı:** Normatif connector envanteri — plugin-düzeyi tek doğruluk kaynağı.
-**Sürüm:** 1.0.0
+**Sürüm:** 1.1.0 (2026-06-20 — fon-mcp canlı tool yüzeyiyle hizalandı)
 
 > **Neden bu dosya var.** Connector tanımı altı SKILL.md içinde tekrarlanmasın; aynı
 > TEFAS/Borsa çağrısı iki skill tarafından ayrı ayrı yapılmasın diye connector
@@ -28,22 +28,27 @@ Sütunlar: **FH** = fon-haritalama · **QA** = quant-analiz · **PM** = piyasa-m
 **RU** = regulasyon-uyum · **PI** = portfoy-insa · **IZ** = izleme · **ORK** = orchestrator.
 ● = birincil/zorunlu · ○ = koşullu/opsiyonel · — = kullanılmaz.
 
-### 1.A fon-mcp (yeni TEFAS/KAP detay sunucusu — `https://fon-mcp.cureonics.workers.dev/mcp`)
+### 1.A fon-mcp (TEFAS/KAP detay sunucusu — `https://fon-mcp.cureonics.workers.dev/mcp`)
 
-| Araç | Döndürdüğü | FH | QA | PM | RU | PI | IZ | ORK | Not |
+> **Yeni TEFAS resmî API** (2026 Next.js göçü sonrası — `fonGnlBlgSiraliGetir` /
+> `dagilimSiraliGetirT` / `fonBilgiGetir` / `fonYonetimBazliBilgiGetir`). Eski
+> `/api/DB/Bind*` rotaları küresel devre dışı (`Method not found`); doğrudan TEFAS
+> kazıma yapan herhangi bir akış BU sunucuya geçirilir. Auth/anahtar YOK.
+
+| Araç | Döndürdüğü (canlı şema) | FH | QA | PM | RU | PI | IZ | ORK | Not |
 |---|---|---|---|---|---|---|---|---|---|
-| `resolve_fund` | kod/ad/kurucu/kategori/KAP | ● | — | — | — | — | ○ | ● | Kimlik çözümleme |
-| `get_fund_registry` | kurucu/PYŞ/strateji/ISIN/risk | ● | — | — | ○ | — | — | ● | Profil kartı |
-| `get_fund_taxonomy` | YAT/EMK kategori ağacı | ● | — | — | — | — | — | ● | Taksonomi |
-| `get_allocation_snapshot` | son varlık-sınıfı dağılımı | ● | ○ | — | — | ○ | ○ | ● | Anlık dağılım |
-| `get_allocation_history` | dağılım **zaman-serisi** | ● | ○ | — | — | — | ○ | ● | Drift/stil için |
-| `get_fund_holdings` | holdings (ağırlık) | ● | ○ | — | — | ○ | — | ● | Yoğunlaşma/overlap |
-| `get_fund_costs` | TER/yönetim ücreti | ● | ○ | — | ○ | ○ | ○ | ● | Maliyet |
-| `compare_fund_costs` | kategori maliyet kesiti | ● | — | — | — | ○ | — | ● | Maliyet tarama |
-| `get_fund_flows` | net giriş/çıkış + AUM/yatırımcı trendi | ● | — | — | — | — | ○ | ● | Akış |
-| `get_flow_leaders` | AUM proxy sıralama | ● | — | — | — | — | — | ● | Akış (proxy) |
-| `list_emk_funds` | EMK evreni | ● | — | — | — | ○ | — | ● | Emeklilik |
-| `fon_mcp_health` | erişilebilirlik | — | — | — | — | — | — | ● | Sağlık-kontrolü |
+| `resolve_fund(query, fund_type?)` | `code/name/aum/kap_link` (kurucu/kategori dönmez) | ● | — | — | — | — | ○ | ● | Kimlik çözümleme |
+| `get_fund_registry(code, fund_type?)` | `name/category/aum/investor_count/category_rank/category_fund_count/market_share/last_price/founder` (PYŞ kısa adı, ünvandan türetilmiş) + `isin=null` + `strategy=null` + `kap_link` | ● | — | — | ○ | — | — | ● | Snapshot kartı; ISIN/strateji için KAP |
+| `get_fund_taxonomy(fund_type, code?)` | `code` verilirse → tek fonun `category`; verilmezse → **SPK kategori referans listesi** (sayım YOK; getiri-sıralı tarama için Borsa `screen_funds`) | ● | — | — | — | — | — | ● | Taksonomi |
+| `get_allocation_snapshot(code, fund_type?)` | son `allocations[{asset_class, code, percent}]` (~30 kodlu kolon → TR etiket) | ● | ○ | — | — | ○ | ○ | ● | Anlık dağılım |
+| `get_allocation_history(code, start_date, end_date, fund_type?)` | dağılım **zaman-serisi** + `note` (>100k satır kapağında uyarı) | ● | ○ | — | — | — | ○ | ● | Drift/stil için |
+| `get_fund_holdings(code, fund_type?)` | `holdings[{instrument, code, weight_pct}]` (**varlık-sınıfı düzeyi**; menkul-bazlı line-item YOK — KAP portföy raporu PDF) | ● | ○ | — | — | ○ | — | ● | Yoğunlaşma/overlap |
+| `get_fund_costs(code, fund_type?)` | `management_fee_pct` + **`ter_ceiling_pct` (azami toplam gider oranı — ÜST SINIR, gerçekleşen TER DEĞİL)** + `umbrella` + `founder_code` ([fon-mcp / fonYonetimBazliBilgiGetir]); gerçekleşen TER → KAP KIID | ● | ○ | — | ○ | ○ | ○ | ● | Maliyet (üst-sınır) |
+| `compare_fund_costs(fund_type, category?, sort_by?, limit?)` | TER üst-sınır kesiti (`sort_by=ter_ceiling_pct` varsayılan; `aum`/`management_fee_pct` opsiyonel); kategori filtresi destekli | ● | — | — | — | ○ | — | ● | Maliyet tarama |
+| `get_fund_flows(code, start_date, end_date, fund_type?)` | NAV/shares/investor/AUM zaman-serisi + Δshares×midNAV ile türetilmiş `net_flow_try` | ● | — | — | — | — | ○ | ● | Akış |
+| `get_flow_leaders(fund_type, limit?)` | AUM proxy sıralı evren | ● | — | — | — | — | — | ● | Akış (proxy) |
+| `list_emk_funds(founder?, limit?)` | EMK evreni; `founder` arg = fon ünvanı substring filtresi (alt-kategori/FİGO/FTGK yeni API'de YOK) | ● | — | — | — | ○ | — | ● | Emeklilik |
+| `fon_mcp_health` | `tefas_reachable`, `tefas_status`, `cache_namespace`, `relay`, `api` damgası | — | — | — | — | — | — | ● | Sağlık-kontrolü |
 
 ### 1.B Borsa MCP (mevcut — `https://borsamcp.fastmcp.app/mcp`)
 
@@ -100,10 +105,12 @@ orchestrator çift çağrıyı engeller (kanonik-önbellek §3).
 
 | Birincil | Düşüş | Caveat etiketi |
 |---|---|---|
-| fon-mcp holdings/TER timeout | Borsa `get_fund_data(include_portfolio)` (sınırlı: asset-class var, line-item yok) | "holdings doğrulanamadı (fon-mcp erişilemedi)" |
-| fon-mcp registry | KAP fon sayfası web_fetch | "profil KAP'tan, doğrulanmamış olabilir" |
-| Borsa `get_fund_data` timeout | degrade — "canlı NAV varsayma" | "NAV alınamadı; metrikler hesaplanamadı" |
-| Borsa `screen_funds` timeout | fon-mcp `compare_fund_costs`/`list_emk_funds` (evren) | "tarama degrade" |
+| fon-mcp holdings/allocation timeout | Borsa `get_fund_data(include_portfolio)` (sınırlı: asset-class var, line-item yok) | "holdings doğrulanamadı (fon-mcp erişilemedi)" |
+| fon-mcp `get_fund_costs` üst-sınır TER vermez (eksik kayıt) | KAP KIID (Yatırımcı Bilgi Formu) — fon-mcp `kap_link` zaten döner | "ter üst-sınırı alınamadı; KAP KIID gerekir" |
+| Gerçekleşen TER gerekliyse | Her zaman KAP KIID (TER üst-sınır ≠ gerçekleşen) | "TER azami sınır; gerçekleşen için KAP KIID" |
+| fon-mcp `get_fund_registry` ISIN/strateji vermez | Borsa `get_fund_data` (ISIN) + KAP fon sayfası (strateji) web_fetch | "profil kısmen KAP'tan, doğrulanmamış olabilir" |
+| Borsa `get_fund_data` timeout | fon-mcp `get_fund_flows` (NAV/shares/AUM zaman-serisi YEDEKLİ omurga) | "NAV omurgası fon-mcp'den; getiri penceresi sınırlı" |
+| Borsa `screen_funds` timeout | fon-mcp `compare_fund_costs(sort_by=ter_ceiling_pct)` / `get_flow_leaders` / `list_emk_funds` (evren) | "tarama degrade — TER/AUM bazlı" |
 
 Her fallback `run_manifest.caveats[]`'a ve rapor §Sınırlar bölümüne yazılır.
 
@@ -112,8 +119,11 @@ Her fallback `run_manifest.caveats[]`'a ve rapor §Sınırlar bölümüne yazıl
 ## 7. Provenance Özeti
 
 Damga grameri `shared/provenance-standard.md`'dedir. Özet: `[Borsa MCP / get_fund_data /
-<as-of>]`, `[fon-mcp / get_holdings / <as-of>]`, `[KAP / duyuru / <kod> / <tarih>]`,
-`[quant-analiz / <script> / <formül-vN>]`; her NAV/metrik `(EOD/gün-sonu, as-of <tarih>)`.
+<as-of>]`, `[fon-mcp / get_fund_holdings / <as-of>]`, `[fon-mcp / fonYonetimBazliBilgiGetir
+/ <as-of>]` (TER üst-sınır), `[KAP / KIID / <kod> / <tarih>]` (gerçekleşen TER), `[KAP /
+duyuru / <kod> / <tarih>]`, `[quant-analiz / <script> / <formül-vN>]`; her NAV/metrik
+`(EOD/gün-sonu, as-of <tarih>)`. TER raporlandığında **üst-sınır mı gerçekleşen mi**
+açıkça etiketlenir.
 
 ---
 
@@ -121,5 +131,8 @@ Damga grameri `shared/provenance-standard.md`'dedir. Özet: `[Borsa MCP / get_fu
 
 `start` skili ve her komut çalışmadan önce:
 1. Borsa MCP: `search_symbol(market='fund', query='<bilinen kod>')` veya `get_fund_data` prob.
-2. fon-mcp: `fon_mcp_health` → `tefas_reachable`.
+2. fon-mcp: `fon_mcp_health` → `tefas_reachable: true` + `api: "fonBilgiGetir/fonGnlBlgSiraliGetir/dagilimSiraliGetirT (yeni resmî API)"` + `cache_namespace: "fon:v4"` (veya sonraki).
 Erişilemeyen connector için ilgili modun degrade çalışacağı kullanıcıya bildirilir.
+
+**Canlı tool envanteri:** 12 araç (yukarıdaki §1.A tablosuyla bire-bir). `tools/list`
+beklentisini bozarsa süit sürümü atlanmış demektir — `evals/mcp_smoke_test.md` çalıştırın.

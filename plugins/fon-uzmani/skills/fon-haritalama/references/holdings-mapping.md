@@ -15,9 +15,15 @@ Hisse fonunun ağırlıklı BIST holding'leri için tekil-hisse derinliği gerek
 `bist-analyst` plugin'i çağrılabilir (composes_with). Fon-düzeyi ↔ hisse-düzeyi köprüsü.
 
 ## TER / gider ayrıştırma
-- Birincil: `fon-mcp get_fund_costs(code)` → TGO/TER + yönetim ücreti.
-- EMK: FİGO/FTGK (EGM kaynağı — fon-mcp gelecek alanı).
-- TER eksikse caveat; `cost_analysis.py` ile net-getiri etkisi modellenir.
+- Birincil: `fon-mcp get_fund_costs(code, fund_type?)` → `management_fee_pct` (yıllık yönetim ücreti)
+  + **`ter_ceiling_pct` (azami toplam gider oranı — ÜST SINIR)** + `umbrella` + `founder_code`.
+  Kaynak `fonYonetimBazliBilgiGetir`.
+- **Üst-sınır ≠ gerçekleşen TER.** Gerçekleşen yıllık TER yalnız KAP Yatırımcı Bilgi Formu'nda
+  (KIID) yayımlanır; rapor her TER sayısının yanına etiket koyar: "(üst-sınır)" veya
+  "(gerçekleşen, KAP KIID)".
+- EMK: FİGO/FTGK (EGM kaynağı — fon-mcp gelecek alanı; şu an yalnız üst-sınır mevcut).
+- TER üst-sınır alınamazsa caveat; `cost_analysis.py` ile net-getiri etkisi her iki taban
+  (üst-sınır + KIID gerçekleşen) için ayrı modellenebilir.
 
 ## Quant'a aktarım
 `holdings` → `concentration.py` (HHI, top-N, overlap, drift). `allocation_history` →

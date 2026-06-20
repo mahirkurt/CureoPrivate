@@ -25,9 +25,13 @@ izleme) + `start` router. Paylaşılan sözleşmeler: [CONNECTORS.md](./CONNECTO
 [shared/](./shared/).
 
 **İki MCP omurgası:**
-- **Borsa MCP** (mevcut) — getiri/NAV serisi/AUM/tarama/benchmark/risksiz oran/makro.
-- **fon-mcp** (yeni; `mcp-servers/fon-mcp/`) — portföy dağılımı (zaman-serili)/holdings/
-  TER/fon akışı/kurucu-yönetici/EMK.
+- **Borsa MCP** (`https://borsamcp.fastmcp.app/mcp`) — getiri/NAV serisi/AUM/tarama/benchmark/
+  risksiz oran/makro + **ISIN** + kategori sıralaması.
+- **fon-mcp** (`https://fon-mcp.cureonics.workers.dev/mcp`, OAuth 2.1; kaynak
+  `mcp-servers/fon-mcp/`) — yeni resmî TEFAS API üzerine 12 araç: **varlık-sınıfı** dağılımı
+  (anlık + tarihsel) / **TER azami sınırı** + yönetim ücreti / fon akışı (net giriş-çıkış) /
+  kategori snapshot / **kurucu** (PYŞ kısa adı, fon ünvanından türetilmiş) / EMK evreni.
+  Strateji / ISIN / gerçekleşen TER / portföy yöneticisi adı KAP fon sayfası gerektirir.
 
 **Kuant motoru:** `skills/quant-analiz/scripts/` — 12 saf-Python (stdlib) modül; Sharpe,
 Sortino, Calmar, maxDD, VaR/CVaR, Monte Carlo, RBSA stil analizi, MVO/HRP optimizasyonu,
@@ -49,7 +53,8 @@ yetkilendirmesi). Kurulumda otomatik bağlanır. fon-mcp dağıtımı/anahtarı 
 
 - Fiyat/NAV **gün-sonu (EOD)**; gün-içi modellenmez.
 - Geçmiş getiri gelecek garantisi değildir.
-- Holdings/TER fon-mcp'ye (TEFAS/KAP) bağlıdır; erişilemezse degrade + caveat.
+- Holdings (varlık-sınıfı) + TER **üst-sınırı** fon-mcp'den. Gerçekleşen TER (yıllık) ve
+  menkul-bazlı line-item holdings KAP fon sayfasından çekilir; fon-mcp erişilemezse degrade + caveat.
 - Portföy optimizasyonu (`portfolio_opt.py`) varsayılan saf-stdlib; numpy opsiyonel.
 
 ## Lisans

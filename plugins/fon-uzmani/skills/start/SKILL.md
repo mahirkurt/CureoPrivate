@@ -27,9 +27,12 @@ kategori tarama, çoklu-fon karşılaştırma, portföy inşası (öneri) ve sü
 
 ## Adım 2 — Connector sağlık-kontrolü (pre-flight, CONNECTORS.md §8)
 1. **Borsa MCP**: `get_fund_data(symbol="TI2")` veya `search_symbol(market='fund', query="TI2")` prob.
-2. **fon-mcp**: `fon_mcp_health` → `tefas_reachable`.
-- Borsa erişilemezse: NAV/getiri/benchmark degrade → kullanıcıyı uyar.
-- fon-mcp erişilemezse: holdings/TER/akış degrade; Borsa `get_fund_data(include_portfolio)` fallback (sınırlı).
+2. **fon-mcp**: `fon_mcp_health` → bekle:
+   - `tefas_reachable: true`
+   - `api: "fonBilgiGetir/fonGnlBlgSiraliGetir/dagilimSiraliGetirT (yeni resmî API)"`.
+   Eski API damgası dönerse süit hedef-uyumsuz sürümle konuşuyor demektir; `evals/mcp_smoke_test.md` çalıştırılır.
+- Borsa erişilemezse: NAV/getiri/benchmark degrade; fon-mcp `get_fund_flows` NAV yedek omurga.
+- fon-mcp erişilemezse: holdings (varlık-sınıfı) + TER üst-sınırı + akış degrade; Borsa `get_fund_data(include_portfolio)` fallback (asset-class düzey).
 
 ## Adım 3 — Skill tanıtımı
 | Skill | Ne yapar |

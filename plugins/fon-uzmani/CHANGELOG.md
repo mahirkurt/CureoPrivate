@@ -2,6 +2,54 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.3.0] — 2026-06-20
+
+fon-mcp canlı tool yüzeyiyle dokümantasyon-davranış hizalama sürümü. Hiçbir kuant betiği
+veya orkestrasyon kapısı değişmedi; **tool çağrı doğruluğu** ve **TER raporlama disiplini**
+düzeltildi.
+
+### Değişti (CONNECTORS.md §1.A — gerçek dönüş şemaları)
+- `resolve_fund` → `code/name/aum/kap_link` (önceki belge "kurucu/kategori" diyordu — bunlar
+  Adım 3'te `get_fund_registry`'den geliyor).
+- `get_fund_registry` → `name/category/aum/investor_count/category_rank/category_fund_count/
+  market_share/last_price/founder` (PYŞ kısa adı, fon ünvanından türetilmiş) + `kap_link`.
+  **ISIN/strateji yeni TEFAS API'sinde yok** → `null` + KAP fon sayfası gerekir.
+- `get_fund_taxonomy` → tek-fon kategorisi VEYA SPK kategori referans listesi (sayım yok;
+  evren-bazlı sayım için Borsa `screen_funds`).
+- `get_fund_holdings` → **varlık-sınıfı** ağırlıkları (`dagilimSiraliGetirT`); menkul-bazlı
+  line-item KAP aylık portföy raporu PDF gerektirir.
+- `get_fund_costs` → `management_fee_pct` + **`ter_ceiling_pct` (azami toplam gider oranı —
+  ÜST SINIR, gerçekleşen TER DEĞİL; `fonYonetimBazliBilgiGetir`)** + `umbrella` +
+  `founder_code`. **Gerçekleşen TER her zaman KAP KIID gerektirir.**
+- `compare_fund_costs` → `fund_type` + opsiyonel `category` + `sort_by` (varsayılan
+  `ter_ceiling_pct`).
+
+### Değişti (raporlama disiplini)
+- Her TER sayısı artık "(üst-sınır)" veya "(gerçekleşen, KAP KIID)" etiketi taşır.
+- izleme doktrini alarm türleri ayrıldı: `ter_ust_sinir_artisi` (DÜŞÜK frekans; genel
+  kurul/tebliğ tetiklidir) + `yonetim_ucreti_artisi` + `gerceklesen_ter_artisi` (KAP KIID).
+- Fallback matrisi (CONNECTORS.md §6): TER üst-sınır vs gerçekleşen ayrımı, `get_fund_flows`
+  Borsa `get_fund_data` çökünce **NAV yedek omurgası** olarak eklendi.
+
+### Değişti (hizalanan dosyalar)
+- `CONNECTORS.md` (§1.A, §6, §7, §8) — sürüm 1.1.0.
+- `skills/fon-haritalama/SKILL.md` (Adım 1-4, G1, Kapsam Dışı) — sürüm 1.3.0.
+- `skills/fon-haritalama/references/holdings-mapping.md` — TER üst-sınır / gerçekleşen ayrımı.
+- `skills/fon-haritalama/references/data-sources.md` — endpoint-bazlı kaynak haritası
+  (`fonGnlBlgSiraliGetir` / `dagilimSiraliGetirT` / `fonBilgiGetir` / `fonYonetimBazliBilgiGetir`).
+- `skills/fon-analiz-orkestratoru/SKILL.md` (Aşama 1, G1, §9 composability).
+- `skills/izleme/references/monitoring-doctrine.md` (alarm tipleri).
+- `shared/provenance-standard.md` (TER üst-sınır + KAP KIID damga grameri).
+- `evals/mcp_smoke_test.md` (canlı `tools/list` + `fon_mcp_health` assertion'ları; 12 araç).
+- `README.md` (omurga tanımı).
+- `.claude-plugin/plugin.json` description (yönetici→kurucu, TER→TER azami sınır).
+
+### Notlar
+- fon-mcp `https://fon-mcp.cureonics.workers.dev` Worker'ı **2026-06-20'de yeniden deploy
+  edildi** (Version `f1406cfe-bd30-4a3e-9fc8-a83458f04998`, CACHE_NAMESPACE `fon:v4`).
+  Eski TEFAS `/api/DB/Bind*` rotaları küresel kapatıldı; yeni rotalar (`fonGnlBlgSiraliGetir`
+  / `dagilimSiraliGetirT` / `fonBilgiGetir` / `fonYonetimBazliBilgiGetir`) canlı + WAF YOK.
+
 ## [1.2.0] — 2026-06-16
 
 Skill-denetim (FULL_AUDIT) iyileştirme sürümü — rapor: 0 CRITICAL / 0 MAJOR; 6/7 skill EXEMPLARY.

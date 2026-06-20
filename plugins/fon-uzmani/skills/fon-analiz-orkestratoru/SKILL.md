@@ -75,10 +75,13 @@ Doğal dil → `assets/brief-schema.json`. Zorunlu: `mode`(1-5) · `universe`(YA
 `benchmark` · `exclusion`. **G0 — 8 kontrol.** Eksik kritik alanı kullanıcıdan iste; uydurma.
 
 ### Aşama 1 — Fon Haritalama (G1, BLOKER) · fon-haritalama
-fon-mcp + Borsa `get_fund_data`/`screen_funds`. Her fon: kod+ad+kurucu+kategori (taksonomi)
-+ NAV-serisi + AUM + tam holdings + TER + fon akışı + yönetici. **Kanonik:** `fund_registry`
-+ `holdings` + `nav_series` **bir kez** (canonical-cache §3). **G1 — 5 kontrol:** her fon
-çözüldü · NAV uzunluğu ≥ horizon · holdings ≈ %100 · TER alındı · kategori atandı.
+fon-mcp + Borsa `get_fund_data`/`screen_funds`. Her fon: kod+ad+kurucu (PYŞ kısa adı,
+fon ünvanından türetilmiş)+kategori (TEFAS) + NAV-serisi + AUM + **varlık-sınıfı holdings**
+(menkul-bazlı line-item KAP gerektirir) + **TER üst-sınırı + yönetim ücreti** (gerçekleşen
+TER için KAP KIID) + fon akışı (Δshares×midNAV). **Kanonik:** `fund_registry` + `holdings`
++ `nav_series` **bir kez** (canonical-cache §3). **G1 — 5 kontrol:** her fon çözüldü · NAV
+uzunluğu ≥ horizon · holdings ≈ %100 (varlık-sınıfı) · TER üst-sınırı alındı (yoksa caveat
+"gerçekleşen için KAP KIID") · kategori atandı.
 
 ### Aşama 2 — Piyasa/Makro Bağlam (G2) · piyasa-makro
 Borsa `get_index_data` (benchmark) + `get_bond_yields` (risksiz) + `get_evds_data`/
@@ -152,8 +155,8 @@ Tüm fallback zincirleri ve caveat etiketleri orada.
 
 ## 9. Composability
 **Downstream:** carbon-html-report / carbon-pptx (rapor render). **Yan:** bist-analyst
-(fonun ağırlıklı BIST hisse holding'leri için look-through), socius-vigil (yönetici/kurucu
-itibar sinyali).
+(fonun ağırlıklı BIST hisse holding'leri için look-through — line-item KAP'tan, varlık-sınıfı
+fon-mcp'den), socius-vigil (kurucu/PYŞ itibar sinyali).
 
 ## 10. Referans Dosyalar
 - `assets/brief-schema.json` — Aşama 0 JSON şeması.

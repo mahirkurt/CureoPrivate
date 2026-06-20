@@ -926,13 +926,18 @@ def confluence(frames):
 # Yardımcı: snapshot'ı supertrend + t3 ile zenginleştir
 # ----------------------------------------------------------------------------
 
-def enrich_snapshot(ohlc, index_closes=None):
+def enrich_snapshot(ohlc, index_closes=None, rsi_slope_window=3, rs_lookback=13):
     """
     indicator_snapshot + supertrend + t3 + ayrışma + (ops.) göreli güç + boşluk
     maruziyeti + duruş — tek pakette (v1.1.0).
 
     index_closes (ops.): endeks (ör. XU100) kapanış serisi verilirse, göreli güç
     hesaplanır ve duruş puanına dahil edilir (bulgu E — "yükselen dalga" düzeltmesi).
+
+    rsi_slope_window (vars. 3) ve rs_lookback (vars. 13): RSI eğim penceresi ile
+    göreli güç lookback'i; walk-forward kalibrasyonu için imzaya açıldı (v1.1.1).
+    Varsayılanlar gömülü değerlerle birebir aynıdır — varsayılan çağrı davranışı
+    değişmez.
 
     KRİTİK SIRALAMA (v1.1.0 kök düzeltmesi): tüm zenginleştirmeler (ayrışma, RSI
     eğimi, göreli güç) duruştan ÖNCE enjekte edilir; böylece bunlar trend_posture
@@ -948,14 +953,14 @@ def enrich_snapshot(ohlc, index_closes=None):
     rsi_full = rsi(norm["close"], 14, full=True)
     rsi_vals = rsi_full.get("values", []) if isinstance(rsi_full, dict) else []
     if isinstance(snap.get("indicators"), dict):
-        snap["indicators"]["rsi_14_slope"] = _series_slope(rsi_vals, window=3)
+        snap["indicators"]["rsi_14_slope"] = _series_slope(rsi_vals, window=rsi_slope_window)
 
     # Ayrışma (B — artık puana girecek, çünkü posture'dan ÖNCE yazılıyor)
     snap["divergence"] = rsi_price_divergence(norm["close"], rsi_vals)
 
     # Göreli güç (E — yalnız endeks serisi verilmişse)
     if index_closes is not None:
-        snap["relative_strength"] = relative_strength(norm["close"], index_closes)
+        snap["relative_strength"] = relative_strength(norm["close"], index_closes, lookback=rs_lookback)
 
     # Boşluk maruziyeti (F — EOD kör-nokta şeffaflığı)
     snap["gap_exposure"] = gap_exposure(norm)

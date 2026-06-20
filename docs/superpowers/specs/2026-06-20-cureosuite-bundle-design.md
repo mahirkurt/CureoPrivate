@@ -62,18 +62,25 @@ Kullanıcı akışı: collaborator daveti kabul → `/plugin marketplace add mah
 
 ### 5.1 rxpraxis lite-dönüşümü (deterministik)
 
+**Yapısal kaldırma (connector + skill + komut):**
 - `.mcp.json`'dan `midas` girdisini çıkar → 6 connector kalır.
 - `skills/thoughtspot-roche/` dizinini sil.
 - `commands/rxpraxis-midas.md` komutunu sil.
-- `CONNECTORS.md`'den midas/ThoughtSpot satırları + fallback referanslarını çıkar.
-- `shared/tool-manifest.json`'dan midas tool girdilerini çıkar.
-- `skills/rxos/` orkestratör + `skills/start/` router'dan midas/thoughtspot
-  yönlendirmelerini temizle (degrade değil, tam çıkarma).
-- `.claude-plugin/plugin.json` `smp.source_skills`'ten `thoughtspot-roche` çıkar.
-- `gated` MCP'lere (`titck`, `titck-cache`, `mevzuat`) Bearer env-placeholder ekle.
+- `.claude-plugin/plugin.json` `smp.source_skills`'ten `thoughtspot-roche` çıkar (→ 3 kaynak skill).
+- `shared/tool-manifest.json`'dan midas/thoughtspot tool girdilerini çıkar.
 
-**Çıktı doğrulama:** `grep -ri "midas\|thoughtspot\|roche" plugins/rxpraxis` → 0 sonuç
-(EULA/changelog tarihsel not hariç).
+**De-advertise (string-scrub DEĞİL — yargı gerektirir):** Kaldırılan connector/skill'i
+*bundled/çağrılabilir* olarak reklamlayan prose'u düzelt: `plugin.json` description/note/keywords,
+`CONNECTORS.md` connector envanteri, `skills/rxos/` orkestratör Aşama 5b, `skills/start/` router,
+`README.md`. **KORUNUR:** pharmaintel/medical-research'ün IQVIA MIDAS'ı *opsiyonel Channel B /
+degrade* olarak dokümante eden metodolojisi (süit ThoughtSpot yokken MIDAS-degrade çalışır),
+"Roche" farma-şirket içeriği (sponsor/ADC sahibi), ve "Midas" ilaç-adı (ör. "Ranivisio (Midas)").
+
+**Gated header:** rxpraxis'te `titck` + `mevzuat`'a `Bearer ${CUREONICS_MCP_KEY}` (titck-cache
+**public** kalır); `fon-mcp` header'ı fon-uzmani varyantında.
+
+**Çıktı doğrulama:** rxpraxis'te `rxpraxis-midas` komutu / `thoughtspot-roche` skill / `.mcp.json`'da
+`midas` server **yok**; metodoloji + Roche/Midas içeriği **korunur**; gated MCP'ler suite key ile 200.
 
 ## 6. Yetkilendirme & anahtar (kritik bölüm)
 

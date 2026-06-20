@@ -1,7 +1,14 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.4
+version: 1.1.5
 changelog: |
+  1.1.5 (2026-06-20) — `skill_study.py --pool`: birden çok bağımsız örneği
+  (dönem/piyasa) havuzlar (güç ↑). Çapraz-piyasa koşum (9 BIST + 9 ABD, ~286-288
+  günlük bar): hiçbir ufukta pozitif skill kanıtı yok (h=5 ρ̄=−0.11 p=0.09 anlamsız;
+  isabet 0.493). Çekişmeli denetimli DERS: aynı pencerede farklı piyasaları
+  havuzlamak bağımsızlık vermez (ortak küresel faktör → etkin K≈17, p iyimser) →
+  negatif eğilim gürültü, pozitif "dışlanmış" değil. Net: duruşun kısa-ufuk getiriyle
+  ilişkisi sıfırdan ayırt edilemez → betimsel/yapısal. Davranış/varsayılan değişmedi.
   1.1.4 (2026-06-20) — Yeni `scripts/skill_study.py`: duruşun MUTLAK kesitsel
   öngörü gücünü ÖRTÜŞMEYEN (bağımsız) bloklarda, SMA200-kapsamlı veride, Student-t
   ile sınar (negatif-ρ uyarısını bağımsız incelemek için). Koşum (12 hisse + XU100,

@@ -234,6 +234,135 @@ def pivot_points(high, low, close, method="classic"):
 
 
 # ----------------------------------------------------------------------------
+# Seri eğimi / boşluk maruziyeti / göreli güç (v1.1.0)
+# ----------------------------------------------------------------------------
+
+def _series_slope(values, window=3):
+    """
+    Son `window` değerin basit eğimi (ilk→son farkı). None-güvenli.
+
+    Eğim-duyarlı RSI okuması (mean-reversion düzeltmesi) için kullanılır:
+    pozitif = yukarı kıvrılma, negatif = aşağı kıvrılma. < 2 gözlemde None.
+    """
+    v = _to_floats(values)
+    if len(v) < 2:
+        return None
+    w = v[-window:] if len(v) >= window else v
+    if len(w) < 2:
+        return None
+    return _round(w[-1] - w[0])
+
+
+def gap_exposure(ohlc, lookback=20):
+    """
+    Seans-arası boşluk (gap) maruziyeti — EOD sistematiğinin yapısal kör noktası.
+
+    EOD veriyle çalışan bir motor, bir önceki kapanış ile bu açılış arasındaki
+    boşluğu ÖNGÖREMEZ; bir Cuma taraması hafta sonu sıçramasını göremez. Bu
+    fonksiyon son `lookback` bar için boşluk istatistiği üretir; böylece bir
+    kurulumun getirisinin ne kadarının seans-arası boşluğa bağımlı olabileceği
+    şeffaflaşır. Karar-destek; ÖNGÖRÜ iddiası taşımaz.
+
+    Dönen: {avg_abs_gap_pct, max_abs_gap_pct, last_gap_pct, gap_up_ratio,
+            sample, note}. Kısa/eksik seride çökmez.
+    """
+    norm = normalize_ohlc(ohlc) if not (isinstance(ohlc, dict) and "open" in ohlc
+                                        and "close" in ohlc and "high" in ohlc) else ohlc
+    o = _to_floats(norm.get("open", []))
+    c = _to_floats(norm.get("close", []))
+    m = min(len(o), len(c))
+    if m < 2:
+        return {"avg_abs_gap_pct": None, "max_abs_gap_pct": None,
+                "last_gap_pct": None, "gap_up_ratio": None, "sample": 0,
+                "note": "yetersiz veri (gap için >=2 bar gerekir)"}
+    o, c = o[-m:], c[-m:]
+    gaps = []
+    for i in range(1, m):
+        prev_c = c[i - 1]
+        if prev_c:
+            gaps.append((o[i] / prev_c - 1.0) * 100.0)
+    if not gaps:
+        return {"avg_abs_gap_pct": None, "max_abs_gap_pct": None,
+                "last_gap_pct": None, "gap_up_ratio": None, "sample": 0,
+                "note": "geçerli kapanış yok"}
+    win = gaps[-lookback:]
+    abs_win = [abs(g) for g in win]
+    up = sum(1 for g in win if g > 0)
+    return {
+        "avg_abs_gap_pct": _round(sum(abs_win) / len(abs_win), 2),
+        "max_abs_gap_pct": _round(max(abs_win), 2),
+        "last_gap_pct": _round(gaps[-1], 2),
+        "gap_up_ratio": _round(up / len(win), 2),
+        "sample": len(win),
+        "note": None,
+    }
+
+
+_RS_LEVELS = ["Güçlü Zayıf", "Zayıf", "Nötr", "Üstün", "Güçlü Üstün"]
+
+
+def relative_strength(stock_closes, index_closes, lookback=13):
+    """
+    Hisse'nin endekse göreli gücü (relative strength) — EOD, karar-destek.
+
+    "Yükselen dalga" (rising-tide) sorununun panzehiri: bir hissenin hareketinin
+    ne kadarının genel piyasayı (endeksi) GERÇEKTEN yendiğini ölçer; rejim
+    etkisini hisse-seçim sinyalinden ayırır. Mutlak teknik duruş, herkesin
+    yükseldiği bir haftada seçim becerisini ölçemez — göreli güç ölçebilir.
+
+    Hesap (son `lookback` bar, kapanış-kapanışa):
+      stock_ret = close[-1]/close[-1-L] - 1
+      index_ret = idx[-1]/idx[-1-L]   - 1
+      rs_excess = stock_ret - index_ret          (göreli aşırı getiri)
+      rs_score  = rs_excess'in -1..+1 ölçeğine sıkıştırılmış hâli (duruş katkısı)
+      rs_rating = 5-kademe etiket
+
+    Seriler kuyruktan hizalanır; kısa seride çökmez (note ile).
+
+    Dönen: {rs_excess_pct, stock_ret_pct, index_ret_pct, rs_score, rs_rating,
+            lookback, note}.
+    """
+    s = _to_floats(stock_closes)
+    x = _to_floats(index_closes)
+    m = min(len(s), len(x))
+    if m < lookback + 1:
+        return {"rs_excess_pct": None, "stock_ret_pct": None,
+                "index_ret_pct": None, "rs_score": None, "rs_rating": None,
+                "lookback": lookback,
+                "note": f"yetersiz veri: göreli güç için ~{lookback + 1} ortak "
+                        f"bar gerekir, {m} var"}
+    s, x = s[-(lookback + 1):], x[-(lookback + 1):]
+    if s[0] == 0 or x[0] == 0:
+        return {"rs_excess_pct": None, "stock_ret_pct": None,
+                "index_ret_pct": None, "rs_score": None, "rs_rating": None,
+                "lookback": lookback, "note": "sıfır taban fiyatı"}
+    stock_ret = s[-1] / s[0] - 1.0
+    index_ret = x[-1] / x[0] - 1.0
+    rs_excess = stock_ret - index_ret
+    # -1..+1 ölçeğine sıkıştır: ±%10 göreli aşırı getiri ≈ ±1.0 doygunluk
+    rs_score = max(-1.0, min(1.0, rs_excess / 0.10))
+    if rs_excess >= 0.05:
+        rating = "Güçlü Üstün"
+    elif rs_excess >= 0.01:
+        rating = "Üstün"
+    elif rs_excess > -0.01:
+        rating = "Nötr"
+    elif rs_excess > -0.05:
+        rating = "Zayıf"
+    else:
+        rating = "Güçlü Zayıf"
+    return {
+        "rs_excess_pct": _round(rs_excess * 100, 2),
+        "stock_ret_pct": _round(stock_ret * 100, 2),
+        "index_ret_pct": _round(index_ret * 100, 2),
+        "rs_score": _round(rs_score, 3),
+        "rs_rating": rating,
+        "lookback": lookback,
+        "note": None,
+    }
+
+
+# ----------------------------------------------------------------------------
 # Teknik duruş (5 seviyeli, şeffaf puan sistemi)
 # ----------------------------------------------------------------------------
 
@@ -264,10 +393,30 @@ def _score_ma_stack(close, sma20, sma50, sma200):
     return None, False
 
 
-def _score_rsi_zone(rsi_v):
-    """RSI bölgesi katkısı (ağırlık 1). pts|None döner."""
+def _score_rsi_zone(rsi_v, rsi_slope=None):
+    """
+    RSI bölgesi katkısı (ağırlık 1), EĞİM-DUYARLI. pts|None döner.
+
+    rsi_slope (opsiyonel): son birkaç barın RSI eğimi (>0 yukarı, <0 aşağı).
+    Sağlandığında uç bölgelerde mean-reversion düzeltmesi uygulanır — saf
+    trend-takipçi okumanın şiddetli ortalamaya-dönüşü ıskalama kör noktasını
+    kapatır:
+      - Aşırı satım (RSI<=30) + yukarı kıvrılma → saf zayıflık (-1.0) yerine
+        erken-dönüş sinyali olarak cezayı nötrle (0.0).
+      - Aşırı alım (RSI>=70) + aşağı kıvrılma → tepe-zayıflaması; aşırı-pozitif
+        katkıyı kıs (0.0).
+    rsi_slope=None iken klasik seviye-temelli davranış AYNEN korunur
+    (geriye-uyumlu — dışarıdan eğimsiz çağrılarda davranış değişmez).
+    """
     if rsi_v is None:
         return None
+    # --- uç-bölge eğim düzeltmeleri (yalnız eğim biliniyorsa) ---
+    if rsi_slope is not None:
+        if rsi_v <= 30 and rsi_slope > 0:
+            return 0.0   # aşırı satımdan dönüş: cezayı nötrle
+        if rsi_v >= 70 and rsi_slope < 0:
+            return 0.0   # aşırı alımdan dönüş: katkıyı kıs
+    # --- klasik seviye-temelli bölgeler ---
     if rsi_v >= 60:
         return 1.0
     elif rsi_v > 50:
@@ -275,7 +424,7 @@ def _score_rsi_zone(rsi_v):
     elif rsi_v > 40:
         return -0.5
     elif rsi_v <= 30:
-        return -1.0  # aşırı satım: zayıflık (kontra okuma yapan ayrı not düşülür)
+        return -1.0  # aşırı satım (eğim bilinmiyorsa): zayıflık
     return -0.75
 
 
@@ -320,6 +469,49 @@ def _score_bollinger(pctb):
     elif pctb <= 0.0:
         return -1.0
     return -0.5
+
+
+def _score_divergence(snapshot):
+    """
+    RSI/fiyat ayrışması katkısı (ağırlık 1). pts|None döner.
+
+    methodology.md §2.4 ayrışmayı açıkça bir sinyal girdisi sayar; enrich_snapshot
+    bunu `snapshot["divergence"]` içinde zaten üretir. v1.1.0 öncesinde bu sinyal
+    HESAPLANIP ATILIYORDU (trend_posture okumuyordu) — belge-kod tutarsızlığı.
+    Bu fonksiyon o sinyali nihayet puana bağlar:
+      - bullish (fiyat lower-low, RSI higher-low) → +1.0  (dip-dönüş erken sinyali)
+      - bearish (fiyat higher-high, RSI lower-high) → -1.0 (tepe-dönüş erken sinyali)
+      - none / yok → katkı yok (max_score'a eklenmez).
+    """
+    if not isinstance(snapshot, dict):
+        return None
+    div = snapshot.get("divergence")
+    d = div.get("divergence") if isinstance(div, dict) else None
+    if d == "bullish":
+        return 1.0
+    if d == "bearish":
+        return -1.0
+    return None
+
+
+def _score_relative_strength(snapshot):
+    """
+    Göreli güç katkısı (ağırlık 1). pts|None döner.
+
+    snapshot['relative_strength']['rs_score'] (-1..+1) varsa duruşa katılır
+    (yalnız enrich_snapshot'a endeks serisi verildiğinde dolar). "Yükselen dalga"
+    düzeltmesi: hisse endeksi yenmiyorsa mutlak güç şişirilmez. Endeks verisi
+    yoksa katkı yok (max_score'a eklenmez) — geriye-uyumlu.
+    """
+    if not isinstance(snapshot, dict):
+        return None
+    rs = snapshot.get("relative_strength")
+    if not isinstance(rs, dict):
+        return None
+    score = rs.get("rs_score")
+    if isinstance(score, (int, float)):
+        return max(-1.0, min(1.0, float(score)))
+    return None
 
 
 def _posture_from_norm(score_norm):
@@ -369,8 +561,8 @@ def trend_posture(snapshot):
         contributions["ma_stack"] = None
         notes.append("MA dizilimi yok")
 
-    # 2) RSI bölgesi (ağırlık 1)
-    rp = _score_rsi_zone(ind.get("rsi_14"))
+    # 2) RSI bölgesi (ağırlık 1) — eğim-duyarlı (v1.1.0)
+    rp = _score_rsi_zone(ind.get("rsi_14"), ind.get("rsi_14_slope"))
     if rp is not None:
         contributions["rsi"] = round(rp, 2)
         score += rp
@@ -417,6 +609,26 @@ def trend_posture(snapshot):
         contributions["bollinger_pctb"] = None
         notes.append("Bollinger %B yok")
 
+    # 7) RSI/fiyat ayrışması (ağırlık 1) — v1.1.0: artık puana giriyor (bulgu B).
+    #    methodology.md §2.4'ün öngördüğü sinyal; önceki sürümde hesaplanıp atılıyordu.
+    dp = _score_divergence(snapshot)
+    if dp is not None:
+        contributions["divergence"] = round(dp, 2)
+        score += dp
+        max_score += 1.0
+    else:
+        contributions["divergence"] = None
+
+    # 8) Göreli güç (ağırlık 1) — v1.1.0: endeks serisi verilmişse (bulgu E).
+    #    "Yükselen dalga"yı hisse-seçim sinyalinden ayırır.
+    rsp = _score_relative_strength(snapshot)
+    if rsp is not None:
+        contributions["relative_strength"] = round(rsp, 2)
+        score += rsp
+        max_score += 1.0
+    else:
+        contributions["relative_strength"] = None
+
     # Normalize → -1..+1 → 5 kova
     if max_score == 0:
         posture = "Nötr"
@@ -426,11 +638,24 @@ def trend_posture(snapshot):
         score_norm = score / max_score  # -1..+1
         posture = _posture_from_norm(score_norm)
 
+    # H (v1.1.0): kapsam-güven bağı. Çekirdek referans ağırlığı 8.0'dır
+    # (ma_stack 2 + rsi 1 + macd 1 + supertrend 2 + t3 1 + bollinger 1).
+    # Etkin ağırlık bunun belirgin altındaysa duruş az göstergeye dayanır;
+    # güven bir kademe düşürülmelidir (kısa seride MACD/T3 düşmesi tipik nedendir).
+    _CORE_MAX = 8.0
+    _LOW_COVERAGE_FLOOR = 5.0
+    low_coverage = max_score < _LOW_COVERAGE_FLOOR
+    if low_coverage:
+        notes.append(f"düşük kapsam (etkin ağırlık {round(max_score, 1)}/"
+                     f"{_CORE_MAX:.0f}) → güveni bir kademe düşür")
+
     return {
         "posture": posture,
         "score": round(score, 2),
         "max_score": round(max_score, 2),
         "score_norm": (round(score_norm, 3) if score_norm is not None else None),
+        "coverage_ratio": round(max_score / _CORE_MAX, 2),
+        "low_coverage": low_coverage,
         "contributions": contributions,
         "note": ("; ".join(notes) if notes else None),
         "disclaimer": "karar-destek; yatırım tavsiyesi değildir",
@@ -701,20 +926,42 @@ def confluence(frames):
 # Yardımcı: snapshot'ı supertrend + t3 ile zenginleştir
 # ----------------------------------------------------------------------------
 
-def enrich_snapshot(ohlc):
-    """indicator_snapshot + supertrend + t3 + posture tek pakette."""
+def enrich_snapshot(ohlc, index_closes=None):
+    """
+    indicator_snapshot + supertrend + t3 + ayrışma + (ops.) göreli güç + boşluk
+    maruziyeti + duruş — tek pakette (v1.1.0).
+
+    index_closes (ops.): endeks (ör. XU100) kapanış serisi verilirse, göreli güç
+    hesaplanır ve duruş puanına dahil edilir (bulgu E — "yükselen dalga" düzeltmesi).
+
+    KRİTİK SIRALAMA (v1.1.0 kök düzeltmesi): tüm zenginleştirmeler (ayrışma, RSI
+    eğimi, göreli güç) duruştan ÖNCE enjekte edilir; böylece bunlar trend_posture
+    puanına GERÇEKTEN girer. Önceki sürümde duruş, ayrışma snapshot'a yazılmadan
+    hesaplanıyordu — bu yüzden ayrışma sinyali hesaplanıp atılıyordu (bulgu B).
+    """
     norm = normalize_ohlc(ohlc)
     snap = indicator_snapshot(norm)
-    st = supertrend(norm["high"], norm["low"], norm["close"])
-    t3v = t3(norm["close"])
-    snap["supertrend"] = st
-    snap["t3"] = t3v
-    posture = trend_posture(snap)
-    # divergence (RSI serisi tam liste ile)
+    snap["supertrend"] = supertrend(norm["high"], norm["low"], norm["close"])
+    snap["t3"] = t3(norm["close"])
+
+    # RSI serisi + son-bar eğimi (C — eğim-duyarlı RSI okuması için)
     rsi_full = rsi(norm["close"], 14, full=True)
-    div = rsi_price_divergence(norm["close"], rsi_full.get("values", []))
-    snap["posture"] = posture
-    snap["divergence"] = div
+    rsi_vals = rsi_full.get("values", []) if isinstance(rsi_full, dict) else []
+    if isinstance(snap.get("indicators"), dict):
+        snap["indicators"]["rsi_14_slope"] = _series_slope(rsi_vals, window=3)
+
+    # Ayrışma (B — artık puana girecek, çünkü posture'dan ÖNCE yazılıyor)
+    snap["divergence"] = rsi_price_divergence(norm["close"], rsi_vals)
+
+    # Göreli güç (E — yalnız endeks serisi verilmişse)
+    if index_closes is not None:
+        snap["relative_strength"] = relative_strength(norm["close"], index_closes)
+
+    # Boşluk maruziyeti (F — EOD kör-nokta şeffaflığı)
+    snap["gap_exposure"] = gap_exposure(norm)
+
+    # Duruş — TÜM zenginleştirmelerden SONRA hesaplanır
+    snap["posture"] = trend_posture(snap)
     return snap
 
 

@@ -37,7 +37,8 @@ Sayısal türetmelerin yeniden-üretilebilir olması için beceri, paketlenmiş 
 | Betik | Görev |
 |---|---|
 | `scripts/technical_helpers.py` | RSI, MACD, hareketli ortalamalar (SMA/EMA), Bollinger bantları, Supertrend, T3, ATR. |
-| `scripts/technical_plus.py` | Çok-zaman-dilimli teyit (confluence), pivot seviyeleri, ileri teknik birleştirme. |
+| `scripts/technical_plus.py` | Teknik duruş puanı, RSI/fiyat **ayrışması** (puanlanır), **göreli güç**, **boşluk (gap) maruziyeti**, çok-zaman-dilimli teyit (confluence), pivot seviyeleri. |
+| `scripts/backtest_posture.py` | Teknik-duruş motorunun **look-ahead'siz öz-denetimi**: Spearman ρ / bilgi katsayısı (IC) / isabet / benchmark-göreli / boşluk ayrıştırması. |
 | `scripts/financial_quality_score.py` | Temel kalite kompoziti (bkz. fundamental-methodology.md). |
 | `scripts/macro_context.py` | Makro rejim sınıflandırması. |
 | `scripts/sentiment_score.py` | KAP/haber duyarlılık skoru. |
@@ -88,9 +89,35 @@ Göstergeler tek tek değil, **istif (stack)** olarak okunur. `technical_plus.py
 
 Gün-sonu veriyle çalışırken:
 
-- **Ayrışma:** Fiyat yeni zirve/dip yaparken RSI veya MACD teyit etmiyorsa (negatif/pozitif uyumsuzluk) işaretlenir. EOD veride ayrışma yalnızca **kapanış serileri** üzerinden okunabilir; gün-içi salınımlar görülmez, bu açıkça belirtilir.
+- **Ayrışma:** Fiyat yeni zirve/dip yaparken RSI veya MACD teyit etmiyorsa (negatif/pozitif uyumsuzluk) işaretlenir. **v1.1.0'dan itibaren ayrışma yalnız işaretlenmez, teknik duruş puanına da katkı verir** (`trend_posture`: bullish +1 / bearish −1; bkz. §2.5). EOD veride ayrışma yalnızca **kapanış serileri** üzerinden okunabilir; gün-içi salınımlar görülmez, bu açıkça belirtilir.
 - **Yanlış kırılım (false breakout):** Bollinger bandı veya seviye kırılımı **hacim teyidi olmadan** gerçekleşmişse, "teyitsiz kırılım — tek günlük EOD kapanışıyla doğrulanmadı" notu eklenir.
 - **Tek-bar riski:** EOD veride tek bir günün uç kapanışı yanıltıcı olabilir; çok-dilim teyidi olmadan tek bara dayalı vargı kurulmaz.
+
+### 2.5 Duruş puanının bileşenleri ve sinyal entegrasyonu (v1.1.0)
+
+Teknik duruş, `trend_posture` içinde **şeffaf, gerekçeli bir puan istifinden** üretilir; her bileşenin katkısı `contributions` altında döner (kara-kutu değil). Çekirdek referans ağırlığı **8.0**'dır:
+
+| Bileşen | Ağırlık | Okuma |
+|---|--:|---|
+| MA dizilimi | 2 | close vs sma20/50/200 + dizilim sırası |
+| RSI bölgesi (**eğim-duyarlı**) | 1 | aşırı-satımdan yukarı kıvrılma cezayı nötrler; aşırı-alımdan dönüş katkıyı kısar |
+| MACD histogram | 1 | işaret |
+| Supertrend yönü | 2 | +1/−1 |
+| T3 konumu | 1 | close vs T3 |
+| Bollinger %B | 1 | bant içi konum |
+| **Ayrışma** | 1 | bullish +1 / bearish −1 (§2.4) — *v1.1.0'da puana bağlandı* |
+| **Göreli güç** | 1 | endeks serisi verilmişse rs_score (−1..+1) |
+
+İki **mean-reversion / rejim düzeltmesi** v1.1.0'da eklendi:
+
+- **Eğim-duyarlı RSI:** Saf seviye okuması, aşırı-satımdan (RSI ≤ 30) yukarı dönen bir kurulumu *zayıflık* sayarak şiddetli ortalamaya-dönüşü yapısal olarak ıskalıyordu. Artık RSI eğimi yukarıysa bu ceza nötrlenir; trend-takipçi kör nokta kapanır. (Eğim bilinmiyorsa klasik davranış korunur.)
+- **Göreli güç (relative strength):** Mutlak duruş, herkesin yükseldiği bir haftada hisse-seçim becerisini ölçemez. Göreli güç, hareketin ne kadarının endeksi GERÇEKTEN yendiğini ölçer (son ~13 bar, hisse getirisi − endeks getirisi) ve "yükselen dalga"yı sinyalden ayırır. Yalnız `enrich_snapshot`'a endeks serisi verildiğinde devreye girer.
+
+**Boşluk (gap) maruziyeti — EOD kör noktası.** `gap_exposure`, son barların seans-arası boşluk istatistiğini üretir. EOD motoru bir önceki kapanış ile bu açılış arasındaki sıçramayı **öngöremez**; bir Cuma taramasının hafta sonu gap'ini göremeyeceği şeffaflaştırılır. Bir kurulumun getirisinin büyük kısmı boşluğa bağımlıysa, bu açıkça not edilir (öngörü iddiası değil, dürüstlük katmanı).
+
+**Kapsam-güven bağı.** Etkin ağırlık çekirdek 8.0'ın belirgin altındaysa (ör. kısa seride MACD/T3 düşerse) duruş az göstergeye dayanır; `low_coverage` bayrağı kalkar ve **güven bir kademe düşürülür**. Bu yüzden Adım 0'daki uzun-aralık haftalık çekim (≈52 bar) önemlidir.
+
+> **Ufuk uyarısı (ampirik).** Look-ahead'siz öz-denetim (`backtest_posture.py`), haftalık duruşun **tek-haftalık** ufukta düşük sinyal taşıdığını (düşük IC) gösterebilir — özellikle getirinin çoğu seans-arası boşluktan geldiğinde. Haftalık duruş **çok-haftalık eğilim** için anlamlıdır; tek-hafta yön tahmininde güven tavanı düşük tutulmalıdır (bkz. §4).
 
 ---
 
@@ -139,6 +166,21 @@ Bantlama:
 - **Düşük:** Birden fazla eksende zayıflık; eksik/eski veri veya katmanlar arası belirgin çelişki.
 
 > Tazelik kuralı: Fiyat verisi EOD/gecikmeli olduğundan, hiçbir vargı "gün-içi/anlık" güven seviyesine yükseltilemez. En yüksek geçerli ufuk günlük/haftalıktır.
+
+### 4.1 Ufuk-koşullu güven kalibrasyonu (v1.1.0)
+
+Güven düzeyi, vargının **ölçüldüğü ufukla** koşullanmalıdır. Teknik duruşun çözünürlüğü ile tahmin ufku eşleşmiyorsa güven tavanı düşürülür:
+
+| Duruş çözünürlüğü | Anlamlı olduğu ufuk | Tek-hafta yön tahmini |
+|---|---|---|
+| Haftalık (1W) çapa | Çok-haftalık ana eğilim (≈ haftalar–aylar) | **Zayıf sinyal** — güven tavanı *Orta* |
+| Günlük (1d) kurulum | Günler–birkaç hafta | Geri çekilme/kırılım zamanlaması |
+
+Gerekçe (ampirik): look-ahead'siz öz-denetim (`backtest_posture.py`), haftalık duruş skoru ile **tek-haftalık** gerçekleşen getiri arasındaki sıra-korelasyonunun (Spearman ρ) düşük — hatta sıfır civarı — olabildiğini gösterir; özellikle haftalık getirinin büyük kısmı **seans-arası boşluktan** geldiğinde (bir EOD motorunun yapısal olarak öngöremeyeceği bileşen). Bu nedenle:
+
+- Mod 2 (haftalık tarama) çıktısında **tek-hafta** öngörüsüne *Yüksek* güven atfedilmez; duruş "çok-haftalık eğilim bağlamı" olarak çerçevelenir.
+- Çok-haftalık eğilim ifadeleri (1W çapa + 1d kurulum **uyumlu** olduğunda) daha yüksek güven taşıyabilir.
+- Boşluk-maruziyeti yüksek bir kurulumda (bkz. §2.5) güven ek olarak bir kademe kısılır.
 
 ---
 

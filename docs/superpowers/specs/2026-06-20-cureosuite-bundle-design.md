@@ -78,7 +78,7 @@ Kullanıcı akışı: collaborator daveti kabul → `/plugin marketplace add mah
 ## 6. Yetkilendirme & anahtar (kritik bölüm)
 
 ### 6.1 Gated connector kümesi
-`fon-mcp`, `titck`, `titck-cache`, `mevzuat`. (`borsa` public no-auth;
+`fon-mcp`, `titck`, `mevzuat`. (`titck-cache` public/no-auth (pure cache-proxy); `borsa` public no-auth;
 `pubmed`/`clinical-trials`/`biorxiv` kullanıcının kendi claude.com bağlantısı.)
 
 ### 6.2 Mekanizma

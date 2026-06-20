@@ -2,6 +2,29 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.3] — 2026-06-20
+
+Günlük-veri toplayıcı + günlük katman kalibrasyonu. Davranış/varsayılanlar değişmedi.
+
+### Eklendi
+- **`scripts/stitch_daily.py`** — günlük-veri toplayıcı/birleştirici. Borsa
+  `get_historical_data` çözünürlüğü aralık-uzunluğuyla ölçeklendiğinden (≤30g→günlük,
+  ~3ay→haftalık, ~1yıl→aylık), uzun bir günlük seri ≤30-günlük dilimler halinde
+  çekilip birleştirilmelidir. Bu betik dilimleri tarihe göre tekilleştirir+sıralar,
+  `walkforward_calibrate`/`backtest_posture`'ın beklediği frames.json'a çevirir ve
+  bir kapsam raporu (SMA50/200 tanımlı mı, bölünme-artefaktı şüphesi) üretir.
+
+### Karar (günlük katman, kanıta dayalı)
+- Kalibrasyon günlük katmanda yeniden koşuldu (8 BIST hissesi + XU100, 101 günlük
+  bölünme-düzeltmeli bar, SMA50 tanımlı, motor-ufku 5 ve 10 işlem günü, 10 rejim) →
+  **varsayılan 3/13 hiçbir kesitte yenilmedi** (h=10 eş-en-iyi fark=0,000; h=5 tek-en-iyi;
+  RS-kapalı win=3 tüm rejimlerde rank-1). Aylık verinin (2,8) imâsı günlükte düzeldi.
+- **Dürüst çerçeve (çekişmeli denetimli):** bu "doğrulama" DEĞİL **non-inferiority**
+  bulgusudur — cell SE'si (≈0,15) ızgara açıklığından (≈0,09) büyük + pencereler örtüşür
+  (etkin N≪10), hiçbir cell ayırt edilemez. Ayrıca **tüm ρ negatif** kalır → motorun
+  mutlak öngörü gücüne dair **ayrı** bir uyarı (parametre sorunu değil), bağımsız
+  incelenmeli. **Karar: varsayılan korunur** (değiştirmek için kanıt yok).
+
 ## [1.1.2] — 2026-06-20
 
 Walk-forward kalibrasyon aracı + çok-rejim kanıtı. Davranış geriye-uyumlu; varsayılanlar değişmedi.

@@ -397,6 +397,12 @@ def pooled_regime_study(frames_list, horizons=(5, 10, 20), min_setup=200,
             per_sample[name] = {"n_blocks_vol": len(e), "n_blocks_regime": len(r),
                                 "mean_vol_extreme": (round(_mean(e), 4) if e else None),
                                 "mean_regime_trend": (round(_mean(r), 4) if r else None)}
+        # NOTE: `last_fr` is the required positional `frames` arg, but when `_pre`
+        # is supplied study_horizon_regime bypasses _collect_regime_blocks entirely
+        # and uses the pre-collected (ve, va, rt, all_obs) lists instead.  The
+        # value of `last_fr` is therefore ignored here — it is passed only to
+        # satisfy the function signature.  This is intentional: we pooled blocks
+        # from all frames_list samples above and hand the merged lists via _pre.
         block = study_horizon_regime(last_fr, h, min_setup, include_rs, sidak_m=m,
                                      _pre=(ve, va, rt, all_obs))
         block["per_sample"] = per_sample
@@ -503,17 +509,21 @@ def _vol_coupled_frames(n_bars=600):
     return {"symbols": syms, "index": idx_bars}
 
 
-def _trend_coupled_frames(n_bars=300):
-    """Pozitif kontrol (rejim): 24 sembol, geniş slope tayfı, vol_amp=2.0.
+def _trend_coupled_frames(n_bars=500):
+    """Pozitif kontrol (rejim): 30 sembol, geniş slope tayfı, vol_amp=1.0.
 
     Yüksek |slope| → backtest_posture puanı yüksek VE efficiency-ratio yüksek
-    (trend baskın). Faz aralığı 0.1 ile ayrıştırılır; sıkı küçük genlik sayesinde
-    slope-ER korelasyonu gürültüyü aşar (K≥10, p<0.05, t>0).
+    (trend baskın). Faz aralığı 0.1 ile ayrıştırılır; küçük vol_amp sayesinde
+    slope-ER korelasyonu gürültüyü aşar. n_bars=500 → K≈20 blok, p<0.01 hedef.
+
+    Tuning: n_bars 300→500 (daha fazla blok: K~20), vol_amp 2.0→1.0 (daha temiz
+    sinyal/gürültü), slope tayfı genişletildi (±1.5 uçları eklendi) → p<<0.01.
     """
-    slopes = [1.2, 1.0, 0.8, 0.6, 0.4, 0.2, 0.05, -0.05,
-              -0.2, -0.4, -0.6, -0.8, -1.0, -1.2,
-              0.9, 0.7, 0.5, 0.3, 0.1, -0.1, -0.3, -0.5, -0.7, -0.9]
-    vol_amp, phase_step = 2.0, 0.1
+    slopes = [1.5, 1.2, 1.0, 0.8, 0.6, 0.4, 0.2, 0.05, -0.05,
+              -0.2, -0.4, -0.6, -0.8, -1.0, -1.2, -1.5,
+              1.3, 0.9, 0.7, 0.5, 0.3, 0.1, -0.1, -0.3, -0.5, -0.7, -0.9, -1.1,
+              1.1, -1.3]
+    vol_amp, phase_step = 1.0, 0.1
     syms = {f"T{i:02d}": _coupled_bars(n_bars, s, i * phase_step, vol_amp=vol_amp)
             for i, s in enumerate(slopes)}
     idx = _coupled_bars(n_bars, 0.3, 0.0, vol_amp=vol_amp)

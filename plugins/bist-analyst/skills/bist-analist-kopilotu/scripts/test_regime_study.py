@@ -78,5 +78,48 @@ class CorrStatsTest(unittest.TestCase):
         self.assertIsNone(rs._sidak(None, 3))
 
 
+import backtest_posture as bp
+
+
+def _frames(slopes, n_bars=300, idx_slope=0.3):
+    syms = {f"S{i:02d}": bp._synthetic_bars(n_bars, slope=s, noise_phase=i * 0.6)
+            for i, s in enumerate(slopes)}
+    idx = bp._synthetic_bars(n_bars, slope=idx_slope, noise_phase=0.0)
+    return {"symbols": syms, "index": idx}
+
+
+class BlockMachineryTest(unittest.TestCase):
+    def test_block_observations_shape(self):
+        fr = _frames([0.6, 0.4, 0.2, 0.0, -0.2, -0.4, 0.5, -0.3], n_bars=260)
+        obs = rs._block_observations(fr, t=230, h=10, include_rs=True)
+        self.assertGreaterEqual(len(obs), 4)
+        o = obs[0]
+        for key in ("sym", "score", "absscore", "posture",
+                    "log_sig_t", "log_sig_fwd", "er_fwd"):
+            self.assertIn(key, o)
+        self.assertGreaterEqual(o["absscore"], 0.0)
+        self.assertGreaterEqual(o["er_fwd"], 0.0)
+        self.assertLessEqual(o["er_fwd"], 1.0)
+
+    def test_collect_blocks_returns_three_lists(self):
+        fr = _frames([0.6, 0.4, 0.2, 0.0, -0.2, -0.4, 0.5, -0.3], n_bars=300)
+        ve, va, rt, all_obs = rs._collect_regime_blocks(fr, h=10, min_setup=200,
+                                                        include_rs=True)
+        self.assertTrue(len(ve) >= 2 and len(rt) >= 2)
+        self.assertTrue(all(-1.0 <= r <= 1.0 for r in ve + va + rt))
+        self.assertGreater(len(all_obs), 0)
+
+    def test_block_stats_and_verdict(self):
+        st = rs._block_stats([0.1, 0.2, 0.15, 0.05, 0.12])  # K=5, hep pozitif
+        self.assertEqual(st["n_blocks"], 5)
+        self.assertIsNotNone(st["p_rho"])
+        self.assertIn(st["t_stat"] > 0, (True, False))
+        self.assertIsInstance(rs._verdict(st), str)
+
+    def test_verdict_low_power(self):
+        st = rs._block_stats([0.1, 0.2])  # K=2 < 4
+        self.assertIn("yetersiz güç", rs._verdict(st))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,17 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.6
+version: 1.1.7
 changelog: |
+  1.1.7 (2026-06-22) — Yeni `scripts/regime_study.py`: duruş kategorilerinin BETİMSEL
+  değerini sınar — ileri OYNAKLIK (mevcut-vol kontrollü kısmi Spearman) + TREND/YATAY
+  rejim (efficiency-ratio); 2 birincil + 2 ikincil test, örtüşmeyen bağımsız blok +
+  Student-t (skill_study makinesi yeniden kullanılır; motor değişmez). Koşum: 8 hisse +
+  XU100, 573 HİZALANMIŞ günlük bar (ortak-tarih kesişimi → blok=aynı gün), h=5/10/20
+  (K=74/37/18). Bulgu: vol büyüklüğü betimsel-değer YOK (p≥0.36; kovan η²≈0); regime_trend
+  h=20'de Šidák-aşan NEGATİF (ρ̄=−0.24, p_Šidák=0.024) → aşırı aylık duruş daha çalkantılı
+  pencere önceler (mütevazı ortalamaya-dönüş tellisi, geçici, replikasyon gerek); vol
+  asimetri h=5/10 zayıf pozitif (ham p~0.02, düzeltilmemiş). Net: motor betimsel/yapısal
+  konumunu korur. Belge + yeni araç; kod/davranış/varsayılan değişmedi.
   1.1.6 (2026-06-20) — Çok-dönem (zaman-bağımsız) BIST kesin koşumu: 8 hisse + XU100,
   615 günlük bar (2,5 yıl), SMA200 tam, h=5'te K=83 GERÇEKTEN bağımsız blok. Hiçbir
   ufukta skill yok (p≥0.38; Šidák≥0.76; isabet ~0.49-0.50). Önceki hafif-negatif eğilim

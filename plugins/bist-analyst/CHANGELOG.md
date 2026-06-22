@@ -2,6 +2,38 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.7] — 2026-06-22
+
+Teknik-duruşun **betimsel değeri** çalışması (oynaklık + trend/yatay rejim). Yeni araç + belge; kod/davranış/varsayılan değişmedi.
+
+### Eklenen
+- Yeni `scripts/regime_study.py` — duruş kategorilerinin ileri **oynaklık** ve
+  **trend/yatay rejim** ile betimsel ilişkisini sınar (getiri-yönü değil, getirinin
+  *karakteri*). İki birincil test: **vol_extreme** (|score_norm| ↔ ileri gerçekleşmiş
+  oynaklık, **mevcut-vol kontrollü kısmi Spearman** — otokorelasyon tuzağını kapatan
+  artımlı test) ve **regime_trend** (|score_norm| ↔ ileri **efficiency-ratio**). İki
+  ikincil: vol_asimetri (kaldıraç) ve vol-kovan η² (varsayımsız çapraz-kontrol, İYİMSER-p).
+  Örtüşmeyen bağımsız blok + Student-t (df=K−1) + Šidák; `skill_study`/`backtest_posture`
+  yeniden kullanılır (**motor değişmez**); pozitif+null sentetik self-test.
+
+### Bulgu (çekişmeli denetimli, dürüst)
+- Koşum: 8 BIST hissesi + XU100, **573 HİZALANMIŞ günlük bar** (ortak-tarih kesişimi →
+  blok t = tüm isimler için aynı takvim günü; 2024-01…2026-04), SMA200 tam, h=5/10/20
+  (K=74/37/18).
+- **Vol büyüklüğü — betimsel-değer YOK:** vol_extreme tüm ufuklarda sıfırdan ayırt
+  edilemez (p≥0,36; nokta tahmini ~0); vol-kovan η²≈0 doğrular → duruş aşırılığı,
+  mevcut-vol temelinin ötesinde ileri-vol bilgisi taşımıyor.
+- **Trend/yatay — çoğunlukla null, tek Šidák-aşan sinyal:** regime_trend h=5/h=10 null
+  (p=0,38/0,94); **h=20'de anlamlı NEGATİF** (ρ̄=−0,24; p=0,004; **p_Šidák=0,024**) →
+  aşırı aylık duruşlar daha çalkantılı/ortalamaya-dönen pencere önceler. Temkinli: en
+  düşük-güç ufku (K=18), kısa ufuklarda yok → **mütevazı ~1-aylık ortalamaya-dönüş
+  tellisi**, geçici; bağımsız dönemde replikasyon gerek, alım-satım sinyali DEĞİL.
+- **Vol asimetrisi (ikincil, düzeltilmemiş):** h=5/h=10 zayıf POZİTİF (ρ̄≈+0,13/+0,18;
+  ham p≈0,02) → yukarı-duruşlar hafifçe daha çok ileri-vol önceler (klasik kaldıracın
+  TERSİ); çoklu-karşılaştırma ile doğrulanmadı, betimsel ipucu.
+- **Net:** motor **betimsel/yapısal** konumunu korur (vol ekseninde de tahmin-değil);
+  **karar-destek (tahmin değil)** ilkesi pekişir.
+
 ## [1.1.6] — 2026-06-20
 
 Çok-dönem (zaman-bağımsız) BIST kesin skill koşumu. Belge güncellemesi; kod/davranış değişmedi.

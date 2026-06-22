@@ -113,7 +113,7 @@ class BlockMachineryTest(unittest.TestCase):
         st = rs._block_stats([0.1, 0.2, 0.15, 0.05, 0.12])  # K=5, hep pozitif
         self.assertEqual(st["n_blocks"], 5)
         self.assertIsNotNone(st["p_rho"])
-        self.assertIn(st["t_stat"] > 0, (True, False))
+        self.assertGreater(st["t_stat"], 0)
         self.assertIsInstance(rs._verdict(st), str)
 
     def test_verdict_low_power(self):

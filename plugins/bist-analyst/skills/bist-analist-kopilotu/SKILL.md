@@ -1,7 +1,16 @@
 ---
 name: bist-analist-kopilotu
-version: 1.1.7
+version: 1.1.8
 changelog: |
+  1.1.8 (2026-06-22) — v1.1.7'nin tek Šidák-aşan bulgusunun (h=20 regime_trend
+  ρ̄=−0.24) bağımsız-era REPLİKASYONU (`regime_study --pool`). İkinci era: 8 hisse +
+  XU100, 565 hizalanmış günlük bar (2021-08…2023-11, v1.1.7 ile örtüşmez → gerçek
+  bağımsızlık). SONUÇ: h=20 sinyali REPLİKE OLMADI (era2 +0.13 p=0.17 işaret ters;
+  havuz K=36 −0.05 p=0.43) → tek-dönem yanlış-pozitifiydi; trend/rejimde betimsel
+  ilişki YOK. vol_extreme sağlam değil (eralar arası tutarsız). TEK replike olan:
+  vol asimetri h=5/10 (havuz +0.11 p=0.005 / +0.14 p=0.017, iki erada da) → yukarı-
+  duruş hafifçe daha çok vol (kaldıraç-tersi), ikincil/düzeltilmemiş, küçük, sinyal
+  değil. Net: motor sağlam biçimde betimsel/yapısal. Belge-only; kod/varsayılan değişmedi.
   1.1.7 (2026-06-22) — Yeni `scripts/regime_study.py`: duruş kategorilerinin BETİMSEL
   değerini sınar — ileri OYNAKLIK (mevcut-vol kontrollü kısmi Spearman) + TREND/YATAY
   rejim (efficiency-ratio); 2 birincil + 2 ikincil test, örtüşmeyen bağımsız blok +

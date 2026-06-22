@@ -2,6 +2,27 @@
 
 Bu eklenti [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) izler.
 
+## [1.1.8] — 2026-06-22
+
+v1.1.7'nin tek Šidák-aşan bulgusunun bağımsız-era **replikasyonu** (`regime_study --pool`). Belge-only; kod/davranış/varsayılan değişmedi.
+
+### Bulgu (replikasyonlu, kesin)
+- v1.1.7'de h=20 regime_trend tek anlamlı sinyaldi (ρ̄=−0,24; p_Šidák=0,024). Doğru
+  yöntemle test edildi: **non-contemporaneous bağımsız era** (çapraz-piyasa aynı-pencere
+  DEĞİL). İkinci era: 8 BIST + XU100, **565 hizalanmış günlük bar (2021-08…2023-11)** —
+  v1.1.7 penceresiyle örtüşmez → bloklar gerçekten bağımsız.
+- **h=20 sinyali REPLİKE OLMADI → yanlış-pozitifti:** era2 tek-başına h=20 regime_trend
+  = **+0,13** (p=0,17; işaret ters); havuz (era1+era2, K=36) = **−0,05** (p=0,43). Tek-dönem
+  gürültüsü / çoklu-karşılaştırma artefaktı. Trend/yatay rejimde **betimsel ilişki YOK**.
+- **vol_extreme sağlam değil:** havuzda yalnız h=10 ham-anlamlı (+0,12 p=0,028, Šidák'ı
+  geçmez); eralar arası tutarsız → mevcut-vol ötesinde güvenilir ileri-vol bilgisi yok.
+- **TEK replike olan düzenlilik — vol asimetrisi (ikincil):** h=5/h=10'da İKİ erada da
+  pozitif (havuz **+0,11 p=0,005 / +0,14 p=0,017**) → yukarı-duruşlar hafifçe daha çok
+  ileri-vol önceler (klasik kaldıracın TERSİ). İkincil/düzeltilmemiş, küçük etki, alım-satım
+  sinyali DEĞİL — ama iki-era replikasyonu en güvenilir betimsel düzenlilik yapar.
+- **Net:** motor sağlam biçimde **betimsel/yapısal**; replikasyon v1.1.7'nin tek "anlamlı"
+  bulgusunu doğru biçimde eledi → karar-destek ilkesi en yüksek-disiplinli temele oturdu.
+
 ## [1.1.7] — 2026-06-22
 
 Teknik-duruşun **betimsel değeri** çalışması (oynaklık + trend/yatay rejim). Yeni araç + belge; kod/davranış/varsayılan değişmedi.

@@ -286,3 +286,45 @@ def _verdict(stats):
         return "BETİMSEL İLİŞKİ YOK (sıfırdan ayırt edilemez)"
     return ("BETİMSEL İLİŞKİ VAR (" + ("pozitif" if t > 0 else "negatif")
             + ", p<0.05)")
+
+
+# --------------------------------------------------------------------------- #
+# Vol-kovanı η² çapraz-kontrolü (havuzlanmış; p İYİMSER)
+# --------------------------------------------------------------------------- #
+
+_BUCKET_NAMES = ["alt", "orta", "üst"]
+
+
+def _vol_buckets(all_obs, n_buckets=3):
+    """Mevcut-vol terciline göre kovanla; her kovanda duruş→ileri-vol KW η².
+
+    UYARI: havuzlama seri/kesitsel bağımlılığı yok sayar → kw_p İYİMSER.
+    Birincil ölçüt blok t-testidir; bu yalnız varsayımsız sağlamlık çapraz-kontrolü.
+    """
+    obs = [o for o in all_obs if o.get("posture")]
+    obs.sort(key=lambda o: o["log_sig_t"])
+    n = len(obs)
+    out = []
+    for bi in range(n_buckets):
+        lo = (bi * n) // n_buckets
+        hi = ((bi + 1) * n) // n_buckets
+        chunk = obs[lo:hi]
+        name = (_BUCKET_NAMES[bi] if n_buckets == 3 and bi < 3
+                else f"kovan{bi + 1}")
+        if len(chunk) < 4:
+            out.append({"name": name, "n": len(chunk),
+                        "note": "yetersiz gözlem (<4)"})
+            continue
+        groups = defaultdict(list)
+        for o in chunk:
+            groups[o["posture"]].append(o["log_sig_fwd"])
+        kw = _kruskal_wallis(list(groups.values()))
+        if kw is None:
+            out.append({"name": name, "n": len(chunk),
+                        "note": "tek duruş grubu — KW tanımsız"})
+        else:
+            out.append({"name": name, "n": len(chunk), "k": kw["k"],
+                        "eta2": round(kw["eta2"], 4),
+                        "H": round(kw["H"], 3),
+                        "kw_p": (round(kw["p"], 4) if kw["p"] is not None else None)})
+    return out

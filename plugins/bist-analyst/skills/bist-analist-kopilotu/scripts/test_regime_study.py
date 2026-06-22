@@ -40,5 +40,43 @@ class PriceStatsTest(unittest.TestCase):
         self.assertIsNone(rs._efficiency_ratio([10, 10, 10]))  # sıfır yol
 
 
+class CorrStatsTest(unittest.TestCase):
+    def test_partial_spearman_degenerate_control_is_none(self):
+        # y == z → ρ_yz=1 → payda 0 → None
+        x = [1.0, 2.0, 3.0, 4.0, 5.0]
+        y = [2.0, 1.0, 4.0, 3.0, 5.0]
+        self.assertIsNone(rs._partial_spearman(x, y, y))
+
+    def test_partial_spearman_matches_formula(self):
+        x = [1.0, 2.0, 3.0, 4.0, 5.0]
+        y = [2.0, 1.0, 4.0, 3.0, 5.0]
+        z = [5.0, 3.0, 4.0, 1.0, 2.0]
+        rxy = rs._spearman(x, y); rxz = rs._spearman(x, z); ryz = rs._spearman(y, z)
+        expect = (rxy - rxz * ryz) / math.sqrt((1 - rxz ** 2) * (1 - ryz ** 2))
+        self.assertAlmostEqual(rs._partial_spearman(x, y, z), expect, places=9)
+
+    def test_partial_spearman_too_few_is_none(self):
+        self.assertIsNone(rs._partial_spearman([1, 2, 3], [3, 2, 1], [1, 1, 2]))
+
+    def test_chi2_sf_df2_closed_form(self):
+        # df=2 → SF(x)=exp(-x/2)
+        self.assertAlmostEqual(rs._chi2_sf(2.0, 2), math.exp(-1.0), places=6)
+        self.assertAlmostEqual(rs._chi2_sf(0.0, 2), 1.0, places=6)
+
+    def test_kruskal_wallis_known(self):
+        # [1,2,3],[4,5,6],[7,8,9] → H=7.2, eta2≈0.8667, p=exp(-3.6)
+        out = rs._kruskal_wallis([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        self.assertAlmostEqual(out["H"], 7.2, places=4)
+        self.assertAlmostEqual(out["eta2"], 5.2 / 6.0, places=4)
+        self.assertAlmostEqual(out["p"], math.exp(-3.6), places=4)
+
+    def test_kruskal_wallis_one_group_is_none(self):
+        self.assertIsNone(rs._kruskal_wallis([[1, 2, 3]]))
+
+    def test_sidak(self):
+        self.assertAlmostEqual(rs._sidak(0.05, 3), 1 - 0.95 ** 3, places=9)
+        self.assertIsNone(rs._sidak(None, 3))
+
+
 if __name__ == "__main__":
     unittest.main()

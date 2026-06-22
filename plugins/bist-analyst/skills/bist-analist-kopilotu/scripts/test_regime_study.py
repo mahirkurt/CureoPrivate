@@ -121,5 +121,29 @@ class BlockMachineryTest(unittest.TestCase):
         self.assertIn("yetersiz güç", rs._verdict(st))
 
 
+class VolBucketTest(unittest.TestCase):
+    def _obs(self, sig_t, posture, sig_fwd):
+        return {"sym": "X", "score": 0.0, "absscore": 0.0, "posture": posture,
+                "log_sig_t": math.log(sig_t), "log_sig_fwd": math.log(sig_fwd),
+                "er_fwd": 0.5}
+
+    def test_buckets_partition_and_eta2(self):
+        obs = []
+        # 3 kovan × 2 duruş × birkaç gözlem; ileri-vol duruşa göre ayrışsın
+        for s_t in (0.01, 0.02, 0.04):  # düşük/orta/yüksek temel
+            for p, fwd in (("Güçlü Yukarı", 0.05), ("Nötr", 0.01)):
+                for _ in range(4):
+                    obs.append(self._obs(s_t, p, fwd))
+        out = rs._vol_buckets(obs, n_buckets=3)
+        self.assertEqual(len(out), 3)
+        scored = [b for b in out if "eta2" in b]
+        self.assertTrue(scored)
+        self.assertTrue(all(b["eta2"] >= 0.0 for b in scored))
+
+    def test_buckets_too_few_marks_note(self):
+        out = rs._vol_buckets([self._obs(0.01, "Nötr", 0.02)], n_buckets=3)
+        self.assertTrue(any("note" in b for b in out))
+
+
 if __name__ == "__main__":
     unittest.main()

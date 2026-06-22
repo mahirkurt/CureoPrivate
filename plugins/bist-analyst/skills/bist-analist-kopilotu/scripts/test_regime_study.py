@@ -145,5 +145,28 @@ class VolBucketTest(unittest.TestCase):
         self.assertTrue(any("note" in b for b in out))
 
 
+class OrchestrationTest(unittest.TestCase):
+    def test_output_contract_keys(self):
+        fr = _frames([0.6, 0.4, 0.2, 0.0, -0.2, -0.4, 0.5, -0.3], n_bars=300)
+        res = rs.regime_study(fr, horizons=(10,), min_setup=200)
+        self.assertIn("horizons", res)
+        h0 = res["horizons"][0]
+        for key in ("horizon", "vol_extreme", "vol_asymmetry",
+                    "vol_bucket_eta2", "regime_trend", "sidak_family_m"):
+            self.assertIn(key, h0)
+        for prim in ("vol_extreme", "regime_trend"):
+            self.assertIn("verdict", h0[prim])
+            self.assertIn("p_sidak", h0[prim])
+        self.assertIn("disclaimer", res)
+
+    def test_render_is_str(self):
+        fr = _frames([0.6, 0.4, 0.2, 0.0, -0.2, -0.4, 0.5, -0.3], n_bars=300)
+        self.assertIsInstance(rs.render(rs.regime_study(fr, horizons=(10,))), str)
+
+    def test_selftest_positive_and_null(self):
+        out = rs._run_selftest()
+        self.assertTrue(out["ok"], msg=str(out))
+
+
 if __name__ == "__main__":
     unittest.main()

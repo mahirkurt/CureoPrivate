@@ -65,7 +65,7 @@
       "name": "bist-analyst",
       "displayName": "BIST Uzmanı",
       "source": "./plugins/bist-analyst",
-      "version": "1.1.6",
+      "version": "1.1.7",
       "description": "Borsa İstanbul (BIST) analist kopilotu. Tek bir gerekçeli brifingde çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini sentezler; tek hisse derin analizi, haftalık tarama, KAP/olay yorumu ve izleme listesi gözetimi modlarıyla çalışır. Borsa MCP veri omurgasını (KAP, gün sonu/EOD fiyat/teknik, tarayıcı, FX, TEFAS, TCMB EVDS) paket içinde getirir. Karar destek niteliğindedir; yatırım danışmanlığı/tavsiyesi değildir.",
       "author": {
         "name": "Cureonics",

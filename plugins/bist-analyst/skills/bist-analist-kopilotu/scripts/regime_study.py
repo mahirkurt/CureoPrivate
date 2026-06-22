@@ -22,6 +22,7 @@ import argparse
 import json
 import math
 import sys
+import unicodedata
 from collections import defaultdict
 
 try:
@@ -195,7 +196,7 @@ def _block_observations(frames, t, h, include_rs):
     sliced = _slice(frames, t + h)
     res = backtest_posture(
         sliced["symbols"], horizon=h, index_bars=sliced.get("index"),
-        include_relative_strength=include_rs, min_setup_bars=50)
+        include_relative_strength=include_rs, min_setup_bars=50)  # iç eşik (skill_study bt_min_setup deseni); dış min_setup'tan ayrı
     score_by = {r["symbol"]: r.get("score_norm") for r in res["rows"]
                 if not r.get("skipped")}
     post_by = {r["symbol"]: r.get("posture") for r in res["rows"]
@@ -425,7 +426,8 @@ def render(result):
     hdr = (f"{'ufuk':>5}{'test':>14}{'blok':>6}{'ρ̄':>9}{'SE':>8}{'t':>8}"
            f"{'p':>8}{'p_Šidák':>9}  yorum")
     lines.append(hdr)
-    lines.append("-" * len(hdr))
+    _wid = sum(0 if unicodedata.combining(c) else 1 for c in hdr)
+    lines.append("-" * _wid)
     for h in result["horizons"]:
         for label, key in (("vol_extreme", "vol_extreme"),
                            ("regime_trend", "regime_trend")):
@@ -447,6 +449,7 @@ def render(result):
         bk = ", ".join(f"{b['name']}:η²={b.get('eta2', '—')}"
                        for b in h["vol_bucket_eta2"]["buckets"])
         lines.append(f"         vol-kovan η² (İYİMSER-p): {bk}")
+    lines.append("(η²<0 ⇒ etki yok — KW η² tahmincisi H<k-1 olduğunda negatif olabilir.)")
     lines.append("")
     lines.append("ρ̄=örtüşmeyen bloklarda ortalama (kısmi) Spearman; t/p=Student-t "
                  "(df=K-1); p_Šidák=2×ufuk aile düzeltmesi. K<4 → yetersiz güç.")

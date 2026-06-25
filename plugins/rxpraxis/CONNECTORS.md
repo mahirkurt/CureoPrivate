@@ -37,7 +37,7 @@ Hücre: ● birincil/zorunlu · ○ koşullu/opsiyonel · — kullanılmaz.
 
 | Connector | Endpoint / Kaynak | Araç sayısı | MR | PI | PP | TS | RX | Notlar |
 |---|---|---|---|---|---|---|---|---|
-| **TİTCK Cache MCP** *(birincil)* | `titck-cache-mcp.cureonics.workers.dev/mcp` | 56 (proxy) | ● | ● | ● | — | ● | **v1.1 — kod-düzeyi tek-sefer (§3).** Ham TİTCK MCP'yi saran şeffaf önbellek proxy'si; `scope_key` başına upstream çağrısı ≤1 (SingleFlight DO + KV TTL). Araç yüzeyi upstream ile **aynı**. rxpraxis'te **kanonik TİTCK yolu budur.** |
+| **TİTCK Cache MCP** *(birincil — kanonik public uç)* | `titck.cureonics.com/mcp` | 56 (proxy) | ● | ● | ● | — | ● | **v1.1 — kod-düzeyi tek-sefer (§3).** Ham TİTCK MCP'yi saran şeffaf önbellek proxy'si; `scope_key` başına upstream çağrısı ≤1 (SingleFlight DO + KV TTL). Araç yüzeyi upstream ile **aynı**. rxpraxis'te **kanonik TİTCK yolu budur.** |
 | **TİTCK MCP** *(upstream / fallback)* | `titck-mcp-to7lqjgdkq-ew.a.run.app/mcp` | 56 | ○ | ○ | ○ | — | ○ | Cache Worker'ın upstream'i. Doğrudan yalnız Cache erişilemezse (§6 fallback) veya cache-bypass tazeleme için çağrılır. Master record + holder + ATC/SNOMED + fiyat + eşdeğer/biyobenzer grup + Madde 23 + withdrawal + batch release + off-label. |
 | **Mevzuat MCP** | `mevzuat-mcp-…run.app/mcp` | 19 | ○ | ○ | ● | — | ● | SMK + yönetmelik + tebliğ + genelge + Resmi Gazete tam metin. 5 fonksiyonel kategori. İçtihat (Yargıtay/Danıştay/AYM) **kapsam dışı**. |
 | **Türk Patent MCP** | `markapatent-mcp.fastmcp.app/mcp` | 6 | ○ | — | ● | — | ● | Patent + marka (Nice) + endüstriyel tasarım (Locarno). CPC/IPC + applicant + abstract. EP→TR validation. |
@@ -124,7 +124,7 @@ pharmaintel Channel A, pharmapatent Mod 13). rxos orkestrasyonunda bu çağrıla
 Bu kural canonical-cache-contract.md §TİTCK ile birlikte normatiftir.
 
 **v1.1 (kod-düzeyi zorlama — dağıtıldı).** Tek-sefer TİTCK kuralı artık `titck-cache-mcp`
-Worker'ı (`titck-cache-mcp.cureonics.workers.dev`) tarafından **deterministik** uygulanır:
+Worker'ı (`titck.cureonics.com`) tarafından **deterministik** uygulanır:
 `scope_key = sha256(tool + canonical(args))` başına upstream çağrısı ≤ 1 — **SingleFlight
 Durable Object** eşzamanlı özdeş çağrıları tek-uçuşa birleştirir (cache stampede önleme), **KV
 TTL** ikinci-kat kenar önbellektir. Üç skill artık ham TİTCK yerine **TİTCK Cache** connector'ını

@@ -61,7 +61,7 @@
     {
       "version": "1.1.0",
       "date": "2026-06-14",
-      "summary": "R1 kod-düzeyi çözümü: TİTCK Cache proxy (titck-cache-mcp.cureonics.workers.dev) bağlandı; tek-sefer TİTCK artık SingleFlight DO + KV TTL ile deterministik. CONNECTORS.md §1.A/§3/§6, run-manifest şeması, BUILD.md §4-R1/§7 güncellendi."
+      "summary": "R1 kod-düzeyi çözümü: TİTCK Cache proxy (titck.cureonics.com) bağlandı; tek-sefer TİTCK artık SingleFlight DO + KV TTL ile deterministik. CONNECTORS.md §1.A/§3/§6, run-manifest şeması, BUILD.md §4-R1/§7 güncellendi."
     },
     {
       "version": "1.0.0",

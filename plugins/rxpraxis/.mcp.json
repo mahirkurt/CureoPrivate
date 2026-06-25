@@ -2,7 +2,7 @@
   "mcpServers": {
     "titck-cache": {
       "type": "http",
-      "url": "https://titck-cache-mcp.cureonics.workers.dev/mcp"
+      "url": "https://titck.cureonics.com/mcp"
     },
     "titck": {
       "type": "http",

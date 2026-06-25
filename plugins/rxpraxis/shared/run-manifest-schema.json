@@ -180,7 +180,7 @@
             },
             "ledger_endpoint": {
               "type": "string",
-              "description": "v1.1: ör. https://titck-cache-mcp.cureonics.workers.dev/ledger?session=<Mcp-Session-Id>"
+              "description": "v1.1: ör. https://titck.cureonics.com/ledger?session=<Mcp-Session-Id>"
             },
             "upstream_calls": {
               "type": "integer",

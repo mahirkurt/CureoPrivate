@@ -137,7 +137,7 @@ thoughtspot-roche §"Path A/Path B" + connector tanımı.
 
 | # | Zorluk | Risk | Azaltım |
 |---|---|---|---|
-| **R1** ✅ | **Tek-sefer TİTCK runtime'da nasıl garanti edilir?** SKILL metni "bir kez çağır" der; ama model üç sibling skill'i çalıştırırken bunu unutabilir. | Çift/üçlü TİTCK sorgusu → latency + tutarsız snapshot. | **ÇÖZÜLDÜ (v1.1 dağıtıldı).** Artık kod-düzeyi deterministik garanti: `titck-cache-mcp` Worker'ı (`titck-cache-mcp.cureonics.workers.dev`, "TİTCK Cache" connector'ı) ham TİTCK MCP'yi saran şeffaf önbellek proxy'sidir. `scope_key = sha256(tool+canonical(args))` başına upstream çağrısı ≤1 — **SingleFlight Durable Object** eşzamanlı özdeş çağrıları tek-uçuşa birleştirir, **KV TTL** ikinci-kat önbellektir. Üç skill ham TİTCK yerine **TİTCK Cache**'i çağırır. `single_shot_enforced` artık `/ledger` ucundan **ölçülür** (`upstream_calls ≤ distinct_scopes`), beyan değil. Önbellek mantığı (§3.2) + manifest denetimi + `/rxpraxis-scan` Adım 3 tamamlayıcı kalır. Playbook: `titck-cache-mcp-build-playbook.md`. |
+| **R1** ✅ | **Tek-sefer TİTCK runtime'da nasıl garanti edilir?** SKILL metni "bir kez çağır" der; ama model üç sibling skill'i çalıştırırken bunu unutabilir. | Çift/üçlü TİTCK sorgusu → latency + tutarsız snapshot. | **ÇÖZÜLDÜ (v1.1 dağıtıldı).** Artık kod-düzeyi deterministik garanti: `titck-cache-mcp` Worker'ı (`titck.cureonics.com`, "TİTCK Cache" connector'ı) ham TİTCK MCP'yi saran şeffaf önbellek proxy'sidir. `scope_key = sha256(tool+canonical(args))` başına upstream çağrısı ≤1 — **SingleFlight Durable Object** eşzamanlı özdeş çağrıları tek-uçuşa birleştirir, **KV TTL** ikinci-kat önbellektir. Üç skill ham TİTCK yerine **TİTCK Cache**'i çağırır. `single_shot_enforced` artık `/ledger` ucundan **ölçülür** (`upstream_calls ≤ distinct_scopes`), beyan değil. Önbellek mantığı (§3.2) + manifest denetimi + `/rxpraxis-scan` Adım 3 tamamlayıcı kalır. Playbook: `titck-cache-mcp-build-playbook.md`. |
 | **R2** | **ThoughtSpot/MIDAS Roche-confidential sızıntısı.** thoughtspot-roche IQVIA MIDAS (Roche internal) verisi döndürür; konsolide raporda uygunsuz ifşa riski. | Gizli ticari veri uygunsuz paylaşım. | `provenance-standard.md` §4 Roche-confidential işaretleme zorunlu; `midas_extract` artefaktı ve onu kullanan her bölüm "Roche confidential" damgası taşır. Cross-country sayılar **annualize + agregat** sunulur (CONNECTORS.md §5), ham hücre dökümü değil. Süit dışı paylaşım açıkça yasak. |
 | **R3** | **pharmaintel + dev manifest context-window basıncı.** pharmaintel ~644 satır + ürün-geliştirme alt-protokolü; tam tarama dört skill'i aynı bağlama yükler. | Bağlam taşması, kalite düşüşü. | (a) Kaynak skill'ler **progressive disclosure** kullanır — ana SKILL.md ince, ağır içerik `references/` altında, yalnız gerektiğinde okunur. (b) Orkestratör aşamaları **sıralı** çalışır; her aşama yalnız ilgili skill'in ilgili bölümünü çeker, dördünü aynı anda değil. (c) Kanonik önbellek, aşamalar arası **veriyi** taşır (ham connector çıktısını değil), bağlamı hafifletir. |
 | **R4** | **Namespace `rxpraxis:rxos` — çift "Rx" + olası kafa karışıklığı.** Komut `/rxpraxis-scan` ile skill `rxpraxis:rxos` arasında kullanıcı ayrımı. | Kullanıcı hangi yüzeyi çağıracağını şaşırabilir. | `start` skill'i (router) niyet→yüzey eşlemesini açıkça yapar. Komutlar kullanıcı-yüzlü giriş; skill'ler komutların çağırdığı motor. README "Hızlı Başlangıç" bunu üç satırda netleştirir. Marka sürekliliği için `rxos` adı korunur (Mahir'in mevcut ekosisteminde tanınır). |
@@ -150,7 +150,7 @@ thoughtspot-roche §"Path A/Path B" + connector tanımı.
 **v1.1 ile bu, `titck-cache-mcp` Worker'ı üzerinden kod-düzeyi deterministik garantiye
 yükseltilmiştir:** connector çağrılarını saran, `scope_key`-anahtarlı, SingleFlight DO + KV TTL
 tabanlı bir ön-uç (Mahir'in `midas-mcp` Worker'ı ile simetrik). Worker dağıtıldı ve **"TİTCK
-Cache"** connector'ı (`titck-cache-mcp.cureonics.workers.dev`) olarak bağlandı; üç skill artık ham
+Cache"** connector'ı (`titck.cureonics.com`) olarak bağlandı; üç skill artık ham
 TİTCK yerine bu proxy'yi çağırır. `single_shot_enforced` artık `/ledger` ucundan ölçülebilir bir
 değişmezdir. İnşa talimatı: `titck-cache-mcp-build-playbook.md`; ayrıntı §7.
 
@@ -241,7 +241,7 @@ ile birlikte kullanın — yalnız SKILL.md'de tek-satırlık not farkı bekleni
 
 - **v1.1 — TİTCK-cache ön-uç Worker — ✅ TAMAMLANDI & DAĞITILDI.** TİTCK MCP'yi saran,
   `scope_key`-anahtarlı önbellek tutan Cloudflare Worker (`midas-mcp` ile simetrik) inşa edildi,
-  `titck-cache-mcp.cureonics.workers.dev` adresine dağıtıldı ve **"TİTCK Cache"** connector'ı olarak
+  `titck.cureonics.com` adresine dağıtıldı ve **"TİTCK Cache"** connector'ı olarak
   Claude'a bağlandı. Çift sorgu *fiziksel olarak* engelleniyor (SingleFlight DO + KV TTL). R1
   azaltımı "disiplin" → "kod-düzeyi deterministik garanti" olarak yükseltildi (§4). İnşa talimatı:
   `titck-cache-mcp-build-playbook.md`. CONNECTORS.md §1.A/§3/§6 ve run-manifest şeması güncellendi.

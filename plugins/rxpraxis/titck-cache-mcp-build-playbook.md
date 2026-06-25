@@ -759,7 +759,7 @@ npx wrangler secret put PURGE_TOKEN          # rastgele güçlü değer
 npx wrangler deploy
 ```
 
-**✅ Kabul kontrolü:** Dağıtım URL'i basılır (ör. `https://titck-cache-mcp.cureonics.workers.dev`).
+**✅ Kabul kontrolü:** Dağıtım URL'i basılır (ör. `https://titck.cureonics.com`).
 `npx wrangler deployments list` son dağıtımı gösterir.
 
 ---
@@ -767,7 +767,7 @@ npx wrangler deploy
 ## 16. Adım S14 — Canlı smoke test
 
 ```bash
-BASE=https://titck-cache-mcp.cureonics.workers.dev
+BASE=https://titck.cureonics.com
 
 # 1) sağlık
 curl -s $BASE/health | jq .
@@ -796,7 +796,7 @@ curl -s "$BASE/ledger?session=SMOKE" | jq .
 **Amaç:** rxpraxis'i ham TİTCK MCP yerine bu önbellekleyen proxy'ye yönlendir.
 
 1. **Claude.ai connector'ı:** TİTCK connector URL'ini
-   `https://titck-cache-mcp.cureonics.workers.dev/mcp` olarak değiştir (ham Cloud Run URL'i yerine).
+   `https://titck.cureonics.com/mcp` olarak değiştir (ham Cloud Run URL'i yerine).
    Araç yüzeyi aynıdır (şeffaf proxy), bu yüzden skill'lerde başka değişiklik gerekmez.
 
 2. **`CONNECTORS.md §3` güncellemesi (rxpraxis):** "Tek-sefer TİTCK kuralı"nın artık **kod-düzeyi
@@ -831,7 +831,7 @@ Aşağıdakilerin **tümü** sağlanmalı:
       araçları kısa TTL (politika) ile davranır.
 - [ ] rxpraxis connector'ı proxy'ye yönlendirilmiş; `CONNECTORS.md §3`, `run-manifest-schema.json`,
       `BUILD.md §4/§7` güncellenmiş.
-- [ ] `wrangler deploy` ile `titck-cache-mcp.cureonics.workers.dev` yayında.
+- [ ] `wrangler deploy` ile `titck.cureonics.com` yayında.
 
 ---
 

@@ -52,6 +52,11 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   çalışıyor, içerik yok) → 0 hit'i "kanıt yok" diye raporlama; önce ingest et veya RAG adımını
   atlandı olarak işaretle. (Vectorize indeksleme ~saniye gecikmeli; ingest'ten hemen sonraki
   `semantic_search` geçici 0 dönebilir → kısa bekle/yeniden dene.)
+- **Temizlik — `forget_document(doc_id)` (v1.4.1).** Bayat/yanlış/test belgesini temizlemek için
+  `ingest_document` ile boş-üzerine-yazma YETMEZ (stale vektör/graph kalır). `forget_document` doc_id ile
+  Vectorize vektörlerini + D1 chunks/manifest/edges'i siler, node-provenance'ını küçültür (son doc'unu
+  kaybeden orphan node silinir). Idempotent (bilinmeyen doc_id → existed:false), destructive. Oturum
+  sonu/yeniden-ingest öncesi korpus hijyeni için kullan.
 
 ---
 

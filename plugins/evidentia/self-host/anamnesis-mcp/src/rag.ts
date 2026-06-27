@@ -22,6 +22,8 @@ import { semanticChunk, type ChunkOpts } from "./chunk.js";
 export interface VectorizeBinding {
   upsert: (vectors: Array<{ id: string; values: number[]; metadata?: Record<string, unknown> }>) => Promise<unknown>;
   query: (vector: number[], opts: Record<string, unknown>) => Promise<unknown>;
+  // Cloudflare Vectorize V2 supports deleteByIds; optional so typecheck stays stub-robust.
+  deleteByIds?: (ids: string[]) => Promise<unknown>;
 }
 export interface D1Like {
   prepare: (sql: string) => {
@@ -184,4 +186,75 @@ export async function corpusStats(env: RagEnv): Promise<Record<string, number>> 
     docs: Number(d?.n ?? 0), chunks: Number(c?.n ?? 0),
     nodes: Number(nodes?.n ?? 0), edges: Number(edges?.n ?? 0),
   };
+}
+
+export interface ForgetResult {
+  doc_id: string;
+  existed: boolean;
+  deleted: { chunks: number; vectors: number; edges: number; nodes_removed: number; nodes_updated: number };
+}
+
+/**
+ * Forget (hard-delete) a document by doc_id. The clean deletion path the index previously
+ * lacked: `ingest_document` only overwrote same-doc_id chunks, leaving stale vectors/graph behind.
+ *
+ * Deletes, by doc_id:
+ *   - Vectorize vectors (by chunk id `${doc_id}::${idx}`, via deleteByIds)
+ *   - D1 `chunks` rows  + the `docs` manifest row
+ *   - D1 graph `edges` sourced from this doc (edges.doc_id = doc_id)
+ *   - D1 graph `nodes` provenance: removes doc_id from the node's doc_ids list; a node that
+ *     loses its LAST contributing doc is deleted (orphan), otherwise its doc_ids is updated.
+ *     (A node co-cited by another surviving doc is preserved — only its provenance shrinks.)
+ *
+ * Idempotent: forgetting an unknown doc_id returns existed:false with all-zero counts (no error).
+ */
+export async function forgetDocument(env: RagEnv, docId: string): Promise<ForgetResult> {
+  await ensureSchema(env);
+
+  // 1) chunk ids for this doc (drive both Vectorize delete + count)
+  const chunkRows = await env.DB.prepare(`SELECT id FROM chunks WHERE doc_id = ?`).bind(docId).all();
+  const chunkIds = ((chunkRows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
+  const docRow = await env.DB.prepare(`SELECT id FROM docs WHERE id = ?`).bind(docId).first<{ id: string }>();
+  const existed = chunkIds.length > 0 || !!docRow;
+
+  // 2) Vectorize: delete the doc's vectors (bounded batches; CF cap is generous but be safe)
+  let vectors = 0;
+  if (chunkIds.length && typeof env.VECTORIZE.deleteByIds === "function") {
+    for (let i = 0; i < chunkIds.length; i += 1000) {
+      await env.VECTORIZE.deleteByIds!(chunkIds.slice(i, i + 1000));
+    }
+    vectors = chunkIds.length;
+  }
+
+  // 3) D1 chunk text + manifest
+  await env.DB.prepare(`DELETE FROM chunks WHERE doc_id = ?`).bind(docId).run();
+  await env.DB.prepare(`DELETE FROM docs WHERE id = ?`).bind(docId).run();
+
+  // 4) graph edges sourced from this doc
+  const edgeCount = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges WHERE doc_id = ?`).bind(docId).first<{ n: number }>();
+  const edges = Number(edgeCount?.n ?? 0);
+  await env.DB.prepare(`DELETE FROM edges WHERE doc_id = ?`).bind(docId).run();
+
+  // 5) graph nodes: shrink provenance; orphan -> delete. LIKE pre-filters, JSON parse confirms
+  //    (so a substring false-match never causes a wrong delete).
+  let nodes_removed = 0, nodes_updated = 0;
+  const needle = `%${JSON.stringify(docId)}%`; // matches the JSON-quoted doc id inside doc_ids
+  const nodeRows = await env.DB.prepare(`SELECT id, doc_ids FROM nodes WHERE doc_ids LIKE ?`).bind(needle).all();
+  const now = Date.now();
+  for (const r of (nodeRows.results ?? []) as Array<{ id: string; doc_ids: string }>) {
+    let docIds: string[] = [];
+    try { docIds = JSON.parse(r.doc_ids || "[]"); } catch { docIds = []; }
+    if (!docIds.includes(docId)) continue; // LIKE false-positive — skip
+    const remaining = docIds.filter((d) => d !== docId);
+    if (remaining.length === 0) {
+      await env.DB.prepare(`DELETE FROM nodes WHERE id = ?`).bind(r.id).run();
+      nodes_removed++;
+    } else {
+      await env.DB.prepare(`UPDATE nodes SET doc_ids = ?, updated_at = ? WHERE id = ?`)
+        .bind(JSON.stringify(remaining), now, r.id).run();
+      nodes_updated++;
+    }
+  }
+
+  return { doc_id: docId, existed, deleted: { chunks: chunkIds.length, vectors, edges, nodes_removed, nodes_updated } };
 }

@@ -18,6 +18,7 @@ sunar. Amaç: araç çıktılarının bağlam taşması nedeniyle eksik/tutarsı
 | `subgraph` | Verilen varlık kümesi içindeki induced kenarlar (çapraz-belge bağ) | read-only |
 | **`hybrid_query`** | **Vektör top-k ∪ graph genişletme → sınırlı kanıt paketi** | read-only |
 | `corpus_stats` | docs/chunks/nodes/edges sayımı | read-only |
+| **`forget_document`** | **doc_id ile temiz silme**: Vectorize vektörleri (`deleteByIds`) + D1 chunks/manifest/edges + node-provenance küçültme (son doc'unu kaybeden orphan node silinir; başka doc'la paylaşılan korunur). Idempotent (bilinmeyen doc_id → existed:false). | **mutation (destructive)** |
 
 ## Mimari
 `bge-m3` (1024-d, çok-dilli — TR sorgu / EN korpus) embeddings → **Vectorize** (vektörler) +

@@ -15,6 +15,8 @@
  *   subgraph          — induced edges over an entity set (cross-document links)
  *   hybrid_query      — FLAGSHIP: vector top-k ∪ graph expansion -> compact evidence bundle
  *   corpus_stats      — doc/chunk/node/edge counts (observability)
+ *   forget_document   — hard-delete a doc by doc_id: Vectorize vectors + D1 chunks/manifest +
+ *                       graph edges; node provenance shrunk, orphan nodes removed (clean teardown)
  *
  * Honest scope: extraction is Claude-in-the-loop (upsert_triples); Microsoft-GraphRAG global
  * community summarization is a documented Cloud Run add-on (NOT shipped as a weak in-Worker
@@ -23,7 +25,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { ingestDocument, semanticSearch, corpusStats, type RagEnv, type RetrievedChunk } from "./rag.js";
+import { ingestDocument, semanticSearch, corpusStats, forgetDocument, type RagEnv, type RetrievedChunk } from "./rag.js";
 import { upsertTriples, neighbors, subgraph, type GraphEnv, type Triple, type GraphEdge } from "./graph.js";
 
 export type AnamEnv = RagEnv & GraphEnv;
@@ -224,6 +226,24 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     async () => {
       try { return ok(await corpusStats(env)); }
       catch (e: any) { return err(`corpus_stats failed: ${e.message}`); }
+    },
+  );
+
+  // ---- forget_document (destructive cleanup) ------------------------------
+  server.tool(
+    "forget_document",
+    "Hard-delete one document from the index by doc_id — the clean teardown path ingest_document " +
+      "lacked (re-ingest only overwrote same-id chunks, leaving stale vectors/graph). Removes: the " +
+      "doc's Vectorize vectors, its D1 chunk text + manifest row, its graph edges, and its provenance " +
+      "from graph nodes (a node that loses its LAST contributing doc is deleted; one still cited by " +
+      "another doc is kept, provenance shrunk). DESTRUCTIVE + irreversible. Idempotent: an unknown " +
+      "doc_id returns existed:false with zero counts. Use to purge test/smoke data or stale corpus.",
+    {
+      doc_id: z.string().describe("Stable id used at ingest (e.g. a DOI or 'cochrane-handbook-ch8'). Exact match."),
+    },
+    async (a) => {
+      try { return ok(await forgetDocument(env, a.doc_id)); }
+      catch (e: any) { return err(`forget_document failed: ${e.message}`); }
     },
   );
 }

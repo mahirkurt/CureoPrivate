@@ -6,7 +6,10 @@
     },
     "fon-mcp": {
       "type": "http",
-      "url": "https://fon-mcp.cureonics.workers.dev/mcp"
+      "url": "https://fon-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FON_MCP_MCP_API_KEY}"
+      }
     }
   }
 }

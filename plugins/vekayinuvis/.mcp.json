@@ -2,7 +2,10 @@
   "mcpServers": {
     "ottoman-archives": {
       "type": "http",
-      "url": "https://ottoman-archives-to7lqjgdkq-ew.a.run.app/mcp"
+      "url": "https://ottoman-archives-to7lqjgdkq-ew.a.run.app/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OTTOMAN_ARCHIVES_MCP_API_KEY}"
+      }
     },
     "yoktez": {
       "type": "http",

@@ -6,15 +6,24 @@
     },
     "titck": {
       "type": "http",
-      "url": "https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+      "url": "https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
+      }
     },
     "mevzuat": {
       "type": "http",
-      "url": "https://mevzuat-mcp-864144140896.europe-west1.run.app/mcp"
+      "url": "https://mevzuat-mcp-864144140896.europe-west1.run.app/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
+      }
     },
     "midas": {
       "type": "http",
-      "url": "https://midas-mcp.cureonics.workers.dev/mcp"
+      "url": "https://midas-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MIDAS_MCP_SHARED_SECRET}"
+      }
     },
     "pubmed": {
       "type": "http",

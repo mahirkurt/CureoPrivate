@@ -42,18 +42,21 @@
     "yok-akademik": {
       "type": "http",
       "url": "https://yok-akademik.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}" },
       "_tier": "O",
       "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
     },
     "social-listening": {
       "type": "http",
       "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${SOCIUS_VIGIL_MCP_API_KEY}" },
       "_tier": "O",
       "_role": "OSINT ekseni (Tier 6) backing (osint-playbook.md) — sosyal/PV sinyal triyajı; KLİNİK KANIT DEĞİL"
     },
     "annas-reader": {
       "type": "http",
       "url": "https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp",
+      "headers": { "Authorization": "Bearer ${ANNAS_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",
       "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)",
@@ -62,6 +65,7 @@
     "anamnesis": {
       "type": "http",
       "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer, drugddx ile aynı 6-invariant auth)",
       "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)",
@@ -70,6 +74,7 @@
     "drugddx": {
       "type": "http",
       "url": "https://drugddx-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${DRUGDDX_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer)",
       "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · serverInfo drugddx-mcp v1.0.0",
@@ -87,6 +92,7 @@
     "openfda": {
       "type": "http",
       "url": "https://openfda-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer, drugddx ile aynı 6-invariant auth)",
       "_probe": "2026-06-25 HTTP 401 SECURED · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
@@ -95,6 +101,7 @@
     "evidentia-kb": {
       "type": "http",
       "url": "https://evidentia-kb-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${EVIDENTIA_KB_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; origins claude.ai/claude.com/grok.com/chatgpt.com)",
       "_probe": "2026-06-26 HTTP 401 SECURED · authenticated initialize 200 · kb_search canlı (244 chunk/24 dosya; bge-m3 Vectorize; layer-file recall doğrulandı)",

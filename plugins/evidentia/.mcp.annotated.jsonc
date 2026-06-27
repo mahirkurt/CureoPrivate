@@ -37,6 +37,30 @@
       "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
       "_role": "GtoPdb hedef/ligand farmakolojisi — ChEMBL get_mechanism tamamlayıcısı (OpenTargets offline iken ikinci kaynak)"
     },
+    "openalex": {
+      "type": "http",
+      "url": "https://openalex.caseyjhand.com/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream — least-privilege; kamu örneği bireysel-operatör",
+      "_probe": "2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç",
+      "_role": "OpenAlex bilimsel katalog — KOL haritalama + atıf-ağı + kurum/yazar (ORCID/ROR) disambiguasyonu (§8); REST-fallback'tan native Tier-K'ya terfi"
+    },
+    "pubmed-epmc": {
+      "type": "http",
+      "url": "https://pubmed.caseyjhand.com/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI + Europe PMC + Unpaywall upstream — least-privilege",
+      "_probe": "2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç",
+      "_role": "PubMed/PMC + Europe PMC + Unpaywall YASAL OA tam-metin (annas gri-alanına temiz alternatif); hesap-seviyesi PubMed'i tamamlar"
+    },
+    "semantic-scholar": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.pipeworx-io/semanticscholar) · S2 Academic Graph — nih/rxnorm/iuphar ile aynı gateway (keyless)",
+      "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · search_papers/get_paper/get_paper_citations/get_author",
+      "_role": "S2 atıf-grafiği/etki-atıfı — Consensus+Scholar Gateway sentezini tamamlar (ikincil). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway keyless)"
+    },
 
     "__TIER_O__operator_cureonics_workers": "🟢 auto-wire — operatörün kendi sertleştirilmiş OAuth 2.1 Worker'ları; başka operatör kendi instance'larına işaret etmeli (CONNECTORS.md)",
 
@@ -51,12 +75,6 @@
       "url": "https://yok-akademik.cureonics.com/mcp",
       "_tier": "O",
       "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
-    },
-    "social-listening": {
-      "type": "http",
-      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
-      "_tier": "O",
-      "_role": "OSINT ekseni (Tier 6) backing (osint-playbook.md) — sosyal/PV sinyal triyajı; KLİNİK KANIT DEĞİL"
     },
     "annas-reader": {
       "type": "http",

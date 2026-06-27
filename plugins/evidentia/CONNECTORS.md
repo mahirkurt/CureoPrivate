@@ -61,7 +61,6 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 |---|---|---|
 | TİTCK Cache | `https://titck-cache-mcp.cureonics.workers.dev` | Türkiye Dörtlüsü latency fallback rung |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
-| Social Listening | `https://socius-vigil-mcp.cureonics.workers.dev/mcp` | OSINT (Tier 6) backing — klinik kanıt DEĞİL |
 | **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED). §1.3 generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 
 ### 1.5 Genişletme Katmanı (mcp-scout canlı-doğrulanmış · Tier-K · §6)
@@ -71,6 +70,9 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | **nih-clinicaltables** | `https://gateway.pipeworx.io/clinicaltables/mcp` | ✅ 200 · keyless | NIH Clinical Tables (ICD/LOINC/NPI/condition) | topluluk · NIH upstream |
 | **nlm-rxnorm** | `https://gateway.pipeworx.io/rxnorm/mcp` | ✅ 200 · keyless | RxNorm normalizasyonu (INN↔RxCUI) | topluluk · NLM upstream |
 | **iuphar-gtopdb** | `https://gateway.pipeworx.io/guidetopharmacology/mcp` | ✅ 200 · keyless | GtoPdb hedef/ligand | topluluk · IUPHAR upstream |
+| **openalex** | `https://openalex.caseyjhand.com/mcp` | ✅ 200 (2026-06-27) · v0.7.2 · 5 araç | OpenAlex katalog (works/authors/institutions/topics/funders) — **KOL/atıf-ağı/kurum disambiguasyon** (§8); REST-fallback→native terfi | topluluk (cyanheads) · OpenAlex upstream |
+| **pubmed-epmc** | `https://pubmed.caseyjhand.com/mcp` | ✅ 200 (2026-06-27) · v2.9.7 · 10 araç | PubMed/PMC + **Europe PMC** + **Unpaywall YASAL OA tam-metin** (annas gri-alanına alternatif) | topluluk (cyanheads) · NCBI/EPMC/Unpaywall upstream |
+| **semantic-scholar** | `https://gateway.pipeworx.io/semanticscholar/mcp` | ✅ 200 (2026-06-27) · pipeworx gateway · S2 pack | Semantic Scholar atıf-grafiği/etki-atıfı (ikincil; Consensus+Scholar Gateway'i tamamlar) | topluluk · S2 upstream (aynı gateway) |
 
 ### 1.6 Self-Host (klinik DDI boşluğu + RAG/GraphRAG substratı + openFDA)
 | Connector | URL | Durum |
@@ -170,7 +172,7 @@ web tarafında OAuth/operatör connector'ları manuel eklenir (mcp-scout
 
 **Tier-O Worker taşınabilirliği:** `*.cureonics.workers.dev` / `yok-akademik.cureonics.com`
 URL'leri **operatöre özeldir**. Başka bir operatör kurarsa kendi instance'larını ayağa
-kaldırıp (TİTCK Cache / YÖK Akademik / Social Listening fork'ları) `.mcp.json`'ı kendi
+kaldırıp (TİTCK Cache / YÖK Akademik fork'ları) `.mcp.json`'ı kendi
 domain'leriyle güncellemelidir.
 
 **Annas Reader + anamnesis (RAG/GraphRAG) yüzey notu:** **Annas Reader** operatörün bağlı

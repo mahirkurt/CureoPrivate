@@ -209,8 +209,19 @@ runtime:
       status: wired
     - name: PDF Viewer                # in-conversation full-text PDF review
       status: conditional
-    - name: Social Listening          # socius-vigil-mcp.cureonics.workers.dev — backs the OSINT axis (osint-playbook.md)
-      status: conditional
+    # --- Tier-K keyless academic expansion (probe-verified 2026-06-27; bundled in ../../.mcp.json) ---
+    - name: OpenAlex                  # openalex.caseyjhand.com — native promotion from rest_fallback; KOL/citation-network/institution disambiguation (§8)
+      status: wired
+      tier: K
+      tools: [openalex_resolve_name, openalex_search_entities, openalex_analyze_trends, openalex_get_citation_graph, openalex_describe_fields]
+    - name: PubMed-EPMC              # pubmed.caseyjhand.com — Europe PMC breadth + Unpaywall legal-OA full-text (complements account-level PubMed)
+      status: wired
+      tier: K
+      tools: [pubmed_search_articles, pubmed_fetch_articles, pubmed_fetch_fulltext, pubmed_europepmc_search, pubmed_lookup_mesh, pubmed_format_citations, pubmed_find_related, pubmed_convert_ids, pubmed_lookup_citation, pubmed_spell_check]
+    - name: Semantic Scholar         # gateway.pipeworx.io/semanticscholar — secondary citation graph (Consensus+Scholar Gateway already synthesize S2); SEMANTIC_SCHOLAR_API_KEY in Doppler
+      status: wired
+      tier: K
+      tools: [search_papers, get_paper, get_paper_citations, get_author]
     # --- Optional / degradable booster (Tier O) ---
     - name: evidentia-kb              # evidentia-kb-mcp.cureonics.workers.dev — KB semantic recall booster (graceful-degrade)
       status: optional
@@ -221,7 +232,8 @@ runtime:
       role: "KB semantic recall booster (graceful-degrade)"
       note: "Every kb_search call is guarded by reachability; absence degrades to Backbone-A only (still complete). May only raise recall, never gate the flow."
   # Native REST fallbacks (no native MCP) — Python requests via bash_tool (extended-api.md)
-  rest_fallback: [OpenAlex, PubChem, "Semantic Scholar Graph", DailyMed, Unpaywall, DOAJ, J-STAGE, DrugBank]
+  # OpenAlex, Semantic Scholar, Unpaywall PROMOTED to native Tier-K MCP (2026-06-27) — see mcp_servers above
+  rest_fallback: [PubChem, DailyMed, DOAJ, J-STAGE, DrugBank]
 
 # β-layer CANDIDATES — NOT wired in standalone skill. Principle = "probe-verified only" (v8.0).
 # evidentia plugin packaging RE-PROBED these via mcp-scout live initialize (2026-06-25);

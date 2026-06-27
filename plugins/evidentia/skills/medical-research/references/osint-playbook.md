@@ -16,15 +16,15 @@ flag items older than 6 months; FAERS/spontaneous reports are **reporting, not i
 - **Patent / IP** — Türk Patent (native) + Espacenet/USPTO via Exa; FTO/landscape → `pharmapatent`.
 - **Regulatory watch** — AdComm/ODAC dates, CHMP agendas, PDUFA via openFDA + Federal Register +
   Exa (`ema.europa.eu`).
-- **Pharmacovigilance signal (triage only)** — openFDA FAERS `count` (PT-level); **Social Listening
-  / socius-vigil** for patient-reported/social signal. Triage only — never a substitute for formal PV.
+- **Pharmacovigilance signal (triage only)** — openFDA FAERS `count` (PT-level); patient-reported /
+  social signal via web search (Tavily → Exa). Triage only — never a substitute for formal PV.
 - **Market access** — payer/SUT signal: Mevzuat (native) + Exa; handoff to `onko-erisim`/`saglik-sigorta`.
 - **KOL network** — OpenAlex/S2 co-authorship + NPI (US) + **YÖK Akademik** (TR) → §8.
 
 ## 2. Connector wiring (α-layer)
-- **Social Listening / socius-vigil** (`socius-vigil-mcp.cureonics.workers.dev`) is the backing
-  connector for social/PV-signal OSINT. Conditional/quota-aware; on failure note the gap.
-- Web OSINT: Tavily (domain-scoped, when live) → Exa fallback.
+- Social / web OSINT (patient-reported & PV signal) is served via **web search** — Tavily
+  (domain-scoped, when live) → Exa fallback. On failure note the gap. (No dedicated social-listening
+  connector is bundled — deep social-listening is out of scope; see §4 boundary.)
 
 ## 3. Source-tag discipline
 Each OSINT line carries: source, type (press/abstract/social/registry), date, and a Tier-6 tag.

@@ -33,6 +33,30 @@
       "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
       "_role": "GtoPdb hedef/ligand farmakolojisi — ChEMBL get_mechanism tamamlayıcısı (OpenTargets offline iken ikinci kaynak)"
     },
+    "openalex": {
+      "type": "http",
+      "url": "https://openalex.caseyjhand.com/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream (otoriter açık katalog) — least-privilege; kamu örneği bireysel-operatör",
+      "_probe": "2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)",
+      "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph"
+    },
+    "pubmed-epmc": {
+      "type": "http",
+      "url": "https://pubmed.caseyjhand.com/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI E-utilities + Europe PMC + Unpaywall upstream — least-privilege; kamu örneği bireysel-operatör",
+      "_probe": "2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)",
+      "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh"
+    },
+    "semantic-scholar": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.pipeworx-io/semanticscholar) · Semantic Scholar Academic Graph upstream — nih-clinicaltables/nlm-rxnorm/iuphar ile AYNI gateway (keyless)",
+      "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · semanticscholar pack: search_papers/get_paper/get_paper_citations/get_author (+ ask_pipeworx)",
+      "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway çağırana keyless; key doğrudan-S2/rate-limit içindir)"
+    },
     "titck-cache": {
       "type": "http",
       "url": "https://titck-cache-mcp.cureonics.workers.dev",
@@ -45,13 +69,6 @@
       "headers": { "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}" },
       "_tier": "O",
       "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
-    },
-    "social-listening": {
-      "type": "http",
-      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${SOCIUS_VIGIL_MCP_API_KEY}" },
-      "_tier": "O",
-      "_role": "OSINT ekseni (Tier 6) backing (osint-playbook.md) — sosyal/PV sinyal triyajı; KLİNİK KANIT DEĞİL"
     },
     "annas-reader": {
       "type": "http",

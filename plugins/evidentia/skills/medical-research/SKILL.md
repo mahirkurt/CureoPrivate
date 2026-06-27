@@ -396,7 +396,7 @@ finalization gate (G1–G7) before emitting. File-based reports → Markdown `.m
 | `regulatory-intelligence.md` | 0.5.C/0.5.D/0.5.K | native openFDA + ICD-11 + WHO GHO + Health Canada + Federal Register |
 | `drug-intelligence-layer.md` | 0.5.I only | REAL AdisInsight schema (search_drugs/get_drug HyDE/generate_chart) |
 | `oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease-layer.md` | per 0.5.A–H | Clinical deep-dive + appraisal checklist + v8.0 native wiring (**recreated v8.2**) |
-| `osint-playbook.md` | OSINT triggers | Competitive/patent/regulatory/PV/market-access/KOL playbooks (+ socius-vigil α-layer) |
+| `osint-playbook.md` | OSINT triggers | Competitive/patent/regulatory/PV/market-access/KOL playbooks (social/web signal via Tavily→Exa) |
 | `execution-map.md` / `composition-runbook.md` / `benchmark-suite.md` / `benchmark-protocol.md` | large query / cross-skill / dev | Fan-out planning, cross-skill pipelines, eval harness docs |
 | `evals/check_integrity.py` + `evals/benchmark-queries.json` | dev / pre-release | **v8.2 NEW** — executable integrity gates (G-REF/G-ALWAYS/G-CONN/G-VERSION) + 10 regression queries |
 | `v8-wiring-patch.md` | historical | P2 specialty-layer wiring spec (applied in v8.2 specialty-layer recreation) |
@@ -446,8 +446,9 @@ connectors_used:
   turkiye: [TİTCK(1a49b1bb), Mevzuat(fbf16a1a), TÜRKPATENT(ded65854), YÖKTez(b2d46b46)]
   fulltext: [EuropePMC PMC, annas-mcp(verified), PaperDownload(660e91bd), Wiley(auth)]
   verification: [NPI(64557ced)]
-  native_rest_fallback: [OpenAlex, PubChem, SemanticScholarGraph, DailyMed, Unpaywall, DOAJ, J-STAGE]
-  alpha_layer_v8_2: [TİTCK Cache(cache/fallback), YÖK Akademik(TR KOL), PDF Viewer, Social Listening(OSINT)]
+  native_tier_k_bundled: [OpenAlex(openalex_*), PubMed-EPMC(pubmed_*; EuropePMC+Unpaywall OA), Semantic Scholar(search_papers/get_paper/citations/author)]   # promoted 2026-06-27 from REST
+  native_rest_fallback: [PubChem, DailyMed, DOAJ, J-STAGE]
+  alpha_layer_v8_2: [TİTCK Cache(cache/fallback), YÖK Akademik(TR KOL), PDF Viewer]
 candidate_connectors_unverified:   # β-layer — NOT wired (probe-verified-only principle)
   - drug-interaction-mcp | medical-terminologies-mcp | medical-codes-mcp-server
 composes_with:

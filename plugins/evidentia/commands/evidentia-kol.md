@@ -32,6 +32,6 @@ Alan/molekül: **$ARGUMENTS**
 - **Kimlik çapraz-doğrulama:** OpenAlex/S2 yazar-ID disambiguasyonu olmadan tek-isim eşleşmesi
   sunulMAZ (eş-isim riski).
 - **Native-first:** EPMC/YÖK Akademik native; OpenAlex/S2 REST. Tek-sefer (`kol_graph` paylaşılır).
-- **OSINT sınırı:** Social Listening (Tier-O) yalnız bağlam/erişilebilirlik triyajı — KOL
-  etki-sıralamasının **klinik** temeli değildir.
+- **OSINT sınırı:** OSINT/sosyal sinyal (Tier-6, web arama üzerinden) yalnız bağlam/erişilebilirlik
+  triyajı — KOL etki-sıralamasının **klinik** temeli değildir.
 - **Gizlilik:** kişi tanımlama için görsel/sorgu disiplinine uy; uydurma profil/iletişim **yok**.

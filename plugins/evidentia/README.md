@@ -67,10 +67,10 @@ connector** ile, Tier-A OAuth connector'ları Advanced settings ile eklenir. Yü
 
 | Katman | Ne | Auto-wire |
 |---|---|---|
-| **Tier-K** keyless remote-ready | Clinical Trials, NPI, bioRxiv + **genişletme:** med-terminologies, NIH Clinical Tables, NLM RxNorm, IUPHAR GtoPdb | ✅ |
-| **Tier-O** operatör Worker'ları | TİTCK Cache, YÖK Akademik, Social Listening, **Annas Reader** (tam-metin), **openfda** (FDA/WHO ICD-11), **evidentia-kb** (KB takviyesi, opsiyonel) | ✅ |
+| **Tier-K** keyless remote-ready | Clinical Trials, NPI, bioRxiv + **genişletme:** med-terminologies, NIH Clinical Tables, NLM RxNorm, IUPHAR GtoPdb, **OpenAlex** (KOL/atıf-ağı), **PubMed-EPMC** (Europe PMC + Unpaywall yasal-OA), **Semantic Scholar** | ✅ |
+| **Tier-O** operatör Worker'ları | TİTCK Cache, YÖK Akademik, **Annas Reader** (tam-metin), **openfda** (FDA/WHO ICD-11), **evidentia-kb** (KB takviyesi, opsiyonel) | ✅ |
 | **Tier-A** auth-gerekli | PubMed/EPMC, Consensus, AdisInsight, TİTCK, Mevzuat, Türk Patent, Tavily, … | env / Settings |
-| **Tier-R** REST fallback | OpenAlex, PubChem, DailyMed, Unpaywall, … | (native MCP değil — bundle dışı) |
+| **Tier-R** REST fallback | PubChem, DailyMed, DOAJ, J-STAGE, … | (native MCP değil — bundle dışı; OpenAlex/Unpaywall/S2 artık native Tier-K) |
 
 Tam envanter, fallback merdivenleri ve probe kanıtı: [`CONNECTORS.md`](./CONNECTORS.md).
 

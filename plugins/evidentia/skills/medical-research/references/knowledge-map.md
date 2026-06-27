@@ -17,7 +17,7 @@
 
 ### connector-registry.md  — [ALWAYS]
 - Sections: §0 Native-First Resolution Principle, §1 Tool Loading via ToolSearch, §2 Verified Connector Table (§2.1 Academic literature core, §2.2 Curated intelligence + mechanism, §2.3 Regulatory + epidemiology + Türkiye + IP, §2.4 Output / compose / visualize, §2.5 α-layer operator-connected high-trust), §3 Per-Connector Usage Notes (§3.1 AdisInsight schema, §3.2 TİTCK structural Turkey data, §3.3 Regulatory MCP native openFDA, §3.4 Tavily quota-aware, §3.5 annas-mcp full-text, §3.6 EPMC copyright gate), §4 Exa Orchestration, §5 Zero-Result Recovery Protocol, §6 Known Limitations & Workarounds, §7 Domain Registry
-- Concepts: tool selection, connector routing, native-first ladder, rate limits, fallback chains, α-layer (operator-connected: TİTCK-cache, YÖK Akademik, PDF Viewer, Social Listening), verified connector table, quota budgeting, zero-result recovery, Exa gap-fill
+- Concepts: tool selection, connector routing, native-first ladder, rate limits, fallback chains, α-layer (operator-connected: TİTCK-cache, YÖK Akademik, PDF Viewer), verified connector table, quota budgeting, zero-result recovery, Exa gap-fill
 - Synonyms: araç seçimi, bağlayıcı yönlendirme, connector seçimi, API yönlendirme, tool routing
 - Cross-links: every axis depends on this for tool resolution; turkiye-layer.md (§3.2 TİTCK); fulltext-retrieval.md (§3.5 annas-mcp); regulatory-intelligence.md (§3.3 openFDA); extended-api.md (§2.1 OpenAlex/S2)
 
@@ -119,9 +119,9 @@
 
 ### osint-playbook.md  — [axis: competitive/OSINT, α-layer]
 - Sections: §1 Playbooks, §2 Connector wiring (α-layer), §3 Source-tag discipline, §4 Output → §20 cross-layer + competitive-intel artifact
-- Concepts: OSINT (Open Source Intelligence), socius-vigil social listening, competitive intelligence, patent monitoring, pharmacovigilance (PV), market access intelligence, KOL identification, regulatory decision tracking, competitive landscape, news/press monitoring, cross-layer competitive artifact
+- Concepts: OSINT (Open Source Intelligence), social listening (via web search), competitive intelligence, patent monitoring, pharmacovigilance (PV), market access intelligence, KOL identification, regulatory decision tracking, competitive landscape, news/press monitoring, cross-layer competitive artifact
 - Synonyms: rekabet istihbaratı, açık kaynak istihbaratı, competitive intelligence, patent takip, PV monitoring, market intelligence, sosyal dinleme
-- Cross-links: connector-registry.md §2.5 (α-layer socius-vigil); medaffairs-ops-layer.md §3 (KOL wiring); drug-intelligence-layer.md (pipeline competitive context); output-templates.md §20 (cross-layer integration notes)
+- Cross-links: connector-registry.md §2.5 (α-layer); medaffairs-ops-layer.md §3 (KOL wiring); drug-intelligence-layer.md (pipeline competitive context); output-templates.md §20 (cross-layer integration notes)
 
 ### Process/tooling (not question-routed, listed for coverage completeness)
 - benchmark-suite.md — deterministic integrity gates (check_integrity.py), regression queries (benchmark-queries.json), pass criteria (release gate)
@@ -209,11 +209,11 @@
 - **Full-text retrieval / PMC / annas-mcp / Wiley / paywalled** → fulltext-retrieval.md (all) · extended-api.md#§5 (Unpaywall) · connector-registry.md#§3.5–§3.6
 - **KOL / Key Opinion Leader / kilit kanaat önderi / author network** → medaffairs-ops-layer.md#§3 (KOL identification wiring §8) · output-templates.md#§8 (KOL Haritası) · extended-api.md#§2 (OpenAlex) · extended-api.md#§4 (Semantic Scholar) · turkiye-layer.md (TR KOL via YÖK Akademik)
 - **Pipeline snapshot / AdisInsight / drug development / Phase 1–3 clinical** → drug-intelligence-layer.md (all) · drug-intelligence-layer.md#§6 (pipeline_payload sidecar) · connector-registry.md#§3.1 (AdisInsight real schema) · output-templates.md#§19 (drug intelligence snapshot)
-- **Competitive intelligence / OSINT / market landscape** → osint-playbook.md (all) · connector-registry.md#§2.5 (α-layer socius-vigil) · drug-intelligence-layer.md#§3.2 (competitor set) · output-templates.md#§20 (cross-layer notes)
+- **Competitive intelligence / OSINT / market landscape** → osint-playbook.md (all) · connector-registry.md#§2.5 (α-layer) · drug-intelligence-layer.md#§3.2 (competitor set) · output-templates.md#§20 (cross-layer notes)
 
 ### Connector / Tool Routing
 
-- **PubMed / MEDLINE / EuropePMC / EPMC** → connector-registry.md#§2.1 (academic literature core) · output-templates.md#§1 (Küresel Literatür) · evidence-grading.md#§1 (Tier 2 primary sources)
+- **PubMed / MEDLINE / EuropePMC / EPMC / Unpaywall / açık-erişim tam-metin** → connector-registry.md#§2.1 (academic literature core + bundled `pubmed-epmc`: `pubmed_europepmc_search`/`pubmed_fetch_fulltext` Unpaywall legal-OA) · output-templates.md#§1 (Küresel Literatür) · evidence-grading.md#§1 (Tier 2 primary sources)
 - **ClinicalTrials.gov / CT.gov / NCT** → connector-registry.md#§2.1 · output-templates.md#§2 (Klinik Pipeline) · drug-intelligence-layer.md#§3.5 (trial intelligence)
 - **AdisInsight / search_drugs / get_drug / HyDE / generate_chart** → drug-intelligence-layer.md#§1–§3 (real schema) · connector-registry.md#§3.1 (AdisInsight corrected schema)
 - **TİTCK / TİTCK-cache / barcode lookup** → turkiye-layer.md#§2 (TİTCK structured queries) · connector-registry.md#§2.5 (α-layer) · connector-registry.md#§3.2 (TİTCK structural Turkey data)
@@ -221,10 +221,10 @@
 - **Mevzuat / SUT / kararname / kanun** → turkiye-layer.md#§3 (Mevzuat native legislation) · regulatory-intelligence.md#§4 (multi-jurisdiction)
 - **Tavily / Exa / web research / gap-fill** → connector-registry.md#§4 (Exa orchestration) · connector-registry.md#§3.4 (Tavily quota-aware) · connector-registry.md#§7 (domain registry) · connector-registry.md#§5 (zero-result recovery)
 - **YÖK Akademik / Turkish academics / TR KOL** → turkiye-layer.md (TR KOL) · medaffairs-ops-layer.md#§3 (KOL wiring §8) · connector-registry.md#§2.5 (α-layer)
-- **OpenAlex / Semantic Scholar / citation graph** → extended-api.md#§2–§4 · medaffairs-ops-layer.md#§3 (KOL via OpenAlex) · output-templates.md#§8 (KOL Haritası)
+- **OpenAlex / Semantic Scholar / citation graph / atıf-ağı / kurum-yazar disambiguasyon** → connector-registry.md#§2.1 (native Tier-K bundled: `openalex_*`, `search_papers`/`get_paper_citations`) · extended-api.md#§2–§4 (REST fallback) · medaffairs-ops-layer.md#§3 (KOL via OpenAlex) · output-templates.md#§8 (KOL Haritası)
 - **ChEMBL / PubChem / chemical structure** → extended-api.md#§3 (PubChem PUG-REST) · drug-intelligence-layer.md#§4 (cross-reference)
 - **WHO GHO / ICD-11 / GLOBOCAN / disease burden** → regulatory-intelligence.md#§2–§3 (WHO ICD-11 + GHO) · hta-layer.md#§3 (epidemiology denominator) · output-templates.md#§21 (0.5.K block)
-- **socius-vigil / social listening / α-layer OSINT** → connector-registry.md#§2.5 (α-layer) · osint-playbook.md#§2 (connector wiring α-layer)
+- **social listening / sosyal dinleme / α-layer OSINT** → osint-playbook.md#§1 (PV signal triage) · osint-playbook.md#§2 (social/web OSINT via Tavily→Exa)
 
 ### Output / Presentation
 

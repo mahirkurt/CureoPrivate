@@ -12,14 +12,14 @@ protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-or
 # --- Skill identity ---------------------------------------------------------
 skill:
   name: medical-research
-  version: "8.3.0"
+  version: "8.4.0"
   title: "Multi-Source Scientific Research & Synthesis Engine"
   description: >
     Turns a clinical / pharma / Türkiye-market question into a critically-appraised,
     Turkish, journal-grade evidence synthesis with knowledge-gap analysis, extending
     when warranted into regulatory, epidemiologic, commercial, IP, full-text and
-    disease-specialty dimensions. Orchestrates 20+ verified connectors + OSINT +
-    10 specialty axes on a native-MCP-first resolution ladder.
+    disease-specialty dimensions. Orchestrates 20+ verified structured connectors across
+    10 specialty axes on a native-MCP-first resolution ladder (no web/OSINT tier — v1.4.0).
   author: "operator (Cureonics fleet)"
   license: "Internal-use grant; AS IS; no warranty"
   entry_point: "./SKILL.md"
@@ -88,7 +88,7 @@ outputs:
     mime_type: "text/markdown"
     optional: true
   - id: competitive-intel
-    description: "Pipeline + positioning (Tier-6 OSINT); handoff to pharmaintel"
+    description: "Structured pipeline + positioning (AdisInsight/CT.gov); OSINT/web competitive intel handed off to pharmaintel (no web tier here)"
     mime_type: "text/markdown"
     optional: true
   - id: pipeline-snapshot
@@ -163,12 +163,7 @@ runtime:
     - name: YokTez MCP                # b2d46b46 — Türkçe + İngilizce
       status: wired
       tools: [search_yok_tez_detailed, get_yok_tez_document_markdown, get_yok_tez_thesis_details, search_yok_tez_by_anabilim_dali]
-    - name: Exa                       # b2b8051d — gap-filler, runs last
-      status: wired
-      tools: [web_search_exa, web_fetch_exa]
-    - name: Tavily                    # 30203133 — quota-limited (432); always Exa-fallback
-      status: conditional
-      tools: [tavily_search, tavily_research, tavily_extract, tavily_crawl, tavily_map]
+    # Exa + Tavily REMOVED v1.4.0 — web-retrieval tier eliminated (pure structured-authoritative; no web fallback)
     - name: AdisInsight               # 6a9fd4a4 — REAL schema (drug-intelligence-layer.md); axis 0.5.I
       status: wired
       tools: [search_drugs, get_drug, search_trials, search_drug_companies, search_trial_companies, generate_chart]
@@ -318,7 +313,7 @@ references:
 
 # --- Build ------------------------------------------------------------------
 build:
-  version: "8.3.0"
+  version: "8.4.0"
   release_date: "2026-06-19"
   release_name: "Reference-Integrity & Operability Release"
   compatibility:

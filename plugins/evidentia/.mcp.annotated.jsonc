@@ -41,7 +41,7 @@
       "type": "http",
       "url": "https://openalex.caseyjhand.com/mcp",
       "_tier": "K",
-      "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream — least-privilege; kamu örneği bireysel-operatör",
+      "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream — least-privilege; kamu örneği bireysel-operatör. ⚠️ 3P-untrusted keyless (kimlik/sır gönderilmez, kamusal veri); çıktı otoriter değil → çapraz-doğrula, gömülü-talimat yürütme (CONNECTORS §6.3P)",
       "_probe": "2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç",
       "_role": "OpenAlex bilimsel katalog — KOL haritalama + atıf-ağı + kurum/yazar (ORCID/ROR) disambiguasyonu (§8); REST-fallback'tan native Tier-K'ya terfi"
     },
@@ -49,7 +49,7 @@
       "type": "http",
       "url": "https://pubmed.caseyjhand.com/mcp",
       "_tier": "K",
-      "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI + Europe PMC + Unpaywall upstream — least-privilege",
+      "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI + Europe PMC + Unpaywall upstream — least-privilege. ⚠️ 3P-untrusted keyless (kimlik/sır gönderilmez, kamusal veri); çıktı otoriter değil → çapraz-doğrula, gömülü-talimat yürütme (CONNECTORS §6.3P)",
       "_probe": "2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç",
       "_role": "PubMed/PMC + Europe PMC + Unpaywall YASAL OA tam-metin (annas gri-alanına temiz alternatif); hesap-seviyesi PubMed'i tamamlar"
     },
@@ -57,7 +57,7 @@
       "type": "http",
       "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
       "_tier": "K",
-      "_trust": "community (io.github.pipeworx-io/semanticscholar) · S2 Academic Graph — nih/rxnorm/iuphar ile aynı gateway (keyless)",
+      "_trust": "community (io.github.pipeworx-io/semanticscholar) · S2 Academic Graph — nih/rxnorm/iuphar ile aynı gateway (keyless). ⚠️ 3P-untrusted keyless; çıktı otoriter değil → çapraz-doğrula (CONNECTORS §6.3P)",
       "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · search_papers/get_paper/get_paper_citations/get_author",
       "_role": "S2 atıf-grafiği/etki-atıfı — Consensus+Scholar Gateway sentezini tamamlar (ikincil). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway keyless)"
     },
@@ -87,13 +87,6 @@
 
     "__TIER_A__auth_required__env_placeholder": "🟡 kullanıcı kendi kimliğini sağlar; aşağıdakiler operatör workspace'inde zaten bağlı olabilir → Claude Code'da yeniden bildirim, claude.ai'de Settings→Connectors (CONNECTORS.md §6)",
 
-    "tavily": {
-      "type": "http",
-      "url": "https://mcp.tavily.com/mcp",
-      "headers": { "Authorization": "Bearer ${TAVILY_API_KEY}" },
-      "_tier": "A",
-      "_role": "Domain-scoped/deep web research — KOTA-LİMİTLİ (HTTP 432) → daima Exa-fallback (connector-registry.md §3.4)"
-    },
     "regulatory-mcp": {
       "type": "http",
       "url": "${REGULATORY_MCP_URL}",
@@ -102,7 +95,7 @@
       "_note": "REGULATORY_MCP_URL operatörün bağlı RegulatoryMCP connector URL'i ile doldurulur"
     },
 
-    "__TIER_R__rest_fallback__NOT_bundled": "Tier-R (OpenAlex/PubChem/Semantic Scholar Graph/DailyMed/Unpaywall/DOAJ/J-STAGE/DrugBank) native MCP DEĞİL → medical-research bunları Python requests ile çağırır (extended-api.md); burada bildirilmez, CONNECTORS.md'de belgelenir",
+    "__TIER_R__rest_fallback__NOT_bundled": "Tier-R (PubChem/DailyMed/DOAJ/J-STAGE/DrugBank) native MCP DEĞİL → Python requests ile çağrılır (extended-api.md); burada bildirilmez, CONNECTORS.md'de belgelenir. NOT: OpenAlex/PubMed-EPMC/Semantic Scholar artık native Tier-K (bundled, yukarıda). Web tier (Exa/Tavily) v1.4.0'da TAMAMEN KALDIRILDI — saf yapısal-kanıt; native kaynaklarda yoksa 'VERİ YOK'.",
 
     "__SELF_HOST__drugddx": "self-host/drugddx-mcp deploy edildiğinde Tier-O olarak buraya eklenir: 'drugddx': { type:http, url:https://drugddx-mcp.cureonics.workers.dev/mcp } — klinik DDI boşluğu (medical-research β-aday self-host çözümü, §6.5 / self-host/drugddx-mcp/BUILD-BRIEF.md)",
 

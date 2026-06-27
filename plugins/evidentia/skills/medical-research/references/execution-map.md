@@ -11,11 +11,9 @@ For heavy queries (3+ axes, ~100–220 calls), plan the parallel fan-out before 
 4. Specialty packages (per active 0.5 axis) — injected.
 5. AdisInsight (0.5.I) → Synapse/OpenTargets (0.5.J, conditional).
 6. Regulatory MCP stack — **singly, not parallel** (180 s timeout risk); retry; skippable.
-7. Exa/Tavily gap-fill — last (Tavily→Exa on 432).
 
 ## 2. Latency & quota budgeting
 - Regulatory MCP: serialize, 1 retry, skippable flag.
-- Tavily: always Exa-fallback.
 - AdisInsight/Wiley: generous but retry-resilient.
 - Record the realized call count + active layers in the `<!-- OPS -->` annex.
 

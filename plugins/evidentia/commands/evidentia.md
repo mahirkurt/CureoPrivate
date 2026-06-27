@@ -30,8 +30,8 @@ Kullanıcı sorusu: **$ARGUMENTS**
    - **Adım 4/5** — kullanıcı etkileşimi + **temiz-kopya doktrini** (VIZ/OPS yorum izolasyonu;
      araç-sızıntısı yok).
 
-3. **Tek-sefer disiplini.** TİTCK barcode bir kez çözülür; RegulatoryMCP tekil+retry+skippable;
-   Tavily kota→Exa-fallback. Kanonik artefaktlar (`evidence_corpus`, `titck_record`,
+3. **Tek-sefer disiplini.** TİTCK barcode bir kez çözülür; RegulatoryMCP tekil+retry+skippable.
+   Kanonik artefaktlar (`evidence_corpus`, `titck_record`,
    `regulatory_snapshot`, `terminology_map`) paylaşılır (canonical-cache-contract.md).
 
 4. **Çapraz-doğrulama (bağlayıcı).** Hasta-etkili her iddia (doz, DDI, terminoloji, endikasyon)

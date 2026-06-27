@@ -3,17 +3,18 @@ name: medical-research
 description: >
   Orchestrates 20+ verified MCP connectors for clinical, pharma and Türkiye-market
   research: academic (PubMed/EuropePMC, Consensus, ClinicalTrials.gov, bioRxiv, YÖK
-  Tez, Exa), curated intel (AdisInsight, ChEMBL), regulatory+epidemiology (native
-  openFDA, ICD-11, WHO GHO), Türkiye native (TİTCK, Mevzuat, TÜRKPATENT), full-text
-  (annas-mcp, EuropePMC PMC), NPI — plus OSINT and 10 specialty axes (Onco, Heme,
+  Tez, OpenAlex, Semantic Scholar), curated intel (AdisInsight, ChEMBL), regulatory
+  (native openFDA, ICD-11), Türkiye native (TİTCK, Mevzuat, TÜRKPATENT), full-text
+  (annas-mcp, EuropePMC PMC, Unpaywall legal-OA), NPI — across 10 specialty axes (Onco, Heme,
   Regulatory, HTA, MedAffairs, Immunology, Neurology, Rare, DrugIntel, Epidemiology).
+  Pure structured-authoritative evidence — no web-search/OSINT tier (removed in plugin 1.4.0).
   Use for ANY medical/onco/heme/immuno/neuro/rare/pharma-pipeline/TR-market/HTA query.
   Triggers: evidence, trial, biomarker, guideline, GRADE, CHMP, HTA, ICER, MSL, CAR-T,
   bispecific, ADC, MRD, BTK, myeloma, JAK, MS, SMA, Alzheimer, orphan, pipeline, ilaç
   peyzajı, PDUFA, deal, ODD, MoA, target, biosimilar, LoE, TİTCK, SGK, SUT, geri ödeme,
   ruhsat, biyobenzer, ATC, FAERS, ICD-11, tam metin. When in doubt, USE THIS SKILL.
 metadata:
-  version: 8.3.0
+  version: 8.4.0
 ---
 
 > ## 🧩 Plugin entegrasyon notu (evidentia)
@@ -26,9 +27,8 @@ metadata:
 >   kaynağı**. Bu skill içi `references/connector-registry.md` standalone kullanım için korunur;
 >   çakışmada `CONNECTORS.md` üstündür.
 > - [`../../shared/canonical-cache-contract.md`](../../shared/canonical-cache-contract.md) —
->   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; RegulatoryMCP
->   tekil+retry+skippable; Tavily kota tek-deneme). Adım 1 paralel çağrı listesi bu sözleşmeye
->   tabidir.
+>   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; openfda
+>   tekil+retry+skippable). Adım 1 paralel çağrı listesi bu sözleşmeye tabidir.
 >
 > **Genişletme connector'ları (mcp-scout canlı-doğrulanmış, 2026-06-25):** `med-terminologies`,
 > `nih-clinicaltables`, `nlm-rxnorm`, `iuphar-gtopdb` — **Adım 1/B "Extended Tier"e opsiyonel
@@ -40,10 +40,10 @@ metadata:
 > `self-host/drugddx-mcp/` (sertleştirilmiş OAuth 2.1 Worker) ile sağlar; deploy edilince Tier-O
 > `drugddx` olarak roster'a girer.
 >
-> **Sürüm/ad değişmez:** Bu skill kanonik adını (`medical-research`) ve sürümünü (**8.3.0**)
-> korur (ADR-05). Plugin sürümü (`1.0.0`) ayrıdır.
+> **Sürüm/ad:** Bu skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **8.4.0**
+> (plugin 1.4.0: web tier [Exa/Tavily] + OSINT ekseni kaldırıldı — saf yapısal-kanıt). Plugin sürümü (`1.4.0`) ayrıdır.
 
-# ⚠️ MANDATORY EXECUTION PROTOCOL — v8.3.0 (medical-research)
+# ⚠️ MANDATORY EXECUTION PROTOCOL — v8.4.0 (medical-research)
 
 **This block is read and applied before any other Phase structure. It is executed on
 every invocation. Sub-sections do not OVERRIDE this block.**
@@ -52,8 +52,8 @@ every invocation. Sub-sections do not OVERRIDE this block.**
 connector registry** (every tool name/parameter verified by live probe). The flagship
 **AdisInsight schema bug is fixed** (real `search_drugs`/`get_drug`/`generate_chart`).
 New native stacks: **Türkiye** (TİTCK + Mevzuat + TÜRKPATENT), **Regulatory Intelligence**
-(native openFDA + ICD-11 + WHO GHO + Health Canada), **Full-Text Retrieval** (annas-mcp +
-EPMC PMC + copyright). New principle: **Native-MCP-First.** New axis: **0.5.K
+(native openFDA + ICD-11 via openfda Worker), **Full-Text Retrieval** (annas-mcp +
+EPMC PMC + Unpaywall legal-OA + copyright). New principle: **Native-MCP-First.** New axis: **0.5.K
 Epidemiology/Disease Burden.**
 
 ## Adım 0: Mandatory Loading
@@ -74,7 +74,7 @@ Always-load = these seven (progressive disclosure DISABLED for them).
 - `references/turkiye-layer.md` — loaded whenever Turkey context OR (by default, since the Türkiye Dörtlüsü is mandatory).
 - `references/regulatory-intelligence.md` — loaded when 0.5.C / 0.5.D / 0.5.K signals fire.
 - `references/drug-intelligence-layer.md` — loaded **only** when 0.5.I fires; contains the REAL AdisInsight schema.
-- `references/osint-playbook.md` + `benchmark-*.md` — loaded only on OSINT / dev context.
+- `references/benchmark-*.md` — loaded only on dev/eval context.
 - Specialty layers (`oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease`) — loaded per Adım 0.5 signal.
 
 ## Adım 0.4: Semantic Scope Scan (MANDATORY — runs before 0.5)
@@ -112,16 +112,15 @@ list.
 | **0.5.G Neurology** | MS, NMOSD, MG, SMA, ALS, Alzheimer, Parkinson, migraine, epilepsy, stroke, DMT, anti-amyloid, ARIA, CGRP | `neurology-layer.md` | §1.M |
 | **0.5.H Rare Disease** | nadir hastalık, orphan, ODD, OMP, Orphanet, OMIM, natural history, registry endpoint, gene therapy, CFTR | `rare-disease-layer.md` | §1.N |
 | **0.5.I Drug Intelligence** | drug/INN/brand name, MoA term, molecular target, drug class, pipeline, PDUFA, deal, LoE, patent cliff, first-in-class | `drug-intelligence-layer.md` | §1.O |
-| **0.5.K Epidemiology / Burden (v8.0 NEW)** | insidans, prevalans, mortalite, hastalık yükü, DALY, epidemiyoloji, GLOBOCAN, "kaç hasta", "Türkiye'de görülme sıklığı", incidence, prevalence, disease burden | `regulatory-intelligence.md` (WHO GHO + ICD-11) | §1.P |
+| **0.5.K Epidemiology / Burden (v8.0 NEW)** | insidans, prevalans, mortalite, hastalık yükü, DALY, epidemiyoloji, GLOBOCAN, "kaç hasta", "Türkiye'de görülme sıklığı", incidence, prevalence, disease burden | `regulatory-intelligence.md` (ICD-11 coding via openfda; WHO-GHO/GLOBOCAN/IHME no native API → documented gap) | §1.P |
 
-**No signal:** the Core academic + Extended + Türkiye Dörtlüsü + (OSINT if active) flow
-runs unchanged.
+**No signal:** the Core academic + Extended + Türkiye Dörtlüsü flow runs unchanged.
 
 ## Adım 1: Mandatory Parallel Call List (native-MCP-first)
 
 Issued on every query regardless of wording. This is a **required execution order**, not
 a menu. Use the **verified tool names** from `connector-registry.md`. Resolve every need
-by the **Native-First ladder** (native MCP → Python REST → Exa/Tavily → documented gap).
+by the **Native-First ladder** (native MCP → Python REST → documented gap; **no web tier** — Exa/Tavily removed v1.4.0).
 
 ### A. Academic Core
 1. `PubMed/EPMC:search_articles` (`8f314cbe…`) — topic + specific reformulation
@@ -131,8 +130,10 @@ by the **Native-First ladder** (native MCP → Python REST → Exa/Tavily → do
 5. `ScholarGateway:semanticSearch`
 6. `PaperSearch:search` (`660e91bd…`)
 7. `YÖK Tez:search_yok_tez_detailed` — TR + EN
-8. `Exa:web_search_exa` — topic + "clinical trial 2025 2026" (gap-filler, runs late)
-9. **AdisInsight `search_drugs`** — GATED by 0.5.I (drug/MoA/target/pipeline signal). Real schema only (`drug-intelligence-layer.md`).
+8. `openalex:openalex_search_entities` (keyless Tier-K) — `openalex_resolve_name` first for author/institution; `openalex_get_citation_graph` for KOL/citation network
+9. `semantic-scholar:search_papers` (keyless Tier-K) — citation graph / influential citations (secondary to Consensus)
+10. `pubmed-epmc:pubmed_europepmc_search` (keyless Tier-K) — Europe PMC breadth (EU/preprint/patent) beyond NLM PubMed
+11. **AdisInsight `search_drugs`** — GATED by 0.5.I (drug/MoA/target/pipeline signal). Real schema only (`drug-intelligence-layer.md`).
 
 ### B. Extended Tier (native MCP first; `requests` fallback)
 - **ChEMBL** (`bio-research:chembl`): `drug_search` / `get_mechanism` / `get_admet` / `target_search` — if topic is a drug/target. (Native connector replaces v7.1 Python ChEMBL.)
@@ -148,25 +149,25 @@ for country in [Turkey, China, Japan, Germany, Brazil, Korea]:
 This loop is not skippable.
 
 ### D. Türkiye Dörtlüsü (MANDATORY, NATIVE — v8.0)
-1. **TİTCK `search_drugs`** (`1a49b1bb…`) — INN + brand (NOT Exa scraping). On stall/timeout → **TİTCK Cache** (`titck-cache-mcp…`) fallback rung (v8.2).
+1. **TİTCK `search_drugs`** (`1a49b1bb…`) — INN + brand (native; NOT web scraping). On stall/timeout → **TİTCK Cache** (`titck-cache-mcp…`) fallback rung (v8.2).
 2. **Mevzuat `search_mevzuat`** (`fbf16a1a…`) — SUT/yönetmelik when clinical/reimbursement
 3. **YÖK Tez `search_yok_tez_detailed`** — TR + EN
 4. **EPMC `AFF:"Turkey"`** (already in C)
 → See `turkiye-layer.md`. Null → "Türkiye Veri Boşluğu" block.
 
 ### E. Guidelines & HTA (when clinical)
-- `Exa:web_search_exa` → NICE / ESMO / NCCN / Cochrane / Epistemonikos (society PDFs; native APIs preferred where they exist).
-- HTA: prefer native (NICE via Exa; IQWiG/HAS/CADTH via Exa) — no native MCP.
+- Society guideline PDFs (NICE / ESMO / NCCN / Cochrane / Epistemonikos) and HTA bodies (NICE / IQWiG / HAS / CADTH) have **no native MCP/API** in this build → report as a **documented gap (VERİ YOK)**; do NOT web-scrape or fabricate (web tier removed v1.4.0). If the operator supplies a guideline PDF, ingest it into anamnesis for analysis.
+- Cochrane methodology references remain reachable via `annas-mcp book_search` (analysis-only, copyright-gated).
 
 ### F–P. Specialty + Drug-Intel + Epidemiology packages
 Injected per Adım 0.5 signal. Highlights (full lists in each layer file):
 - **§1.F Oncology / §1.G Hematology** — NCCN/ESMO/ASCO/ASH/EHA + OncoKB/CIViC + ASCO/ESMO/ASH abstract mining + **TİTCK off-label (native)** + AdisInsight pipeline + Synapse (if auth).
 - **§1.I Drug Intelligence** — AdisInsight `search_drugs`/`get_drug`(HyDE)/`search_drug_companies`/`generate_chart` + CT.gov/DailyMed/openFDA cross-ref (`drug-intelligence-layer.md`).
-- **§1.I/J/K (Regulatory/HTA/MA)** — **native openFDA** (drugsfda/label/FAERS) + **ICD-11** + EMA(Exa) + TİTCK(native) + Mevzuat(native) + AdisInsight milestone reconstruction.
-- **§1.P Epidemiology (v8.0)** — **WHO GHO `who_gho_query`** (burden/incidence/mortality) + **ICD-11 `icd11_search`** (coding) + GLOBOCAN (Exa) → feeds HTA budget-impact + rare-disease prevalence. ⚠️ regulatory MCP is latency-prone: call singly, retry, skippable.
+- **§1.I/J/K (Regulatory/HTA/MA)** — **native openFDA** (drugsfda/label/FAERS) + **ICD-11** + TİTCK(native) + Mevzuat(native) + AdisInsight milestone reconstruction. (EMA CHMP/EPAR has no native API → documented gap; not web-scraped.)
+- **§1.P Epidemiology (v8.0)** — **ICD-11 `icd11_search`** (coding via openfda) → feeds HTA budget-impact + rare-disease prevalence. ⚠️ openfda is latency-prone: call singly, retry, skippable. (WHO GHO / GLOBOCAN / IHME burden have no native API in this build → documented gap, never fabricated.)
 
 ### Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`)
-Cascade: EPMC `get_full_text_article` (PMC OA) → `get_copyright_status` → PaperSearch `read_pubmed_paper` → **annas-mcp `article_download`** (DOI, verified) / `book_search` (methodology) → Wiley (auth) → Exa `web_fetch_exa`. **Copyright:** analysis only; no verbatim bulk reproduction; CC-BY (via copyright_status) freely quotable.
+Cascade: EPMC `get_full_text_article` (PMC OA) → `get_copyright_status` → PaperSearch `read_pubmed_paper` → **annas-mcp `article_download`** (DOI, verified) / `book_search` (methodology) → Wiley (auth) → **pubmed-epmc `pubmed_fetch_fulltext`** (EuropePMC + Unpaywall legal-OA, last resort). **Copyright:** analysis only; no verbatim bulk reproduction; CC-BY (via copyright_status) freely quotable. No web scraping.
 
 ## Adım 2: Generosity Principle (UNCAPPED)
 
@@ -178,9 +179,8 @@ Typical call counts: general ~48–60; single specialty ~60–78; two-layer ~72�
 heavy (e.g., "Casgevy TR erişim" = heme+reg+HTA+rare+drug-intel+Türkiye+epi) ~100–150;
 complex strategic ~150–220. **No upper cap.**
 
-Retry generosity: 3× + exponential backoff. Pagination: up to 3 pages. **Regulatory MCP
-exception:** call singly (not parallel) due to latency; one retry; mark skippable if it
-stalls. **Tavily exception:** on 432/error fall through to Exa.
+Retry generosity: 3× + exponential backoff. Pagination: up to 3 pages. **openfda (FDA/ICD-11)
+exception:** call singly (not parallel) due to latency; one retry; mark skippable if it stalls.
 
 Mandatory transparency note. **Placement (v8.1):** in **file-based clean-copy reports** this
 note is emitted inside the **non-rendering operational annex** (`<!-- OPS: … -->`), NOT in the
@@ -189,9 +189,9 @@ answers it may remain visible. Content:
 ```
 ---
 Cömertlik Garantisi: Bu yanıtın üretiminde [N] API çağrısı yapıldı. Aktif katmanlar: [...].
-Native-first çözümleme uygulandı. Hiçbir boyut budget gerekçesiyle atlanmadı.
-[Eğer varsa: (Tavily kotası nedeniyle Exa-fallback kullanıldı. / Regulatory MCP gecikmesi
-nedeniyle [kaynak] tekil çağrı + retry ile alındı.)]
+Native-first çözümleme uygulandı (web tier yok). Hiçbir boyut budget gerekçesiyle atlanmadı.
+[Eğer varsa: (openfda gecikmesi nedeniyle [kaynak] tekil çağrı + retry ile alındı. /
+Native-API'siz kaynak(lar) [X] dürüstçe VERİ YOK olarak işaretlendi — web-scraping yok.)]
 ```
 
 ## Adım 3: Output Contract
@@ -213,7 +213,7 @@ Cross-Layer Notes; **§21 Epidemiology/Burden (0.5.K, v8.0)**.
 ## 11–18. Specialty extended sections (when active)
 ## 19. Drug Intelligence Pipeline Snapshot (0.5.I — real AdisInsight)
 ## 20. Cross-Layer Integration Notes
-## 21. Epidemiyoloji / Hastalık Yükü (0.5.K — WHO GHO + ICD-11 + GLOBOCAN)  [v8.0]
+## 21. Epidemiyoloji / Hastalık Yükü (0.5.K — ICD-11 coding via openfda; WHO-GHO/GLOBOCAN no native API → documented gap)  [v8.0]
 ```
 **v8.1 — Internal scaffold vs. clean copy.** The §1–21 contract above governs research
 **completeness** (every dimension covered). It is an *internal* scaffold: its tool-annotated
@@ -224,7 +224,7 @@ annotations, call telemetry and viz directives never appear in the reader-facing
 
 Optional `.data.json` sidecar (v8.0 schema, `output-templates.md`): evidence/trial/
 guideline/regulatory/HTA tables + specialty_payload + **pipeline_payload (real AdisInsight
-fields)** + **turkey_access_summary (native TİTCK)** + **epidemiology_payload (WHO GHO)** +
+fields)** + **turkey_access_summary (native TİTCK)** + **epidemiology_payload (ICD-11; burden = documented gap if no native API)** +
 sources_summary (`connectors_used` lists verified connectors). Consumed by carbon-html-
 report / carbon-pptx / pharmaintel / pharmapatent / onko-erisim / saglik-sigorta.
 
@@ -284,10 +284,11 @@ Re-scan `references/knowledge-map.md` against the question and the work done:
 
 ---
 
-# medical-research: Multi-Source Scientific Research & Synthesis Engine (v8.3)
+# medical-research: Multi-Source Scientific Research & Synthesis Engine (v8.4)
 
-You orchestrate 20+ **verified** connectors plus OSINT + 10 specialty axes as a unified
-scientific research and intelligence system. Transform a question into a comprehensive,
+You orchestrate 20+ **verified** structured connectors across 10 specialty axes as a unified
+scientific research and intelligence system (pure structured-authoritative evidence — no web/OSINT
+tier). Transform a question into a comprehensive,
 critically appraised, **Turkish-language** evidence synthesis with knowledge-gap analysis,
 and — when warranted — extend into regulatory, epidemiologic, commercial, IP, full-text,
 and disease-specialty dimensions.
@@ -306,9 +307,10 @@ question (full trigger list is in the frontmatter `description` and the Adım 0.
 ## Limitations / Out-of-Scope
 This skill provides the evidence/landscape layer; it hands off, never absorbs: individual SGK
 appeal / litigation → `onko-erisim` / `saglik-sigorta`; promotional MLR review → `promo-censor`;
-net-new commercial strategy → `pharmaintel`; FTO/IP litigation depth → `pharmapatent`; deep TR
-regulatory reform → `lex-sanitas`. OSINT (Tier 6) and FAERS counts are context/reporting, never
-clinical evidence or incidence. β-candidate connectors are not wired until probe-verified.
+net-new commercial strategy + **OSINT/web competitive intelligence** → `pharmaintel`; FTO/IP litigation depth → `pharmapatent`; deep TR
+regulatory reform → `lex-sanitas`. FAERS counts are context/reporting, never clinical evidence or
+incidence. β-candidate connectors are not wired until probe-verified. **No web tier** (Exa/Tavily/OSINT
+removed v1.4.0): no-API sources (EMA, guideline PDFs, GLOBOCAN) → documented gap, never web-scraped.
 
 ## Core Philosophy
 Connectors form a **symbiotic ecosystem**, triangulated, not queried in isolation. v8.0
@@ -316,36 +318,36 @@ grounds that ecosystem in real tool schemas (Native-First) so triangulation is b
 calls that actually succeed. A PubMed SR gains context from a bioRxiv preprint; a CT.gov
 Phase 3 entry is enriched by an AdisInsight regulatory history; **TİTCK native** gives the
 Turkish price/reimbursement/biosimilar reality that determines local practice; **annas-mcp**
-+ EPMC PMC open the full text behind a critical abstract; **WHO GHO + ICD-11** give the
-epidemiologic denominator behind an HTA budget-impact model.
++ EPMC PMC open the full text behind a critical abstract; **ICD-11 (via openfda)** gives the
+coding spine for the epidemiologic denominator behind an HTA budget-impact model (burden
+sources without a native API are reported as a documented gap, never fabricated).
 
 ## Phase 1 — Query Intelligence
 1.1 Decompose (PICO + specialty + epidemiology dimension).
 1.1b Query-type classifier (priority, not gating — all branches default-active).
 1.2 Generate ≥2 query variants per connector (Specific / Broad / Lateral).
 1.3 Appraisal depth (formal GRADE vs pragmatic — `evidence-grading.md`).
-1.4 Exa/Tavily enrichment planning (Tavily quota-aware).
-1.5 OSINT dimension assessment (`osint-playbook.md`).
-1.6 Specialty + epidemiology layer assessment (Adım 0.5 documents this).
+1.4 Specialty + epidemiology layer assessment (Adım 0.5 documents this).
 
 ## Phase 2 — Connector Orchestration
 **FIRST read `connector-registry.md`.** Search ALL relevant connectors for EVERY query.
-Three-tier architecture: Core academic + OSINT; Extended (native MCP first, REST fallback);
+Three-tier architecture: Core academic (incl. OpenAlex/Semantic Scholar/PubMed-EPMC); Extended (native MCP first, REST fallback);
 Specialty (per Adım 0.5). Execution order: academic connectors → specialty layer → **AdisInsight
 (0.5.I)** → Synapse/OpenTargets (0.5.J, if auth/online) → native Türkiye + Regulatory stacks →
-Exa/Tavily gap-fill last. Capture source ID (PMID/DOI/NCT/YÖK/barcode/URL), title, authors,
+documented gap if unresolved (no web tier). Capture source ID (PMID/DOI/NCT/YÖK/OpenAlex-ID/barcode), title, authors,
 date, findings, study type, population, n.
 
 ## Phase 3 — Evidence Synthesis & Critical Appraisal
-Read `evidence-grading.md`. Deduplicate/cross-reference; apply Tier 0–6 hierarchy (Tier 6
-OSINT never supports clinical claims); GRADE or pragmatic; convergent/divergent/complementary;
+Read `evidence-grading.md`. Deduplicate/cross-reference; apply Tier 0–6 hierarchy (Tier 6 =
+lowest-grade context, never supports clinical claims); GRADE or pragmatic; convergent/divergent/complementary;
 temporal narrative; guideline concordance; **full-text-enriched numerical endpoints** (HR, CI,
 p, subgroups, AE) via the full-text cascade with copyright gate; entity/relation/temporal
 extraction; specialty-specific appraisal checklists (per active layer).
 
 ## Phase 4 — Knowledge Gap Analysis
-Evidence / methodological / guideline-regulatory / future-research / OSINT / specialty gaps,
-plus **epidemiologic gaps** (registry coverage, Turkish incidence/prevalence data availability).
+Evidence / methodological / guideline-regulatory / future-research / specialty gaps,
+plus **epidemiologic gaps** (registry coverage, Turkish incidence/prevalence data availability)
+and **no-API source gaps** (EMA/guideline-PDF/GLOBOCAN unreachable without web tier — flag honestly).
 
 ## Phase 5 — Output Generation
 Read `output-templates.md` (section/format scaffold) **and `report-presentation.md`** (clean-copy
@@ -368,8 +370,8 @@ finalization gate (G1–G7) before emitting. File-based reports → Markdown `.m
 - **Specialty integrity** — tumor-specific ≠ transferable; dynamic guidelines reported with
   version+date; WHO-HAEM5 ↔ ICC-2022 dual classification; living risk-stratification.
 - **Türkiye relevance** — TİTCK reimbursement/SUT is often determinative; always check natively.
-- **OSINT integrity** — OSINT ≠ evidence; source-tagged; >6mo flagged; FAERS = reporting, not
-  incidence.
+- **FAERS / reporting integrity** — FAERS = spontaneous reporting, not incidence; source-tagged; >6mo flagged.
+- **No web tier / no fabrication** — Exa/Tavily/OSINT removed (v1.4.0); no-API sources (EMA, guideline PDFs, GLOBOCAN/IHME) are reported as a documented gap, never web-scraped or fabricated.
 - **Connector failure** — never silently omit; report the gap + queries attempted.
 - **Clean-copy / sunum bütünlüğü (v8.1)** — file-based reports read like a peer-reviewed
   article: full sentences, scholarly Turkish, explicit references, info boxes; **no internal
@@ -387,16 +389,15 @@ finalization gate (G1–G7) before emitting. File-based reports → Markdown `.m
 |---|---|---|
 | `skill-manifest.yaml` | tooling / audit | **v8.2 NEW** — standalone SMP v1.0 manifest: runtime.mcp_servers (incl. α-layer + β-candidates), composition pipe_to + scope_guard, verification gates, constraints |
 | `connector-registry.md` | ALWAYS (Adım 0) | Verified tool table, native-first ladder, per-connector notes, α-layer (§2.5), limitations |
-| `extended-api.md` | ALWAYS | Native-MCP-first; Python REST fallback (OpenAlex/PubChem/S2/Unpaywall/DOAJ/J-STAGE/DrugBank) |
+| `extended-api.md` | ALWAYS | Native-MCP-first (OpenAlex/S2/Unpaywall now native Tier-K); Python REST fallback (PubChem/DOAJ/J-STAGE/DrugBank) |
 | `evidence-grading.md` | ALWAYS (Phase 3) | Tier 0–6, GRADE, pragmatic, NER, full-text+copyright integration |
 | `output-templates.md` | ALWAYS (Phase 5) | Format A–I, sidecar v8.0, epidemiology block |
 | `fulltext-retrieval.md` | ALWAYS | EPMC PMC → copyright → annas → paper-download → Wiley cascade |
 | `report-presentation.md` | ALWAYS (Phase 5 / Adım 5) | **v8.1** — clean-copy doctrine: scholarly Turkish, no tooling leakage, journal-style Methods, info boxes, `<!-- VIZ -->`/`<!-- OPS -->` isolation, scaffold→clean-copy map, finalization gate G1–G7 |
 | `turkiye-layer.md` | Turkey context / default | TİTCK + Mevzuat + YÖK + TÜRKPATENT native |
-| `regulatory-intelligence.md` | 0.5.C/0.5.D/0.5.K | native openFDA + ICD-11 + WHO GHO + Health Canada + Federal Register |
+| `regulatory-intelligence.md` | 0.5.C/0.5.D/0.5.K | native openFDA (FAERS/label/drugsfda/enforcement) + ICD-11 (via openfda Worker). WHO GHO/Health Canada/Federal Register/EUR-Lex not bundled → documented gap |
 | `drug-intelligence-layer.md` | 0.5.I only | REAL AdisInsight schema (search_drugs/get_drug HyDE/generate_chart) |
 | `oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease-layer.md` | per 0.5.A–H | Clinical deep-dive + appraisal checklist + v8.0 native wiring (**recreated v8.2**) |
-| `osint-playbook.md` | OSINT triggers | Competitive/patent/regulatory/PV/market-access/KOL playbooks (social/web signal via Tavily→Exa) |
 | `execution-map.md` / `composition-runbook.md` / `benchmark-suite.md` / `benchmark-protocol.md` | large query / cross-skill / dev | Fan-out planning, cross-skill pipelines, eval harness docs |
 | `evals/check_integrity.py` + `evals/benchmark-queries.json` | dev / pre-release | **v8.2 NEW** — executable integrity gates (G-REF/G-ALWAYS/G-CONN/G-VERSION) + 10 regression queries |
 | `v8-wiring-patch.md` | historical | P2 specialty-layer wiring spec (applied in v8.2 specialty-layer recreation) |
@@ -412,6 +413,7 @@ finalization gate (G1–G7) before emitting. File-based reports → Markdown `.m
 | **8.1** | **Jun 2026** | **Clean-Copy Presentation Doctrine.** New always-loaded reference `report-presentation.md` governing Phase 5 *presentation* (output-templates.md keeps governing *scope/format*). Adds **Adım 5 — Nihai Sunum Sözleşmesi**: file-based reports are now journal-grade Turkish clean copies — full sentences + scholarly register, explicit Vancouver references (PMID/DOI/NCT + access date), executive summary + key findings with plain-language evidence-level tags, abbreviations index + labeled info boxes, reader-facing Methods/Limitations. **Anti-leakage:** connector/tool names, function signatures, MCP, axis codes (`0.5.I`/`§1.O`), call counts and sidecar refs are banned from the reader-facing body; the **Cömertlik Garantisi** telemetry and all operational trace relocate to a non-rendering `<!-- OPS: … -->` annex. **Visualization-directive isolation:** every "convert X into a chart/diagram" instruction lives only inside non-rendering `<!-- VIZ: type/title/data/encoding/note -->` comments adjacent to its data — structurally invisible to the reader and gate-checked. Adds an internal-scaffold→clean-copy heading map and a **finalization gate G1–G7** (full sentences, leakage scan, directive isolation, reference integrity, definition coverage, telemetry placement, flow). Renderer handoff: carbon-html-report consumes-and-strips VIZ/OPS and maps info-box labels to Carbon callouts. Backward-compatible: research depth (Adım 0–4) and connector wiring unchanged; only the output *form* is upgraded. |
 | **8.3** | **Jun 2026** | **v8.3.0 — semantic coverage mechanism: Adım 0.4 + knowledge-map + Completeness Gate + G-COVERAGE; optional evidentia-kb booster.** New always-load file `references/knowledge-map.md` (semantic index). New mandatory step Adım 0.4 (Semantic Scope Scan): decomposes question into concept set, resolves sections via knowledge-map Inverted Map, optionally calls `kb_search` booster, emits auditable `coverage_set` into Ops sidecar. Adım 0.5 now loads the UNION of coverage_set (keyword signals only add, never shrink). Full-detail discipline: loaded KB sections never silently summarised away. New Completeness Gate (MANDATORY before finalising): re-scans map for unconsulted axes, loads gaps, re-checks until empty. `G-COVERAGE` gate added to check_integrity.py. Booster (`evidentia-kb` Worker, `kb_search`) optional + graceful-degrade. Additive (ADR-05): all existing Adım 0/0.5/layer content unchanged. |
 | **8.2** | **Jun 2026** | **Reference-Integrity & Operability Release (skill-upgrader UPGRADE Faz 5).** Closes the v8.0/8.1 incomplete-migration gap: SKILL.md had cited **22** reference files of which only **6** existed (3 of them always-load). **UP-001:** recreated the 3 missing always-load files (`evidence-grading.md`, `extended-api.md`, `output-templates.md`, primary-source-grounded) + the 8 specialty layers + `osint-playbook.md` + 4 infra files — **all 22 references now resolve.** **UP-002:** promoted the SKILL.md-embedded SMP excerpt to a standalone, parseable **`skill-manifest.yaml`** (runtime.mcp_servers + composition + verification + constraints) — lifts D1/D6/D7/D8 by giving the auditor structured data. **UP-004:** added an **executable** verification harness (`evals/check_integrity.py` — G-REF/G-ALWAYS/G-CONN/G-VERSION + `benchmark-queries.json` 10 regression queries) — verification is now runnable, not merely documented. **UP-005 (α-layer):** wired the operator-connected, high-trust connectors **TİTCK Cache** (Türkiye-Dörtlüsü latency fallback), **YÖK Akademik** (Turkish-KOL identification, §8), PDF Viewer, Social Listening (OSINT backing). **UP-006:** added canonical navigational headings (When-To-Invoke / Limitations) to remove D4 false-positives. **UP-007 (β-layer):** documented — but did **NOT** wire — registry-discovered clinical-DDI + terminology candidates (community/unverified) in `candidate_connectors_unverified`, honoring the v8.0 probe-verified-only principle. Backward-compatible: research depth + native-first wiring unchanged; this release makes the skill **operable and gate-passing**. |
+| **8.4** | **Jun 2026** | **v8.4.0 — Structured-Authoritative Refocus (web tier + OSINT removed).** The **Exa/Tavily web-retrieval tier and the entire OSINT axis** (incl. `osint-playbook.md`, social-listening) were **removed** — evidentia is now a pure structured-authoritative evidence engine. Native-First ladder ends at **documented gap** (no web fallback); sources with no native API (EMA CHMP/EPAR, ESMO/NCCN/NICE guideline PDFs, GLOBOCAN/IHME/WHO-GHO burden) are reported as an unreachable gap, **never web-scraped or fabricated**. Full-text cascade Tier 5 (was Exa) → **pubmed-epmc Unpaywall legal-OA**. **Added 3 keyless Tier-K academic connectors** (probe-verified 2026-06-27): **OpenAlex** (KOL/citation-network/institution disambiguation), **PubMed-EPMC** (Europe PMC breadth + Unpaywall legal-OA full text), **Semantic Scholar** (citation graph) — promoted from native_rest_fallback. OSINT/web competitive intelligence now hands off to external `pharmaintel`. Security: 3P-untrusted academic-MCP trust posture documented (connector-registry §6.3P; keyless ⇒ no secret leak). Additive/ADR-05-safe for all clinical specialty content. |
 
 ---
 
@@ -425,21 +427,21 @@ finalization gate (G1–G7) before emitting. File-based reports → Markdown `.m
 ```yaml
 skill_manifest_protocol: 1.0
 skill_name: medical-research
-skill_version: 8.3.0
+skill_version: 8.4.0
 produces:
   - evidence-synthesis-markdown (Format A–I + §21 epidemiology)
   - clean-copy-report (v8.1 — journal-grade reader-facing article; tooling/telemetry/viz
     directives carried only in non-rendering <!-- OPS -->/<!-- VIZ --> annex)
   - data-sidecar-json (evidence/trial/guideline/regulatory/hta tables + specialty_payload
     + pipeline_payload[real AdisInsight] + turkey_access_summary[native TİTCK]
-    + epidemiology_payload[WHO GHO] + sources_summary)
-  - kol-map | patent-landscape | competitive-intel | pipeline-snapshot
+    + epidemiology_payload[ICD-11] + sources_summary)
+  - kol-map | patent-landscape | pipeline-snapshot
 consumes:
   - clinical-question (required) | pmid/nct/drug-name/moa/target/drug-class/gene-variant
     | indication-code(ICD-11) | sponsor-name | barcode(TİTCK) | regulatory-milestone
 connectors_used:
   academic: [PubMed/EuropePMC(8f314cbe), Consensus, ScholarGateway, PaperSearch(660e91bd),
-    ClinicalTrials(4cc36ce0), bioRxiv, YÖKTez, Exa, Tavily]
+    ClinicalTrials(4cc36ce0), bioRxiv, YÖKTez, OpenAlex(keyless), SemanticScholar(keyless), PubMed-EPMC(keyless)]
   curated_intel: [AdisInsight(6a9fd4a4, real schema), ChEMBL(bio-research), Synapse(auth),
     Wiley(auth), OpenTargets(conditional)]
   regulatory_epi: [RegulatoryMCP(922d7cdc): openFDA+ICD11+WHO-GHO+HealthCanada+FederalRegister+EURLex]

@@ -27,15 +27,19 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | Paper Search | 🟢 | API | search · read_pubmed_paper · download_* (tam-metin tier 2) | topluluk | A |
 | bioRxiv / medRxiv | 🟢 | none | search_preprints (preprint flag zorunlu) | Anthropic HCLS | K |
 | YÖK Tez | 🟢 | none | search_yok_tez_detailed · get_yok_tez_document_markdown (+2) | operatör | A |
-| Exa | 🟢 | API | web_search_exa · web_fetch_exa (gap-filler, en son) | resmi | A |
-| Tavily | 🟢 | API | tavily_search/research/extract — **kota 432 → Exa-fallback** | resmi | A |
 
-> **Bundled Tier-A statik URL'leri (`.mcp.json`):** Tavily `https://mcp.tavily.com/mcp`
-> (Bearer `${TAVILY_API_KEY}`). **(RegulatoryMCP/Lex-Sanitas Tier-A girdisi KALDIRILDI** —
-> karşılaştırmalı-hukuk araçları medikal kanıtta gürültüydü; yerine self-host **`openfda`** Tier-O
-> + ICD-11 için aynı `openfda` Worker'ın `icd11_search`'ü (WHO ICD-11 MMS API, server-side OAuth); bkz §1.6.) Diğer Tier-A connector'lar (PubMed/EPMC, Consensus, AdisInsight,
-> TİTCK, Mevzuat, Türk Patent, …) operatör workspace / claude.ai dizin connector'larıdır →
-> roster'da statik URL ile **bildirilmez**; CONNECTORS.md envanteri + Settings ile bağlanır (§6).
+> **WEB TIER KALDIRILDI (v1.4.0):** Exa ve Tavily — ve OSINT ekseni — **tamamen çıkarıldı**.
+> evidentia artık **saf yapısal-otoriter kanıt motorudur**: hiçbir web-arama/scraping fallback'i yoktur.
+> Bir veri yapısal connector'larda (PubMed/EPMC, OpenAlex, S2, CT.gov, openFDA, TİTCK, Mevzuat, NPI …)
+> bulunamıyorsa sonuç dürüstçe **"VERİ YOK / bulunamadı"** olarak raporlanır — ASLA uydurulmaz.
+> Native-API'si olmayan kaynaklar (EMA CHMP/EPAR, ESMO/NCCN/NICE kılavuz PDF'leri, GLOBOCAN/IHME
+> epidemiyoloji) bu nedenle **erişilemez bir boşluk** olarak işaretlenir.
+>
+> **Bundled Tier-A statik URL'leri (`.mcp.json`):** YOK. **(RegulatoryMCP/Lex-Sanitas Tier-A girdisi
+> KALDIRILDI** — karşılaştırmalı-hukuk araçları medikal kanıtta gürültüydü; yerine self-host **`openfda`**
+> Tier-O + ICD-11 için aynı `openfda` Worker'ın `icd11_search`'ü; bkz §1.6.) Tier-A connector'lar
+> (PubMed/EPMC, Consensus, AdisInsight, TİTCK, Mevzuat, Türk Patent, …) operatör workspace / claude.ai
+> dizin connector'larıdır → roster'da statik URL ile **bildirilmez**; envanter + Settings ile bağlanır (§6).
 
 ### 1.2 Curated Intelligence + Mekanizma
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
@@ -91,21 +95,23 @@ Unpaywall · DOAJ · J-STAGE · DrugBank**. `.mcp.json`'da **bildirilmez**.
 
 ## 2. Native-First Fallback Zincirleri (çözümleme merdivenleri)
 
-Her veri ihtiyacı şu sırayla çözülür: **native MCP → REST → web (Exa/Tavily) → belgelenmiş
-boşluk** ("VERİ BULUNAMADI" + denenen sorgular).
+Her veri ihtiyacı şu sırayla çözülür: **native MCP → REST → belgelenmiş boşluk**
+("VERİ BULUNAMADI" + denenen sorgular). **Web tier (Exa/Tavily) v1.4.0'da kaldırıldı** —
+yapısal kaynaklarda yoksa dürüstçe boşluk raporlanır, ASLA web-scraping/uydurma yapılmaz.
 
 | İhtiyaç | Merdiven |
 |---|---|
-| ICD/condition kodlama | `openfda` `icd11_search` (WHO ICD-11 MMS, ICD-11 birincil) → `nih-clinicaltables` (ICD-10/9) → Exa |
+| ICD/condition kodlama | `openfda` `icd11_search` (WHO ICD-11 MMS, ICD-11 birincil) → `nih-clinicaltables` (ICD-10/9) → bulunamazsa boşluk |
 | İlaç normalizasyonu (INN↔RxCUI) | `nlm-rxnorm` → `med-terminologies` (RxNorm) → DailyMed REST |
 | Terminoloji çapraz-yürüyüş (SNOMED/MeSH/LOINC/ATC) | `med-terminologies` (SNOMED/MeSH/LOINC/RxNorm/ATC) + ICD-11 için `openfda` `icd11_search` → `nih-clinicaltables` |
+| KOL / atıf-ağı / kurum-yazar | `openalex` (`openalex_resolve_name`→`search_entities`/`get_citation_graph`) → `semantic-scholar` → EPMC → NPI (US) → YÖK Akademik (TR) |
 | Mekanizma / hedef | ChEMBL `get_mechanism`/`target_search` → `iuphar-gtopdb` → OpenTargets (offline) → EPMC |
-| TR ruhsat/fiyat/biyobenzer | TİTCK native → **TİTCK Cache** (stall'da) → Mevzuat → Exa (son çare) |
-| Epidemiyoloji/yük | `nih-clinicaltables` (condition) → GLOBOCAN/IHME (Exa) → PubMed/EPMC. (WHO GHO `who_gho_query` bundle'dan çıkarıldı; gerekirse operatörün standalone Lex-Sanitas connector'ından.) |
+| TR ruhsat/fiyat/biyobenzer | TİTCK native → **TİTCK Cache** (stall'da) → Mevzuat → bulunamazsa boşluk |
+| Epidemiyoloji/yük | `nih-clinicaltables` (condition) → PubMed/EPMC. (GLOBOCAN/IHME/WHO GHO native-API'si bundle'da YOK → erişilemez boşluk olarak işaretle, uydurma yok.) |
 | Klinik DDI | **drugddx** (✅ canlı) → `nlm-rxnorm` etkileşim + DailyMed label DDI-bölümü (⚠️ "etkileşim verisi" olarak sunulMAZ) |
-| Regülatuvar (FDA) | **openfda** `openfda_search` (drug/event FAERS · drug/label · drugsfda · enforcement) → DailyMed REST (label) → Exa (accessdata.fda.gov) |
-| Tam-metin | EPMC `get_full_text_article` → `get_copyright_status` → Paper Search `read_pubmed_paper` → **Annas Reader** (`article_download`/`book_download`) → Wiley → Exa **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
-| Kılavuz/HTA PDF | Exa (esmo/nccn/nice…) → Tavily (kota varsa, domain-scoped) |
+| Regülatuvar (FDA) | **openfda** `openfda_search` (drug/event FAERS · drug/label · drugsfda · enforcement) → DailyMed REST (label) → bulunamazsa boşluk |
+| Tam-metin | EPMC `get_full_text_article` → `get_copyright_status` → **pubmed-epmc** `pubmed_fetch_fulltext` (EuropePMC + Unpaywall YASAL OA) → Paper Search `read_pubmed_paper` → **Annas Reader** (`article_download`/`book_download`) → Wiley **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
+| Kılavuz/HTA PDF (ESMO/NCCN/NICE) + EMA (CHMP/EPAR) | native-API YOK → **erişilemez boşluk** (VERİ YOK; uydurma yok). Operatör kılavuz PDF'ini yüklerse anamnesis'e ingest edilebilir |
 
 ---
 
@@ -131,10 +137,10 @@ Bir `doc_id` (DOI vb.) bir kez ingest edilir; sonraki sorgular indeksten okur �
 
 | Connector | Çağrı öncesi |
 |---|---|
-| Regulatory MCP | Latency-aware: tekil (paralel değil) çağrı; 1 retry; stall → skippable işaretle |
-| Tavily | Kota kontrolü; 432 → Exa-fallback (sessizce değil, çıktıda not) |
+| openfda (FDA/ICD-11) | Latency-aware: tekil (paralel değil) çağrı; 1 retry; stall → skippable işaretle |
 | Synapse / Wiley | `authenticate`; başarısız → graceful skip + not |
 | OpenTargets | Offline olabilir → ChEMBL `target_search` fallback hazır |
+| Self-host Worker'lar (openfda/drugddx/anamnesis/evidentia-kb) | **User-Agent zorunlu (D10):** boş/şüpheli UA → Cloudflare Error 1010 / 403. MCP istemcisi gerçek UA gönderir (sorun yok); doğrudan curl/script testinde `-H "User-Agent: Mozilla/5.0"` ekle. |
 | Tier-K genişletme (×4) | İlk kullanımda liveness; topluluk-yayıncı → **least-privilege, sandbox-first** |
 | drugddx (self-host) | Deploy + `/health` ok + Bearer `initialize` 200 (BUILD-BRIEF.md DoD) |
 
@@ -191,6 +197,27 @@ olduğunda uçtan uca çalışır (retrieve-don't-dump → `evidence_index`, §3
 
 `medical-research` evrenseldir (hastane/IV dahil tüm alanlar). Ancak: **DDI çıktısı**
 otoriter kaynak olmadan "etkileşim verisi" olarak sunulMAZ; **FAERS** sayıları raporlamadır,
-insidans değildir; **OSINT** (Tier 6) bağlamdır, klinik kanıt değildir; **β-aday**
-connector'lar probe-verified olmadan bağlanmaz. Bireysel SGK/dava → `onko-erisim`; MLR →
-`promo-censor`; ticari strateji → `pharmaintel` (medical-research kanıt katmanını sağlar).
+insidans değildir; **β-aday** connector'lar probe-verified olmadan bağlanmaz; **web tier yok**
+(Exa/Tavily/OSINT v1.4.0'da kaldırıldı) → yapısal kaynakta yoksa "VERİ YOK", uydurma yok.
+Bireysel SGK/dava → `onko-erisim`; MLR → `promo-censor`; ticari strateji (rekabet/OSINT dahil) →
+`pharmaintel` (medical-research yalnız yapısal kanıt katmanını sağlar).
+
+---
+
+## 8. Bilinen upstream araç kusurları (2026-06-27 canlı denetim)
+
+Bu araçlar **upstream/üçüncü-taraf** kaynaklı kusurludur — plugin tarafından doğrudan
+düzeltilemez. Hepsi `pipeworx_feedback`/operatöre raporlandı; skill bunlardan **kaçınıp
+çalışan alternatife yönlenir** (no-fabrication: kusur gizlenmez).
+
+| # | Araç (pack) | Kusur | Yönlendirme (kullan) |
+|---|---|---|---|
+| D1 | `nlm-rxnorm.rxnorm_interactions` (rxnorm) | **HTTP 404** — RxNav Drug Interaction API NLM tarafından Oca-2024'te kaldırıldı | Klinik-DDI: **`drugddx`** (`interaction_label`/`normalize_drug`) + DailyMed label DDI-bölümü. `rxnorm_interactions` ASLA çağrılmaz (deprecated/removed-upstream). |
+| D2 | `nlm-rxnorm.rxnorm_related` (rxnorm) | **HTTP 400** (tty'li ve tty'siz, dokümante örnekle bile); gateway tty'yi virgülle iletiyor olabilir | Brand↔generic eşleme: **`med-terminologies.atc_classify`** veya **TİTCK `find_equivalent_products_by_substance`**. |
+| D3 | `nih-clinicaltables.icd10cm` (clinicaltables) | İsim→kod araması **0 döner** (`diabetes`→0); yalnız kod→açıklama çalışır | Tanı→kod: **`med-terminologies.map_icd10_to_icd11`** veya **`openfda.icd11_search`**. `icd10cm` YALNIZ kod→açıklama doğrulaması için. |
+| D4 | `nlm-rxnorm.rxnorm_search` (rxnorm) | Yalnız **SBD/SCD** döner (IN/BN/PIN yok) → ingredient RxCUI doğrudan alınamaz | Ingredient RxCUI: **`med-terminologies.atc_classify`** veya `resolve_entity(drug)`. |
+| D5 | `*.validate_claim` (pipeworx) | **Dönem-hizalama zayıf** — doğru "FY2024" iddiası en güncel FY2025 ile kıyaslanıp "%6 sapma" denir | Kullanımda **asserted fiscal-year** açıkça verilir; sonucu dönem-uyumu için elle teyit et. |
+| D6 | `med-terminologies.icd11_search` (med-terminologies) | **AUTH_CONFIG_ERROR** — sunucuda WHO_CLIENT_ID/SECRET yok | ICD-11 metin araması: **DAİMA `openfda.icd11_search`** (WHO ICD-11 MMS, server-side OAuth; canlı doğrulandı haemophilia A→3B10.0). |
+
+> D1–D5 upstream **pipeworx** (io.github.pipeworx-io) / D6 **medical.sidneybissoli.com** kaynaklıdır;
+> evidentia salt-okunur tüketicidir. Bu satırlar `connector-registry.md` §3.3/§5 yönlendirmeleriyle tutarlıdır.

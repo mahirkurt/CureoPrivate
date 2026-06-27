@@ -4,7 +4,7 @@
 **Primary connector:** AdisInsight MCP (server `6a9fd4a4…`).
 **⚠️ v8.0 CORRECTION:** v7.1 documented a fictional *Springer Pharma API Bundle* schema (`organisations`/`phases`/`indications`/`moas`/`drugClass`/`locations`/`fromDate`/`toDate`). **That schema does not exist on the connected MCP.** This file documents the **real, probe-verified** interface. Any call using the old parameters will fail.
 
-**Companion connectors:** Clinical Trials v2, DailyMed (extended-api), regulatory MCP `openfda_search` (FAERS), EPMC, ChEMBL, Exa (fallback), `pharmaintel` skill (deeper commercial handoff).
+**Companion connectors:** Clinical Trials v2, DailyMed (extended-api), regulatory MCP `openfda_search` (FAERS), EPMC, ChEMBL, `pharmaintel` skill (deeper commercial handoff).
 
 ---
 
@@ -86,7 +86,7 @@ Output → `pipeline_payload.regulatory_milestones`.
 AdisInsight: search_trials(compound="<INN>", phase="Phase III", status="Recruiting")
 AdisInsight: search_drug_companies(...) # for partnership inference
 ```
-Deal/conference depth on the public MCP is thinner than the curated web product → cross-ref with `pharmaintel` (SEC 8-K, press) and Exa conference pages. Document gaps explicitly.
+Deal/conference depth on the public MCP is thinner than the curated web product → cross-ref with `pharmaintel` (SEC 8-K, press). If still not recovered, report the deal/conference dimension as a gap (VERİ YOK) — do NOT fabricate. Document gaps explicitly.
 
 ---
 
@@ -97,7 +97,7 @@ Deal/conference depth on the public MCP is thinner than the curated web product 
 | `history_events` PMIDs | EPMC `get_article_metadata` | title/authors/journal match |
 | trial NCTs | CT.gov `get_trial_details` | phase + sponsor + dates |
 | FDA approval/CRL | regulatory MCP `openfda_search(endpoint="drug/drugsfda")` + DailyMed | approval/letter date |
-| EMA CHMP/registration | Exa `site:ema.europa.eu` (EPAR) | CHMP minutes date |
+| EMA CHMP/registration | EMA has no native API in this build → not retrievable; report as a gap (VERİ YOK), do NOT fabricate | — |
 | Türkiye status | **TİTCK `search_drugs`** (native) | ruhsat + reimbursement |
 | AE profile | regulatory MCP `openfda_search(endpoint="drug/event", count=...)` | FAERS PT frequencies (NOT incidence) |
 | Mechanism/target | ChEMBL `get_mechanism` / `target_search` | action_type + UniProt |
@@ -110,9 +110,8 @@ Deal/conference depth on the public MCP is thinner than the curated web product 
 
 1. **Direct:** `search_drugs(drug_name=…)` / `(mechanism=…)` / `(targets=…)`.
 2. **Reformulate:** brand↔INN; mechanism parent class; `search_drug_companies` by indication.
-3. **Exa site-restricted:** `web_search_exa("site:adisinsight.springer.com {drug/MoA}")`.
-4. **Synthesize from primaries:** CT.gov `search_by_sponsor` + DailyMed + EMA EPAR (Exa) + openFDA FAERS + `pharmaintel` skill.
-5. **Document gap:** "AdisInsight returned no curated pipeline data; reconstructed from CT.gov + DailyMed + EPAR + FAERS — deals/conference dimensions not recovered."
+3. **Synthesize from primaries:** CT.gov `search_by_sponsor` + DailyMed + openFDA FAERS + `pharmaintel` skill. (EMA has no native API in this build → EPAR not retrievable; report as a gap, do NOT fabricate.)
+4. **Document gap:** "AdisInsight returned no curated pipeline data; reconstructed from CT.gov + DailyMed + FAERS — EMA/EPAR and deals/conference dimensions not recovered (VERİ YOK), not fabricated."
 
 ---
 
@@ -163,7 +162,7 @@ Deal/conference depth on the public MCP is thinner than the curated web product 
 2. `get_drug` without `query_text` → no document chunks (basic info only).
 3. AdisInsight public MCP has no date-range filter — read timestamps from `history_events`/`development_phases` instead.
 4. Türkiye data thin in AdisInsight → **TİTCK native is authoritative** for TR.
-5. Deal/conference depth thinner than the curated web product → cross-ref pharmaintel + Exa; document gaps.
+5. Deal/conference depth thinner than the curated web product → cross-ref pharmaintel; if not recovered, report as a gap (VERİ YOK), do NOT fabricate; document gaps.
 6. `search_drugs` `per_page` ≤ 100; paginate for large MoA landscapes.
 7. Disambiguate generics with `developers`/`therapeutic_area`/`dev_phase` on `get_drug`.
 

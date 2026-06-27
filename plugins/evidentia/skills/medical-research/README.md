@@ -21,11 +21,11 @@ repo) — they are not auto-installed.
 | `SKILL.md` | v8.0 orchestration core — native-first protocol, verified registry, 10-axis classifier (+0.5.K epidemiology), real Adım 1 call list, output contract, SMP manifest | ✅ full rewrite |
 | `references/connector-registry.md` | Verified tool table (replaces `connector-api.md`); native-first ladder; per-connector notes; limitations | ✅ full (new) |
 | `references/drug-intelligence-layer.md` | **CRITICAL FIX** — real AdisInsight schema (`search_drugs`/`get_drug` HyDE/`generate_chart`); v7.1 fictional schema removed | ✅ full rewrite |
-| `references/turkiye-layer.md` | **NEW** — TİTCK 15+ native tools + Mevzuat + TÜRKPATENT + YÖK (replaces Exa TR scraping) | ✅ full (new) |
+| `references/turkiye-layer.md` | **NEW** — TİTCK 15+ native tools + Mevzuat + TÜRKPATENT + YÖK (native TR sources, no web scraping) | ✅ full (new) |
 | `references/regulatory-intelligence.md` | **NEW** — native openFDA + WHO ICD-11 + WHO GHO + Health Canada + Federal Register + EUR-Lex | ✅ full (new) |
 | `references/fulltext-retrieval.md` | **NEW** — full-text cascade EPMC PMC → copyright → annas-mcp (verified) → paper-download → Wiley; copyright gate | ✅ full (new) |
 | `references/report-presentation.md` | **NEW (v8.1)** — clean-copy doctrine: scholarly Turkish, no tooling leakage, journal-style Methods, info boxes, `<!-- VIZ -->`/`<!-- OPS -->` isolation, scaffold→clean-copy map, finalization gate G1–G7 | ✅ full (new) |
-| `references/v8-wiring-patch.md` | Precise find→replace spec for the remaining existing files (extended-api, evidence-grading, output-templates, 8 specialty layers, osint/execution/composition/benchmark) — retains clinical content, swaps connector wiring | ✅ actionable spec |
+| `references/v8-wiring-patch.md` | Precise find→replace spec for the remaining existing files (extended-api, evidence-grading, output-templates, 8 specialty layers, execution/composition/benchmark) — retains clinical content, swaps connector wiring | ✅ actionable spec |
 
 ## What's done vs. remaining
 - **P0 (this turn):** plan + SKILL.md + connector-registry + drug-intelligence-layer + turkiye-layer — full files.
@@ -41,5 +41,5 @@ returning a full Columvi/Roche/STARGLO/ODAC/CRL profile.
 ## Verification (live probes, 9 Jun 2026)
 AdisInsight ✅ (glofitamab profile) · TİTCK ✅ (trastuzumab + biosimilars + 2026 prices) ·
 annas-mcp ✅ (GRADE 2008 downloaded) · WHO GHO ✅ (Türkiye life-expectancy) · openFDA/ICD-11/
-EPMC/ChEMBL schemas ✅ · Tavily ⚠️ quota (Exa-fallback) · Regulatory MCP ⚠️ latency (single+retry) ·
+EPMC/ChEMBL schemas ✅ · Regulatory MCP ⚠️ latency (single+retry) ·
 OpenTargets ❌ offline (conditional).

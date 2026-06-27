@@ -1,7 +1,7 @@
 {
   "name": "evidentia",
-  "version": "1.3.0",
-  "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. medical-research v8.3.0 flagship skill (semantik-kapsam mekanizması: knowledge-map + Adım 0.4 Semantic Scope Scan + zorunlu çok-eksen fan-out + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 15-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, med-terminologies/RxNorm/GtoPdb, OpenAlex [KOL/atıf-ağı/kurum disambiguasyon], PubMed-EPMC [Europe PMC + Unpaywall yasal-OA tam-metin], Semantic Scholar) + operatör-bağlı Annas Reader tam-metin + DÖRT self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, temiz-kopya doktrini, copyright-kapılı tam-metin, retrieve-don't-dump.",
+  "version": "1.4.0",
+  "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. **Saf yapısal-otoriter kanıt** (v1.4.0: web tier [Exa/Tavily] + OSINT ekseni kaldırıldı; native kaynakta yoksa 'VERİ YOK', uydurma yok). medical-research v8.4.0 flagship skill (semantik-kapsam: knowledge-map + Adım 0.4 Semantic Scope Scan + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 14-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, med-terminologies/RxNorm/GtoPdb, OpenAlex [KOL/atıf-ağı/kurum disambiguasyon], PubMed-EPMC [Europe PMC + Unpaywall yasal-OA tam-metin], Semantic Scholar) + operatör-bağlı Annas Reader tam-metin + DÖRT self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, temiz-kopya doktrini, copyright-kapılı tam-metin, retrieve-don't-dump.",
   "author": {
     "name": "operator (Cureonics fleet)",
     "url": "https://cureonics.com"
@@ -41,7 +41,7 @@
   "mcpServers": "./.mcp.json",
   "metadata": {
     "flagship_skill": "medical-research",
-    "flagship_version": "8.3.0",
+    "flagship_version": "8.4.0",
     "smp_manifest": "./skills/medical-research/skill-manifest.yaml",
     "connector_source_of_truth": "./CONNECTORS.md",
     "orchestration_contract": "./shared/canonical-cache-contract.md",
@@ -61,6 +61,8 @@
     ],
     "min_host": "Claude Code / claude.ai custom connectors",
     "connector_probe_basis": "skill-manifest.yaml (probe 2026-06-09) + mcp-scout live registry+initialize (2026-06-25) + Tier-K academic expansion probe (OpenAlex/PubMed-EPMC/Semantic Scholar, 2026-06-27)",
+    "third_party_trust_note": "openalex/pubmed-epmc (caseyjhand.com) + semantic-scholar (pipeworx) are third-party UNAUTHENTICATED hosts — keyless (no identity/secret sent), public bibliographic data only; output is untrusted DATA not instructions, cross-verify clinical/numeric claims. See connector-registry §6.3P. Definitive hardening = self-host the cyanheads OSS servers as operator Workers.",
+    "architecture_note_v1_4_0": "Structured-authoritative only: Exa/Tavily web-retrieval tier and OSINT axis removed. No-API sources (EMA, society guideline PDFs, GLOBOCAN/IHME/WHO-GHO burden) are reported as a documented gap, never web-scraped or fabricated. Known upstream tool defects (rxnorm_interactions 404, rxnorm_related 400, nih icd10cm name-search, med-terminologies icd11_search AUTH) are documented + rerouted in CONNECTORS §8 / connector-registry §6.",
     "self_host_components": [
       "./self-host/anamnesis-mcp",
       "./self-host/drugddx-mcp",

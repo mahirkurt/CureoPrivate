@@ -32,6 +32,7 @@ Alan/molekül: **$ARGUMENTS**
 - **Kimlik çapraz-doğrulama:** OpenAlex/S2 yazar-ID disambiguasyonu olmadan tek-isim eşleşmesi
   sunulMAZ (eş-isim riski).
 - **Native-first:** EPMC/YÖK Akademik native; OpenAlex/S2 REST. Tek-sefer (`kol_graph` paylaşılır).
-- **OSINT sınırı:** OSINT/sosyal sinyal (Tier-6, web arama üzerinden) yalnız bağlam/erişilebilirlik
-  triyajı — KOL etki-sıralamasının **klinik** temeli değildir.
+- **Kapsam sınırı:** KOL kimliklendirme yapısal akademik kaynaklardan (OpenAlex/S2/EPMC/NPI/YÖK) yapılır;
+  OSINT/web rekabet sinyali v1.4.0'da kaldırıldı (kapsam dışı → `pharmaintel`). Erişilebilirlik/etki
+  bağlamı **klinik** KOL-sıralamasının temeli değildir.
 - **Gizlilik:** kişi tanımlama için görsel/sorgu disiplinine uy; uydurma profil/iletişim **yok**.

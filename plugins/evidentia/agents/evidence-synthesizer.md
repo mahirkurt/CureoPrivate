@@ -37,7 +37,7 @@ sorgular sana gelmez.
 
 3. **Tek-sefer disiplini.** Kanonik artefaktları (`evidence_corpus`, `titck_record`,
    `regulatory_snapshot`, `terminology_map`, `kol_graph`, `evidence_index`) bir kez doldur; çift connector sorgusu
-   yapma; RegulatoryMCP tekil+retry+skippable; Tavily kota→Exa.
+   yapma; RegulatoryMCP tekil+retry+skippable.
 
    **RAG/GraphRAG (anamnesis) — retrieve-don't-dump.** Tam-metin makale/kitap veya büyük araç
    çıktısını **ham olarak bağlamına alma**. Onun yerine anamnesis `ingest_document` ile indeksle

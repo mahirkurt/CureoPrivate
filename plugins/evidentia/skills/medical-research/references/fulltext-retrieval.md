@@ -1,12 +1,13 @@
 # Full-Text Retrieval Cascade (v8.0 — NEW)
 
 **Loaded:** ALWAYS (Adım 0).
-**Purpose:** v7.1 could only reach full text via `Exa:web_fetch_exa` — blind at paywalls.
+**Purpose:** v7.1 could only reach full text via blind web fetch — blind at paywalls.
 v8.0 adds a **verified multi-tier cascade** that opens open-access, PMC, and (for analysis
-only) paywalled full text, with an explicit **copyright gate**.
+only) paywalled full text, with an explicit **copyright gate**. (v1.4.0: the web-fetch last
+resort was replaced by the bundled **pubmed-epmc** Unpaywall legal-OA resolver — no web scraping.)
 
 **Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **annas-mcp**
-(verified), Wiley (`bio-research:wiley`, OAuth), Exa (last resort).
+(verified), Wiley (`bio-research:wiley`, OAuth), **pubmed-epmc** (`pubmed_fetch_fulltext` — EuropePMC + Unpaywall legal OA, last resort).
 
 ---
 
@@ -53,9 +54,10 @@ user + for your analysis of the retrieved content, not re-upload.
 `Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals). Graceful
 skip if unauthenticated.
 
-### Tier 5 — Exa (last resort)
-`Exa:web_fetch_exa(urls=[...], maxCharacters=...)` — when no API path exists. On paywall,
-note and stop.
+### Tier 5 — pubmed-epmc Unpaywall legal-OA (last resort)
+`pubmed-epmc:pubmed_fetch_fulltext(...)` resolves legal open-access full text via the NCBI PMC →
+EuropePMC fullTextXML → **Unpaywall** chain (DOI/PMID/PMCID). No web scraping. If still no legal
+OA copy exists, **note the gap and stop** (do not fabricate; web tier removed v1.4.0).
 
 ---
 
@@ -85,7 +87,7 @@ literature rather than memory.
 ## 5. Output integration
 Extracted full-text data points feed: §1 (numerical endpoints), §7 (Tier-0 GRADE tables),
 evidence-table sidecar (`result_summary`, HR/CI), and the relevant specialty section.
-Tag each: citation + `[tam metin: PMC OA | annas analiz | Wiley | Exa]` + license note.
+Tag each: citation + `[tam metin: PMC OA | annas analiz | Wiley | Unpaywall OA]` + license note.
 
 ---
 
@@ -95,7 +97,7 @@ Tag each: citation + `[tam metin: PMC OA | annas analiz | Wiley | Exa]` + licens
 2. **Copyright** — the dominant constraint; default to paraphrase + data extraction.
 3. **annas availability** — mirror/SciDB dependent; if a DOI fails, try Tier 1/2 first.
 4. **Wiley/Synapse auth** — graceful skip if unauthenticated.
-5. **Exa paywall blindness** — last resort only.
+5. **No web fallback** (Exa/Tavily removed v1.4.0) — if no legal-OA copy resolves via Tier 1–5, note the gap; never web-scrape or fabricate.
 
 ---
 

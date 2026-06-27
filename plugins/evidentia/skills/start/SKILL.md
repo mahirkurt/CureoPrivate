@@ -3,7 +3,7 @@ name: start
 description: >-
   evidentia süitine giriş ve yönlendirme. Bağlı MCP connector'larını (akademik çekirdek,
   Türkiye Dörtlüsü, regülatuar/epidemiyoloji, mcp-scout genişletme, self-host drugddx)
-  kontrol eder, flagship medical-research v8.2.0 skill'ini ve dört komutu tanıtır, kullanıcının
+  kontrol eder, flagship medical-research 8.4.0 skill'ini ve dört komutu tanıtır, kullanıcının
   niyetine göre doğru komuta/eksene yönlendirir. İlk kez süitle çalışırken, hangi connector'ların
   bağlı olduğunu görmek için, ya da "evidentia nedir / nereden başlamalıyım / hangi komutu
   kullanmalıyım / connector'larım bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler —
@@ -21,7 +21,7 @@ işi flagship `medical-research` skill'i ve dört komut yapar.
 ## Adım 1 — Karşılama
 
 Kullanıcıya kısaca: evidentia, **çok-kaynaklı bilimsel kanıt sentezi + Türkiye-pazarı**
-araştırma motorudur. `medical-research` v8.2.0 flagship'ini, 20+ doğrulanmış connector'ı ve
+araştırma motorudur. `medical-research` 8.4.0 flagship'ini, 20+ doğrulanmış connector'ı ve
 mcp-scout ile canlı-doğrulanmış klinik genişletme MCP'lerini tek pakette toplar. 10 uzmanlık
 ekseni vardır: Onko · Heme · Regülatuar · HTA · MedAffairs · İmmün · Nöro · Nadir · DrugIntel ·
 Epidemiyoloji.
@@ -36,7 +36,7 @@ yok" şaşkınlığını önler. [`CONNECTORS.md`](../../CONNECTORS.md) ve
 
 Kontrol listesi (gruba göre):
 1. **Akademik çekirdek** — PubMed/EPMC, Clinical Trials, Consensus, Scholar Gateway, bioRxiv,
-   YÖK Tez, Exa, Tavily (kota?).
+   YÖK Tez.
 2. **Curated + mekanizma** — AdisInsight, ChEMBL (+ Synapse/OpenTargets/Wiley koşullu).
 3. **Türkiye Dörtlüsü + IP** — TİTCK (+ Cache), Mevzuat, Türk Patent, RegulatoryMCP (latency!),
    NPI, annas-mcp.
@@ -56,7 +56,7 @@ araştırmayı durdurmayın.
 
 ## Adım 3 — Flagship Skill Tanıtımı
 
-`medical-research` v8.2.0 ağır işi yapar: native-MCP-first çözümleme, probe-verified-only,
+`medical-research` 8.4.0 ağır işi yapar: native-MCP-first çözümleme, probe-verified-only,
 Adım 0–5 protokolü (kapsam → kaynak seçimi → çoklu-kaynak getirme → çapraz-doğrulama → sentez →
 temiz-kopya). Kullanıcı doğrudan bir araştırma sorusu sorduğunda bu skill devreye girer; `start`
 yalnızca yönlendirir.

@@ -33,7 +33,6 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 - **RegulatoryMCP (latency-prone 180s).** **Tekil** çağrı (paralel değil) + **1 retry** +
   başarısızsa **skippable** işaretle ve `regulatory_snapshot`'ı kısmî bırak. Asla 2. tam
   deneme yapma; downstream "regülatuar veri kısmî" notuyla devam eder.
-- **Tavily (kota 432).** Kota dolmuşsa **tek** deneme → Exa-fallback; tekrar denenmez.
 - **Tier-K genişletme (×4).** İlk liveness sonrası aynı oturumda yeniden probe edilmez;
   sonuç `terminology_map`'e yazılır.
 - **drugddx (self-host, deploy sonrası).** İlaç çifti normalizasyonu `terminology_map`'ten
@@ -46,6 +45,13 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   taşması nedeniyle eksik/tutarsız değerlendirmeyi önleyen çekirdek kuraldır. Varlık/ilişki
   **çıkarımı orchestrator (Claude) tarafından** yapılır → `upsert_triples` (LLM-in-the-loop
   GraphRAG); Worker yalnız depolar+gezer.
+- **anamnesis korpusu OTURUM-İÇİ doldurulur — boş-korpus guard'ı (D9).** anamnesis kalıcı bir
+  korpus DEĞİLDİR; her oturumda `ingest_document` ile doldurulur. `semantic_search`/`hybrid_query`
+  çağırmadan ÖNCE **zorunlu `corpus_stats` kontrolü**: `docs == 0` ise önce ilgili tam-metni
+  `ingest_document` ile indeksle. Boş korpusta 0 hit dönmesi **bir hata değildir** (RAG substratı
+  çalışıyor, içerik yok) → 0 hit'i "kanıt yok" diye raporlama; önce ingest et veya RAG adımını
+  atlandı olarak işaretle. (Vectorize indeksleme ~saniye gecikmeli; ingest'ten hemen sonraki
+  `semantic_search` geçici 0 dönebilir → kısa bekle/yeniden dene.)
 
 ---
 

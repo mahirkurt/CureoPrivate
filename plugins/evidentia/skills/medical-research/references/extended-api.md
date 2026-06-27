@@ -6,8 +6,8 @@ migration; reconstructed here. Endpoints below are public, documented APIs; call
 illustrative templates, not verbatim vendor copy.
 
 **Core rule (inherited from `connector-registry.md` §0):** resolve every data need on the
-**Native-First ladder** — native MCP → native REST via `bash_tool`+`requests` → Exa/Tavily →
-documented gap. This file covers **rung 2**: the sources that have **no native MCP** and must be
+**Native-First ladder** — native MCP → native REST via `bash_tool`+`requests` → documented gap
+(VERİ YOK / not found). This file covers **rung 2**: the sources that have **no native MCP** and must be
 reached by REST. Where a native MCP now exists (EuropePMC, ChEMBL, openFDA), use it instead — v7.1
 wrongly used REST for those; v8.x corrects it.
 
@@ -77,6 +77,6 @@ ChEMBL native (`get_mechanism`/`get_admet`) + openFDA. Never fabricate DrugBank 
 
 ## 9. Failure & rate-limit discipline
 - 429/5xx → exponential backoff (3×), then mark the rung exhausted and **descend the ladder**
-  (REST empty → Exa/Tavily → "VERİ BULUNAMADI" with queries listed).
+  (REST empty → "VERİ BULUNAMADI / not found" with queries listed).
 - Never silently omit a failed source; the Generosity note (`<!-- OPS -->` annex) records it.
 - Keep all REST output structured (JSON) for the `.data.json` sidecar (`output-templates.md`).

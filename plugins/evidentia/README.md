@@ -98,12 +98,13 @@ Tam envanter, fallback merdivenleri ve probe kanıtı: [`CONNECTORS.md`](./CONNE
 
 ## Doğrulama kapıları
 
-`G-REF` · `G-CONN` · `G-ALWAYS` · `G-VERSION` (skill bütünlüğü) + `G-PROBE` · `G-BUNDLE` ·
+`G-REF` · `G-CONN` · `G-ALWAYS` · `G-VERSION` · `G-COVERAGE` · **`G-RAG`** (skill bütünlüğü + çıktı faithfulness §7.2.1) + `G-PROBE` · `G-BUNDLE` ·
 `G-TRUST` · `G-SURFACE` · `G-REGRESSION` · `G-COPYRIGHT` (plugin). Koşum:
 ```bash
 python scripts/g_probe.py        # .mcp.json URL'lerinde canlı initialize
 python scripts/g_bundle.py       # .mcp.json ↔ CONNECTORS.md tutarlılık
-python skills/medical-research/evals/check_integrity.py
+python skills/medical-research/evals/check_integrity.py        # yapısal: G-REF/G-CONN/G-ALWAYS/G-VERSION/G-COVERAGE
+python skills/medical-research/evals/rag_quality.py            # G-RAG: çıktı faithfulness (§7.2.1) — yapısal taban; --judge ile LLM-judge (EVIDENTIA_JUDGE_KEY)
 ```
 
 ---

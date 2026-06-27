@@ -272,7 +272,7 @@ x_evidentia_self_host_2026_06_25:
 
 # --- Verification gates (executable — evals/check_integrity.py) --------------
 verification:
-  gate_count: 7
+  gate_count: 8
   gates:
     - id: G-REF
       description: "Reference integrity — every references/*.md cited by SKILL.md exists on disk"
@@ -297,6 +297,10 @@ verification:
     - id: G-COVERAGE
       description: "Semantic coverage — knowledge-map.md references every corpus file; Adım 0.4 coverage_set is emitted; multi-axis fan-out feeds 0.5 loader"
       command: "python3 evals/check_integrity.py --coverage"
+      blocking: true
+    - id: G-RAG
+      description: "RAG-quality eval (§7.2.1) — output faithfulness: structural floor (citation resolution, source grounding/no-fabrication, no vague attribution, quantitative-claim citation) self-validated on a gold set incl planted negative controls; optional LLM-judge layer (faithfulness/answer-rel/context-rel). MEASURED accuracy, not just structural."
+      command: "python3 evals/rag_quality.py   # add --judge with EVIDENTIA_JUDGE_KEY for semantic layer"
       blocking: true
     - id: G-COPYRIGHT
       description: "Full-text sections enforce no-verbatim-bulk + copyright_status gate (fulltext-retrieval.md)"

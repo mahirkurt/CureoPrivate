@@ -82,24 +82,26 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     },
   );
 
-  // ---- semantic_search (HYBRID: vector ∥ BM25 → RRF → rerank) -------------
+  // ---- semantic_search (HYBRID + MULTI-QUERY: queries → vector∥BM25 → RRF → rerank) -------
   server.tool(
     "semantic_search",
-    "HYBRID retrieval over ingested chunks: vector (multilingual bge-m3 — Turkish query vs English " +
-      "corpus) ∥ FTS5 BM25 lexical → RRF fusion → cross-encoder rerank (bge-reranker). This catches " +
-      "BOTH conceptual matches AND exact terminology (drug/gene/code) that pure vector blurs. Each " +
-      "chunk carries {doc_id, idx, score, retrieval} provenance (retrieval = which arm + final stage). " +
-      "Read-only. Stages degrade gracefully (no lexical hit → vector-only; reranker error → RRF). " + SUBSTRATE_NOTE,
+    "HYBRID + MULTI-QUERY retrieval — the recall-maximising path for 'miss no detail'. Decompose " +
+      "the question into sub-aspects/synonyms and pass them in `queries[]`; each runs vector " +
+      "(multilingual bge-m3 — Turkish query vs English corpus) ∥ FTS5 BM25 lexical, then ALL are " +
+      "RRF-fused and cross-encoder reranked (bge-reranker) against `query`. Catches conceptual AND " +
+      "exact-terminology (drug/gene/code) matches across every facet of a complex question. Each chunk " +
+      "carries {doc_id, idx, score, retrieval} provenance. Read-only; stages degrade gracefully. " + SUBSTRATE_NOTE,
     {
-      query: z.string().describe("Natural-language query (Turkish or English)"),
+      query: z.string().describe("PRIMARY natural-language query (Turkish or English); rerank target"),
+      queries: z.array(z.string()).optional().describe("Decomposed sub-queries / synonyms / facets (recall booster — pass the question's distinct aspects; max 8 incl primary)"),
       k: z.number().int().min(1).max(50).optional().describe("How many chunks to return after rerank (default 8)"),
       doc_id: z.string().optional().describe("Restrict to a single document"),
       rerank: z.boolean().optional().describe("Cross-encoder rerank the fused candidates (default true; set false for raw RRF speed)"),
     },
     async (a) => {
       try {
-        const chunks = await semanticSearch(env, { query: a.query, k: a.k, doc_id: a.doc_id, rerank: a.rerank });
-        return ok({ query: a.query, k: a.k ?? 8, hits: chunks.length, pipeline: "vector∥bm25→rrf→rerank", chunks, note: SUBSTRATE_NOTE });
+        const chunks = await semanticSearch(env, { query: a.query, queries: a.queries, k: a.k, doc_id: a.doc_id, rerank: a.rerank });
+        return ok({ query: a.query, queries: a.queries?.length ?? 0, k: a.k ?? 8, hits: chunks.length, pipeline: "multiquery→vector∥bm25→rrf→rerank", chunks, note: SUBSTRATE_NOTE });
       } catch (e: any) { return err(`semantic_search failed: ${e.message}`); }
     },
   );
@@ -158,12 +160,14 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
   // ---- hybrid_query (FLAGSHIP) -------------------------------------------
   server.tool(
     "hybrid_query",
-    "FLAGSHIP retrieval: HYBRID chunk retrieval (vector ∥ BM25 → RRF → cross-encoder rerank) UNION " +
-      "graph expansion, assembled into a COMPACT, provenance-stamped evidence bundle sized for the " +
-      "context window. This is the call that yields broad + accurate + CONSISTENT answers without " +
-      "dumping the corpus. Pass seed_entities to also graph-expand named concepts. Read-only. " + SUBSTRATE_NOTE,
+    "FLAGSHIP retrieval: HYBRID + MULTI-QUERY chunk retrieval (queries → vector ∥ BM25 → RRF → " +
+      "cross-encoder rerank) UNION graph expansion, assembled into a COMPACT, provenance-stamped " +
+      "evidence bundle sized for the context window. The call that yields broad + accurate + " +
+      "CONSISTENT answers without dumping the corpus. Pass `queries[]` (decomposed sub-aspects) to " +
+      "maximise recall and `seed_entities` to graph-expand named concepts. Read-only. " + SUBSTRATE_NOTE,
     {
-      query: z.string().describe("The synthesis question (Turkish or English)"),
+      query: z.string().describe("The PRIMARY synthesis question (Turkish or English)"),
+      queries: z.array(z.string()).optional().describe("Decomposed sub-aspects/synonyms of the question (recall booster; fused across all)"),
       k: z.number().int().min(1).max(24).optional().describe("Vector chunks to retrieve (default 8)"),
       seed_entities: z.array(z.string()).optional().describe("Named concepts to graph-expand (e.g. ['emicizumab'])"),
       hops: z.number().int().min(1).max(2).optional().describe("Graph hops for seed entities (default 1)"),
@@ -176,8 +180,8 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
         const perChunk = a.per_chunk_chars ?? 1100;
         const maxEdges = a.max_edges ?? 40;
 
-        // 1) vector retrieval
-        const chunks: RetrievedChunk[] = await semanticSearch(env, { query: a.query, k });
+        // 1) hybrid + multi-query retrieval
+        const chunks: RetrievedChunk[] = await semanticSearch(env, { query: a.query, queries: a.queries, k });
         const docIds = [...new Set(chunks.map((c) => c.doc_id))];
 
         // 2) graph context: relations sourced from the retrieved documents (ranked by weight)

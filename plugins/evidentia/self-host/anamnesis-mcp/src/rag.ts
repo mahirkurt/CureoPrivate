@@ -198,38 +198,59 @@ async function rerankCandidates(env: RagEnv, query: string, texts: string[]): Pr
   } catch { return null; }
 }
 
+/** §8 monitoring pillar — emit one structured retrieval telemetry line to CF Workers logs.
+ *  This is an HTTP Worker (not stdio MCP), so console.log is the log stream, not the protocol
+ *  (§2.3.2 only constrains stdio). Lets the operator watch recall/precision health over time. */
+function logRetrieval(t: Record<string, unknown>): void {
+  try { console.log(JSON.stringify({ evt: "anamnesis.retrieval", ...t })); } catch { /* never throw */ }
+}
+
 /**
- * Hybrid retrieval — the §4.1.1 production pipeline:
- *   vector (bge-m3) ∥ FTS5-BM25  →  RRF fusion  →  cross-encoder rerank (bge-reranker)  →  top-k.
+ * Hybrid + multi-query retrieval — the FULL §4.1.1 production pipeline:
+ *   [query decomposition: PRIMARY + caller sub-queries]
+ *     → per query: vector (bge-m3) ∥ FTS5-BM25
+ *     → RRF fusion across ALL queries × arms
+ *     → cross-encoder rerank (bge-reranker) against the PRIMARY query
+ *     → top-k.
  *
- * Each stage degrades gracefully: no FTS match → vector-only; reranker error → RRF order; this
- * preserves the prior pure-vector behaviour as the floor. `rerank:false` skips the reranker.
- * Optional `doc_id` scopes both arms to one document.
+ * `queries[]` (optional) carries the orchestrator's decomposed sub-aspects/synonyms — this is the
+ * query-transformation front that maximises RECALL ("miss no detail in the literature"); rerank
+ * then restores precision. Each stage degrades gracefully: no FTS → vector-only; reranker error →
+ * RRF order; no queries[] → single-query (prior behaviour). Optional `doc_id` scopes all arms.
  */
 export async function semanticSearch(
   env: RagEnv,
-  args: { query: string; k?: number; doc_id?: string; rerank?: boolean },
+  args: { query: string; k?: number; doc_id?: string; rerank?: boolean; queries?: string[] },
 ): Promise<RetrievedChunk[]> {
   await ensureSchema(env);
   const k = Math.min(Math.max(args.k ?? 8, 1), 50);
-  const pool = Math.min(Math.max(k * 4, 20), 60); // candidate pool for fusion + rerank
+  // Larger candidate pool than k → maximise RECALL ("miss no detail") before rerank tightens precision.
+  const pool = Math.min(Math.max(k * 5, 30), 80);
 
-  // --- vector arm (semantic) ---
-  const qv = await embedOne(env, args.query);
-  const vOpts: Record<string, unknown> = { topK: pool, returnMetadata: "all" };
-  if (args.doc_id) vOpts["filter"] = { doc_id: args.doc_id };
-  const vMatches = normalizeMatches(await env.VECTORIZE.query(qv, vOpts));
-  const vIds = vMatches.map((m) => m.id);
+  // --- query set: PRIMARY + caller-decomposed sub-queries/synonyms (§4.1.1 query transformation).
+  //     The orchestrator (Claude) decomposes the complex question; the Worker fuses across all of
+  //     them — recall-maximising, no Worker-side LLM call (§12.5: let the strong model decompose). ---
+  const primary = args.query;
+  const queries = [...new Set([primary, ...((args.queries ?? []).map((q) => (q || "").trim()))].filter(Boolean))].slice(0, 8);
 
-  // --- lexical arm (BM25) — best-effort ---
-  let lIds: string[] = [];
-  try { lIds = await lexicalSearch(env, args.query, pool, args.doc_id); } catch { lIds = []; }
+  const lists: string[][] = [];      // every ranked id-list (each query × each arm) for RRF
+  const vSet = new Set<string>(), lSet = new Set<string>();
+  for (const q of queries) {
+    // vector arm
+    const qv = await embedOne(env, q);
+    const vOpts: Record<string, unknown> = { topK: pool, returnMetadata: "all" };
+    if (args.doc_id) vOpts["filter"] = { doc_id: args.doc_id };
+    const vIds = normalizeMatches(await env.VECTORIZE.query(qv, vOpts)).map((m) => m.id);
+    if (vIds.length) { lists.push(vIds); vIds.forEach((id) => vSet.add(id)); }
+    // lexical arm (BM25) — best-effort
+    let lIds: string[] = [];
+    try { lIds = await lexicalSearch(env, q, pool, args.doc_id); } catch { lIds = []; }
+    if (lIds.length) { lists.push(lIds); lIds.forEach((id) => lSet.add(id)); }
+  }
+  if (!lists.length) { logRetrieval({ queries: queries.length, v: 0, l: 0, hits: 0, mode: "empty" }); return []; }
 
-  if (!vIds.length && !lIds.length) return [];
-
-  // --- RRF fusion (single arm passes through unchanged) ---
-  const fused = rrfFuse([vIds, lIds].filter((l) => l.length)).slice(0, pool);
-  const vSet = new Set(vIds), lSet = new Set(lIds);
+  // --- RRF fusion across ALL queries × arms ---
+  const fused = rrfFuse(lists).slice(0, pool);
 
   // --- hydrate candidate texts from D1 ---
   const candIds = fused.map((f) => f.id);
@@ -240,13 +261,13 @@ export async function semanticSearch(
   const byId = new Map<string, Record<string, unknown>>();
   for (const row of (rows.results ?? []) as Array<Record<string, unknown>>) byId.set(String(row["id"]), row);
   const cands = fused.filter((f) => byId.has(f.id));
-  if (!cands.length) return [];
+  if (!cands.length) { logRetrieval({ queries: queries.length, v: vSet.size, l: lSet.size, hits: 0, mode: "no-hydrate" }); return []; }
 
-  // --- cross-encoder rerank (best-effort; floor = RRF order) ---
+  // --- cross-encoder rerank against the PRIMARY query (best-effort; floor = RRF order) ---
   let order: Array<{ id: string; score: number }> = cands;
   let reranked = false;
   if (args.rerank !== false && cands.length > 1) {
-    const rr = await rerankCandidates(env, args.query, cands.map((c) => String(byId.get(c.id)!["text"])));
+    const rr = await rerankCandidates(env, primary, cands.map((c) => String(byId.get(c.id)!["text"])));
     if (rr) { order = rr.map((r) => ({ id: cands[r.idx].id, score: r.score })).filter((x) => x.id); reranked = true; }
   }
 
@@ -266,6 +287,8 @@ export async function semanticSearch(
       retrieval: `${arm}→${reranked ? "rerank" : "rrf"}`,
     });
   }
+  // §8 monitoring pillar — lightweight retrieval telemetry to CF Workers logs (HTTP Worker; not stdio).
+  logRetrieval({ queries: queries.length, v: vSet.size, l: lSet.size, fused: fused.length, hits: out.length, reranked, mode: "hybrid" });
   return out;
 }
 

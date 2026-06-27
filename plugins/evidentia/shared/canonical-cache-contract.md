@@ -57,6 +57,15 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   Vectorize vektörlerini + D1 chunks/manifest/edges'i siler, node-provenance'ını küçültür (son doc'unu
   kaybeden orphan node silinir). Idempotent (bilinmeyen doc_id → existed:false), destructive. Oturum
   sonu/yeniden-ingest öncesi korpus hijyeni için kullan.
+- **RECALL — çok-sorgulu ayrıştırma (v1.6.0, "hiçbir detayı atlamama" kuralı).** Karmaşık/çok-yönlü bir
+  soruda `semantic_search`/`hybrid_query` TEK sorguyla çağırılMAZ. Soruyu ayrı **alt-yönlere + eşanlamlı/
+  terminoloji varyantlarına** ayır ve hepsini `queries:[...]` ile geçir (PRIMARY `query` rerank hedefi).
+  Worker her sorgu için vektör∥BM25 koşar, **tümünü RRF ile füzyonlar**, sonra PRIMARY'ye karşı rerank eder
+  → her facet'in kanıtı yüzeye çıkar (maksimum recall), rerank precision'ı korur. Örn. "molekül X — etkinlik
+  + toksisite + TR geri-ödeme + pipeline" → `queries:["X efficacy trial","X toxicity/AE management","X SGK SUT
+  reimbursement Türkiye","X pipeline development phase"]`. Tek-aspektli dar sorgu literatürün diğer yönlerini
+  KAÇIRIR — çok-yönlü sorularda çok-sorgu ZORUNLUdur. (Adım 1.2'deki Specific/Broad/Lateral varyantları bu
+  `queries[]`'i besler.)
 
 ---
 

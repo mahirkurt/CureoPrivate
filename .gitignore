@@ -16,3 +16,7 @@ node_modules/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# evidentia secret keys doc (canonical lives in CureoSuite; NEVER commit here)
+EVIDENTIA-KURULUM-VE-KEYLER.md
+*-KEYLER.md

@@ -264,7 +264,7 @@ x_evidentia_self_host_2026_06_25:
     url: "https://anamnesis-mcp.cureonics.workers.dev/mcp (post-deploy Tier-O)"
     fills_gap: "RAG/GraphRAG retrieval substrate — semantic chunking (bge-m3 1024-d) + Vectorize + D1 entity-relation graph; prevents context-window truncation of full-text/large tool outputs (evidence_index, retrieve-don't-dump)"
     tools: [ingest_document, semantic_search, upsert_triples, graph_neighbors, subgraph, hybrid_query, corpus_stats, forget_document]
-    status: "DEPLOYED LIVE (Worker ver 75caa988, 8 tools incl forget_document v1.4.1); Vectorize 1024-d cosine + D1 provisioned; corpus clean (forget_document verified: orphan-node teardown + idempotent)"
+    status: "DEPLOYED LIVE (Worker ver c9f9529b, 8 tools); HYBRID retrieval v1.5.0 (§4.1.1: vector bge-m3 ∥ BM25/FTS5 → RRF → cross-encoder rerank bge-reranker → top-k; graceful-degrade) — E2E verified (vector+lexical→rerank fires, scores differentiated vs RRF tie); forget_document clean teardown (orphan-node, idempotent) verified; Vectorize 1024-d cosine + D1 + FTS5"
     note: "entity/relation extraction is orchestrator(Claude)-in-the-loop via upsert_triples; Microsoft-GraphRAG global community summarization deferred to documented Cloud Run indexer — NOT shipped as weak in-Worker approximation"
   - id: "annas-reader (operator-connected)"
     url: "https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp"

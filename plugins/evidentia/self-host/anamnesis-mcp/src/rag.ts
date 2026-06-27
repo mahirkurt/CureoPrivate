@@ -60,8 +60,20 @@ export async function ensureSchema(env: RagEnv): Promise<void> {
        doc_id TEXT, evidence TEXT, weight INTEGER DEFAULT 1, updated_at INTEGER)`,
     `CREATE INDEX IF NOT EXISTS idx_edges_subject ON edges(subject)`,
     `CREATE INDEX IF NOT EXISTS idx_edges_object ON edges(object)`,
+    // FTS5 lexical index over chunk text — the BM25 half of hybrid retrieval (§4.1.2).
+    // id/doc_id UNINDEXED (stored, not tokenized); `text` is the searchable column.
+    `CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(id UNINDEXED, doc_id UNINDEXED, text)`,
   ];
   for (const s of stmts) await env.DB.prepare(s).run();
+  // One-time backfill: if a pre-existing deployment has chunks but the FTS index is empty
+  // (table just created), mirror chunk text into FTS so lexical search covers legacy data.
+  try {
+    const fc = await env.DB.prepare(`SELECT COUNT(*) AS n FROM chunks_fts`).first<{ n: number }>();
+    const cc = await env.DB.prepare(`SELECT COUNT(*) AS n FROM chunks`).first<{ n: number }>();
+    if (Number(fc?.n ?? 0) === 0 && Number(cc?.n ?? 0) > 0) {
+      await env.DB.prepare(`INSERT INTO chunks_fts (id, doc_id, text) SELECT id, doc_id, text FROM chunks`).run();
+    }
+  } catch { /* FTS backfill is best-effort; hybrid degrades to vector-only if unavailable */ }
 }
 
 function chunkId(docId: string, idx: number): string {
@@ -101,13 +113,19 @@ export async function ingestDocument(
     );
   }
 
-  // D1 text store
+  // D1 text store. Re-ingest: clear this doc's stale FTS rows first (chunks uses INSERT OR
+  // REPLACE by id, but chunks_fts is a separate table that must be cleared by doc_id).
+  await env.DB.prepare(`DELETE FROM chunks_fts WHERE doc_id = ?`).bind(args.doc_id).run();
   for (const c of chunks) {
+    const cid = chunkId(args.doc_id, c.idx);
     await env.DB.prepare(
       `INSERT OR REPLACE INTO chunks (id, doc_id, idx, text, token_est, source, title, created_at)
        VALUES (?,?,?,?,?,?,?,?)`,
-    ).bind(chunkId(args.doc_id, c.idx), args.doc_id, c.idx, c.text, c.tokenEst,
+    ).bind(cid, args.doc_id, c.idx, c.text, c.tokenEst,
            args.source ?? null, args.title ?? null, now).run();
+    // mirror into the FTS5 lexical index (BM25 half of hybrid retrieval)
+    await env.DB.prepare(`INSERT INTO chunks_fts (id, doc_id, text) VALUES (?,?,?)`)
+      .bind(cid, args.doc_id, c.text).run();
   }
   await env.DB.prepare(
     `INSERT OR REPLACE INTO docs (id, title, source, n_chunks, created_at) VALUES (?,?,?,?,?)`,
@@ -129,7 +147,12 @@ export interface RetrievedChunk {
   text: string;
   title?: string | null;
   source?: string | null;
+  /** Retrieval provenance: which arm(s) surfaced this chunk + final stage (rerank/rrf). §12.3. */
+  retrieval?: string;
 }
+
+/** Cross-encoder reranker (Cloudflare Workers AI). Same AI binding as the bge-m3 embedder. */
+export const RERANK_MODEL = "@cf/baai/bge-reranker-base";
 
 function normalizeMatches(raw: unknown): Array<{ id: string; score: number; metadata?: Record<string, unknown> }> {
   const r = raw as Record<string, unknown> | undefined;
@@ -138,39 +161,109 @@ function normalizeMatches(raw: unknown): Array<{ id: string; score: number; meta
   return [];
 }
 
-/** Vector top-k retrieval with D1 text hydration. Optional doc_id scoping via metadata filter. */
+/** FTS5 lexical (BM25) arm of hybrid retrieval. Query is sanitised into an OR of quoted tokens
+ *  (so FTS5 operators in user text can't break the MATCH). Returns chunk ids best-first. */
+async function lexicalSearch(env: RagEnv, query: string, n: number, docId?: string): Promise<string[]> {
+  const tokens = (query.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter((t) => t.length > 1).slice(0, 24);
+  if (!tokens.length) return [];
+  const match = tokens.map((t) => `"${t.replace(/"/g, '""')}"`).join(" OR ");
+  const sql = docId
+    ? `SELECT id FROM chunks_fts WHERE chunks_fts MATCH ? AND doc_id = ? ORDER BY rank LIMIT ?`
+    : `SELECT id FROM chunks_fts WHERE chunks_fts MATCH ? ORDER BY rank LIMIT ?`;
+  const binds: unknown[] = docId ? [match, docId, n] : [match, n];
+  const rows = await env.DB.prepare(sql).bind(...binds).all();
+  return ((rows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
+}
+
+/** Reciprocal Rank Fusion over ranked id lists (k=60, standard). Robust to differing scales
+ *  between the vector (cosine) and lexical (BM25) arms — fuses by RANK, not raw score. */
+function rrfFuse(lists: string[][], k = 60): Array<{ id: string; score: number }> {
+  const score = new Map<string, number>();
+  for (const list of lists) list.forEach((id, rank) => score.set(id, (score.get(id) ?? 0) + 1 / (k + rank + 1)));
+  return [...score.entries()].map(([id, s]) => ({ id, score: s })).sort((a, b) => b.score - a.score);
+}
+
+/** Cross-encoder rerank of candidate texts against the query. Best-effort: returns ranked
+ *  {idx,score} (idx = position in `texts`), or null on any error (caller keeps RRF order). */
+async function rerankCandidates(env: RagEnv, query: string, texts: string[]): Promise<Array<{ idx: number; score: number }> | null> {
+  try {
+    const raw = await env.AI.run(RERANK_MODEL, { query, contexts: texts.map((t) => ({ text: t })) }) as Record<string, unknown>;
+    const resp = (raw?.["response"] ?? raw?.["result"] ?? raw) as Array<{ id?: number; score?: number }> | undefined;
+    if (!Array.isArray(resp) || !resp.length) return null;
+    const ranked = resp
+      .filter((r) => typeof r.id === "number" && r.id! >= 0 && r.id! < texts.length)
+      .map((r) => ({ idx: r.id as number, score: Number(r.score ?? 0) }))
+      .sort((a, b) => b.score - a.score);
+    return ranked.length ? ranked : null;
+  } catch { return null; }
+}
+
+/**
+ * Hybrid retrieval — the §4.1.1 production pipeline:
+ *   vector (bge-m3) ∥ FTS5-BM25  →  RRF fusion  →  cross-encoder rerank (bge-reranker)  →  top-k.
+ *
+ * Each stage degrades gracefully: no FTS match → vector-only; reranker error → RRF order; this
+ * preserves the prior pure-vector behaviour as the floor. `rerank:false` skips the reranker.
+ * Optional `doc_id` scopes both arms to one document.
+ */
 export async function semanticSearch(
   env: RagEnv,
-  args: { query: string; k?: number; doc_id?: string },
+  args: { query: string; k?: number; doc_id?: string; rerank?: boolean },
 ): Promise<RetrievedChunk[]> {
   await ensureSchema(env);
   const k = Math.min(Math.max(args.k ?? 8, 1), 50);
-  const qv = await embedOne(env, args.query);
-  const opts: Record<string, unknown> = { topK: k, returnMetadata: "all" };
-  if (args.doc_id) opts["filter"] = { doc_id: args.doc_id };
-  const raw = await env.VECTORIZE.query(qv, opts);
-  const matches = normalizeMatches(raw);
-  if (!matches.length) return [];
+  const pool = Math.min(Math.max(k * 4, 20), 60); // candidate pool for fusion + rerank
 
-  const ids = matches.map((m) => m.id);
-  const placeholders = ids.map(() => "?").join(",");
+  // --- vector arm (semantic) ---
+  const qv = await embedOne(env, args.query);
+  const vOpts: Record<string, unknown> = { topK: pool, returnMetadata: "all" };
+  if (args.doc_id) vOpts["filter"] = { doc_id: args.doc_id };
+  const vMatches = normalizeMatches(await env.VECTORIZE.query(qv, vOpts));
+  const vIds = vMatches.map((m) => m.id);
+
+  // --- lexical arm (BM25) — best-effort ---
+  let lIds: string[] = [];
+  try { lIds = await lexicalSearch(env, args.query, pool, args.doc_id); } catch { lIds = []; }
+
+  if (!vIds.length && !lIds.length) return [];
+
+  // --- RRF fusion (single arm passes through unchanged) ---
+  const fused = rrfFuse([vIds, lIds].filter((l) => l.length)).slice(0, pool);
+  const vSet = new Set(vIds), lSet = new Set(lIds);
+
+  // --- hydrate candidate texts from D1 ---
+  const candIds = fused.map((f) => f.id);
+  const ph = candIds.map(() => "?").join(",");
   const rows = await env.DB.prepare(
-    `SELECT id, doc_id, idx, text, title, source FROM chunks WHERE id IN (${placeholders})`,
-  ).bind(...ids).all();
+    `SELECT id, doc_id, idx, text, title, source FROM chunks WHERE id IN (${ph})`,
+  ).bind(...candIds).all();
   const byId = new Map<string, Record<string, unknown>>();
   for (const row of (rows.results ?? []) as Array<Record<string, unknown>>) byId.set(String(row["id"]), row);
+  const cands = fused.filter((f) => byId.has(f.id));
+  if (!cands.length) return [];
 
+  // --- cross-encoder rerank (best-effort; floor = RRF order) ---
+  let order: Array<{ id: string; score: number }> = cands;
+  let reranked = false;
+  if (args.rerank !== false && cands.length > 1) {
+    const rr = await rerankCandidates(env, args.query, cands.map((c) => String(byId.get(c.id)!["text"])));
+    if (rr) { order = rr.map((r) => ({ id: cands[r.idx].id, score: r.score })).filter((x) => x.id); reranked = true; }
+  }
+
+  // --- assemble top-k with retrieval provenance ---
   const out: RetrievedChunk[] = [];
-  for (const m of matches) {
-    const row = byId.get(m.id);
+  for (const c of order.slice(0, k)) {
+    const row = byId.get(c.id);
     if (!row) continue;
+    const arm = vSet.has(c.id) && lSet.has(c.id) ? "vector+lexical" : vSet.has(c.id) ? "vector" : "lexical";
     out.push({
       doc_id: String(row["doc_id"]),
       idx: Number(row["idx"]),
-      score: m.score,
+      score: c.score,
       text: String(row["text"]),
       title: (row["title"] as string) ?? null,
       source: (row["source"] as string) ?? null,
+      retrieval: `${arm}→${reranked ? "rerank" : "rrf"}`,
     });
   }
   return out;
@@ -226,8 +319,9 @@ export async function forgetDocument(env: RagEnv, docId: string): Promise<Forget
     vectors = chunkIds.length;
   }
 
-  // 3) D1 chunk text + manifest
+  // 3) D1 chunk text + FTS lexical index + manifest
   await env.DB.prepare(`DELETE FROM chunks WHERE doc_id = ?`).bind(docId).run();
+  await env.DB.prepare(`DELETE FROM chunks_fts WHERE doc_id = ?`).bind(docId).run();
   await env.DB.prepare(`DELETE FROM docs WHERE id = ?`).bind(docId).run();
 
   // 4) graph edges sourced from this doc

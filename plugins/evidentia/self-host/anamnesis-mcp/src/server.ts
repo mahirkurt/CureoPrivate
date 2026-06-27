@@ -9,7 +9,7 @@
  *
  * Tools:
  *   ingest_document   — semantic-chunk + embed + store; returns a MANIFEST, not the text
- *   semantic_search   — vector top-k chunks with provenance (doc_id, idx, score)
+ *   semantic_search   — HYBRID: vector ∥ BM25(FTS5) → RRF → cross-encoder rerank; provenance-stamped
  *   upsert_triples    — write Claude-extracted entity/relation triples to the D1 graph
  *   graph_neighbors   — n-hop local GraphRAG expansion from one entity
  *   subgraph          — induced edges over an entity set (cross-document links)
@@ -82,20 +82,24 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     },
   );
 
-  // ---- semantic_search ----------------------------------------------------
+  // ---- semantic_search (HYBRID: vector ∥ BM25 → RRF → rerank) -------------
   server.tool(
     "semantic_search",
-    "Vector top-k retrieval over ingested chunks (multilingual bge-m3 — Turkish query against " +
-      "English corpus works). Returns chunks with {doc_id, idx, score} provenance. Read-only. " + SUBSTRATE_NOTE,
+    "HYBRID retrieval over ingested chunks: vector (multilingual bge-m3 — Turkish query vs English " +
+      "corpus) ∥ FTS5 BM25 lexical → RRF fusion → cross-encoder rerank (bge-reranker). This catches " +
+      "BOTH conceptual matches AND exact terminology (drug/gene/code) that pure vector blurs. Each " +
+      "chunk carries {doc_id, idx, score, retrieval} provenance (retrieval = which arm + final stage). " +
+      "Read-only. Stages degrade gracefully (no lexical hit → vector-only; reranker error → RRF). " + SUBSTRATE_NOTE,
     {
       query: z.string().describe("Natural-language query (Turkish or English)"),
-      k: z.number().int().min(1).max(50).optional().describe("How many chunks (default 8)"),
+      k: z.number().int().min(1).max(50).optional().describe("How many chunks to return after rerank (default 8)"),
       doc_id: z.string().optional().describe("Restrict to a single document"),
+      rerank: z.boolean().optional().describe("Cross-encoder rerank the fused candidates (default true; set false for raw RRF speed)"),
     },
     async (a) => {
       try {
-        const chunks = await semanticSearch(env, { query: a.query, k: a.k, doc_id: a.doc_id });
-        return ok({ query: a.query, k: a.k ?? 8, hits: chunks.length, chunks, note: SUBSTRATE_NOTE });
+        const chunks = await semanticSearch(env, { query: a.query, k: a.k, doc_id: a.doc_id, rerank: a.rerank });
+        return ok({ query: a.query, k: a.k ?? 8, hits: chunks.length, pipeline: "vector∥bm25→rrf→rerank", chunks, note: SUBSTRATE_NOTE });
       } catch (e: any) { return err(`semantic_search failed: ${e.message}`); }
     },
   );
@@ -154,10 +158,10 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
   // ---- hybrid_query (FLAGSHIP) -------------------------------------------
   server.tool(
     "hybrid_query",
-    "FLAGSHIP retrieval: vector top-k chunks UNION graph expansion, assembled into a COMPACT, " +
-      "provenance-stamped evidence bundle sized for the context window. This is the call that " +
-      "yields broad + accurate + CONSISTENT answers without dumping the corpus. Pass seed_entities " +
-      "to also graph-expand named concepts. Read-only. " + SUBSTRATE_NOTE,
+    "FLAGSHIP retrieval: HYBRID chunk retrieval (vector ∥ BM25 → RRF → cross-encoder rerank) UNION " +
+      "graph expansion, assembled into a COMPACT, provenance-stamped evidence bundle sized for the " +
+      "context window. This is the call that yields broad + accurate + CONSISTENT answers without " +
+      "dumping the corpus. Pass seed_entities to also graph-expand named concepts. Read-only. " + SUBSTRATE_NOTE,
     {
       query: z.string().describe("The synthesis question (Turkish or English)"),
       k: z.number().int().min(1).max(24).optional().describe("Vector chunks to retrieve (default 8)"),
@@ -206,7 +210,7 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
 
         return ok({
           query: a.query,
-          retrieval: { vector_k: k, chunks: bundleChunks.length, graph_edges: graph.length, docs: docIds },
+          retrieval: { pipeline: "vector∥bm25→rrf→rerank", k, chunks: bundleChunks.length, graph_edges: graph.length, docs: docIds },
           chunks: bundleChunks,
           graph,
           approx_token_budget: approxTokens,

@@ -12,11 +12,11 @@ sunar. Amaç: araç çıktılarının bağlam taşması nedeniyle eksik/tutarsı
 | Araç | İşlev | Tip |
 |---|---|---|
 | `ingest_document` | Semantik chunk + embed + sakla → **manifest** döner (ham metin değil) | mutation |
-| `semantic_search` | Vektör top-k chunk + provenance (doc_id, idx, score) | read-only |
+| `semantic_search` | **HİBRİT getirim (§4.1.1): vektör (bge-m3) ∥ BM25 (FTS5) → RRF → cross-encoder rerank (bge-reranker)** → top-k; her chunk `{doc_id,idx,score,retrieval}` provenance. `rerank:false` ham RRF. Graceful-degrade. | read-only |
 | `upsert_triples` | Claude'un çıkardığı varlık/ilişki triple'larını D1 grafiğine yaz | mutation |
 | `graph_neighbors` | Bir varlıktan n-hop yerel GraphRAG genişletme | read-only |
 | `subgraph` | Verilen varlık kümesi içindeki induced kenarlar (çapraz-belge bağ) | read-only |
-| **`hybrid_query`** | **Vektör top-k ∪ graph genişletme → sınırlı kanıt paketi** | read-only |
+| **`hybrid_query`** | **FLAGSHIP: hibrit chunk getirim (vektör∥BM25→RRF→rerank) ∪ graph genişletme → sınırlı kanıt paketi** | read-only |
 | `corpus_stats` | docs/chunks/nodes/edges sayımı | read-only |
 | **`forget_document`** | **doc_id ile temiz silme**: Vectorize vektörleri (`deleteByIds`) + D1 chunks/manifest/edges + node-provenance küçültme (son doc'unu kaybeden orphan node silinir; başka doc'la paylaşılan korunur). Idempotent (bilinmeyen doc_id → existed:false). | **mutation (destructive)** |
 

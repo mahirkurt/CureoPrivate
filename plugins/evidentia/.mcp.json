@@ -86,7 +86,7 @@
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer, drugddx ile aynı 6-invariant auth)",
       "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)",
-      "_role": "RAG/GraphRAG retrieval substratı (8 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + corpus_stats + **forget_document** (doc_id ile temiz silme: Vectorize+D1+graph; orphan-node temizliği, idempotent — v1.4.1, Worker ver 75caa988); bağlam-penceresi koruması (shared/canonical-cache-contract.md evidence_index). Vectorize bge-m3 1024-d cosine + D1 graph"
+      "_role": "RAG/GraphRAG retrieval substratı (8 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + corpus_stats + forget_document (doc_id ile temiz silme, orphan-node, idempotent). **HİBRİT GETİRİM (v1.5.0, §4.1.1): semantic_search/hybrid_query = vektör (bge-m3) ∥ BM25 (FTS5 lexical) → RRF füzyon → cross-encoder rerank (bge-reranker-base) → top-k; her aşama graceful-degrade.** Karmaşık veride en doğru/kapsamlı getirim: kavramsal + tam-terminoloji (ilaç/gen/kod) eşleşmesi; bağlam-penceresi koruması (evidence_index). Vectorize bge-m3 1024-d cosine + D1 graph + FTS5; Worker ver c9f9529b"
     },
     "drugddx": {
       "type": "http",

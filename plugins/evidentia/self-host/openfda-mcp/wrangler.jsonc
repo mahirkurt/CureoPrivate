@@ -1,0 +1,29 @@
+{
+  // openfda-mcp — Cloudflare Worker (Family A). Deploy: `wrangler deploy`.
+  // SECRETS ARE NOT DECLARED HERE (invariant 6). Set them with:
+  //   wrangler secret put MCP_API_KEY
+  //   wrangler secret put AUTH_HMAC_SECRET
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "openfda-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "MCP_OBJECT", "class_name": "OpenFda" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["OpenFda"] }
+  ],
+
+  // NON-SECRET vars only. OAUTH_ALLOWED_REDIRECT_ORIGINS empty => default allowlist
+  // (https://claude.ai, https://claude.com). MCP_ALLOW_NO_AUTH MUST stay "0" in production.
+  "vars": {
+    "MCP_ALLOW_NO_AUTH": "0",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+  },
+
+  "observability": { "enabled": true }
+}

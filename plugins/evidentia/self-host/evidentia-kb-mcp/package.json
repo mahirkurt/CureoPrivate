@@ -1,0 +1,11 @@
+{
+  "name": "evidentia-kb-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hardened-OAuth Cloudflare Worker MCP — read-only semantic search over the medical-research knowledge base (bge-m3 Vectorize). One tool: kb_search. Recall booster for evidentia Adım 0.4 / Completeness Gate.",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run", "dev": "wrangler dev", "deploy": "wrangler deploy", "cf-typegen": "wrangler types" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.12.0", "agents": "^0.0.80", "zod": "^3.23.8" },
+  "devDependencies": { "@cloudflare/vitest-pool-workers": "^0.8.0", "@cloudflare/workers-types": "^4.20250620.0", "typescript": "^5.6.0", "vitest": "~3.2.0", "wrangler": "^4.20.0" }
+}

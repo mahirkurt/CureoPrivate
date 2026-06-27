@@ -1,0 +1,71 @@
+{
+  "name": "evidentia",
+  "version": "1.2.0",
+  "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. medical-research v8.3.0 flagship skill (semantik-kapsam mekanizması: knowledge-map + Adım 0.4 Semantic Scope Scan + zorunlu çok-eksen fan-out + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 13-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, med-terminologies/RxNorm/GtoPdb) + operatör-bağlı Annas Reader tam-metin + DÖRT self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, temiz-kopya doktrini, copyright-kapılı tam-metin, retrieve-don't-dump.",
+  "author": {
+    "name": "operator (Cureonics fleet)",
+    "url": "https://cureonics.com"
+  },
+  "license": "Internal-use grant; AS IS; no warranty",
+  "homepage": "https://cureonics.com",
+  "keywords": [
+    "medical-research",
+    "evidence-synthesis",
+    "oncology",
+    "hematology",
+    "regulatory",
+    "hta",
+    "epidemiology",
+    "turkiye",
+    "titck",
+    "kol",
+    "clinical-trials",
+    "pharmacovigilance",
+    "drug-intelligence",
+    "orchestrator",
+    "rag",
+    "graphrag",
+    "semantic-chunking",
+    "semantic-coverage",
+    "icd-11",
+    "openfda",
+    "full-text"
+  ],
+  "skills": [
+    "./skills/start",
+    "./skills/medical-research"
+  ],
+  "commands": "./commands",
+  "mcpServers": "./.mcp.json",
+  "metadata": {
+    "flagship_skill": "medical-research",
+    "flagship_version": "8.3.0",
+    "smp_manifest": "./skills/medical-research/skill-manifest.yaml",
+    "connector_source_of_truth": "./CONNECTORS.md",
+    "orchestration_contract": "./shared/canonical-cache-contract.md",
+    "discovery_upstream": "mcp-scout",
+    "verification_gates": [
+      "G-REF",
+      "G-CONN",
+      "G-ALWAYS",
+      "G-VERSION",
+      "G-PROBE",
+      "G-BUNDLE",
+      "G-TRUST",
+      "G-SURFACE",
+      "G-REGRESSION",
+      "G-COPYRIGHT",
+      "G-COVERAGE"
+    ],
+    "min_host": "Claude Code / claude.ai custom connectors",
+    "connector_probe_basis": "skill-manifest.yaml (probe 2026-06-09) + mcp-scout live registry+initialize (2026-06-25)",
+    "self_host_components": [
+      "./self-host/anamnesis-mcp",
+      "./self-host/drugddx-mcp",
+      "./self-host/openfda-mcp",
+      "./self-host/evidentia-kb-mcp"
+    ],
+    "rag_substrate": "./self-host/anamnesis-mcp (semantic chunking + Vectorize bge-m3 1024-d + D1 GraphRAG; evidence_index canonical artifact)",
+    "fulltext_connector": "annas-reader (operator-connected Cloud Run, OAuth-gated)"
+  }
+}

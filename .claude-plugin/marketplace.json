@@ -140,6 +140,38 @@
         "ijmes-transliteration"
       ],
       "strict": false
+    },
+    {
+      "name": "evidentia",
+      "displayName": "Evidentia",
+      "source": "./plugins/evidentia",
+      "version": "1.2.0",
+      "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. medical-research v8.3.0 flagship (semantik-kapsam mekanizması: knowledge-map + Adım 0.4 Semantic Scope Scan + zorunlu çok-eksen fan-out + Completeness Gate + G-COVERAGE integrity gate) + start skill + evidence-synthesizer alt-ajan + 5 komut + 13-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, med-terminologies/RxNorm/GtoPdb) + operatör-bağlı Annas Reader tam-metin + dört self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, retrieve-don't-dump, temiz-kopya doktrini, copyright-kapılı tam-metin. Karar/araştırma destek niteliğindedir; klinik tavsiye değildir.",
+      "author": {
+        "name": "Cureonics",
+        "url": "https://cureonics.com"
+      },
+      "category": "research",
+      "keywords": [
+        "medical-research",
+        "evidence-synthesis",
+        "rag",
+        "graphrag",
+        "semantic-coverage",
+        "oncology",
+        "hematology",
+        "regulatory",
+        "hta",
+        "turkiye",
+        "titck",
+        "kol",
+        "clinical-trials",
+        "pharmacovigilance",
+        "icd-11",
+        "openfda",
+        "full-text"
+      ],
+      "strict": false
     }
   ]
 }

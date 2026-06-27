@@ -1,0 +1,48 @@
+{
+  // anamnesis-mcp — Cloudflare Worker (Cureonics Family A). Deploy: `wrangler deploy`.
+  //
+  // PROVISIONING (run BEFORE first deploy — see BUILD-BRIEF.md S2):
+  //   npx wrangler vectorize create anamnesis-index --dimensions=1024 --metric=cosine
+  //   npx wrangler d1 create anamnesis-graph           # paste database_id below
+  //
+  // SECRETS ARE NOT DECLARED HERE (auth invariant 6). Set them with:
+  //   wrangler secret put MCP_API_KEY
+  //   wrangler secret put AUTH_HMAC_SECRET
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "anamnesis-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Workers AI — embeddings (@cf/baai/bge-m3, 1024-d). Available as env.AI.
+  "ai": { "binding": "AI" },
+
+  // Vectorize — chunk vector store. index_name MUST match the created index (1024-d cosine).
+  "vectorize": [
+    { "binding": "VECTORIZE", "index_name": "anamnesis-index" }
+  ],
+
+  // D1 — chunk/doc text store + entity-relation graph. Paste database_id after `d1 create`.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "anamnesis-graph", "database_id": "64c547b8-934d-42ef-aee1-01e83f512d0f" }
+  ],
+
+  // Durable Object backing the McpAgent session (sqlite-backed DO).
+  "durable_objects": {
+    "bindings": [
+      { "name": "MCP_OBJECT", "class_name": "Anamnesis" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Anamnesis"] }
+  ],
+
+  // NON-SECRET vars only. OAUTH_ALLOWED_REDIRECT_ORIGINS empty => default allowlist
+  // (https://claude.ai, https://claude.com). MCP_ALLOW_NO_AUTH MUST stay "0" in production.
+  "vars": {
+    "MCP_ALLOW_NO_AUTH": "0",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+  },
+
+  "observability": { "enabled": true }
+}

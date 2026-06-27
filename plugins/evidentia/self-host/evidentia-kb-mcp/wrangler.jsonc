@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "evidentia-kb-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "ai": { "binding": "AI" },
+  "vectorize": [{ "binding": "KB_VECTORIZE", "index_name": "evidentia-kb" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "evidentia-kb-db", "database_id": "768497d5-d4e3-45e2-b24f-f27dc619a4eb" }],
+  "durable_objects": { "bindings": [{ "name": "MCP_OBJECT", "class_name": "EvidentiaKb" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["EvidentiaKb"] }],
+  "vars": { "MCP_ALLOW_NO_AUTH": "0", "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com" },
+  "observability": { "enabled": true }
+}

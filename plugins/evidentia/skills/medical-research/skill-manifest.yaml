@@ -1,0 +1,336 @@
+# =============================================================================
+# medical-research — Skill Manifest Protocol v1.0 (standalone, machine-readable)
+# Added v8.2.0 (UP-002); restructured to the canonical SMP v1.0 schema
+# (smp-orchestrator/examples/example-skill-manifest.yaml) so the auditor reads
+# structured identity/IO/composition/verification instead of falling back to prose.
+# Connector server IDs verified by live MCP probe 9 Jun 2026; α-layer added 19 Jun 2026.
+# =============================================================================
+
+manifest_version: "1.0"
+protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-orchestrator)"
+
+# --- Skill identity ---------------------------------------------------------
+skill:
+  name: medical-research
+  version: "8.3.0"
+  title: "Multi-Source Scientific Research & Synthesis Engine"
+  description: >
+    Turns a clinical / pharma / Türkiye-market question into a critically-appraised,
+    Turkish, journal-grade evidence synthesis with knowledge-gap analysis, extending
+    when warranted into regulatory, epidemiologic, commercial, IP, full-text and
+    disease-specialty dimensions. Orchestrates 20+ verified connectors + OSINT +
+    10 specialty axes on a native-MCP-first resolution ladder.
+  author: "operator (Cureonics fleet)"
+  license: "Internal-use grant; AS IS; no warranty"
+  entry_point: "./SKILL.md"
+  homepage: null
+
+# --- Classification ---------------------------------------------------------
+classification:
+  primary_category: "medical-clinical-research"
+  secondary_categories:
+    - "pharma-commercial-intelligence"
+    - "document-generation"
+  tags:
+    - evidence-synthesis
+    - oncology
+    - hematology
+    - regulatory
+    - hta
+    - epidemiology
+    - turkiye
+    - kol
+    - orchestrator
+  primary_domain: MEDICAL_CLINICAL_RESEARCH       # ENRICH_ADVISOR persona hint (P2)
+
+# --- Domains ----------------------------------------------------------------
+domains:
+  - medical_clinical_research
+  - pharma_commercial_intelligence
+  - document_production
+
+# --- Inputs -----------------------------------------------------------------
+inputs:
+  - id: clinical_question
+    required: true
+    description: >
+      The medical / pharma / Türkiye-market question to research.
+    mime_types: ["text/plain"]
+    semantic_requirements:
+      - "A focused clinical, regulatory, epidemiologic, or commercial question"
+  - id: structured_identifiers
+    required: false
+    description: >
+      Optional precise anchors: PMID, DOI, NCT-ID, drug name, MoA, molecular target,
+      drug class, gene variant, ICD-11 indication code, sponsor name, TİTCK barcode,
+      regulatory milestone.
+    mime_types: ["text/plain"]
+
+# --- Outputs ----------------------------------------------------------------
+outputs:
+  - id: evidence-synthesis-markdown
+    description: "Format A–I core §1–10 + specialty §11–18 + §19 drug-intel + §21 epidemiology"
+    mime_type: "text/markdown"
+    features: ["critically-appraised", "GRADE/tiered", "Turkish"]
+  - id: clean-copy-report
+    description: "v8.1 journal-grade reader-facing article; tooling/telemetry/viz only in non-rendering OPS/VIZ annex"
+    mime_type: "text/markdown"
+  - id: data-sidecar-json
+    description: "evidence/trial/guideline/regulatory/hta tables + specialty/pipeline[AdisInsight]/turkey[TİTCK]/epi[WHO GHO] payloads + sources_summary"
+    mime_type: "application/json"
+    optional: true
+  - id: kol-map
+    description: "Ranked author table + network note (US NPI + TR YÖK Akademik)"
+    mime_type: "text/markdown"
+    optional: true
+  - id: patent-landscape
+    description: "IP/FTO landscape (Türk Patent); handoff to pharmapatent"
+    mime_type: "text/markdown"
+    optional: true
+  - id: competitive-intel
+    description: "Pipeline + positioning (Tier-6 OSINT); handoff to pharmaintel"
+    mime_type: "text/markdown"
+    optional: true
+  - id: pipeline-snapshot
+    description: "AdisInsight pipeline + regulatory history (axis 0.5.I)"
+    mime_type: "text/markdown"
+    optional: true
+
+# --- Composition (data flow) ------------------------------------------------
+composition:
+  pipe_from: []                       # accepts a clinical-question directly; no required upstream
+  pipe_to:
+    - skill: carbon-html-report
+      version_constraint: ">=4.0.0"
+      rationale: "Consumes .data.json sidecar → publication HTML/PDF; consumes-and-strips VIZ/OPS."
+      intermediate_format: "application/json"
+    - skill: carbon-pptx
+      rationale: "Sidecar → Marp/PowerPoint deck."
+      intermediate_format: "application/json"
+    - skill: pharmaintel
+      rationale: "Commercial deep-dive (medical-research supplies the evidence layer)."
+      intermediate_format: "text/markdown"
+    - skill: pharmapatent
+      rationale: "IP / FTO handoff with Türk Patent output."
+      intermediate_format: "text/markdown"
+    - skill: thoughtspot-roche
+      rationale: "IQVIA MIDAS market-size handoff via the ThoughtSpot connector."
+      intermediate_format: "text/markdown"
+    - skill: onko-erisim
+      rationale: "Individual patient SGK/access handoff (TR)."
+      intermediate_format: "text/markdown"
+    - skill: saglik-sigorta
+      rationale: "Insurance/access handoff (TR)."
+      intermediate_format: "text/markdown"
+    - skill: lex-sanitas
+      rationale: "Health-law / regulatory-reform handoff."
+      intermediate_format: "text/markdown"
+    - skill: lex-mercator
+      rationale: "Commercial-law handoff."
+      intermediate_format: "text/markdown"
+    - skill: promo-censor
+      rationale: "Promotional-material compliance handoff."
+      intermediate_format: "text/markdown"
+  scope_guard:
+    - "individual patient SGK appeal / litigation → onko-erisim / saglik-sigorta (NOT in-skill)"
+    - "promotional MLR review → promo-censor (NOT in-skill)"
+    - "from-scratch commercial deep-dive → pharmaintel (medical-research provides the evidence layer)"
+
+# --- Runtime (connector dependency surface; D6 + G-CONN read this block) -----
+# status: wired = called in Adım 1/specialty packages; conditional = auth/online gated;
+#         fallback = native-first secondary; pipe handled in composition.
+runtime:
+  native_first: true
+  mcp_servers:
+    - name: PubMed                    # Europe PMC; 8f314cbe (mirror bio-research:pubmed)
+      status: wired
+      tools: [search_articles, get_full_text_article, get_copyright_status, convert_article_ids, find_related_articles, lookup_article_by_citation, get_article_metadata]
+    - name: Consensus                 # b2afd737 — reproduce sign-up/usage message verbatim; ≤3 calls/batch
+      status: wired
+      tools: [search]
+    - name: Scholar Gateway           # 0db119cc
+      status: wired
+      tools: [semanticSearch]
+    - name: Paper Search              # 660e91bd — also full-text read/download
+      status: wired
+      tools: [search, search_pubmed, search_semantic, search_biorxiv, search_google_scholar, read_pubmed_paper, download_pubmed, download_biorxiv, download_semantic]
+    - name: Clinical Trials           # 4cc36ce0 (mirror bio-research:c-trials)
+      status: wired
+      tools: [search_trials, get_trial_details, search_by_sponsor, search_investigators, analyze_endpoints, search_by_eligibility]
+    - name: bioRxiv                   # 4e673875 — preprint flag mandatory
+      status: wired
+      tools: [search_preprints, get_preprint, search_published_preprints, search_by_funder]
+    - name: YokTez MCP                # b2d46b46 — Türkçe + İngilizce
+      status: wired
+      tools: [search_yok_tez_detailed, get_yok_tez_document_markdown, get_yok_tez_thesis_details, search_yok_tez_by_anabilim_dali]
+    - name: Exa                       # b2b8051d — gap-filler, runs last
+      status: wired
+      tools: [web_search_exa, web_fetch_exa]
+    - name: Tavily                    # 30203133 — quota-limited (432); always Exa-fallback
+      status: conditional
+      tools: [tavily_search, tavily_research, tavily_extract, tavily_crawl, tavily_map]
+    - name: AdisInsight               # 6a9fd4a4 — REAL schema (drug-intelligence-layer.md); axis 0.5.I
+      status: wired
+      tools: [search_drugs, get_drug, search_trials, search_drug_companies, search_trial_companies, generate_chart]
+    - name: ChEMBL                    # bio-research:chembl (newer; not yet in audit registry — verify)
+      status: wired
+      tools: [drug_search, compound_search, get_mechanism, get_admet, get_bioactivity, target_search]
+    - name: Synapse                   # bio-research:synapse — OAuth-gated (0.5.J)
+      status: conditional
+      tools: [authenticate]
+    - name: OpenTargets               # bio-research:ot — offline at last probe
+      status: conditional
+      tools: []
+    - name: Wiley                     # bio-research:wiley — OAuth-gated; full-text tier 4
+      status: conditional
+      tools: [authenticate]
+    - name: Regulatory MCP            # 922d7cdc — openFDA + ICD-11 + WHO GHO + Health Canada + Federal Register + EUR-Lex (call singly)
+      status: wired
+      tools: [openfda_search, icd11_search, who_gho_query, health_canada_dpd, federal_register_search, eurlex_expert_search]
+    - name: TİTCK                     # 1a49b1bb — Türkiye Dörtlüsü structural
+      status: wired
+      tools: [search_drugs, get_drug, get_atc_class_summary, find_off_label_uses_for_drug, find_biosimilar_group, find_reference_prices_for_drug, compare_drug_to_alternatives, find_equivalent_products_by_substance, search_regulation_article23, find_authorization_cancellations_for_drug, get_price_history, get_withdrawal_trend, get_atc_hierarchy, search_off_label_uses, find_shared_substance_peers]
+    - name: Mevzuat                   # fbf16a1a — SUT/yönetmelik/fiyat kararnamesi
+      status: wired
+      tools: [search_mevzuat, get_mevzuat_text, get_mevzuat_content, get_anayasa, get_mevzuat_madde_tree, get_mevzuat_madde_diff]
+    - name: Türk Patent               # ded65854 — Turkey IP
+      status: wired
+      tools: [search_patents, search_trademarks, search_designs, get_patent_details]
+    - name: NPI Registry              # 64557ced — US PI/KOL verification
+      status: wired
+      tools: [npi_search, npi_lookup, npi_validate]
+    - name: annas-mcp                 # full-text cascade tier 3 (verified); copyright discipline
+      status: wired
+      tools: [article_search, book_search, article_download, book_download]
+    # --- α-layer additions (UP-005): already connected in operator workspace, high-trust ---
+    - name: TİTCK Cache               # titck-cache-mcp.cureonics.workers.dev — fast cache/fallback for Türkiye Dörtlüsü
+      status: fallback
+    - name: YÖK Akademik              # yok-akademik.cureonics.com — Turkish KOL identification (DISTINCT from YokTez)
+      status: wired
+    - name: PDF Viewer                # in-conversation full-text PDF review
+      status: conditional
+    - name: Social Listening          # socius-vigil-mcp.cureonics.workers.dev — backs the OSINT axis (osint-playbook.md)
+      status: conditional
+    # --- Optional / degradable booster (Tier O) ---
+    - name: evidentia-kb              # evidentia-kb-mcp.cureonics.workers.dev — KB semantic recall booster (graceful-degrade)
+      status: optional
+      tier: O
+      optional: true
+      degradable: true
+      tools: [kb_search]
+      role: "KB semantic recall booster (graceful-degrade)"
+      note: "Every kb_search call is guarded by reachability; absence degrades to Backbone-A only (still complete). May only raise recall, never gate the flow."
+  # Native REST fallbacks (no native MCP) — Python requests via bash_tool (extended-api.md)
+  rest_fallback: [OpenAlex, PubChem, "Semantic Scholar Graph", DailyMed, Unpaywall, DOAJ, J-STAGE, DrugBank]
+
+# β-layer CANDIDATES — NOT wired in standalone skill. Principle = "probe-verified only" (v8.0).
+# evidentia plugin packaging RE-PROBED these via mcp-scout live initialize (2026-06-25);
+# verified ones are wired in ../../.mcp.json (Tier-K). See ../../CONNECTORS.md §1.5/§6.
+x_candidate_connectors_unverified:
+  - id: "io.github.guptaprakhariitr/drug-interaction-mcp"
+    url: "https://drug-interaction-mcp.atlasword.workers.dev/mcp"
+    fills_gap: "clinical drug-drug interaction (TİTCK find_drug_drug_interactions is substance-overlap, not clinical DDI)"
+    trust: "community publisher; auth none-declared; UNVERIFIED — probe before use"
+    x_evidentia_probe_2026_06_25: "HTTP 500 (Cloudflare error 1101, Worker exception) — DEPLOYMENT BROKEN → evidentia self-host fork self-host/drugddx-mcp/ (hardened OAuth 2.1 Worker)"
+  - id: "io.github.SidneyBissoli/medical-terminologies-mcp"
+    url: "https://medical.sidneybissoli.com/mcp"
+    fills_gap: "terminology cross-walk (SNOMED/MeSH/UMLS) — skill has only fragmentary ICD-11 + TİTCK SNOMED ids"
+    trust: "community; UNVERIFIED"
+    x_evidentia_probe_2026_06_25: "HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7 · 37 tools → WIRED Tier-K (least-privilege, sandbox-first)"
+  - id: "io.github.cyanheads/medical-codes-mcp-server"
+    fills_gap: "medical code cross-coding (partial overlap with ICD-11)"
+    trust: "community; UNVERIFIED"
+    x_evidentia_probe_2026_06_25: "not re-probed — superseded by pipeworx keyless trio (nih-clinicaltables/nlm-rxnorm) wired Tier-K"
+# evidentia-added verified expansion (Tier-K) — wired in ../../.mcp.json:
+x_evidentia_expansion_verified_2026_06_25:
+  - id: "io.github.pipeworx-io/clinicaltables"  # NIH Clinical Tables; keyless; HTTP 200
+  - id: "io.github.pipeworx-io/rxnorm"           # NLM RxNav; keyless; HTTP 200
+  - id: "io.github.pipeworx-io/guidetopharmacology"  # IUPHAR GtoPdb; keyless; HTTP 200
+
+# evidentia self-host Workers (Cureonics Family A — hardened OAuth 2.1) + full-text re-probe:
+x_evidentia_self_host_2026_06_25:
+  - id: "self-host/drugddx-mcp"
+    url: "https://drugddx-mcp.cureonics.workers.dev/mcp (post-deploy Tier-O)"
+    fills_gap: "clinical-DDI fallback (RxNorm normalize + DailyMed label section); NOT a pairwise DDI engine"
+    status: "source delivered + typecheck clean; deploy gate = self-host/drugddx-mcp/BUILD-BRIEF.md DoD"
+  - id: "self-host/anamnesis-mcp"
+    url: "https://anamnesis-mcp.cureonics.workers.dev/mcp (post-deploy Tier-O)"
+    fills_gap: "RAG/GraphRAG retrieval substrate — semantic chunking (bge-m3 1024-d) + Vectorize + D1 entity-relation graph; prevents context-window truncation of full-text/large tool outputs (evidence_index, retrieve-don't-dump)"
+    tools: [ingest_document, semantic_search, upsert_triples, graph_neighbors, subgraph, hybrid_query, corpus_stats]
+    status: "source delivered + typecheck clean (7 src modules); deploy gate = self-host/anamnesis-mcp/BUILD-BRIEF.md DoD (Vectorize 1024-d cosine + D1 provisioning)"
+    note: "entity/relation extraction is orchestrator(Claude)-in-the-loop via upsert_triples; Microsoft-GraphRAG global community summarization deferred to documented Cloud Run indexer — NOT shipped as weak in-Worker approximation"
+  - id: "annas-reader (operator-connected)"
+    url: "https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+    x_evidentia_probe_2026_06_25: "HTTP 401 SECURED (Cloud Run OAuth gate active — expected/correct, like yok-akademik) → wired live Tier-O in ../../.mcp.json. Full-text downloads land on the USER machine (not sandbox) → ingest into anamnesis or paste for analysis. Copyright: analysis-only, no verbatim bulk."
+
+# --- Verification gates (executable — evals/check_integrity.py) --------------
+verification:
+  gate_count: 7
+  gates:
+    - id: G-REF
+      description: "Reference integrity — every references/*.md cited by SKILL.md exists on disk"
+      command: "python3 evals/check_integrity.py --refs"
+      blocking: true
+    - id: G-CONN
+      description: "Connector resolution — every connector named in connector-registry resolves to a runtime.mcp_servers entry"
+      command: "python3 evals/check_integrity.py --connectors"
+      blocking: true
+    - id: G-ALWAYS
+      description: "Adım 0 always-load files all present (connector-registry, extended-api, evidence-grading, output-templates, fulltext-retrieval, report-presentation)"
+      command: "python3 evals/check_integrity.py --always-load"
+      blocking: true
+    - id: G-VERSION
+      description: "Version stamp agreement across manifest, SKILL.md frontmatter, SKILL.md H1 changelog"
+      command: "python3 evals/check_integrity.py --version"
+      blocking: false
+    - id: G-REGRESSION
+      description: "10 regression queries map to expected layer activation + connector set"
+      command: "see evals/benchmark-queries.json (qualitative, run via SKILL.md)"
+      blocking: false
+    - id: G-COVERAGE
+      description: "Semantic coverage — knowledge-map.md references every corpus file; Adım 0.4 coverage_set is emitted; multi-axis fan-out feeds 0.5 loader"
+      command: "python3 evals/check_integrity.py --coverage"
+      blocking: true
+    - id: G-COPYRIGHT
+      description: "Full-text sections enforce no-verbatim-bulk + copyright_status gate (fulltext-retrieval.md)"
+      command: "manual review per fulltext-retrieval.md"
+      blocking: true
+
+# --- References -------------------------------------------------------------
+references:
+  primary: "./SKILL.md"
+  always_load: [connector-registry.md, extended-api.md, evidence-grading.md, output-templates.md, fulltext-retrieval.md, report-presentation.md, knowledge-map.md]
+  always_load_roles:
+    knowledge-map.md: "semantic coverage index"
+  eval_harness: [evals/check_integrity.py, evals/benchmark-queries.json]
+
+# --- Build ------------------------------------------------------------------
+build:
+  version: "8.3.0"
+  release_date: "2026-06-19"
+  release_name: "Reference-Integrity & Operability Release"
+  compatibility:
+    backward_compatible_with: ["8.1", "8.0"]
+    breaking_changes: []
+    additive_changes:
+      - "standalone canonical SMP v1.0 manifest (UP-002)"
+      - "executable integrity gate evals/check_integrity.py + 10 regression queries (UP-004)"
+      - "recreated 3 always-load files + 8 specialty layers + osint + 4 infra files (UP-001/UP-003)"
+      - "α-layer connectors wired: TİTCK Cache, YÖK Akademik, PDF Viewer, Social Listening (UP-005)"
+      - "canonical navigational headings (UP-006)"
+
+# --- Constraints (extension) ------------------------------------------------
+constraints:
+  native_first: true
+  drug_intel_gating: "§1.O fires only on axis 0.5.I (drug/MoA/target/pipeline signal)"
+  copyright_limits: "enforced — no verbatim bulk; CC-BY via EPMC get_copyright_status"
+  clean_copy_doctrine: true
+  no_tooling_leakage: true
+  viz_directive_isolation: true
+  probe_verified_only: true
+
+provenance:
+  connector_probe_date: "2026-06-09"
+  alpha_layer_added: "2026-06-19"
+  registry_discovery_date: "2026-06-19"
+  note: "If a connector reference cannot be resolved to a real tool, it is a defect (v8.0 ground-truth principle)."

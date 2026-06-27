@@ -1,0 +1,93 @@
+{
+  "$comment": "evidentia bundled connector roster — ADR-03 dört-katman. Tier-K (keyless remote-ready) ve Tier-O (operatör Worker'ları) auto-wire; Tier-A env placeholder; Tier-R (REST fallback) bundle dışıdır (CONNECTORS.md). claude.ai vs Claude Code yüzey ayrımı için CONNECTORS.md §6. TEK DOĞRULUK KAYNAĞI: CONNECTORS.md — bu dosya ile çapraz-doğrulama G-BUNDLE kapısıdır.",
+
+  "mcpServers": {
+
+    "__TIER_K__keyless_remote_ready": "🟢 auto-wire — keyless, en düşük tedarik-zinciri riski",
+
+    "med-terminologies": {
+      "type": "http",
+      "url": "https://medical.sidneybissoli.com/mcp",
+      "_tier": "K",
+      "_trust": "community-unverified (io.github.SidneyBissoli) — least-privilege, sandbox-first, klinik çıktıyı bağımsız çapraz-doğrula",
+      "_probe": "2026-06-25 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7",
+      "_role": "Terminoloji çapraz-yürüyüşü: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10 (37 araç) — medical-research §6 boşluk-kapatıcı"
+    },
+    "nih-clinicaltables": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/clinicaltables/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.pipeworx-io) · NIH upstream (otoriter veri) — least-privilege",
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
+      "_role": "NIH Clinical Tables: ICD-10/9, RxTerms, LOINC, NPI, condition lookup — RegulatoryMCP icd11_search latency'sine hızlı keyless ikinci yol"
+    },
+    "nlm-rxnorm": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/rxnorm/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.pipeworx-io) · NLM RxNav upstream — least-privilege",
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
+      "_role": "RxNorm/RxNav normalizasyonu — TİTCK Türkçe INN ↔ ABD RxCUI köprüsü (cross-country MIDAS/AdisInsight eşlemeleri)"
+    },
+    "iuphar-gtopdb": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/guidetopharmacology/mcp",
+      "_tier": "K",
+      "_trust": "community (io.github.pipeworx-io) · IUPHAR/BPS upstream — least-privilege",
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
+      "_role": "GtoPdb hedef/ligand farmakolojisi — ChEMBL get_mechanism tamamlayıcısı (OpenTargets offline iken ikinci kaynak)"
+    },
+
+    "__TIER_O__operator_cureonics_workers": "🟢 auto-wire — operatörün kendi sertleştirilmiş OAuth 2.1 Worker'ları; başka operatör kendi instance'larına işaret etmeli (CONNECTORS.md)",
+
+    "titck-cache": {
+      "type": "http",
+      "url": "https://titck-cache-mcp.cureonics.workers.dev",
+      "_tier": "O",
+      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/RegulatoryMCP stall'da; aynı mantıksal TİTCK şeması"
+    },
+    "yok-akademik": {
+      "type": "http",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "_tier": "O",
+      "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
+    },
+    "social-listening": {
+      "type": "http",
+      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
+      "_tier": "O",
+      "_role": "OSINT ekseni (Tier 6) backing (osint-playbook.md) — sosyal/PV sinyal triyajı; KLİNİK KANIT DEĞİL"
+    },
+    "annas-reader": {
+      "type": "http",
+      "url": "https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp",
+      "_tier": "O",
+      "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",
+      "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)",
+      "_role": "Tam-metin geri-çağırma (full-text cascade tier 3): article_search/article_download (DOI), book_search/book_download (MD5+format). ⚠️ İndirmeler KULLANICININ makinesine iner (sandbox'a değil) → içerik analizi için anamnesis'e ingest/yapıştır. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1)"
+    },
+
+    "__TIER_A__auth_required__env_placeholder": "🟡 kullanıcı kendi kimliğini sağlar; aşağıdakiler operatör workspace'inde zaten bağlı olabilir → Claude Code'da yeniden bildirim, claude.ai'de Settings→Connectors (CONNECTORS.md §6)",
+
+    "tavily": {
+      "type": "http",
+      "url": "https://mcp.tavily.com/mcp",
+      "headers": { "Authorization": "Bearer ${TAVILY_API_KEY}" },
+      "_tier": "A",
+      "_role": "Domain-scoped/deep web research — KOTA-LİMİTLİ (HTTP 432) → daima Exa-fallback (connector-registry.md §3.4)"
+    },
+    "regulatory-mcp": {
+      "type": "http",
+      "url": "${REGULATORY_MCP_URL}",
+      "_tier": "A",
+      "_role": "openFDA + ICD-11 + WHO GHO + Health Canada + Federal Register + EUR-Lex — LATENCY-PRONE (180s) → tekil çağrı + retry + skippable",
+      "_note": "REGULATORY_MCP_URL operatörün bağlı RegulatoryMCP connector URL'i ile doldurulur"
+    },
+
+    "__TIER_R__rest_fallback__NOT_bundled": "Tier-R (OpenAlex/PubChem/Semantic Scholar Graph/DailyMed/Unpaywall/DOAJ/J-STAGE/DrugBank) native MCP DEĞİL → medical-research bunları Python requests ile çağırır (extended-api.md); burada bildirilmez, CONNECTORS.md'de belgelenir",
+
+    "__SELF_HOST__drugddx": "self-host/drugddx-mcp deploy edildiğinde Tier-O olarak buraya eklenir: 'drugddx': { type:http, url:https://drugddx-mcp.cureonics.workers.dev/mcp } — klinik DDI boşluğu (medical-research β-aday self-host çözümü, §6.5 / self-host/drugddx-mcp/BUILD-BRIEF.md)",
+
+    "__SELF_HOST__anamnesis": "self-host/anamnesis-mcp deploy edildiğinde Tier-O olarak buraya eklenir: 'anamnesis': { type:http, url:https://anamnesis-mcp.cureonics.workers.dev/mcp } — RAG/GraphRAG retrieval substratı: tam-metin ingest (semantik chunk + bge-m3 embed) + semantic_search + hybrid_query + bilgi grafiği. Bağlam-penceresi taşmasını önler (shared/canonical-cache-contract.md → evidence_index kanonik artefaktı). Deploy: self-host/anamnesis-mcp/BUILD-BRIEF.md (Vectorize 1024-d + D1 provizyon)"
+  }
+}

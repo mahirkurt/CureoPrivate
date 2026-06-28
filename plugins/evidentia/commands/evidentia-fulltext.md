@@ -1,5 +1,5 @@
 ---
-description: Copyright-kapılı tam-metin getirme kademesi. Bir referans (DOI/PMID/PMCID/başlık) için EPMC→Paper Search→annas-mcp→Wiley→Exa merdivenini yürütür; her adımda lisans/copyright durumunu doğrular; CC-BY dışı içerikte verbatim toplu reprodüksiyon yapmaz.
+description: Copyright-kapılı tam-metin getirme kademesi. Bir referans (DOI/PMID/PMCID/başlık) için EPMC→Paper Search→annas-mcp→Wiley→Unpaywall merdivenini yürütür; her adımda lisans/copyright durumunu doğrular; CC-BY dışı içerikte verbatim toplu reprodüksiyon yapmaz.
 argument-hint: <DOI / PMID / PMCID / makale başlığı>
 ---
 
@@ -23,7 +23,7 @@ adımda bağlayıcıdır** (G-COPYRIGHT).
    alıntı. ⚠️ İndirme **kullanıcının makinesine** iner → analiz için metin yapıştırılır veya
    (uzunsa) doğrudan anamnesis'e ingest edilir (Adım 8).
 6. **Wiley** (koşullu OAuth `authenticate`) — yayıncı tam-metin (tier 4).
-7. **Exa** (son çare) — açık PDF lokasyonu (esmo/nature/lancet… domain-scoped).
+7. **Unpaywall** (son çare) — yasal açık-erişim PDF lokasyonu (pubmed-epmc Unpaywall entegrasyonu; yalnız legal-OA, verbatim toplu reprodüksiyon yok).
 8. **anamnesis ingest (uzun metin → indeks, ham metin DEĞİL).** Getirilen tam metin **kısa**
    değilse (≳1-2 sayfa) bağlama dökme: anamnesis `ingest_document(text=…, doc_id=<DOI>,
    source=…)` → **manifest** döner. Sonra `semantic_search` / **`hybrid_query`** ile sorguya

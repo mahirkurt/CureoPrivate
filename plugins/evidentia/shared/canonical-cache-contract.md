@@ -18,7 +18,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 |---|---|---|
 | `evidence_corpus` | İlk akademik tarama (PubMed/EPMC/CT.gov/Consensus) | sentez, KOL, tam-metin, ekseni-özgü adımlar |
 | `titck_record` | İlk TİTCK `get_drug`/`search_drugs` | fiyat, biyobenzer, off-label, regülatuar adımlar |
-| `regulatory_snapshot` | İlk RegulatoryMCP çağrısı (openFDA/ICD-11/WHO GHO) | epidemiyoloji, güvenlik, kodlama adımları |
+| `regulatory_snapshot` | İlk openfda (self-host) çağrısı (openFDA/ICD-11) | epidemiyoloji, güvenlik, kodlama adımları |
 | `terminology_map` | İlk `med-terminologies`/`nlm-rxnorm`/`nih-clinicaltables` | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar taraması | KOL haritası, ağ analizi |
 | `evidence_index` | İlk anamnesis `ingest_document` (tam-metin/büyük çıktı indekslemesi) | sentez, tam-metin, `hybrid_query` çeken tüm adımlar — **ham metin değil, indeks** |
@@ -30,7 +30,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 - **TİTCK tek-sefer kuralı.** Barcode/ürün çözümü **bir kez** yapılır; sonraki TİTCK
   alt-sorguları (fiyat geçmişi, biyobenzer grup, off-label) çözülen `titck_record`'tan
   ilerler. Aynı ürünü iki kez `search_drugs` ile aramak yasaktır.
-- **RegulatoryMCP (latency-prone 180s).** **Tekil** çağrı (paralel değil) + **1 retry** +
+- **openfda (self-host, latency-prone).** **Tekil** çağrı (paralel değil) + **1 retry** +
   başarısızsa **skippable** işaretle ve `regulatory_snapshot`'ı kısmî bırak. Asla 2. tam
   deneme yapma; downstream "regülatuar veri kısmî" notuyla devam eder.
 - **Tier-K genişletme (×4).** İlk liveness sonrası aynı oturumda yeniden probe edilmez;
@@ -72,7 +72,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 ## 3. Atlama (Skip) Sözleşmesi
 
 Bir connector latency/kota/auth nedeniyle başarısız olursa: (a) **graceful skip**, (b) kanonik
-artefaktı **kısmî** işaretle, (c) çıktıda **açıkça not düş** ("RegulatoryMCP stall → epidemiyoloji
+artefaktı **kısmî** işaretle, (c) çıktıda **açıkça not düş** ("openfda stall → epidemiyoloji
 katmanı kısmî; denenen: who_gho_query[TUR]"). Sessiz atlama **yasaktır** — temiz-kopya doktrini
 (VIZ/OPS yorum izolasyonu) ihlal edilmez; boşluk görünür kalır.
 

@@ -23,7 +23,7 @@ Her grup için durum: ✅ bağlı / ⚠️ manuel-gerekli / 🔴 eksik → fallb
 `.mcp.json` bundled roster ile `CONNECTORS.md` envanterini çapraz-doğrula (her bundled URL
 CONNECTORS.md'de belgeli mi; her Tier-K/O girdisi roster'da mı):
 ```bash
-python scripts/g_bundle.py
+python ${CLAUDE_PLUGIN_ROOT}/scripts/g_bundle.py
 ```
 Tutarsızlık → düzeltilecek delta'yı raporla.
 
@@ -32,7 +32,7 @@ Tutarsızlık → düzeltilecek delta'yı raporla.
 `probe`/`yenile` istendiğinde (veya periyodik) Tier-K + Tier-O remote URL'lerinde canlı MCP
 `initialize` çalıştır (no-fabrication: durum **canlı** doğrulanır, hatırlanmaz):
 ```bash
-python scripts/g_probe.py
+python ${CLAUDE_PLUGIN_ROOT}/scripts/g_probe.py
 ```
 Beklenen: med-terminologies (200, v1.5.7), nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb (200,
 pipeworx-gateway). Bir URL 4xx/5xx → raporla; **drug-interaction-mcp HTTP 500 ise** → self-host

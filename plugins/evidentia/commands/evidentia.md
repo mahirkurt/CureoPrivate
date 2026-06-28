@@ -1,5 +1,5 @@
 ---
-description: Tam çok-kaynaklı kanıt sentezi koşumu — medical-research v8.2.0 flagship'ini kapsam→çoklu-kaynak→çapraz-doğrulama→sentez→temiz-kopya protokolüyle çalıştırır. Argüman = araştırma sorusu (molekül, hastalık, kılavuz/HTA, TR ruhsat/fiyat, pipeline).
+description: Tam çok-kaynaklı kanıt sentezi koşumu — medical-research v8.4.0 flagship'ini kapsam→çoklu-kaynak→çapraz-doğrulama→sentez→temiz-kopya protokolüyle çalıştırır. Argüman = araştırma sorusu (molekül, hastalık, kılavuz/HTA, TR ruhsat/fiyat, pipeline).
 argument-hint: <araştırma sorusu — molekül / hastalık / kılavuz / TR pazar>
 ---
 
@@ -7,7 +7,7 @@ argument-hint: <araştırma sorusu — molekül / hastalık / kılavuz / TR paza
 
 Kullanıcı sorusu: **$ARGUMENTS**
 
-`medical-research` v8.2.0 flagship skill'ini **eksiksiz** çalıştırın. Süit bağlamında
+`medical-research` v8.4.0 flagship skill'ini **eksiksiz** çalıştırın. Süit bağlamında
 [`CONNECTORS.md`](../CONNECTORS.md) ve [`shared/canonical-cache-contract.md`](../shared/canonical-cache-contract.md)
 **normatiftir**.
 
@@ -30,7 +30,7 @@ Kullanıcı sorusu: **$ARGUMENTS**
    - **Adım 4/5** — kullanıcı etkileşimi + **temiz-kopya doktrini** (VIZ/OPS yorum izolasyonu;
      araç-sızıntısı yok).
 
-3. **Tek-sefer disiplini.** TİTCK barcode bir kez çözülür; RegulatoryMCP tekil+retry+skippable.
+3. **Tek-sefer disiplini.** TİTCK barcode bir kez çözülür; openfda tekil+retry+skippable.
    Kanonik artefaktlar (`evidence_corpus`, `titck_record`,
    `regulatory_snapshot`, `terminology_map`) paylaşılır (canonical-cache-contract.md).
 

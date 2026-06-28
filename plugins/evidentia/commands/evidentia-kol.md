@@ -7,7 +7,7 @@ argument-hint: <terapötik alan / molekül / endikasyon>
 
 Alan/molekül: **$ARGUMENTS**
 
-`medical-research` **§8 KOL Haritası** protokolünü (v8.2) yürüt.
+`medical-research` **§8 KOL Haritası** protokolünü (v8.4) yürüt.
 
 ## Kademe
 

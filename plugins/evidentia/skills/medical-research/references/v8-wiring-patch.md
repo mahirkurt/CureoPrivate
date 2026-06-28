@@ -15,7 +15,7 @@ clinical body; only the calls change.
 
 | Find (v7.1 pattern) | Replace (v8.0) |
 |---|---|
-| `OpenFDA … via bash_tool` / `api.fda.gov` Python block | `RegulatoryMCP:openfda_search(endpoint=..., search=..., count=...)` (native); Python only as fallback |
+| `OpenFDA … via bash_tool` / `api.fda.gov` Python block | `openfda:openfda_search(endpoint=..., search=..., count=...)` (native); Python only as fallback |
 | `ChEMBL … requests` (`extended-api §6`) | `ChEMBL(bio-research):drug_search/get_mechanism/get_admet/target_search` (native); requests fallback |
 | `Europe PMC … requests` for search | `EPMC(8f314cbe):search_articles` (native); `get_full_text_article`+`get_copyright_status` for full text |
 | TR drug-status web scraping | `TİTCK:search_drugs/get_atc_class_summary/...` (native — `turkiye-layer.md`) |
@@ -42,7 +42,7 @@ clinical body; only the calls change.
 
 ## D. `output-templates.md` (update)
 - Sidecar bump `medical_research_sidecar_version: "8.0"`.
-- `connectors_used` → replace with verified list: `["PubMed/EuropePMC(8f314cbe)","Consensus","ScholarGateway","PaperSearch(660e91bd)","ClinicalTrials(4cc36ce0)","bioRxiv","YÖKTez","AdisInsight(6a9fd4a4)","ChEMBL(bio-research)","RegulatoryMCP(922d7cdc)","TİTCK(1a49b1bb)","Mevzuat(fbf16a1a)","TÜRKPATENT(ded65854)","NPI(64557ced)","annas-mcp","Synapse(auth)","Wiley(auth)"]`.
+- `connectors_used` → replace with verified list: `["PubMed/EuropePMC(8f314cbe)","Consensus","ScholarGateway","PaperSearch(660e91bd)","ClinicalTrials(4cc36ce0)","bioRxiv","YÖKTez","AdisInsight(6a9fd4a4)","ChEMBL(bio-research)","openfda(self-host)","TİTCK(1a49b1bb)","Mevzuat(fbf16a1a)","TÜRKPATENT(ded65854)","NPI(64557ced)","annas-mcp","Synapse(auth)","Wiley(auth)"]`.
 - `pipeline_payload` → replace with v8.0 real-field schema (`drug-intelligence-layer.md §6`): `doc_id`, `adis_profile_url`, `regulatory_history[]` from `history_events`, `highest_phases_by_indication[]`.
 - `turkey_access_summary` → replace with native-TİTCK fields (`turkiye-layer.md §5`): `titck_products[]`, `price_try{}`, `biosimilar_landscape[]`, `off_label_oncology[]`, `reference_status`, `essential_drug_list`.
 - **Add** `epidemiology_payload` block (`regulatory-intelligence.md §6`).

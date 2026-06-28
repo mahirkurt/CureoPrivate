@@ -5,7 +5,7 @@ description: >-
   çok-ülke + tam-metin getiren araştırmalarda (örn. "molekül X — global kanıt + 6-ülke pazar +
   pipeline + KOL + tam-metin") çağrılır; onlarca connector çağrısının ham gürültüsünü kendi
   bağlam penceresinde tüketir ve ana pencereye YALNIZ damıtılmış kanonik artefaktları + numaralı
-  sentez çıktısını döndürür. medical-research v8.2.0 protokolünü çalıştırır; temiz-kopya doktrinine
+  sentez çıktısını döndürür. medical-research v8.4.0 protokolünü çalıştırır; temiz-kopya doktrinine
   ve tek-sefer/kanonik-önbellek sözleşmesine tabidir. Tek-eksenli/hızlı sorgular için ÇAĞIRMA —
   doğrudan /evidentia yeterlidir; bu ajan bağlam-pencere ekonomisi gerektiğinde devreye girer.
 tools: Read, Bash, Glob, Grep, WebFetch, WebSearch
@@ -37,7 +37,7 @@ sorgular sana gelmez.
 
 3. **Tek-sefer disiplini.** Kanonik artefaktları (`evidence_corpus`, `titck_record`,
    `regulatory_snapshot`, `terminology_map`, `kol_graph`, `evidence_index`) bir kez doldur; çift connector sorgusu
-   yapma; RegulatoryMCP tekil+retry+skippable.
+   yapma; openfda tekil+retry+skippable.
 
    **RAG/GraphRAG (anamnesis) — retrieve-don't-dump.** Tam-metin makale/kitap veya büyük araç
    çıktısını **ham olarak bağlamına alma**. Onun yerine anamnesis `ingest_document` ile indeksle

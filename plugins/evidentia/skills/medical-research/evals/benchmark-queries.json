@@ -22,7 +22,7 @@
       "query": "Faricimab nAMD — FDA label + EMA status + ICD-11 coding + SNOMED cross-walk",
       "expected_axis": ["0.5.C Regulatory"],
       "must_fire": ["Regulatory MCP", "med-terminologies", "nih-clinicaltables", "PubMed"],
-      "regression_if": "RegulatoryMCP called in parallel (not singly) OR terminology cross-walk skipped OR Tier-K community caveat (least-privilege) absent"
+      "regression_if": "openfda called in parallel (not singly) OR terminology cross-walk skipped OR Tier-K community caveat (least-privilege) absent"
     },
     {
       "id": "Q04-hta",

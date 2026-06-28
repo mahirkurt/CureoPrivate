@@ -3,7 +3,7 @@ name: start
 description: >-
   evidentia süitine giriş ve yönlendirme. Bağlı MCP connector'larını (akademik çekirdek,
   Türkiye Dörtlüsü, regülatuar/epidemiyoloji, mcp-scout genişletme, self-host drugddx)
-  kontrol eder, flagship medical-research 8.4.0 skill'ini ve dört komutu tanıtır, kullanıcının
+  kontrol eder, flagship medical-research 8.4.0 skill'ini ve beş komutu tanıtır, kullanıcının
   niyetine göre doğru komuta/eksene yönlendirir. İlk kez süitle çalışırken, hangi connector'ların
   bağlı olduğunu görmek için, ya da "evidentia nedir / nereden başlamalıyım / hangi komutu
   kullanmalıyım / connector'larım bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler —
@@ -14,7 +14,7 @@ description: >-
 # evidentia — Başlangıç & Yönlendirme
 
 Bu skill, `evidentia` araştırma süitine **giriş kapısıdır**. Beş adımı sırayla yürütün; ağır
-işi flagship `medical-research` skill'i ve dört komut yapar.
+işi flagship `medical-research` skill'i ve beş komut yapar.
 
 ---
 
@@ -38,7 +38,7 @@ Kontrol listesi (gruba göre):
 1. **Akademik çekirdek** — PubMed/EPMC, Clinical Trials, Consensus, Scholar Gateway, bioRxiv,
    YÖK Tez.
 2. **Curated + mekanizma** — AdisInsight, ChEMBL (+ Synapse/OpenTargets/Wiley koşullu).
-3. **Türkiye Dörtlüsü + IP** — TİTCK (+ Cache), Mevzuat, Türk Patent, RegulatoryMCP (latency!),
+3. **Türkiye Dörtlüsü + IP** — TİTCK (+ Cache), Mevzuat, Türk Patent, openfda (latency!),
    NPI, annas-mcp.
 4. **mcp-scout genişletme (Tier-K)** — med-terminologies, NIH Clinical Tables, NLM RxNorm,
    IUPHAR GtoPdb → **topluluk-yayıncı: least-privilege, sandbox-first**.
@@ -71,6 +71,7 @@ yalnızca yönlendirir.
 | `/evidentia-connectors` | **Preflight + roster tazeleme** (mcp-scout) + G-PROBE canlı doğrulama |
 | `/evidentia-fulltext <ref>` | **Tam-metin kademe** — EPMC→Paper Search→annas→Wiley (copyright-kapılı) |
 | `/evidentia-kol <alan/molekül>` | **KOL haritası** — OpenAlex→S2→EPMC→NPI→YÖK Akademik |
+| `/evidentia-synthesize <konu>` | **Graph-temelli derin sentez** — tam-metni anamnesis'e ingest (RAG/GraphRAG, bge-m3+D1), context-window-güvenli provenance'lı sentez |
 
 Ağır/geniş fan-out koşumlar için `evidence-synthesizer` alt-ajanı bağlamı izole eder.
 
@@ -84,6 +85,7 @@ Ağır/geniş fan-out koşumlar için `evidence-synthesizer` alt-ajanı bağlam�
 | "Connector'larım bağlı mı / roster güncel mi" | `/evidentia-connectors` |
 | "Şu makalenin tam metni" | `/evidentia-fulltext` (copyright kapısı) |
 | "Bu alanda KOL kim" | `/evidentia-kol` |
+| "Derin / çok-belge sentez, bağlam taşmadan" | `/evidentia-synthesize` (anamnesis RAG/GraphRAG) |
 | Belirsiz / çok-eksenli | `/evidentia` (medical-research kapsam-belirleme yapar) |
 
 **Scope Guard (devir):**

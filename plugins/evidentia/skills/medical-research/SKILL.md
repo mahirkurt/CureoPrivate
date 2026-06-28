@@ -139,7 +139,7 @@ by the **Native-First ladder** (native MCP → Python REST → documented gap; *
 - **ChEMBL** (`bio-research:chembl`): `drug_search` / `get_mechanism` / `get_admet` / `target_search` — if topic is a drug/target. (Native connector replaces v7.1 Python ChEMBL.)
 - **EPMC SR filter**: `search_articles("(topic) AND systematic review[Publication Type]")` — Tier 0.
 - **PubChem / OpenAlex / Semantic Scholar Graph / DailyMed / Unpaywall / DOAJ / J-STAGE**: native REST via `bash_tool` (no native MCP) — see `extended-api.md`.
-- **openFDA**: **native** `RegulatoryMCP:openfda_search` (NOT Python requests) — drugsfda + label + FAERS.
+- **openFDA**: **native** `openfda:openfda_search` (NOT Python requests) — drugsfda + label + FAERS.
 
 ### C. Multi-Country AFF (MANDATORY, EPMC native)
 ```
@@ -444,7 +444,7 @@ connectors_used:
     ClinicalTrials(4cc36ce0), bioRxiv, YÖKTez, OpenAlex(keyless), SemanticScholar(keyless), PubMed-EPMC(keyless)]
   curated_intel: [AdisInsight(6a9fd4a4, real schema), ChEMBL(bio-research), Synapse(auth),
     Wiley(auth), OpenTargets(conditional)]
-  regulatory_epi: [RegulatoryMCP(922d7cdc): openFDA+ICD11+WHO-GHO+HealthCanada+FederalRegister+EURLex]
+  regulatory_epi: [openfda(self-host): openFDA+ICD11; WHO-GHO/HealthCanada/FederalRegister/EURLex = belgeli boşluk]
   turkiye: [TİTCK(1a49b1bb), Mevzuat(fbf16a1a), TÜRKPATENT(ded65854), YÖKTez(b2d46b46)]
   fulltext: [EuropePMC PMC, annas-mcp(verified), PaperDownload(660e91bd), Wiley(auth)]
   verification: [NPI(64557ced)]
@@ -458,7 +458,7 @@ composes_with:
   - onko-erisim | saglik-sigorta | pharmapatent | pharmaintel | rxos | thoughtspot-roche
   - lex-mercator | lex-sanitas | promo-censor (regulatory/legal handoff)
 verification:   # executable — evals/check_integrity.py
-  gates: [G-REF, G-ALWAYS, G-CONN, G-VERSION, G-REGRESSION, G-COPYRIGHT]
+  gates: [G-REF, G-CONN, G-ALWAYS, G-VERSION, G-REGRESSION, G-COVERAGE, G-RAG, G-COPYRIGHT]
 constraints:
   native_first: true
   drug_intel_gating: §1.O fires only on 0.5.I

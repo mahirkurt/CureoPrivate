@@ -1,7 +1,7 @@
 # evidentia
 
 **Çok-kaynaklı bilimsel kanıt sentezi ve Türkiye-pazarı araştırma motoru** — bir Claude
-Code / claude.ai marketplace plugin'i. `medical-research` v8.3.0 flagship skill'ini, 20+ doğrulanmış
+Code / claude.ai marketplace plugin'i. `medical-research` v8.4.0 flagship skill'ini, 20+ doğrulanmış
 connector'ı (13'ü bundled roster'da) ve `mcp-scout` ile canlı-doğrulanmış klinik genişletme
 MCP'lerini tek kurulabilir pakette toplar.
 
@@ -9,9 +9,9 @@ MCP'lerini tek kurulabilir pakette toplar.
 
 ## Ne sağlar
 
-- **Flagship skill:** `medical-research` v8.3.0 — 10 uzmanlık ekseni (Onko, Heme, Regülatuar,
+- **Flagship skill:** `medical-research` v8.4.0 — 10 uzmanlık ekseni (Onko, Heme, Regülatuar,
   HTA, MedAffairs, İmmün, Nöro, Nadir, DrugIntel, Epidemiyoloji), native-MCP-first çözümleme,
-  temiz-kopya doktrini, copyright-kapılı tam-metin. v8.3.0 ekler: `references/knowledge-map.md`
+  temiz-kopya doktrini, copyright-kapılı tam-metin. v8.4.0 ekler: `references/knowledge-map.md`
   semantik indeks, Adım 0.4 Semantic Scope Scan (soru ayrıştırma → `coverage_set`), Completeness
   Gate ve G-COVERAGE bütünlük kapısı (ADR-05-safe, çekirdek değişmedi).
 - **`start` skill'i:** süit oryantasyonu + connector preflight + niyet yönlendirme.
@@ -31,8 +31,8 @@ MCP'lerini tek kurulabilir pakette toplar.
 - **Dört self-host bileşeni** — sertleştirilmiş OAuth 2.1 Cloudflare Worker'ları (`self-host/`):
   [`drugddx-mcp`](./self-host/drugddx-mcp/BUILD-BRIEF.md) (klinik DDI boşluğu) ·
   [`anamnesis-mcp`](./self-host/anamnesis-mcp/BUILD-BRIEF.md) (RAG/GraphRAG substratı) ·
-  [`openfda-mcp`](./self-host/openfda-mcp/BUILD-BRIEF.md) (FDA openFDA + WHO ICD-11; deploy talimatı §3.3) ·
-  [`evidentia-kb-mcp`](./self-host/evidentia-kb-mcp/BUILD-BRIEF.md) (KB semantik-kapsam takviyesi, opsiyonel; §3.4).
+  [`openfda-mcp`](./self-host/openfda-mcp/) (FDA openFDA + WHO ICD-11; deploy talimatı §3.3) ·
+  [`evidentia-kb-mcp`](./self-host/evidentia-kb-mcp/) (KB semantik-kapsam takviyesi, opsiyonel; §3.4).
 
 ---
 
@@ -118,6 +118,6 @@ python skills/medical-research/evals/rag_quality.py            # G-RAG: çıktı
 ---
 
 *AS IS; no warranty. Internal-use grant. medical-research çekirdeği ADR-05-safe genişletildi
-(skill v8.3.0: semantic coverage — knowledge-map + Adım 0.4 + G-COVERAGE; çekirdek değişmedi).
-Plugin v1.1.0, Phase 2.1: openfda + evidentia-kb self-host Workers eklendi; RegulatoryMCP/Lex-Sanitas
+(skill v8.4.0: semantic coverage — knowledge-map + Adım 0.4 + G-COVERAGE; çekirdek değişmedi).
+Plugin v1.6.4, Phase 2.1: openfda + evidentia-kb self-host Workers eklendi; RegulatoryMCP/Lex-Sanitas
 Tier-A girdisi çıkarıldı. Bundled roster: 13 server (2026-06-26).*

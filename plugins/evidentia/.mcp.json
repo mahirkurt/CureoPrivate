@@ -15,7 +15,7 @@
       "_tier": "K",
       "_trust": "community (io.github.pipeworx-io) · NIH upstream (otoriter veri) — least-privilege",
       "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
-      "_role": "NIH Clinical Tables: ICD-10/9, RxTerms, LOINC, NPI, condition lookup — RegulatoryMCP icd11_search latency'sine hızlı keyless ikinci yol"
+      "_role": "NIH Clinical Tables: ICD-10/9, RxTerms, LOINC, NPI, condition lookup — openfda icd11_search latency'sine hızlı keyless ikinci yol"
     },
     "nlm-rxnorm": {
       "type": "http",
@@ -61,7 +61,7 @@
       "type": "http",
       "url": "https://titck.cureonics.com/mcp",
       "_tier": "O",
-      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/RegulatoryMCP stall'da; aynı mantıksal TİTCK şeması"
+      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal TİTCK şeması"
     },
     "yok-akademik": {
       "type": "http",

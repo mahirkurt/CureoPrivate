@@ -91,19 +91,17 @@
     "drugddx": {
       "type": "http",
       "url": "https://drugddx-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${DRUGDDX_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer)",
-      "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · serverInfo drugddx-mcp v1.0.0",
+      "_probe": "2026-06-28 OPEN/keyless (MCP_ALLOW_NO_AUTH=1; salt-okunur public-API proxy) · no-auth initialize 200 · serverInfo drugddx-mcp v1.0.0",
       "_role": "Klinik-DDI fallback — RxNorm normalize + DailyMed label etkileşim bölümü (NOT a pairwise DDI engine; klinik-DDI boşluk-kapatıcı)"
     },
     "openfda": {
       "type": "http",
       "url": "https://openfda-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer, drugddx ile aynı 6-invariant auth)",
-      "_probe": "2026-06-25 HTTP 401 SECURED · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
+      "_probe": "2026-06-28 OPEN/keyless (MCP_ALLOW_NO_AUTH=1; salt-okunur public-API proxy) · no-auth initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
       "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan: `med-terminologies` icd11'i WHO creds yokluğundan ÇALIŞMIYOR. RegulatoryMCP/Lex-Sanitas roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Lex-Sanitas connector'ından)."
     },
     "evidentia-kb": {

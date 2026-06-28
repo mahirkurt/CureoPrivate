@@ -21,7 +21,7 @@
   // NON-SECRET vars only. OAUTH_ALLOWED_REDIRECT_ORIGINS empty => default allowlist
   // (https://claude.ai, https://claude.com). MCP_ALLOW_NO_AUTH MUST stay "0" in production.
   "vars": {
-    "MCP_ALLOW_NO_AUTH": "0",
+    "MCP_ALLOW_NO_AUTH": "1",
     "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
   },
 

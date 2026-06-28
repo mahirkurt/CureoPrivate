@@ -32,7 +32,7 @@ Marketplace deposu eklendikten sonra:
 
 ```bash
 # Marketplace'i ekle (private GitHub deposu)
-/plugin marketplace add mahirkurt/marketplace
+/plugin marketplace add mahirkurt/CureoPrivate
 
 # Plugin'i kur
 /plugin install vekayinuvis@cureonics-marketplace

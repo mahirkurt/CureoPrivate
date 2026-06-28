@@ -8,8 +8,8 @@
     "name": "Cureonics",
     "url": "https://cureonics.com"
   },
-  "homepage": "https://github.com/mahirkurt/marketplace/tree/main/plugins/bist-analyst",
-  "repository": "https://github.com/mahirkurt/marketplace",
+  "homepage": "https://github.com/mahirkurt/CureoPrivate/tree/main/plugins/bist-analyst",
+  "repository": "https://github.com/mahirkurt/CureoPrivate",
   "license": "MIT",
   "keywords": [
     "bist",

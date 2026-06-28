@@ -40,7 +40,7 @@ yoğunlaşma, maliyet, kalite kompoziti, izleme. Her biri bağımsız CLI + self
 ## Kurulum
 
 ```bash
-/plugin marketplace add mahirkurt/marketplace   # veya cureonics-marketplace
+/plugin marketplace add mahirkurt/CureoPrivate   # katalog kimliği: cureonics-marketplace
 /plugin install fon-uzmani@cureonics-marketplace
 ```
 

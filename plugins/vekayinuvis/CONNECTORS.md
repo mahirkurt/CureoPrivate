@@ -148,8 +148,8 @@ keychain'ine yazılır (settings.json'a değil).
    sorulur, keychain'de saklanır, `${user_config.*}` ile URL'ye enjekte edilir.
    Asla repo'ya commit edilmez.
 
-> **Güvenlik notu.** Bu plugin **private GitHub deposunda** (`mahirkurt/marketplace`
-> = `cureonics-marketplace`) barındırılır; `.mcp.json` içindeki URL'ler yalnız repo
+> **Güvenlik notu.** Bu plugin **private GitHub deposunda** (`mahirkurt/CureoPrivate`;
+> fonksiyonel katalog kimliği `cureonics-marketplace`) barındırılır; `.mcp.json` içindeki URL'ler yalnız repo
 > erişimi olanlara görünür. `ottoman-archives` Cloud Run endpoint'i ayrıca OAuth ile
 > korunur — URL'in görünmesi tek başına erişim vermez. Statik token'lar yine de asla
 > repo'ya commit edilmez (`userConfig` ile keychain'de tutulur).

@@ -32,7 +32,7 @@ düzeyi ve karşıt senaryoyla, ve sonda zorunlu feragatle.
 
 ```bash
 # 1) Marketplace'i ekleyin (GitHub kısayolu)
-/plugin marketplace add mahirkurt/marketplace
+/plugin marketplace add mahirkurt/CureoPrivate
 
 # 2) Eklentiyi kurun
 /plugin install bist-analyst@cureonics-marketplace

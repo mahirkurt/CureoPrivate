@@ -17,6 +17,7 @@ node_modules/
 __pycache__/
 *.pyc
 
-# evidentia secret keys doc (canonical lives in CureoSuite; NEVER commit here)
+# evidentia secret keys doc — holds LIVE MCP API keys; NEVER commit (gitignored everywhere)
 EVIDENTIA-KURULUM-VE-KEYLER.md
 *-KEYLER.md
+plugins/evidentia/docs/EVIDENTIA-KURULUM-VE-KEYLER.md

@@ -59,7 +59,7 @@
     },
     "titck-cache": {
       "type": "http",
-      "url": "https://titck-cache-mcp.cureonics.workers.dev",
+      "url": "https://titck.cureonics.com/mcp",
       "_tier": "O",
       "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/RegulatoryMCP stall'da; aynı mantıksal TİTCK şeması"
     },

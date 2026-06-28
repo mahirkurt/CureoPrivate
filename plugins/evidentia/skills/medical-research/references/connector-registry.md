@@ -80,7 +80,7 @@ Already connected in the operator workspace (mostly Cureonics-built); wired in v
 
 | Connector | Server | Role | Notes |
 |---|---|---|---|
-| **TİTCK Cache** | `titck-cache-mcp.cureonics.workers.dev` | Latency-resilient cache/fallback for the Türkiye Dörtlüsü | Use when native TİTCK or Regulatory MCP stalls; same logical schema as TİTCK. Fallback rung in the Türkiye native ladder |
+| **TİTCK Cache** | `titck.cureonics.com/mcp` | Latency-resilient cache/fallback for the Türkiye Dörtlüsü | Use when native TİTCK or Regulatory MCP stalls; same logical schema as TİTCK. Fallback rung in the Türkiye native ladder |
 | **YÖK Akademik** | `yok-akademik.cureonics.com` | **Turkish KOL identification** (DISTINCT from YÖK Tez) | §8 KOL Haritası Türkçe katmanı: h-index, ortak-yazar ağı, yayınlar, danışmanlık tezleri. Chain: OpenAlex/S2 → EPMC → NPI (US) → **YÖK Akademik (TR)** |
 | **PDF Viewer** | (operator-connected) | In-conversation full-text PDF review | Full-text cascade adjunct — annas-mcp downloads to the user's machine; PDF Viewer renders/inspects in-chat |
 

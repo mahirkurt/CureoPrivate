@@ -63,7 +63,7 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 ### 1.4 α-katman (operatör-bağlı, yüksek-güven · Tier-O)
 | Connector | URL | Rol |
 |---|---|---|
-| TİTCK Cache | `https://titck-cache-mcp.cureonics.workers.dev` | Türkiye Dörtlüsü latency fallback rung |
+| TİTCK Cache | `https://titck.cureonics.com/mcp` | Türkiye Dörtlüsü latency fallback rung |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
 | **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED). §1.3 generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 

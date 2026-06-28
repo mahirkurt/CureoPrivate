@@ -198,7 +198,7 @@ runtime:
       status: wired
       tools: [article_search, book_search, article_download, book_download]
     # --- α-layer additions (UP-005): already connected in operator workspace, high-trust ---
-    - name: TİTCK Cache               # titck-cache-mcp.cureonics.workers.dev — fast cache/fallback for Türkiye Dörtlüsü
+    - name: TİTCK Cache               # titck.cureonics.com/mcp — fast cache/fallback for Türkiye Dörtlüsü
       status: fallback
     - name: YÖK Akademik              # yok-akademik.cureonics.com — Turkish KOL identification (DISTINCT from YokTez)
       status: wired

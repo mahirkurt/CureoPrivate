@@ -1,6 +1,6 @@
 {
   "name": "evidentia",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. **Saf yapısal-otoriter kanıt** (v1.4.0: web tier [Exa/Tavily] + OSINT ekseni kaldırıldı; native kaynakta yoksa 'VERİ YOK', uydurma yok). medical-research v8.4.0 flagship skill (semantik-kapsam: knowledge-map + Adım 0.4 Semantic Scope Scan + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 14-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, med-terminologies/RxNorm/GtoPdb, OpenAlex [KOL/atıf-ağı/kurum disambiguasyon], PubMed-EPMC [Europe PMC + Unpaywall yasal-OA tam-metin], Semantic Scholar) + operatör-bağlı Annas Reader tam-metin + DÖRT self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, temiz-kopya doktrini, copyright-kapılı tam-metin, retrieve-don't-dump.",
   "author": {
     "name": "operator (Cureonics fleet)",

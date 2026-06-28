@@ -148,13 +148,24 @@ function authorizationServer(url: URL): Response {
     token_endpoint_auth_methods_supported: ["none"],
   });
 }
-function registerStub(): Response {
+async function registerStub(req: Request): Promise<Response> {
   // RFC 7591 single-tenant stub — real gate is MCP_API_KEY; DCR auth method is "none".
+  // MUST echo the client's redirect_uris back, or claude.ai/grok reject DCR with
+  // "Couldn't register … sign-in service". The full-origin allowlist is still enforced
+  // at /authorize + /token (redirectAllowed), so echoing here is safe.
+  let redirect_uris: string[] = [];
+  try {
+    const body = (await req.json()) as { redirect_uris?: unknown };
+    if (Array.isArray(body?.redirect_uris)) {
+      redirect_uris = body.redirect_uris.filter((u): u is string => typeof u === "string");
+    }
+  } catch { /* missing/invalid body -> echo empty */ }
   return json({
     client_id: REALM,
     token_endpoint_auth_method: "none",
     grant_types: ["authorization_code"],
     response_types: ["code"],
+    redirect_uris,
   }, 201);
 }
 
@@ -249,7 +260,7 @@ export async function handleOAuth(req: Request, env: AuthEnv): Promise<Response>
   const p = url.pathname;
   if (req.method === "GET" && p === "/.well-known/oauth-protected-resource") return protectedResource(url);
   if (req.method === "GET" && p === "/.well-known/oauth-authorization-server") return authorizationServer(url);
-  if (req.method === "POST" && p === "/oauth/register") return registerStub();
+  if (req.method === "POST" && p === "/oauth/register") return registerStub(req);
   if (req.method === "GET" && p === "/oauth/authorize") return authorizeForm(url, env);
   if (req.method === "POST" && p === "/oauth/authorize") return authorizeSubmit(req, url, env);
   if (req.method === "POST" && p === "/oauth/token") return tokenExchange(req, env);

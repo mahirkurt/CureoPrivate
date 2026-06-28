@@ -84,7 +84,7 @@
       "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
       "headers": { "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}" },
       "_tier": "O",
-      "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer, drugddx ile aynı 6-invariant auth)",
+      "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
       "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)",
       "_role": "RAG/GraphRAG retrieval substratı (8 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + corpus_stats + forget_document (doc_id ile temiz silme, orphan-node, idempotent). **ÇOK-SORGULU HİBRİT GETİRİM (v1.6.0, tam §4.1.1): semantic_search/hybrid_query = `queries[]` ayrıştırma → her sorgu için vektör (bge-m3) ∥ BM25 (FTS5) → RRF füzyon (tüm sorgu×arm) → cross-encoder rerank (bge-reranker) → top-k; her aşama graceful-degrade.** Karmaşık çok-yönlü soruda recall-maks (detay atlamama): soruyu alt-yönlere/eşanlamlılara böl→`queries[]` ile geç; kavramsal+tam-terminoloji (ilaç/gen/kod). §8 retrieval telemetri CF-log'da. Bağlam-penceresi koruması (evidence_index). Vectorize 1024-d cosine + D1 graph + FTS5; Worker ver 984a9b59"
     },
@@ -92,16 +92,17 @@
       "type": "http",
       "url": "https://drugddx-mcp.cureonics.workers.dev/mcp",
       "_tier": "O",
-      "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer)",
+      "_trust": "operator self-host (Cloudflare Worker) — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1): /mcp Bearer-gate'siz; salt-okunur NIH RxNav/DailyMed proxy, server-side upstream cred YOK → confused-deputy/sır sızıntısı yok; maliyet = yalnız Worker invocation",
       "_probe": "2026-06-28 OPEN/keyless (MCP_ALLOW_NO_AUTH=1; salt-okunur public-API proxy) · no-auth initialize 200 · serverInfo drugddx-mcp v1.0.0",
       "_role": "Klinik-DDI fallback — RxNorm normalize + DailyMed label etkileşim bölümü (NOT a pairwise DDI engine; klinik-DDI boşluk-kapatıcı)"
     },
     "openfda": {
       "type": "http",
       "url": "https://openfda-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}" },
       "_tier": "O",
-      "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer, drugddx ile aynı 6-invariant auth)",
-      "_probe": "2026-06-28 OPEN/keyless (MCP_ALLOW_NO_AUTH=1; salt-okunur public-API proxy) · no-auth initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
+      "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
+      "_probe": "2026-06-28 RE-GATED Bearer (icd11_search WHO ICD-11 server-side OAuth cred → confused-deputy önlemi; açık değil) · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
       "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan: `med-terminologies` icd11'i WHO creds yokluğundan ÇALIŞMIYOR. RegulatoryMCP/Lex-Sanitas roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Lex-Sanitas connector'ından)."
     },
     "evidentia-kb": {

@@ -57,6 +57,24 @@
       "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · semanticscholar pack: search_papers/get_paper/get_paper_citations/get_author (+ ask_pipeworx)",
       "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway çağırana keyless; key doğrudan-S2/rate-limit içindir)"
     },
+    "pophive": {
+      "type": "http",
+      "url": "https://mcp.pophive.org/mcp",
+      "_tier": "K-epi",
+      "_scope": "us-only",
+      "_trust": "Yale School of Public Health (kamusal, agregat, de-identified; DOI 10.5281/zenodo.17345935) — otoriter ABD-surveillance; çıktıyı BİREBİR aktar, sayıyı yeniden-türetme",
+      "_probe": "2026-06-28 HTTP 200 · get_current_status(rsv,Connecticut) canlı (6-kaynak verdict, US-only)",
+      "_role": "ABD epidemiyoloji (eksen 0.5.K → §1.P/§21): get_current_status/get_trend/get_map/get_coverage/compare/get_data — ED/hastane/atıksu/lab aktivitesi + çocukluk aşı kapsamı. YALNIZCA ABD → global/Türkiye yük belgelenmiş boşluk (PopHIVE'ı ABD-dışına GENELLEME)"
+    },
+    "mevzuat-bilgisi": {
+      "type": "http",
+      "url": "https://mevzuat.surucu.dev/mcp",
+      "_tier": "secondary",
+      "_secondary": true,
+      "_trust": "topluluk (surucu.dev) — primer Mevzuat'a ÇAPRAZ-KONTROL aynası; primacy primer Mevzuat'tadır",
+      "_probe": "2026-06-28 HTTP 200 · search_kanun('ilaç')→67 (kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak)",
+      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat"
+    },
     "titck-cache": {
       "type": "http",
       "url": "https://titck.cureonics.com/mcp",

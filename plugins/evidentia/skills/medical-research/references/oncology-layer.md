@@ -20,8 +20,9 @@ TMB, RECIST, irRECIST, neoadjuvan, adjuvan, metastatik, OS, PFS, ORR, DoR, bioma
   protokolleri (Mevzuat) — often determinative for Turkish practice.
 
 ## 2. Molecular / biomarker knowledge bases
-- **OncoKB** (levels of evidence 1–4, R1–R2) and **CIViC** — via Exa/web (no native MCP); cite
-  level + variant. **ChEMBL** native for target pharmacology; **PubChem** REST for structure.
+- **OncoKB** (levels of evidence 1–4, R1–R2) and **CIViC** — **no native MCP/API → documented gap**
+  (not web-scraped, v1.4.0); when level/variant is unavailable natively, report the gap. **ChEMBL**
+  native + **iuphar-gtopdb** (Tier-K) for target pharmacology; **PubChem** REST for structure.
 - Companion-diagnostic status when a biomarker gates therapy.
 
 ## 3. Evidence mining

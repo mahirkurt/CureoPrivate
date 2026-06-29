@@ -54,6 +54,7 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
 | **openfda** (self-host) | — | OAuth/Bearer | `openfda_search` (drug/event·label·drugsfda·enforcement·device/*, api.fda.gov keyless) + `icd11_search` (WHO ICD-11 MMS, server-side OAuth) — hızlı. **(RegulatoryMCP/Lex-Sanitas yerine; ICD-11 buradan; WHO GHO/Health Canada/EUR-Lex çıkarıldı)** | operatör self-host | O |
+| **PopHIVE** (US epi · v8.5) | 🟢 | none | `get_current_status` · `get_trend` · `get_map` · `get_coverage` · `compare` · `get_data` — Yale harmonize **ABD** sürveyans (ED/hastane/atıksu/lab + çocukluk aşı kapsamı). **YALNIZCA ABD** (global/Türkiye yük = belgelenmiş boşluk); precomputed kanıtı **birebir aktar, sayıyı yeniden-türetme**. Eksen 0.5.K → §1.P/§21 | Yale (kamusal, DOI 10.5281/zenodo.17345935) | K-epi |
 | TİTCK | 🟢 | none | search_drugs · get_drug · find_biosimilar_group · get_price_history · find_off_label_uses_for_drug (+11) | operatör | A |
 | Mevzuat | 🟢 | none | search_mevzuat · get_mevzuat_text · get_anayasa (+3) | operatör | A |
 | Türk Patent | 🟢 | API | search_patents · search_trademarks · get_patent_details (+1) | operatör | A |
@@ -107,7 +108,7 @@ yapısal kaynaklarda yoksa dürüstçe boşluk raporlanır, ASLA web-scraping/uy
 | KOL / atıf-ağı / kurum-yazar | `openalex` (`openalex_resolve_name`→`search_entities`/`get_citation_graph`) → `semantic-scholar` → EPMC → NPI (US) → YÖK Akademik (TR) |
 | Mekanizma / hedef | ChEMBL `get_mechanism`/`target_search` → `iuphar-gtopdb` → OpenTargets (offline) → EPMC |
 | TR ruhsat/fiyat/biyobenzer | TİTCK native → **TİTCK Cache** (stall'da) → Mevzuat → bulunamazsa boşluk |
-| Epidemiyoloji/yük | `nih-clinicaltables` (condition) → PubMed/EPMC. (GLOBOCAN/IHME/WHO GHO native-API'si bundle'da YOK → erişilemez boşluk olarak işaretle, uydurma yok.) |
+| Epidemiyoloji/yük | **ABD:** `PopHIVE` (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — precomputed, birebir aktar) + ICD-11 kodlama (`openfda`). **Türkiye:** TİTCK + EPMC `AFF:"Turkey"` + YÖK Tez. **Global/TR yük (GLOBOCAN/IHME/WHO-GHO):** native-API YOK → erişilemez boşluk (uydurma yok). PopHIVE'ı ABD-dışına genelleme. |
 | Klinik DDI | **drugddx** (✅ canlı) → `nlm-rxnorm` etkileşim + DailyMed label DDI-bölümü (⚠️ "etkileşim verisi" olarak sunulMAZ) |
 | Regülatuvar (FDA) | **openfda** `openfda_search` (drug/event FAERS · drug/label · drugsfda · enforcement) → DailyMed REST (label) → bulunamazsa boşluk |
 | Tam-metin | EPMC `get_full_text_article` → `get_copyright_status` → **pubmed-epmc** `pubmed_fetch_fulltext` (EuropePMC + Unpaywall YASAL OA) → Paper Search `read_pubmed_paper` → **Annas Reader** (`article_download`/`book_download`) → Wiley **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
@@ -221,3 +222,26 @@ düzeltilemez. Hepsi `pipeworx_feedback`/operatöre raporlandı; skill bunlardan
 
 > D1–D5 upstream **pipeworx** (io.github.pipeworx-io) / D6 **medical.sidneybissoli.com** kaynaklıdır;
 > evidentia salt-okunur tüketicidir. Bu satırlar `connector-registry.md` §3.3/§5 yönlendirmeleriyle tutarlıdır.
+> **Canlı yeniden-doğrulama 2026-06-28** (`connector-registry.md §8` Probe Log): D1 (404), D2 (400),
+> D3 (icd10cm isim→0), D6 (AUTH_CONFIG_ERROR) **birebir teyit edildi**; çalışan whitelist (atc_classify,
+> map_icd10_to_icd11, drugs, icd10cm-kod, rxnorm_search/get_properties, search_targets/ligands) doğrulandı.
+
+---
+
+## 9. Adjudication Log — v8.5 (çakışan/yeni yüzeyler · canlı probe 2026-06-28)
+
+Yeni aday connector'lar **probe-verified-only** (DEĞİŞMEZ 2) ilkesiyle yargılandı. Tam kanıt:
+`connector-registry.md §8` Probe Log.
+
+| Aday | Probe (2026-06-28) | Karar | Gerekçe |
+|---|---|---|---|
+| **PopHIVE** (`mcp.pophive.org`) | 200 · `get_current_status(rsv,CT)` canlı | **WIRE** (Tier-K-epi, §1.3) | ABD epidemiyoloji boşluğunu kapatır (native). **YALNIZCA ABD** → global/TR yük hâlâ belgelenmiş boşluk; precomputed kanıt birebir aktarılır. |
+| **drugddx** (`drugddx-mcp…`) | 200 · `normalize_drug`/`interaction_label` canlı | **WIRE** (Tier-O, D-β) | Klinik-DDI boşluk-kapatıcı (pairwise motor DEĞİL); self_host bloğundan runtime'a terfi. |
+| **Mevzuat Bilgisi** (`mevzuat.surucu.dev`) | 200 · `search_kanun("ilaç")`→67 | **WIRE secondary** (opsiyonel, degradable) | Primer Mevzuat'a **çapraz-kontrol aynası** — kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak ekler (primer keyword-aramasında yok). **Primacy primer Mevzuat'ta**; tek-sefer cache'e tabi; yalnız primer-miss veya numara/gerekçe lookup'ında çağrılır. Tool whitelist: `search_kanun`, `search_mevzuat`. |
+| **Elicit** (`elicit.com/api/mcp`) | **OAuth bağlandı → 2026-06-28 CANLI** (`search_papers`→JULIET NEJM PMID 30501490; `list_reports` canlı) | **WIRE secondary** (conditional/OAuth) | Sistematik-derleme/ekstraksiyon katmanı, **Consensus'a secondary**. Doğrulanmış araçlar: `search_papers`/`search_trials` (corpus arama — typeTags RCT/Meta/SR + quartile/yıl filtreleri), `list_reports`/`get_report`, `create_report` (SR-rapor üreteci — kota-yükü, ölçülü kullan). **Statik `elk_live_` anahtarı Elicit REST-API anahtarıdır, MCP-JWS DEĞİL** (MCP OAuth ile bağlanır). Wiley/Synapse gibi: claude.ai Settings ile bağlanır, statik `.mcp.json` URL'si YOK; zorunlu Adım 1 listesinde DEĞİL; çıkarılan iddialar çapraz-doğrulanır (DEĞİŞMEZ 4). Anahtar → Doppler `ELICIT_API_KEY` (rotate önerilir). |
+| **Yargı** (TR mahkeme) | (bağlı) | **WIRE ETME** | Hukuk içtihadı evidentia kapsamı dışı → **`lex-sanitas` / `ius-salutis`**'e devredilir (start Scope Guard + §7). |
+| **pipeworx generic** (`ask_pipeworx`/`discover_tools`/`remember`/`recall`/`polymarket_*`/`scan_*`/`subscribe`/`validate_claim`) | — | **WHITELIST-DIŞI** | En-az-yetki (DEĞİŞMEZ 5): yalnız tıbbi pack araçları çağrılır; jenerik orchestration/finans araçları asla. **G-WHITELIST** statik denetler. |
+
+> **Tool-düzeyi en-az-yetki (DEĞİŞMEZ 5):** `.mcp.json` sunucu düzeyinde bağlar; araç-düzeyi whitelist
+> `connector-registry.md §2.6`'da normatiftir ve skill yalnız o araçları çağırır. **G-WHITELIST** §2.6
+> whitelist'inde hiçbir pipeworx-jenerik araç adı bulunmadığını doğrular.

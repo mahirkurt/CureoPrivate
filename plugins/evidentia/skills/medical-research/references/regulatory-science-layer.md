@@ -12,9 +12,9 @@ designation, REMS, RMP, withdrawal, label change, post-marketing, supplementary 
 
 ## 1. Agency pathways & milestones (Tier 1 / primary)
 - **FDA:** approval type (full vs accelerated), AdComm/ODAC vote, CRL, REMS — via **native openFDA**
-  (`drug/drugsfda`, `drug/label`, `drug/enforcement`) + Federal Register (reg MCP).
-- **EMA:** CHMP opinion, conditional/exceptional, PRIME — EMA has **no native MCP** → Exa
-  (`ema.europa.eu`); cross-check with AdisInsight `history_events`.
+  (`drug/drugsfda`, `drug/label`, `drug/enforcement`). *(Federal Register has no native API → documented gap; the legacy Regulatory MCP was removed v8.5 D-α.)*
+- **EMA:** CHMP opinion, conditional/exceptional, PRIME — EMA has **no native MCP/API → documented gap**
+  (EPAR/CHMP not web-scraped, v1.4.0); cross-check with AdisInsight `history_events`.
 - **TİTCK (TR, native):** ruhsat status, Madde-23 başvuru (`search_regulation_article23`),
   authorization cancellations (`find_authorization_cancellations_for_drug`), withdrawal trend.
 - **EUR-Lex** (reg MCP `eurlex_expert_search`) for EU legal basis.

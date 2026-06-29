@@ -5,7 +5,7 @@ description: >-
   çok-ülke + tam-metin getiren araştırmalarda (örn. "molekül X — global kanıt + 6-ülke pazar +
   pipeline + KOL + tam-metin") çağrılır; onlarca connector çağrısının ham gürültüsünü kendi
   bağlam penceresinde tüketir ve ana pencereye YALNIZ damıtılmış kanonik artefaktları + numaralı
-  sentez çıktısını döndürür. medical-research v8.4.0 protokolünü çalıştırır; temiz-kopya doktrinine
+  sentez çıktısını döndürür. medical-research v8.5.0 protokolünü çalıştırır; temiz-kopya doktrinine
   ve tek-sefer/kanonik-önbellek sözleşmesine tabidir. Tek-eksenli/hızlı sorgular için ÇAĞIRMA —
   doğrudan /evidentia yeterlidir; bu ajan bağlam-pencere ekonomisi gerektiğinde devreye girer.
 tools: Read, Bash, Glob, Grep, WebFetch, WebSearch
@@ -31,9 +31,11 @@ sorgular sana gelmez.
    kanonik artefakt). Flagship protokol: `../skills/medical-research/SKILL.md` (Adım 0–5).
 
 2. **medical-research Adım 0–5'i çalıştır** — native-MCP-first; cömertlik ilkesi; aktif eksen
-   paketleri. Genişletme connector'ları (`med-terminologies`, `nih-clinicaltables`, `nlm-rxnorm`,
-   `iuphar-gtopdb`) **sandbox-first, least-privilege**; hasta-etkili çıktı otoriter kaynakla
-   çapraz-doğrulanır.
+   paketleri. **Extended Tier-K** (`med-terminologies`, `nih-clinicaltables`, `nlm-rxnorm`,
+   `iuphar-gtopdb`) **sandbox-first, least-privilege, TOOL-whitelist** (CONNECTORS.md §9 / connector-registry
+   §2.6; kırık D1/D2/D3/D6 araçları çağrılmaz, pipeworx jenerikleri whitelist-dışı); klinik-DDI = `drugddx`
+   (Tier-O canlı, pairwise motor DEĞİL); **ABD epidemiyoloji** = `PopHIVE` (US-only, precomputed birebir
+   aktarılır — global/TR yük boşluk). Hasta-etkili çıktı otoriter kaynakla çapraz-doğrulanır.
 
 3. **Tek-sefer disiplini.** Kanonik artefaktları (`evidence_corpus`, `titck_record`,
    `regulatory_snapshot`, `terminology_map`, `kol_graph`, `evidence_index`) bir kez doldur; çift connector sorgusu

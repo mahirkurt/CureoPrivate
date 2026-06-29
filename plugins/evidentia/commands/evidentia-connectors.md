@@ -34,9 +34,13 @@ Tutarsızlık → düzeltilecek delta'yı raporla.
 ```bash
 python ${CLAUDE_PLUGIN_ROOT}/scripts/g_probe.py
 ```
-Beklenen: med-terminologies (200, v1.5.7), nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb (200,
-pipeworx-gateway). Bir URL 4xx/5xx → raporla; **drug-interaction-mcp HTTP 500 ise** → self-host
-`drugddx` deploy durumunu hatırlat (`self-host/drugddx-mcp/BUILD-BRIEF.md`).
+Beklenen (**2026-06-28 canlı re-probe**, `connector-registry.md §8` Probe Log): med-terminologies
+(200; ⚠️ `icd11_search` AUTH-kırık → ICD-11 = `openfda`), nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb
+(200, pipeworx-gateway; ⚠️ nlm-rxnorm `interactions`=404 / `related`=400, nih `icd10cm` isim→0),
+**drugddx (200, CANLI, Tier-O)**, **openfda (Bearer; openFDA + WHO ICD-11)**, **PopHIVE (200, ABD epi;
+US-only)**, **Mevzuat Bilgisi (200, ikincil)**. Bir URL 4xx/5xx → raporla. **Yalnız §2.6 whitelist
+araçları** çağrılır (pipeworx jenerikleri DEĞİL — G-WHITELIST); hasta-etkili çıktı otoriter kaynakla
+çapraz-doğrulanır (G-XVAL). Elicit: OAuth-gated (claude.ai-bağlı) → tools/list canlı OAuth probe bekliyor.
 
 ## 4. Roster Bakımı (mcp-scout devri)
 

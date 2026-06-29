@@ -1,3 +1,9 @@
+> ⛔ **SUPERSEDED / HISTORICAL (2026-06-28).** Bu belge v7.1→v8.0 geçişini kayda alır.
+> **v8.4.0 itibarıyla Exa/Tavily web tier ve OSINT ekseni KALDIRILMIŞTIR** (bkz. SKILL.md
+> "Version History" v8.4 + plugin 1.4.0). Buradaki her "Exa/Tavily fallback" yönergesi
+> GEÇERSİZDİR; geçerli akış: Native-First → documented gap (web fallback yok).
+> Gövde, denetim izi için değiştirilmeden korunmuştur.
+
 # medical-research Skill — Kapsamlı İyileştirme Planı (v7.1 → v8.0)
 
 **Belge türü:** Mühendislik iyileştirme planı + konnektör entegrasyon mimarisi

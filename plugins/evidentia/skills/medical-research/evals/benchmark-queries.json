@@ -1,41 +1,41 @@
 {
   "$schema": "internal/medical-research-benchmark-v1",
-  "description": "G-REGRESSION (non-blocking, qualitative) — 10 regression queries. Each maps a query to the expected 0.5 axis activation + the connector set that MUST fire. Run via SKILL.md Adim 0.5 classifier; a regression = wrong axis fired OR a mandatory connector skipped without a logged fallback. evidentia note: queries 2/3/7 also exercise the wired Tier-K expansion connectors.",
-  "version": "8.2.0",
+  "description": "G-REGRESSION (non-blocking, qualitative) — 13 regression queries. Each maps a query to the expected 0.5 axis activation + the connector set that MUST fire. Run via SKILL.md Adim 0.5 classifier; a regression = wrong axis fired OR a mandatory connector skipped without a logged fallback. v8.5: D-α (Regulatory MCP→openfda) + web-tier-removal (Exa→documented gap) propagated; Q11/Q12/Q13 exercise the v8.5 Extended-Tier promotion (drugddx/nlm-rxnorm, PopHIVE US-only, iuphar-gtopdb).",
+  "version": "8.5.0",
   "queries": [
     {
       "id": "Q01-onco",
       "query": "Pembrolizumab 1L NSCLC PD-L1 ≥50% — global evidence + guideline placement + TR ruhsat/fiyat",
       "expected_axis": ["0.5.A Onco"],
-      "must_fire": ["PubMed", "Clinical Trials", "Guidelines&HTA(ESMO/NCCN/NICE)", "TİTCK", "Mevzuat"],
-      "regression_if": "oncology-layer.md not loaded OR TİTCK price path skipped OR guideline placement section absent"
+      "must_fire": ["PubMed", "Clinical Trials", "Guidelines&HTA(ESMO/NCCN/NICE=documented gap)", "TİTCK", "Mevzuat"],
+      "regression_if": "oncology-layer.md not loaded OR TİTCK price path skipped OR guideline placement section absent OR society-PDF gap web-scraped"
     },
     {
       "id": "Q02-heme-ddi",
       "query": "Emicizumab inhibitörsüz Hemofili A — evidence + concomitant therapy interaction profile + TR market",
       "expected_axis": ["0.5.B Heme"],
-      "must_fire": ["PubMed", "Clinical Trials", "TİTCK", "nlm-rxnorm", "med-terminologies"],
-      "regression_if": "DDI presented as 'interaction data' without authoritative source (substance-overlap discipline violated) OR drugddx/label-section caveat missing OR hematology-layer.md not loaded"
+      "must_fire": ["PubMed", "Clinical Trials", "TİTCK", "drugddx", "med-terminologies"],
+      "regression_if": "DDI presented as 'interaction data' without authoritative source (substance-overlap discipline violated) OR drugddx/label-section caveat missing OR rxnorm_interactions called (D1 404) OR hematology-layer.md not loaded"
     },
     {
       "id": "Q03-regulatory-term",
       "query": "Faricimab nAMD — FDA label + EMA status + ICD-11 coding + SNOMED cross-walk",
       "expected_axis": ["0.5.C Regulatory"],
-      "must_fire": ["Regulatory MCP", "med-terminologies", "nih-clinicaltables", "PubMed"],
-      "regression_if": "openfda called in parallel (not singly) OR terminology cross-walk skipped OR Tier-K community caveat (least-privilege) absent"
+      "must_fire": ["openfda(openfda_search+icd11_search)", "med-terminologies(atc_classify/map_icd10_to_icd11)", "nih-clinicaltables(icd10cm-code)", "PubMed"],
+      "regression_if": "openfda called in parallel (not singly) OR ICD-11 routed to med-terminologies.icd11_search (D6 broken) OR EMA gap web-scraped OR Tier-K least-privilege caveat absent"
     },
     {
       "id": "Q04-hta",
       "query": "CAR-T DLBCL 3L — NICE/ICER cost-effectiveness + ICER threshold + budget impact",
       "expected_axis": ["0.5.D HTA"],
-      "must_fire": ["Guidelines&HTA(NICE/ICER)", "PubMed", "Exa"],
-      "regression_if": "hta-layer.md not loaded OR ICER/QALY framing absent"
+      "must_fire": ["PubMed", "ICD-11(openfda, denominators)", "Guidelines&HTA(NICE/ICER=documented gap, no web)"],
+      "regression_if": "hta-layer.md not loaded OR ICER/QALY framing absent OR NICE/ICER PDF web-scraped (web tier removed)"
     },
     {
       "id": "Q05-medaffairs-kol",
       "query": "Tirzepatide obezite — KOL landscape (global + US + TR) + congress signal",
       "expected_axis": ["0.5.E MedAffairs"],
-      "must_fire": ["OpenAlex(REST)", "Semantic Scholar Graph(REST)", "Europe PMC", "NPI Registry", "YÖK Akademik"],
+      "must_fire": ["openalex", "semantic-scholar", "PubMed-EPMC", "NPI Registry", "YÖK Akademik"],
       "regression_if": "author disambiguation skipped (single-name match) OR YÖK Akademik confused with YokTez OR medaffairs-ops-layer.md not loaded"
     },
     {
@@ -49,8 +49,8 @@
       "id": "Q07-neuro-term",
       "query": "Lecanemab early Alzheimer — evidence + ICD-11/condition coding + TR access outlook",
       "expected_axis": ["0.5.G Neurology"],
-      "must_fire": ["PubMed", "Clinical Trials", "nih-clinicaltables", "Regulatory MCP", "TİTCK"],
-      "regression_if": "neurology-layer.md not loaded OR condition coding skipped"
+      "must_fire": ["PubMed", "Clinical Trials", "nih-clinicaltables(icd10cm-code)", "openfda(icd11_search)", "TİTCK"],
+      "regression_if": "neurology-layer.md not loaded OR condition coding skipped OR icd10cm used for name→code (D3; route to map_icd10_to_icd11/openfda.icd11_search)"
     },
     {
       "id": "Q08-rare",
@@ -70,10 +70,31 @@
       "id": "Q10-epidemiology",
       "query": "Gastric cancer Türkiye — incidence/burden + GLOBOCAN + ICD-11",
       "expected_axis": ["0.5.K Epidemiology"],
-      "must_fire": ["Regulatory MCP(who_gho_query)", "nih-clinicaltables", "GLOBOCAN(Exa)", "TİTCK"],
-      "regression_if": "FAERS reporting counts presented as incidence OR who_gho_query not singly-called OR epidemiology section (21) absent"
+      "must_fire": ["openfda(icd11_search)", "TİTCK", "Europe PMC(AFF:Turkey)", "YÖK Tez", "GLOBOCAN/IHME(=documented gap, no native API)"],
+      "regression_if": "FAERS reporting counts presented as incidence OR PopHIVE presented as covering Türkiye (US-only) OR GLOBOCAN/burden web-scraped/fabricated OR epidemiology section (21) absent"
+    },
+    {
+      "id": "Q11-ddi-rxcui",
+      "query": "imatinib drug-drug interaction profile + RxCUI normalization for a CML regimen",
+      "expected_axis": ["0.5.I DrugIntel"],
+      "must_fire": ["drugddx(normalize_drug→interaction_label)", "nlm-rxnorm(rxnorm_search/get_properties)", "DailyMed(SPL interaction section)"],
+      "regression_if": "rxnorm_interactions called (D1 404) OR rxnorm_related called (D2 400) OR interaction_label DailyMed-pointer presented as a computed pairwise verdict without a licensed-source cross-validation gate (G-XVAL)"
+    },
+    {
+      "id": "Q12-us-epi-tr-gap",
+      "query": "Türkiye'de RSV mevsimsel trend nedir?",
+      "expected_axis": ["0.5.K Epidemiology"],
+      "must_fire": ["PopHIVE(US-only — scope note)", "TİTCK", "Europe PMC(AFF:Turkey)", "YÖK Tez"],
+      "regression_if": "PopHIVE US data presented as Türkiye data (US-only scope violated) OR PopHIVE numbers re-derived instead of relayed OR Türkiye RSV gap-note absent (global/TR burden = documented gap; TR substitutes TİTCK + EPMC AFF:Turkey + YÖK Tez)"
+    },
+    {
+      "id": "Q13-target-pharmacology",
+      "query": "JAK inhibitörü hedef farmakolojisi — target/ligand profile + mechanism",
+      "expected_axis": ["0.5.F Immunology", "0.5.I DrugIntel"],
+      "must_fire": ["iuphar-gtopdb(search_targets/search_ligands)", "ChEMBL(get_mechanism/target_search)", "PubMed"],
+      "regression_if": "mechanism claim presented without ChEMBL/EPMC cross-validation (G-XVAL) OR iuphar-gtopdb used as sole authority for a clinical claim OR OpenTargets-offline fallback not honored"
     }
   ],
-  "pass_criteria": "For each query: correct axis layer loaded AND every must_fire connector either fired OR a documented fallback (CONNECTORS.md §2) was logged. A silent skip of a must_fire connector is a regression. Clinical-impact outputs (DDI/dose/terminology) cross-validated against an authoritative source.",
-  "evidentia_expansion_note": "med-terminologies / nih-clinicaltables / nlm-rxnorm / iuphar-gtopdb are community-published Tier-K (probe 2026-06-25): when they fire, the least-privilege + sandbox-first + clinical-cross-validation discipline (CONNECTORS.md §5) MUST hold."
+  "pass_criteria": "For each query: correct axis layer loaded AND every must_fire connector either fired OR a documented fallback (CONNECTORS.md §2) was logged. A silent skip of a must_fire connector is a regression. Clinical-impact outputs (DDI/dose/terminology) cross-validated against an authoritative source (G-XVAL). No web scraping/fabrication for documented-gap sources (web tier removed v1.4.0).",
+  "evidentia_expansion_note": "Extended Tier-K (med-terminologies / nih-clinicaltables / nlm-rxnorm / iuphar-gtopdb) + drugddx are first-class as of v8.5 (live re-probe 2026-06-28; connector-registry §8). When they fire, tool-level whitelist + least-privilege + sandbox-first + clinical-cross-validation (CONNECTORS.md §5/§9, connector-registry §2.6) MUST hold; broken tools D1/D2/D3/D6 are never called. PopHIVE is US-only (relay precomputed, never re-derive; global/TR burden = documented gap)."
 }

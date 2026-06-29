@@ -1,7 +1,7 @@
 {
   "name": "evidentia",
-  "version": "1.6.4",
-  "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. **Saf yapısal-otoriter kanıt** (v1.4.0: web tier [Exa/Tavily] + OSINT ekseni kaldırıldı; native kaynakta yoksa 'VERİ YOK', uydurma yok). medical-research v8.4.0 flagship skill (semantik-kapsam: knowledge-map + Adım 0.4 Semantic Scope Scan + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 14-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, med-terminologies/RxNorm/GtoPdb, OpenAlex [KOL/atıf-ağı/kurum disambiguasyon], PubMed-EPMC [Europe PMC + Unpaywall yasal-OA tam-metin], Semantic Scholar) + operatör-bağlı Annas Reader tam-metin + DÖRT self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, temiz-kopya doktrini, copyright-kapılı tam-metin, retrieve-don't-dump.",
+  "version": "1.7.0",
+  "description": "Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. **Saf yapısal-otoriter kanıt** (v1.4.0: web tier [Exa/Tavily] + OSINT ekseni kaldırıldı; native kaynakta yoksa 'VERİ YOK', uydurma yok). medical-research v8.5.0 flagship skill (semantik-kapsam: knowledge-map + Adım 0.4 Semantic Scope Scan + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 16-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA + WHO ICD-11, NPI, **Extended Tier-K first-class** med-terminologies/RxNorm/GtoPdb/nih-clinicaltables [tool-whitelist + çapraz-doğrulama], OpenAlex [KOL/atıf-ağı/kurum disambiguasyon], PubMed-EPMC [Europe PMC + Unpaywall yasal-OA tam-metin], Semantic Scholar, **PopHIVE [ABD epidemiyoloji sürveyans — eksen 0.5.K]**, Mevzuat Bilgisi [ikincil çapraz-kontrol]) + operatör-bağlı Annas Reader tam-metin + DÖRT self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · **drugddx klinik-DDI [Tier-O canlı]** · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search semantik-recall booster). 10 uzmanlık ekseni, native-MCP-first çözümleme, temiz-kopya doktrini, copyright-kapılı tam-metin, retrieve-don't-dump. v8.5 canlı re-probe 2026-06-28.",
   "author": {
     "name": "operator (Cureonics fleet)",
     "url": "https://cureonics.com"
@@ -41,7 +41,7 @@
   "mcpServers": "./.mcp.json",
   "metadata": {
     "flagship_skill": "medical-research",
-    "flagship_version": "8.4.0",
+    "flagship_version": "8.5.0",
     "smp_manifest": "./skills/medical-research/skill-manifest.yaml",
     "connector_source_of_truth": "./CONNECTORS.md",
     "orchestration_contract": "./shared/canonical-cache-contract.md",
@@ -58,7 +58,9 @@
       "G-REGRESSION",
       "G-COPYRIGHT",
       "G-COVERAGE",
-      "G-RAG"
+      "G-RAG",
+      "G-XVAL",
+      "G-WHITELIST"
     ],
     "min_host": "Claude Code / claude.ai custom connectors",
     "connector_probe_basis": "skill-manifest.yaml (probe 2026-06-09) + mcp-scout live registry+initialize (2026-06-25) + Tier-K academic expansion probe (OpenAlex/PubMed-EPMC/Semantic Scholar, 2026-06-27)",

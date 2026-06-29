@@ -3,12 +3,14 @@ name: start
 description: >-
   evidentia süitine giriş ve yönlendirme. Bağlı MCP connector'larını (akademik çekirdek,
   Türkiye Dörtlüsü, regülatuar/epidemiyoloji, mcp-scout genişletme, self-host drugddx)
-  kontrol eder, flagship medical-research 8.4.0 skill'ini ve beş komutu tanıtır, kullanıcının
+  kontrol eder, flagship medical-research 8.5.0 skill'ini ve beş komutu tanıtır, kullanıcının
   niyetine göre doğru komuta/eksene yönlendirir. İlk kez süitle çalışırken, hangi connector'ların
   bağlı olduğunu görmek için, ya da "evidentia nedir / nereden başlamalıyım / hangi komutu
   kullanmalıyım / connector'larım bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler —
   evidentia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım",
   "hangi eksen", araştırma motoru kurulumu, kanıt sentezi nereden.
+metadata:
+  version: "1.0.0"
 ---
 
 # evidentia — Başlangıç & Yönlendirme
@@ -21,7 +23,7 @@ işi flagship `medical-research` skill'i ve beş komut yapar.
 ## Adım 1 — Karşılama
 
 Kullanıcıya kısaca: evidentia, **çok-kaynaklı bilimsel kanıt sentezi + Türkiye-pazarı**
-araştırma motorudur. `medical-research` 8.4.0 flagship'ini, 20+ doğrulanmış connector'ı ve
+araştırma motorudur. `medical-research` 8.5.0 flagship'ini, 20+ doğrulanmış connector'ı ve
 mcp-scout ile canlı-doğrulanmış klinik genişletme MCP'lerini tek pakette toplar. 10 uzmanlık
 ekseni vardır: Onko · Heme · Regülatuar · HTA · MedAffairs · İmmün · Nöro · Nadir · DrugIntel ·
 Epidemiyoloji.
@@ -40,9 +42,12 @@ Kontrol listesi (gruba göre):
 2. **Curated + mekanizma** — AdisInsight, ChEMBL (+ Synapse/OpenTargets/Wiley koşullu).
 3. **Türkiye Dörtlüsü + IP** — TİTCK (+ Cache), Mevzuat, Türk Patent, openfda (latency!),
    NPI, annas-mcp.
-4. **mcp-scout genişletme (Tier-K)** — med-terminologies, NIH Clinical Tables, NLM RxNorm,
-   IUPHAR GtoPdb → **topluluk-yayıncı: least-privilege, sandbox-first**.
-5. **Self-host** — drugddx (deploy edildi mi? `/health` ok mu?).
+4. **Extended Tier-K (genişletme · first-class v8.5)** — med-terminologies, NIH Clinical Tables, NLM RxNorm,
+   IUPHAR GtoPdb → **topluluk-yayıncı: least-privilege, sandbox-first; TOOL-whitelist + çapraz-doğrulama**
+   (connector-registry §2.6; kırık D1/D2/D3/D6 araçları çağrılmaz, pipeworx jenerikleri whitelist-dışı).
+5. **Tier-K-epi** — PopHIVE (ABD sürveyans, eksen 0.5.K → §1.P/§21). **YALNIZCA ABD** (global/Türkiye yük = belgelenmiş boşluk; precomputed kanıt birebir aktarılır).
+6. **Self-host (Tier-O)** — drugddx (**CANLI**, klinik-DDI), anamnesis (RAG/GraphRAG), evidentia-kb (kb_search booster), openfda (openFDA + WHO ICD-11; latency!).
+7. **İkincil / koşullu** — Mevzuat Bilgisi (primer Mevzuat'a çapraz-kontrol aynası), Elicit (OAuth, claude.ai-bağlı; tools/list canlı probe bekliyor — zorunlu listede değil).
 
 > **Yüzey ayrımı (kritik):** **Claude Code**'da plugin `.mcp.json` roster'ını otomatik bağlar.
 > **claude.ai web**'de Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom
@@ -56,7 +61,7 @@ araştırmayı durdurmayın.
 
 ## Adım 3 — Flagship Skill Tanıtımı
 
-`medical-research` 8.4.0 ağır işi yapar: native-MCP-first çözümleme, probe-verified-only,
+`medical-research` 8.5.0 ağır işi yapar: native-MCP-first çözümleme, probe-verified-only,
 Adım 0–5 protokolü (kapsam → kaynak seçimi → çoklu-kaynak getirme → çapraz-doğrulama → sentez →
 temiz-kopya). Kullanıcı doğrudan bir araştırma sorusu sorduğunda bu skill devreye girer; `start`
 yalnızca yönlendirir.

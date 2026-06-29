@@ -12,7 +12,7 @@ access, named-patient.
 
 ## 1. Reference resources (Tier 1 / primary)
 - **Orphanet** (ORPHAcode, epidemiology, expert centres), **OMIM** (genetic basis),
-  **GARD/NORD**; gene–disease via Orphanet/OMIM (no native MCP → Exa/web).
+  **GARD/NORD**; gene–disease via Orphanet/OMIM (no native MCP/API → **documented gap**, not web-scraped).
 - Designations: FDA ODD, EMA OMP, TİTCK orphan handling; AdisInsight `is_orphan_drug`.
 
 ## 2. Evidence specifics (small-n methodology)

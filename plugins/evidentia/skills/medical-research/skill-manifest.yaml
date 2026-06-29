@@ -12,7 +12,7 @@ protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-or
 # --- Skill identity ---------------------------------------------------------
 skill:
   name: medical-research
-  version: "8.4.0"
+  version: "8.5.0"
   title: "Multi-Source Scientific Research & Synthesis Engine"
   description: >
     Turns a clinical / pharma / Türkiye-market question into a critically-appraised,
@@ -179,9 +179,10 @@ runtime:
     - name: Wiley                     # bio-research:wiley — OAuth-gated; full-text tier 4
       status: conditional
       tools: [authenticate]
-    - name: Regulatory MCP            # 922d7cdc — openFDA + ICD-11 + WHO GHO + Health Canada + Federal Register + EUR-Lex (call singly)
+    - name: openfda                   # openfda-mcp.cureonics.workers.dev (self-host Tier-O). D-α FIX (2026-06-28 probe): replaces legacy "Regulatory MCP 922d7cdc". openFDA (FAERS/label/drugsfda/enforcement/device, api.fda.gov keyless) + WHO ICD-11 MMS (server-side OAuth). Latency-prone → call singly + 1 retry + skippable.
       status: wired
-      tools: [openfda_search, icd11_search, who_gho_query, health_canada_dpd, federal_register_search, eurlex_expert_search]
+      tier: O
+      tools: [openfda_search, icd11_search]   # who_gho_query/health_canada_dpd/federal_register_search/eurlex_expert_search REMOVED — not bundled in the openfda Worker → no native API → documented gap (CONNECTORS.md §1.3 / connector-registry.md §2.3 / regulatory-intelligence.md §3-4). ICD-11 reroute target for the broken med-terminologies.icd11_search (D6).
     - name: TİTCK                     # 1a49b1bb — Türkiye Dörtlüsü structural
       status: wired
       tools: [search_drugs, get_drug, get_atc_class_summary, find_off_label_uses_for_drug, find_biosimilar_group, find_reference_prices_for_drug, compare_drug_to_alternatives, find_equivalent_products_by_substance, search_regulation_article23, find_authorization_cancellations_for_drug, get_price_history, get_withdrawal_trend, get_atc_hierarchy, search_off_label_uses, find_shared_substance_peers]
@@ -217,6 +218,28 @@ runtime:
       status: wired
       tier: K
       tools: [search_papers, get_paper, get_paper_citations, get_author]
+    # --- D-β FIX (2026-06-28 probe): drugddx PROMOTED from x_evidentia_self_host to first-class runtime (LIVE) ---
+    - name: drugddx                   # drugddx-mcp.cureonics.workers.dev (self-host Tier-O; OPEN/keyless MCP_ALLOW_NO_AUTH=1, read-only public-API proxy). Clinical-DDI gap-filler — NOT a pairwise DDI engine.
+      status: wired
+      tier: O
+      tools: [normalize_drug, interaction_label]   # normalize_drug → RxCUI; interaction_label → DailyMed SPL interaction-section pointer. Cross-validate with DailyMed/licensed source; never present label text as a computed pairwise verdict (CONNECTORS.md §5).
+    # --- Tier-K-epi: US public-health surveillance (probe-verified 2026-06-28) ---
+    - name: PopHIVE                   # mcp.pophive.org — Yale PopHIVE harmonized US surveillance (DOI 10.5281/zenodo.17345935). US-ONLY aggregate; relay precomputed evidence, never re-derive. Global/TR burden = documented gap.
+      status: wired
+      tier: K
+      scope: us-only
+      tools: [get_current_status, get_trend, get_map, get_coverage, compare, get_data]   # ED-visits/hospitalizations/wastewater/lab/search-trends + childhood vaccination coverage. Feeds §1.P/§21 (axis 0.5.K).
+    # --- Secondary cross-check mirror (primacy = primary Mevzuat fbf16a1a) ---
+    - name: Mevzuat Bilgisi           # mevzuat.surucu.dev — secondary TR-legislation cross-check; adds law-NUMBER lookup + bedesten.adalet.gov.tr second source (primary Mevzuat's keyword search lacks both). Subject to one-fetch cache; invoked only on primary-Mevzuat miss or when a law-number/gerekçe lookup is needed.
+      status: conditional
+      tier: secondary
+      tools: [search_kanun, search_mevzuat]   # law-number/title lookup + bedesten cross-check. Primacy stays with the primary Mevzuat connector (Türkiye Dörtlüsü).
+    # --- Elicit — operator-connected academic SR/extraction (OAuth-gated; live MCP probe 2026-06-28 → 401 OAuth-required) ---
+    - name: Elicit                    # elicit.com/api/mcp — systematic-review / structured-extraction layer; SECONDARY to Consensus. OAuth 2.1-gated (scope elicit.mcp) → connected via claude.ai Settings, NOT a static .mcp.json URL (like Wiley/Synapse). The static elk_live_ key is Elicit's REST-API key (Doppler ELICIT_API_KEY), NOT the MCP token.
+      status: conditional
+      tier: secondary
+      auth: oauth
+      tools: [search_papers, search_trials, list_reports, get_report, create_report]   # probe-verified 2026-06-28 via the OAuth session (search_papers→JULIET NEJM PMID 30501490 live; list_reports live). search_papers/search_trials = corpus search (typeTags RCT/Meta/SR + quartile/year filters); create_report = SR-report generator (quota-bearing — use judiciously). SECONDARY to Consensus; NOT in the mandatory Adım 1 list; cross-validate extracted claims (DEĞİŞMEZ 4).
     # --- Optional / degradable booster (Tier O) ---
     - name: evidentia-kb              # evidentia-kb-mcp.cureonics.workers.dev — KB semantic recall booster (graceful-degrade)
       status: optional
@@ -259,7 +282,7 @@ x_evidentia_self_host_2026_06_25:
   - id: "self-host/drugddx-mcp"
     url: "https://drugddx-mcp.cureonics.workers.dev/mcp (post-deploy Tier-O)"
     fills_gap: "clinical-DDI fallback (RxNorm normalize + DailyMed label section); NOT a pairwise DDI engine"
-    status: "source delivered + typecheck clean; deploy gate = self-host/drugddx-mcp/BUILD-BRIEF.md DoD"
+    status: "DEPLOYED LIVE (2026-06-28 probe: normalize_drug→rxcui, interaction_label→DailyMed SPL; open/keyless) — D-β: PROMOTED to runtime.mcp_servers (Tier-O, wired). This block retained as the deploy-source record."
   - id: "self-host/anamnesis-mcp"
     url: "https://anamnesis-mcp.cureonics.workers.dev/mcp (post-deploy Tier-O)"
     fills_gap: "RAG/GraphRAG retrieval substrate — semantic chunking (bge-m3 1024-d) + Vectorize + D1 entity-relation graph; prevents context-window truncation of full-text/large tool outputs (evidence_index, retrieve-don't-dump)"
@@ -272,7 +295,7 @@ x_evidentia_self_host_2026_06_25:
 
 # --- Verification gates (executable — evals/check_integrity.py) --------------
 verification:
-  gate_count: 8
+  gate_count: 11
   gates:
     - id: G-REF
       description: "Reference integrity — every references/*.md cited by SKILL.md exists on disk"
@@ -306,6 +329,18 @@ verification:
       description: "Full-text sections enforce no-verbatim-bulk + copyright_status gate (fulltext-retrieval.md)"
       command: "manual review per fulltext-retrieval.md"
       blocking: true
+    - id: G-PROBE
+      description: "Every wired Tier-K/Tier-O connector in connector-registry §2.6 has a WIRE row in the §8 Probe Log (no remembered liveness — probe-verified-only, DEĞİŞMEZ 2)"
+      command: "python3 evals/check_integrity.py --probe"
+      blocking: true
+    - id: G-XVAL
+      description: "Each Extended-Tier recipe in SKILL.md Adım 1/B carries an explicit cross-validation gate (patient-impacting output confirmed against an authoritative source, DEĞİŞMEZ 4)"
+      command: "python3 evals/check_integrity.py --xval"
+      blocking: true
+    - id: G-WHITELIST
+      description: "No pipeworx-generic tool name (ask_pipeworx/discover_tools/remember/recall/forget/polymarket_*/scan_*/subscribe/validate_claim) appears in the connector-registry §2.6 tool whitelist (tool-level least-privilege, DEĞİŞMEZ 5)"
+      command: "python3 evals/check_integrity.py --whitelist"
+      blocking: true
 
 # --- References -------------------------------------------------------------
 references:
@@ -317,18 +352,33 @@ references:
 
 # --- Build ------------------------------------------------------------------
 build:
-  version: "8.4.0"
-  release_date: "2026-06-19"
-  release_name: "Reference-Integrity & Operability Release"
+  version: "8.5.0"
+  release_date: "2026-06-28"          # v8.5 Extended-Tier Promotion live re-probe (connector-registry §8 Probe Log)
+  release_name: "Extended-Tier Promotion & Epidemiology Wiring"
   compatibility:
-    backward_compatible_with: ["8.1", "8.0"]
+    backward_compatible_with: ["8.4", "8.3", "8.2", "8.1", "8.0"]   # all ADR-05 additive
     breaking_changes: []
     additive_changes:
-      - "standalone canonical SMP v1.0 manifest (UP-002)"
-      - "executable integrity gate evals/check_integrity.py + 10 regression queries (UP-004)"
-      - "recreated 3 always-load files + 8 specialty layers + osint + 4 infra files (UP-001/UP-003)"
-      - "α-layer connectors wired: TİTCK Cache, YÖK Akademik, PDF Viewer, Social Listening (UP-005)"
-      - "canonical navigational headings (UP-006)"
+      # v8.2 — Reference-Integrity & Operability Release (skill-upgrader UPGRADE Faz 5)
+      - "v8.2: standalone canonical SMP v1.0 manifest (UP-002)"
+      - "v8.2: executable integrity gate evals/check_integrity.py + 10 regression queries (UP-004)"
+      - "v8.2: recreated 3 always-load files + 8 specialty layers + osint + 4 infra files (UP-001/UP-003)"
+      - "v8.2: α-layer connectors wired: TİTCK Cache, YÖK Akademik, PDF Viewer, Social Listening (UP-005)"
+      - "v8.2: canonical navigational headings (UP-006)"
+      # v8.3 — semantic coverage mechanism
+      - "v8.3: semantic coverage mechanism — new always-load references/knowledge-map.md + mandatory Adım 0.4 (Semantic Scope Scan: concept-set decomposition → coverage_set) + Completeness Gate + G-COVERAGE gate added to check_integrity.py; Adım 0.5 now loads the UNION of coverage_set (keyword signals only add, never shrink)"
+      - "v8.3: optional evidentia-kb (kb_search) semantic-recall booster — graceful-degrade; may only raise recall, never gates the flow"
+      # v8.4 — Structured-Authoritative Refocus (web tier + OSINT removed)
+      - "v8.4: removed the Exa/Tavily web-retrieval tier AND the entire OSINT axis (osint-playbook.md, social-listening) — pure structured-authoritative engine; Native-First ladder now ends at documented gap (no web fallback; no-API sources reported as unreachable gap, never web-scraped or fabricated)"
+      - "v8.4: full-text cascade Tier 5 (was Exa) → pubmed-epmc Unpaywall legal-OA"
+      - "v8.4: added 3 keyless Tier-K academic connectors (probe-verified 2026-06-27) — OpenAlex, PubMed-EPMC, Semantic Scholar — promoted from native_rest_fallback; web/OSINT competitive intelligence handed off to pharmaintel; 3P-untrusted keyless trust posture documented (connector-registry §6.3P; keyless ⇒ no secret leak)"
+      # v8.5 — Extended-Tier Promotion & Epidemiology Wiring (live re-probe 2026-06-28; connector-registry §8 Probe Log)
+      - "v8.5: Extended Tier-K (med-terminologies/nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb) promoted to first-class with TOOL-LEVEL whitelists + cross-validation gates (connector-registry §2.6); broken tools D1(rxnorm_interactions 404)/D2(rxnorm_related 400)/D3(icd10cm name-search→0)/D6(med-terminologies.icd11_search AUTH) routed to working alternatives; pipeworx generics out-of-whitelist (G-WHITELIST)"
+      - "v8.5: D-β — drugddx promoted from x_evidentia_self_host into runtime.mcp_servers (Tier-O, live: normalize_drug/interaction_label)"
+      - "v8.5: D-α — legacy 'Regulatory MCP 922d7cdc' replaced by openfda (openFDA + WHO ICD-11); who_gho_query/health_canada_dpd/federal_register_search/eurlex_expert_search not bundled → documented gap (regulatory-intelligence.md refocused; all Exa references removed)"
+      - "v8.5: PopHIVE wired for US epidemiology (Tier-K-epi, axis 0.5.K / §1.P / §21: get_current_status/get_trend/get_map/get_coverage/compare); US-ONLY — global/Türkiye burden stays documented gap; precomputed evidence relayed, never re-derived"
+      - "v8.5: Mevzuat Bilgisi secondary cross-check (law-number lookup + bedesten second source; primacy = primary Mevzuat); Elicit secondary/conditional (OAuth, claude.ai-connected; tools probe-verified 2026-06-28 = search_papers/search_trials/list_reports/get_report/create_report; the static elk_live_ key is Elicit's REST key, not an MCP JWS)"
+      - "v8.5: new executable gates — G-PROBE (every wired Tier-K/O connector has WIRE evidence in the Probe Log), G-XVAL (each Extended-Tier recipe carries a cross-validation gate), G-WHITELIST (no pipeworx-generic tool appears in the §2.6 whitelist) + 3 regression queries (benchmark-queries.json)"
 
 # --- Constraints (extension) ------------------------------------------------
 constraints:

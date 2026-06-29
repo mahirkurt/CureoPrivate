@@ -18,7 +18,7 @@
 | 4 | **EuropePMC** Turkish affiliation | `search_articles("(konu) AND AFF:\"Turkey\"")` | (retained) |
 | 5 | **TÜRKPATENT** | `search_patents`, `search_trademarks` | `Exa` patent scraping |
 
-Exa Turkish scraping is now a **fallback only** (e.g., TOD/THD congress books, kanser.gov.tr pages without an API).
+There is **no web fallback** (Exa/Tavily removed v1.4.0): TOD/THD congress books or kanser.gov.tr pages without an API are a **documented gap (VERİ YOK)** — an operator-supplied PDF may be ingested into anamnesis. Native TİTCK + Mevzuat cover the structured TR data.
 
 ---
 

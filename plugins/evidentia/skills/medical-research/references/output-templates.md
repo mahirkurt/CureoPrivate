@@ -30,7 +30,7 @@ Core §1–10 always; specialty §11–18 when a 0.5 axis is active; §19 (0.5.I
 ## 11–18. Specialty extended sections (per active 0.5 layer)
 ## 19. Drug Intelligence Pipeline Snapshot (0.5.I)
 ## 20. Cross-Layer Integration Notes
-## 21. Epidemiyoloji / Hastalık Yükü (0.5.K — WHO GHO + ICD-11 + GLOBOCAN)
+## 21. Epidemiyoloji / Hastalık Yükü (0.5.K — ICD-11 via openfda + US surveillance via PopHIVE; global/TR burden = documented gap)
 ```
 
 > The tool-annotated headings above are the **internal scaffold**. For file-based reports,
@@ -60,9 +60,13 @@ Select the format that matches the query intent; sections from §1 may be reorde
 ## 3. §21 Epidemiology Block (0.5.K)
 
 When the epidemiology axis fires, emit a dedicated block:
-- **Burden estimates** — WHO GHO `who_gho_query` (incidence/prevalence/mortality/DALY), Turkey arm
-  (`SpatialDim eq 'TUR'`) when available, plus comparator countries.
-- **Coding** — ICD-11 `icd11_search` for the condition code(s); GLOBOCAN via Exa for cancer.
+- **US surveillance (v8.5)** — `PopHIVE` (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare`):
+  US disease activity (ED/hospitalization/wastewater/lab) + childhood vaccination coverage. **Relay the
+  precomputed evidence verbatim — never re-derive the numbers. US-ONLY.**
+- **Global / Türkiye burden** — **no native API → documented gap (VERİ YOK)**, never web-scraped or
+  fabricated. TR substitutes: TİTCK + EPMC `AFF:"Turkey"` + YÖK Tez. (Legacy `who_gho_query` and
+  `GLOBOCAN via Exa` are removed — web tier gone v1.4.0.)
+- **Coding** — ICD-11 via **`openfda:icd11_search`** for the condition code(s) (D6: never `med-terminologies.icd11_search`).
 - **Denominator role** — explicitly connect the epidemiologic denominator to HTA budget-impact
   (§F) and rare-disease prevalence (§ rare-disease-layer) when those axes co-fire.
 - **Gap note** — Turkish incidence/registry-coverage availability (feeds Phase 4 gap analysis).
@@ -89,7 +93,7 @@ pharmapatent / onko-erisim / saglik-sigorta. Top-level keys:
                               brand_names[], organizations[], is_orphan_drug, adis_insight_profile_url */ },
   "turkey_access_summary": { /* native TİTCK: barcode, atc, reimbursement_status, reference_status,
                                price{firm,depot,pharmacy,retail,eur,valid_from}, biosimilar_group[] */ },
-  "epidemiology_payload":  { /* WHO GHO series + ICD-11 codes + GLOBOCAN */ },
+  "epidemiology_payload":  { /* PopHIVE US surveillance (relayed) + ICD-11 codes (openfda); global/TR burden = documented gap */ },
   "sources_summary":     { "connectors_used": [ /* verified connector names */ ],
                             "n_calls": 0, "gaps": [ /* sources that returned null + queries */ ] }
 }

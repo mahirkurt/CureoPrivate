@@ -86,6 +86,27 @@ Already connected in the operator workspace (mostly Cureonics-built); wired in v
 
 > **β-layer (NOT wired).** Registry-discovered remote-ready candidates (clinical-DDI, terminology cross-walk) that fill genuine gaps but are **community-published + unverified**. The v8.0 "probe-verified only" principle forbids wiring them before a live `tools/list` probe + Tier-2 (Glama/PulseMCP) trust vetting. Listed in `skill-manifest.yaml` `candidate_connectors_unverified`. See the upgrade plan UP-007.
 
+### 2.6 Extended Terminology / Pharmacology Tier (Tier-K) — first-class, tool-whitelisted (v8.5)
+
+Promoted to first-class in v8.5 (`Extended-Tier Promotion`). **Least-privilege is enforced at the
+TOOL level (DEĞİŞMEZ 5):** only the verified-working tools below are ever called; the BROKEN tools
+are never invoked, and the pipeworx **generic** tools (`ask_pipeworx`, `discover_tools`,
+`remember`/`recall`/`forget`, `polymarket_*`, `scan_*`, `subscribe`, `validate_claim`, …) are
+**out-of-whitelist** (G-WHITELIST). All four are community-published → **sandbox-first; patient-impacting
+output cross-validated against an authoritative source** (DEĞİŞMEZ 4 / §6.3P).
+
+| Connector | Server | ✅ Whitelist (verified 2026-06-28) | ⛔ Broken — never call | Primary role | Cross-validation gate |
+|---|---|---|---|---|---|
+| **med-terminologies** | `medical.sidneybissoli.com` | `atc_classify`, `map_icd10_to_icd11` | **`icd11_search` → AUTH_CONFIG_ERROR** (no WHO creds) | ATC class + authoritative ICD-10→ICD-11 map (WHO 2025-01) | ICD-11 text search → **`openfda.icd11_search`** (D6). Patient-impacting → authoritative source |
+| **nih-clinicaltables** | `gateway.pipeworx.io/clinicaltables` | `drugs` (RxTerms+RXCUIS), `icd10cm` **code→desc**, `conditions` | **`icd10cm` name-search → 0** (free-text broken) | ICD-10-CM code→description, RxTerms autocomplete | Diagnosis text→code → **`map_icd10_to_icd11`** / **`openfda.icd11_search`** (D3) |
+| **nlm-rxnorm** | `gateway.pipeworx.io/rxnorm` | `rxnorm_search` (SBD/SCD), `rxnorm_get_properties` | **`rxnorm_interactions` → 404**, **`rxnorm_related` → 400** (NLM RxNav interaction API retired Jan-2024) | RxNorm normalize (name↔RxCUI), properties | Brand↔generic → **TİTCK `find_equivalent_products_by_substance`** / `med-terminologies.atc_classify` (D2/D4); DDI → **drugddx** (D1) |
+| **iuphar-gtopdb** | `gateway.pipeworx.io/guidetopharmacology` | `search_targets`, `search_ligands`, `target_interactions`, `ligand_interactions` | — | Target/ligand pharmacology (IUPHAR/BPS) | Complements ChEMBL `get_mechanism`; second source when OpenTargets offline |
+| **drugddx** (Tier-O) | `drugddx-mcp.cureonics.workers.dev` | `normalize_drug`, `interaction_label` | — | Clinical-DDI gap-filler — **NOT a pairwise DDI engine** | `interaction_label` returns a DailyMed SPL pointer (label text), **never a computed verdict** → confirm with DailyMed/licensed source (§5) |
+
+> **Tool-level whitelist note.** `.mcp.json` wires at the **server** level; the per-tool whitelist
+> above is the enforced contract — the skill calls only these tools. G-WHITELIST statically asserts
+> no pipeworx-generic tool name appears in this §2.6 whitelist.
+
 ---
 
 ## 3. Per-Connector Usage Notes (from live probes)
@@ -96,7 +117,7 @@ Already connected in the operator workspace (mostly Cureonics-built); wired in v
 ### 3.2 TİTCK — structural Turkey data
 `search_drugs(query="trastuzumab")` returns barcode, ATC, marketing-authorization holder, `reimbursement_status` (GERİ ÖDEMELİ / GERİ ÖDEMESİZ), `reference_status`, lifecycle, manufacture origin, and a typed `price` block (firm/depot/pharmacy/retail TRY + source-country EUR + valid-from date). Chain: `search_drugs` → `get_drug(record_id=barcode)` → `find_biosimilar_group` / `find_reference_prices_for_drug` / `compare_drug_to_alternatives` / `find_off_label_uses_for_drug`. ⚠️ ATC may differ between master (`L01FD01`, current) and `detailed_price_list` sub-field (`L01XC03`, legacy) — **master record is authoritative.** ⚠️ `find_drug_drug_interactions` is a deprecated alias for substance-overlap (NOT clinical DDI) — prefer `find_shared_substance_peers` and never present as interaction data.
 
-### 3.3 Regulatory MCP — native openFDA + epidemiology
+### 3.3 openfda (self-host) — native openFDA + ICD-11  [D-α: replaces legacy "Regulatory MCP 922d7cdc"]
 `openfda_search(endpoint="drug/event", search='patient.drug.medicinalproduct:"X"', count="patient.reaction.reactionmeddrapt.exact")` for FAERS PT-level signal counts (NOT incidence — spontaneous reporting). `endpoint="drug/drugsfda"` for approval data, `drug/label` for labeling, `drug/enforcement` for recalls. **`icd11_search` for indication coding** (this is the ONLY working ICD-11 text search — D6: `med-terminologies.icd11_search` returns AUTH_CONFIG_ERROR; always route ICD-11 here). Disease-burden (WHO GHO/GLOBOCAN/IHME) has **no native API in this build** → documented gap, never fabricated. ⚠️ Server is slow — issue these singly, allow retry, and mark as skippable if a query stalls.
 
 ### 3.4 Web research — REMOVED (v1.4.0)
@@ -158,14 +179,44 @@ The Tier-K academic expansion (`openalex`, `pubmed-epmc`, `semantic-scholar`, ad
 
 ---
 
-## 7. Domain Registry (query-construction guidance for Exa/Tavily)
+## 7. Authoritative Source Domains (reference only — NOT web-scraped)
+
+> **No web tier (v1.4.0).** evidentia does **not** fetch or scrape these domains — the Exa/Tavily
+> query-construction tier was removed. This list is retained only to (a) **recognize/cite** a canonical
+> source that a user supplies or that surfaces inside native results, and (b) keep gap-transparency
+> honest: when one of these is the *only* place an answer lives and it has no native API, the result is
+> reported as a **documented gap (VERİ YOK)**, never fabricated.
 
 Guidelines/societies: `esmo.org, nccn.org, asco.org, hematology.org, ehaweb.org, nice.org.uk, who.int, cochrane.org, epistemonikos.org, acr.org, eular.org, aan.com, ectrims.eu, ecco-ibd.eu, ginasthma.org, orpha.net`.
-Regulatory (prefer native first): `fda.gov, accessdata.fda.gov, ema.europa.eu, titck.gov.tr, sgk.gov.tr, resmigazete.gov.tr, pmda.go.jp`.
+Regulatory (native-first via openfda/TİTCK/Mevzuat): `fda.gov, accessdata.fda.gov, ema.europa.eu, titck.gov.tr, sgk.gov.tr, resmigazete.gov.tr, pmda.go.jp`.
 Journals: `nejm.org, thelancet.com, jamanetwork.com, bmj.com, nature.com, bloodjournal.org, ascopubs.org, haematologica.org, annals.org`.
 HTA: `nice.org.uk, iqwig.de, has-sante.fr, cadth.ca, cda-amc.ca, pbac.pbs.gov.au, icer.org, tlv.se`.
 Türkiye: `titck.gov.tr, sgk.gov.tr, resmigazete.gov.tr, mevzuat.gov.tr, thd.org.tr, kanser.gov.tr, dergipark.org.tr, trdizin.gov.tr`.
+US epidemiology (native via PopHIVE): `pophive.org` (Yale harmonized US surveillance — see §8 Probe Log).
 
 ---
 
-*v8.0 — All tool names/parameters verified by live probe 9 June 2026. When a documented capability conflicts with observed behavior, observed behavior is authoritative.*
+## 8. Probe Log — 2026-06-28 (G-PROBE evidence base, v8.5 Extended-Tier Promotion)
+
+Live MCP tool-call probes (not remembered — DEĞİŞMEZ 2). HTTP/result + working/broken tools recorded;
+classified **WIRE / DEGRADE / DECLINE**. Drift evidence: drugddx **LIVE** (D-β); legacy "Regulatory MCP
+922d7cdc" **absent from the tool surface** → superseded by **openfda** (D-α).
+
+| Connector | Server | Result | ✅ Verified working | ⛔ Verified broken | Class |
+|---|---|---|---|---|---|
+| drugddx | `drugddx-mcp.cureonics.workers.dev` | 200 (open/keyless) | `normalize_drug` (imatinib→rxcui 282388), `interaction_label` (warfarin→DailyMed SPL setid) | — | **WIRE** Tier-O |
+| med-terminologies | `medical.sidneybissoli.com` | 200 | `atc_classify` (metformin→A10BA), `map_icd10_to_icd11` (E11→5A11, WHO 2025-01) | `icd11_search` → **AUTH_CONFIG_ERROR** | **WIRE** Tier-K |
+| nih-clinicaltables | `gateway.pipeworx.io/clinicaltables` | 200 | `drugs` (aspirin→15+RXCUIS), `icd10cm` code (E11→87 codes) | `icd10cm` name-search ("type 2 diabetes"→0) | **WIRE** Tier-K |
+| nlm-rxnorm | `gateway.pipeworx.io/rxnorm` | 200 | `rxnorm_search` (imatinib SBD/SCD), `rxnorm_get_properties` (282388→IN imatinib) | `rxnorm_interactions` → **404**, `rxnorm_related` → **400** | **WIRE** Tier-K |
+| iuphar-gtopdb | `gateway.pipeworx.io/guidetopharmacology` | 200 | `search_targets` (JAK→JAK2/JAK3), `search_ligands` (imatinib→id 5687) | — | **WIRE** Tier-K |
+| PopHIVE | `mcp.pophive.org` | 200 | `get_current_status` (rsv/CT→6-source verdict, US-only) | — (US-only scope) | **WIRE** Tier-K-epi |
+| openfda (incumbent) | `openfda-mcp.cureonics.workers.dev` | 200 | `icd11_search` (WHO ICD-11 MMS 2024-01), `openfda_search` (imatinib FAERS PT counts) | — | **WIRED** (D-α target) |
+| Mevzuat Bilgisi | `mevzuat.surucu.dev` | 200 | `search_kanun` ("ilaç"→67 incl. law-number lookup) | — | **WIRE secondary** |
+| Elicit | `elicit.com/api/mcp` | 200 LIVE (OAuth session) | `search_papers` (→JULIET NEJM PMID 30501490), `search_trials`, `list_reports`, `get_report`, `create_report` | — (static `elk_live_` key = REST, not MCP-JWS) | **WIRE secondary** (OAuth, conditional) |
+| Regulatory MCP (legacy) | `922d7cdc` | not in tool surface | — | who_gho/health_canada/federal_register/eurlex | **superseded → openfda** (D-α); those 4 = documented gap |
+
+---
+
+*v8.0 baseline — tool names/parameters verified by live probe 9 June 2026; **v8.5 re-probe 2026-06-28**
+(§8 Probe Log) promoted the Extended Tier-K to first-class, fixed the D-α/D-β drift, and wired PopHIVE
+(US epidemiology). When a documented capability conflicts with observed behavior, observed behavior is authoritative.*

@@ -3,23 +3,37 @@
 check_integrity.py — medical-research skill integrity gate (evals harness).
 
 Implements the executable gates declared in skill-manifest.yaml `verification:`:
-  --refs        G-REF      every references/*.md cited by SKILL.md exists on disk      (blocking)
+  --refs        G-REF      every references/*.md cited by SKILL.md exists on disk;
+                           mount-tolerant — out-of-tree plugin-root links
+                           (../../CONNECTORS.md, ../../shared/…) WARN-skip when the
+                           full plugin is not mounted                                   (blocking)
   --connectors  G-CONN     every connector in connector-registry resolves to a
                            runtime.mcp_servers entry in the manifest                    (blocking)
   --always-load G-ALWAYS   the 6 Adim-0 always-load files all present                  (blocking)
   --version     G-VERSION  version stamp agreement: manifest <-> SKILL.md frontmatter
                            <-> SKILL.md H1/changelog                                     (non-blocking)
   --coverage    G-COVERAGE knowledge-map.md exhaustive & consistent vs corpus           (blocking)
+  --probe       G-PROBE    every first-class Extended Tier-K/O connector has a WIRE row
+                           in the connector-registry §8 Probe Log (probe-verified-only)  (blocking)
+  --xval        G-XVAL     each Extended-Tier recipe (SKILL.md Adım 1/B) carries a
+                           cross-validation gate                                          (blocking)
+  --whitelist   G-WHITELIST no pipeworx-generic tool appears in the §2.6 tool whitelist   (blocking)
+  --strict      re-elevate out-of-tree plugin-root ref misses (G-REF) to FAIL, for
+                full-plugin-mount CI where the root MUST resolve                        (modifier)
   (no flag)     run all gates
 
 Stdlib only (no PyYAML dependency) — the manifest is parsed with lightweight,
 structure-aware line scanning. Exit code 0 = all run gates passed; 1 = a blocking
 gate failed; 2 = harness/setup error.
 
-This harness was completed as part of the `evidentia` plugin packaging: the source
-skill referenced evals/check_integrity.py in its manifest but did not ship the file
-(a pre-existing G-REF defect). Behaviour is faithful to the manifest spec; the skill's
-research logic is untouched (ADR-05).
+This harness ships with the `evidentia` plugin packaging (the source skill cited
+evals/check_integrity.py in its manifest but did not ship it). G-REF is now
+mount-aware: in a skill-only / flattened / CI / claude.ai-cache checkout the plugin
+root is absent, so out-of-tree references (../../CONNECTORS.md,
+../../shared/canonical-cache-contract.md) resolve only in a full mount — they are
+reported as WARN and skipped (not FAIL) by default, and re-elevated to FAIL under
+--strict. In-tree references keep a hard FAIL when missing. Behaviour is faithful to
+the manifest spec; the skill's research logic is untouched (ADR-05).
 """
 from __future__ import annotations
 
@@ -37,6 +51,7 @@ CONNECTOR_REGISTRY = REFS_DIR / "connector-registry.md"
 ALWAYS_LOAD = [
     "connector-registry.md", "extended-api.md", "evidence-grading.md",
     "output-templates.md", "fulltext-retrieval.md", "report-presentation.md",
+    "knowledge-map.md",   # v8.3 always-load (Adım 0.4 semantic coverage index)
 ]
 
 GREEN, RED, YELLOW, RESET = "\033[32m", "\033[31m", "\033[33m", "\033[0m"
@@ -90,22 +105,32 @@ def _manifest_versions(text: str) -> set[str]:
 
 
 # ----------------------------------------------------------------------------- gates
-def gate_refs() -> bool:
-    """G-REF: every references/*.md cited by SKILL.md exists on disk.
+def gate_refs(strict: bool = False) -> bool:
+    """G-REF: every references/*.md cited by SKILL.md exists on disk (mount-tolerant).
 
     Path-aware: (a) bare `references/<name>.md` paths must exist in references/;
     (b) markdown links `[..](path.md)` are resolved relative to SKILL.md and checked
-    at the resolved location (so cross-dir links like ../../shared/x.md and ../../CONNECTORS.md
-    validate correctly). Plain prose mentions of removed files (e.g. "replaces connector-api.md")
-    are NOT citations and are ignored.
+    at the resolved location.
+
+    Mount-awareness: a (b) link whose resolved target escapes the skill tree
+    (e.g. ../../CONNECTORS.md, ../../shared/canonical-cache-contract.md) is a
+    *plugin-root* reference — normative, but only resolvable in a FULL plugin mount.
+    In a skill-only / flattened / CI / claude.ai-cache checkout the root is absent:
+      - target exists  -> PASS (full mount)
+      - target absent  -> WARN + skipped from `missing` (mount-tolerant default),
+                          unless --strict, which re-elevates it to FAIL (full-mount CI).
+    In-tree links keep a hard FAIL when missing (a genuinely deleted ref stays red).
+    Plain prose mentions of removed files (e.g. "replaces connector-api.md") are NOT
+    citations and are ignored.
     """
-    print("G-REF  reference integrity (path-aware)")
+    print("G-REF  reference integrity (path-aware, mount-tolerant)")
     skill = _read(SKILL_MD)
     base = SKILL_MD.parent
     missing: list[str] = []
     checked = 0
+    skipped = 0
 
-    # (a) references/<name>.md  -> must exist in references/
+    # (a) references/<name>.md  -> must exist in references/ (always in-tree)
     ref_cites = sorted(set(re.findall(r"references/([a-z0-9][a-z0-9\-]*\.md)", skill)))
     for name in ref_cites:
         checked += 1
@@ -123,10 +148,25 @@ def gate_refs() -> bool:
             continue  # already covered by (a)
         target = (base / rel).resolve()
         checked += 1
-        exists = target.exists()
-        label = rel if exists else f"{rel}  -> {target}"
-        (_ok if exists else _fail)(f"link {label}")
-        if not exists:
+        # in-tree vs out-of-tree (plugin-root) classification — stdlib-universal and
+        # backward-safe: relative_to()+except, not is_relative_to() (Py3.9+ only).
+        try:
+            target.relative_to(SKILL_DIR)
+            in_tree = True
+        except ValueError:
+            in_tree = False
+        if target.exists():
+            _ok(f"link {rel}")
+        elif not in_tree:
+            # plugin-root ref: resolves only in a full plugin mount
+            if strict:
+                _fail(f"link {rel}  -> {target} (out-of-tree; --strict)")
+                missing.append(rel)
+            else:
+                _warn(f"link {rel} — plugin-root ref; resolves only in full plugin mount")
+                skipped += 1
+        else:
+            _fail(f"link {rel}  -> {target}")
             missing.append(rel)
 
     if checked == 0:
@@ -134,7 +174,11 @@ def gate_refs() -> bool:
     if missing:
         _fail(f"{len(missing)} cited reference(s) missing: {', '.join(missing)}")
         return False
-    _ok(f"all {checked} cited reference(s)/link(s) resolve on disk")
+    resolved = checked - skipped
+    msg = f"all {resolved} in-tree/resolved reference(s)/link(s) OK"
+    if skipped:
+        msg += f"; {skipped} plugin-root ref(s) WARN-skipped (full-mount only)"
+    _ok(msg)
     return True
 
 
@@ -198,7 +242,7 @@ def gate_connectors() -> bool:
 
     # Unresolved here are advisory (registry contains prose tokens too) — report, don't hard-fail
     # unless a KNOWN core connector is absent from the manifest.
-    core = ["PubMed", "Clinical Trials", "TİTCK", "Mevzuat", "Regulatory MCP", "AdisInsight", "ChEMBL"]
+    core = ["PubMed", "Clinical Trials", "TİTCK", "Mevzuat", "openfda", "AdisInsight", "ChEMBL"]   # v8.5 D-α: Regulatory MCP → openfda
     core_missing = [c for c in core if norm(c) not in server_norm]
     _ok(f"{len(server_names)} runtime.mcp_servers entries parsed")
     if core_missing:
@@ -297,12 +341,141 @@ def gate_version() -> bool:
     return True
 
 
+# ----------------------------------------------------------------------------- v8.5 gates
+def _md_section(text: str, heading_substr: str) -> str:
+    """Return the markdown section whose heading contains heading_substr, up to the next
+    same-or-higher-level heading (or EOF)."""
+    out: list[str] = []
+    capturing = False
+    level = 0
+    for ln in text.splitlines():
+        m = re.match(r"^(#{1,6})\s+(.*)$", ln)
+        if m and not capturing and heading_substr.lower() in m.group(2).lower():
+            capturing, level = True, len(m.group(1))
+            out.append(ln)
+            continue
+        if capturing and m and len(m.group(1)) <= level:
+            break
+        if capturing:
+            out.append(ln)
+    return "\n".join(out)
+
+
+# Extended Tier-K/O connectors that MUST be first-class + probe-evidenced (v8.5)
+EXTENDED_TIER = ["med-terminologies", "nih-clinicaltables", "nlm-rxnorm", "iuphar-gtopdb", "drugddx"]
+
+# pipeworx generic tools that must NEVER appear in the §2.6 tool whitelist (least-privilege)
+PIPEWORX_GENERIC = {
+    "ask_pipeworx", "ask_pipeworx_grounded", "discover_tools", "remember", "recall",
+    "forget", "subscribe", "unsubscribe", "list_subscriptions", "validate_claim",
+    "suggest_questions", "deep_research", "bet_research", "compare_entities",
+    "entity_profile", "resolve_entity", "recent_alerts", "recent_changes",
+    "pipeworx_feedback", "pipeworx_trending", "ai_visibility_check", "generate_llms_txt",
+    "scan_competitor_ai_presence", "scan_dependency", "search_within",
+    "polymarket_arbitrage", "polymarket_edges", "polymarket_edge_tracker",
+    "polymarket_fill_risk", "polymarket_kalshi_spread",
+}
+
+
+def gate_probe() -> bool:
+    """G-PROBE: every first-class Extended Tier-K/O connector has a WIRE row in the
+    connector-registry §8 Probe Log — probe-verified-only (DEĞİŞMEZ 2: no remembered
+    liveness without on-disk probe evidence)."""
+    print("G-PROBE  Extended-Tier connectors ⇄ §8 Probe Log evidence")
+    if not CONNECTOR_REGISTRY.exists():
+        _fail("connector-registry.md absent")
+        return False
+    probe = _md_section(_read(CONNECTOR_REGISTRY), "Probe Log")
+    if not probe.strip():
+        _fail("no 'Probe Log' section in connector-registry.md (FAZ 0.3)")
+        return False
+    if not re.search(r"20\d\d-\d\d-\d\d", probe):
+        _warn("Probe Log has no ISO date stamp")
+    # Only TABLE ROWS count as probe evidence — a prose legend ("classified WIRE / DEGRADE /
+    # DECLINE") must NOT satisfy the gate. A row is a line starting with '|'.
+    rows = [l for l in probe.splitlines() if l.strip().startswith("|")]
+    ok = True
+    for c in EXTENDED_TIER + ["PopHIVE"]:
+        row = next((l for l in rows if c in l and re.search(r"\bWIRE", l)), None)
+        if row:
+            _ok(f"{c} — WIRE table-row in Probe Log")
+        else:
+            _fail(f"{c} — no WIRE table-row in Probe Log (probe-verified-only)")
+            ok = False
+    return ok
+
+
+def gate_xval() -> bool:
+    """G-XVAL: each Extended-Tier recipe in SKILL.md Adım 1/B carries an explicit
+    cross-validation gate (patient-impacting output confirmed against an authoritative
+    source, DEĞİŞMEZ 4)."""
+    print("G-XVAL  Extended-Tier recipes carry a cross-validation gate")
+    skill = _read(SKILL_MD)
+    if "Extended Tier-K" not in skill:
+        _fail("SKILL.md has no 'Extended Tier-K' recipe block (Adım 1/B)")
+        return False
+    block = skill.split("Extended Tier-K", 1)[1].split("\n## ", 1)[0]
+    recipes = ["Terminology", "normalization", "Clinical DDI", "Mechanism"]
+    cues = ["cross-validate", "cross-validation", "çapraz-doğrula", "authoritative", "licensed source"]
+    ok = True
+    for r in recipes:
+        idx = block.lower().find(r.lower())
+        if idx < 0:
+            _fail(f"recipe '{r}' missing from Extended-Tier block")
+            ok = False
+            continue
+        # Bound the scan to THIS recipe bullet only (up to the next "- " bullet) so a
+        # neighbouring recipe's cross-validation cue cannot bleed in and mask a stripped gate.
+        nxt = block.find("\n- ", idx + 1)
+        seg = (block[idx:nxt] if nxt > idx else block[idx: idx + 600]).lower()
+        if any(c in seg for c in cues):
+            _ok(f"recipe '{r}' → cross-validation gate present")
+        else:
+            _fail(f"recipe '{r}' → no cross-validation gate")
+            ok = False
+    return ok
+
+
+def gate_whitelist() -> bool:
+    """G-WHITELIST: no pipeworx-generic tool name appears in the connector-registry §2.6
+    tool whitelist column (tool-level least-privilege, DEĞİŞMEZ 5)."""
+    print("G-WHITELIST  no pipeworx-generic tool in the §2.6 whitelist")
+    if not CONNECTOR_REGISTRY.exists():
+        _fail("connector-registry.md absent")
+        return False
+    sec = _md_section(_read(CONNECTOR_REGISTRY), "Extended Terminology")
+    if not sec.strip():
+        _fail("no §2.6 'Extended Terminology / Pharmacology Tier' section")
+        return False
+    whitelist_cells: list[str] = []
+    for ln in sec.splitlines():
+        if not ln.strip().startswith("|"):
+            continue
+        cells = [c.strip() for c in ln.strip().strip("|").split("|")]
+        if len(cells) >= 3 and cells[0].startswith("**"):   # data row (connector bolded)
+            whitelist_cells.append(cells[2])
+    if not whitelist_cells:
+        _fail("could not parse §2.6 whitelist column")
+        return False
+    blob = " ".join(whitelist_cells).lower()
+    leaked = sorted({g for g in PIPEWORX_GENERIC if re.search(r"\b" + re.escape(g) + r"\b", blob)})
+    _ok(f"parsed {len(whitelist_cells)} §2.6 whitelist cell(s)")
+    if leaked:
+        _fail(f"pipeworx-generic tool(s) leaked into whitelist: {', '.join(leaked)}")
+        return False
+    _ok("no pipeworx-generic tool in the §2.6 whitelist")
+    return True
+
+
 GATES = {
     "refs": ("G-REF", gate_refs, True),
     "always-load": ("G-ALWAYS", gate_always_load, True),
     "connectors": ("G-CONN", gate_connectors, True),
     "version": ("G-VERSION", gate_version, False),
     "coverage": ("G-COVERAGE", gate_coverage, True),
+    "probe": ("G-PROBE", gate_probe, True),
+    "xval": ("G-XVAL", gate_xval, True),
+    "whitelist": ("G-WHITELIST", gate_whitelist, True),
 }
 
 
@@ -310,6 +483,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="medical-research integrity gate")
     for flag in GATES:
         ap.add_argument(f"--{flag}", action="store_true")
+    ap.add_argument("--strict", action="store_true",
+                    help="G-REF: re-elevate out-of-tree plugin-root ref misses to FAIL (full-mount CI)")
     args = ap.parse_args()
     selected = [k for k in GATES if getattr(args, k.replace("-", "_"))]
     if not selected:
@@ -320,7 +495,7 @@ def main() -> int:
     try:
         for key in selected:
             gid, fn, blocking = GATES[key]
-            passed = fn()
+            passed = fn(strict=args.strict) if key == "refs" else fn()
             print()
             if not passed and blocking:
                 failed_blocking.append(gid)

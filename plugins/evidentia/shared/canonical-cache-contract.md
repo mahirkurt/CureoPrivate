@@ -35,8 +35,11 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   deneme yapma; downstream "regülatuar veri kısmî" notuyla devam eder.
 - **Tier-K genişletme (×4).** İlk liveness sonrası aynı oturumda yeniden probe edilmez;
   sonuç `terminology_map`'e yazılır.
-- **drugddx (self-host, deploy sonrası).** İlaç çifti normalizasyonu `terminology_map`'ten
+- **drugddx (self-host, Tier-O canlı).** İlaç çifti normalizasyonu `terminology_map`'ten
   okunur; aynı çift iki kez sorgulanmaz.
+- **PopHIVE (Tier-K-epi, US-only · v8.5).** Bir hastalık×yer dilimi **bir kez** çekilir →
+  `regulatory_snapshot`'a yazılır; precomputed kanıt **BİREBİR** taşınır (PopHIVE sayıları
+  yeniden-türetilMEZ). YALNIZCA ABD — global/Türkiye yük için bu artefakta yazma (belgelenmiş boşluk).
 - **anamnesis `evidence_index` (self-host, deploy sonrası) — retrieve-don't-dump.** Tam-metin
   makale/kitap veya büyük araç çıktısı **asla ham olarak bağlama dökülmez**; bir `doc_id`
   (DOI vb.) **bir kez** `ingest_document` ile indekslenir (semantik chunk + bge-m3 embed +
@@ -72,8 +75,8 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 ## 3. Atlama (Skip) Sözleşmesi
 
 Bir connector latency/kota/auth nedeniyle başarısız olursa: (a) **graceful skip**, (b) kanonik
-artefaktı **kısmî** işaretle, (c) çıktıda **açıkça not düş** ("openfda stall → epidemiyoloji
-katmanı kısmî; denenen: who_gho_query[TUR]"). Sessiz atlama **yasaktır** — temiz-kopya doktrini
+artefaktı **kısmî** işaretle, (c) çıktıda **açıkça not düş** ("openfda stall → regülatuar/epidemiyoloji
+katmanı kısmî; denenen: openfda_search[FAERS] · PopHIVE[US]"). Sessiz atlama **yasaktır** — temiz-kopya doktrini
 (VIZ/OPS yorum izolasyonu) ihlal edilmez; boşluk görünür kalır.
 
 ---

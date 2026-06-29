@@ -76,6 +76,24 @@ Always-load = these seven (progressive disclosure DISABLED for them).
 - `references/benchmark-*.md` — loaded only on dev/eval context.
 - Specialty layers (`oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease`) — loaded per Adım 0.5 signal.
 
+## Adım 0.1: Project Settings (if present)
+
+If a `.claude/evidentia.local.md` file exists in the project root, **Read it** and apply its
+YAML frontmatter before proceeding:
+- `enabled: false` → ignore the settings file entirely; run with defaults.
+- `known_connected: [...]` → treat these connectors as available; do not waste Adım 1 calls
+  re-probing them. Connectors NOT listed still follow the normal fallback ladder.
+- `default_axis` → if non-empty, seed it into the Adım 0.4 `coverage_set` (the scan may add
+  more axes; the user's explicit intent overrides).
+- `fulltext_tier: off` → skip the annas-reader full-text rung; `copyright_gated` (default) keeps
+  the copyright gate on the cascade (`fulltext-retrieval.md`).
+- `completeness_gate: lenient|standard|strict` → tune the G-COVERAGE / Completeness Gate
+  strictness for this run.
+- `auto_ingest_rag: true` → ingest long fetched documents into the `anamnesis` RAG substrate
+  before synthesis.
+
+This is a per-project override layer; absent the file, behave exactly as before.
+
 ## Adım 0.4: Semantic Scope Scan (MANDATORY — runs before 0.5)
 
 Using `references/knowledge-map.md`, scan the KB by MEANING, not keywords:

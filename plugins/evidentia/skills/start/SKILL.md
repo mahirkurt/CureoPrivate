@@ -36,6 +36,20 @@ Araştırmaya başlamadan **bağlanırlığı raporlayın**. Bu, çift connector
 yok" şaşkınlığını önler. [`CONNECTORS.md`](../../CONNECTORS.md) ve
 [`shared/canonical-cache-contract.md`](../../shared/canonical-cache-contract.md) **normatiftir**.
 
+### Adım 2.0 — Proje Ayarları (varsa)
+
+Önce proje kökünde `.claude/evidentia.local.md` var mı bak; varsa **Read ile oku** ve YAML
+frontmatter'ı uygula:
+- `enabled: false` → süit bu projede pasif; ayar dosyasını yok say, normal akışa dön.
+- `known_connected: [...]` → bu connector'ları **bağlı kabul et**, tekrar probe etme; yalnız
+  listede olmayanları kontrol et (çift-sorgu ve "neden veri yok" gürültüsünü azaltır). Liste
+  boşsa tam preflight yap.
+- `default_axis` → boş değilse o ekseni varsayılan al (kullanıcının açık niyeti override eder).
+- `fulltext_tier`, `completeness_gate`, `auto_ingest_rag` → araştırma koşumuna **bağlam olarak
+  taşı** (medical-research bunları Adım 0.1'de okur).
+
+Dosya yoksa varsayılanlarla (tam preflight · copyright_gated · standard) devam et.
+
 Kontrol listesi (gruba göre):
 1. **Akademik çekirdek** — PubMed/EPMC, Clinical Trials, Consensus, Scholar Gateway, bioRxiv,
    YÖK Tez.

@@ -1,10 +1,12 @@
-# Evidence Grading & Critical Appraisal (v8.2)
+# Evidence Grading & Critical Appraisal (v9.0)
 
-**Loaded:** ALWAYS (Phase 3 — Evidence Synthesis & Critical Appraisal).
-**Recreated v8.2.0 (UP-001):** this file was referenced as always-load by SKILL.md Adım 0 but
-was absent after the v8.0→v8.1 partial migration; reconstructed here from primary
-methodological sources. No content is fabricated — every framework below is cited to its
-canonical authority.
+**Loaded:** ALWAYS (P6 — GRADE Certainty; no dedicated phase file, this is P6's home).
+**v9.0.0 (Task 13, PRISMA refactor):** GRADE + Summary-of-Findings (SoF) are made **central** —
+§1 Tier hierarchy and §2 GRADE core mechanics are preserved verbatim in spirit, but §2 now
+states per-outcome GRADE domains as an **explicit, structured input** fed by `risk-of-bias.md`
+(not a prose aside), and a new §8 gives the SoF table spec **consumed by `prisma-reporting.md`
+§5** (the canonical `grade_sof` shape — this file supplies the reasoning that fills it, it does
+not re-specify or diverge from its shape).
 
 **Authority basis:** GRADE Working Group (Guyatt et al., *BMJ* 2008; *J Clin Epidemiol* 2011
 series) · PRISMA 2020 (Page et al., *BMJ* 2021) · Cochrane Handbook for Systematic Reviews of
@@ -36,18 +38,45 @@ clinical claims; lower tiers contextualize but **never** override.
 ## 2. GRADE — Certainty of Evidence (per outcome)
 
 Apply formal GRADE when the question is a focused PICO with extractable outcomes; otherwise use
-the pragmatic track (§3). Start position by design, then move:
+the pragmatic track (§3). Certainty is rated **per outcome**, never per study — each critical/
+important outcome (OS, PFS, ORR, Grade ≥3 AE, QoL, …) gets its own independent rating, its own
+row in the SoF table (§8), and its own set of downgrade/upgrade reasons; a single body of
+evidence can be "High" for one outcome and "Low" for another. Start position by design, then
+move through the five domains (§2.1) systematically — not as a holistic gestalt impression.
 
-- **Start HIGH** for RCT bodies of evidence; **start LOW** for observational bodies.
-- **Rate DOWN** for: risk of bias (RoB 2 / ROBINS-I), inconsistency (I², τ², non-overlapping CIs),
-  indirectness (PICO transferability), imprecision (CI crosses MID; optimal information size),
-  publication bias (funnel asymmetry, small-study effects).
-- **Rate UP** (observational only) for: large effect (RR ≥2 / ≤0.5), dose-response, plausible
-  residual confounding working against the observed effect.
-- **Final certainty:** ⊕⊕⊕⊕ High · ⊕⊕⊕◯ Moderate · ⊕⊕◯◯ Low · ⊕◯◯◯ Very low.
+**Final certainty:** ⊕⊕⊕⊕ High · ⊕⊕⊕◯ Moderate · ⊕⊕◯◯ Low · ⊕◯◯◯ Very low. Start HIGH for RCT
+bodies of evidence; start LOW for observational bodies (each rate-down step below moves one
+level; two or more domains rated "serious" for the same outcome may compound to a two-level
+drop when the Cochrane Handbook ch. 14 guidance so indicates).
 
-Report certainty **per critical outcome** (OS, PFS, ORR, Grade ≥3 AE, QoL), not per study, and
-summarise in a GRADE Summary-of-Findings frame (absolute + relative effect, n studies, certainty).
+### 2.1 The five GRADE domains — each an explicit, structured input
+
+Every domain below is rated **per outcome**, not per study, and the rating is recorded with an
+explicit reason string (feeds `grade_sof[].downgrade_reasons`, §8) — a bare "Moderate" without
+a stated reason is not an acceptable GRADE output.
+
+| Domain | What is rated down | **Structured input source** |
+|---|---|---|
+| **Risk of bias (RoB)** | The proportion of the outcome's contributing evidence at high/serious/critical risk of bias, weighted by the outcome's information size | **`risk-of-bias.md` §5** — explicitly: "a body of evidence for outcome X is downgraded one level (serious limitation) if the majority of contributing studies carry a `high`/`serious`/`critical` `overall_judgement`; two levels (very serious) if that majority is pervasive and unmitigated by sensitivity analysis excluding the high-RoB studies." Only `human_approved:true` `rob_assessments` rows count toward this majority (`risk-of-bias.md` §3 human-approval gate) — a draft judgement never drives a downgrade. |
+| **Inconsistency** | Unexplained heterogeneity across studies contributing to the same outcome | I², τ², visual overlap of point estimates/CIs, and — critically — whether `data-extraction.md` §3's outcome-based pooling flagged a **unit/definition mismatch** ("birim uyumsuz — sentezlenemez"); an unresolved unit mismatch is itself a serious-inconsistency signal, not silently averaged away |
+| **Indirectness** | Mismatch between the retrieved evidence's PICO and the review's PICO (`prisma-protocol.md` §2) | Population/intervention/comparator/outcome/setting transferability check against the pre-specified `protocol` block; surrogate outcomes used in place of the pre-specified `outcome_primary` are an automatic indirectness flag |
+| **Imprecision** | Wide confidence intervals relative to a minimally important difference (MID), or a small total information size | CI width vs. MID; total `n_participants` (from `evidence_table` — `data-extraction.md` §5) relative to optimal information size; a single small trial driving a critical outcome is a canonical imprecision downgrade |
+| **Publication bias** | Suspected selective non-publication of unfavourable results | Funnel-plot asymmetry (when ≥10 studies), discrepancy between registered outcomes (CT.gov via `search-strategy.md` §4 grey-literature/registry search) and published outcomes, and industry-funding concentration noted in `evidence_table[].funding`/`coi` |
+
+**Rate UP** (observational bodies only, §3 pragmatic-track equivalents apply analogously) for:
+large effect (RR ≥2 / ≤0.5), dose-response gradient, or plausible residual confounding working
+*against* the observed effect (would have biased the estimate toward the null, yet an effect was
+still observed).
+
+### 2.2 Aggregation discipline
+
+`rob_assessments` (per-study) and `grade_sof[].downgrade_reasons` (per-outcome) are related but
+**not the same granularity** — the mapping from many per-study RoB judgements to one per-outcome
+RoB-domain rating is itself a judgement call made **at P6**, and the rationale (which studies,
+what proportion, what weight) is recorded in `grade_sof[].plain_language_summary` or an adjacent
+note, never left implicit. GRADE certainty is **never recomputed** downstream — `prisma-reporting.md`
+§5 relays the P6 output into the SoF table verbatim; if a P7 reviewer disagrees with a rating,
+the correction happens here at P6, not by silently editing the reporting-stage table.
 
 ---
 
@@ -96,5 +125,57 @@ evidence tables (`output-templates.md`) and the temporal narrative (how the evid
 
 Deduplicate across connectors (same PMID/DOI/NCT). Present convergence explicitly; when sources
 diverge, state *why* (population, era, design) rather than averaging. Tie every enrichment
-sentence to a cited source. Knowledge-gap analysis (Phase 4) names what the evidence does **not**
+sentence to a cited source. Knowledge-gap analysis (P4/P7) names what the evidence does **not**
 yet answer — including Turkish incidence/registry-coverage gaps for the epidemiology axis.
+
+---
+
+## 8. Summary-of-Findings (SoF) Table Spec — consumed by `prisma-reporting.md` §5
+
+The SoF table is the GRADE Working Group's standard vehicle for communicating per-outcome
+certainty alongside effect estimates (Guyatt et al.); it is the artefact that makes §1's Tier
+hierarchy and §2's per-outcome domain ratings **legible to the reader** in ⑥ of the SR report
+(`output-templates.md` §1). **This file authors the reasoning; `prisma-reporting.md` §5 owns and
+defines the canonical `grade_sof` JSON shape** — the two are kept in lockstep and this section
+is written to match that shape field-for-field (no divergent key names are introduced here).
+
+### 8.1 Row construction (one row per critical/important outcome)
+
+For every outcome carried in `evidence_table` (`data-extraction.md` §5) that the P0 protocol
+marked `outcome_primary` or `outcome_secondary` (`prisma-protocol.md` §5), or that P4's
+outcome-based pooling (`data-extraction.md` §3) aggregated, construct one SoF row:
+
+- **`outcome_name`** — verbatim from the protocol/extraction outcome name (no rewording that
+  could obscure which pre-specified outcome this is).
+- **`n_studies` / `n_participants`** — summed directly from the `human_approved:true`
+  `evidence_table` rows contributing to this outcome; never estimated or rounded up when a
+  study's `n_total` is `"VERİ BULUNAMADI"` (that study is excluded from the sum, not
+  approximated).
+- **`effect_measure` / `effect_size` / `ci_95`** — the pooled (if meta-analyzed) or the single
+  representative (if narrative synthesis only, clearly noted as such) effect estimate.
+- **`certainty`** — the §2 per-outcome GRADE rating (⊕⊕⊕⊕/⊕⊕⊕◯/⊕⊕◯◯/⊕◯◯◯), never defaulted.
+- **`downgrade_reasons`** — the explicit subset of the five §2.1 domains that were rated down (or
+  empty array if none) — always the *reason strings*, never a bare certainty level without its
+  justification.
+- **`importance`** — `critical` / `important` / `not_important`, per the protocol's outcome
+  hierarchy (primary outcomes are `critical` by default unless the protocol states otherwise).
+- **`plain_language_summary`** — one or two reader-facing sentences translating the effect +
+  certainty into plain Turkish (e.g., "Tedavi, genel sağkalımı muhtemelen artırmaktadır (orta
+  düzey kesinlik); etkinin büyüklüğü hakkında kesinlik sınırlıdır çünkü …") — this is what
+  populates ⑥'s narrative gloss in the clean copy (`report-presentation.md`).
+
+### 8.2 No-fabrication discipline (identical to phase-file norm)
+
+A blank/`null` field is **never** filled with a plausible-looking default (e.g. defaulting an
+unrated outcome to "Moderate"); it is written as `"raporlanmadı"` and the gap is carried into
+⑦ Kısıtlılıklar. This mirrors `prisma-reporting.md` §5's own no-fabrication clause and
+`screening.md`/`data-extraction.md`/`risk-of-bias.md`'s identical norm — GRADE ratings are as
+subject to the "no silent estimation" doctrine as any PRISMA flow count.
+
+### 8.3 Presentation
+
+⑥ in the reader-facing report (`output-templates.md` §1, `report-presentation.md`'s Clean-Copy
+İskeleti) renders the SoF table with a visible "**Tablo N.**" caption and an accompanying
+`<!-- VIZ -->` directive when a graphical certainty-by-effect display is warranted
+(`report-presentation.md` İlke 5). The GRADE symbol legend (⊕⊕⊕⊕ High … ⊕◯◯◯ Very low) is
+defined once, near the table, in plain Turkish — never left as an unexplained glyph run.

@@ -1,10 +1,17 @@
-# report-presentation.md — Nihai Sunum Sözleşmesi (Clean-Copy Doctrine) · v8.1
+# report-presentation.md — Nihai Sunum Sözleşmesi (Clean-Copy Doctrine) · v9.0
 
-> **Ne zaman yüklenir:** HER çağrıda (Adım 0 zorunlu yükleme listesi). Bu dosya Phase 5 —
-> Output Generation'ın *biçim* ve *sunum* katmanını yönetir. `output-templates.md` "hangi
-> bölümler / hangi format" sorusunu (kapsam) yönetir; bu dosya "okuyucunun eline geçen
-> nihai metin nasıl okunur" sorusunu (sunum) yönetir. İkisi tamamlayıcıdır; çelişki
-> hâlinde **clean-copy ilkeleri sunum açısından önceliklidir**.
+> **Ne zaman yüklenir:** HER çağrıda (Adım 0 zorunlu yükleme listesi). Bu dosya P7 — PRISMA
+> Reporting / Output Generation'ın *biçim* ve *sunum* katmanını yönetir. `output-templates.md`
+> "hangi bölümler / hangi format" sorusunu (①–⑧ SR rapor iskeleti — kapsam) yönetir; bu dosya
+> "okuyucunun eline geçen nihai metin nasıl okunur" sorusunu (sunum) yönetir; `prisma-reporting.md`
+> PRISMA artefaktlarının (akış diyagramı, kontrol listesi, SoF tablosu) mekaniğini yönetir. Üçü
+> tamamlayıcıdır; çelişki hâlinde **clean-copy ilkeleri sunum açısından önceliklidir**.
+>
+> **v9.0 (Task 13, PRISMA refactor):** İç scaffold→clean-copy başlık eşlemesi, eski §1–21
+> istihbarat-raporu iskeletinden **①–⑧ SR (sistematik derleme) başlık haritasına** geçirildi.
+> Altı bağlayıcı temiz-kopya ilkesi (İlke 1–6+), VIZ/OPS HTML-yorum izolasyonu ve nihai
+> doğrulama kapısı **korunmuştur**; kapı, PRISMA-kontrol-listesi tamamlık taramasını (G8)
+> içerecek şekilde genişletilmiştir.
 
 Bu sözleşmenin amacı tektir: araştırma sürecinin tüm derinliğini koruyarak, okuyucunun
 eline **hakemli bir dergide okunan makale niteliğinde, temiz ve nihai bir kopya** vermek.
@@ -259,82 +266,128 @@ Bu öneriler 1–5'in ruhuna uygun, ek nitelik kazandıran unsurlardır:
 
 ---
 
-## Clean-Copy İskeleti (okuyucuya yönelik bölüm sırası)
+## Clean-Copy İskeleti (okuyucuya yönelik bölüm sırası — SR/PRISMA ①–⑧)
+
+Bu iskelet `output-templates.md` §1'in ①–⑧ SR rapor sözleşmesinin **okuyucuya görünen**
+biçimidir; numaralı dairelerin (①…⑧) kendisi başlık metnine girmez — doğal Türkçe akademik
+başlıklar kullanılır (aşağıdaki eşleme tablosunda birebir karşılıkları verilmiştir).
 
 ```markdown
 # [Başlık]
-## [Alt başlık — kapsam]
-*Veri kesim tarihi: GG Ay YYYY · Araştırma sorusu: …*
+## [Alt başlık — kapsam, derleme tipi: sistematik derleme | kapsam derlemesi | hızlı derleme]
+*Veri kesim tarihi: GG Ay YYYY · Araştırma sorusu: … · PICO/PECO: P … I/E … C … O …*
 
 ## Yönetici Özeti
-(150–300 sözcük, düzyazı)
+(150–300 sözcük, düzyazı — PRISMA'nın yapılandırılmış özet ilkesiyle uyumlu: amaç, yöntem
+özeti, ana bulgu, ana kısıtlılık, sonuç tek paragrafta)
 
 ## Anahtar Bulgular
-- … (Kanıt düzeyi: …)
+- … (Kanıt düzeyi: …) — GRADE sertaintysinin sade Türkçe karşılığı
 
 ### Kısaltmalar Dizini
 | Kısaltma | Açılım | Türkçe |
 
-## Giriş ve Arka Plan
-## Yöntem
-(genel veri tabanları, dâhil/dışlama, GRADE, dil, veri kesim tarihi — araç adı yok)
+## ① Arka Plan
+(klinik/bilimsel gerekçe — neden bu soru, mevcut kanıt boşluğu)
 
-## Bulgular
-### Küresel Literatür ve Kanıt Tabanı
-### Klinik Geliştirme Hattı
-### Mekanizma ve Farmakoloji           ← ilaç bağlamında
-### Ruhsat, Etiket ve Düzenleyici Durum ← ilaç bağlamında
-### Türkiye'de Ruhsat, Fiyat ve Geri Ödeme
-### Epidemiyoloji ve Hastalık Yükü      ← 0.5.K aktifse
-### Kılavuz Önerileri ve Klinik Yerleşim
-(+ uzmanlık alanı bölümleri, gerektiğinde)
+## ② Amaç ve Kapsam
+(PICO/PECO/PCC düzyazı biçiminde; derleme tipi — sistematik/kapsam/hızlı — ve gerekçesi)
 
-## Tartışma
+## ③ Yöntem
+(uygunluk kriterleri, bilgi kaynakları/veri tabanları, arama stratejisi özeti, seçim süreci,
+veri çıkarım süreci, yanlılık riski aracı, sentez yöntemi, GRADE, veri kesim tarihi —
+genel veri tabanı adları serbest, araç/fonksiyon adı yok — bkz. İlke 2.2)
+
+## ④ PRISMA Akış Diyagramı
+(kutu-kutu şema + görünür "Şekil N." başlığı; VIZ direktifi hemen altında — bkz. İlke 5)
+
+## ⑤ Bulgular
+### Çalışma Özellikleri
+(dahil çalışmaların tablo hâlinde özeti — bkz. ⑤.1)
+### Yanlılık Riski Özeti
+(trafik-ışığı/ısı-tablosu görünür başlığı + VIZ direktifi — bkz. ⑤.2)
+### Sonuç Bazlı Bulgular
+(her kritik/önemli sonlanım için ayrı alt-başlık; anlatı + tablo — bkz. ⑤.3)
+### Küresel Literatür ve Kanıt Tabanı            ← her derlemede
+### Klinik Geliştirme Hattı                       ← ilgiliyse
+### Mekanizma ve Farmakoloji                      ← ilaç bağlamında
+### Ruhsat, Etiket ve Düzenleyici Durum            ← ilaç bağlamında
+### Türkiye'de Ruhsat, Fiyat ve Geri Ödeme         ← TR bağlamında
+### Epidemiyoloji ve Hastalık Yükü                 ← 0.5.K aktifse
+### Kılavuz Önerileri ve Klinik Yerleşim           ← ilgiliyse
+(+ uzmanlık alanı alt-başlıkları, gerektiğinde)
+
+## ⑥ Summary-of-Findings (Kanıt Özeti) Tablosu
+(GRADE sertainty + etki büyüklüğü + görünür "Tablo N." başlığı — bkz. `evidence-grading.md` §8)
+
+## ⑦ Tartışma
 (yakınsama/ıraksama, zamansal anlatı, kılavuz uyumu — sentez düzyazısı)
+### Kısıtlılıklar
+(kanıt kısıtlılığı + yöntem kısıtlılığı — tekil-eleştirmen notu dâhil, `screening.md` §4)
+### Sonuç ve Çıkarımlar
 
-## Sınırlılıklar
-## Sonuç ve Çıkarımlar
-## Kaynaklar
+## ⑧ Kaynaklar
 1. … PMID/DOI/NCT — Erişim: GG Ay YYYY
 
+### Ek — Dahil Edilen Çalışmalar
+### Ek — Tam Metinde Dışlanan Çalışmalar (gerekçeli)
+
+<!-- Opsiyonel zenginleştirme ekleri (yalnız ilgili modül tetiklendiyse; ①–⑧'in bir parçası
+     DEĞİL, ayrı ve etiketli) -->
+## Ek A — İlaç İstihbaratı ve Ticari Görünüm      ← 0.5.I aktifse
+## Ek B — Düzenleyici Kilometre Taşları           ← 0.5.C aktifse
+## Ek C — HTA / Erişim Modeli                     ← 0.5.D aktifse
+## Ek D — Bilimsel Görüş Liderleri ve Araştırma Ağı ← KOL modülü aktifse
+## Ek E — Epidemiyolojik Ek Tablo                 ← 0.5.K genişletilmiş veri gerektiriyorsa
+
 <!-- OPS:
-Üretim notu (okuyucuya render edilmez). Çağrı sayısı: N. Aktif katmanlar: […].
-Native-first çözümleme uygulandı. Konnektör boşlukları: […]. Cömertlik Garantisi: […].
+Üretim notu (okuyucuya render edilmez). Çağrı sayısı: N. Aktif fazlar: P0–P7. Aktif
+zenginleştirme modülleri: […]. Native-first çözümleme uygulandı. Konnektör boşlukları: […].
+Cömertlik Garantisi: […].
 -->
 ```
 
 ---
 
-## İç Scaffold → Clean-Copy Başlık Eşlemesi
+## İç SR Bölüm → Clean-Copy Başlık Eşlemesi (①–⑧)
 
-Adım 3'teki iç bütünlük sözleşmesi (§1–21) araştırmanın **kapsamını** garanti eder; ancak o
-scaffold'daki araç-etiketli başlıklar ("Küresel Literatür (PubMed + EuropePMC)", "Ruhsat &
-Etiket (native openFDA…)", "(0.5.I — real AdisInsight)") temiz kopyaya **olduğu gibi
-girmez**. Aşağıdaki eşleme uygulanır:
+`output-templates.md` §1'deki ①–⑧ SR rapor sözleşmesi araştırmanın **kapsamını ve sırasını**
+garanti eder; ancak o sözleşmedeki numaralı-daire etiketleri ve alt-madde tool-provenance
+okları (`← prisma-protocol.md §3` gibi) temiz kopyaya **olduğu gibi girmez** — doğal Türkçe
+akademik başlıklara çevrilir. Aşağıdaki eşleme uygulanır (bu tablo, eski §1–21 istihbarat-
+raporu iskeletinin yerini alır — Task 13, PRISMA refactor):
 
-| İç scaffold bölümü (kapsam) | Temiz kopya başlığı (okuyucu) |
+| İç SR bölümü (kapsam, `output-templates.md` §1) | Temiz kopya başlığı (okuyucu) |
 |---|---|
-| §1 Küresel Literatür (PubMed + EuropePMC) | Küresel Literatür ve Kanıt Tabanı |
-| §2 Klinik Pipeline (CT.gov v2) | Klinik Geliştirme Hattı |
-| §3 Mekanizma & Farmakoloji (ChEMBL/PubChem) | Mekanizma ve Farmakoloji |
-| §4 Ruhsat & Etiket (native openFDA/label/EMA) | Ruhsat, Etiket ve Düzenleyici Durum |
-| §5 Türkiye Verileri (TİTCK/Mevzuat/YÖK/AFF) | Türkiye'de Ruhsat, Fiyat ve Geri Ödeme |
-| §6 6-ülke AFF matriksi | (Bulgular içine "coğrafi kapsama" cümlesi; AFF jargonu yok) |
-| §7 Tier 0 Sentez (SR + Cochrane) | (Bulgular/Tartışma'da "sistematik derleme düzeyinde kanıt") |
-| §8 KOL Haritası (OpenAlex→S2→NPI) | Bilimsel Görüş Liderleri ve Araştırma Ağı (isteğe bağlı) |
-| §9 Kılavuz Yerleşimi (NICE/ESMO/NCCN) | Kılavuz Önerileri ve Klinik Yerleşim |
-| §10 Açık Erişim & Tam Metin | (Yöntem/Kaynaklar'a erir; ayrı okuyucu bölümü değil) |
-| §11–18 Uzmanlık bölümleri | İlgili, okuyucuya yönelik başlıklar |
-| §19 Drug Intelligence Pipeline (AdisInsight) | Geliştirme Hattı ve Ticari Görünüm |
-| §20 Cross-Layer Integration Notes | (Tartışma'ya erir) |
-| §21 Epidemiyoloji/Hastalık Yükü (WHO GHO) | Epidemiyoloji ve Hastalık Yükü |
+| ① Arka Plan | Arka Plan |
+| ② Amaç + PICO/PECO + derleme tipi | Amaç ve Kapsam |
+| ③.1 Uygunluk kriterleri | Yöntem → "dahil edilen çalışmalar şu kriterlere göre belirlendi" cümlesi |
+| ③.2 Kaynaklar / bilgi kaynakları | Yöntem → "taranan kamu veri tabanlarının genel adları" (İlke 2.2) |
+| ③.3 Arama stratejisi | Yöntem → arama stratejisinin kavramsal özeti + veri kesim tarihi |
+| ③.4 Seçim süreci | Yöntem → seçim/tarama süreci özeti |
+| ③.5 Veri çıkarım süreci | Yöntem → çıkarım süreci özeti |
+| ③.6 Yanlılık riski değerlendirmesi | Yöntem → uygulanan RoB aracı adı (RoB 2/ROBINS-I/QUADAS-2/NOS) |
+| ③.7 Sentez yöntemleri | Yöntem → sentez yaklaşımı (anlatı/meta-analiz) |
+| ③.8 GRADE | Yöntem → "kanıt değerlendirme çerçevesi" sade dille |
+| ③.9 Veri kesim tarihi | Başlık bloğu + Yöntem |
+| ④ PRISMA akış diyagramı | PRISMA Akış Diyagramı (görünür "Şekil N." + VIZ direktifi) |
+| ⑤.1 Çalışma özellikleri tablosu | Bulgular → Çalışma Özellikleri |
+| ⑤.2 RoB özeti | Bulgular → Yanlılık Riski Özeti |
+| ⑤.3 Sonuç-bazlı bulgular | Bulgular → Sonuç Bazlı Bulgular + konu-özel alt-başlıklar (Küresel Literatür, Klinik Geliştirme Hattı, Mekanizma/Farmakoloji ilaç bağlamında, Ruhsat/Düzenleyici Durum ilaç bağlamında, Türkiye'de Ruhsat/Fiyat/Geri Ödeme, Epidemiyoloji 0.5.K aktifse, Kılavuz Önerileri) |
+| ⑥ Summary-of-Findings/GRADE tablosu | Summary-of-Findings (Kanıt Özeti) Tablosu |
+| ⑦ Tartışma · kısıtlılıklar · sonuç | Tartışma / Kısıtlılıklar / Sonuç ve Çıkarımlar |
+| ⑧ Kaynaklar + dahil/dışlanan listeleri | Kaynaklar + Ek — Dahil Edilen Çalışmalar + Ek — Tam Metinde Dışlanan Çalışmalar |
+| Opsiyonel zenginleştirme ekleri (0.5.A–K, KOL) | Ayrı, etiketli "Ek A/B/C/D/E — …" bölümleri; ①–⑧'in bir parçası değildir, ①–⑧'den SONRA gelir |
 
 ---
 
-## Nihai Doğrulama Kapısı (emit'ten önce çalıştırılır)
+## Nihai Doğrulama Kapısı (emit'ten önce çalıştırılır — G1–G8)
 
 Aşağıdaki kontroller temiz kopya yayımlanmadan **önce** uygulanır. Herhangi biri başarısızsa
-metin düzeltilir.
+metin düzeltilir. **v9.0 (Task 13):** kapı, G8 — PRISMA-kontrol-listesi tamamlık taraması —
+eklenerek genişletilmiştir; bu, `SKILL.md`'nin "Completeness Gate"iyle aynı değildir (o,
+konnektör/bölüm kapsamasını denetler; G8 burada **rapor metninin** PRISMA 2020/ScR madde
+madde karşılığını denetler).
 
 **G1 — Tam cümle.** Anlatı bölümlerinde yüklemsiz/telgraf parça yok; her tablo/madde bloğu
 tam cümleyle çerçevelenmiş.
@@ -344,14 +397,15 @@ tam cümleyle çerçevelenmiş.
 
 ```bash
 # Yasak araç/işletme jetonları — yalnızca <!-- ... --> dışındaki görünür metinde aranır
-grep -nE '(:search_|:get_|MCP|connector|native-first|HyDE|Adım 0\.5|0\.5\.[A-Z]|§1\.[A-Z]|AFF:"|Cömertlik Garantisi|sidecar|payload|search_drugs|who_gho_query|icd11_search|openfda_search)' rapor.md
+grep -nE '(:search_|:get_|MCP|connector|native-first|HyDE|Adım 0\.5|0\.5\.[A-Z]|P[0-7] \(faz\)|screening_log|evidence_table|rob_assessments|grade_sof|AFF:"|Cömertlik Garantisi|sidecar|payload|search_drugs|who_gho_query|icd11_search|openfda_search)' rapor.md
 # Görünür görselleştirme DİREKTİFİ sızıntısı (komut kipinde, yorum dışında)
 grep -nE '(grafiğe (dönüştür|çevir)|diyagrama (dök|çevir)|görselleştir:|bir tabloya dönüştür)' rapor.md
 ```
 Not: Bu taramalar `<!-- VIZ -->` / `<!-- OPS -->` içeriğini hariç tutacak biçimde
-yorumlanır (yorum blokları kasıtlı olarak bu jetonları taşıyabilir). "PubMed/CT.gov tarandı"
-gibi **veri tabanı adları kabul** edilir; yasak olan, fonksiyon imzaları ve iç süreç
-etiketleridir.
+yorumlanır (yorum blokları kasıtlı olarak bu jetonları taşıyabilir). "PubMed/CT.gov tarandı",
+"RoB 2 uygulandı", "GRADE ile derecelendirildi" gibi **veri tabanı adları ve yöntemsel
+çerçeve adları kabul** edilir; yasak olan, fonksiyon imzaları, sidecar alan adları
+(`screening_log` vb.) ve iç süreç/faz etiketleridir.
 
 **G3 — Direktif izolasyonu.** Tüm görselleştirme yönergeleri `<!-- VIZ -->` içinde; görünür
 gövdede yalnızca "**Şekil N.**" görünür başlıkları var.
@@ -368,6 +422,29 @@ görünür gövdede çağrı sayısı/konnektör adı yok.
 
 **G7 — Akış.** Bölümler geçiş cümleleriyle bağlı; her bölüm konu cümlesiyle açılıp sentez
 cümlesiyle kapanıyor; Yönetici Özeti ve Sonuç mevcut.
+
+**G8 — PRISMA-kontrol-listesi tamamlık taraması.** Rapor, `prisma-reporting.md` §2'deki madde
+grubu → bölüm eşlemesine karşı denetlenir; sistematik/hızlı derlemede PRISMA 2020 27 maddesinin,
+kapsam derlemesinde PRISMA-ScR 22 maddesinin **her biri** raporda karşılığını buluyor mu diye
+tek tek işaretlenir:
+- ① Arka Plan madde 3–4'ü (gerekçe, amaç/PICO) karşılıyor mu?
+- ③ Yöntem, madde 5–15/16'yı (uygunluk, bilgi kaynağı, arama, seçim, çıkarım, RoB aracı, sentez
+  yöntemi) tek tek karşılıyor mu — hiçbiri sessizce atlanmamış mı?
+- ④ PRISMA akış diyagramı, `screening_log` sayaçlarıyla **birebir** tutarlı mı (madde 8–9,
+  reconciliation: `included + Σexcluded_title_abstract + Σexcluded_full_text == identified`)?
+- ⑤ Bulgular, madde 16–22/20'yi (seçim akışı, çalışma özellikleri, RoB sonucu, sonuç sentezi)
+  karşılıyor mu; yalnızca `human_approved:true` satırlar tabloya/figüre girmiş mi
+  (`prisma-reporting.md` §3–§4)?
+- ⑥ SoF tablosu madde 20 kapsamındaki sentez sonuçlarını GRADE sertaintysiyle birlikte taşıyor mu?
+- ⑦ Tartışma madde 23'ü (kanıt + yöntem kısıtlılığı, tekil-eleştirmen notu) karşılıyor mu?
+- ⑧ Kaynaklar/protokol/fon/COI madde 24–27'yi karşılıyor mu?
+- **Kapsam derlemesinde** (PRISMA-ScR): RoB atlanmışsa ⑤.2/⑥ bunu **açıkça** "kapsam
+  derlemesi — RoB uygulanmadı" notuyla belirtiyor mu (gizlenmiyor mu)?
+
+Eksik bir madde varsa rapor **tamamlanmamış** sayılır; eksiklik doldurulur veya (gerçekten
+uygulanamıyorsa) raporda açık bir "uygulanamaz" notuyla işaretlenir — sessizce atlanmaz. Bu
+tarama SKILL.md'nin Adım 0.4/Completeness Gate'inin (konnektör/bölüm kapsaması) yerini almaz;
+onu **rapor-metni düzeyinde** tamamlar.
 
 ---
 
@@ -390,7 +467,7 @@ Bu raporu render eden katman aşağıdaki sözleşmeye uyar:
 
 ---
 
-*v8.1 — Bu dosya Phase 5'in sunum katmanını yönetir. Temiz kopya = okuyucunun gördüğü
-makale; VIZ/OPS = yalnızca tasarım/şeffaflık için görünmez katman. "Direktifler nihai
-metne girmez" gereksinimi, HTML-yorumu izolasyonu + G2/G3 doğrulama kapısı ile yapısal
-olarak güvence altındadır.*
+*v9.0 — Bu dosya P7 (PRISMA Reporting)'in sunum katmanını yönetir. Temiz kopya = okuyucunun
+gördüğü ①–⑧ SR makale; VIZ/OPS = yalnızca tasarım/şeffaflık için görünmez katman. "Direktifler
+nihai metne girmez" gereksinimi, HTML-yorumu izolasyonu + G2/G3 doğrulama kapısı ile; "rapor
+PRISMA'nın tüm maddelerini karşılıyor" gereksinimi G8 ile yapısal olarak güvence altındadır.*

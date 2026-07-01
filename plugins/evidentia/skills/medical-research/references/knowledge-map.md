@@ -105,6 +105,12 @@
 - Synonyms: protokol, soru çerçevesi, dahil hariç kriterleri, araştırma sorusu, review protocol
 - Cross-links: search-strategy.md (P1); screening.md (eligibility → screening); prisma-reporting.md (protocol → checklist)
 
+### search-strategy.md  — [PHASE P1]
+- Sections: §1 Kavram→MeSH/Emtree eşleme, §2 Boole yapısı, §3 Veritabanı-başına sorgu çevirisi, §4 Duyarlılık/özgüllük filtreleri, §5 Raporlanabilir arama dizesi, §6 Sınır dürüstlüğü
+- Concepts: MeSH, Emtree, controlled vocabulary, Boolean, field tags, search filters, sensitivity/precision, grey literature, reproducible search string, PRISMA item 7
+- Synonyms: arama stratejisi, sorgu çevirisi, anahtar kelime eşleme, search string, database query
+- Cross-links: prisma-protocol.md (PICO→concepts); connector-registry.md (per-database tool names); prisma-reporting.md (search string reporting)
+
 ### regulatory-intelligence.md  — [axis 0.5.C / 0.5.D / 0.5.K]
 - Sections: §1 Native openFDA (replaces Python requests), §2 WHO ICD-11 — indication coding, §3 WHO GHO — disease burden / epidemiology (axis 0.5.K), §4 Multi-jurisdiction regulatory cross-reference, §5 How this layer feeds the clinical layers, §6 Output — epidemiology_payload sidecar, §7 Known limitations
 - Concepts: openFDA (drug events/recalls/labels/enforcement), ICD-11 coding, WHO GHO (Global Health Observatory), GLOBOCAN cancer incidence, disease burden, DALY, Federal Register, Health Canada (CADTH/HC), EUR-Lex, multi-jurisdiction approval tracking, epidemiology payload sidecar

@@ -12,14 +12,19 @@ protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-or
 # --- Skill identity ---------------------------------------------------------
 skill:
   name: medical-research
-  version: "8.5.0"
-  title: "Multi-Source Scientific Research & Synthesis Engine"
+  version: "9.0.0"
+  title: "General Medical Literature-Review Engine (PRISMA)"
   description: >
-    Turns a clinical / pharma / Türkiye-market question into a critically-appraised,
-    Turkish, journal-grade evidence synthesis with knowledge-gap analysis, extending
-    when warranted into regulatory, epidemiologic, commercial, IP, full-text and
-    disease-specialty dimensions. Orchestrates 20+ verified structured connectors across
-    10 specialty axes on a native-MCP-first resolution ladder (no web/OSINT tier — v1.4.0).
+    General-purpose medical literature review engine. Runs an end-to-end PRISMA 2020 /
+    PRISMA-ScR systematic or scoping review across all of medicine and every question
+    type (therapy, diagnosis, prognosis, etiology, prevention) on a fixed P0-P7 pipeline:
+    protocol + PICO/PECO, search strategy, comprehensive retrieval + dedup, screening,
+    data extraction, risk of bias, GRADE certainty, and a clean Turkish report with a
+    PRISMA flow diagram + Summary-of-Findings table. Optional, context-triggered
+    enrichment modules (therapeutic-area, drug/regulatory, HTA, Türkiye market,
+    epidemiology) load only when context calls for them; they never drive the default.
+    Pure structured evidence on a native-MCP-first resolution ladder — no web/OSINT
+    tier, no fabrication.
   author: "operator (Cureonics fleet)"
   license: "Internal-use grant; AS IS; no warranty"
   entry_point: "./SKILL.md"
@@ -27,20 +32,20 @@ skill:
 
 # --- Classification ---------------------------------------------------------
 classification:
-  primary_category: "medical-clinical-research"
+  primary_category: "medical-evidence-synthesis"
   secondary_categories:
-    - "pharma-commercial-intelligence"
+    - "systematic-review"
     - "document-generation"
   tags:
+    - systematic-review
+    - prisma
+    - prisma-scr
+    - literature-review
+    - scoping-review
+    - risk-of-bias
+    - grade
+    - screening
     - evidence-synthesis
-    - oncology
-    - hematology
-    - regulatory
-    - hta
-    - epidemiology
-    - turkiye
-    - kol
-    - orchestrator
   primary_domain: MEDICAL_CLINICAL_RESEARCH       # ENRICH_ADVISOR persona hint (P2)
 
 # --- Domains ----------------------------------------------------------------
@@ -345,20 +350,25 @@ verification:
 # --- References -------------------------------------------------------------
 references:
   primary: "./SKILL.md"
-  always_load: [connector-registry.md, extended-api.md, evidence-grading.md, output-templates.md, fulltext-retrieval.md, report-presentation.md, knowledge-map.md]
+  always_load: [knowledge-map.md, connector-registry.md, evidence-grading.md, output-templates.md, report-presentation.md, prisma-reporting.md]
   always_load_roles:
     knowledge-map.md: "semantic coverage index"
   eval_harness: [evals/check_integrity.py, evals/benchmark-queries.json]
 
 # --- Build ------------------------------------------------------------------
 build:
-  version: "8.5.0"
-  release_date: "2026-06-28"          # v8.5 Extended-Tier Promotion live re-probe (connector-registry §8 Probe Log)
-  release_name: "Extended-Tier Promotion & Epidemiology Wiring"
+  version: "9.0.0"
+  release_date: "2026-07-01"          # v9.0.0 PRISMA pipeline rewrite + de-skew
+  release_name: "PRISMA Pipeline Rewrite & De-Skew"
   compatibility:
-    backward_compatible_with: ["8.4", "8.3", "8.2", "8.1", "8.0"]   # all ADR-05 additive
-    breaking_changes: []
+    backward_compatible_with: ["8.5", "8.4", "8.3", "8.2", "8.1", "8.0"]
+    breaking_changes:
+      - "v9.0.0: mandatory 10-axis domain matrix replaced by a fixed PRISMA 2020 / PRISMA-ScR pipeline (P0-P7); Adım 0.5 changed from a MANDATORY axis loader into an OPTIONAL, context-triggered enrichment classifier — default review path loads NO domain layer"
     additive_changes:
+      # v9.0.0 — PRISMA Pipeline Rewrite & De-Skew
+      - "v9.0.0: end-to-end PRISMA 2020/PRISMA-ScR pipeline P0-P7 (protocol/PICO -> search-strategy -> retrieval+dedup -> screening -> data-extraction -> risk-of-bias -> GRADE -> PRISMA-reporting), each phase pointing at its own reference file; new always-load prisma-reporting.md (PRISMA flow diagram + SoF table + checklist)"
+      - "v9.0.0: description reframed to a general-purpose systematic/scoping-review engine (PRISMA/PICO/PECO/screening/RoB/GRADE triggers); therapeutic-area/commercial framing no longer dominates the identity"
+      - "v9.0.0: preserved backbone doctrines (native-MCP-first, clean-copy, retrieve-don't-dump, no-fabrication, uncapped depth, tek-sefer cache) and all Extended-Tier cross-validation recipes (moved under P4); connector wiring and reference corpus unchanged (additive)"
       # v8.2 — Reference-Integrity & Operability Release (skill-upgrader UPGRADE Faz 5)
       - "v8.2: standalone canonical SMP v1.0 manifest (UP-002)"
       - "v8.2: executable integrity gate evals/check_integrity.py + 10 regression queries (UP-004)"

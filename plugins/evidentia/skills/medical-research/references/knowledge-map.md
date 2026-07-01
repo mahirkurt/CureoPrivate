@@ -111,6 +111,12 @@
 - Synonyms: arama stratejisi, sorgu çevirisi, anahtar kelime eşleme, search string, database query
 - Cross-links: prisma-protocol.md (PICO→concepts); connector-registry.md (per-database tool names); prisma-reporting.md (search string reporting)
 
+### screening.md  — [PHASE P3]
+- Sections: §1 İki-aşamalı tarama, §2 Parti-parti include/exclude+gerekçe, §3 İnsan-onay kapısı, §4 İkili tarama notu, §5 Sayı defteri (screening_log)
+- Concepts: title/abstract screening, full-text screening, eligibility application, exclusion reasons, human-in-the-loop, dual screening, PRISMA flow counts
+- Synonyms: tarama, eleme, dahil hariç, screening, study selection
+- Cross-links: prisma-protocol.md (eligibility); data-extraction.md (included → extraction); prisma-reporting.md (flow counts)
+
 ### regulatory-intelligence.md  — [axis 0.5.C / 0.5.D / 0.5.K]
 - Sections: §1 Native openFDA (replaces Python requests), §2 WHO ICD-11 — indication coding, §3 WHO GHO — disease burden / epidemiology (axis 0.5.K), §4 Multi-jurisdiction regulatory cross-reference, §5 How this layer feeds the clinical layers, §6 Output — epidemiology_payload sidecar, §7 Known limitations
 - Concepts: openFDA (drug events/recalls/labels/enforcement), ICD-11 coding, WHO GHO (Global Health Observatory), GLOBOCAN cancer incidence, disease burden, DALY, Federal Register, Health Canada (CADTH/HC), EUR-Lex, multi-jurisdiction approval tracking, epidemiology payload sidecar

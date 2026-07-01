@@ -49,9 +49,8 @@ REFS_DIR = SKILL_DIR / "references"
 CONNECTOR_REGISTRY = REFS_DIR / "connector-registry.md"
 
 ALWAYS_LOAD = [
-    "connector-registry.md", "extended-api.md", "evidence-grading.md",
-    "output-templates.md", "fulltext-retrieval.md", "report-presentation.md",
-    "knowledge-map.md",   # v8.3 always-load (Adım 0.4 semantic coverage index)
+    "knowledge-map.md", "connector-registry.md", "evidence-grading.md",
+    "output-templates.md", "report-presentation.md", "prisma-reporting.md",
 ]
 
 GREEN, RED, YELLOW, RESET = "\033[32m", "\033[31m", "\033[33m", "\033[0m"
@@ -261,7 +260,7 @@ def gate_coverage() -> bool:
 
     Three checks:
       (1) Every references/*.md (except the map itself) is mentioned in the map.
-      (2) Every Adim-0.5 axis id (0.5.A .. 0.5.K) found in SKILL.md appears in the map.
+      (2) Every PRISMA phase marker (P0 .. P7) found in SKILL.md appears in the map.
       (3) No dangling entries: every *.md token in the map resolves on disk
           (checked in references/ first, then SKILL_DIR for SKILL.md itself).
     """
@@ -286,14 +285,23 @@ def gate_coverage() -> bool:
             _fail(f"knowledge-map.md does not reference {fname}")
             ok = False
 
-    # (2) every Adim 0.5 axis id in SKILL.md appears in the map
+    # (2) every PRISMA phase marker P0..P7 in SKILL.md appears in the map — either as a
+    # literal token, or (for phases with no dedicated phase-file, e.g. P2 Retrieval/Dedup
+    # riding the native-first ladder in extended-api.md/fulltext-retrieval.md, and P6 GRADE
+    # living in the [ALWAYS] evidence-grading.md) via its documented routing file(s).
     skill_text = _read(SKILL_MD)
-    axes = sorted(set(re.findall(r"0\.5\.[A-K]", skill_text)))
-    for ax in axes:
-        if ax in map_text:
-            _ok(f"map covers axis {ax}")
+    phases = sorted(set(re.findall(r"\bP[0-7]\b", skill_text)))
+    PHASE_FALLBACK_FILES = {
+        "P2": ["extended-api.md", "fulltext-retrieval.md"],
+        "P6": ["evidence-grading.md"],
+    }
+    for ph in phases:
+        if ph in map_text:
+            _ok(f"map covers phase {ph}")
+        elif ph in PHASE_FALLBACK_FILES and any(f in map_text for f in PHASE_FALLBACK_FILES[ph]):
+            _ok(f"map covers phase {ph} (via {'/'.join(PHASE_FALLBACK_FILES[ph])}, no dedicated phase file)")
         else:
-            _fail(f"map omits axis {ax}")
+            _fail(f"map omits phase {ph}")
             ok = False
 
     # (3) no dangling *.md tokens in the map
@@ -308,7 +316,7 @@ def gate_coverage() -> bool:
         ok = False
 
     if ok:
-        _ok(f"map consistent with corpus ({len(ref_files)} files, {len(axes)} axes, 0 dangling)")
+        _ok(f"map consistent with corpus ({len(ref_files)} files, {len(phases)} phases, 0 dangling)")
     else:
         _fail("map drift detected — update references/knowledge-map.md")
     return ok
@@ -467,6 +475,63 @@ def gate_whitelist() -> bool:
     return True
 
 
+PHASE_FILES = {
+    "P0": "prisma-protocol.md", "P1": "search-strategy.md", "P3": "screening.md",
+    "P4": "data-extraction.md", "P5": "risk-of-bias.md", "P7": "prisma-reporting.md",
+}
+DOMAIN_LAYERS = [
+    "oncology-layer.md", "hematology-layer.md", "immunology-layer.md",
+    "neurology-layer.md", "rare-disease-layer.md", "drug-intelligence-layer.md",
+    "regulatory-intelligence.md", "regulatory-science-layer.md", "hta-layer.md",
+    "medaffairs-ops-layer.md", "turkiye-layer.md",
+]
+
+
+def gate_phases() -> bool:
+    """G-PHASES: SKILL.md declares P0..P7 and points each defined phase at its reference file."""
+    print("G-PHASES  PRISMA pipeline phases present")
+    skill = _read(SKILL_MD)
+    ok = True
+    for ph in ["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]:
+        if re.search(r"\b" + ph + r"\b", skill):
+            _ok(f"phase {ph} declared")
+        else:
+            _fail(f"phase {ph} missing from SKILL.md")
+            ok = False
+    for ph, fname in PHASE_FILES.items():
+        if fname in skill:
+            _ok(f"{ph} points at {fname}")
+        else:
+            _fail(f"{ph} does not point at {fname}")
+            ok = False
+    return ok
+
+
+def gate_deskew() -> bool:
+    """G-DESKEW: no domain layer is mandatorily loaded in the default path. Every domain
+    layer reference in SKILL.md sits under the optional/enrichment framing, never an
+    'always'/'mandatorily loaded' directive."""
+    print("G-DESKEW  domain layers are optional (de-skew invariant)")
+    skill = _read(SKILL_MD)
+    ok = True
+    # A bare "mandator" substring check collides with its own negation ("non-mandatory",
+    # "not mandatory") — the same class of false-positive as G-DESC's SMA/PRISMA collision.
+    # Only flag an un-negated "mandator" mention.
+    mandator_re = re.compile(r"(?<!non-)(?<!non )(?<!not )mandator")
+    for layer in DOMAIN_LAYERS:
+        for m in re.finditer(re.escape(layer), skill):
+            # inspect the line containing this mention
+            line_start = skill.rfind("\n", 0, m.start()) + 1
+            line_end = skill.find("\n", m.start())
+            line = skill[line_start: line_end if line_end > 0 else len(skill)].lower()
+            if mandator_re.search(line) or "always-load" in line or "always load" in line or "zorunlu" in line:
+                _fail(f"{layer} referenced as mandatory/always: '{line.strip()[:80]}'")
+                ok = False
+    if ok:
+        _ok(f"all {len(DOMAIN_LAYERS)} domain layers referenced as optional/enrichment")
+    return ok
+
+
 SKILL_MAX_LINES = 500
 DESC_MAX_CHARS = 1024
 # therapeutic-area / commercial triggers that must NOT dominate the general description
@@ -519,7 +584,12 @@ def gate_desc() -> bool:
         ok = False
     else:
         _ok(f"required general triggers present: {', '.join(REQUIRED_DESC_TRIGGERS)}")
-    leaked = [t for t in FORBIDDEN_DESC_TRIGGERS if t.lower() in desc.lower()]
+    # Word-boundary match: a bare substring check makes "SMA" collide with the mandatory
+    # required trigger "PRISMA" (PRI-SMA), which would make G-DESC unsatisfiable. The
+    # author's " MS," spacing hack shows boundary intent; enforce it uniformly.
+    def _forbidden_hit(t: str, hay: str) -> bool:
+        return re.search(r"(?<![a-z])" + re.escape(t.lower().strip()) + r"(?![a-z])", hay) is not None
+    leaked = [t for t in FORBIDDEN_DESC_TRIGGERS if _forbidden_hit(t, desc.lower())]
     if leaked:
         _fail(f"therapeutic-area/commercial trigger(s) dominate description: {', '.join(leaked)}")
         ok = False
@@ -539,6 +609,8 @@ GATES = {
     "whitelist": ("G-WHITELIST", gate_whitelist, True),
     "size": ("G-SIZE", gate_size, True),
     "desc": ("G-DESC", gate_desc, True),
+    "phases": ("G-PHASES", gate_phases, True),
+    "deskew": ("G-DESKEW", gate_deskew, True),
 }
 
 

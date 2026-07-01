@@ -1,6 +1,8 @@
 # Drug Intelligence Layer (v8.0 — corrected AdisInsight schema)
 
-**Loaded when:** Adım 0.5.I drug-intelligence signal is detected.
+**Optional enrichment module** — loaded only when the question's context calls for
+drug-intelligence data. NOT mandatory; the core PRISMA pipeline (P0–P7) runs without it.
+Output → enrichment appendix.
 **Primary connector:** AdisInsight MCP (server `6a9fd4a4…`).
 **⚠️ v8.0 CORRECTION:** v7.1 documented a fictional *Springer Pharma API Bundle* schema (`organisations`/`phases`/`indications`/`moas`/`drugClass`/`locations`/`fromDate`/`toDate`). **That schema does not exist on the connected MCP.** This file documents the **real, probe-verified** interface. Any call using the old parameters will fail.
 
@@ -152,7 +154,7 @@ Deal/conference depth on the public MCP is thinner than the curated web product 
 - **pharmapatent** — `competitor_landscape` → FTO/invalidity/biosimilar-entry (Markush, SPC). Use TÜRKPATENT for TR IP.
 - **onko-erisim** — oncology pipeline + `drug_profile.approval_status` → SGK ödeme petition (NCCN/ESMO + Anayasa 17/56). Pull TİTCK reimbursement natively.
 - **saglik-sigorta** — label/indication + TİTCK price → tıbbi gereklilik defense.
-- **carbon-html-report / carbon-pptx** — `pipeline_payload` + `generate_chart` → §19 Pipeline Snapshot + milestone timeline.
+- **carbon-html-report / carbon-pptx** — `pipeline_payload` + `generate_chart` → enrichment appendix Pipeline Snapshot + milestone timeline.
 - **talent-praetor** — `conference_coverage.kol_authors` → KOL graph → senior MSL/RWE Lead competency model.
 
 ---

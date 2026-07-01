@@ -1,6 +1,8 @@
 # Regulatory Science Layer (0.5.C)
 
-**Loaded:** when axis 0.5.C fires (+ `regulatory-intelligence.md`). **Adım 1 package:** §1.I.
+**Optional enrichment module** — loaded only when the question's context calls for regulatory
+data. NOT mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → enrichment
+appendix.
 **Recreated v8.2.0 (UP-003).**
 
 **Triggers (full):** ruhsat, MAA, NDA/BLA, FDA approval, EMA, CHMP, TİTCK, AdComm/ODAC,
@@ -29,7 +31,8 @@ AdisInsight flags (`is_orphan_drug`/`is_btt`/`is_prime`) cross-validated against
 - Safety signals: openFDA FAERS `count` (PT-level) — **reporting, not incidence**; never present as rate.
 - TR lag: time from FDA/EMA approval → TİTCK ruhsat → SGK reimbursement.
 
-## 4. Output → §1.I / §4
-Feeds §4 Ruhsat & Etiket (milestone timeline FDA/EMA/TİTCK) and the regulatory_table sidecar.
-Latency note: regulatory MCP is slow — call singly, retry, skippable. Handoff: deep TR regulatory
-reform → `lex-sanitas`; promotional compliance → `promo-censor`.
+## 4. Output → enrichment appendix
+Feeds the enrichment appendix's Ruhsat & Etiket note (milestone timeline FDA/EMA/TİTCK) and the
+regulatory_table sidecar — never the core SR sections. Latency note: regulatory MCP is slow —
+call singly, retry, skippable. Handoff: deep TR regulatory reform → `lex-sanitas`; promotional
+compliance → `promo-censor`.

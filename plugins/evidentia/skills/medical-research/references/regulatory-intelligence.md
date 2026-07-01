@@ -1,6 +1,8 @@
 # Regulatory Intelligence & Epidemiology Layer (v8.0; refocused v8.5)
 
-**Loaded when:** 0.5.C (Regulatory), 0.5.D (HTA), or 0.5.K (Epidemiology/Disease Burden) fires.
+**Optional enrichment module** — loaded only when the question's context calls for regulatory
+data. NOT mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → enrichment
+appendix.
 **Purpose:** Provide the **verified native data plumbing** for the regulatory + epidemiology
 dimensions. Complements (does not replace) the clinical `regulatory-science-layer.md` and
 `hta-layer.md` — those keep the domain logic; this file wires the connectors.
@@ -106,15 +108,16 @@ it as covering Türkiye or global burden.**
 ## 5. How this layer feeds the clinical layers
 
 - **0.5.C Regulatory** (`regulatory-science-layer.md`): native `drugsfda` approval timeline +
-  `drug/label` boxed warnings + AdisInsight `history_events` (CRL/ODAC/registration) → §13 regulatory
-  trajectory. **Withdrawal pool**: `openfda_search(endpoint="drug/enforcement")` + AdisInsight
-  discontinued/withdrawn phases. *(EMA EPAR/CHMP = documented gap; cross-ref AdisInsight history.)*
+  `drug/label` boxed warnings + AdisInsight `history_events` (CRL/ODAC/registration) → enrichment
+  appendix regulatory trajectory. **Withdrawal pool**: `openfda_search(endpoint="drug/enforcement")` +
+  AdisInsight discontinued/withdrawn phases. *(EMA EPAR/CHMP = documented gap; cross-ref AdisInsight
+  history.)*
 - **0.5.D HTA** (`hta-layer.md`): ICD-11 coding (denominators) + **PopHIVE US burden/coverage** where
-  US-relevant → budget-impact context; TİTCK price (native) + Mevzuat SUT (native) → §14.f Türkiye.
-  *(NICE/CADTH/IQWiG/HAS have no native API → documented gap; do not web-scrape.)*
-- **0.5.K Epidemiology** (output §21): ICD-11 (`openfda`) + **PopHIVE (US)** → US incidence/activity +
-  vaccination coverage; **global/TR burden = documented gap** (TR substitutes: TİTCK + EPMC AFF:Turkey +
-  YÖK Tez).
+  US-relevant → budget-impact context; TİTCK price (native) + Mevzuat SUT (native) → enrichment
+  appendix Türkiye note. *(NICE/CADTH/IQWiG/HAS have no native API → documented gap; do not web-scrape.)*
+- **0.5.K Epidemiology** (output → enrichment appendix): ICD-11 (`openfda`) + **PopHIVE (US)** → US
+  incidence/activity + vaccination coverage; **global/TR burden = documented gap** (TR substitutes:
+  TİTCK + EPMC AFF:Turkey + YÖK Tez).
 
 ---
 

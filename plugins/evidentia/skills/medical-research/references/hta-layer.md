@@ -1,6 +1,7 @@
 # HTA & Market Access Layer (0.5.D)
 
-**Loaded:** when axis 0.5.D fires (+ `regulatory-intelligence.md`). **Adım 1 package:** §1.J.
+**Optional enrichment module** — loaded only when the question's context calls for HTA data.
+NOT mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → enrichment appendix.
 **Recreated v8.2.0 (UP-003).**
 
 **Triggers (full):** HTA, maliyet etkililik, cost-effectiveness, ICER, QALY, ICUR, NICE, CADTH/CDA,
@@ -27,7 +28,8 @@ price-/SUT-determined.
 Budget impact needs the eligible population → pull WHO GHO / GLOBOCAN / ICD-11 prevalence
 (`regulatory-intelligence.md` §epi) and Turkish incidence where available.
 
-## 4. Output → §1.J / §F-format
-Feeds the HTA table (body, decision, ICER, QALY, date) + SUT status + price chain. Handoff: deep
-SGK/individual access → `onko-erisim` / `saglik-sigorta`. Surrogate-endpoint → value caveats
+## 4. Output → enrichment appendix
+Feeds the enrichment appendix's HTA table (body, decision, ICER, QALY, date) + SUT status + price
+chain — never the core SR sections. Handoff: deep SGK/individual access → `onko-erisim` /
+`saglik-sigorta`. Surrogate-endpoint → value caveats
 inherited from `evidence-grading.md`.

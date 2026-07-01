@@ -1,6 +1,11 @@
 # Türkiye Native Layer (v8.0 — NEW)
 
-**Loaded when:** Any query with Turkey context (Türkiye, TR, SGK, SUT, TİTCK, geri ödeme, ruhsat, eczane, yerli, biyobenzer) — and **by default on every query** (the "Türkiye Dörtlüsü" is mandatory in SKILL.md Adım 1.D).
+**Optional enrichment module** — loaded only when the question's context calls for Türkiye-market
+data. NOT mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → enrichment
+appendix. TR retrieval is context-triggered: a TR-specific question (Türkiye, TR, SGK, SUT,
+TİTCK, geri ödeme, ruhsat, eczane, yerli, biyobenzer) OR an explicit user request pulls in this
+layer's "Türkiye Dörtlüsü" (TİTCK + Mevzuat + YÖK Tez + EuropePMC AFF:Turkey) — it is not run by
+default on every query.
 
 **Purpose:** Replace the v7.1 Türkiye Dörtlüsü's `Exa site:titck.gov.tr` web-scraping with **native, structured MCP queries.** This is the single largest capability upgrade in v8.0 and directly serves TR pharma / oncology / regulatory / market-access work and the `onko-erisim` / `saglik-sigorta` / `pharmaintel` / `rxos` skill compositions.
 
@@ -86,7 +91,7 @@ Feeds `pharmapatent` / `rxos` skills for generic feasibility, biosimilar entry, 
 
 ---
 
-## 5. Türkiye Output Block (for §5 / §13.f / turkey_access_summary sidecar)
+## 5. Türkiye Output Block (for the enrichment appendix / turkey_access_summary sidecar)
 
 Populate the sidecar `turkey_access_summary` from native sources:
 ```json
@@ -115,12 +120,14 @@ Populate the sidecar `turkey_access_summary` from native sources:
 
 ---
 
-## 7. Mandatory Türkiye Dörtlüsü (every query — SKILL.md Adım 1.D, v8.0)
+## 7. Türkiye Dörtlüsü (context-triggered — TR-specific question OR user-requested, v8.0)
 1. **TİTCK `search_drugs`** (native) — INN + brand.
 2. **Mevzuat `search_mevzuat`** (native) — SUT/yönetmelik when clinical/reimbursement context.
 3. **YÖK Tez `search_yok_tez_detailed`** — Türkçe + İngilizce.
 4. **EuropePMC `AFF:"Turkey"`** — Turkish-authored studies.
-Null-reporting: if all return empty, emit a **Türkiye Veri Boşluğu** block (do not silently omit).
+Not run by default on every query — only when this layer is loaded (TR context detected or
+explicitly requested). Output → enrichment appendix. Null-reporting: if all return empty, emit a
+**Türkiye Veri Boşluğu** block (do not silently omit).
 
 ---
 

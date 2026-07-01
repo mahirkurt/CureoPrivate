@@ -123,6 +123,12 @@
 - Synonyms: veri çıkarımı, kanıt tablosu, ekstraksiyon, data charting, extraction form
 - Cross-links: screening.md (included studies); fulltext-retrieval.md (cascade); evidence-grading.md (GRADE input); risk-of-bias.md (per-study RoB); prisma-reporting.md (evidence table)
 
+### risk-of-bias.md  — [PHASE P5]
+- Sections: §1 Araç seçim matrisi (RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST/AMSTAR-2), §2 Alan-alan sorular + yargı, §3 İnsan-onay kapısı, §4 Özet gösterim, §5 GRADE'e devir
+- Concepts: risk of bias, RoB2, ROBINS-I, QUADAS-2, Newcastle-Ottawa, PROBAST, AMSTAR-2, traffic-light plot, domain judgement, bias downgrade
+- Synonyms: yanlılık riski, önyargı değerlendirmesi, bias assessment, quality appraisal
+- Cross-links: data-extraction.md (study design); evidence-grading.md (GRADE bias domain); prisma-reporting.md (RoB summary figure)
+
 ### regulatory-intelligence.md  — [axis 0.5.C / 0.5.D / 0.5.K]
 - Sections: §1 Native openFDA (replaces Python requests), §2 WHO ICD-11 — indication coding, §3 WHO GHO — disease burden / epidemiology (axis 0.5.K), §4 Multi-jurisdiction regulatory cross-reference, §5 How this layer feeds the clinical layers, §6 Output — epidemiology_payload sidecar, §7 Known limitations
 - Concepts: openFDA (drug events/recalls/labels/enforcement), ICD-11 coding, WHO GHO (Global Health Observatory), GLOBOCAN cancer incidence, disease burden, DALY, Federal Register, Health Canada (CADTH/HC), EUR-Lex, multi-jurisdiction approval tracking, epidemiology payload sidecar

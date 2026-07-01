@@ -1,6 +1,8 @@
 # Oncology Layer (0.5.A)
 
-**Loaded:** when axis 0.5.A fires. **Adım 1 package:** §1.F.
+**Optional enrichment module** — loaded only when the question's context enters oncology. NOT
+mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → clearly-labelled enrichment
+appendix (not the core SR report).
 **Recreated v8.2.0 (UP-003):** clinical body grounded in current oncology authorities; connector
 wiring is v8.0 native.
 
@@ -38,7 +40,7 @@ TMB, RECIST, irRECIST, neoadjuvan, adjuvan, metastatik, OS, PFS, ORR, DoR, bioma
 - **Subgroup credibility** (pre-specified vs. post-hoc; interaction test).
 - **ESMO-MCBS / ESCAT grade** when positioning benefit or a molecular target.
 
-## 5. Output → §1.F / §9 / §19
-Feeds §9 Kılavuz Yerleşimi (NCCN/ESMO line-of-therapy placement), §19 Drug Intelligence (pipeline),
-and the TR access reality in §5 (TİTCK off-label + SUT). Endpoint table + biomarker-actionability
-note in the `.data.json` `specialty_payload`.
+## 5. Output → enrichment appendix (domain-specific guideline placement / pipeline note), never the core SR sections
+Feeds the enrichment appendix's guideline-placement note (NCCN/ESMO line-of-therapy) and pipeline
+note (AdisInsight/CT.gov), plus the TR access reality note (TİTCK off-label + SUT). Endpoint table +
+biomarker-actionability note in the `.data.json` `specialty_payload`.

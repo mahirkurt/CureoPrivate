@@ -1,6 +1,8 @@
 # Hematology Layer (0.5.B)
 
-**Loaded:** when axis 0.5.B fires. **Adım 1 package:** §1.G.
+**Optional enrichment module** — loaded only when the question's context enters hematology. NOT
+mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → clearly-labelled enrichment
+appendix (not the core SR report).
 **Recreated v8.2.0 (UP-003).** Malignant-heme depth; v8.0 native wiring.
 
 **Triggers (full):** lösemi, lenfoma, myelom, AML, ALL, CML, CLL, MDS, MPN, DLBCL, FL, MCL, HL,
@@ -35,6 +37,7 @@ WHO-HAEM5, ICC-2022, ELN-2022, IPSS-M, IMWG, Lugano, IWCLL.
 - Cytogenetic/molecular subgroup credibility (del17p, TP53, complex karyotype).
 - For cell/gene therapy: manufacturing/vein-to-vein, bridging therapy, CRS/ICANS grading (ASTCT).
 
-## 5. Output → §1.G / §9 / §19
-Feeds §9 (ELN/IPSS-M/IMWG-anchored placement), §19 (heme pipeline), §5 (TR biosimilar + access).
-Dual-classification note + MRD assay/threshold recorded in `specialty_payload`.
+## 5. Output → enrichment appendix (domain-specific guideline placement / pipeline note), never the core SR sections
+Feeds the enrichment appendix's guideline-placement note (ELN/IPSS-M/IMWG-anchored) and pipeline
+note (heme pipeline), plus the TR access reality note (TR biosimilar + access). Dual-classification
+note + MRD assay/threshold recorded in `specialty_payload`.

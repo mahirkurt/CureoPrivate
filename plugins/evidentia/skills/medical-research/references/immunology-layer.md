@@ -1,6 +1,8 @@
 # Immunology & Inflammation Layer (0.5.F)
 
-**Loaded:** when axis 0.5.F fires. **Adım 1 package:** §1.L.
+**Optional enrichment module** — loaded only when the question's context enters immunology. NOT
+mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → clearly-labelled enrichment
+appendix (not the core SR report).
 **Recreated v8.2.0 (UP-003).**
 
 **Triggers (full):** RA/romatoid artrit, PsA/psoriatik artrit, AS/aksiyel spondiloartrit, SLE/lupus,
@@ -25,6 +27,7 @@ Surveillance). Biosimilar landscape via TİTCK `find_biosimilar_group`.
 - Long-term safety (registry/RWE Tier 4): infection, malignancy, MACE/VTE for JAK.
 - Treat-to-target framing where guidelines specify.
 
-## 4. Output → §1.L / §3 / §9
-Feeds §3 Mechanism, §9 guideline placement, §4 label/safety (JAK class warnings). TR biosimilar +
-SUT access in §5. `specialty_payload`: endpoint set + class-safety note.
+## 4. Output → enrichment appendix (domain-specific guideline placement / pipeline note), never the core SR sections
+Feeds the enrichment appendix's mechanism note, guideline-placement note, and label/safety note (JAK
+class warnings), plus TR biosimilar + access note. `specialty_payload`: endpoint set + class-safety
+note.

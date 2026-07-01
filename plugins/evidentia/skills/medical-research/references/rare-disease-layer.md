@@ -1,6 +1,8 @@
 # Rare Disease Layer (0.5.H)
 
-**Loaded:** when axis 0.5.H fires. **Adım 1 package:** §1.N.
+**Optional enrichment module** — loaded only when the question's context enters rare-disease. NOT
+mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → clearly-labelled enrichment
+appendix (not the core SR report).
 **Recreated v8.2.0 (UP-003).**
 
 **Triggers (full):** nadir hastalık, rare disease, orphan, ODD/orphan drug designation, OMP,
@@ -27,7 +29,7 @@ Prevalence is decisive for rare-disease HTA and access. Pull Orphanet prevalence
 (`regulatory-intelligence.md`) + Turkish prevalence/registry availability (a recurring gap →
 Phase 4 gap note).
 
-## 4. Output → §1.N / §21 / §F
-Feeds §21 epidemiology (prevalence), §F HTA/access (one-time-therapy economics), §5 TR access
-(named-patient/expanded-access where no ruhsat). `specialty_payload`: ORPHAcode + natural-history
-comparator validity note.
+## 4. Output → enrichment appendix (domain-specific guideline placement / pipeline note), never the core SR sections
+Feeds the enrichment appendix's epidemiology note (prevalence), HTA/access note (one-time-therapy
+economics), and TR access note (named-patient/expanded-access where no ruhsat). `specialty_payload`:
+ORPHAcode + natural-history comparator validity note.

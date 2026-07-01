@@ -1,6 +1,8 @@
 # Neurology Layer (0.5.G)
 
-**Loaded:** when axis 0.5.G fires. **Adım 1 package:** §1.M.
+**Optional enrichment module** — loaded only when the question's context enters neurology. NOT
+mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → clearly-labelled enrichment
+appendix (not the core SR report).
 **Recreated v8.2.0 (UP-003).**
 
 **Triggers (full):** MS/multipl skleroz, NMOSD, MOGAD, MG/miyastenia, SMA/spinal müsküler atrofi,
@@ -28,8 +30,11 @@ anti-CD20, S1P modulators, BTKi (MS); ASO/splice-modifier/gene therapy (SMA: nus
 risdiplam oral, onasemnogene gene therapy); anti-amyloid mAbs (Alzheimer); anti-CGRP (migraine).
 ChEMBL native + AdisInsight pipeline + CT.gov.
 
-## 4. Appraisal & output → §1.M / §9 / §21
+## 4. Appraisal
 - Natural-history/registry comparators (SMA, ALS) — Tier 4 validity caveats.
 - Open-label-extension durability; functional vs. surrogate endpoints.
-Feeds §9 placement, §21 epidemiology (incidence/newborn-screening context for SMA — co-fire 0.5.K),
-§5 TR access. Handoff for individual access (e.g., SMA SGK) → `onko-erisim`/`saglik-sigorta`.
+
+## 5. Output → enrichment appendix (domain-specific guideline placement / pipeline note), never the core SR sections
+Feeds the enrichment appendix's guideline-placement note, epidemiology note (incidence/newborn-
+screening context for SMA — co-fire 0.5.K), and TR access note. Handoff for individual access (e.g.,
+SMA SGK) → `onko-erisim`/`saglik-sigorta`.

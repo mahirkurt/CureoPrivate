@@ -17,7 +17,16 @@ claude.ai yargısı: 🟢 Directory-Verified / Remote-Ready · 🟡 Hostable-Rem
 Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **operatör**
 (Cureonics Worker) · **Anthropic HCLS** (hcls.mcp.claude.com / pubmed.mcp.claude.com dizini).
 
-### 1.1 Akademik Çekirdek
+**Katmanlama (v9.1 — bibliyografik çekirdek birincil, alan-connector'ları opsiyonel):** §1.1
+**Bibliyografik Çekirdek** her PRISMA taramasının konudan bağımsız yüklediği **her-zaman-açık**
+settir (P1 arama → P2 getirim → P4 tam-metin). §1.2/§1.3 (curated intelligence + mekanizma;
+regülatuar/epidemiyoloji/Türkiye/IP) yalnız Adım 0.5 ilgili bağlamı işaretlediğinde yüklenen
+**opsiyonel, zenginleştirme-modülü-kapılı** katmanlardır. §1.5 (Genişletme Katmanı) ve self-host
+Tier-O (§1.6) da aynı şekilde opsiyonel/sinyal-kapılıdır. Çekirdek hiçbir opsiyonel connector'ın
+bağlı olmasına bağımlı değildir; bir opsiyonel modülün yokluğu yalnız o modülü bozar, temel PRISMA
+hattını değil.
+
+### 1.1 Bibliyografik Çekirdek (her-zaman-açık getirim seti)
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
 | PubMed / Europe PMC | 🟢 | API | search_articles · get_full_text_article · get_copyright_status · convert_article_ids (+3) | Anthropic HCLS | A |
@@ -27,6 +36,18 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | Paper Search | 🟢 | API | search · read_pubmed_paper · download_* (tam-metin tier 2) | topluluk | A |
 | bioRxiv / medRxiv | 🟢 | none | search_preprints (preprint flag zorunlu) | Anthropic HCLS | K |
 | YÖK Tez | 🟢 | none | search_yok_tez_detailed · get_yok_tez_document_markdown (+2) | operatör | A |
+
+**Tam-metin rung'u (P4, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
+| Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
+|---|---|---|---|---|---|
+| annas-mcp | 🟡 | — | article_search · article_download · book_search (tam-metin tier 3; **copyright kapısı**) | topluluk | A |
+| Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü) | topluluk (cyanheads) | K |
+
+**RAG substratı (retrieve-don't-dump, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
+| Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
+|---|---|---|---|---|---|
+| anamnesis (self-host) | — | OAuth/Bearer | ingest_document · semantic_search · hybrid_query · graph_neighbors · corpus_stats · forget_document | operatör self-host | O |
+| evidentia-kb (self-host) | — | OAuth/Bearer | kb_search — Adım 0.4 semantik yönlendirme takviyesi (bağlı değilse map-only degrade) | operatör self-host | O |
 
 > **WEB TIER KALDIRILDI (v1.4.0):** Exa ve Tavily — ve OSINT ekseni — **tamamen çıkarıldı**.
 > evidentia artık **saf yapısal-otoriter kanıt motorudur**: hiçbir web-arama/scraping fallback'i yoktur.
@@ -41,7 +62,10 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 > (PubMed/EPMC, Consensus, AdisInsight, TİTCK, Mevzuat, Türk Patent, …) operatör workspace / claude.ai
 > dizin connector'larıdır → roster'da statik URL ile **bildirilmez**; envanter + Settings ile bağlanır (§6).
 
-### 1.2 Curated Intelligence + Mekanizma
+### 1.2 Curated Intelligence + Mekanizma — OPSİYONEL (zenginleştirme-modülü-kapılı)
+**Yalnız Adım 0.5 Drug Intelligence (0.5.I) veya mekanizma/hedef sinyali işaretlediğinde yüklenir.**
+Yokluğu yalnız ilaç-zekası/mekanizma modülünü bozar — bibliyografik çekirdek (§1.1) etkilenmez.
+
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
 | AdisInsight | 🟢 | API | search_drugs · get_drug(HyDE) · generate_chart (+3) — **gerçek şema** (drug-intelligence-layer.md); eksen 0.5.I | resmi (Springer) | A |
@@ -50,7 +74,14 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | OpenTargets | 🔴 | — | (offline son probe'da) → ChEMBL target_search fallback | bio-research | A (offline) |
 | Wiley | 🟡 | OAuth | authenticate → publisher tam-metin (tier 4) | bio-research | A (conditional) |
 
-### 1.3 Regülatuar + Epidemiyoloji + Türkiye + IP
+### 1.3 Regülatuar + Epidemiyoloji + Türkiye + IP — OPSİYONEL (zenginleştirme-modülü-kapılı)
+**Yalnız Adım 0.5 Regulatory (0.5.C), HTA (0.5.D), Epidemiyoloji (0.5.K) veya Türkiye pazarı
+bağlamı işaretlendiğinde yüklenir.** Bu **kanıt-bağlamı zenginleştirmesidir**, kendi başına
+ticari/regülasyon istihbaratı DEĞİLDİR — ticari strateji `pharmaintel`'e, MLR `promo-censor`'a,
+bireysel SGK/geri-ödeme `onko-erisim`'e, patent-özel iş `pharmapatent`'e, karşılaştırmalı-hukuk
+soruları `lex-sanitas`/`health-policy`'ye yönlendirilir. Yokluğu yalnız işaretlenen modülü bozar —
+bibliyografik çekirdek (§1.1) etkilenmez.
+
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
 | **openfda** (self-host) | — | OAuth/Bearer | `openfda_search` (drug/event·label·drugsfda·enforcement·device/*, api.fda.gov keyless) + `icd11_search` (WHO ICD-11 MMS, server-side OAuth) — hızlı. **(RegulatoryMCP/Lex-Sanitas yerine; ICD-11 buradan; WHO GHO/Health Canada/EUR-Lex çıkarıldı)** | operatör self-host | O |
@@ -59,16 +90,26 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | Mevzuat | 🟢 | none | search_mevzuat · get_mevzuat_text · get_anayasa (+3) | operatör | A |
 | Türk Patent | 🟢 | API | search_patents · search_trademarks · get_patent_details (+1) | operatör | A |
 | NPI Registry | 🟢 | none | npi_search · npi_lookup · npi_validate (ABD PI/KOL) | Anthropic HCLS | K* |
-| annas-mcp | 🟡 | — | article_search · article_download · book_search (tam-metin tier 3; **copyright kapısı**) | topluluk | A |
 
-### 1.4 α-katman (operatör-bağlı, yüksek-güven · Tier-O)
+### 1.4 α-katman (operatör-bağlı, yüksek-güven · Tier-O) — OPSİYONEL (modülüne bağlı yükleme)
+**Yalnız desteklediği opsiyonel modülle birlikte yüklenir** — TİTCK Cache Türkiye-pazarı
+merdiveninin (§1.3) fallback basamağıdır, YÖK Akademik opsiyonel Türk-KOL modülüdür; **Annas
+Reader ise çekirdek tam-metin rung'unun (§1.1) parçasıdır**, opsiyonel değildir. Yokluğu yalnız
+bağlı olduğu modülü/rung'u bozar.
+
 | Connector | URL | Rol |
 |---|---|---|
 | TİTCK Cache | `https://titck.cureonics.com/mcp` | Türkiye Dörtlüsü latency fallback rung |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
-| **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED). §1.3 generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
+| **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED) — **§1.1 çekirdek tam-metin rung'unun parçası**, generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 
 ### 1.5 Genişletme Katmanı (mcp-scout canlı-doğrulanmış · Tier-K · §6)
+**Karışık katman — dikkat:** `openalex` / `pubmed-epmc` / `semantic-scholar` **bibliyografik
+çekirdeğin** (§1.1) bundled tool yüzeyleridir, her-zaman-açıktır. `med-terminologies` /
+`nih-clinicaltables` / `nlm-rxnorm` / `iuphar-gtopdb` ise **OPSİYONEL** Extended Tier-K'dır —
+yalnız drug/terminology zenginleştirme sinyali (Adım 0.5) ateşlendiğinde çağrılır
+(`connector-registry.md §2.6` tool-whitelist).
+
 | Connector | URL | Probe (2026-06-25) | Rol | Güven |
 |---|---|---|---|---|
 | **med-terminologies** | `https://medical.sidneybissoli.com/mcp` | ✅ 200 · v1.5.7 · 37 araç | SNOMED/LOINC/RxNorm/MeSH/ATC çapraz-yürüyüş (⚠️ `icd11_search` sunucuda WHO creds yok → AUTH_CONFIG_ERROR; **ICD-11 için `openfda`**) | **topluluk-UNVERIFIED** |
@@ -80,6 +121,11 @@ Güven: **resmi-ns** (com.x / ai.x ters-DNS) · **topluluk** (io.github.x) · **
 | **semantic-scholar** | `https://gateway.pipeworx.io/semanticscholar/mcp` | ✅ 200 (2026-06-27) · pipeworx gateway · S2 pack | Semantic Scholar atıf-grafiği/etki-atıfı (ikincil; Consensus+Scholar Gateway'i tamamlar) | topluluk · S2 upstream (aynı gateway) |
 
 ### 1.6 Self-Host (klinik DDI boşluğu + RAG/GraphRAG substratı + openFDA)
+**Karışık katman — dikkat:** `anamnesis` ve `evidentia-kb` **bibliyografik çekirdeğin RAG
+substratıdır** (§1.1) — her-zaman-açık, retrieve-don't-dump + Adım 0.4 yönlendirme için. `drugddx`
+ve `openfda` ise **OPSİYONEL** — yalnız klinik-DDI / regülatuar / ICD-11 zenginleştirme sinyali
+ateşlendiğinde çağrılır (§1.3).
+
 | Connector | URL | Durum |
 |---|---|---|
 | **drugddx** | `https://drugddx-mcp.cureonics.workers.dev/mcp` (✅ CANLI 2026-06-25) | β-aday `drug-interaction-mcp` HTTP 500 (CF 1101) → **self-host fork** (`self-host/drugddx-mcp/BUILD-BRIEF.md`). **Deployed + Tier-O roster'da** (2026-06-28 AÇIK/keyless — MCP_ALLOW_NO_AUTH=1, salt-okunur public-API proxy; no-auth initialize 200 · serverInfo drugddx-mcp v1.0.0). |
@@ -94,24 +140,47 @@ Unpaywall · DOAJ · J-STAGE · DrugBank**. `.mcp.json`'da **bildirilmez**.
 
 ---
 
-## 2. Native-First Fallback Zincirleri (çözümleme merdivenleri)
+## 2. Native-First Fallback Zincirleri (PRISMA faz bazında çözümleme merdivenleri)
 
 Her veri ihtiyacı şu sırayla çözülür: **native MCP → REST → belgelenmiş boşluk**
 ("VERİ BULUNAMADI" + denenen sorgular). **Web tier (Exa/Tavily) v1.4.0'da kaldırıldı** —
 yapısal kaynaklarda yoksa dürüstçe boşluk raporlanır, ASLA web-scraping/uydurma yapılmaz.
+Merdivenler artık **PRISMA fazına göre** gruplanır: **P1 (arama stratejisi)** → **P2 (getirim/
+dedup)** → **P4 (tam-metin zenginleştirme)**. P1/P2/P4 çekirdek merdivenleri (§1.1) her taramada
+çalışır; Adım 0.5 etiketli satırlar yalnız ilgili opsiyonel modül ateşlendiğinde devreye girer.
+
+### P1 — Arama stratejisi (çekirdek, her-zaman-açık)
+
+| İhtiyaç | Merdiven |
+|---|---|
+| Bibliyografik arama (MeSH/Emtree + serbest metin) | PubMed/EPMC `search_articles` → `pubmed-epmc` (`pubmed_search_articles`/`pubmed_europepmc_search`) → Scholar Gateway `semanticSearch` → Consensus `search` → Paper Search / bioRxiv-medRxiv / YÖK Tez |
+| KOL / atıf-ağı / kurum-yazar | `openalex` (`openalex_resolve_name`→`search_entities`/`get_citation_graph`) → `semantic-scholar` → EPMC → NPI (US, **opsiyonel**) → YÖK Akademik (TR, **opsiyonel**) |
+
+### P2 — Getirim & dedup (çekirdek, her-zaman-açık)
+
+| İhtiyaç | Merdiven |
+|---|---|
+| Çekirdek akademik getirim | PubMed/EPMC → Clinical Trials v2 `search_trials` → bioRxiv/medRxiv `search_preprints` → Paper Search → `openalex`/`semantic-scholar`/`pubmed-epmc` (Tier-K bundled, çekirdeğin parçası) |
+| Semantik KB takviyesi (Adım 0.4) | `evidentia-kb` `kb_search` — bağlı değilse map-only degrade (opsiyonel booster, çekirdek akışı bloklamaz) |
+
+### P4 — Tam-metin zenginleştirme (çekirdek, her-zaman-açık)
+
+| İhtiyaç | Merdiven |
+|---|---|
+| Tam-metin | EPMC `get_full_text_article` → `get_copyright_status` → **pubmed-epmc** `pubmed_fetch_fulltext` (EuropePMC + Unpaywall YASAL OA) → Paper Search `read_pubmed_paper` → **Annas Reader** (`article_download`/`book_download`) → Wiley (opsiyonel, OAuth) **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
+
+### Opsiyonel modül merdivenleri (yalnız Adım 0.5 sinyaliyle)
 
 | İhtiyaç | Merdiven |
 |---|---|
 | ICD/condition kodlama | `openfda` `icd11_search` (WHO ICD-11 MMS, ICD-11 birincil) → `nih-clinicaltables` (ICD-10/9) → bulunamazsa boşluk |
 | İlaç normalizasyonu (INN↔RxCUI) | `nlm-rxnorm` → `med-terminologies` (RxNorm) → DailyMed REST |
 | Terminoloji çapraz-yürüyüş (SNOMED/MeSH/LOINC/ATC) | `med-terminologies` (SNOMED/MeSH/LOINC/RxNorm/ATC) + ICD-11 için `openfda` `icd11_search` → `nih-clinicaltables` |
-| KOL / atıf-ağı / kurum-yazar | `openalex` (`openalex_resolve_name`→`search_entities`/`get_citation_graph`) → `semantic-scholar` → EPMC → NPI (US) → YÖK Akademik (TR) |
 | Mekanizma / hedef | ChEMBL `get_mechanism`/`target_search` → `iuphar-gtopdb` → OpenTargets (offline) → EPMC |
 | TR ruhsat/fiyat/biyobenzer | TİTCK native → **TİTCK Cache** (stall'da) → Mevzuat → bulunamazsa boşluk |
 | Epidemiyoloji/yük | **ABD:** `PopHIVE` (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — precomputed, birebir aktar) + ICD-11 kodlama (`openfda`). **Türkiye:** TİTCK + EPMC `AFF:"Turkey"` + YÖK Tez. **Global/TR yük (GLOBOCAN/IHME/WHO-GHO):** native-API YOK → erişilemez boşluk (uydurma yok). PopHIVE'ı ABD-dışına genelleme. |
 | Klinik DDI | **drugddx** (✅ canlı) → `nlm-rxnorm` etkileşim + DailyMed label DDI-bölümü (⚠️ "etkileşim verisi" olarak sunulMAZ) |
 | Regülatuvar (FDA) | **openfda** `openfda_search` (drug/event FAERS · drug/label · drugsfda · enforcement) → DailyMed REST (label) → bulunamazsa boşluk |
-| Tam-metin | EPMC `get_full_text_article` → `get_copyright_status` → **pubmed-epmc** `pubmed_fetch_fulltext` (EuropePMC + Unpaywall YASAL OA) → Paper Search `read_pubmed_paper` → **Annas Reader** (`article_download`/`book_download`) → Wiley **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
 | Kılavuz/HTA PDF (ESMO/NCCN/NICE) + EMA (CHMP/EPAR) | native-API YOK → **erişilemez boşluk** (VERİ YOK; uydurma yok). Operatör kılavuz PDF'ini yüklerse anamnesis'e ingest edilebilir |
 
 ---
@@ -172,8 +241,17 @@ Bir `doc_id` (DOI vb.) bir kez ingest edilir; sonraki sorgular indeksten okur �
 |---|---|---|
 | **Claude Code** (plugin runtime) | ✅ Tam — `mcpServers` doğrudan bağlanır | Plugin kurulumu connector'ları yükler |
 | **claude.ai** (web) | ⚠️ Kısmî | Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom connector**; Tier-A OAuth'u Advanced settings |
+| **ChatGPT** (web · Developer Mode) | ❌ Yok — elle | **Settings → Connectors** (Plus/Pro/Business/Enterprise/Edu + **Developer Mode**). Self-host Worker URL'leri (`…/mcp`) elle eklenir; gated olanlarda OAuth, drugddx + keyless'larda "No authentication". Detay: `docs/EVIDENTIA-KURULUM-VE-KEYLER.md` Kurulum yolu **C**. |
 
-**Yanılgı önleme:** "Plugin her yerde her şeyi otomatik bağlar" **yanlıştır**. claude.ai
+**ChatGPT uyumu (4 self-host Worker, 2026-06-30 canlı doğrulandı):** anamnesis · evidentia-kb ·
+openfda · drugddx **ChatGPT custom-connector ile çalışır**. Redirect allowlist `https://chatgpt.com`
+içerir; OAuth keşfi **RFC 9728**'e göre sağlamlaştırıldı (401 `WWW-Authenticate` →
+`resource_metadata`; PRM **path-insertion** `…/oauth-protected-resource/mcp`). Tümü **additive** —
+claude.ai/grok yüzeyleri bozulmaz. ChatGPT istemcisi `/mcp`'yi sunucu tarafından çağırır → CORS
+gerekmez. Üçüncü-taraf keyless connector'ların (med-terminologies, pipeworx gateway'leri, caseyjhand)
+ChatGPT-uyumu **upstream operatöre** bağlıdır.
+
+**Yanılgı önleme:** "Plugin her yerde her şeyi otomatik bağlar" **yanlıştır**. claude.ai/ChatGPT
 web tarafında OAuth/operatör connector'ları manuel eklenir (mcp-scout
 `claude-ai-compatibility.md`). `start` skill'inin Adım 2 preflight'ı bunu raporlar.
 
@@ -196,12 +274,26 @@ olduğunda uçtan uca çalışır (retrieve-don't-dump → `evidence_index`, §3
 
 ## 7. Kapsam Notu
 
-`medical-research` evrenseldir (hastane/IV dahil tüm alanlar). Ancak: **DDI çıktısı**
-otoriter kaynak olmadan "etkileşim verisi" olarak sunulMAZ; **FAERS** sayıları raporlamadır,
-insidans değildir; **β-aday** connector'lar probe-verified olmadan bağlanmaz; **web tier yok**
-(Exa/Tavily/OSINT v1.4.0'da kaldırıldı) → yapısal kaynakta yoksa "VERİ YOK", uydurma yok.
-Bireysel SGK/dava → `onko-erisim`; MLR → `promo-censor`; ticari strateji (rekabet/OSINT dahil) →
-`pharmaintel` (medical-research yalnız yapısal kanıt katmanını sağlar).
+`medical-research` evrenseldir (hastane/IV dahil tüm alanlar) ve **çekirdeği bibliyografik
+PRISMA hattıdır** (§1.1 — PubMed/EPMC, Europe PMC, OpenAlex, Semantic Scholar, Consensus,
+ClinicalTrials, bioRxiv/medRxiv, Paper Search, YÖK Tez + tam-metin/RAG substratı). **TİTCK/
+Mevzuat/TÜRKPATENT, openFDA/ICD-11, AdisInsight/ChEMBL/GtoPdb, PopHIVE, med-terminologies/
+RxNorm/nih-clinicaltables, drugddx, NPI/YÖK-Akademik gibi opsiyonel Türkiye/regülatuar/ilaç
+modülleri, çekirdek taramaya bağlam veren KANIT-ZENGİNLEŞTİRMESİDİR — kendi başına ticari
+istihbarat, regülasyon-işleri veya pazar-erişim danışmanlığı DEĞİLDİR.** Bu opsiyonel
+modüllerden çıkan sinyal ticari/regülatuar bir soruya dönüşürse **doğru skill'e devredilir,
+medical-research'te derinleştirilmez:**
+- Ticari strateji / rekabet / pipeline istihbaratı (OSINT dahil) → `pharmaintel`
+- Promosyonel materyal / MLR incelemesi → `promo-censor`
+- Bireysel SGK/geri-ödeme itirazı, dava dosyası → `onko-erisim`
+- Patent-özel araştırma (TÜRKPATENT'in salt patent-hukuku boyutu) → `pharmapatent`
+- Karşılaştırmalı hukuk / mevzuat yorumu (TR dışı) → `lex-sanitas` / `health-policy`
+
+Ayrıca: **DDI çıktısı** otoriter kaynak olmadan "etkileşim verisi" olarak sunulMAZ; **FAERS**
+sayıları raporlamadır, insidans değildir; **β-aday** connector'lar probe-verified olmadan
+bağlanmaz; **web tier yok** (Exa/Tavily/OSINT v1.4.0'da kaldırıldı) → yapısal kaynakta yoksa
+"VERİ YOK", uydurma yok. `medical-research` yalnız yapısal kanıt katmanını sağlar; opsiyonel
+modüllerin yokluğu çekirdek bibliyografik hattı asla bozmaz.
 
 ---
 

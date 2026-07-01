@@ -32,7 +32,19 @@ Keyword search also works for discovery (`ToolSearch "adisinsight drug pipeline"
 
 ## 2. Verified Connector Table
 
-### 2.1 Academic literature core
+**Tiering (v9.1 — bibliographic core primary, domain optional):** §2.1 is the **Bibliographic
+Core** — the always-on retrieval set every PRISMA review loads regardless of subject (P1 search →
+P2 retrieval → P4 full-text). §2.2/§2.3 (curated intelligence + mechanism; regulatory/
+epidemiology/Türkiye/IP) are **optional, enrichment-module-gated** — they load only when Adım 0.5
+flags a matching context signal (drug intelligence, Türkiye market, regulatory, epidemiology).
+§2.5 (α-layer) and §2.6 (Extended Tier-K) are likewise optional/signal-gated. The core never
+depends on an optional connector being connected; an optional module's absence degrades that
+module only, never the base PRISMA pipeline.
+
+### 2.1 Bibliographic Core (always-on retrieval set)
+
+**Loaded on every review, no enrichment signal required.** Covers P1 (search strategy translation),
+P2 (retrieval/dedup), and P4 (full-text enrichment when abstract is insufficient).
 
 | Connector | Server | Verified primary tools | Notes |
 |---|---|---|---|
@@ -47,9 +59,26 @@ Keyword search also works for discovery (`ToolSearch "adisinsight drug pipeline"
 | **bioRxiv / medRxiv** | `4e673875…` · `bio-research:biorxiv` | `search_preprints`, `get_preprint`, `search_published_preprints`, `search_by_funder` | ⚠️ Preprint = non-peer-reviewed flag mandatory |
 | **YÖK Tez** | `b2d46b46…` | `search_yok_tez_detailed`, `get_yok_tez_document_markdown`, `get_yok_tez_thesis_details`, `search_yok_tez_by_anabilim_dali` | Türkçe + İngilizce terim; tez tam metni sayfa-sayfa Markdown |
 
+**Full-text rung (P4, part of the core — not enrichment-gated):**
+
+| Connector | Server | Verified primary tools | Notes |
+|---|---|---|---|
+| **annas-mcp** | `annas-mcp` | `article_search` (DOI/keywords), `book_search`, `article_download` (by DOI — **verified working**), `book_download` (MD5 hash + format) | Full-text cascade tier 3 — core P4 rung (not an optional/domain module). ⚠️ Copyright: analysis only, no verbatim bulk reproduction |
+| **Unpaywall** (via `pubmed-epmc` bundled tool) | `pubmed.caseyjhand.com/mcp` | `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA resolution) | Legal-OA full-text alternative to the annas gray-area rung; see §2.1 PubMed-EPMC row above |
+
+**RAG substrate (retrieve-don't-dump, part of the core — not enrichment-gated):**
+
+| Connector | Server | Verified primary tools | Notes |
+|---|---|---|---|
+| **anamnesis** | `anamnesis-mcp.cureonics.workers.dev` | `ingest_document`, `semantic_search`, `hybrid_query`, `upsert_triples`, `graph_neighbors`, `subgraph`, `corpus_stats`, `forget_document` | RAG/GraphRAG retrieval substrate — long full-text/tool output is indexed here rather than dumped into context (§3 `evidence_index`); core P4 discipline, not a domain module |
+| **evidentia-kb** | `evidentia-kb-mcp.cureonics.workers.dev` | `kb_search` | Semantic recall over SKILL.md + `references/*.md` for Adım 0.4 routing; optional booster if unreachable (map-only degrade), but not a domain/enrichment module |
+
 > **Web tier removed (v1.4.0):** Exa and Tavily are no longer connectors. evidentia resolves only via native MCP + native REST; if a need has no native API it is reported as a documented gap (§0 tier 3), never web-scraped or fabricated.
 
-### 2.2 Curated intelligence + mechanism
+### 2.2 Curated intelligence + mechanism — OPTIONAL (enrichment-module-gated)
+
+**Loads only when Adım 0.5 flags Drug Intelligence (0.5.I) or a mechanism/target signal.** Absence
+degrades the drug-intelligence/mechanism module only — the bibliographic core (§2.1) is unaffected.
 
 | Connector | Server | Verified primary tools | Notes |
 |---|---|---|---|
@@ -59,24 +88,30 @@ Keyword search also works for discovery (`ToolSearch "adisinsight drug pipeline"
 | **OpenTargets** | `bio-research:ot` | (not surfaced as of probe) | ⚠️ Offline at last check — load conditionally; fallback ChEMBL `target_search` + EPMC |
 | **Wiley** | `bio-research:wiley` | `authenticate` → publisher full-text | OAuth-gated; full-text cascade tier 4 |
 
-### 2.3 Regulatory + epidemiology + Türkiye + IP
+### 2.3 Regulatory + epidemiology + Türkiye + IP — OPTIONAL (enrichment-module-gated)
+
+**Loads only when Adım 0.5 flags Regulatory (0.5.C), HTA (0.5.D), Epidemiology (0.5.K), or Türkiye
+market context.** This is **evidence-context enrichment**, not commercial/regulatory-affairs
+intelligence in its own right — commercial strategy routes to `pharmaintel`, MLR to
+`promo-censor`, individual reimbursement/SGK to `onko-erisim`, patent-only work to `pharmapatent`,
+and comparative-law questions to `lex-sanitas`/`health-policy`. Absence degrades only the flagged
+module — the bibliographic core (§2.1) is unaffected.
 
 | Connector | Server | Verified primary tools | Notes |
 |---|---|---|---|
 | **openfda** (self-host Tier-O) | `openfda-mcp.cureonics.workers.dev` | `openfda_search` (endpoint enum: `drug/event`, `drug/label`, `drug/drugsfda`, `drug/enforcement`, device/*; `search` Lucene + `count` aggregation), **`icd11_search`** (WHO ICD-11 MMS, server-side OAuth) | ⚠️ Latency-prone — call singly, retry, skippable. **icd11_search lives HERE** (D6: `med-terminologies.icd11_search` is BROKEN/AUTH_CONFIG_ERROR). `who_gho_query`/`health_canada_dpd`/`federal_register_search`/`eurlex_expert_search` are **NOT bundled** (old Regulatory MCP removed) → documented gap. |
-| **TİTCK** | `1a49b1bb…` | `search_drugs`, `get_drug`, `get_atc_class_summary`, `find_off_label_uses_for_drug`, `find_biosimilar_group`, `find_reference_prices_for_drug`, `compare_drug_to_alternatives`, `find_equivalent_products_by_substance`, `search_regulation_article23`, `find_authorization_cancellations_for_drug`, `get_price_history`, `get_withdrawal_trend`, `get_atc_hierarchy`, `search_off_label_uses` | **See `turkiye-layer.md`.** Türkiye Dörtlüsü now structural |
-| **Türk Mevzuat** | `fbf16a1a…` | `search_mevzuat` (needs `tur` code for `baslik` search), `get_mevzuat_text`, `get_mevzuat_content`, `get_anayasa`, `get_mevzuat_madde_tree`, `get_mevzuat_madde_diff` | SUT, yönetmelik, fiyat kararnamesi — native legislation |
-| **TÜRKPATENT** | `ded65854…` | `search_patents` (title/applicant/IPC/CPC), `search_trademarks`, `search_designs`, `get_patent_details` | Turkey IP — pharmapatent composition |
-| **NPI Registry** | `64557ced…` | `npi_search`, `npi_lookup`, `npi_validate` | US PI/KOL verification (NPI-1 individual, NPI-2 org). US-only |
-| **annas-mcp** | `annas-mcp` | `article_search` (DOI/keywords), `book_search`, `article_download` (by DOI — **verified working**), `book_download` (MD5 hash + format) | Full-text cascade tier 3. ⚠️ Copyright: analysis only, no verbatim bulk reproduction |
+| **TİTCK** | `1a49b1bb…` | `search_drugs`, `get_drug`, `get_atc_class_summary`, `find_off_label_uses_for_drug`, `find_biosimilar_group`, `find_reference_prices_for_drug`, `compare_drug_to_alternatives`, `find_equivalent_products_by_substance`, `search_regulation_article23`, `find_authorization_cancellations_for_drug`, `get_price_history`, `get_withdrawal_trend`, `get_atc_hierarchy`, `search_off_label_uses` | **See `turkiye-layer.md`.** Türkiye Dörtlüsü — optional Türkiye market module |
+| **Türk Mevzuat** | `fbf16a1a…` | `search_mevzuat` (needs `tur` code for `baslik` search), `get_mevzuat_text`, `get_mevzuat_content`, `get_anayasa`, `get_mevzuat_madde_tree`, `get_mevzuat_madde_diff` | SUT, yönetmelik, fiyat kararnamesi — native legislation; optional Türkiye market module |
+| **TÜRKPATENT** | `ded65854…` | `search_patents` (title/applicant/IPC/CPC), `search_trademarks`, `search_designs`, `get_patent_details` | Turkey IP — optional; feeds `pharmapatent` composition, not evidentia's default path |
+| **NPI Registry** | `64557ced…` | `npi_search`, `npi_lookup`, `npi_validate` | US PI/KOL verification (NPI-1 individual, NPI-2 org). US-only; optional KOL-identification module |
 
 ### 2.4 Output / compose / visualize
 - **AdisInsight `generate_chart`** — Chart.js inline (phase distribution, competitor landscape).
 - **carbon-html-report / carbon-pptx** — consume `.data.json` sidecar.
 - **mevzuat + TÜRKPATENT** — feed `onko-erisim` / `saglik-sigorta` / `pharmapatent` / `rxos` skill compositions.
 
-### 2.5 α-layer — operator-connected, high-trust (v8.2 NEW)
-Already connected in the operator workspace (mostly Cureonics-built); wired in v8.2 (UP-005). Declared in `skill-manifest.yaml` `runtime.mcp_servers`.
+### 2.5 α-layer — operator-connected, high-trust (v8.2 NEW) — OPTIONAL (enrichment-module-gated)
+Already connected in the operator workspace (mostly Cureonics-built); wired in v8.2 (UP-005). Declared in `skill-manifest.yaml` `runtime.mcp_servers`. **Loads only alongside the Türkiye market / full-text modules it serves** — TİTCK Cache is a fallback rung for the optional Türkiye ladder (§2.3), YÖK Akademik is the optional Turkish-KOL module, and PDF Viewer is an adjunct to the core full-text rung (§2.1). Absence degrades only the module it backs, not the bibliographic core.
 
 | Connector | Server | Role | Notes |
 |---|---|---|---|
@@ -86,14 +121,17 @@ Already connected in the operator workspace (mostly Cureonics-built); wired in v
 
 > **β-layer (NOT wired).** Registry-discovered remote-ready candidates (clinical-DDI, terminology cross-walk) that fill genuine gaps but are **community-published + unverified**. The v8.0 "probe-verified only" principle forbids wiring them before a live `tools/list` probe + Tier-2 (Glama/PulseMCP) trust vetting. Listed in `skill-manifest.yaml` `candidate_connectors_unverified`. See the upgrade plan UP-007.
 
-### 2.6 Extended Terminology / Pharmacology Tier (Tier-K) — first-class, tool-whitelisted (v8.5)
+### 2.6 Extended Terminology / Pharmacology Tier (Tier-K) — first-class, tool-whitelisted (v8.5) — OPTIONAL (enrichment-module-gated)
 
-Promoted to first-class in v8.5 (`Extended-Tier Promotion`). **Least-privilege is enforced at the
-TOOL level (DEĞİŞMEZ 5):** only the verified-working tools below are ever called; the BROKEN tools
-are never invoked, and the pipeworx **generic** tools (`ask_pipeworx`, `discover_tools`,
-`remember`/`recall`/`forget`, `polymarket_*`, `scan_*`, `subscribe`, `validate_claim`, …) are
-**out-of-whitelist** (G-WHITELIST). All four are community-published → **sandbox-first; patient-impacting
-output cross-validated against an authoritative source** (DEĞİŞMEZ 4 / §6.3P).
+Promoted to first-class in v8.5 (`Extended-Tier Promotion`). **First-class does not mean always-on:**
+this tier loads only when Adım 0.5 flags a drug/terminology enrichment signal (Extended Tier-K
+recipes, SKILL.md Adım 1/B) — the bibliographic core (§2.1) never depends on it. **Least-privilege
+is enforced at the TOOL level (DEĞİŞMEZ 5):** only the verified-working tools below are ever
+called; the BROKEN tools are never invoked, and the pipeworx **generic** tools (`ask_pipeworx`,
+`discover_tools`, `remember`/`recall`/`forget`, `polymarket_*`, `scan_*`, `subscribe`,
+`validate_claim`, …) are **out-of-whitelist** (G-WHITELIST). All four are community-published →
+**sandbox-first; patient-impacting output cross-validated against an authoritative source**
+(DEĞİŞMEZ 4 / §6.3P).
 
 | Connector | Server | ✅ Whitelist (verified 2026-06-28) | ⛔ Broken — never call | Primary role | Cross-validation gate |
 |---|---|---|---|---|---|

@@ -467,6 +467,67 @@ def gate_whitelist() -> bool:
     return True
 
 
+SKILL_MAX_LINES = 500
+DESC_MAX_CHARS = 1024
+# therapeutic-area / commercial triggers that must NOT dominate the general description
+FORBIDDEN_DESC_TRIGGERS = [
+    "CAR-T", "bispecific", "myeloma", "JAK", " MS,", "SMA", "Alzheimer", "ADC",
+    "BTK", "MRD", "PDUFA", "biosimilar", "SGK", "SUT", "biyobenzer",
+]
+# general systematic-review triggers that MUST appear
+REQUIRED_DESC_TRIGGERS = ["systematic", "PRISMA", "PICO"]
+
+
+def _skill_description() -> str:
+    """Extract the YAML frontmatter `description:` block value from SKILL.md."""
+    text = _read(SKILL_MD)
+    m = re.search(r"^description:\s*>?\s*\n((?:[ \t]+.*\n)+)", text, re.MULTILINE)
+    if m:
+        return " ".join(l.strip() for l in m.group(1).splitlines())
+    m2 = re.search(r"^description:\s*(.+)$", text, re.MULTILINE)
+    return m2.group(1).strip() if m2 else ""
+
+
+def gate_size() -> bool:
+    """G-SIZE: SKILL.md body < 500 lines (Talimatname §3.2.1)."""
+    print("G-SIZE  SKILL.md line budget")
+    n = len(_read(SKILL_MD).splitlines())
+    if n < SKILL_MAX_LINES:
+        _ok(f"SKILL.md {n} lines (< {SKILL_MAX_LINES})")
+        return True
+    _fail(f"SKILL.md {n} lines (>= {SKILL_MAX_LINES}) — split into references/")
+    return False
+
+
+def gate_desc() -> bool:
+    """G-DESC: description <=1024 chars, general PRISMA triggers present, no
+    therapeutic-area/commercial trigger domination (de-skew invariant)."""
+    print("G-DESC  skill description hygiene (de-skew)")
+    desc = _skill_description()
+    ok = True
+    if not desc:
+        _fail("no description: block parsed from SKILL.md frontmatter")
+        return False
+    if len(desc) <= DESC_MAX_CHARS:
+        _ok(f"description {len(desc)} chars (<= {DESC_MAX_CHARS})")
+    else:
+        _fail(f"description {len(desc)} chars (> {DESC_MAX_CHARS})")
+        ok = False
+    missing = [t for t in REQUIRED_DESC_TRIGGERS if t.lower() not in desc.lower()]
+    if missing:
+        _fail(f"description missing required general trigger(s): {', '.join(missing)}")
+        ok = False
+    else:
+        _ok(f"required general triggers present: {', '.join(REQUIRED_DESC_TRIGGERS)}")
+    leaked = [t for t in FORBIDDEN_DESC_TRIGGERS if t.lower() in desc.lower()]
+    if leaked:
+        _fail(f"therapeutic-area/commercial trigger(s) dominate description: {', '.join(leaked)}")
+        ok = False
+    else:
+        _ok("no therapeutic-area/commercial trigger domination")
+    return ok
+
+
 GATES = {
     "refs": ("G-REF", gate_refs, True),
     "always-load": ("G-ALWAYS", gate_always_load, True),
@@ -476,6 +537,8 @@ GATES = {
     "probe": ("G-PROBE", gate_probe, True),
     "xval": ("G-XVAL", gate_xval, True),
     "whitelist": ("G-WHITELIST", gate_whitelist, True),
+    "size": ("G-SIZE", gate_size, True),
+    "desc": ("G-DESC", gate_desc, True),
 }
 
 

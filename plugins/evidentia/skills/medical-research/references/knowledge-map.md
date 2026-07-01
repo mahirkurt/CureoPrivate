@@ -1,19 +1,40 @@
-# Knowledge Map — medical-research semantic coverage index (v8.3)
+# Knowledge Map — medical-research semantic coverage index (v9.0)
 
-> Adım 0.4 (Semantic Scope Scan) reads this to build `coverage_set` by MEANING, not keywords.
-> G-COVERAGE asserts this map is exhaustive vs. the real corpus. Keep in sync with the layer files.
-> Axis IDs covered: 0.5.A · 0.5.B · 0.5.C · 0.5.D · 0.5.E · 0.5.F · 0.5.G · 0.5.H · 0.5.I · 0.5.J · 0.5.K
+> Adım 0.4 (Semantic Scope Scan) reads this to build `coverage_set` by MEANING, not keywords, and
+> to route the question to PRISMA PHASE files (P0–P7) + OPTIONAL enrichment MODULES by meaning.
+> G-COVERAGE asserts this map is exhaustive vs. the real corpus. Keep in sync with the phase and
+> module files. Phases covered: P0 P1 P2 P3 P4 P5 P6 P7.
+
+## Question-Type → PICO taxonomy
+
+Adım 0.4 first classifies the question's **type**; the type fixes which framework P0 pre-specifies
+and which appraisal tools P5 applies. This is orthogonal to the optional domain modules below —
+every question type routes through the same P0–P7 spine.
+
+| Question type | Framework | Primary design | RoB / appraisal tool (P5) |
+|---|---|---|---|
+| **Therapy / intervention** | PICO | RCT | RoB2 |
+| **Diagnosis / test accuracy** | PICO (index test / reference test / target condition) | cross-sectional diagnostic accuracy study | QUADAS-2 |
+| **Prognosis** | PECO | cohort study | QUIPS / PROBAST (if prediction model) |
+| **Etiology / harm** | PECO | cohort or case-control | ROBINS-I / Newcastle-Ottawa |
+| **Prevention** | PICO | RCT or cohort | RoB2 or ROBINS-I |
+| **Scoping** | PCC (Population/Concept/Context) | any design (breadth over depth) | not applicable — PRISMA-ScR, no RoB synthesis required |
+
+Cross-links: prisma-protocol.md (P0 — where question-type classification happens, §1) ·
+risk-of-bias.md (P5 — tool selection matrix, §1) · prisma-reporting.md (P7 — PRISMA vs
+PRISMA-ScR checklist selection, §2).
 
 ---
 
 ## Forward Map (file → sections → concepts → cross-links)
 
 ### SKILL.md  — [ALWAYS]
-- Sections: Adım 0 (Mandatory Loading), Adım 0.5 (Domain Classifier — 10-Axis Signal Detection), Adım 1 (Mandatory Parallel Call List), Adım 2 (Generosity Principle), Adım 3 (Output Contract), Adım 4 (User Interaction), Adım 5 (Nihai Sunum Sözleşmesi), Reference Files Progressive Disclosure, Version History, SMP v1.0 Manifest
-- Axis table: 0.5.A Oncology, 0.5.B Hematology, 0.5.C Regulatory, 0.5.D HTA, 0.5.E Medical Affairs, 0.5.F Immunology, 0.5.G Neurology, 0.5.H Rare Disease, 0.5.I Drug Intelligence, 0.5.J (Synapse/OpenTargets, auth-conditional), 0.5.K Epidemiology/Burden
-- Concepts: skill protocol, axis signal detection, native-MCP-first principle, always-load files, output contract, Cömertlik Garantisi, clean-copy doctrine, §1–21 scaffold, two-output model, tool loading via ToolSearch, Phase 1–5 pipeline
-- Synonyms: akış protokolü, araştırma sırası, kural seti, beceri yönergesi, methodology, protocol
-- Cross-links: every axis 0.5.A–0.5.K, connector-registry.md (tool resolution), output-templates.md (§1–21 scaffold), report-presentation.md (clean-copy doctrine), evidence-grading.md (GRADE), all specialty layers
+- Sections: Adım 0 (Mandatory Loading), Adım 0.1 (Project Settings), Adım 0.4 (Semantic Scope Scan — routes to PHASE files + optional MODULES, MANDATORY, runs before 0.5), Adım 0.5 (Optional Enrichment Classifier — NON-mandatory), PRISMA Pipeline Phases P0–P7, Adım 2 (Generosity Principle), Adım 3 (Output Contract), Adım 5 (Nihai Sunum Sözleşmesi), Completeness Gate, Reference Files Progressive Disclosure, Version History, SMP v1.0 Manifest
+- Pipeline table: **P0** Protocol & PICO/PECO/PCC (`prisma-protocol.md`) → **P1** Search Strategy (`search-strategy.md`) → **P2** Retrieval & Deduplication (native-first ladder, no dedicated phase file — routes via `extended-api.md`/`fulltext-retrieval.md`) → **P3** Screening (`screening.md`, human-approval checkpoint) → **P4** Data Extraction (`data-extraction.md`) → **P5** Risk of Bias (`risk-of-bias.md`, human-approval checkpoint) → **P6** GRADE Certainty (no dedicated phase file — routes via `evidence-grading.md`, an [ALWAYS] file) → **P7** PRISMA Reporting (`prisma-reporting.md`). Every review runs this core spine; P0–P7 is never skipped.
+- Optional enrichment modules (Adım 0.5, NON-mandatory, context-triggered — de-skew invariant: default path loads none): oncology, hematology, regulatory, HTA, medical-affairs/KOL, immunology, neurology, rare-disease, drug-intelligence, Türkiye-market, regulatory-intelligence/epidemiology.
+- Concepts: skill protocol, PRISMA 2020/PRISMA-ScR pipeline, optional-module signal detection, native-MCP-first principle, always-load files, output contract, Cömertlik Garantisi, clean-copy doctrine, two-output model, tool loading via ToolSearch, human-approval checkpoints (P3/P5), de-skew invariant
+- Synonyms: akış protokolü, araştırma sırası, kural seti, beceri yönergesi, methodology, protocol, PRISMA hattı
+- Cross-links: P0–P7 phase files (prisma-protocol.md, search-strategy.md, screening.md, data-extraction.md, risk-of-bias.md, prisma-reporting.md), evidence-grading.md (P6 GRADE, [ALWAYS]), connector-registry.md (tool resolution), output-templates.md (report structure), report-presentation.md (clean-copy doctrine), all optional enrichment modules
 
 ### connector-registry.md  — [ALWAYS]
 - Sections: §0 Native-First Resolution Principle, §1 Tool Loading via ToolSearch, §2 Verified Connector Table (§2.1 Academic literature core, §2.2 Curated intelligence + mechanism, §2.3 Regulatory + epidemiology + Türkiye + IP, §2.4 Output / compose / visualize, §2.5 α-layer operator-connected high-trust), §3 Per-Connector Usage Notes (§3.1 AdisInsight schema, §3.2 TİTCK structural Turkey data, §3.3 Regulatory MCP native openFDA, §3.4 web research REMOVED v1.4.0, §3.5 annas-mcp full-text, §3.6 EPMC copyright gate), §4 Web Retrieval REMOVED v1.4.0, §5 Zero-Result Recovery Protocol, §6 Known Limitations & Workarounds, §6.3P third-party academic-MCP trust posture, §7 Domain Registry
@@ -45,59 +66,59 @@
 - Synonyms: sunum doktrini, temiz kopya, clean copy, presentation rules, output formatting, sızıntı yasağı, leakage ban, bilimsel yazım
 - Cross-links: output-templates.md (scaffold→clean-copy mapping); evidence-grading.md (finalization gate references GRADE); all specialty layers (their §1.X output blocks feed the clean copy)
 
-### oncology-layer.md  — [axis 0.5.A]
-- Sections: §1 Guideline authorities (Tier 1), §2 Molecular / biomarker knowledge bases, §3 Evidence mining, §4 Appraisal checklist (oncology-specific), §5 Output → §1.F / §9 / §19
+### oncology-layer.md  — [OPTIONAL MODULE: oncology]
+- Sections: §1 Guideline authorities (Tier 1), §2 Molecular / biomarker knowledge bases, §3 Evidence mining, §4 Appraisal checklist (oncology-specific), §5 Output → enrichment appendix
 - Concepts: solid tumours, NSCLC, breast cancer, CRC, melanoma, ADC (antibody-drug conjugate), IO/PD-(L)1, checkpoint inhibitors, RECIST, NCCN, ESMO, ASCO, OS/PFS/ORR, biomarkers (KRAS/EGFR/HER2/MSI/TMB), staging, OncoKB, CIViK, TİTCK off-label oncology
 - Synonyms: kanser, tümör, malignite, neoplazi, solid tumor, onkoloji, akciğer kanseri, meme kanseri
-- Cross-links: hematology-layer.md (heme-onc overlap); drug-intelligence-layer.md (onco pipeline, 0.5.I); turkiye-layer.md (TR onco reimbursement, SGK SUT); hta-layer.md (oncology cost-effectiveness); regulatory-science-layer.md (oncology approval pathways); evidence-grading.md (oncology appraisal checklist §4)
+- Cross-links: hematology-layer.md (heme-onc overlap); drug-intelligence-layer.md (onco pipeline module); turkiye-layer.md (TR onco reimbursement, SGK SUT); hta-layer.md (oncology cost-effectiveness); regulatory-science-layer.md (oncology approval pathways); evidence-grading.md (P6, oncology appraisal checklist §4); risk-of-bias.md (P5, RoB tool selection feeds the appraisal checklist)
 
-### hematology-layer.md  — [axis 0.5.B]
-- Sections: §1 Classification & risk (dual where applicable — Tier 1), §2 Response & disease-monitoring criteria, §3 Evidence + pipeline mining, §4 Appraisal checklist (heme-specific), §5 Output → §1.G / §9 / §19
+### hematology-layer.md  — [OPTIONAL MODULE: hematology]
+- Sections: §1 Classification & risk (dual where applicable — Tier 1), §2 Response & disease-monitoring criteria, §3 Evidence + pipeline mining, §4 Appraisal checklist (heme-specific), §5 Output → enrichment appendix
 - Concepts: leukemia (AML/CLL/ALL), lymphoma (DLBCL/FL/MCL), myeloma (MM), MRD (minimal residual disease), CAR-T therapy, bispecific antibodies, WHO-HAEM5 classification, ELN-2022 risk stratification, IPSS-M, flow cytometry, allogeneic/autologous SCT
 - Synonyms: lösemi, lenfoma, myelom, kan kanseri, hematoloji, bone marrow, kemik iliği, CAR-T, bispecific
-- Cross-links: oncology-layer.md (overlap solid/liquid tumors); drug-intelligence-layer.md (CAR-T/bispecific pipeline, 0.5.I); regulatory-science-layer.md (accelerated approval pathways); hta-layer.md (CAR-T cost-effectiveness); evidence-grading.md (heme-specific appraisal §4)
+- Cross-links: oncology-layer.md (overlap solid/liquid tumors); drug-intelligence-layer.md (CAR-T/bispecific pipeline module); regulatory-science-layer.md (accelerated approval pathways); hta-layer.md (CAR-T cost-effectiveness); evidence-grading.md (P6, heme-specific appraisal §4)
 
-### regulatory-science-layer.md  — [axis 0.5.C]
-- Sections: §1 Agency pathways & milestones (Tier 1 / primary), §2 Designation flags, §3 Appraisal checklist, §4 Output → §1.I / §4
+### regulatory-science-layer.md  — [OPTIONAL MODULE: regulatory]
+- Sections: §1 Agency pathways & milestones (Tier 1 / primary), §2 Designation flags, §3 Appraisal checklist, §4 Output → enrichment appendix
 - Concepts: FDA approval (NDA/BLA/sNDA), EMA (MAA/CHMP/CAT), TİTCK ruhsat, AdCom, accelerated approval, BTD (Breakthrough Therapy Designation), PRIME (EMA), REMS, conditional MA, withdrawal/suspension, biosimilar, labeling/SPC
 - Synonyms: ruhsat, onay, piyasaya çıkış, marketing authorization, drug approval, izin belgesi, EMA onayı, FDA onayı, ruhsat iptali, withdrawal
-- Cross-links: regulatory-intelligence.md (native openFDA + multi-jurisdiction); turkiye-layer.md (TİTCK native stack); drug-intelligence-layer.md (regulatory milestones, 0.5.I); hta-layer.md (regulatory→HTA pathway); rare-disease-layer.md (ODD/OMP designations)
+- Cross-links: regulatory-intelligence.md (native openFDA + multi-jurisdiction module); turkiye-layer.md (TİTCK native stack); drug-intelligence-layer.md (regulatory milestones module); hta-layer.md (regulatory→HTA pathway); rare-disease-layer.md (ODD/OMP designations); data-extraction.md (P4, milestone dates feed extraction)
 
-### hta-layer.md  — [axis 0.5.D]
-- Sections: §1 HTA bodies (Tier 1), §2 Economic-model appraisal, §3 Epidemiologic denominator (co-fire with 0.5.K), §4 Output → §1.J / §F-format
+### hta-layer.md  — [OPTIONAL MODULE: HTA]
+- Sections: §1 HTA bodies (Tier 1), §2 Economic-model appraisal, §3 Epidemiologic denominator (co-fires with the regulatory-intelligence module), §4 Output → enrichment appendix
 - Concepts: NICE (England/Wales), CADTH (Canada), PBAC (Australia), IQWiG (Germany), HAS (France), ICER, QALY, cost-utility analysis, budget impact model, MAIC (Matching-Adjusted Indirect Comparison), NMA (network meta-analysis), cost-effectiveness threshold, payer/reimbursement decision, value dossier
 - Synonyms: maliyet etkililik, fiyatlandırma, geri ödeme, sağlık teknolojisi değerlendirme, HTA, payer, budget impact, karşılaştırmalı etkinlik
-- Cross-links: regulatory-science-layer.md (regulatory→HTA sequencing); turkiye-layer.md (SGK SUT, TR geri ödeme); regulatory-intelligence.md (epidemiology denominator, 0.5.K); evidence-grading.md (NMA/MAIC appraisal); drug-intelligence-layer.md (pipeline intelligence for HTA)
+- Cross-links: regulatory-science-layer.md (regulatory→HTA sequencing); turkiye-layer.md (SGK SUT, TR geri ödeme); regulatory-intelligence.md (epidemiology denominator module); evidence-grading.md (P6, NMA/MAIC appraisal); drug-intelligence-layer.md (pipeline intelligence for HTA)
 
-### medaffairs-ops-layer.md  — [axis 0.5.E]
+### medaffairs-ops-layer.md  — [OPTIONAL MODULE: KOL/medical-affairs]
 - Sections: §1 Standards & codes (Tier 1 / primary), §2 Operational artifacts, §3 KOL identification wiring (§8), §4 Boundary / handoff
 - Concepts: MSL (Medical Science Liaison), KOL (Key Opinion Leader), advisory board, GPP3 (Good Publication Practice 3), ICMJE authorship, EFPIA/IFPMA codes, İEİS (Turkish pharma industry code), IIS/ISR (investigator-initiated studies), MLR (Medical Legal Review), FCPA, Transfer of Value (ToV), evidence generation planning, congress abstracts
 - Synonyms: tıbbi bilim uzmanı, KOL, kilit kanaat önderi, akademisyen, medical education, yayın planlama, MSL
-- Cross-links: fulltext-retrieval.md (KOL publication retrieval); extended-api.md (OpenAlex/S2 for KOL mapping); connector-registry.md §2.1 (native openalex/semantic-scholar for KOL); output-templates.md (§8 KOL Haritası); turkiye-layer.md (TR KOL via YÖK Akademik)
+- Cross-links: fulltext-retrieval.md (KOL publication retrieval); extended-api.md (P2, OpenAlex/S2 for KOL mapping); connector-registry.md §2.1 (native openalex/semantic-scholar for KOL); output-templates.md (§8 KOL Haritası); turkiye-layer.md (TR KOL via YÖK Akademik module)
 
-### immunology-layer.md  — [axis 0.5.F]
-- Sections: §1 Guidelines (Tier 1), §2 Mechanism & class, §3 Endpoint appraisal, §4 Output → §1.L / §3 / §9
+### immunology-layer.md  — [OPTIONAL MODULE: immunology]
+- Sections: §1 Guidelines (Tier 1), §2 Mechanism & class, §3 Endpoint appraisal, §4 Output → enrichment appendix
 - Concepts: rheumatoid arthritis (RA), psoriatic arthritis (PsA), SLE (lupus), IBD (Crohn's/UC), psoriasis, atopic dermatitis (AD), asthma, anti-TNF biologics, IL-17/IL-23 inhibitors, JAK inhibitors, TYK2 inhibitors, ACR20/50/70, PASI, CDAI, biologics switching
 - Synonyms: romatoloji, otoimmün hastalık, inflamatuar hastalık, immunoloji, biyolojik ajan, JAK inhibitörü, romatoid artrit, lupus, sedef
-- Cross-links: drug-intelligence-layer.md (biologic/immunology pipeline, 0.5.I); regulatory-science-layer.md (JAK safety label updates); hta-layer.md (biologics cost-effectiveness); evidence-grading.md (immunology endpoint appraisal §4)
+- Cross-links: drug-intelligence-layer.md (biologic/immunology pipeline module); regulatory-science-layer.md (JAK safety label updates); hta-layer.md (biologics cost-effectiveness); evidence-grading.md (P6, immunology endpoint appraisal §4)
 
-### neurology-layer.md  — [axis 0.5.G]
-- Sections: §1 Guidelines & criteria (Tier 1), §2 Disease-specific endpoint frameworks, §3 Mechanism & pipeline, §4 Appraisal & output → §1.M / §9 / §21
+### neurology-layer.md  — [OPTIONAL MODULE: neurology]
+- Sections: §1 Guidelines & criteria (Tier 1), §2 Disease-specific endpoint frameworks, §3 Mechanism & pipeline, §4 Appraisal & output → enrichment appendix
 - Concepts: multiple sclerosis (MS/RRMS/SPMS), NMOSD, myasthenia gravis (MG), SMA (spinal muscular atrophy), ALS, Alzheimer's disease, Parkinson's disease, migraine, epilepsy, stroke, DMT (disease-modifying therapy), anti-amyloid (aducanumab/lecanemab), ARIA, CGRP inhibitors, gene therapy (SMA), EDSS
 - Synonyms: nöroloji, sinir sistemi, beyin hastalığı, multipl skleroz, Alzheimer, demans, inme, nörodejeneratif
-- Cross-links: drug-intelligence-layer.md (CNS pipeline, 0.5.I); regulatory-science-layer.md (accelerated approval ARIA risk); rare-disease-layer.md (SMA/ALS rare-disease crossover); hta-layer.md (neurology cost models); evidence-grading.md (neurology endpoint appraisal §4)
+- Cross-links: drug-intelligence-layer.md (CNS pipeline module); regulatory-science-layer.md (accelerated approval ARIA risk); rare-disease-layer.md (SMA/ALS rare-disease crossover); hta-layer.md (neurology cost models); evidence-grading.md (P6, neurology endpoint appraisal §4)
 
-### rare-disease-layer.md  — [axis 0.5.H]
-- Sections: §1 Reference resources (Tier 1 / primary), §2 Evidence specifics (small-n methodology), §3 Epidemiology denominator (co-fire 0.5.K), §4 Output → §1.N / §21 / §F
+### rare-disease-layer.md  — [OPTIONAL MODULE: rare-disease]
+- Sections: §1 Reference resources (Tier 1 / primary), §2 Evidence specifics (small-n methodology), §3 Epidemiology denominator (co-fires with the regulatory-intelligence module), §4 Output → enrichment appendix
 - Concepts: orphan disease, ODD (Orphan Drug Designation), OMP (EMA Orphan Medicinal Product), Orphanet, OMIM, natural history study, registry endpoint, gene therapy, CFTR modulators (CF), enzyme replacement therapy, expanded access, single-arm trial, historical control, Bayesian methodology
 - Synonyms: nadir hastalık, yetim hastalık, orphan, ender görülen, Orphanet, doğumsal hastalık, genetic disease, genetik hastalık
-- Cross-links: regulatory-science-layer.md (ODD pathways, accelerated/conditional approval); drug-intelligence-layer.md (rare disease pipeline, 0.5.I); hta-layer.md (orphan HTA, NICE Highly Specialised Technologies); regulatory-intelligence.md (epidemiology/burden 0.5.K); neurology-layer.md (SMA/ALS crossover); evidence-grading.md (small-n methodology)
+- Cross-links: regulatory-science-layer.md (ODD pathways, accelerated/conditional approval); drug-intelligence-layer.md (rare disease pipeline module); hta-layer.md (orphan HTA, NICE Highly Specialised Technologies); regulatory-intelligence.md (epidemiology/burden module); neurology-layer.md (SMA/ALS crossover); evidence-grading.md (P6, small-n methodology); risk-of-bias.md (P5, single-arm/historical-control appraisal)
 
-### drug-intelligence-layer.md  — [axis 0.5.I]
+### drug-intelligence-layer.md  — [OPTIONAL MODULE: drug-intelligence]
 - Sections: §1 The Real AdisInsight Tool Surface (verified 9 Jun 2026), §2 What search_drugs Returns (real profile shape), §3 Use-Case Patterns (§3.1 Drug Profile Lookup, §3.2 MoA/Target Landscape competitor set, §3.3 Company Portfolio, §3.4 Regulatory Milestone Reconstruction, §3.5 Trial/Conference/Deal Intelligence), §4 Cross-Reference Protocol, §5 Zero-Result Fallback Chain, §6 pipeline_payload Sidecar, §7 Composition with Sister Skills, §8 Known Pitfalls
 - Concepts: INN (International Nonproprietary Name), brand name, MoA (Mechanism of Action), molecular target, drug class, pipeline (Phase 1/2/3/launch), PDUFA date, deal/licensing, LoE (Loss of Exclusivity), patent cliff, first-in-class, AdisInsight search_drugs/get_drug/HyDE, competitor landscape, company portfolio
 - Synonyms: ilaç adayı, aktif madde, etken madde, boru hattı, geliştirme hattı, drug pipeline, klinik aşama, moleküler hedef, MoA, etki mekanizması
-- Cross-links: connector-registry.md §3.1 (AdisInsight schema); oncology-layer.md (onco drugs); hematology-layer.md (heme drugs); immunology-layer.md (biologics/JAK); neurology-layer.md (CNS pipeline); rare-disease-layer.md (orphan pipeline); extended-api.md (PubChem/DailyMed/DrugBank cross-ref); turkiye-layer.md (TR pipeline access)
+- Cross-links: connector-registry.md §3.1 (AdisInsight schema); oncology-layer.md (onco drugs module); hematology-layer.md (heme drugs module); immunology-layer.md (biologics/JAK module); neurology-layer.md (CNS pipeline module); rare-disease-layer.md (orphan pipeline module); extended-api.md (P2, PubChem/DailyMed/DrugBank cross-ref); turkiye-layer.md (TR pipeline access module)
 
 ### prisma-protocol.md  — [PHASE P0]
 - Sections: §1 Soru-tipi sınıflaması, §2 PICO/PECO/PICOTS, §3 Uygunluk kriterleri, §4 Derleme tipi (sistematik/kapsam/hızlı), §5 Protokol çıktısı, §6 P1 devir
@@ -135,17 +156,17 @@
 - Synonyms: PRISMA akış, akış diyagramı, kontrol listesi, SoF tablosu, reporting standard
 - Cross-links: screening.md (flow counts); data-extraction.md (evidence table); risk-of-bias.md (RoB summary); evidence-grading.md (GRADE SoF); output-templates.md (report structure); report-presentation.md (clean copy)
 
-### regulatory-intelligence.md  — [axis 0.5.C / 0.5.D / 0.5.K]
-- Sections: §1 Native openFDA (replaces Python requests), §2 WHO ICD-11 — indication coding, §3 WHO GHO — disease burden / epidemiology (axis 0.5.K), §4 Multi-jurisdiction regulatory cross-reference, §5 How this layer feeds the clinical layers, §6 Output — epidemiology_payload sidecar, §7 Known limitations
+### regulatory-intelligence.md  — [OPTIONAL MODULE: regulatory-intelligence/epidemiology]
+- Sections: §1 Native openFDA (replaces Python requests), §2 WHO ICD-11 — indication coding, §3 WHO GHO — disease burden / epidemiology, §4 Multi-jurisdiction regulatory cross-reference, §5 How this layer feeds the clinical modules, §6 Output — epidemiology_payload sidecar, §7 Known limitations
 - Concepts: openFDA (drug events/recalls/labels/enforcement), ICD-11 coding, WHO GHO (Global Health Observatory), GLOBOCAN cancer incidence, disease burden, DALY, Federal Register, Health Canada (CADTH/HC), EUR-Lex, multi-jurisdiction approval tracking, epidemiology payload sidecar
 - Synonyms: FDA veri tabanı, ilaç güvenliği, hastalık yükü, epidemiyoloji, prevalans, insidans, düzenleyici zeka, regulatory intelligence, ICD kodu
-- Cross-links: regulatory-science-layer.md (agency pathways); hta-layer.md (epidemiology denominator for cost models); turkiye-layer.md (TR regulatory cross-ref); rare-disease-layer.md (epidemiology for rare diseases); output-templates.md (§21 epidemiology block)
+- Cross-links: regulatory-science-layer.md (agency pathways module); hta-layer.md (epidemiology denominator for cost models module); turkiye-layer.md (TR regulatory cross-ref module); rare-disease-layer.md (epidemiology for rare diseases module); output-templates.md (§21 epidemiology block)
 
-### turkiye-layer.md  — [axis: Türkiye cross-cutting]
-- Sections: §1 The v8.0 Türkiye Stack (replaces Dörtlüsü web-scraping), §2 TİTCK — Structured Drug Queries (§2.1 Core lookup chain, §2.2 Specialized TİTCK tools, §2.3 Data caveats), §3 Mevzuat — Native Legislation (SUT, yönetmelik, kararname), §4 TÜRKPATENT — Turkey IP (jenerik/biyobenzer), §5 Türkiye Output Block (turkey_access_summary sidecar), §6 Composition, §7 Mandatory Türkiye Dörtlüsü (every query)
+### turkiye-layer.md  — [OPTIONAL MODULE: Türkiye-market]
+- Sections: §1 The v8.0 Türkiye Stack (replaces Dörtlüsü web-scraping), §2 TİTCK — Structured Drug Queries (§2.1 Core lookup chain, §2.2 Specialized TİTCK tools, §2.3 Data caveats), §3 Mevzuat — Native Legislation (SUT, yönetmelik, kararname), §4 TÜRKPATENT — Turkey IP (jenerik/biyobenzer), §5 Türkiye Output Block (turkey_access_summary sidecar), §6 Composition, §7 Türkiye Dörtlüsü (context-triggered — TR-specific question OR user-requested)
 - Concepts: TİTCK drug registry, SGK (Sosyal Güvenlik Kurumu), SUT (Sağlık Uygulama Tebliği), reimbursement list, Mevzuat legislation, TÜRKPATENT (patent/generic/biosimilar), YÖK Akademik (TR KOL), Türkiye Dörtlüsü (TİTCK+Mevzuat+TÜRKPATENT+YÖK), fiyat (drug price), geri ödeme (reimbursement), ruhsat TR, AFF:"Turkey" literature
 - Synonyms: Türkiye, TR, Türkiye ilaç, SGK geri ödeme, SUT listesi, Sağlık Bakanlığı, Türk mevzuatı, TİTCK, Turkish reimbursement, Turkish market access
-- Cross-links: regulatory-science-layer.md (TİTCK ruhsat); regulatory-intelligence.md (TR multi-jurisdiction cross-ref); hta-layer.md (TR HTA/SGK decisions); oncology-layer.md (TR onco off-label TİTCK); medaffairs-ops-layer.md (TR KOL via YÖK Akademik); drug-intelligence-layer.md (TR drug intelligence, 0.5.I)
+- Cross-links: regulatory-science-layer.md (TİTCK ruhsat module); regulatory-intelligence.md (TR multi-jurisdiction cross-ref module); hta-layer.md (TR HTA/SGK decisions module); oncology-layer.md (TR onco off-label TİTCK module); medaffairs-ops-layer.md (TR KOL via YÖK Akademik module); drug-intelligence-layer.md (TR drug intelligence module)
 
 ### fulltext-retrieval.md  — [axis: full-text/KOL cross-cutting]
 - Sections: §1 When to retrieve full text, §2 The Cascade (Tier 1 EuropePMC PMC, Tier 2 Paper Search download, Tier 3 annas-mcp paywalled, Tier 4 Wiley OAuth-gated, Tier 5 pubmed-epmc Unpaywall legal-OA last resort), §3 Copyright Gate (MANDATORY), §4 Methodology Grounding (annas book layer), §5 Output integration, §6 Known limitations

@@ -99,6 +99,12 @@
 - Synonyms: ilaç adayı, aktif madde, etken madde, boru hattı, geliştirme hattı, drug pipeline, klinik aşama, moleküler hedef, MoA, etki mekanizması
 - Cross-links: connector-registry.md §3.1 (AdisInsight schema); oncology-layer.md (onco drugs); hematology-layer.md (heme drugs); immunology-layer.md (biologics/JAK); neurology-layer.md (CNS pipeline); rare-disease-layer.md (orphan pipeline); extended-api.md (PubChem/DailyMed/DrugBank cross-ref); turkiye-layer.md (TR pipeline access)
 
+### prisma-protocol.md  — [PHASE P0]
+- Sections: §1 Soru-tipi sınıflaması, §2 PICO/PECO/PICOTS, §3 Uygunluk kriterleri, §4 Derleme tipi (sistematik/kapsam/hızlı), §5 Protokol çıktısı, §6 P1 devir
+- Concepts: PICO, PECO, PCC, eligibility criteria, question type (therapy/diagnosis/prognosis/etiology/prevention), scoping review, PRISMA-ScR, protocol pre-specification
+- Synonyms: protokol, soru çerçevesi, dahil hariç kriterleri, araştırma sorusu, review protocol
+- Cross-links: search-strategy.md (P1); screening.md (eligibility → screening); prisma-reporting.md (protocol → checklist)
+
 ### regulatory-intelligence.md  — [axis 0.5.C / 0.5.D / 0.5.K]
 - Sections: §1 Native openFDA (replaces Python requests), §2 WHO ICD-11 — indication coding, §3 WHO GHO — disease burden / epidemiology (axis 0.5.K), §4 Multi-jurisdiction regulatory cross-reference, §5 How this layer feeds the clinical layers, §6 Output — epidemiology_payload sidecar, §7 Known limitations
 - Concepts: openFDA (drug events/recalls/labels/enforcement), ICD-11 coding, WHO GHO (Global Health Observatory), GLOBOCAN cancer incidence, disease burden, DALY, Federal Register, Health Canada (CADTH/HC), EUR-Lex, multi-jurisdiction approval tracking, epidemiology payload sidecar

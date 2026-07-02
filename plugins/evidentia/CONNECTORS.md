@@ -40,8 +40,9 @@ hattını değil.
 **Tam-metin rung'u (P4, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
-| annas-mcp | 🟡 | — | article_search · article_download · book_search (tam-metin tier 3; **copyright kapısı**) | topluluk | A |
-| Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü) | topluluk (cyanheads) | K |
+| **openathens** (self-host) | — | OAuth/Bearer | `oa_resolve` · `oa_fetch_fulltext`(ingest) · `oa_list_databases` · `oa_batch_submit`/`oa_batch_result` — **tam-metin Tier 3: LİSANSLI kurumsal** (Millet Kütüphanesi/OpenAthens → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane…; **annas'ın ÖNÜNDE**, legal-öncelikli). **Deploy-bekliyor** (`openathens-mcp`); bağlı değilse cascade Tier 4/5'e düşer | operatör self-host | O |
+| annas-mcp | 🟡 | — | article_search · article_download · book_search (**tam-metin Tier 5 — SON ÇARE**, lisanslı band'dan [OpenAthens+Wiley] sonra; **copyright kapısı**) | topluluk | A |
+| Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü; Tier 6 son legal-OA süpürmesi) | topluluk (cyanheads) | K |
 
 **RAG substratı (retrieve-don't-dump, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
@@ -101,7 +102,7 @@ bağlı olduğu modülü/rung'u bozar.
 |---|---|---|
 | TİTCK Cache | `https://titck.cureonics.com/mcp` | Türkiye Dörtlüsü latency fallback rung |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
-| **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED) — **§1.1 çekirdek tam-metin rung'unun parçası**, generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
+| **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED) — **§1.1 çekirdek tam-metin rung'unun parçası; full-text cascade Tier 5 (SON ÇARE)** — lisanslı band (OpenAthens Tier 3 + Wiley Tier 4) getiremeyince devreye girer (legal-öncelikli), generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 
 ### 1.5 Genişletme Katmanı (mcp-scout canlı-doğrulanmış · Tier-K · §6)
 **Karışık katman — dikkat:** `openalex` / `pubmed-epmc` / `semantic-scholar` **bibliyografik
@@ -167,7 +168,7 @@ dedup)** → **P4 (tam-metin zenginleştirme)**. P1/P2/P4 çekirdek merdivenleri
 
 | İhtiyaç | Merdiven |
 |---|---|
-| Tam-metin | EPMC `get_full_text_article` → `get_copyright_status` → **pubmed-epmc** `pubmed_fetch_fulltext` (EuropePMC + Unpaywall YASAL OA) → Paper Search `read_pubmed_paper` → **Annas Reader** (`article_download`/`book_download`) → Wiley (opsiyonel, OAuth) **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
+| Tam-metin (legal-first) | EPMC `get_copyright_status` → EPMC `get_full_text_article` (PMC OA, Tier 1) → Paper Search `read_pubmed_paper` (Tier 2) → **OpenAthens/Millet Kütüphanesi** `oa_resolve`/`oa_fetch_fulltext` (**Tier 3 — LİSANSLI kurumsal, legal-öncelikli**; `openathens` HP self-host, **deploy-bekliyor** → bağlı değilse atla) → Wiley (opsiyonel OAuth, Tier 4) → **Annas Reader** `article_download`/`book_download` (**Tier 5 — SON ÇARE**, lisanslı band [OpenAthens+Wiley] getiremeyince) → **pubmed-epmc** `pubmed_fetch_fulltext` (Unpaywall YASAL-OA, Tier 6 son süpürme) **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
 
 ### Opsiyonel modül merdivenleri (yalnız Adım 0.5 sinyaliyle)
 

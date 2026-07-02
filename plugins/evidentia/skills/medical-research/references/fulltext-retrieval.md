@@ -1,35 +1,50 @@
-# Full-Text Retrieval Cascade (v8.0 — NEW)
+# Full-Text Retrieval Cascade (v9.0)
 
-**Loaded:** ALWAYS (Adım 0).
-**Purpose:** v7.1 could only reach full text via blind web fetch — blind at paywalls.
-v8.0 adds a **verified multi-tier cascade** that opens open-access, PMC, and (for analysis
-only) paywalled full text, with an explicit **copyright gate**. (v1.4.0: the web-fetch last
-resort was replaced by the bundled **pubmed-epmc** Unpaywall legal-OA resolver — no web scraping.)
+**Loaded:** ALWAYS (Adım 0). Feeds **P4 Data Extraction** (`data-extraction.md`): full text is
+retrieved here, then extracted into the `evidence_table` — never dumped raw into context.
+**Purpose:** open the full text needed for extraction/appraisal when the abstract is
+insufficient, along a **legal-first, copyright-gated** ladder. No web scraping (v1.4.0).
 
-**Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **annas-mcp**
-(verified), Wiley (`bio-research:wiley`, OAuth), **pubmed-epmc** (`pubmed_fetch_fulltext` — EuropePMC + Unpaywall legal OA, last resort).
+## Legal-first positioning (read this first)
+
+Full text is resolved in **descending order of legal cleanliness**, and the ladder stops at
+the first tier that delivers:
+
+1. **Free open-access** (Tier 1–2, Tier 6 sweep) — CC-BY/CC0 or legal-OA; freely quotable.
+2. **Licensed institutional access** (Tier 3 **OpenAthens/Millet Kütüphanesi** + Tier 4
+   **Wiley**) — the operator's *own legitimate subscription* via federated SAML; analysis/
+   extraction only.
+3. **Grey-area shadow library** (Tier 5 **annas-mcp**) — **LAST RESORT**, entered only when the
+   licensed band (Tier 3 + Tier 4) cannot supply the item.
+
+> **OpenAthens is preferred over annas by design.** A legitimate licensed copy (Tier 3) is
+> always tried before the grey-area annas (Tier 5). annas is never the primary paywall gate.
+
+**Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **openathens**
+(HP self-host — *deploy-pending*, §Tier 3), Wiley (`bio-research:wiley`, OAuth), **annas-mcp**
+(verified, last-resort), **pubmed-epmc** (`pubmed_fetch_fulltext` — EuropePMC + Unpaywall legal-OA).
 
 ---
 
 ## 1. When to retrieve full text
-Trigger full-text retrieval when the abstract is insufficient for the synthesis:
-- Pivotal Phase 3 RCT: subgroup data, secondary endpoints, safety tables, HR/CI/p.
-- SR/meta-analysis: forest-plot data, GRADE tables, heterogeneity (I²).
-- Guideline/methodology grounding (GRADE, Cochrane Handbook, ESMO-MCBS, PRISMA).
-- Discordant findings needing the methods/limitations section.
-Limit to the **top 3–5 most decision-relevant** items; do not bulk-fetch.
+Trigger during **P4** when the abstract is insufficient for extraction/appraisal:
+- Pivotal RCT: subgroup data, secondary endpoints, safety tables, HR/CI/p.
+- SR/meta-analysis: forest-plot data, GRADE/SoF tables, heterogeneity (I²).
+- RoB (P5): the methods/limitations section a design-specific tool (RoB2/ROBINS-I/QUADAS-2) needs.
+- Methodology grounding (GRADE, Cochrane Handbook, PRISMA, AMSTAR-2).
+Limit to the **top 3–5 most decision-relevant** items; do not bulk-fetch (§Tier 3 pacing).
 
 ---
 
-## 2. The Cascade (in order)
+## 2. The Cascade (in order — stop at first success)
 
-### Tier 1 — EuropePMC PMC (open access, native)
+### Tier 1 — EuropePMC PMC (free open access, native)
 ```
-EPMC: get_copyright_status(pmids=[...])      # determine OA / license FIRST
-EPMC: convert_article_ids(...)               # PMID → PMCID if needed
-EPMC: get_full_text_article(pmc_ids=["PMC..."])   # ~6M OA articles
+EPMC: get_copyright_status(pmids=[...])          # determine OA / license FIRST
+EPMC: convert_article_ids(...)                   # PMID → PMCID if needed
+EPMC: get_full_text_article(pmc_ids=["PMC..."])  # ~6M OA articles
 ```
-If CC-BY/CC0 → free to quote (with attribution). If not OA here → Tier 2.
+CC-BY/CC0 → free to quote (attribution). Not OA here → Tier 2.
 
 ### Tier 2 — Paper Search download (PMC extraction)
 ```
@@ -37,69 +52,113 @@ PaperSearch: read_pubmed_paper(paper_id="<PMID/PMCID>")   # extracts text
 PaperSearch: download_pubmed / download_biorxiv / download_semantic
 ```
 
-### Tier 3 — annas-mcp (paywalled article / methodology book) — VERIFIED
+### Tier 3 — OpenAthens / Millet Kütüphanesi (LICENSED institutional — primary paywall gate)
+**Status:** connector `openathens` — HP self-host (`openathens.cureonics.com/mcp`, hardened
+OAuth 2.1 + Bearer, `openathens-mcp` design 2026-07-01). **Deploy-pending:** if the connector is
+NOT connected, **skip Tier 3 → Tier 4/5** (graceful degrade, no error). When connected, it is the
+**primary paywall gate** and takes precedence over annas (legal-first).
+
+**Coverage:** OpenAthens federation via Cumhurbaşkanlığı Millet Kütüphanesi → ProQuest, EBSCO,
+Gale, ScienceDirect/Elsevier, Wiley, Springer, Nature, JSTOR, Scopus, Web of Science, IEEE,
+Taylor & Francis, Oxford, Cambridge, Emerald, OVID, Cochrane, … (legitimate campus-off access
+via stored SAML session; no relay needed).
+
 ```
-annas: article_search(query="<DOI or keywords>")   # → metadata + SciDB handle
-annas: article_download(doi="10.xxxx/...")          # VERIFIED: downloads PDF to user machine
-annas: book_search(query="Cochrane Handbook ...")   # methodology references
-annas: book_download(hash="<md5>", format="pdf", title="...")
+openathens: oa_server_info()                              # logged_in bool, institution, coverage, caveat
+openathens: oa_list_databases(filter?="oncology")         # licensed DB list (name · redirector URL · category)
+openathens: oa_resolve(doi="10.xxxx/…" | pmid="…" | title="…")
+                                                          # → target URL + OpenAthens redirector URL(s) + covering DB/publisher (mcp_verified:false)
+openathens: oa_fetch_fulltext(doi="10.xxxx/…", ingest=true)
+                                                          # copyright-gated delivery; long text → anamnesis manifest + provenance-stamped slices; short → cited quote; reports which DB served it
 ```
-**Verified 9 Jun 2026:** `article_search("10.1136/bmj.39489.470347.AD")` resolved the GRADE
-2008 paper; `article_download` succeeded (file → user's Downloads). `book_search("Cochrane
-Handbook ...")` returned the 2019/2020 2nd edition.
-**Note:** downloads land on the **user's computer**, not the sandbox — they are for the
-user + for your analysis of the retrieved content, not re-upload.
+- **Delivery (retrieve-don't-dump):** the download happens server-side on HP, so the server reads
+  the text. Long (≳1–2 pages) → anamnesis `ingest_document(doc_id=<DOI>, source="openathens:<db>")`
+  → manifest, then `semantic_search`/`hybrid_query` for query-bounded, provenance-stamped slices
+  (`evidence_index`). Short → reasoned short quote. **Raw verbatim is never dumped to context.**
+  anamnesis unreachable → summary (not verbatim) + "full text landed on HP" note.
+- **Defensive pacing (account protection — MANDATORY for lists):** batch via
+  `oa_batch_submit(refs[])` → `oa_batch_result(job_id)`; sequential (concurrency = 1), jittered
+  20–60 s delay, per-run cap 25, daily cap 100. Goal: never trip a publisher anti-bot and suspend
+  the whole institutional account. Over-cap items are `deferred` (not a gap), reported in the caveat.
+- **Failure** (auth/fetch/SAML) → `manual_required` (redirector deep-link + echoed identifier) —
+  never fabricated. Every output carries a robots/ToS + copyright caveat.
 
 ### Tier 4 — Wiley (publisher full text, OAuth-gated)
-`Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals). Graceful
-skip if unauthenticated.
+`Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals) for publishers the
+OpenAthens tier does not cover. Graceful skip if unauthenticated. (Still inside the **licensed band**.)
 
-### Tier 5 — pubmed-epmc Unpaywall legal-OA (last resort)
-`pubmed-epmc:pubmed_fetch_fulltext(...)` resolves legal open-access full text via the NCBI PMC →
-EuropePMC fullTextXML → **Unpaywall** chain (DOI/PMID/PMCID). No web scraping. If still no legal
-OA copy exists, **note the gap and stop** (do not fabricate; web tier removed v1.4.0).
+### Tier 5 — annas-mcp (shadow library — LAST RESORT, after the licensed band)
+**Entered only when the licensed band (Tier 3 OpenAthens + Tier 4 Wiley) cannot supply the item.**
+Grey-area; legal-first doctrine keeps it last.
+```
+annas: article_search(query="<DOI or keywords>")   # → metadata + SciDB handle
+annas: article_download(doi="10.xxxx/…")            # VERIFIED: downloads PDF to the USER's machine
+annas: book_search(query="Cochrane Handbook …")     # methodology references (§4)
+annas: book_download(hash="<md5>", format="pdf", title="…")
+```
+**Verified 9 Jun 2026:** `article_search("10.1136/bmj.39489.470347.AD")` resolved the GRADE 2008
+paper; `article_download` succeeded. **Note:** downloads land on the **user's computer**, not the
+sandbox — for the user + your analysis of the retrieved content, not re-upload. Copyright-gated (§3).
+
+### Tier 6 — pubmed-epmc Unpaywall legal-OA (final legal-OA sweep)
+`pubmed-epmc:pubmed_fetch_fulltext(...)` resolves legal open-access full text via NCBI PMC →
+EuropePMC fullTextXML → **Unpaywall** (DOI/PMID/PMCID). Free/legal (overlaps Tier 1–2; kept as a
+last legal-OA sweep). If still no legal copy exists, **note the gap and stop** — never fabricate.
 
 ---
 
-## 3. Copyright Gate (MANDATORY)
+## 3. Copyright Gate (MANDATORY — G-COPYRIGHT)
+Applies identically to Tier 3 (OpenAthens), Tier 4 (Wiley), Tier 5 (annas):
 - **Always** run EPMC `get_copyright_status` before quoting any article at length.
 - **Open access (CC-BY/CC0):** quotation with attribution permitted.
-- **Restricted / annas / Wiley full text:** use for **analysis, extraction of facts and
-  numbers, and paraphrase only**. Do **NOT** reproduce large verbatim blocks, full figures,
-  or full tables. Report extracted data points (HR, CI, n, endpoints) — these are facts, not
-  copyrightable expression — with citation.
-- Methodology books (Cochrane Handbook, GRADE): cite and paraphrase the method; never paste
-  chapters.
+- **Licensed / shadow full text (OpenAthens · Wiley · annas):** use for **analysis, extraction of
+  facts and numbers, and paraphrase only**. Do **NOT** reproduce large verbatim blocks, whole
+  figures, or whole tables. Extracted data points (HR, CI, n, endpoints) are **facts, not
+  copyrightable expression** — report them with citation.
+- Licensed access is the operator's **own legitimate subscription**, used for personal/analytic
+  purposes, server-side; credentials live only in Doppler, never in output or logs.
+- Methodology books (Cochrane Handbook, GRADE): cite and paraphrase the method; never paste chapters.
 
 ---
 
-## 4. Methodology Grounding (annas book layer)
-For appraisal rigor, retrieve and consult (analysis only) authoritative methodology when a
-query demands formal grading or SR methods:
-- **GRADE** (Guyatt et al., BMJ 2008; GRADE handbook) — quality-of-evidence domains.
-- **Cochrane Handbook 2nd ed.** (Higgins et al., 2019/2020) — RoB 2, meta-analysis, GRADE.
-- **PRISMA 2020**, **AMSTAR-2**, **ESMO-MCBS** scoring guide, **CHEERS-2022** (HTA).
-These ground `evidence-grading.md` and the specialty appraisal checklists in the primary
-literature rather than memory.
+## 4. Methodology Grounding (book layer — Tier 3 DB or Tier 5 annas)
+For appraisal rigor, retrieve and consult (analysis only) authoritative methodology when a query
+demands formal grading or SR methods:
+- **GRADE** (Guyatt et al., BMJ 2008; GRADE handbook) — certainty domains.
+- **Cochrane Handbook 2nd ed.** (Higgins et al., 2019/2020) — RoB2, meta-analysis, GRADE.
+- **PRISMA 2020 / PRISMA-ScR**, **AMSTAR-2**, **RoB2 / ROBINS-I / QUADAS-2** guidance, **CHEERS-2022**.
+These ground `evidence-grading.md` (P6) and `risk-of-bias.md` (P5) in the primary literature
+rather than memory. Prefer the licensed DB (Tier 3, e.g. Cochrane Library) over annas (Tier 5).
 
 ---
 
-## 5. Output integration
-Extracted full-text data points feed: §1 (numerical endpoints), §7 (Tier-0 GRADE tables),
-evidence-table sidecar (`result_summary`, HR/CI), and the relevant specialty section.
-Tag each: citation + `[tam metin: PMC OA | annas analiz | Wiley | Unpaywall OA]` + license note.
+## 5. Output integration (→ P4/P6/P7)
+Extracted full-text data points feed the **`evidence_table`** (P4 `data-extraction.md`: effect
+size + 95% CI, N, outcomes), the **GRADE/SoF** synthesis (P6), and the study-characteristics table
+(P7). Tag each extracted value with citation + access path
+`[tam metin: PMC OA | OpenAthens:<db> | Wiley | annas analiz | Unpaywall OA]` + license note +
+the anamnesis `doc_id::idx` provenance where ingested.
 
 ---
 
 ## 6. Known limitations
-1. **Downloads are user-side** (not sandbox-readable) — pipeline validates retrieval; content
-   analysis uses the metadata/abstract + what the tool returns.
+1. **Downloads are host-side** — annas → user machine; OpenAthens → HP (server reads it). The
+   pipeline validates retrieval; context sees only the anamnesis-indexed, provenance-stamped slice.
 2. **Copyright** — the dominant constraint; default to paraphrase + data extraction.
-3. **annas availability** — mirror/SciDB dependent; if a DOI fails, try Tier 1/2 first.
-4. **Wiley/Synapse auth** — graceful skip if unauthenticated.
-5. **No web fallback** (Exa/Tavily removed v1.4.0) — if no legal-OA copy resolves via Tier 1–5, note the gap; never web-scrape or fabricate.
+3. **OpenAthens deploy-pending** — until `openathens-mcp` is live + connected, Tier 3 is skipped
+   and the ladder falls to Tier 4/5 (annas rises back toward primary paywall gate only in that
+   degraded state). `.mcp.json` wiring + `OPENATHENS_MCP_API_KEY` activate it at deploy time.
+4. **Publisher anti-bot / account suspension** — the main Tier-3 risk; mitigated by defensive
+   pacing (sequential, jitter, per-run + daily caps, personal-use discipline). Persistent risk.
+5. **annas availability** — mirror/SciDB dependent; if a DOI fails, the licensed band + Tier 1/2/6
+   are the alternatives.
+6. **Wiley/annas/OpenAthens auth** — graceful skip if unauthenticated/unconnected.
+7. **No web fallback** (Exa/Tavily removed v1.4.0) — if nothing across Tier 1–6 resolves, note the
+   gap; never web-scrape or fabricate.
 
 ---
 
-*v8.0 — annas-mcp `article_search`/`article_download`/`book_search` verified working; EPMC
-`get_full_text_article`/`get_copyright_status` schemas verified 9 June 2026.*
+*v9.0 — OpenAthens/Millet Kütüphanesi licensed tier added as Tier 3 (legal-first, before annas);
+annas moved to Tier 5 last-resort. openathens-mcp design `docs/superpowers/specs/2026-07-01-
+openathens-fulltext-evidentia-design.md` (CureoHub); deploy-pending. annas `article_search`/
+`article_download`/`book_search` + EPMC `get_full_text_article`/`get_copyright_status` verified.*

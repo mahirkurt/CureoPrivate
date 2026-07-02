@@ -4,15 +4,15 @@ description: >
   General-purpose medical literature review engine. Runs an end-to-end PRISMA 2020 /
   PRISMA-ScR systematic or scoping review across all of medicine and every question type
   (therapy, diagnosis, prognosis, etiology, prevention): protocol + PICO/PECO, search
-  strategy (MeSH/Emtree), comprehensive retrieval + dedup, title/abstract + full-text
-  screening, data extraction, risk of bias (RoB2/ROBINS-I/QUADAS-2), GRADE certainty,
-  and a clean Turkish report with a PRISMA flow diagram + Summary-of-Findings table.
-  Optional, context-triggered enrichment modules (therapeutic-area, drug/regulatory,
-  HTA, Türkiye market, epidemiology) load only when context calls for them; they never
-  drive the default. Pure structured evidence; no web/OSINT tier; no fabrication. Use for
-  ANY literature review, systematic review, scoping review, evidence synthesis, or PICO
-  request. Triggers: literatür derleme, sistematik derleme, kapsam derleme, PRISMA, PICO,
-  PECO, screening, risk of bias, GRADE, kanıt sentezi, meta-analiz, dahil hariç kriterleri.
+  strategy (MeSH/Emtree), retrieval + dedup, title/abstract + full-text screening, data
+  extraction, risk of bias (RoB2/ROBINS-I/QUADAS-2), GRADE certainty, and a clean Turkish
+  PRISMA report (flow diagram + Summary-of-Findings). Optional, context-triggered
+  enrichment modules (therapeutic-area, drug/regulatory, HTA, Türkiye market, epidemiology)
+  fire only on in-question context, never the default. Pure structured evidence; no
+  web/OSINT tier; no fabrication. Use for ANY literature review, systematic review, scoping
+  review, evidence synthesis, or PICO request. Triggers: literatür derleme, sistematik
+  derleme, kapsam derleme, PRISMA, PICO, PECO, screening, risk of bias, GRADE, kanıt
+  sentezi, meta-analiz, dahil hariç kriterleri.
 metadata:
   version: 9.0.0
 ---

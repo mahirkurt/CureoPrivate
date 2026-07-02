@@ -51,7 +51,7 @@ classification:
 # --- Domains ----------------------------------------------------------------
 domains:
   - medical_clinical_research
-  - pharma_commercial_intelligence
+  - medical_evidence_synthesis
   - document_production
 
 # --- Inputs -----------------------------------------------------------------

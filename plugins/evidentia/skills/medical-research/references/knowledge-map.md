@@ -43,7 +43,7 @@ PRISMA-ScR checklist selection, §2).
 - Cross-links: every axis depends on this for tool resolution; turkiye-layer.md (§3.2 TİTCK); fulltext-retrieval.md (§3.5 annas-mcp); regulatory-intelligence.md (§3.3 openFDA); extended-api.md (§2.1 OpenAlex/S2)
 
 ### evidence-grading.md  — [ALWAYS]
-- Sections: §1 The Tier 0–6 Source Hierarchy, §2 GRADE — Certainty of Evidence (per outcome), §3 Pragmatic Appraisal Track, §4 Specialty Appraisal Checklists (per active 0.5 layer), §5 Full-Text-Enriched Numerical Extraction (with copyright gate), §6 Entity / Relation / Temporal Extraction (NER), §7 Synthesis Stance
+- Sections: §1 The Tier 0–6 Source Hierarchy, §2 GRADE — Certainty of Evidence (per outcome), §3 Pragmatic Appraisal Track, §4 Specialty Appraisal Checklists (per active enrichment module), §5 Full-Text-Enriched Numerical Extraction (with copyright gate), §6 Entity / Relation / Temporal Extraction (NER), §7 Synthesis Stance
 - Concepts: GRADE certainty, RoB (risk of bias), Tier 0 (Cochrane/SR), Tier 1–6 hierarchy, CONSORT/PRISMA, NER extraction, endpoint appraisal, certainty downgrading, NMA/MAIC appraisal, pragmatic track, full-text numerical extraction
 - Synonyms: kanıt kalitesi, kanıt derecelendirmesi, evidence quality, certainty of evidence, kaynak hiyerarşisi, meta-analysis appraisal, RCT appraisal
 - Cross-links: all specialty layers for their appraisal checklists (per active enrichment module); fulltext-retrieval.md (§5 numerical extraction); output-templates.md (§7 Tier 0 Sentez); hta-layer.md (economic model appraisal)

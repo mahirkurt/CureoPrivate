@@ -92,7 +92,7 @@ State the appraisal track used so the reader can calibrate.
 
 ---
 
-## 4. Specialty Appraisal Checklists (per active 0.5 layer)
+## 4. Specialty Appraisal Checklists (per active enrichment module)
 
 - **Oncology/Heme** — endpoint hierarchy (OS > PFS/iPFS > ORR/DoR > surrogate); crossover &
   informative censoring; RECIST 1.1 / Lugano / IMWG response criteria; MRD assay + threshold.
@@ -126,7 +126,7 @@ evidence tables (`output-templates.md`) and the temporal narrative (how the evid
 Deduplicate across connectors (same PMID/DOI/NCT). Present convergence explicitly; when sources
 diverge, state *why* (population, era, design) rather than averaging. Tie every enrichment
 sentence to a cited source. Knowledge-gap analysis (P4/P7) names what the evidence does **not**
-yet answer — including Turkish incidence/registry-coverage gaps for the epidemiology axis.
+yet answer — including Turkish incidence/registry-coverage gaps for the epidemiology enrichment module.
 
 ---
 

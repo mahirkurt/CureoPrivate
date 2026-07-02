@@ -1,51 +1,54 @@
 ---
-description: Tam çok-kaynaklı kanıt sentezi koşumu — medical-research v8.4.0 flagship'ini kapsam→çoklu-kaynak→çapraz-doğrulama→sentez→temiz-kopya protokolüyle çalıştırır. Argüman = araştırma sorusu (molekül, hastalık, kılavuz/HTA, TR ruhsat/fiyat, pipeline).
-argument-hint: <araştırma sorusu — molekül / hastalık / kılavuz / TR pazar>
+description: Uçtan uca PRISMA sistematik/kapsam derleme koşumu — medical-research flagship'ini P0→P7 (protokol → arama stratejisi → getirim+dedup → tarama → çıkarım → yanlılık riski → GRADE → PRISMA raporlama) insan-onay kapılarıyla çalıştırır. Argüman = herhangi bir tıbbi araştırma sorusu (her uzmanlık, her soru tipi: tedavi/tanı/prognoz/etiyoloji/önleme).
+argument-hint: <araştırma sorusu — herhangi bir tıbbi konu>
 ---
 
-# /evidentia — Tam Kanıt Sentezi Koşumu
+# /evidentia — Uçtan Uca PRISMA Derleme Koşumu
 
 Kullanıcı sorusu: **$ARGUMENTS**
 
-`medical-research` v8.4.0 flagship skill'ini **eksiksiz** çalıştırın. Süit bağlamında
+`medical-research` flagship skill'ini **P0→P7 eksiksiz** çalıştırın. Süit bağlamında
 [`CONNECTORS.md`](../CONNECTORS.md) ve [`shared/canonical-cache-contract.md`](../shared/canonical-cache-contract.md)
 **normatiftir**.
 
-## Yürütme
+## Yürütme — PRISMA yaşam döngüsü (P0–P7)
 
-1. **Pre-flight (kısa).** Soru kapsamına göre hangi connector gruplarının gerektiğini belirle;
-   yüzey-bilinçli bağlanırlığı doğrula (claude.ai'de Tier-K/O manuel olabilir — CONNECTORS.md §6).
-   Eksik connector → fallback merdivenini (CONNECTORS.md §2) kullan, durma.
+1. **P0 Protokol** (`references/prisma-protocol.md`) — soru-tipini sınıfla; PICO/PECO + uygunluk
+   kriterleri; derleme tipi (sistematik/kapsam/hızlı).
+2. **P1 Arama stratejisi** (`references/search-strategy.md`) — kavram→MeSH/Emtree; veritabanı-başına
+   sorgu; raporlanabilir arama dizesi.
+3. **P2 Getirim + dedup** — bibliyografik çekirdek connector'larında (CONNECTORS.md §1.1) kapsamlı
+   arama → tekilleştirilmiş kayıt seti + kaynak-bazlı sayılar.
+4. **P3 Tarama** (`references/screening.md`) — başlık/özet → tam-metin; dahil/hariç + gerekçe.
+   **İnsan-onay kapısı bağlayıcı.**
+5. **P4 Çıkarım** (`references/data-extraction.md`) — tam-metin (`/evidentia-fulltext`) → anamnesis
+   RAG → kanıt tablosu (retrieve-don't-dump).
+6. **P5 Yanlılık riski** (`references/risk-of-bias.md`) — tasarıma göre RoB2 / ROBINS-I / QUADAS-2 /
+   Newcastle-Ottawa / PROBAST / AMSTAR-2. **İnsan-onay kapısı bağlayıcı.**
+7. **P6 Sentez + GRADE** (`references/evidence-grading.md`) — sonuç-bazlı GRADE kesinlik + SoF.
+8. **P7 Raporlama** (`references/prisma-reporting.md`) — PRISMA 2020 / PRISMA-ScR akış diyagramı
+   (gerçek sayılar) + kontrol listesi + çalışma-özellikleri + RoB özeti + Summary-of-Findings;
+   temiz-kopya (VIZ/OPS yorum izolasyonu; araç-sızıntısı yok).
 
-2. **medical-research Adım 0–5'i çalıştır:**
-   - **Adım 0/0.5** — zorunlu yükleme + 10-eksen sınıflandırıcı (Onko/Heme/Regülatuar/HTA/
-     MedAffairs/İmmün/Nöro/Nadir/DrugIntel/Epidemiyoloji sinyali).
-   - **Adım 1** — native-MCP-first paralel çağrı listesi (Akademik Çekirdek + Extended Tier +
-     6-ülke AFF + Türkiye Dörtlüsü + Kılavuz/HTA + aktif eksen paketleri). **Genişletme
-     connector'ları** (`med-terminologies`, `nih-clinicaltables`, `nlm-rxnorm`, `iuphar-gtopdb`)
-     Extended Tier'de **opsiyonel native-first** kaynaktır → topluluk-yayıncı: **sandbox-first,
-     least-privilege**.
-   - **Adım 2** — cömertlik ilkesi (uncapped getirme).
-   - **Adım 3** — çıktı sözleşmesi (numaralı bölümler 1–21; aktif eksene göre).
-   - **Adım 4/5** — kullanıcı etkileşimi + **temiz-kopya doktrini** (VIZ/OPS yorum izolasyonu;
-     araç-sızıntısı yok).
+## Opsiyonel zenginleştirme (bağlam-tetiklemeli)
 
-3. **Tek-sefer disiplini.** TİTCK barcode bir kez çözülür; openfda tekil+retry+skippable.
-   Kanonik artefaktlar (`evidence_corpus`, `titck_record`,
-   `regulatory_snapshot`, `terminology_map`) paylaşılır (canonical-cache-contract.md).
+Adım 0.5 sınıflandırıcısı yalnız soru gerçekten o bağlama girince ilgili opsiyonel modülü yükler
+(tedavi-alanı / ilaç-istihbaratı / regülatuar / HTA / KOL / Türkiye-pazarı / epidemiyoloji) →
+çıktıya **işaretli ek** olarak girer, çekirdek SR raporunun kimliğini belirlemez. **Hiçbir modül
+zorunlu değildir; çekirdek PRISMA hattı her koşulda çalışır.**
 
-4. **Çapraz-doğrulama (bağlayıcı).** Hasta-etkili her iddia (doz, DDI, terminoloji, endikasyon)
-   **iki bağımsız kaynakla** doğrulanır; topluluk-MCP çıktısı otoriter kaynak (KÜB/SPL/kılavuz)
-   olmadan klinik karar olarak sunulmaz (CONNECTORS.md §5). DDI **"etkileşim verisi"** olarak
-   sunulMAZ (substance-overlap ayrımı).
+## Disiplin
 
-5. **Boşluk dürüstlüğü.** Bulunamayan veri "VERİ BULUNAMADI" + denenen sorgularla raporlanır;
-   sessiz atlama yok.
+- **Tek-sefer / kanonik önbellek** (canonical-cache-contract.md); openfda tekil+retry+skippable.
+- **Çapraz-doğrulama** — hasta-etkili her iddia iki bağımsız kaynakla; topluluk-MCP çıktısı otoriter
+  kaynak olmadan klinik karar olarak sunulmaz (CONNECTORS.md §5). DDI substance-overlap ayrımı.
+- **No-fabrication** — bulunamayan veri "VERİ BULUNAMADI" + denenen sorgular; PRISMA akış sayıları
+  connector toplam-sayı vermiyorsa sınırı dürüstçe not edilir; sessiz atlama yok.
 
 ## Ağır koşum
 
-Geniş fan-out (çok eksen + çok ülke + tam-metin) bekleniyorsa `evidence-synthesizer` alt-ajanını
-tetikle: ham connector gürültüsünü izole eder, yalnız damıtılmış kanonik artefaktları döndürür.
+Geniş fan-out (çok kaynak + tam-metin korpus) bekleniyorsa `evidence-synthesizer` alt-ajanını
+tetikle: ham connector gürültüsünü izole eder, ana pencereye yalnız damıtılmış kanıt paketi döner.
 
 ## Devir (Scope Guard)
 

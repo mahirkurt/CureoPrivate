@@ -3,12 +3,13 @@ description: Copyright-kapılı tam-metin getirme kademesi. Bir referans (DOI/PM
 argument-hint: <DOI / PMID / PMCID / makale başlığı>
 ---
 
-# /evidentia-fulltext — Tam-Metin Kademe (Copyright-Kapılı)
+# /evidentia-fulltext — Tam-Metin Kademe (P4, Copyright-Kapılı)
 
 Hedef referans: **$ARGUMENTS**
 
-`medical-research` `references/fulltext-retrieval.md` merdivenini yürüt. **Copyright kapısı her
-adımda bağlayıcıdır** (G-COPYRIGHT).
+`medical-research` **P4 çıkarım** fazının tam-metin kademesi: `references/fulltext-retrieval.md`
+merdivenini yürüt; getirilen tam metin `references/data-extraction.md` çıkarımını (kanıt tablosu)
+besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
 
 ## Kademe
 

@@ -10,8 +10,10 @@ allowed-tools: Bash(python:*), Bash(curl:*)
 
 ## 1. Yüzey-Bilinçli Bağlanırlık Raporu
 
-[`CONNECTORS.md`](../CONNECTORS.md) §1'deki beş gruba göre **hangi connector'ın bağlı, hangisinin
-manuel ekleme gerektirdiğini** raporla. **Kritik yüzey ayrımı (CONNECTORS.md §6):**
+[`CONNECTORS.md`](../CONNECTORS.md) §1'deki katmanlamaya göre raporla: **§1.1 Bibliyografik Çekirdek**
+(her PRISMA taramasında her-zaman-açık) bağlı mı; **§1.2–§1.6 opsiyonel zenginleştirme modülleri**
+(alan/ilaç/regülatuar/HTA/KOL/Türkiye) hangileri bağlı, hangileri manuel ekleme gerektiriyor.
+**Kritik yüzey ayrımı (CONNECTORS.md §6):**
 - **Claude Code** → `.mcp.json` roster'ı otomatik bağlar.
 - **claude.ai web** → Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom
   connector**; Tier-A OAuth Advanced settings. "Otomatik bağlı" varsayma.

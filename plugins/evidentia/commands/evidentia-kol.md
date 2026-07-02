@@ -1,13 +1,16 @@
 ---
-description: KOL (Key Opinion Leader) haritalama koşumu. Bir terapötik alan/molekül için OpenAlex→Semantic Scholar→EuropePMC yazar taraması, ABD PI doğrulaması (NPI), Türk akademisyen katmanı (YÖK Akademik) ile ortak-yazar ağı + etki sıralaması üretir. medical-research §8 KOL Haritası protokolü.
+description: KOL (Key Opinion Leader) haritalama — **opsiyonel zenginleştirme modülü** (medaffairs-ops). Yalnız soru KOL/uzman-haritası bağlamına girince çağrılır. Bir terapötik alan/molekül için OpenAlex→Semantic Scholar→EuropePMC yazar taraması, ABD PI doğrulaması (NPI), Türk akademisyen katmanı (YÖK Akademik) ile ortak-yazar ağı + etki sıralaması üretir; çıktı PRISMA raporuna işaretli ek olarak girer.
 argument-hint: <terapötik alan / molekül / endikasyon>
 ---
 
-# /evidentia-kol — KOL Haritası
+# /evidentia-kol — KOL Haritası (Opsiyonel Zenginleştirme Modülü)
 
 Alan/molekül: **$ARGUMENTS**
 
-`medical-research` **§8 KOL Haritası** protokolünü (v8.4) yürüt.
+`medical-research`'ün **opsiyonel KOL zenginleştirme modülünü** (`references/medaffairs-ops-layer.md`)
+yürüt. Bu modül çekirdek PRISMA hattının parçası **değildir**; yalnız soru KOL/uzman-haritası
+bağlamına girince devreye girer ve çıktı SR raporuna **işaretli ek (KOL eki)** olarak eklenir,
+çekirdek bölümlere değil.
 
 ## Kademe
 
@@ -20,7 +23,7 @@ Alan/molekül: **$ARGUMENTS**
 5. **Türk akademisyen katmanı (YÖK Akademik).** TR KOL'ler için `yok-akademik` — **YÖK Tez'den
    FARKLI**: h-index, ortak-yazar ağı, yayın, danışmanlık tezleri, kurum. (Tier-O Worker.)
 
-## Çıktı
+## Çıktı (KOL eki)
 
 - **Sıralı KOL listesi** (etki: yayın hacmi + atıf + son-yazarlık + klinik-çalışma rolü).
 - **Ortak-yazar ağı** (kümeler/merkeziyet) — kanonik `kol_graph`'ten.
@@ -33,6 +36,6 @@ Alan/molekül: **$ARGUMENTS**
   sunulMAZ (eş-isim riski).
 - **Native-first:** EPMC/YÖK Akademik native; OpenAlex/S2 REST. Tek-sefer (`kol_graph` paylaşılır).
 - **Kapsam sınırı:** KOL kimliklendirme yapısal akademik kaynaklardan (OpenAlex/S2/EPMC/NPI/YÖK) yapılır;
-  OSINT/web rekabet sinyali v1.4.0'da kaldırıldı (kapsam dışı → `pharmaintel`). Erişilebilirlik/etki
-  bağlamı **klinik** KOL-sıralamasının temeli değildir.
+  OSINT/web rekabet sinyali kapsam dışı → `pharmaintel`. Erişilebilirlik/etki bağlamı klinik
+  KOL-sıralamasının temeli değildir.
 - **Gizlilik:** kişi tanımlama için görsel/sorgu disiplinine uy; uydurma profil/iletişim **yok**.

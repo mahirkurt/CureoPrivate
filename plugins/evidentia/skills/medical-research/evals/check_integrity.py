@@ -285,21 +285,14 @@ def gate_coverage() -> bool:
             _fail(f"knowledge-map.md does not reference {fname}")
             ok = False
 
-    # (2) every PRISMA phase marker P0..P7 in SKILL.md appears in the map — either as a
-    # literal token, or (for phases with no dedicated phase-file, e.g. P2 Retrieval/Dedup
-    # riding the native-first ladder in extended-api.md/fulltext-retrieval.md, and P6 GRADE
-    # living in the [ALWAYS] evidence-grading.md) via its documented routing file(s).
+    # (2) every PRISMA phase marker P0..P7 in SKILL.md appears in the map as a literal token.
+    # (P2 Retrieval/Dedup and P6 GRADE have no dedicated phase-file, but the module-index
+    # carries explicit P2/P6 phase notes, so a literal-token check suffices.)
     skill_text = _read(SKILL_MD)
     phases = sorted(set(re.findall(r"\bP[0-7]\b", skill_text)))
-    PHASE_FALLBACK_FILES = {
-        "P2": ["extended-api.md", "fulltext-retrieval.md"],
-        "P6": ["evidence-grading.md"],
-    }
     for ph in phases:
         if ph in map_text:
             _ok(f"map covers phase {ph}")
-        elif ph in PHASE_FALLBACK_FILES and any(f in map_text for f in PHASE_FALLBACK_FILES[ph]):
-            _ok(f"map covers phase {ph} (via {'/'.join(PHASE_FALLBACK_FILES[ph])}, no dedicated phase file)")
         else:
             _fail(f"map omits phase {ph}")
             ok = False

@@ -46,7 +46,7 @@ PRISMA-ScR checklist selection, §2).
 - Sections: §1 The Tier 0–6 Source Hierarchy, §2 GRADE — Certainty of Evidence (per outcome), §3 Pragmatic Appraisal Track, §4 Specialty Appraisal Checklists (per active 0.5 layer), §5 Full-Text-Enriched Numerical Extraction (with copyright gate), §6 Entity / Relation / Temporal Extraction (NER), §7 Synthesis Stance
 - Concepts: GRADE certainty, RoB (risk of bias), Tier 0 (Cochrane/SR), Tier 1–6 hierarchy, CONSORT/PRISMA, NER extraction, endpoint appraisal, certainty downgrading, NMA/MAIC appraisal, pragmatic track, full-text numerical extraction
 - Synonyms: kanıt kalitesi, kanıt derecelendirmesi, evidence quality, certainty of evidence, kaynak hiyerarşisi, meta-analysis appraisal, RCT appraisal
-- Cross-links: all specialty layers for their appraisal checklists (0.5.A–0.5.H); fulltext-retrieval.md (§5 numerical extraction); output-templates.md (§7 Tier 0 Sentez); hta-layer.md (economic model appraisal)
+- Cross-links: all specialty layers for their appraisal checklists (per active enrichment module); fulltext-retrieval.md (§5 numerical extraction); output-templates.md (§7 Tier 0 Sentez); hta-layer.md (economic model appraisal)
 
 ### extended-api.md  — [ALWAYS]
 - Sections: §1 When this file applies, §2 OpenAlex (works, authors, institutions, citations), §3 PubChem PUG-REST (chemistry, identifiers), §4 Semantic Scholar Graph API (citations, influential citations), §5 Open-access determination — Unpaywall + DOAJ, §6 J-STAGE (Japanese scientific literature — 6-country coverage), §7 DailyMed (US Structured Product Labeling), §8 DrugBank (license-gated conditional), §9 Failure & rate-limit discipline
@@ -193,7 +193,7 @@ PRISMA-ScR checklist selection, §2).
 - **Immunology / RA / PsA / SLE / IBD / psoriasis / atopic dermatitis / asthma** → immunology-layer.md (all) · drug-intelligence-layer.md#§3.2 (biologic/JAK pipeline) · regulatory-science-layer.md#§2 (JAK label updates) · hta-layer.md#§2 (biologics economic models)
 - **Neurology / MS / NMOSD / Alzheimer / Parkinson / migraine / SMA / ALS** → neurology-layer.md (all) · drug-intelligence-layer.md#§3 (CNS pipeline) · rare-disease-layer.md (SMA/ALS crossover) · hta-layer.md#§2 (neurology economic models)
 - **Rare disease / orphan / nadir hastalık / ODD / OMP** → rare-disease-layer.md (all) · regulatory-science-layer.md#§2 (ODD designation) · regulatory-intelligence.md#§3 (GLOBOCAN/GHO for rare epi) · hta-layer.md#§1 (NICE HST, CADTH rare)
-- **Epidemiology / incidence / prevalence / disease burden / hastalık yükü / GLOBOCAN / GBD** → regulatory-intelligence.md#§3 (WHO GHO + GLOBOCAN) · regulatory-intelligence.md#§6 (epidemiology_payload sidecar) · hta-layer.md#§3 (epidemiologic denominator) · rare-disease-layer.md#§3 (rare epi co-fire 0.5.K) · output-templates.md#§21 (0.5.K block)
+- **Epidemiology / incidence / prevalence / disease burden / hastalık yükü / GLOBOCAN / GBD** → regulatory-intelligence.md#§3 (WHO GHO + GLOBOCAN) · regulatory-intelligence.md#§6 (epidemiology_payload sidecar) · hta-layer.md#§3 (epidemiologic denominator) · rare-disease-layer.md#§3 (rare epi co-fire) · output-templates.md (epidemiology enrichment appendix)
 
 ### Drug / INN / Brand / MoA / Target / Class
 
@@ -203,19 +203,19 @@ PRISMA-ScR checklist selection, §2).
 - **Biosimilar / generic / jenerik / biyobenzer** → turkiye-layer.md#§4 (TÜRKPATENT) · regulatory-science-layer.md#§1 (biosimilar pathways) · drug-intelligence-layer.md#§3.4 (regulatory milestones)
 - **Drug-drug interaction / DDI** → extended-api.md#§8 (DrugBank conditional) · regulatory-intelligence.md#§1 (openFDA FAERS)
 
-### Specialty Axis
+### Optional Enrichment Modules (context-triggered — never the default; output → labelled appendix)
 
-- **0.5.A Oncology axis** → oncology-layer.md (all) · drug-intelligence-layer.md (0.5.I) · turkiye-layer.md (TR onco) · hta-layer.md (onco cost-effectiveness)
-- **0.5.B Hematology axis** → hematology-layer.md (all) · drug-intelligence-layer.md (0.5.I) · regulatory-science-layer.md (approval pathways)
-- **0.5.C Regulatory axis** → regulatory-science-layer.md (all) · regulatory-intelligence.md (openFDA + multi-jurisdiction) · turkiye-layer.md (TİTCK)
-- **0.5.D HTA / access axis** → hta-layer.md (all) · regulatory-intelligence.md (epidemiology denominator) · turkiye-layer.md (SGK SUT) · evidence-grading.md (NMA/MAIC)
-- **0.5.E Medical Affairs axis** → medaffairs-ops-layer.md (all) · fulltext-retrieval.md (publication retrieval) · extended-api.md (OpenAlex/S2 KOL mapping) · connector-registry.md §2.1 (native openalex/semantic-scholar)
-- **0.5.F Immunology axis** → immunology-layer.md (all) · drug-intelligence-layer.md (0.5.I biologic pipeline)
-- **0.5.G Neurology axis** → neurology-layer.md (all) · drug-intelligence-layer.md (0.5.I CNS) · rare-disease-layer.md (SMA/ALS crossover)
-- **0.5.H Rare Disease axis** → rare-disease-layer.md (all) · regulatory-science-layer.md (ODD) · hta-layer.md (NICE HST) · regulatory-intelligence.md (0.5.K epidemiology co-fire)
-- **0.5.I Drug Intelligence axis** → drug-intelligence-layer.md (all) · connector-registry.md#§3.1 (AdisInsight real schema) · extended-api.md (PubChem/DrugBank) · turkiye-layer.md (TR drug stack)
-- **0.5.J Synapse / OpenTargets (auth-conditional)** → SKILL.md (pipeline mention) · drug-intelligence-layer.md#§7 (composition with sister skills) · connector-registry.md#§2.2 (curated intelligence)
-- **0.5.K Epidemiology / Burden axis** → regulatory-intelligence.md#§3 (WHO GHO) · regulatory-intelligence.md#§6 (epidemiology_payload) · hta-layer.md#§3 (epidemiology denominator) · rare-disease-layer.md#§3 (rare epi) · output-templates.md#§21 (0.5.K block)
+- **Oncology module** → oncology-layer.md (all) · drug-intelligence-layer.md (drug/pipeline enrichment) · turkiye-layer.md (TR onco) · hta-layer.md (onco cost-effectiveness)
+- **Hematology module** → hematology-layer.md (all) · drug-intelligence-layer.md (drug/pipeline enrichment) · regulatory-science-layer.md (approval pathways)
+- **Regulatory module** → regulatory-science-layer.md (all) · regulatory-intelligence.md (openFDA + multi-jurisdiction) · turkiye-layer.md (TİTCK)
+- **HTA / access module** → hta-layer.md (all) · regulatory-intelligence.md (epidemiology denominator) · turkiye-layer.md (SGK SUT) · evidence-grading.md (NMA/MAIC)
+- **Medical Affairs / KOL module** → medaffairs-ops-layer.md (all) · fulltext-retrieval.md (publication retrieval) · extended-api.md (OpenAlex/S2 KOL mapping) · connector-registry.md §2.1 (native openalex/semantic-scholar)
+- **Immunology module** → immunology-layer.md (all) · drug-intelligence-layer.md (biologic pipeline enrichment)
+- **Neurology module** → neurology-layer.md (all) · drug-intelligence-layer.md (CNS drug enrichment) · rare-disease-layer.md (neuromuscular crossover)
+- **Rare Disease module** → rare-disease-layer.md (all) · regulatory-science-layer.md (ODD) · hta-layer.md (NICE HST) · regulatory-intelligence.md (epidemiology co-fire)
+- **Drug Intelligence module** → drug-intelligence-layer.md (all) · connector-registry.md#§3.1 (AdisInsight real schema) · extended-api.md (PubChem/DrugBank) · turkiye-layer.md (TR drug stack)
+- **Synapse / OpenTargets module (auth-conditional)** → SKILL.md (pipeline mention) · drug-intelligence-layer.md#§7 (composition with sister skills) · connector-registry.md#§2.2 (curated intelligence)
+- **Epidemiology / Burden module** → regulatory-intelligence.md#§3 (WHO GHO) · regulatory-intelligence.md#§6 (epidemiology_payload) · hta-layer.md#§3 (epidemiology denominator) · rare-disease-layer.md#§3 (rare epi) · output-templates.md (epidemiology enrichment appendix)
 
 ### Geography
 
@@ -274,7 +274,7 @@ PRISMA-ScR checklist selection, §2).
 - **YÖK Akademik / Turkish academics / TR KOL** → turkiye-layer.md (TR KOL) · medaffairs-ops-layer.md#§3 (KOL wiring §8) · connector-registry.md#§2.5 (α-layer)
 - **OpenAlex / Semantic Scholar / citation graph / atıf-ağı / kurum-yazar disambiguasyon** → connector-registry.md#§2.1 (native Tier-K bundled: `openalex_*`, `search_papers`/`get_paper_citations`) · extended-api.md#§2–§4 (REST fallback) · medaffairs-ops-layer.md#§3 (KOL via OpenAlex) · output-templates.md#§8 (KOL Haritası)
 - **ChEMBL / PubChem / chemical structure** → extended-api.md#§3 (PubChem PUG-REST) · drug-intelligence-layer.md#§4 (cross-reference)
-- **WHO GHO / ICD-11 / GLOBOCAN / disease burden** → ICD-11 via `openfda` `icd11_search` (connector-registry.md#§3.3) · hta-layer.md#§3 (epidemiology denominator) · output-templates.md#§21 (0.5.K block). (WHO GHO/GLOBOCAN native-API not bundled → documented gap.)
+- **WHO GHO / ICD-11 / GLOBOCAN / disease burden** → ICD-11 via `openfda` `icd11_search` (connector-registry.md#§3.3) · hta-layer.md#§3 (epidemiology denominator) · output-templates.md (epidemiology enrichment appendix). (WHO GHO/GLOBOCAN native-API not bundled → documented gap.)
 
 ### Output / Presentation
 

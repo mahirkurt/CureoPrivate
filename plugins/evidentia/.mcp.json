@@ -90,7 +90,7 @@
     },
     "annas-reader": {
       "type": "http",
-      "url": "https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp",
+      "url": "https://annas.cureonics.com/mcp",
       "headers": { "Authorization": "Bearer ${ANNAS_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",

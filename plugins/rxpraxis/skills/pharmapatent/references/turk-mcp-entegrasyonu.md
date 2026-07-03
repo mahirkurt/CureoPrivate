@@ -31,9 +31,9 @@
 
 | MCP | Sunucu URL | Araç sayısı | Kapsam | Durum |
 |---|---|---|---|---|
-| **TİTCK MCP** | `titck-mcp-to7lqjgdkq-ew.a.run.app` | 56 | TR beşeri tıbbi ürün master dataset + bağlı 19 dinamik modül (active ingredients, foreign ingredients, off-label, Madde 23, batch release, supply tracking, additional monitoring, withdrawal, reference prices, institutional fees, scheduling, regulation art.23) + 4 derived dataset (holders kanonik + SNOMED ingredient map + ICD-10 maps + drug-substance profile) | ✅ Aktif |
+| **TİTCK MCP** | `titck-origin.cureonics.com` | 56 | TR beşeri tıbbi ürün master dataset + bağlı 19 dinamik modül (active ingredients, foreign ingredients, off-label, Madde 23, batch release, supply tracking, additional monitoring, withdrawal, reference prices, institutional fees, scheduling, regulation art.23) + 4 derived dataset (holders kanonik + SNOMED ingredient map + ICD-10 maps + drug-substance profile) | ✅ Aktif |
 | **Türk Patent MCP** | `markapatent-mcp.fastmcp.app` | 6 | TÜRKPATENT — patent + endüstriyel tasarım + ticari marka. Search + get_details her üç varlık için | ✅ Aktif |
-| **Mevzuat MCP** | `mevzuat-mcp-to7lqjgdkq-ew.a.run.app` (revision `00017-668`) | 12 | mevzuat.gov.tr — kanun/yönetmelik/tebliğ/genelge tam metin (SMK 6769, BTÜ Yönetmeliği, TİTCK kılavuzları, Cumhurbaşkanlığı kararları). MCP SDK 1.27.0, protocolVersion `2024-11-05` | ✅ Aktif (v2.0.1) |
+| **Mevzuat MCP** | `mevzuat.cureonics.com` (revision `00017-668`) | 12 | mevzuat.gov.tr — kanun/yönetmelik/tebliğ/genelge tam metin (SMK 6769, BTÜ Yönetmeliği, TİTCK kılavuzları, Cumhurbaşkanlığı kararları). MCP SDK 1.27.0, protocolVersion `2024-11-05` | ✅ Aktif (v2.0.1) |
 
 ### 1.2. MCP-First doktrin (5 zorunlu kural)
 
@@ -303,7 +303,7 @@ Mevcut MCP araçları bu ayrımı doğrudan filter parametresi olarak vermiyor; 
 
 ### 4.1. Durum özeti
 
-- **Sunucu**: `https://mevzuat-mcp-to7lqjgdkq-ew.a.run.app/mcp`
+- **Sunucu**: `https://mevzuat.cureonics.com/mcp`
 - **Cloud Run revision**: `mevzuat-mcp-00017-668`
 - **MCP SDK**: 1.27.0
 - **protocolVersion**: `2024-11-05`

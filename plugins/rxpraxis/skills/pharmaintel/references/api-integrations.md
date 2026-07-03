@@ -443,7 +443,7 @@ If precondition is not met, pharmaintel falls back to free-tier IQVIA Institute 
 
 ## §16. TİTCK MCP — Türkiye Regulatory Primary (v4.0.0)
 
-**MCP server:** `https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp` (Anthropic-hosted connector; verify availability)
+**MCP server:** `https://titck-origin.cureonics.com/mcp` (Anthropic-hosted connector; verify availability)
 **Auth:** Per connector configuration (typically no auth required for public TİTCK data)
 **Tier:** Tier-0 primary (Türkiye regulatuar zemin gerçeği)
 

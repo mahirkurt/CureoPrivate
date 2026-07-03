@@ -205,7 +205,7 @@ dependencies:
 mcp_connectors:
   - id: "titck-mcp"
     name: "TİTCK MCP"
-    server_url: "https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+    server_url: "https://titck-origin.cureonics.com/mcp"
     status: "active"
     tool_count: 56
     scope: >
@@ -256,7 +256,7 @@ mcp_connectors:
 
   - id: "mevzuat-mcp"
     name: "Mevzuat MCP"
-    server_url: "https://mevzuat-mcp-to7lqjgdkq-ew.a.run.app/mcp"
+    server_url: "https://mevzuat.cureonics.com/mcp"
     cloud_run_revision: "mevzuat-mcp-00017-668"
     mcp_sdk_version: "1.27.0"
     protocol_version: "2024-11-05"

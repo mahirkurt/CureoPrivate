@@ -102,7 +102,7 @@ bağlı olduğu modülü/rung'u bozar.
 |---|---|---|
 | TİTCK Cache | `https://titck.cureonics.com/mcp` | Türkiye Dörtlüsü latency fallback rung |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
-| **Annas Reader** | `https://annas-mcp-to7lqjgdkq-ew.a.run.app/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED) — **§1.1 çekirdek tam-metin rung'unun parçası; full-text cascade Tier 5 (SON ÇARE)** — lisanslı band (OpenAthens Tier 3 + Wiley Tier 4) getiremeyince devreye girer (legal-öncelikli), generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
+| **Annas Reader** | `https://annas.cureonics.com/mcp` | **Tam-metin geri-çağırma** (operatör-bağlı Cloud Run, OAuth-gated; 2026-06-25 401 SECURED) — **§1.1 çekirdek tam-metin rung'unun parçası; full-text cascade Tier 5 (SON ÇARE)** — lisanslı band (OpenAthens Tier 3 + Wiley Tier 4) getiremeyince devreye girer (legal-öncelikli), generic `annas-mcp` satırını gerçekler/yerine geçer. Araçlar: `article_search`/`article_download` (DOI), `book_search`/`book_download` (MD5+format). ⚠️ İndirmeler **kullanıcının makinesine** iner (sandbox'a değil) → analiz için **anamnesis ingest** veya yapıştırma gerekir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 
 ### 1.5 Genişletme Katmanı (mcp-scout canlı-doğrulanmış · Tier-K · §6)
 **Karışık katman — dikkat:** `openalex` / `pubmed-epmc` / `semantic-scholar` **bibliyografik

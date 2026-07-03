@@ -77,7 +77,7 @@ npx wrangler login       # Cloudflare hesabına giriş (cureonics hesabı)
 
 Ajan ayrıca şu iki bilgiyi hazır tutmalı:
 
-- **Upstream MCP URL:** `https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp`
+- **Upstream MCP URL:** `https://titck-origin.cureonics.com/mcp`
 - **Upstream auth:** Bilinmiyor. **Varsayılan: kimliksiz dene.** Smoke testte 401/403 alınırsa
   (S13) `UPSTREAM_AUTH_HEADER` secret'ı eklenir. Kullanıcıdan teyit iste.
 
@@ -154,7 +154,7 @@ mkdir -p src test
   "observability": { "enabled": true },
 
   "vars": {
-    "UPSTREAM_MCP_URL": "https://titck-mcp-to7lqjgdkq-ew.a.run.app/mcp",
+    "UPSTREAM_MCP_URL": "https://titck-origin.cureonics.com/mcp",
     "CACHE_NAMESPACE": "tc:v1",
     "DEFAULT_TTL_SECONDS": "86400"
   },

@@ -27,7 +27,7 @@ Vekayinüvis iki katmanlı bir connector mimarisi kullanır:
 
 | Sunucu adı | Transport | URL | Rol | Kimlik doğrulama |
 |---|---|---|---|---|
-| `ottoman-archives` | http | `https://ottoman-archives-to7lqjgdkq-ew.a.run.app/mcp` | 33-kaynaklı Osmanlı arşiv keşfi + IIIF tam-metin + Hicri/Rumî/Miladi çevirici + ebced + eScriptorium HTR + TDV İslâm Ansiklopedisi | Cloud Run dağıtımı — endpoint'in auth modeline göre `/mcp` üzerinden doğrulama gerekebilir |
+| `ottoman-archives` | http | `https://ottoman.cureonics.com/mcp` | 33-kaynaklı Osmanlı arşiv keşfi + IIIF tam-metin + Hicri/Rumî/Miladi çevirici + ebced + eScriptorium HTR + TDV İslâm Ansiklopedisi | Cloud Run dağıtımı — endpoint'in auth modeline göre `/mcp` üzerinden doğrulama gerekebilir |
 | `yoktez` | http | `https://yoktezmcp.fastmcp.app/mcp` | YÖK Ulusal Tez Merkezi — tahrir/mühimme/şer'iye sicili transkripsiyon tezleri, anabilim dalı bazlı arama | FastMCP host — gerekirse `/mcp` OAuth akışı |
 
 **Ottoman Archives yetenek katmanları** (skill § 3.1): A. Kaynak Keşfi ·
@@ -69,7 +69,7 @@ API-key gerektiren sunucular `userConfig` ile parametrelenir; bu durumda
   "mcpServers": {
     "ottoman-archives": {
       "type": "http",
-      "url": "https://ottoman-archives-to7lqjgdkq-ew.a.run.app/mcp"
+      "url": "https://ottoman.cureonics.com/mcp"
     },
     "yoktez": {
       "type": "http",

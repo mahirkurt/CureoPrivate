@@ -157,6 +157,24 @@ python skills/medical-research/evals/rag_quality.py            # G-RAG: çıktı
 
 ---
 
+## Hook mimarisi (runtime enforcement)
+
+Skill'in prose olarak anlattığı üç değişmezi **çalışma anında** uygulayan üç deterministik komut
+hook'u (`hooks/hooks.json`). Hepsi **fail-open** (hook hatası asla araç çağrısını kırmaz) ve MCP
+araçlarına özeldir.
+
+| Hook | Olay | Ne yapar |
+|---|---|---|
+| **`guard_tool_call.py`** | `PreToolUse` (`mcp__.*`) | **En-az-yetki + kırık-araç guard.** Dört pipeworx gateway'inde (semantic-scholar/nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb) 30 pipeworx-generic aracı ve **D1** `rxnorm_interactions` (404) · **D2/D4** `rxnorm_related` (400) · **D6** `med-terminologies.icd11_search` (AUTH) araçlarını **DENY** eder, çalışan alternatife yönlendirir. Server-aware (openfda `icd11_search` + §2.6 whitelist dokunulmaz). |
+| **`retrieve_dont_dump.py`** | `PostToolUse` (`mcp__.*`) | Büyük tam-metin çıktısında (openathens/EPMC/annas/Unpaywall · >6 KB) **retrieve-don't-dump** hatırlatır: ham işleme, anamnesis `ingest_document` → `semantic_search`/`hybrid_query` ile sınırlı dilim çek (advisory, bloklamaz). |
+| **`session_preflight.py`** | `SessionStart` | Gated self-host connector key(ler)i (`OPENATHENS`/`ANAMNESIS`/`OPENFDA`/`EVIDENTIA_KB`/`ANNAS`/`YOK_AKADEMIK`_MCP_API_KEY) ortamda eksikse `doppler run` hatırlatır; **hepsi mevcutsa sessiz** (gürültüsüz). |
+
+**Devre dışı bırak:** `<proje>/.claude/evidentia-guard.off` dosyası oluştur → guard tümüyle
+bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py` (21 deny/allow/edge senaryosu).
+⚠️ Hook'lar oturum başında yüklenir → değişiklikten sonra Claude Code'u yeniden başlat (`claude`).
+
+---
+
 ## İlişkili skill'ler
 
 - **Upstream:** `mcp-scout` (connector roster bakımı — bundle edilmez, dış araçtır).

@@ -145,6 +145,16 @@ called; the BROKEN tools are never invoked, and the pipeworx **generic** tools (
 > **Tool-level whitelist note.** `.mcp.json` wires at the **server** level; the per-tool whitelist
 > above is the enforced contract — the skill calls only these tools. G-WHITELIST statically asserts
 > no pipeworx-generic tool name appears in this §2.6 whitelist.
+>
+> **Runtime-enforced (plugin hook layer).** Beyond the static gate, the plugin ships a **PreToolUse
+> guard hook** (`hooks/guard_tool_call.py`) that **DENIES at call time**: (a) any pipeworx-generic
+> tool (`ask_pipeworx`/`discover_tools`/`polymarket_*`/`scan_*`/`remember`/`recall`/… — the 30-name
+> set) on the four gateway servers (semantic-scholar/nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb),
+> and (b) the known-broken tools **D1** `rxnorm_interactions` (404), **D2/D4** `rxnorm_related` (400),
+> **D6** `med-terminologies.icd11_search` (AUTH_CONFIG_ERROR) — each with a redirect to the working
+> alternative. Server-aware (openfda `icd11_search` and the §2.6 whitelisted tools are untouched);
+> fail-open; disable with `<project>/.claude/evidentia-guard.off`. So least-privilege is now both
+> **documented and enforced**, not merely asserted. See `hooks/hooks.json` + `hooks/test_hooks.py`.
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 14 hukuk/regülasyon MCP + companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit yumuşak delegasyonun canlı erişilebilirliğini raporlar. Hangi araçlar hazır, hangileri anahtar/bağlantı bekliyor gösterir. Argüman gerekmez.
+description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 14 hukuk/regülasyon MCP + companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun canlı erişilebilirliğini raporlar. Hangi araçlar hazır, hangileri anahtar/bağlantı bekliyor gösterir. Argüman gerekmez.
 argument-hint: (argüman gerekmez)
 allowed-tools: Read, Bash, Task
 ---
@@ -19,9 +19,10 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
    - **Büyük-veri substratı:** anamnesis (`mcp__anamnesis__*`) — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
    - **Delegasyon:** evidentia (klinik kanıt) · sci-audit (atıf-adli + dil)
 4. **Her satır için durum:** `hazır (anahtar var)` / `anahtar bekliyor: <ENV_VAR>` / `companion — claude.ai connector olarak ekle` / `plugin kurulu değil (graceful degrade)`.
-5. **Özet:** kaç server tam-filoya hazır, hangileri kullanıcı aksiyonu bekliyor (Doppler `cureohub/dev_personal` Bearer inject veya claude.ai connector ekleme).
+5. **Kapı etkisini göster:** companion/delegasyon satırlarında eksikliğin maliyetini açıkça yaz — `Yargı bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat doğrulanamaz)` · `Open Law bağlı değil ⇒ G6 CONDITIONAL (CELEX doğrulama degrade)` · `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL satırları manual_required` · `evidentia kurulu değil ⇒ klinik iddialar unverified` · `sci-audit kurulu değil ⇒ çıktı-QA manuel`.
+6. **Özet:** kaç server tam-filoya hazır, hangileri kullanıcı aksiyonu bekliyor (Doppler `cureohub/dev_personal` Bearer inject veya claude.ai connector ekleme) ve bu eksikliklerin hangi kapıları CONDITIONAL'a düşürdüğü.
 
-> Not: Bir server anahtar/bağlantı beklese bile plugin **graceful degrade** eder — o katman kapsam manifestosunda `skipped: anahtar yok` olarak beyan edilir, çıktı durmaz, asla uydurma yapılmaz.
+> Not: Bir server anahtar/bağlantı beklese bile plugin **graceful degrade** eder — o katman kapsam manifestosunda `skipped: anahtar yok` olarak beyan edilir, çıktı durmaz, asla uydurma yapılmaz. **Ters yüzü:** kurulu/bağlı bir katman (companion dahil) tetiklenmiş bağlamda ATLANAMAZ — bu G0 ihlalidir (`shared/composition-contract.md`).
 
 ## Anahtar env-var haritası
 

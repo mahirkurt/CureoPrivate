@@ -27,6 +27,15 @@ MODE_SIGNALS = [
 # Zorunlu çıktı bileşenleri.
 HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b|hit \d|skipped:|empty\b)", re.IGNORECASE)
 HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_review_required|güven etiketi)", re.IGNORECASE)
+# Manifesto varsa içinde görünmesi ZORUNLU satırlar: 3 companion + 2 delegasyon plugin'i
+# (durum ne olursa olsun — hit/empty/degraded/skipped-with-reason — satır mevcut olmalı).
+MANDATORY_ROWS = {
+    "Yargı (companion — G5 içtihat)": re.compile(r"\bYarg", re.IGNORECASE),
+    "Open Law (companion — G6 CELEX)": re.compile(r"Open[_ ]?Law", re.IGNORECASE),
+    "Ansvar (companion — Mod7 58-yargı)": re.compile(r"\bAnsvar", re.IGNORECASE),
+    "evidentia (klinik delegasyon)": re.compile(r"\bevidentia", re.IGNORECASE),
+    "sci-audit (çıktı-QA delegasyonu)": re.compile(r"\bsci[- ]?audit", re.IGNORECASE),
+}
 
 
 def last_assistant_message(event):
@@ -80,6 +89,15 @@ def main():
     missing = []
     if not HAS_MANIFEST.search(text):
         missing.append("kapsam manifestosu (G0 — wire'lı tüm MCP'lerin hit/empty/degraded/skipped-with-reason kanıtı)")
+    else:
+        # Manifesto var → companion + delegasyon satırları da mevcut olmalı (SKILL §7 / coverage-manifest.md).
+        absent_rows = [label for label, rx in MANDATORY_ROWS.items() if not rx.search(text)]
+        if absent_rows:
+            missing.append(
+                "manifestoda zorunlu satır(lar): " + ", ".join(absent_rows)
+                + " (her biri hit/empty/degraded/skipped-with-reason olarak yazılmalı; "
+                "companion skip'i ilgili kapıyı CONDITIONAL yapar)"
+            )
     if not HAS_CONFIDENCE.search(text):
         missing.append("confidence_label (mod + combined_confidence + human_review_required:true + scope_disclaimer)")
 

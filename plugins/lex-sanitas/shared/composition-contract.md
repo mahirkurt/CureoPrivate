@@ -1,6 +1,8 @@
-# Lex Sanitas — Kompozisyon Sözleşmesi (evidentia + sci-audit yumuşak delegasyon)
+# Lex Sanitas — Kompozisyon Sözleşmesi (evidentia + sci-audit + companion connector'lar — bağlam-tetiklemeli ZORUNLU entegrasyon)
 
-Lex Sanitas **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 modu çalıştırır. Ancak iki komşu plugin ile **yumuşak delegasyon** (soft delegation) yoluyla birlikte çalışır — **varsa** çağrılır, **yoksa** zarifçe degrade eder ve bunu kapsam manifestosunda (G0) beyan eder. Bu, ekosistemin kanıtlanmış desenidir (üç plugin ayrı marketplace girişi olarak kalır).
+Lex Sanitas **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 modu çalıştırır. Ancak **kurulu/bağlı olan** komşu plugin ve companion connector'lar için entegrasyon **opsiyonel değildir**: bağlam tetiklendiğinde çağrılmaları **zorunludur**; atlanmaları **G0 ihlalidir**. "Yumuşak" olan tek şey *yokluk hâlidir* — plugin/connector gerçekten kurulu/bağlı değilse zarifçe degrade edilir, bu kapsam manifestosunda (G0) gerekçesiyle beyan edilir ve ilgili kalite kapısı CONDITIONAL'a düşer. Hiçbir degrade uydurmaya yol açmaz. (Plugin'ler ayrı marketplace girişi olarak kalır.)
+
+**Karar kuralı (her sorguda):** (1) SessionStart preflight'ın kurulum/bağlantı işaretlerini oku → (2) bağlam tetikleyicisini değerlendir (aşağıdaki matrisler) → (3) tetiklenen HER kurulu/bağlı katmanı çağır → (4) manifestoya satırını yaz. "Çağırmasam da olur" diye bir durum yoktur; yalnız "tetiklenmedi (gerekçe)" veya "kurulu/bağlı değil" vardır.
 
 ## 1. evidentia — klinik kanıt katmanı
 
@@ -51,17 +53,32 @@ Lex Sanitas **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 mo
 
 **sci-audit yoksa:** atıf-adli + imla denetimi manuel yapılır (lex-sanitas kendi G3/G7 kapıları zaten çalışır); manifestoda `sci-audit → skipped: plugin kurulu değil`. Çıktı durmaz.
 
-## 3. Degrade matrisi (özet)
+## 3. Companion connector'lar — Yargı · Open Law · Ansvar (tam-filonun zorunlu üyeleri)
+
+Bu üçü claude.ai connector'ı olarak bağlanır (`.mcp.json`'da wire edilmez — çifte kayıt olmasın); **bağlı oldukları her oturumda tam-filonun zorunlu üyeleridir** ve kalite kapılarına bağlıdır. `/lex-connectors` durumlarını raporlar.
+
+| Companion | Araç yüzeyi | Zorunlu tetik (bağlam) | Bağlı kapı | Bağlı değilse |
+|---|---|---|---|---|
+| **Yargı** | `mcp__Yarg__search_anayasa_unified` · `search_bedesten_unified` · `search_emsal_detailed_decisions` · `get_*_markdown` | İçtihat zinciri gereken HER an: ANALYZE 7-boyut iptal-riski · DRAFT/AMEND gerekçe dayanağı · COMPLY K-2 (AYM belirlilik)/K-17 · OPINE mütalaa · TBMM genel gerekçe · EX_POST yargı-pratiği | **G5** | G5 en fazla CONDITIONAL; kullanıcıya "Yargı connector'ını bağla" önerisi; içtihat iddiası `unverified` etiketli, asla uydurma |
+| **Open Law** | `mcp__Open_Law__fetch_eurlex` · `lookup_statute` · `legislation_toc` · `search_caselaw` · `fetch_hudoc` | CELEX/EUR-Lex **konsolide doğrulama** (G6'nın birincil aracı) · Mod 7 UK satırı · AB müktesebat uyum tablosu · AİHM (HUDOC) içtihadı | **G6** | CELEX doğrulaması german-law `get_eu_basis` → WebFetch'e degrade + G6 CONDITIONAL; manifesto beyanı |
+| **Ansvar** | `mcp__Ansvar__search(jurisdictions=…)` · `get_provision` · `list_coverage` · `validate_citation` | Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL veya diğer 58-yargı korpusu kapsamındaki ülke satırı · yatay çerçeve/standart (GDPR/NIS2/veri güvenliği) sorguları | Mod 7 kapsam bütünlüğü | O yargı satırı `manual_required` + kapsam-boşluğu beyanı; satır tablodan SİLİNMEZ |
+
+**Sorumluluk sınırı:** Türkiye içtihadında otorite Yargı'dır; UK+EU resmî metinde Open Law; Ansvar çok-yargı *tarama* katmanıdır — çatışmada ülkenin resmî portalı (health-policy/german-law/Open Law) kazanır, Ansvar bulgusu ikincil teyit olarak not edilir.
+
+## 4. Degrade matrisi (özet)
 
 | Durum | Davranış | Manifesto satırı |
 |---|---|---|
-| evidentia + sci-audit ikisi de kurulu | Tam kompozisyon | `evidentia → hit` · `sci-audit → hit` |
-| yalnız evidentia | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |
-| yalnız sci-audit | Dil-QA tam, klinik `unverified` uyarısı | `evidentia → skipped: plugin kurulu değil` |
-| ikisi de yok | lex-sanitas tek başına (9 mod çalışır) | her ikisi `skipped: plugin kurulu değil` |
+| evidentia + sci-audit kurulu, 3 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` |
+| evidentia kurulu ama klinik-boyutlu sorguda ÇAĞRILMADI | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
+| sci-audit kurulu ama çıktı denetimsiz teslim edildi | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
+| yalnız evidentia kurulu | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |
+| yalnız sci-audit kurulu | Dil-QA tam, klinik `unverified` uyarısı | `evidentia → skipped: plugin kurulu değil` |
+| companion bağlı değil | İlgili kapı CONDITIONAL + kullanıcıya bağlama önerisi | `Yarg/Open_Law/Ansvar → skipped: companion bağlı değil` |
+| ikisi de yok, companion'lar yok | lex-sanitas tek başına (9 mod çalışır; G5/G6 CONDITIONAL) | tümü `skipped` + gerekçe |
 
-**Değişmez:** hiçbir degrade durumu **uydurmaya** yol açmaz. Eksik katman = dürüst `unverified`/`skipped` beyanı, asla fabrikasyon. İnsan denetimi her hâlde zorunludur.
+**Değişmez:** hiçbir degrade durumu **uydurmaya** yol açmaz. Eksik katman = dürüst `unverified`/`skipped` beyanı, asla fabrikasyon. `skipped` yalnız (a) gerçek yokluk, (b) gerekçeli bağlam-dışılık ile meşrudur — kurulu/bağlı bir katmanın tetiklenmiş bağlamda atlanması her zaman ihlaldir. İnsan denetimi her hâlde zorunludur.
 
-## 4. Paylaşılan büyük-veri substratı (anamnesis)
+## 5. Paylaşılan büyük-veri substratı (anamnesis)
 
 lex-sanitas ve evidentia **aynı `anamnesis` RAG/GraphRAG substratını** evidence_index olarak paylaşır (bkz. `context-economy-contract.md` Tier 2). İkisi de büyük tam-metni `ingest_document(doc_id=<kanonik id>)` ile indeksler ve `hybrid_query` ile bounded dilim çeker. **doc_id ad-uzayı ayrımı** çakışmayı önler: lex-sanitas hukuk belgelerini `mevzuat:…`/`celex:…`/`ecli:…`/`rg:…` önekleriyle, evidentia bilimsel belgeleri DOI/PMID ile indeksler. Kanonik cache oturum-kapsamlıdır; bir belge bir kez ingest edilir, iki plugin de aynı doc_id'ye query atabilir. anamnesis anahtarı yoksa her iki plugin de kendi bounded-chunk fallback'ine degrade eder.

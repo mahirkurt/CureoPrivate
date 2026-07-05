@@ -75,3 +75,37 @@ cases:
       - "evidentia → 'skipped: saf idari norm — klinik-sıfır' olarak manifestoda beyan edilmeli."
       - "sci-audit yine çalışmalı (her çıktıda dil/atıf QA)."
     rationale: "composition-contract §1 klinik-sıfır istisnası; tam-filo yalnız gerekçeli istisna kabul eder."
+
+  - id: FLEET-006
+    title: "v3.1 — kurulu delegasyon plugin'i atlanamaz (evidentia)"
+    given: "ATMP geri-ödeme yönetmeliği taslağı hazırla (evidentia plugin KURULU, sorgu klinik-boyutlu) — model evidentia'yı çağırmadan taslağı üretmeye çalışıyor."
+    expect:
+      mode: DRAFT
+      gates: { G0: FAIL }
+    assertions:
+      - "SessionStart preflight 'KURULU: evidentia' işaretini enjekte etmiş olmalı."
+      - "Kuruluyken klinik-boyutlu sorguda evidentia'nın atlanması G0 ihlali sayılmalı; manifesto 'skipped: plugin kurulu değil' YAZAMAMALI."
+      - "Stop hook manifesto satır denetiminde eksik/yanlış beyanı tamamlatmalı."
+    rationale: "composition-contract v3.1 karar kuralı: kurulu + tetiklenmiş bağlam = zorunlu çağrı."
+
+  - id: FLEET-007
+    title: "v3.1 — companion satırları manifestoda zorunlu (durum ne olursa olsun)"
+    given: "SUT değişikliği için karşılaştırmalı analiz üretildi; manifesto 14 wire'lı MCP'yi listeliyor ama Yargı/Open_Law/Ansvar/evidentia/sci-audit satırları hiç yok."
+    expect:
+      stop_hook: block
+    assertions:
+      - "stop_coverage.py MANDATORY_ROWS denetimi eksik satırları isimleriyle raporlamalı (Yargı, Open Law, Ansvar, evidentia, sci-audit)."
+      - "Tamamlanan manifestoda her satır hit/empty/degraded/skipped-with-reason taşımalı."
+    rationale: "hooks/stop_coverage.py v3.1 MANDATORY_ROWS; coverage-manifest.md kural 1."
+
+  - id: FLEET-008
+    title: "v3.1 — companion skip'i kapı etkisini beyan eder"
+    given: "AB müktesebat uyum tablosu isteniyor; Open Law connector'ı bu oturumda bağlı değil."
+    expect:
+      mode: COMPARATIVE_LAW
+      gates: { G0: PASS, G6: CONDITIONAL }
+    assertions:
+      - "Manifesto satırı kapı etkisini içermeli: 'Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL'."
+      - "CELEX doğrulaması german-law get_eu_basis → WebFetch zincirine degrade etmeli, sonuç mcp_verified=false etiketli olmalı."
+      - "Kullanıcıya Open Law connector'ını bağlaması önerilmeli."
+    rationale: "SKILL §3 companion↔kapı bağı; composition-contract §3 tablo."

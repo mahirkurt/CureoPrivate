@@ -31,17 +31,43 @@ GATED = {
 
 CONVENTIONS = (
     "[lex-sanitas] Türkiye sağlık mevzuatı reform protokolü aktif. Çekirdek invaryantlar: "
-    "(1) TAM-FİLO — wire'lı 14 hukuk MCP + bağlı companion her sorguda çalışır; çıktı G0 kapsam "
-    "manifestosu taşır (server → hit/empty/degraded/skipped-with-reason; sessiz atlama = FAIL). "
+    "(1) TAM-FİLO — wire'lı 14 hukuk MCP + 3 companion (Yargı mcp__Yarg__* / Open Law mcp__Open_Law__* / "
+    "Ansvar mcp__Ansvar__*) her sorguda çalışır; companion'lar tam-filonun ZORUNLU üyeleridir "
+    "(Yargı↔G5 içtihat, Open Law↔G6 CELEX doğrulama, Ansvar↔Mod7 58-yargı) — bağlıyken tetiklenmiş "
+    "bağlamda atlanmaları G0 ihlalidir; bağlı değillerse ilgili kapı CONDITIONAL + manifesto beyanı. "
+    "Çıktı G0 kapsam manifestosu taşır (server → hit/empty/degraded/skipped-with-reason; sessiz "
+    "atlama = FAIL). "
     "(2) NO-FABRICATION — kanun/CELEX/AYM/Yargıtay/PMID asla uydurulmaz; her atıf MCP-doğrulanmış "
     "(evidence_ledger). (3) SCOPE GUARD — yalnız mevzuat reformu; bireysel dava (SGK red/AYM başvuru), "
-    "malpraktis → saglik-sigorta/onko-erisim; promosyon denetimi → promo-censor. (4) DELEGASYON — "
-    "klinik kanıt → evidentia; atıf-adli + TR dil → sci-audit (varsa; yoksa graceful degrade). "
+    "malpraktis → saglik-sigorta/onko-erisim; promosyon denetimi → promo-censor. (4) ZORUNLU DELEGASYON — "
+    "klinik kanıt → evidentia (her klinik-boyutlu sorguda); atıf-adli + TR dil → sci-audit (her çıktıda). "
+    "Bu plugin'ler KURULUYKEN atlanmaları G0 ihlalidir; degrade yalnız gerçek yoklukta meşrudur. "
     "(5) İNSAN DENETİMİ her çıktıda zorunlu. (6) BAĞLAM EKONOMİSİ — tam-filo ham veri ana pencereye "
     "girmez: ≤4 paralel distiller alt-ajanı (Tier 1) + anamnesis RAG substratı (Tier 2, büyük tam-metin "
     "ingest→bounded query) + kanonik cache (bir-kez-getir) + kör-getirme-yok chunking. "
     "shared/context-economy-contract.md."
 )
+
+# Delegasyon plugin'leri — kurulum algılama (deterministik, fail-open).
+DELEGATION_PLUGINS = {"evidentia": "evidentia@", "sci-audit": "sci-audit@"}
+
+
+def detect_installed_plugins():
+    """~/.claude/settings.json enabledPlugins içinden evidentia/sci-audit kurulumunu algılar.
+
+    Amaç: 'kurulu → çağrı ZORUNLU / kurulu değil → graceful degrade' ayrımını oturum başında
+    kanıta bağlamak. Okuma başarısızlığı = bilinmiyor (boş dict) — fail-open.
+    """
+    try:
+        path = os.path.expanduser("~/.claude/settings.json")
+        with open(path, encoding="utf-8") as fh:
+            enabled = json.load(fh).get("enabledPlugins", {})
+        return {
+            name: any(k.startswith(prefix) and v for k, v in enabled.items())
+            for name, prefix in DELEGATION_PLUGINS.items()
+        }
+    except Exception:
+        return {}
 
 
 def main():
@@ -52,6 +78,25 @@ def main():
 
     missing = [f"{c} (${v})" for c, v in GATED.items() if not os.environ.get(v)]
     ctx = CONVENTIONS
+
+    plugins = detect_installed_plugins()
+    if plugins:
+        installed = [n for n, ok in plugins.items() if ok]
+        absent = [n for n, ok in plugins.items() if not ok]
+        if installed:
+            ctx += (
+                "\n[preflight/delegasyon] KURULU: " + ", ".join(installed)
+                + " → bağlam tetiklendiğinde çağrılmaları ZORUNLU (evidentia: her klinik-boyutlu "
+                "sorgu; sci-audit: her reform-modu çıktısı). Atlanmaları G0 ihlalidir; manifesto "
+                "satırları 'skipped: plugin kurulu değil' YAZILAMAZ."
+            )
+        if absent:
+            ctx += (
+                "\n[preflight/delegasyon] KURULU DEĞİL: " + ", ".join(absent)
+                + " → graceful degrade meşru; manifestoda 'skipped: plugin kurulu değil' beyan et, "
+                "eksik katmanı uydurma."
+            )
+
     if missing:
         ctx += (
             "\n[preflight] Şu hukuk connector anahtar(lar)ı süreç ortamında YOK: "

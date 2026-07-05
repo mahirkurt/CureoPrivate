@@ -31,13 +31,13 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 | mevzuat | `MEVZUAT_MCP_API_KEY` |
 | resmi-gazete | `RESMI_GAZETE_MCP_API_KEY` |
 | tbmm | `TBMM_MCP_API_KEY` |
-| saglikbakanligi | `SAGLIK_MCP_API_KEY` |
+| saglikbakanligi | `SAGLIK_BAKANLIGI_MCP_API_KEY` |
 | detsis | `DETSIS_MCP_API_KEY` |
-| health-policy | `HEALTH_POLICY_MCP_API_KEY` |
+| health-policy | `LEX_SANITAS_MCP_API_KEY` |
 | german-law | `GERMAN_LAW_MCP_API_KEY` |
 | ich-guidelines | `ICH_MCP_API_KEY` |
 | intl-treaty | `INTL_TREATY_MCP_API_KEY` |
-| eudamed | `EUDAMED_MCP_API_KEY` |
+| eudamed | `EUDAMED_MCP_MCP_API_KEY` |
 | oecd | `OECD_MCP_API_KEY` |
 | yok-akademik | `YOK_AKADEMIK_MCP_API_KEY` |
 | anamnesis (büyük-veri substratı) | `ANAMNESIS_MCP_API_KEY` |

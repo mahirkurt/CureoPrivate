@@ -37,7 +37,7 @@
     "saglikbakanligi": {
       "type": "http",
       "url": "https://saglik-mcp.cureonics.com/mcp",
-      "headers": { "Authorization": "Bearer ${SAGLIK_MCP_API_KEY}" },
+      "headers": { "Authorization": "Bearer ${SAGLIK_BAKANLIGI_MCP_API_KEY}" },
       "_tier": "primary",
       "_role": "T.C. Sağlık Bakanlığı ikincil mevzuat / soft-law (genelge·yönerge·rehber·kurul kararı·SKS) — Resmî Gazete/mevzuat.gov.tr'de OLMAYAN idari norm katmanı (9 sb_* aracı). Tebliğ/genelge düzeyi reformda mevcut-durum. Taslak/YSŞ → manual_required."
     },
@@ -51,7 +51,7 @@
     "health-policy": {
       "type": "http",
       "url": "https://health-policy-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${HEALTH_POLICY_MCP_API_KEY}" },
+      "headers": { "Authorization": "Bearer ${LEX_SANITAS_MCP_API_KEY}" },
       "_tier": "comparative",
       "_role": "YABANCI ÜLKE sağlık mevzuatı resmî-metin portalları (eski lex-sanitas'ın yabancı-tarama parçasından bağımsızlaşan MCP): US (eCFR T21/FedReg/GovInfo/Congress), CA JusticeLaws, JP e-LAWS, AU FRL, ES BOE, IE eISB, CN NPC, MX DOF. Mod 7 COMPARATIVE_LAW birincil kaynağı + legal_distill_start/result sweep. Sınırlar: DE→german-law; UK+EU→Open Law; TR→mevzuat/titck; CH/FR/IT/NL/SE + 58-yargı→Ansvar."
     },
@@ -79,7 +79,7 @@
     "eudamed": {
       "type": "http",
       "url": "https://eudamed-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${EUDAMED_MCP_API_KEY}" },
+      "headers": { "Authorization": "Bearer ${EUDAMED_MCP_MCP_API_KEY}" },
       "_tier": "comparative",
       "_role": "EUDAMED AB tıbbi cihaz DB (MDR/IVDR). Tıbbi cihaz reformunda AB benchmark + cihaz/aktör kayıt yapısı. Zorunlu olgunluk _caveat (veri tabanı kademeli dolum)."
     },

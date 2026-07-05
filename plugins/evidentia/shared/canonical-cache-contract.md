@@ -21,7 +21,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 | `regulatory_snapshot` | İlk openfda (self-host) çağrısı (openFDA/ICD-11) | epidemiyoloji, güvenlik, kodlama adımları |
 | `terminology_map` | İlk `med-terminologies`/`nlm-rxnorm`/`nih-clinicaltables` | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar taraması | KOL haritası, ağ analizi |
-| `evidence_index` | İlk anamnesis `ingest_document` (tam-metin/büyük çıktı indekslemesi) | sentez, tam-metin, `hybrid_query` çeken tüm adımlar — **ham metin değil, indeks** |
+| `evidence_index` | İlk anamnesis `ingest_document` — Tier 3 openathens `oa_fetch_fulltext`(ingest=true) · Tier 4 Wiley · Tier 5 annas · yüklenen PDF; tam-metin/büyük çıktı indekslemesi | sentez, tam-metin, `hybrid_query` çeken tüm adımlar — **ham metin değil, indeks** |
 
 ---
 

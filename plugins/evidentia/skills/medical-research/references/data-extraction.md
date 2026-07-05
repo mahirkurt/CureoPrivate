@@ -33,8 +33,9 @@ değer asla üretilmez (bkz. §4).
 
 ## 2. Tam-metin akışı — retrieve-don't-dump
 
-1. **Cascade** — `fulltext-retrieval.md` §2 (Tier 1–5) ile tam metin edinilir
-   (EPMC OA → Paper Search → annas-mcp → Wiley → pubmed-epmc Unpaywall).
+1. **Cascade** — `fulltext-retrieval.md` §2 (Tier 1–6, legal-first) ile tam metin edinilir
+   (EPMC OA → Paper Search → OpenAthens/Millet Kütüphanesi [Tier 3 lisanslı] → Wiley [Tier 4]
+   → annas-mcp [Tier 5 son çare] → pubmed-epmc Unpaywall [Tier 6]).
 2. **Ingest** — edinilen tam metin (veya operatörün sağladığı PDF metni)
    `anamnesis: ingest_document(text=..., doc_id="<PMID|DOI>", source="<Tier adı>",
    title=...)` ile semantik-parçalanıp indekslenir. Bu adım metnin **ham hâlde

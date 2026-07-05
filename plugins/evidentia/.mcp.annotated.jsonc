@@ -76,13 +76,22 @@
       "_tier": "O",
       "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
     },
+    "openathens": {
+      "type": "http",
+      "url": "https://openathens.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}" },
+      "_tier": "O",
+      "_trust": "operator self-host (HP systemd — hardened OAuth 2.1 + Bearer; yok-akademik/annas ile aynı desen)",
+      "_probe": "2026-07-03 HTTP 401 SECURED (Bearer kapısı aktif) · openathens-mcp CANLI (SP-initiated OpenAthens SAML via Millet Kütüphanesi)",
+      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE): oa_resolve/oa_fetch_fulltext(ingest)/oa_list_databases/oa_batch_submit/oa_batch_result. Anti-bot yayıncı → manual_required deep-link; bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok"
+    },
     "annas-reader": {
       "type": "http",
       "url": "https://annas.cureonics.com/mcp",
       "_tier": "O",
       "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",
       "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)",
-      "_role": "Tam-metin geri-çağırma (full-text cascade tier 3): article_search/article_download (DOI), book_search/book_download (MD5+format). ⚠️ İndirmeler KULLANICININ makinesine iner (sandbox'a değil) → içerik analizi için anamnesis'e ingest/yapıştır. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1)"
+      "_role": "Tam-metin geri-çağırma (full-text cascade Tier 5 — SON ÇARE, lisanslı band [OpenAthens Tier 3 + Wiley Tier 4] getiremeyince): article_search/article_download (DOI), book_search/book_download (MD5+format). ⚠️ İndirmeler KULLANICININ makinesine iner (sandbox'a değil) → içerik analizi için anamnesis'e ingest/yapıştır. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1)"
     },
 
     "__TIER_A__auth_required__env_placeholder": "🟡 Tier-A AÇIK/web tier YOK — RegulatoryMCP (openFDA/ICD-11/WHO GHO) v1.4.0'da kaldırıldı; openFDA + ICD-11 artık openfda self-host Tier-O'dan (yukarıda). Bu satır tarihsel iskelet olarak korunur.",

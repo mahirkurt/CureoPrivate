@@ -134,3 +134,31 @@ describe("Bearer guard", () => {
     expect(requireBearer(new Request("https://w.example/mcp"), e)).toBeNull();
   });
 });
+
+describe("RFC 9728 — OAuth discovery surface (claude.ai / ChatGPT / grok)", () => {
+  it("serves protected-resource metadata at the bare well-known path", async () => {
+    const res = await handleOAuth(
+      new Request("https://w.example/.well-known/oauth-protected-resource"), ENV);
+    expect(res.status).toBe(200);
+    const meta = await res.json() as any;
+    expect(meta.resource).toBe("https://w.example/mcp");
+    expect(meta.authorization_servers).toEqual(["https://w.example"]);
+  });
+
+  it("also serves it at the path-inserted URL ChatGPT requests (…/oauth-protected-resource/mcp)", async () => {
+    const res = await handleOAuth(
+      new Request("https://w.example/.well-known/oauth-protected-resource/mcp"), ENV);
+    expect(res.status).toBe(200);
+    const meta = await res.json() as any;
+    expect(meta.resource).toBe("https://w.example/mcp");
+    expect(meta.authorization_servers).toEqual(["https://w.example"]);
+  });
+
+  it("401 WWW-Authenticate advertises resource_metadata pointing at the PRM", () => {
+    const res = requireBearer(new Request("https://w.example/mcp", { method: "POST" }), ENV);
+    expect(res).not.toBeNull();
+    const wa = res!.headers.get("www-authenticate") || "";
+    expect(wa).toContain("Bearer realm=");
+    expect(wa).toContain('resource_metadata="https://w.example/.well-known/oauth-protected-resource/mcp"');
+  });
+});

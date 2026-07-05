@@ -20,10 +20,13 @@ besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
 3. **EPMC tam metin.** `get_full_text_article` (PMC açık-erişim) — lisans elverdiğince.
 4. **Paper Search.** `read_pubmed_paper` / `download_*` (tier 2).
 5. **OpenAthens / Millet Kütüphanesi** (Tier 3 — **lisanslı kurumsal, legal-öncelikli; annas'ın
-   ÖNÜNDE**). `openathens` connector (HP self-host, `openathens.cureonics.com`; **deploy-bekliyor**
-   → bağlı değilse bu adımı atla, Tier 4/5'e düş). `oa_resolve(doi/pmid/title)` → kapsayan DB +
+   ÖNÜNDE**). `openathens` connector (HP self-host, `openathens.cureonics.com/mcp` — **CANLI**;
+   bağlı değilse bu adımı atla, Tier 4/5'e düş). `oa_resolve(doi/pmid/title)` → kapsayan DB +
    OpenAthens redirector; `oa_fetch_fulltext(doi, ingest=true)` → copyright-gated teslim (uzun metin
    **HP'de** iner → anamnesis manifest; verbatim bağlama dökülmez; hangi DB'nin verdiği raporlanır).
+   **Kapsam gerçeği:** anti-bot duvarı OLMAYAN yayıncılar (Springer, Nature) tam metin verir;
+   Cloudflare/JS anti-bot'lu yayıncılar (Wiley, Elsevier, OUP, Sage, T&F) → `manual_required`
+   redirector deep-link (anti-bot AŞILMAZ — doktrin gereği; elle aç veya Tier 4/5).
    Referans-listesi için `oa_batch_submit`/`oa_batch_result` (**savunmacı pacing:** sıralı, 20–60 s
    jitter, per-run 25 / günlük 100 cap — kurum hesabını koru). Başarısız → `manual_required`
    (redirector deep-link + echoed identifier); uydurma yok.

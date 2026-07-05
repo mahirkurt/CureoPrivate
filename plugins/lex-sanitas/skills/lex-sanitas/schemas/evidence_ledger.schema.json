@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lex-sanitas.local/schemas/evidence_ledger.schema.json",
+  "title": "Lex-Sanitas Evidence Ledger / EDR (v1.0)",
+  "description": "Kanıt Defteri (Evidence Decision Record — EDR). Lex-sanitas çıktısındaki HER somut bilimsel/hukuki iddianın denetlenebilir kaydı: kaynak, GRADE, doğrulama bayrağı, hangi çıktı bölümünü desteklediği ve Vancouver atfı. R14'teki 'EDR tüketim noktaları' kavramını biçimselleştirir; evidence_grading + citation_index + turkish_legislation_refs alanlarından türetilir. Amaç: G5 (içtihat/doktrin temeli) + G7 (epistemik dürüstlük) kapılarının makine-denetlenebilir kanıtını üretmek.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ledger_version", "generated_at", "source_sidecar", "entries"],
+  "properties": {
+    "ledger_version": { "type": "string", "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "source_sidecar": {
+      "description": "Bu defterin türetildiği sidecar künyesi.",
+      "type": "object",
+      "required": ["schema_version", "lex_sanitas_version"],
+      "additionalProperties": true,
+      "properties": {
+        "schema_version": { "type": "string", "enum": ["2.0", "2.3", "2.3.1"] },
+        "medical_research_version": { "type": "string" },
+        "lex_sanitas_version": { "type": "string", "pattern": "^2\\.[0-9]+(\\.[0-9]+)?$" }
+      }
+    },
+    "mode": {
+      "description": "Defteri üreten lex-sanitas modu.",
+      "type": "string",
+      "enum": ["DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA", "COMPARATIVE_LAW", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION"]
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/ledgerEntry" }
+    },
+    "integrity_summary": {
+      "description": "Defter düzeyinde G7 özeti. unverified_count > 0 ise çıktıda bilgi-sınırı uyarısı zorunludur.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "total_entries": { "type": "integer", "minimum": 0 },
+        "verified_count": { "type": "integer", "minimum": 0 },
+        "unverified_count": { "type": "integer", "minimum": 0 },
+        "illustrative_placeholder_count": { "type": "integer", "minimum": 0 },
+        "high_grade_count": { "type": "integer", "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "ledgerEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "claim_text", "claim_type", "source", "verification", "supports_sections"],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^E[0-9]{3,}$",
+          "description": "Benzersiz kanıt kimliği, örn. E001."
+        },
+        "claim_text": { "type": "string", "minLength": 1 },
+        "claim_type": {
+          "type": "string",
+          "enum": ["clinical_evidence", "regulatory_fact", "legislation_ref", "case_law", "doctrine", "international_norm", "hta_economic", "market_data"]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "identifier"],
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": ["primary_legislation", "case_law", "international_acquis", "scientific_literature", "regulatory_authority", "hta_body", "real_world_data"]
+            },
+            "identifier": {
+              "type": "string",
+              "description": "NCT/PMID/CELEX/RG-no/E.-K. no/DOI gibi kararlı tanımlayıcı."
+            },
+            "title": { "type": "string" },
+            "url": { "type": "string", "format": "uri" },
+            "registry_id": {
+              "description": "source_registry.yaml'daki kaynak kimliğine bağ (örn. 'tr.law.1262').",
+              "type": "string"
+            }
+          }
+        },
+        "grade": {
+          "description": "Klinik iddialar için GRADE; hukuki iddialar için n/a olabilir.",
+          "type": "string",
+          "enum": ["HIGH", "MODERATE", "LOW", "VERY_LOW", "n/a"]
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mcp_verified", "status"],
+          "properties": {
+            "mcp_verified": { "type": "boolean" },
+            "verifier": {
+              "type": "string",
+              "enum": ["mevzuat_mcp", "yargi_mcp", "yoktez_mcp", "titck_mcp", "open_primary_source", "medical_research_connector", "none"]
+            },
+            "status": {
+              "type": "string",
+              "enum": ["verified", "unverified", "illustrative_placeholder_not_verified"]
+            },
+            "verified_at": { "type": "string", "format": "date-time" }
+          },
+          "if": { "properties": { "mcp_verified": { "const": false } } },
+          "then": {
+            "properties": { "status": { "enum": ["unverified", "illustrative_placeholder_not_verified"] } }
+          }
+        },
+        "supports_sections": {
+          "description": "Bu kanıtın desteklediği çıktı bölümleri (örn. ['§2 Bilimsel Dayanak', 'Madde 3 gerekçesi']).",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "citation_vancouver": { "type": "string" }
+      },
+      "$comment": "G7 zinciri: status='verified' YALNIZCA mcp_verified=true ile geçerlidir; aksi halde çıktı bu iddiayı 'doğrulanmamış/temsilî' olarak etiketlemelidir."
+    }
+  }
+}

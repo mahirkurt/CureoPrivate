@@ -1,0 +1,316 @@
+---
+# =============================================================================
+# Lex-Sanitas Source Registry (v1.0 — introduced in skill v2.6.0)
+# =============================================================================
+# Lex-sanitas'ın atıf yaptığı/araştırdığı kaynakların kanonik envanteri.
+# Amaç: (a) evidence_ledger entry'lerindeki source.registry_id'ye kararlı bağ
+# sağlamak; (b) G5/G6/G7 kapılarının hangi kaynak katmanından beslendiğini
+# makine-okunur kılmak; (c) programmatic_source_healthcheck.yaml ile
+# erişilebilirlik izlemeyi mümkün kılmak.
+#
+# Katmanlar (tier):
+#   constitution | primary_legislation | case_law | international_acquis |
+#   international_guidance | comparative_jurisdiction | mcp_server |
+#   scientific_connector | hta_body
+#
+# Doğrulama (verification): mevzuat_mcp | yargi_mcp | yoktez_mcp | titck_mcp |
+#   lex_sanitas_mcp | open_primary_source | medical_research_connector | manual
+# =============================================================================
+
+registry_version: "1.0"
+introduced_in_skill_version: "2.6.0"
+generated_at: "2026-06-06T00:00:00Z"
+maintainer_note: >
+  Bu envanter REFORM ekseni içindir. Bireysel hak-arama (AYM bireysel başvuru,
+  bireysel SGK red savunması), TİTCK dava dilekçesi ve promosyonel materyal
+  denetimi kapsam-dışıdır (Scope Guard). İçtihat kaynakları reform-GEREKÇE
+  sinyali olarak kullanılır, dava dilekçesi üretimi için DEĞİL.
+
+# --------------------------------------------------------------------------
+# 1. Anayasal temeller
+# --------------------------------------------------------------------------
+constitution:
+  - id: tr.const.1982
+    name: "Türkiye Cumhuriyeti Anayasası (1982)"
+    key_articles:
+      - { art: "5",  topic: "Devletin temel amaç ve görevleri" }
+      - { art: "13", topic: "Temel hak ve hürriyetlerin sınırlanması (kanunilik)" }
+      - { art: "17", topic: "Yaşam hakkı, vücut bütünlüğü" }
+      - { art: "20", topic: "Özel hayatın gizliliği → KVKK m. 6 (sağlık verisi)" }
+      - { art: "56", topic: "Sağlık hakkı (ana hüküm)" }
+      - { art: "90/5", topic: "Usulüne uygun andlaşmaların kanun hükmü + ICESCR Md. 12" }
+      - { art: "88", topic: "Kanun teklif ve görüşülmesi (Mod 8)" }
+      - { art: "124", topic: "Yönetmeliklerin kanuna aykırı olamayacağı" }
+    access: { url: "https://www.mevzuat.gov.tr/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 2. Primer mevzuat (kanun düzlemi)
+# --------------------------------------------------------------------------
+primary_legislation:
+  - id: tr.law.1262
+    name: "1262 sayılı İspençiyari ve Tıbbi Müstahzarlar Kanunu"
+    enacted: "1928-05-14"
+    domain: "İlaç ruhsatlandırma (temel kanun)"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.1219
+    name: "1219 sayılı Tababet ve Şuabatı San'atlarının Tarzı İcrasına Dair Kanun"
+    enacted: "1928-04-11"
+    domain: "Sağlık mesleklerinin icrası"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.3359
+    name: "3359 sayılı Sağlık Hizmetleri Temel Kanunu"
+    enacted: "1987-05-07"
+    domain: "Sağlık hizmetleri organizasyonu"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.6197
+    name: "6197 sayılı Eczacılar ve Eczaneler Hakkında Kanun"
+    enacted: "1953-12-18"
+    domain: "Eczane düzenlemesi"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.5258
+    name: "5258 sayılı Aile Hekimliği Kanunu"
+    enacted: "2004-11-24"
+    domain: "Aile hekimliği"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.5510
+    name: "5510 sayılı Sosyal Sigortalar ve Genel Sağlık Sigortası Kanunu"
+    enacted: "2006-05-31"
+    domain: "GSS zemini (SUT dayanağı) — POLİTİKA reformu ekseni"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.6502
+    name: "6502 sayılı Tüketicinin Korunması Hakkında Kanun"
+    enacted: "2013-11-07"
+    domain: "TKHK — sağlık hizmeti tüketimi kesişimi"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+
+secondary_legislation_reference_files:
+  note: "Yönetmelik/tebliğ/genelge düzlemi paket içi referanslarda haritalanır."
+  files:
+    - references/02-saglik-mevzuat-haritasi.md
+    - references/07-mevzuat-mcp-workflow.md
+
+# --------------------------------------------------------------------------
+# 3. İçtihat (reform-gerekçe sinyali — dava dilekçesi DEĞİL)
+# --------------------------------------------------------------------------
+case_law:
+  - id: tr.court.aym
+    name: "Anayasa Mahkemesi (norm denetimi + içtihat)"
+    use: "Belirlilik/ölçülülük + sağlık hakkı reform gerekçe sinyali"
+    scope_note: "Bireysel başvuru DİLEKÇESİ üretimi KAPSAM DIŞI (→ onko-erisim)."
+    access: { url: "https://www.anayasa.gov.tr/", mcp_server: yargi }
+    verification: yargi_mcp
+  - id: tr.court.danistay
+    name: "Danıştay (idari yargı içtihatı)"
+    use: "Yönetmelik iptal riski analizi (ANALYZE)"
+    scope_note: "İptal davası DİLEKÇESİ üretimi KAPSAM DIŞI."
+    access: { url: "https://www.danistay.gov.tr/", mcp_server: yargi }
+    verification: yargi_mcp
+  - id: tr.court.yargitay
+    name: "Yargıtay (adli yargı içtihatı)"
+    use: "Doktrin + içtihat zinciri (G5)"
+    access: { url: "https://www.yargitay.gov.tr/", mcp_server: yargi }
+    verification: yargi_mcp
+  - id: intl.court.echr
+    name: "AİHM / ECtHR"
+    use: "AİHS Md. 2/8 reform gerekçe sinyali (örn. Mehmet Şentürk, Asiye Genç)"
+    access: { url: "https://hudoc.echr.coe.int/" }
+    verification: open_primary_source
+  - id: intl.court.cjeu
+    name: "ABAD / CJEU"
+    use: "AB müktesebatı yorumu (COMPARATIVE_LAW)"
+    access: { url: "https://curia.europa.eu/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 4. Uluslararası müktesebat (AB — CELEX zorunlu, G6)
+# --------------------------------------------------------------------------
+international_acquis:
+  - id: eu.celex.32014R0536
+    name: "Klinik Araştırmalar Tüzüğü (CTR)"
+    celex: "32014R0536"
+    access: { url: "https://eur-lex.europa.eu/", consolidated: true }
+    verification: open_primary_source
+  - id: eu.celex.32007R1394
+    name: "İleri Tedavi Tıbbi Ürünleri Tüzüğü (ATMP)"
+    celex: "32007R1394"
+    access: { url: "https://eur-lex.europa.eu/", consolidated: true }
+    verification: open_primary_source
+  - id: eu.celex.32001L0083
+    name: "Beşeri Tıbbi Ürünler Direktifi"
+    celex: "32001L0083"
+    access: { url: "https://eur-lex.europa.eu/", consolidated: true }
+    verification: open_primary_source
+  - id: eu.celex.MDR_IVDR
+    name: "MDR (2017/745) + IVDR (2017/746)"
+    celex: ["32017R0745", "32017R0746"]
+    access: { url: "https://eur-lex.europa.eu/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 4.bis AB referans sözlüğü / açık veri (v2.7.0 — Layer-B, lex-sanitas-mcp sarılı)
+# --------------------------------------------------------------------------
+eu_reference_data:
+  - id: eu.eurovoc
+    name: "EuroVoc — çok dilli AB thesaurus (SKOS)"
+    use: "Kavram→kanonik EuroVoc URI eşleme (DRAFT/ANALYZE/COMPARATIVE_LAW); uydurma kavram riskini düşürür (G7)"
+    access: { url: "https://publications.europa.eu/webapi/rdf/sparql", mcp_server: lex_sanitas }
+    wrapped: "v2.7.0 — eurovoc_concept_lookup (SPARQL/SKOS, dil filtresi zorunlu)"
+    verification: lex_sanitas_mcp
+  - id: eu.dataeuropa
+    name: "data.europa.eu — AB açık-veri portalı"
+    use: "Resmî gazete/dataset keşfi (RIA/COMPARATIVE_LAW). MEVZUAT METNİ DEĞİL — dataset metaverisi."
+    access: { url: "https://data.europa.eu/", mcp_server: lex_sanitas }
+    wrapped: "v2.7.0 — dataeuropa_dataset_search (REST hub search; SPARQL CONTAINS pratikte timeout)"
+    verification: lex_sanitas_mcp
+
+# --------------------------------------------------------------------------
+# 5. Uluslararası rehber/norm (R10/R11/R12)
+# --------------------------------------------------------------------------
+international_guidance:
+  - id: un.icescr.art12
+    name: "ICESCR Md. 12 + Genel Yorum 14 (AAAQ)"
+    use: "Anayasa Md. 90/5 köprüsü (erişilebilirlik kriteri)"
+    access: { url: "https://www.ohchr.org/" }
+    verification: open_primary_source
+  - id: who.guidance
+    name: "WHO operasyonel rehberleri"
+    access: { url: "https://www.who.int/" }
+    verification: open_primary_source
+  - id: ich.guidelines
+    name: "ICH kılavuzları (E6, Q-serisi vb.)"
+    access: { url: "https://www.ich.org/" }
+    verification: open_primary_source
+  - id: pics.gmp
+    name: "PIC/S GMP rehberleri"
+    access: { url: "https://picscheme.org/" }
+    verification: open_primary_source
+  - id: imdrf.guidance
+    name: "IMDRF tıbbi cihaz rehberleri"
+    access: { url: "https://www.imdrf.org/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 6. Karşılaştırmalı yargı bölgeleri (COMPARATIVE_LAW; v2.5 yeni bölgeler)
+# --------------------------------------------------------------------------
+comparative_jurisdiction:
+  - id: cmp.hk
+    name: "Hong Kong — Cap. 138 vd."
+    access: { url: "https://www.elegislation.gov.hk/" }
+    verification: open_primary_source
+  - id: cmp.au
+    name: "Avustralya — Federal Register of Legislation (Therapeutic Goods Act vd.)"
+    access: { url: "https://www.legislation.gov.au/", mcp_server: lex_sanitas }
+    wrapped: "v2.7.0 — australia_legislation_search/_fetch (FRL OData)"
+    verification: lex_sanitas_mcp
+  - id: cmp.nz
+    name: "Yeni Zelanda — Medicines Act 1981"
+    access: { url: "https://www.legislation.govt.nz/" }
+    verification: open_primary_source
+    note: "D-class (web_primary): API yalnızca 202 async-generate/poll döner; temiz senkron uç YOK → SARMALANMADI."
+  - id: cmp.ca
+    name: "Kanada — Justice Laws (Food and Drugs Act vd.) / Health Canada DPD"
+    access: { url: "https://laws-lois.justice.gc.ca/", mcp_server: lex_sanitas }
+    wrapped: "v2.7.0 — canada_justicelaws_fetch (LIMS XML); health_canada_dpd (v2.6.x)"
+    verification: lex_sanitas_mcp
+  - id: cmp.jp
+    name: "Japonya — e-LAWS (e-Gov Law Search, v2.7.0 yeni)"
+    access: { url: "https://laws.e-gov.go.jp/", mcp_server: lex_sanitas }
+    wrapped: "v2.7.0 — japan_elaws_search/_fetch (e-LAWS API v2)"
+    verification: lex_sanitas_mcp
+  - id: cmp.ch
+    name: "İsviçre — Fedlex (Classified Compilation RS/SR)"
+    access: { url: "https://www.fedlex.admin.ch/", mcp_server: lex_sanitas }
+    wrapped: "v2.6.x — fedlex_sparql/_fetch_document (JOLux/ELI, Akoma Ntoso)"
+    verification: lex_sanitas_mcp
+  - id: cmp.de
+    name: "Almanya — NeuRIS (Rechtsinformationen des Bundes, beta)"
+    access: { url: "https://testphase.rechtsinformationen.bund.de/", mcp_server: lex_sanitas }
+    wrapped: "v2.6.x — germany_law_search/_get (kanun + içtihat)"
+    verification: lex_sanitas_mcp
+  - id: cmp.br
+    name: "Brezilya — ANVISA mevzuatı / Diário Oficial (v2.5 yeni)"
+    access: { url: "https://www.gov.br/anvisa/" }
+    verification: open_primary_source
+    note: "D-class (web_primary): LexML SRU/apidata uçları 404 (2026-06-07 probe); resmî programatik uç doğrulanamadı → SARMALANMADI."
+  - id: cmp.sa
+    name: "Suudi Arabistan — SFDA / Saudi Open Data (v2.5 yeni)"
+    access: { url: "https://www.sfda.gov.sa/" }
+    verification: open_primary_source
+    note: "D-class (web_primary): open.data.gov.sa erişilemedi/CKAN doğrulanamadı (2026-06-07 probe) → SARMALANMADI."
+  - id: cmp.ae
+    name: "BAE — MoHAP (v2.5 yeni)"
+    access: { url: "https://mohap.gov.ae/" }
+    verification: open_primary_source
+    note: "D-class: UAE Legislation Portal public API yok; MoHAP Open Data onboarding bekliyor (Dalga 3) → SARMALANMADI."
+
+# --------------------------------------------------------------------------
+# 7. MCP sunucuları (operasyonel omurga)
+# --------------------------------------------------------------------------
+mcp_server:
+  - id: mcp.mevzuat
+    name: "Mevzuat MCP"
+    role: "Türk mevzuat metni doğrulama (DRAFT/ANALYZE)"
+    verification: mevzuat_mcp
+  - id: mcp.yargi
+    name: "Hukuki Veritabanları / Yargı MCP"
+    role: "AYM/Danıştay/Yargıtay içtihat doğrulama (G5)"
+    verification: yargi_mcp
+  - id: mcp.yoktez
+    name: "YokTez MCP"
+    role: "Akademik tez/doktrin taraması (G5)"
+    verification: yoktez_mcp
+  - id: mcp.titck
+    name: "TİTCK MCP"
+    role: "Ürün/ruhsat/ÜTS verisi (ANALYZE §13.f)"
+    verification: titck_mcp
+  - id: mcp.lex_sanitas
+    name: "Lex-Sanitas MCP (Cloudflare Worker connector)"
+    role: "Programatik Katman-2 sarmalayıcı (27 araç, v2.7.0): AB CELLAR (ELI/ECLI/CELEX, AKN), UK legislation (AKN), ABD eCFR/Federal Register/GovInfo/Regulations/Congress, WHO ICD-11+GHO, Health Canada DPD, openFDA, Légifrance (sandbox), İsviçre Fedlex, Almanya NeuRIS, AB EuroVoc (SKOS), Kanada Justice Laws (XML), Japonya e-LAWS, Avustralya FRL (OData), AB data.europa.eu. Karşılaştırmalı/uluslararası programatik doğrulama (G5/G7)."
+    access: { url: "https://lex-sanitas-mcp.cureonics.workers.dev/mcp" }
+    verification: lex_sanitas_mcp
+    note: "Yalnızca Katman-2; Türk iç hukuku Mevzuat/Yargı/YokTez/TİTCK MCP'lerinde kalır. EMA/DrugBank araçları anahtar yoksa kapalı. v2.7.0 Layer-B araçları structuredContent + verification zarfı (mcp_verified) döndürür. D-class (web-only, SARMALANMADI): Brezilya LexML, Suudi Open Data, Yeni Zelanda, Singapur SSO, UAE Legislation Portal. v2.8.0: çok-kaynak retrieval bağlam-izole distiller alt-ajanlarına devredilir (SKILL.md §5.4.quinquies); ana ajana retrieval_distillate zarfı döner. v2.9.0: claude.ai web ortamında (alt-ajan yok) çok-kaynak retrieval, connector'ın sunucu-tarafı `legal_distill_start`/`legal_distill_result` araçlarıyla MCP sunucusu içinde yürütülür ve yalnızca retrieval_distillate (v1.1) zarfı döner (server-side path; SKILL.md §5.4.quinquies precedence)."
+
+# --------------------------------------------------------------------------
+# 8. Bilimsel konnektörler (medical-research üzerinden — dolaylı)
+# --------------------------------------------------------------------------
+scientific_connector:
+  via: medical-research
+  note: "Lex-sanitas bunları doğrudan çağırmaz; medical-research handoff ile sidecar.connectors_used'da görünür."
+  connectors:
+    - { id: sci.pubmed,         name: "PubMed" }
+    - { id: sci.epmc,           name: "Europe PMC" }
+    - { id: sci.clinicaltrials, name: "ClinicalTrials.gov" }
+    - { id: sci.dailymed,       name: "DailyMed" }
+    - { id: sci.openfda,        name: "openFDA" }
+    - { id: sci.ema,            name: "EMA / EPAR" }
+    - { id: sci.adisinsight,    name: "AdisInsight" }
+    - { id: sci.consensus,      name: "Consensus" }
+    - { id: sci.biorxiv,        name: "bioRxiv / medRxiv" }
+
+# --------------------------------------------------------------------------
+# 9. HTA gövdeleri (OPINE/RIA)
+# --------------------------------------------------------------------------
+hta_body:
+  - id: hta.icer
+    name: "ICER (ABD)"
+    access: { url: "https://icer.org/" }
+    verification: open_primary_source
+  - id: hta.nice
+    name: "NICE (İngiltere)"
+    access: { url: "https://www.nice.org.uk/" }
+    verification: open_primary_source

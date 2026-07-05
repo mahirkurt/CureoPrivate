@@ -71,10 +71,86 @@ def _add(findings: list[Finding], text: str, patterns: dict, code: str, severity
             findings.append(Finding(severity, code, message, m.group(0).strip()[:140]))
 
 
+# --- Checksum / format validation for structured identifiers ---------------
+# These are deterministic, offline validity checks. A checksum failure means the
+# identifier is impossible (very likely fabricated); it is NOT existence proof —
+# a valid checksum still needs axis-A resolution against a real source.
+
+ISBN13 = re.compile(r"\bISBN(?:-13)?[:\s]*((?:97[89][-\s]?)(?:\d[-\s]?){9}\d)\b", re.IGNORECASE)
+ISBN10 = re.compile(r"\bISBN(?:-10)?[:\s]*((?:\d[-\s]?){9}[\dXx])\b", re.IGNORECASE)
+ORCID = re.compile(r"\b(?:ORCID[:\s]*)?(\d{4}-\d{4}-\d{4}-\d{3}[\dXx])\b")
+ARXIV_NEW = re.compile(r"\barXiv[:\s]*(\d{4})\.(\d{4,5})(v\d+)?\b", re.IGNORECASE)
+ARXIV_OLD = re.compile(r"\barXiv[:\s]*([a-z-]+(?:\.[A-Z]{2})?/\d{7})(v\d+)?\b", re.IGNORECASE)
+
+
+def _isbn13_ok(digits: str) -> bool:
+    d = [int(c) for c in digits]
+    if len(d) != 13:
+        return False
+    s = sum(d[i] * (1 if i % 2 == 0 else 3) for i in range(12))
+    return (10 - s % 10) % 10 == d[12]
+
+
+def _isbn10_ok(chars: str) -> bool:
+    if len(chars) != 10:
+        return False
+    s = 0
+    for i, c in enumerate(chars):
+        v = 10 if c in "Xx" and i == 9 else (int(c) if c.isdigit() else -1)
+        if v < 0:
+            return False
+        s += v * (10 - i)
+    return s % 11 == 0
+
+
+def _orcid_ok(orcid: str) -> bool:
+    body = orcid.replace("-", "")
+    if len(body) != 16:
+        return False
+    total = 0
+    for c in body[:15]:
+        if not c.isdigit():
+            return False
+        total = (total + int(c)) * 2
+    check = (12 - total % 11) % 11
+    expected = "X" if check == 10 else str(check)
+    return body[15].upper() == expected
+
+
+def check_identifiers(text: str) -> list[Finding]:
+    findings: list[Finding] = []
+    for m in ISBN13.finditer(text):
+        digits = re.sub(r"[-\s]", "", m.group(1))
+        if not _isbn13_ok(digits):
+            findings.append(Finding("error", "invalid-isbn13",
+                                    "ISBN-13 checksum fails; the identifier is impossible (likely fabricated).",
+                                    m.group(0).strip()[:60]))
+    for m in ISBN10.finditer(text):
+        chars = re.sub(r"[-\s]", "", m.group(1))
+        # skip if it was actually the tail of an ISBN-13 (already handled)
+        if len(chars) == 10 and not _isbn10_ok(chars):
+            findings.append(Finding("error", "invalid-isbn10",
+                                    "ISBN-10 checksum fails; the identifier is impossible (likely fabricated).",
+                                    m.group(0).strip()[:60]))
+    for m in ORCID.finditer(text):
+        if not _orcid_ok(m.group(1)):
+            findings.append(Finding("error", "invalid-orcid",
+                                    "ORCID checksum (ISO 7064 MOD 11-2) fails; impossible identifier.",
+                                    m.group(0).strip()[:60]))
+    for m in ARXIV_NEW.finditer(text):
+        yy, mm = int(m.group(1)[:2]), int(m.group(1)[2:])
+        if not (1 <= mm <= 12):
+            findings.append(Finding("warning", "malformed-arxiv-id",
+                                    "arXiv id month is out of range (YYMM.NNNNN); verify it.",
+                                    m.group(0).strip()[:60]))
+    return findings
+
+
 def audit_text(text: str) -> dict:
     findings: list[Finding] = []
     _add(findings, text, OVERCERTAINTY, "over-certainty", "warning")
     _add(findings, text, UNIVERSAL_QUANTIFIER, "universal-quantifier", "warning")
+    findings += check_identifiers(text)
 
     for m in MALFORMED_DOI.finditer(text):
         findings.append(Finding("error", "malformed-doi",

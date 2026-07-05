@@ -1,3 +1,0 @@
-# Placeholder so the findings/ directory is tracked. Runtime findings JSON is written
-# to ./.replicatio/findings in the ANALYSIS project (or --out / $REPLICATIO_FINDINGS_DIR),
-# never into the installed plugin cache.

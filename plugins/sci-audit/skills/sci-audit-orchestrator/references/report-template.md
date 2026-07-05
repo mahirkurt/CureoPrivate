@@ -43,3 +43,9 @@ Absence of a finding is not proof of correctness.>
 
 ## Provider / MCP status
 <one line per helper: ok | error | unavailable | not run — and the effect>
+
+## Evidence ledger / Kanıt defteri
+<for a defensible audit: each resolved claim/citation with its source id,
+checked-via (abstract | pubmed-epmc fulltext | crossref | …), verdict, and the
+SHA-256 source-content hash from scripts/evidence_ledger.py. Omit if no external
+resolution was performed.>

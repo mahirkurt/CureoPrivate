@@ -82,10 +82,34 @@ def semantic_entropy(
     return {"entropy": ent, "n_clusters": len(clusters), "n_samples": total}
 
 
+def entropy_from_clusters(cluster_sizes: List[int]) -> dict:
+    """Entropy (nats) over already-formed meaning-cluster sizes.
+
+    This is the seam the `entropy-sampler` subagent uses: it does the sampling
+    and meaning-clustering (it is the NLI judge), then feeds the cluster sizes
+    here for the arithmetic. Stdin form: a JSON list of ints, e.g. [4,1,1].
+    """
+    sizes = [int(s) for s in cluster_sizes if int(s) > 0]
+    total = sum(sizes)
+    if total == 0:
+        return {"entropy": 0.0, "n_clusters": 0, "n_samples": 0}
+    probs = [s / total for s in sizes]
+    ent = -sum(p * math.log(p) for p in probs if p > 0)
+    return {"entropy": ent, "n_clusters": len(sizes), "n_samples": total}
+
+
 if __name__ == "__main__":
-    # Smoke test of the clustering math with a trivial stub entailment.
-    demo = ["Paris", "The capital is Paris", "Lyon", "Paris.", "It is Lyon"]
-    same = lambda a, b: a.strip(". ").lower().replace("the capital is ", "").replace("it is ", "") \
-        == b.strip(". ").lower().replace("the capital is ", "").replace("it is ", "")
-    print(semantic_entropy("capital of France?", n=len(demo),
-                           generate=lambda p, k: demo, entails=same))
+    import json
+    import sys
+
+    data = sys.stdin.read().strip()
+    if data:
+        # Compute entropy from a JSON list of cluster sizes fed on stdin.
+        print(json.dumps(entropy_from_clusters(json.loads(data))))
+    else:
+        # Smoke test of the clustering math with a trivial stub entailment.
+        demo = ["Paris", "The capital is Paris", "Lyon", "Paris.", "It is Lyon"]
+        same = lambda a, b: a.strip(". ").lower().replace("the capital is ", "").replace("it is ", "") \
+            == b.strip(". ").lower().replace("the capital is ", "").replace("it is ", "")
+        print(json.dumps(semantic_entropy("capital of France?", n=len(demo),
+                                          generate=lambda p, k: demo, entails=same)))

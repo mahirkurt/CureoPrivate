@@ -179,40 +179,11 @@
       "strict": false
     },
     {
-      "name": "replicatio",
-      "displayName": "Replicatio",
-      "source": "./plugins/replicatio",
-      "version": "0.1.0",
-      "description": "R + CSV istatistiksel analizlerin doğruluk (yöntem/varsayım/raporlama tutarlılığı) ve yeniden-üretilebilirlik (sürüm sabitliği/kod-veri uyumu/bağımsız tekrar) denetim süiti. start router + beş katman skill'i (data-contract/assumption-audit/numeric-consistency/repro-audit/cross-validate) ve beş komut A→F katmanlı denetimi yürütür; ham istatistiği R betiklerine bırakır (pointblank/validate, easystats performance + DHARMa, statcheck + scrutiny GRIM/GRIMMER + rsprite2 SPRITE, renv/targets/testthat + covr, waldo + specr). R-MCP sunucularını .mcp.json ile bağlar (r-mcptools btw_mcp_server + opsiyonel rstudio-r) — yerel/stdio-öncelikli, salt-okunur veri; barındırılan rmcp oracle opt-in. Severity-graded (CRITICAL/MAJOR/MINOR/OBSERVATION), provenance-stamped, no-fabrication; IBM Carbon v11 HTML rapor. Karar-destek niteliğindedir.",
-      "author": {
-        "name": "Cureonics",
-        "url": "https://cureonics.com"
-      },
-      "category": "research",
-      "keywords": [
-        "r",
-        "rstats",
-        "statistics",
-        "reproducibility",
-        "data-validation",
-        "audit",
-        "metascience",
-        "pointblank",
-        "easystats",
-        "statcheck",
-        "grim",
-        "renv",
-        "mcp",
-        "no-fabrication"
-      ],
-      "strict": false
-    },
-    {
       "name": "sci-audit",
       "displayName": "Scientific Audit",
       "source": "./plugins/sci-audit",
-      "version": "0.1.0",
-      "description": "LLM tarafından üretilmiş bilimsel metinleri (makale taslağı, tez bölümü, derleme, rapor, abstract) hem adli hem dilsel denetleyen genel amaçlı, alan-bağımsız araç. Yedi denetim ekseni: (A) referans bütünlüğü / uydurma-kaynak tespiti, (B) iddia temellendirme, (C) istatistik tutarlılığı (statcheck/GRIM), (D) halüsinasyon sinyalleri + semantic entropy, (E) raporlama kılavuzu uyumu (PRISMA/CONSORT/STROBE/COREQ/SRQR/JARS/TRIPOD), (F) AI-kullanım şeffaflığı, (G) Türkçe bilimsel dil ve imla (metin Türkçe algılandığında otomatik). Deterministik çekirdek SAF Python stdlib (claude.ai web dahil her ortamda çalışır); ağır bağımlılıklar (Zemberek/RAGAS) opsiyonel katmanda graceful-skip. Uzak-yalnız MCP (pubmed/openalex/semantic-scholar); LLM-yargıç Claude-native style-judge alt-ajanı. No-fabrication: çözülemeyen kaynak/erişilemeyen servis 'unverified' etiketi alır, asla 'geçti' olmaz.",
+      "version": "0.2.0",
+      "description": "LLM tarafından üretilmiş bilimsel metinleri hem adli hem dilsel denetleyen genel amaçlı, alan-bağımsız araç. Yedi eksen: (A) referans bütünlüğü, (B) iddia temellendirme + yasal açık-erişim TAM METİN doğrulama, (C) belge-içi istatistik tutarlılığı (statcheck/GRIM/GRIMMER/SPRITE/GA/yüzde/altgrup — ham veri gerektirmez, Türkçe ondalık virgül destekli; kaldırılan replicatio'nun sayısal-tutarlılık katmanını stdlib olarak konsolide eder), (D) halüsinasyon sinyalleri + ISBN/ORCID/arXiv checksum + varlık (ilaç/gen/hastalık) doğrulama, (E) 14 raporlama kılavuzu (PRISMA/PRISMA-ScR/CONSORT/CONSORT-AI/STROBE/COREQ/SRQR/JARS/TRIPOD/TRIPOD+AI/STARD/SPIRIT/CHEERS/ARRIVE) + bölüm ön-tarama, (F) AI-kullanım şeffaflığı (ICMJE/COPE), (G) Türkçe bilimsel dil ve imla (otomatik). Deterministik çekirdek SAF Python stdlib (claude.ai web dahil); uzak-yalnız MCP; Claude-native yargıç; injection kalkanı + gizlilik invariantı + content-hash kanıt defteri. No-fabrication: çözülemeyen kaynak 'unverified', asla 'geçti' olmaz.",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"
@@ -229,6 +200,35 @@
         "statcheck",
         "claim-grounding",
         "ai-transparency"
+      ],
+      "strict": false
+    },
+    {
+      "name": "lex-sanitas",
+      "displayName": "Lex Sanitas",
+      "source": "./plugins/lex-sanitas",
+      "version": "3.0.0",
+      "description": "Türkiye sağlık mevzuatının her düzlemde (kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge) reform, değişiklik ve yeniden yazımı için en ileri düzey norm-üretim protokolü. Dokuz mod: DRAFT (yeni mevzuat) · AMEND (değişiklik) · ANALYZE · COMPLY (5210 uyum, R6b 21-nokta rubrik) · OPINE (kurum/bilirkişi görüşü) · RIA (DEA/BEF) · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI (Anayasa Md.88) · EX_POST_EVALUATION. 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12 çerçevesi; G0-G9 kalite kapıları + evidence_ledger no-fabrication disiplini. TAM-FİLO aktivasyonu: wire edilmiş 14 hukuk/regülasyon MCP + 3 companion HER SORGUDA çalışır, çıktı kapsam manifestosu (G0) taşır (mevzuat primer + resmi-gazete + titck + tbmm + saglikbakanligi + detsis · karşılaştırmalı health-policy [yabancı ülke] + german-law + ich + intl-treaty + eudamed + oecd · doktrin yok-akademik · companion Yargı/Open Law/Ansvar). Yumuşak delegasyon: klinik kanıt → evidentia; atıf-adli + Türkçe hukuk dili → sci-audit (yoksa graceful degrade). Kapsam reform/norm-üretim; bireysel dava (SGK red, AYM başvuru), malpraktis, promosyon denetimi KAPSAM DIŞI (Scope Guard). Karar-destek niteliğindedir; resmî hukuki mütalaa değildir, insan denetimi zorunludur.",
+      "author": {
+        "name": "Cureonics",
+        "url": "https://cureonics.com"
+      },
+      "category": "regulatory-drafting",
+      "keywords": [
+        "turkish-health-law",
+        "regulatory-drafting",
+        "mevzuat-reformu",
+        "5210-yonetmelik",
+        "kanun-teklifi",
+        "yonetmelik-taslagi",
+        "regulatory-impact-assessment",
+        "comparative-regulation",
+        "titck",
+        "aym-belirlilik",
+        "oecd-better-regulation",
+        "ex-post-evaluation",
+        "no-fabrication",
+        "evidence-ledger"
       ],
       "strict": false
     }

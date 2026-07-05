@@ -17,9 +17,13 @@ in the axis skills and subagents.
 | B | Claim grounding | `claim-grounding` skill | `claim-extractor` + `claim-refuter` agents |
 | C | Statistical consistency | `stats-forensics` skill (statcheck/GRIM) | `stats-checker` agent |
 | D | Hallucination signals | `hallucination-signals` skill | `semantic_entropy.py` via a subagent |
-| E | Reporting-guideline conformance | `guideline-mapper` agent + `references/guidelines/` | — |
-| F | AI-use transparency | this skill (disclosure scan) | — |
+| E | Reporting-guideline conformance | `guideline_prescan.py` + `references/guidelines/` (14 guidelines) | `guideline-mapper` agent |
+| F | AI-use transparency | `ai-transparency` skill (`ai_transparency.py`) | — |
 | G | Turkish scientific writing | `turkish-sci-style` skill (`tr_sciaudit.py`) | `style-judge` agent |
+
+Axis D also has an `entity-verifier` agent (hallucinated drug/gene/disease names
+→ authority terminology MCPs) and an `entropy-sampler` agent (semantic-entropy
+consistency signal for a single high-stakes claim).
 
 ## Workflow
 
@@ -29,10 +33,15 @@ in the axis skills and subagents.
 2. **Detect language.** If the text is Turkish (Turkish-specific letters
    present) or the user passed `--lang tr`, axis G is REQUIRED. Otherwise G is
    skipped and noted as "not applicable (non-Turkish)".
-3. **Detect document type** to select the axis-E guideline: systematic
-   review → PRISMA; RCT → CONSORT; observational → STROBE; qualitative →
-   COREQ/SRQR; diagnostic/prognostic model → TRIPOD; general empirical report →
-   JARS. When unsure, ask or run the closest fit and say so.
+3. **Detect document type** to select the axis-E guideline (14 available in
+   `references/guidelines/`): systematic review → PRISMA; scoping review →
+   PRISMA-ScR; RCT → CONSORT (AI/ML trial → CONSORT-AI); observational → STROBE;
+   qualitative interviews/focus groups → COREQ (other qualitative → SRQR);
+   diagnostic accuracy → STARD; prediction model → TRIPOD (ML model →
+   TRIPOD+AI); trial protocol → SPIRIT; health-economic evaluation → CHEERS;
+   animal study → ARRIVE; general quantitative report → JARS. When unsure, ask
+   or run the closest fit and say so. Run
+   `scripts/guideline_prescan.py` first for a cheap section-presence map.
 4. **Section the text** if it is long (> ~4000 words): split on headings and
    fan out sections to subagents so each fits a clean context window. Merge
    findings by axis afterward.
@@ -73,10 +82,30 @@ carries a scope note saying what it did and did not check. An unresolved
 citation, an unreachable MCP, or a skipped provider is reported as such, never
 as a pass. See `references/conventions.md`.
 
-## References
+## Defensibility (evidence ledger)
 
-- `references/conventions.md` — scientific-integrity conventions, the axis→MCP
-  routing table, and the provider-degrade matrix (injected at SessionStart).
+For a defensible, reproducible audit, stamp each resolved claim/citation into a
+content-hashed ledger:
+`scripts/evidence_ledger.py add --ledger .claude/sci-audit-ledger.jsonl --claim … --source-id … --excerpt "<exact source text>" --verdict … --checked-via …`.
+It stores the SHA-256 of the source text (never the body/PII), so a reviewer can
+later `verify` the source has not changed. Pass the timestamp in (`--ts`); the
+module never reads the clock.
+
+## References & scripts
+
+- `references/conventions.md` — conventions, axis→MCP routing, provider-degrade
+  matrix, **injection shield**, and **privacy invariant** (injected at SessionStart).
 - `references/report-template.md` — the seven-axis merged report shell.
-- `references/guidelines/` — PRISMA/CONSORT/STROBE/COREQ/SRQR/JARS/TRIPOD item
-  checklists for axis E.
+- `references/guidelines/` — 14 reporting-guideline checklists for axis E
+  (PRISMA, PRISMA-ScR, CONSORT, CONSORT-AI, STROBE, COREQ, SRQR, JARS, TRIPOD,
+  TRIPOD+AI, STARD, SPIRIT, CHEERS, ARRIVE).
+- `scripts/guideline_prescan.py` — deterministic section-presence pre-scan (E).
+- `scripts/evidence_ledger.py` — content-hashed provenance ledger (defensibility).
+
+## Scoring calibration
+
+The per-axis score (100 − 15/blocker − 5/major − 1/minor, floored at 0) is a
+transparent HEURISTIC summary, not a validated metric. The evidence list is the
+product; the number orients the reader. Do not present the score as a
+calibrated quality measure — say "heuristic" when reporting it, and let blockers
+speak for themselves regardless of the arithmetic.

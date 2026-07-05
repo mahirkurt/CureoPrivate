@@ -16,8 +16,12 @@ the text claims.
 For each (claim, cited_source) pair:
 
 1. Resolve the cited source via the scholarly MCPs (`pubmed`,
-   `semantic-scholar`, `openalex`) — fetch the abstract or, if available, the
-   relevant full-text passage.
+   `semantic-scholar`, `openalex`). Fetch the abstract first; when the abstract
+   does not settle whether the specific claim is supported, fetch the
+   **full text**: `pubmed-epmc` `pubmed_fetch_fulltext` (legal Europe PMC +
+   Unpaywall open access) for journal articles, or a Paper Search connector's
+   `read_*_paper` for arXiv/bioRxiv/medRxiv preprints. Note in the verdict
+   whether you judged from abstract or full text.
 2. Ask: does the source actually state or support this specific claim (including
    the exact number/direction)? Look for the claim to be REFUTED — a number that
    differs, a population that differs, a direction reversed, an overgeneralised

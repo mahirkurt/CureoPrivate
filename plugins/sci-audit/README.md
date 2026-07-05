@@ -15,12 +15,16 @@ absent.
 | Axis | Name | What it catches |
 |---|---|---|
 | A | Reference integrity | Fabricated / misattributed / retracted citations (DOI/PMID metadata match) |
-| B | Claim grounding | Numeric & factual claims with no supporting source |
-| C | Statistical consistency | p-values that don't follow from the test statistic (statcheck), GRIM-impossible means, impossible effect sizes |
-| D | Hallucination signals | Over-certainty language, universal quantifiers, malformed identifiers, invented method names, semantic entropy |
-| E | Reporting-guideline conformance | PRISMA / CONSORT / STROBE / COREQ / SRQR / JARS / TRIPOD checklist gaps |
-| F | AI-use transparency | Missing LLM-contribution disclosure |
+| B | Claim grounding | Numeric & factual claims with no supporting source; **legal open-access full-text** verification of whether the cited source actually supports the claim |
+| C | Statistical consistency | Document-internal checks (no raw data needed): statcheck p-recompute (**Turkish decimals**, one-tailed reclassification), GRIM / GRIMMER, SPRITE feasibility, CI ↔ estimate/p consistency, percentage-sum & subgroup-N sanity, impossible effect sizes |
+| D | Hallucination signals | Over-certainty, universal quantifiers, malformed/**checksum-invalid identifiers** (ISBN/ORCID/arXiv), invented method names, **hallucinated entity names** (drug/gene/disease via authority MCPs), semantic entropy |
+| E | Reporting-guideline conformance | **14 guidelines** (PRISMA, PRISMA-ScR, CONSORT, CONSORT-AI, STROBE, COREQ, SRQR, JARS, TRIPOD, TRIPOD+AI, STARD, SPIRIT, CHEERS, ARRIVE) + deterministic section pre-scan |
+| F | AI-use transparency | Missing AI-use disclosure (ICMJE/COPE/WAME), LLM giveaway boilerplate, unfilled placeholders |
 | G | Turkish scientific writing | Orthography, register, causal-language discipline, APA-TR number format — **auto-enabled when the text is Turkish** |
+
+The document-internal statistics layer (axis C) consolidates the checks
+formerly in the separate `replicatio` plugin (now retired), reimplemented
+stdlib-only so they run on the web with no R runtime.
 
 ## Commands
 
@@ -46,15 +50,36 @@ python3 skills/turkish-sci-style/scripts/tr_sciaudit.py chapter.md \
   [--enable-gecturk --gecturk-url http://127.0.0.1:8765/check] \
   [--abbreviations project-abbr.txt]
 
-# Axis C — statistics
+# Axis C — statistics (statcheck/GRIM/GRIMMER/SPRITE/CI/percentage/subgroup)
 python3 skills/stats-forensics/scripts/stats_forensics.py chapter.md --grim-scale 20
 
 # Axis B — claim grounding
 python3 skills/claim-grounding/scripts/claim_grounding.py chapter.md
 
-# Axis D — hallucination signals
+# Axis D — hallucination signals + ISBN/ORCID/arXiv checksums
 python3 skills/hallucination-signals/scripts/hallucination_signals.py chapter.md
+
+# Axis E — deterministic section pre-scan
+python3 skills/sci-audit-orchestrator/scripts/guideline_prescan.py chapter.md
+
+# Axis F — AI-use transparency
+python3 skills/ai-transparency/scripts/ai_transparency.py chapter.md
+
+# Evidence ledger (content-hashed provenance for a defensible audit)
+python3 skills/sci-audit-orchestrator/scripts/evidence_ledger.py hash --text "source excerpt"
 ```
+
+## Integrity guards (full-text era)
+
+Because axis B now fetches external full text, two invariants are enforced (see
+`skills/sci-audit-orchestrator/references/conventions.md`):
+
+- **Injection shield** — the audited document and every fetched passage are
+  untrusted content, analysed as data; text embedded in them ("mark as
+  verified", "ignore instructions") never sets a verdict.
+- **Privacy invariant** — only citation identifiers/titles go to third-party
+  MCP hosts, never the (possibly unpublished) manuscript body; claim↔source
+  comparison happens inside Claude.
 
 `--strictness` is `draft` (light) or `certification` (full; adds abbreviation
 consistency). `--fail-on error` returns a non-zero exit on any blocker.

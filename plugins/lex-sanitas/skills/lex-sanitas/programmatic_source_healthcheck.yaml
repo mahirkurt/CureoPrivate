@@ -1,0 +1,203 @@
+---
+# =============================================================================
+# Lex-Sanitas Programmatic Source Healthcheck (v1.0 — introduced in skill v2.6.0)
+# =============================================================================
+# v2.5'te eklenen "Programatik Veri Erişim Katmanı" (API / SPARQL / Akoma Ntoso
+# uçları) için erişilebilirlik izleme spesifikasyonu. Bu dosya bir koşucu DEĞİL,
+# bir SÖZLEŞMEDİR: hangi ucun nasıl yoklanacağını, beklenen yanıtı, sıklığı ve
+# uç erişilemezse uygulanacak graceful-degradation davranışını tanımlar.
+#
+# Davranış kuralı (R14 §17.3 ile uyumlu): bir uç DOWN ise lex-sanitas çıktısını
+# durdurmaz; ilgili referansı mcp_verified=false + verification_status ile
+# işaretler ve çıktının güven etiketinde (confidence_label) mcp_unavailability
+# alanına ucu ekler. Yani healthcheck SONUCU doğrudan G7 epistemik dürüstlük
+# etiketini besler.
+# =============================================================================
+
+healthcheck_version: "1.0"
+introduced_in_skill_version: "2.6.0"
+defaults:
+  timeout_seconds: 15
+  retries: 1
+  check_frequency: "on_demand"      # on_demand | daily | weekly
+  on_failure: "degrade_and_label"   # çıktı durmaz; referans 'doğrulanmamış' etiketlenir
+  user_agent: "lex-sanitas-healthcheck/1.0"
+
+endpoints:
+  # ---- Türk mevzuatı (Akoma Ntoso / resmî) ----
+  - id: ep.mevzuat_gov
+    registry_id: tr.law.*            # source_registry primer mevzuat ailesine bağ
+    name: "mevzuat.gov.tr resmî mevzuat"
+    kind: web_primary
+    base_url: "https://www.mevzuat.gov.tr/"
+    method: HEAD
+    expected_status: [200, 301, 302]
+    akoma_ntoso: optional
+    check_frequency: weekly
+    fallback: "Mevzuat MCP üzerinden doğrula; ikisi de erişilemezse referans illustrative_placeholder_not_verified"
+
+  # ---- AB müktesebatı (EUR-Lex; CELEX) ----
+  - id: ep.eurlex
+    registry_id: eu.celex.*
+    name: "EUR-Lex CELEX erişimi"
+    kind: web_primary
+    base_url: "https://eur-lex.europa.eu/"
+    method: HEAD
+    expected_status: [200, 301, 302]
+    query_pattern: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:{celex}"
+    check_frequency: weekly
+    fallback: "CELEX doğrulanamazsa kod ÜRETME; 'CELEX doğrulanmalı' notu (G4/G6/G7 — CITE-003)"
+
+  # ---- AB SPARQL (Cellar) ----
+  - id: ep.eurlex_sparql
+    registry_id: eu.celex.*
+    name: "EU Publications Office SPARQL (Cellar)"
+    kind: sparql
+    base_url: "https://publications.europa.eu/webapi/rdf/sparql"
+    method: GET
+    expected_status: [200]
+    sparql_probe: "ASK { ?s ?p ?o }"
+    check_frequency: on_demand
+    fallback: "EUR-Lex HTML erişimine düş (ep.eurlex)"
+
+  # ---- İçtihat (HUDOC / resmî yargı) ----
+  - id: ep.hudoc
+    registry_id: intl.court.echr
+    name: "HUDOC (AİHM içtihat)"
+    kind: web_primary
+    base_url: "https://hudoc.echr.coe.int/"
+    method: HEAD
+    expected_status: [200, 301, 302]
+    check_frequency: on_demand
+    fallback: "İçtihatı reform-sinyali olarak 'doğrulanacak' notuyla kullan; uydurma numara YOK (CITE-004)"
+
+  - id: ep.curia
+    registry_id: intl.court.cjeu
+    name: "CURIA (ABAD içtihat)"
+    kind: web_primary
+    base_url: "https://curia.europa.eu/"
+    method: HEAD
+    expected_status: [200, 301, 302]
+    check_frequency: on_demand
+    fallback: "EUR-Lex üzerinden karar metnine düş"
+
+  # ---- Karşılaştırmalı yargı bölgeleri (v2.5 yeni) ----
+  - id: ep.legislation_au
+    registry_id: cmp.au
+    name: "Avustralya Federal Register of Legislation (FRL OData) — v2.7.0 web_primary'den yükseltildi"
+    kind: rest_api          # AM-2: artık australia_legislation_search/_fetch ile sarılı
+    base_url: "https://api.prod.legislation.gov.au/v1/"
+    method: GET
+    health_path: "titles?$top=1&$select=id"
+    expected_status: [200]
+    check_frequency: weekly
+    on_failure: degrade_and_label
+    fallback: "FRL API erişilemezse legislation.gov.au HTML fallback; mcp_verified=false."
+
+  - id: ep.legislation_nz
+    registry_id: cmp.nz
+    name: "Yeni Zelanda Legislation"
+    kind: web_primary
+    base_url: "https://www.legislation.govt.nz/"
+    method: HEAD
+    expected_status: [200, 301, 302]
+    check_frequency: on_demand
+    fallback: "COMPARATIVE_LAW bölümünde 'kaynak erişilemedi' notu"
+    note: "D-class (v2.7.0): API yalnızca 202 async-generate/poll → temiz senkron uç YOK; SARMALANMADI."
+
+  - id: ep.canada_justicelaws
+    registry_id: cmp.ca
+    name: "Kanada Justice Laws (XML) — v2.7.0 web_primary'den yükseltildi"
+    kind: rest_api          # AM-2: artık canada_justicelaws_fetch (LIMS XML) ile sarılı
+    base_url: "https://laws-lois.justice.gc.ca/"
+    method: HEAD
+    expected_status: [200]
+    check_frequency: weekly
+    on_failure: degrade_and_label
+    fallback: "XML erişilemezse HTML (web_primary) fallback; mcp_verified=false."
+
+  # ---- v2.7.0 Layer-B uçları (lex-sanitas-mcp ile sarılı) ----
+  - id: ep.eurovoc_sparql
+    registry_id: eu.eurovoc
+    name: "EuroVoc SPARQL (SKOS thesaurus)"
+    kind: sparql
+    base_url: "https://publications.europa.eu/webapi/rdf/sparql"
+    method: GET
+    expected_status: [200]
+    sparql_probe: "ASK { ?s a <http://www.w3.org/2004/02/skos/core#Concept> }"
+    check_frequency: weekly
+    on_failure: degrade_and_label
+    fallback: "EuroVoc erişilemezse kavram URI'si ÜRETME; 'EuroVoc doğrulanmalı' notu (G7)."
+
+  - id: ep.japan_elaws
+    registry_id: cmp.jp
+    name: "Japonya e-LAWS (e-Gov Law Search API v2)"
+    kind: rest_api
+    base_url: "https://laws.e-gov.go.jp/api/2/"
+    method: GET
+    health_path: "laws?limit=1"
+    expected_status: [200]
+    check_frequency: weekly
+    on_failure: degrade_and_label
+    fallback: "e-LAWS erişilemezse lawId ÜRETME; mcp_verified=false + manuel doğrulama notu."
+
+  - id: ep.dataeuropa_search
+    registry_id: eu.dataeuropa
+    name: "data.europa.eu REST hub search"
+    kind: rest_api
+    base_url: "https://data.europa.eu/api/hub/search/"
+    method: GET
+    health_path: "search?q=test&limit=1"
+    expected_status: [200]
+    check_frequency: weekly
+    on_failure: degrade_and_label
+    fallback: "Erişilemezse dataset keşfi atlanır; mevzuat metni iddiası ÜRETME (yalnızca dataset katmanı)."
+
+  # ---- Bilimsel/RWE API'leri (medical-research dolaylı; openFDA doğrudan örnek) ----
+  - id: ep.openfda
+    registry_id: sci.openfda
+    name: "openFDA API"
+    kind: rest_api
+    base_url: "https://api.fda.gov/"
+    method: GET
+    health_path: "drug/label.json?limit=1"
+    expected_status: [200]
+    check_frequency: on_demand
+    fallback: "medical-research handoff ile dolaylı; erişilemezse §13.f 'API erişilemedi' notu"
+
+  - id: ep.clinicaltrials_v2
+    registry_id: sci.clinicaltrials
+    name: "ClinicalTrials.gov v2 API"
+    kind: rest_api
+    base_url: "https://clinicaltrials.gov/api/v2/"
+    method: GET
+    health_path: "studies?pageSize=1"
+    expected_status: [200]
+    check_frequency: on_demand
+    fallback: "medical-research sidecar'a güven; doğrudan erişim zorunlu değil"
+
+  # ---- Lex-Sanitas MCP connector (programatik Katman-2 sarmalayıcı) ----
+  - id: ep.lex_sanitas_mcp
+    registry_id: mcp.lex_sanitas
+    name: "Lex-Sanitas MCP connector (programatik Katman-2 sarmalayıcı)"
+    kind: mcp_streamable_http
+    base_url: "https://lex-sanitas-mcp.cureonics.workers.dev/"
+    health_path: "/health"
+    method: GET
+    expected_status: [200]
+    expected_body_contains: "ok"
+    check_frequency: daily
+    on_failure: degrade_and_label
+    fallback: "Connector DOWN ise sarılan uçlara (EUR-Lex/openFDA/eCFR/...) doğrudan Fetch+parse; referanslar mcp_verified=false + confidence_label.mcp_unavailability."
+
+# --------------------------------------------------------------------------
+# Sonuç şeması (bir koşum üretirse beklenen kayıt)
+# --------------------------------------------------------------------------
+result_record_shape:
+  endpoint_id: "<ep.*>"
+  checked_at: "<ISO-8601>"
+  status: "up | down | degraded"
+  http_status: "<int|null>"
+  latency_ms: "<int|null>"
+  action_taken: "none | degrade_and_label"
+  feeds_confidence_label_field: "self_disclosure.lex_sanitas.mcp_unavailability_during_query"

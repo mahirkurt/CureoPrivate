@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lex-sanitas.local/schemas/confidence_label.schema.json",
+  "title": "Lex-Sanitas Zorunlu Çıktı Güven Etiketi (v1.0)",
+  "description": "Her lex-sanitas çıktısının sonunda yer alması ZORUNLU güven etiketinin biçimsel sözleşmesi. Sidecar'daki epistemic_honesty bloğundan türetilir ama bağımsız, makine-okunur bir artefakt olarak paketlenir (denetim önerisi: 'Her çıktı sonunda zorunlu güven etiketi standardını ayrı şema olarak paketle'). Çift öz-beyan (medical-research + lex-sanitas) + birleşik güven + insan-kontrolü uyarısını içerir.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "label_version",
+    "mode",
+    "combined_confidence",
+    "human_review_required",
+    "self_disclosure"
+  ],
+  "properties": {
+    "label_version": { "type": "string", "const": "1.0" },
+    "mode": {
+      "type": "string",
+      "enum": ["DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA", "COMPARATIVE_LAW", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION"]
+    },
+    "medical_research_invoked": {
+      "description": "Klinik konulu çalışmalarda medical-research çağrıldı mı? (R14 §1.2). Klinik konuda zorunlu modlarda true beklenir.",
+      "type": "boolean"
+    },
+    "combined_confidence": {
+      "type": "string",
+      "enum": ["HIGH", "MODERATE", "LOW"]
+    },
+    "confidence_basis": {
+      "description": "Güven seviyesinin kısa gerekçesi (kanıt derecesi, MCP doğrulama oranı, veri boşlukları).",
+      "type": "string"
+    },
+    "human_review_required": {
+      "description": "Lex-sanitas çıktıları resmî/operasyonel kullanım öncesi daima insan hukukçu kontrolü gerektirir. Bu alan her zaman true olmalıdır.",
+      "type": "boolean",
+      "const": true
+    },
+    "self_disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lex_sanitas", "medical_research"],
+      "properties": {
+        "lex_sanitas": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "mcp_unavailability_during_query", "uncertain_interpretations"],
+          "properties": {
+            "version": { "type": "string", "pattern": "^2\\.[0-9]+(\\.[0-9]+)?$" },
+            "sidecar_schema_origin": { "type": "string", "enum": ["2.0", "2.3", "2.3.1"] },
+            "mcp_unavailability_during_query": { "type": "array", "items": { "type": "string" } },
+            "uncertain_interpretations": { "type": "array", "items": { "type": "string" } },
+            "limitations_due_to_mode": { "type": "string" }
+          }
+        },
+        "medical_research": {
+          "description": "medical-research çağrılmadıysa invoked=false ve diğer alanlar boş olabilir.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["invoked"],
+          "properties": {
+            "invoked": { "type": "boolean" },
+            "version_limitations": { "type": "string" },
+            "knowledge_gaps": { "type": "array", "items": { "type": "string" } },
+            "single_source_findings": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "scope_disclaimer": {
+      "description": "Kapsam-dışı kalemlerin reddi (Scope Guard). Çıktı bireysel SGK/AYM savunması, TİTCK dava dilekçesi, ADACLIN-tipi savunma veya promosyonel PASS/FAIL üretmediğini teyit eder.",
+      "type": "string"
+    },
+    "out_of_scope_redirect": {
+      "description": "İstem kapsam-dışıysa yönlendirilen skill(ler).",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["saglik-sigorta", "onko-erisim", "promo-censor"]
+      }
+    },
+    "unverified_claims_present": {
+      "description": "Evidence ledger'da doğrulanmamış/temsilî kayıt varsa true; çıktıda bilgi-sınırı uyarısı zorunlu.",
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "EX_POST_EVALUATION için medical-research çağrısı zorunludur (R14 §1.2 + §6.1).",
+      "if": { "properties": { "mode": { "const": "EX_POST_EVALUATION" } }, "required": ["mode"] },
+      "then": { "properties": { "medical_research_invoked": { "const": true } }, "required": ["medical_research_invoked"] }
+    }
+  ]
+}

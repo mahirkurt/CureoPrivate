@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lex-sanitas.local/schemas/medical_sidecar.schema.json",
+  "title": "Lex-Sanitas ← medical-research Sidecar (v2.3.1)",
+  "description": "medical-research v7.1 skill'inden lex-sanitas'a aktarılan .data.json yan dosyasının (sidecar) biçimsel sözleşmesi. R14 §14 + R14b §3 yapısını kodlar. Bu şema sidecar SÜRÜMÜNÜ (schema_version 2.3.1) doğrular; motor sürümü (lex_sanitas_version) ayrı alandır. Mod 9 (EX_POST_EVALUATION) için ex_post_metrics zorunluluğu allOf/if-then ile kodlanmıştır.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "medical_research_version",
+    "lex_sanitas_version",
+    "generated_at",
+    "query_metadata",
+    "epistemic_honesty"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Sidecar şema sürümü. v2.3.1 = ex_post_metrics + reverse_signals + çift epistemik öz-beyan içeren güncel şema. Mod 9 yalnızca 2.3.1 kabul eder (R14b pseudocode 11. adım).",
+      "type": "string",
+      "enum": ["2.0", "2.3", "2.3.1"]
+    },
+    "medical_research_version": {
+      "description": "medical-research skill motor sürümü (R14 §17 uyumluluk matrisi). Patch eki kabul edilir (örn. 7.1.2).",
+      "type": "string",
+      "pattern": "^7\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "lex_sanitas_version": {
+      "description": "Sidecar'ı tüketen lex-sanitas motor sürümü. Sidecar şemasından bağımsızdır; sürüm karışmasını önlemek için ayrı tutulur (v2.5.7 P1-4).",
+      "type": "string",
+      "pattern": "^2\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "query_metadata": {
+      "type": "object",
+      "required": ["original_query", "connectors_used"],
+      "additionalProperties": true,
+      "properties": {
+        "original_query": { "type": "string" },
+        "enriched_query": { "type": "object", "additionalProperties": true },
+        "execution_time_ms": { "type": "integer", "minimum": 0 },
+        "connectors_used": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "pubmed", "epmc", "clinical_trials", "dailymed", "openfda",
+              "ema", "titck", "yoktez", "regulatory_api", "adisinsight",
+              "consensus", "scholar_gateway", "biorxiv", "synapse",
+              "exa", "tavily", "osint"
+            ]
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "specialty_layer_activations": {
+      "description": "medical-research 0.5.A–0.5.I uzmanlık ekseni tetiklemeleri.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["axis", "name", "trigger_words"],
+        "additionalProperties": true,
+        "properties": {
+          "axis": { "type": "string", "pattern": "^0\\.5\\.[A-Z]$" },
+          "name": { "type": "string" },
+          "trigger_words": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "evidence_grading": {
+      "description": "Her endpoint için GRADE etiketi (R14 §14.2).",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["grade"],
+        "additionalProperties": true,
+        "properties": {
+          "grade": { "$ref": "#/$defs/gradeLevel" },
+          "study_count": { "type": "integer", "minimum": 0 },
+          "design": { "type": "string" },
+          "studies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "nct_id": { "type": "string" },
+                "design": { "type": "string" },
+                "n": { "type": "integer", "minimum": 0 },
+                "primary_endpoint_hr": { "type": "number" },
+                "ci_95": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "section_payloads": {
+      "description": "Lex-sanitas çıktı bölümlerine eşlenen yapılandırılmış yük (R14 §14.3).",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "turkish_legislation_refs": {
+      "description": "Türk mevzuat referansları. Her giriş mcp_verified bayrağı taşımalıdır (G7 epistemik dürüstlük). Doğrulanmamış girişler verification_status='illustrative_placeholder_not_verified' ile işaretlenir.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "primary_legislation": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/legislationRef" }
+        }
+      }
+    },
+    "yargi_ictihat_chain": {
+      "description": "İçtihat zinciri. Bireysel başvuru/dava DİLEKÇESİ değil; reform-gerekçe sinyali olarak kullanılır (Scope Guard). Her karar mcp_verified taşımalı.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "aym_decisions": { "type": "array", "items": { "$ref": "#/$defs/caseRef" } },
+        "danistay_decisions": { "type": "array", "items": { "$ref": "#/$defs/caseRef" } },
+        "yargitay_decisions": { "type": "array", "items": { "$ref": "#/$defs/caseRef" } }
+      }
+    },
+    "reverse_signals": {
+      "description": "medical-research → lex-sanitas geri sinyalleri (belirsizlik/alternatif yorum/güven kırılımı).",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "uncertainty_flags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "section": { "type": "string" },
+              "type": { "type": "string" },
+              "description": { "type": "string" },
+              "impact_on_lex_sanitas": { "type": "string" }
+            }
+          }
+        },
+        "alternative_interpretations": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "confidence_breakdown": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "overall_grade": { "$ref": "#/$defs/gradeLevel" },
+            "high_grade_sections": { "type": "array", "items": { "type": "string" } },
+            "moderate_grade_sections": { "type": "array", "items": { "type": "string" } },
+            "low_grade_sections": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "ex_post_metrics": { "$ref": "#/$defs/exPostMetrics" },
+    "epistemic_honesty": {
+      "description": "Çift sürümlü epistemik dürüstlük bloğu (R14 §14.7). Zorunludur (G7).",
+      "type": "object",
+      "required": ["combined_confidence"],
+      "additionalProperties": true,
+      "properties": {
+        "medical_research_self_disclosure": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "knowledge_gaps": { "type": "array", "items": { "type": "string" } },
+            "uncertainty_flags": { "type": "array", "items": { "type": "string" } },
+            "single_source_findings": { "type": "array", "items": { "type": "string" } },
+            "version_limitations": { "type": "string" }
+          }
+        },
+        "lex_sanitas_self_disclosure": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "mcp_unavailability_during_query": { "type": "array", "items": { "type": "string" } },
+            "uncertain_interpretations": { "type": "array", "items": { "type": "string" } },
+            "limitations_due_to_mode": { "type": "string" },
+            "version": { "type": "string", "pattern": "^2\\.[0-9]+(\\.[0-9]+)?$" },
+            "sidecar_schema_origin": { "type": "string", "enum": ["2.0", "2.3", "2.3.1"] }
+          }
+        },
+        "combined_confidence": { "$ref": "#/$defs/confidenceLevel" },
+        "recommendation_for_user": { "type": "string" }
+      }
+    },
+    "citation_index": {
+      "description": "Vancouver formatlı atıf indeksi; lex-sanitas 'Kaynakça' bölümüne entegre edilir.",
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "Mod 9 kuralı (R14b pseudocode 11. adım): bir sidecar ex_post analizi için üretildiyse (ex_post_metrics.applicable_for_ex_post_evaluation == true) şema 2.3.1 olmalı ve ex_post_metrics çekirdek alanları dolu olmalı.",
+      "if": {
+        "type": "object",
+        "properties": {
+          "ex_post_metrics": {
+            "type": "object",
+            "properties": { "applicable_for_ex_post_evaluation": { "const": true } },
+            "required": ["applicable_for_ex_post_evaluation"]
+          }
+        },
+        "required": ["ex_post_metrics"]
+      },
+      "then": {
+        "properties": { "schema_version": { "const": "2.3.1" } },
+        "required": ["schema_version", "ex_post_metrics"]
+      }
+    }
+  ],
+  "$defs": {
+    "gradeLevel": {
+      "type": "string",
+      "enum": ["HIGH", "MODERATE", "LOW", "VERY_LOW"]
+    },
+    "confidenceLevel": {
+      "type": "string",
+      "enum": ["HIGH", "MODERATE", "LOW"]
+    },
+    "legislationRef": {
+      "type": "object",
+      "required": ["name", "mcp_verified"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "rg_date": { "type": "string" },
+        "rg_number": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "relevant_articles": { "type": "array", "items": { "type": "string" } },
+        "mcp_verified": {
+          "description": "G7: referans Mevzuat MCP veya açık primer kaynaktan doğrulandı mı? false ise verification_status zorunlu.",
+          "type": "boolean"
+        },
+        "verification_status": { "type": "string" }
+      },
+      "if": { "properties": { "mcp_verified": { "const": false } } },
+      "then": { "required": ["name", "mcp_verified", "verification_status"] }
+    },
+    "caseRef": {
+      "type": "object",
+      "required": ["mcp_verified"],
+      "additionalProperties": true,
+      "properties": {
+        "case_no": { "type": "string" },
+        "subject": { "type": "string" },
+        "outcome": { "type": "string" },
+        "mcp_verified": { "type": "boolean" }
+      }
+    },
+    "exPostMetrics": {
+      "description": "Mod 9 (EX_POST_EVALUATION) metrikleri (R14 §14.6). applicable_for_ex_post_evaluation true ise elapsed_months ve en az bir veri bloğu (market/reimbursement/clinical) beklenir.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "applicable_for_ex_post_evaluation": { "type": "boolean" },
+        "elapsed_months_since_implementation": { "type": "integer", "minimum": 0 },
+        "market_data": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "midas_data_available": { "type": "boolean" },
+            "pre_implementation_market_size_try": { "type": "number", "minimum": 0 },
+            "post_implementation_market_size_try": { "type": "number", "minimum": 0 },
+            "growth_rate": { "type": "number" }
+          }
+        },
+        "reimbursement_data": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "sgk_total_spending_try": { "$ref": "#/$defs/prePost" },
+            "rejection_rate": { "$ref": "#/$defs/prePost" },
+            "average_processing_days": { "$ref": "#/$defs/prePost" }
+          }
+        },
+        "clinical_real_world_data": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "patient_cohorts_available": { "type": "array", "items": { "type": "string" } },
+            "key_outcome_metrics": { "type": "array" }
+          }
+        },
+        "judicial_review_outcomes": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "aym_iptal_count": { "type": "integer", "minimum": 0 },
+            "danistay_iptal_count": { "type": "integer", "minimum": 0 },
+            "aihm_violations": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "stakeholder_feedback": { "type": "object", "additionalProperties": true }
+      },
+      "if": { "properties": { "applicable_for_ex_post_evaluation": { "const": true } }, "required": ["applicable_for_ex_post_evaluation"] },
+      "then": {
+        "required": ["applicable_for_ex_post_evaluation", "elapsed_months_since_implementation"],
+        "anyOf": [
+          { "required": ["market_data"] },
+          { "required": ["reimbursement_data"] },
+          { "required": ["clinical_real_world_data"] }
+        ]
+      }
+    },
+    "prePost": {
+      "type": "object",
+      "required": ["pre", "post"],
+      "additionalProperties": false,
+      "properties": {
+        "pre": { "type": "number" },
+        "post": { "type": "number" }
+      }
+    }
+  }
+}

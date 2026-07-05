@@ -1,0 +1,77 @@
+suite:
+  id: full_fleet_coverage
+  title: "Tam-Filo Aktivasyonu ve G0 Kapsam Manifestosu Testleri (v3.0.0)"
+  version: "1.0"
+  target_skill: lex-sanitas
+  target_version: ">= 3.0.0"
+  evaluator: [manual, smp-orchestrator, skill-censor]
+  description: >
+    v3.0.0 tam-filo invaryantını doğrular: wire edilmiş 14 hukuk/regülasyon MCP
+    + bağlı companion (Yargı/Open Law/Ansvar) + evidentia (klinik-boyut) + sci-audit
+    HER sorguda devreye alınır ve her çıktı bir G0 kapsam manifestosu taşır
+    (server → hit/empty/degraded/skipped-with-reason). Sessiz atlama = G0 FAIL.
+    Degrade dürüsttür: eksik katman 'skipped' beyanı alır, asla uydurma.
+
+cases:
+  - id: FLEET-001
+    title: "DRAFT — tam-filo süpürme + kapsam manifestosu zorunlu"
+    given: "Biyobenzer ilaçların değiştirilebilirliği (interchangeability) için TİTCK yönetmeliği taslağı hazırla."
+    expect:
+      mode: DRAFT
+      full_fleet: true
+      gates: { G0: PASS, G1: PASS, G2: PASS, G7: PASS }
+    assertions:
+      - "Çıktı bir kapsam manifestosu (G0) içermeli: 14 wire'lı MCP + companion + evidentia + sci-audit için birer satır."
+      - "Her server satırı hit/empty/degraded/skipped-with-reason durumlarından biriyle işaretlenmeli."
+      - "Hiçbir server sessizce atlanmamalı — atlandıysa gerekçe ('anahtar yok' / 'mod için N/A') yazılmalı."
+      - "Ağır getirim legal-distiller alt-ajanına delege edilmeli (ana bağlamda ham döküm olmamalı)."
+    rationale: "SKILL §3 tam-filo + §4 G0 + §7 kapsam manifestosu; shared/coverage-manifest.md biçimi."
+
+  - id: FLEET-002
+    title: "Companion bağlı değil — dürüst skipped beyanı"
+    given: "1219 sayılı Kanun'un tabip yetkilerini karşılaştırmalı analiz et (Yargı/Open Law/Ansvar connector'ları bağlı DEĞİL)."
+    expect:
+      mode: COMPARATIVE_LAW
+      full_fleet: true
+      gates: { G0: PASS }
+    assertions:
+      - "Manifestoda Yargı/Open Law/Ansvar → 'skipped: companion bağlı değil' olarak beyan edilmeli."
+      - "Bağlı olan health-policy/german-law/ich/intl-treaty/eudamed/oecd yine de ateşlenmeli."
+      - "Eksik companion için içtihat/karşılaştırma UYDURULMAMALI — sadece dürüst boşluk."
+    rationale: "composition-contract §3 degrade matrisi; no-fabrication değişmezi."
+
+  - id: FLEET-003
+    title: "Anahtar yok — graceful degrade, çıktı durmaz"
+    given: "Endikasyon-dışı ilaç kullanımı genelgesini incele (GERMAN_LAW_MCP_API_KEY süreç ortamında YOK)."
+    expect:
+      mode: ANALYZE
+      full_fleet: true
+      gates: { G0: PASS }
+    assertions:
+      - "SessionStart preflight german-law anahtarının eksik olduğunu işaretlemiş olmalı."
+      - "Manifestoda german-law → 'skipped: anahtar yok'; çıktı bu yüzden DURMAMALI."
+      - "Diğer wire'lı server'lar (mevzuat/resmi-gazete/titck/saglikbakanligi vb.) normal çalışmalı."
+    rationale: "hooks/session_start.py preflight + SKILL §3 degrade_and_label."
+
+  - id: FLEET-004
+    title: "Stop kapısı — manifesto eksikse tamamlat"
+    given: "Bir yönetmelik taslağı üretildi ama çıktıda kapsam manifestosu ve confidence_label yok."
+    expect:
+      stop_hook: block
+    assertions:
+      - "Stop hook (stop_coverage.py) turu devam ettirip eksik manifesto + confidence_label'ı tamamlatmalı."
+      - "Tamamlanan çıktı G0 + confidence_label taşımalı."
+    rationale: "hooks/stop_coverage.py — mod-çıktısı imzası var ama zorunlu bileşenler eksik."
+
+  - id: FLEET-005
+    title: "Saf idari norm — klinik-sıfır, evidentia atlanır ama beyan edilir"
+    given: "Bir sağlık kuruluşunun iç arşiv-yönetimi işleyiş yönetmeliği taslağı hazırla (klinik içerik yok)."
+    expect:
+      mode: DRAFT
+      full_fleet: true
+      gates: { G0: PASS }
+    assertions:
+      - "Hukuk MCP'leri (mevzuat/resmi-gazete/detsis/saglikbakanligi) yine tam-filo çalışmalı."
+      - "evidentia → 'skipped: saf idari norm — klinik-sıfır' olarak manifestoda beyan edilmeli."
+      - "sci-audit yine çalışmalı (her çıktıda dil/atıf QA)."
+    rationale: "composition-contract §1 klinik-sıfır istisnası; tam-filo yalnız gerekçeli istisna kabul eder."

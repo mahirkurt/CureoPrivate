@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "lex-sanitas",
+  "displayName": "Lex Sanitas",
+  "version": "3.0.0",
+  "description": "Türkiye sağlık mevzuatının her düzlemde (kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge) reform, değişiklik ve yeniden yazımı için en ileri düzey norm-üretim protokolü. Çekirdek amaç: yeni mevzuat üretmek (DRAFT) + mevcut mevzuatı değiştirmek (AMEND) + TBMM kanun teklifi hazırlamak (TBMM_KANUN_TEKLIFI). Destekleyen modlar: analiz · 5210 uyum denetimi · paydaş/bilirkişi görüşü · RIA (DEA/BEF) · karşılaştırmalı hukuk · ex post değerlendirme (9 mod). 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12 çerçevesi; G1-G9 kalite kapıları + R6b 21-nokta yürütülebilir uyum rubriği + evidence_ledger no-fabrication disiplini. 14 hukuk/regülasyon MCP wire (PRİMER mevzuat + resmi-gazete + titck + tbmm + saglikbakanligi + detsis · KARŞILAŞTIRMALI health-policy [yabancı ülke] + german-law + ich + intl-treaty + eudamed + oecd · DOKTRİN yok-akademik). Yumuşak delegasyon: klinik kanıt → evidentia plugin; AI güvenilirlik + atıf-adli + Türkçe hukuk dili → sci-audit plugin. Kapsam: reform/norm-üretim; bireysel dava (SGK red, AYM başvuru), malpraktis, promosyon denetimi KAPSAM DIŞI (Scope Guard).",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "license": "Internal skill asset, not for external redistribution",
+  "homepage": "https://cureonics.com",
+  "keywords": [
+    "turkish-health-law",
+    "regulatory-drafting",
+    "mevzuat-reformu",
+    "5210-yonetmelik",
+    "kanun-teklifi",
+    "yonetmelik-taslagi",
+    "teblig-taslagi",
+    "regulatory-impact-assessment",
+    "comparative-regulation",
+    "titck",
+    "sgk",
+    "aym-belirlilik",
+    "oecd-better-regulation",
+    "ex-post-evaluation",
+    "no-fabrication",
+    "evidence-ledger"
+  ]
+}

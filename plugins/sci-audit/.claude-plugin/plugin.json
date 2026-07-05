@@ -1,0 +1,23 @@
+{
+  "name": "sci-audit",
+  "version": "0.1.0",
+  "description": "Domain-agnostic forensic and linguistic auditor for LLM-generated scientific text. Seven audit axes: reference integrity, claim grounding, statistical consistency, hallucination signals, reporting-guideline conformance, AI-use transparency, and Turkish scientific writing/orthography. Deterministic stdlib core with graceful provider degrade; remote-only MCP; Claude-native LLM judge.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://cureonics.com",
+  "license": "MIT",
+  "keywords": [
+    "scientific-integrity",
+    "hallucination",
+    "citations",
+    "turkish",
+    "imla",
+    "guardrails",
+    "reporting-guidelines",
+    "statcheck",
+    "claim-grounding",
+    "ai-transparency"
+  ]
+}

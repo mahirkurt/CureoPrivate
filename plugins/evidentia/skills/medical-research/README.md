@@ -62,7 +62,7 @@ the skill, install the `evidentia` plugin (or copy into your saved skill repo) �
 | `references/drug-intelligence-layer.md` | Real AdisInsight schema (`search_drugs`/`get_drug` HyDE/`generate_chart`); v7.1 fictional schema removed | ✅ current |
 | `references/turkiye-layer.md` | TİTCK 15+ native tools + Mevzuat + TÜRKPATENT + YÖK (native TR sources, no web scraping) | ✅ current |
 | `references/regulatory-intelligence.md` | Native openFDA + WHO ICD-11 (via openfda Worker); no-API burden/guideline sources = documented gap | ✅ current |
-| `references/fulltext-retrieval.md` | Full-text cascade EPMC PMC → copyright gate → annas-mcp → Unpaywall legal-OA (Tier 5, was Exa) | ✅ current |
+| `references/fulltext-retrieval.md` | Full-text cascade (legal-first 6-tier): EPMC PMC OA → Paper Search → OpenAthens/Millet Kütüphanesi (Tier 3 licensed) → Wiley (Tier 4) → annas-mcp (Tier 5 last resort) → pubmed-epmc Unpaywall (Tier 6) | ✅ current |
 | `references/report-presentation.md` | v8.1 clean-copy doctrine; `<!-- VIZ -->`/`<!-- OPS -->` isolation; finalization gate G1–G7 | ✅ current |
 | `references/{oncology,hematology,regulatory-science,hta,medaffairs-ops,immunology,neurology,rare-disease}-layer.md` | 8 specialty layers — clinical content + verified connector wiring | ✅ current |
 | `references/v8-wiring-patch.md` | find→replace wiring spec — **applied in v8.2** (retained as provenance) | ✅ applied |

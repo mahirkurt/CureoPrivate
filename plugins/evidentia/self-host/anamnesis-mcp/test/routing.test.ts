@@ -47,4 +47,21 @@ describe("router", () => {
     expect(res.status).toBe(401);
     expect(res.headers.get("www-authenticate")).toContain("Bearer");
   });
+
+  // RFC 9728 path-insertion — ChatGPT requests the PRM at .../oauth-protected-resource/mcp
+  it("protected-resource metadata is also served at the path-inserted URL", async () => {
+    const res = await worker.fetch(
+      new Request("https://w.example/.well-known/oauth-protected-resource/mcp"), ENV, ctx);
+    expect(res.status).toBe(200);
+    const meta = await res.json() as any;
+    expect(meta.resource).toBe("https://w.example/mcp");
+    expect(meta.authorization_servers).toEqual(["https://w.example"]);
+  });
+
+  it("401 WWW-Authenticate advertises resource_metadata (RFC 9728)", async () => {
+    const res = await worker.fetch(new Request("https://w.example/mcp", { method: "POST" }), ENV, ctx);
+    expect(res.status).toBe(401);
+    const wa = res.headers.get("www-authenticate") || "";
+    expect(wa).toContain('resource_metadata="https://w.example/.well-known/oauth-protected-resource/mcp"');
+  });
 });

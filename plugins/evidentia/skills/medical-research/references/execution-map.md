@@ -5,7 +5,7 @@
 For heavy queries (3+ axes, ~100–220 calls), plan the parallel fan-out before issuing calls.
 
 ## 1. Order of operations (Adım 1)
-1. Academic core (PubMed/EPMC, CT.gov, bioRxiv, Consensus, Scholar Gateway, Paper Search, YokTez) — parallel.
+1. Academic core — **ALWAYS-ON: fire ALL discovery connectors in parallel** (PubMed/EPMC, CT.gov, bioRxiv, Consensus, Scholar Gateway, Paper Search, YokTez, OpenAlex, Semantic Scholar, pubmed-epmc); an unreachable connector is logged as a visible OPS gap, never silently dropped.
 2. 6-country AFF matrix (EPMC) — mandatory loop, not skippable.
 3. Türkiye Dörtlüsü (TİTCK + Mevzuat + YokTez + AFF:Turkey) — native; TİTCK Cache fallback on stall.
 4. Specialty packages (per active 0.5 axis) — injected.

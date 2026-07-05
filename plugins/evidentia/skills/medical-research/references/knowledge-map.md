@@ -169,8 +169,8 @@ PRISMA-ScR checklist selection, §2).
 - Cross-links: regulatory-science-layer.md (TİTCK ruhsat module); regulatory-intelligence.md (TR multi-jurisdiction cross-ref module); hta-layer.md (TR HTA/SGK decisions module); oncology-layer.md (TR onco off-label TİTCK module); medaffairs-ops-layer.md (TR KOL via YÖK Akademik module); drug-intelligence-layer.md (TR drug intelligence module)
 
 ### fulltext-retrieval.md  — [axis: full-text/KOL cross-cutting]
-- Sections: §1 When to retrieve full text, §2 The Cascade (Tier 1 EuropePMC PMC, Tier 2 Paper Search download, Tier 3 annas-mcp paywalled, Tier 4 Wiley OAuth-gated, Tier 5 pubmed-epmc Unpaywall legal-OA last resort), §3 Copyright Gate (MANDATORY), §4 Methodology Grounding (annas book layer), §5 Output integration, §6 Known limitations
-- Concepts: open access, PMC full-text, EPMC copyright_status, paywalled article retrieval, Anna's Archive, Wiley publisher full text, methodology books, Unpaywall, DOAJ, copyright gate, verbatim prohibition, CC-BY license
+- Sections: §1 When to retrieve full text, §2 The Cascade — legal-first 6-tier (Tier 1 EuropePMC PMC OA, Tier 2 Paper Search download, Tier 3 OpenAthens/Millet Kütüphanesi licensed institutional, Tier 4 Wiley OAuth-gated, Tier 5 annas-mcp shadow-library LAST RESORT, Tier 6 pubmed-epmc Unpaywall legal-OA sweep), §3 Copyright Gate (MANDATORY), §4 Methodology Grounding (annas book layer), §5 Output integration, §6 Known limitations
+- Concepts: open access, PMC full-text, EPMC copyright_status, OpenAthens / Millet Kütüphanesi licensed institutional access, paywalled article retrieval, Anna's Archive, Wiley publisher full text, methodology books, Unpaywall, DOAJ, copyright gate, verbatim prohibition, CC-BY license
 - Synonyms: tam metin, açık erişim, full text, article download, PDF erişim, makale indirme, copyright, telif hakkı
 - Cross-links: connector-registry.md §3.5–3.6 (annas-mcp + EPMC copyright gate); extended-api.md §5 (Unpaywall/DOAJ); medaffairs-ops-layer.md (KOL publication retrieval); output-templates.md (§10 açık erişim); evidence-grading.md §5 (full-text numerical extraction)
 
@@ -253,11 +253,11 @@ PRISMA-ScR checklist selection, §2).
 - **Case series / single-arm / small-n** → rare-disease-layer.md#§2 (evidence specifics small-n) · evidence-grading.md#§3 (pragmatic track) · evidence-grading.md#§4 (specialty checklist)
 - **Preprint / bioRxiv / medRxiv** → evidence-grading.md#§1 (Tier 6 preprint) · connector-registry.md#§2.1 (academic literature core)
 - **GRADE / certainty / RoB / downgrading** → evidence-grading.md#§2 (GRADE per outcome) · evidence-grading.md#§4 (specialty checklists) · output-templates.md#§7 (Tier 0 synthesis)
-- **Full text / PMC / open access / copyright** → fulltext-retrieval.md (all) · connector-registry.md#§3.5–§3.6 (annas-mcp + EPMC copyright gate) · extended-api.md#§5 (Unpaywall/DOAJ)
+- **Full text / PMC / open access / OpenAthens / Millet Kütüphanesi / licensed / copyright** → fulltext-retrieval.md (all, legal-first: OpenAthens Tier 3 licensed → Wiley Tier 4 → annas Tier 5) · connector-registry.md#§2.1 (openathens + annas-mcp + EPMC copyright gate) · extended-api.md#§5 (Unpaywall/DOAJ)
 
 ### Full-Text / KOL / Pipeline
 
-- **Full-text retrieval / PMC / annas-mcp / Wiley / paywalled** → fulltext-retrieval.md (all) · extended-api.md#§5 (Unpaywall) · connector-registry.md#§3.5–§3.6
+- **Full-text retrieval / PMC / OpenAthens / annas-mcp / Wiley / paywalled** → fulltext-retrieval.md (all, legal-first: OpenAthens Tier 3 licensed → Wiley Tier 4 → annas Tier 5) · extended-api.md#§5 (Unpaywall) · connector-registry.md#§2.1 (full-text rung)
 - **KOL / Key Opinion Leader / kilit kanaat önderi / author network** → medaffairs-ops-layer.md#§3 (KOL identification wiring §8) · output-templates.md#§8 (KOL Haritası) · extended-api.md#§2 (OpenAlex) · extended-api.md#§4 (Semantic Scholar) · turkiye-layer.md (TR KOL via YÖK Akademik)
 - **Pipeline snapshot / AdisInsight / drug development / Phase 1–3 clinical** → drug-intelligence-layer.md (all) · drug-intelligence-layer.md#§6 (pipeline_payload sidecar) · connector-registry.md#§3.1 (AdisInsight real schema) · output-templates.md#§19 (drug intelligence snapshot)
 - **Competitive set / pipeline landscape (structured only)** → drug-intelligence-layer.md#§3.2 (competitor set, AdisInsight/CT.gov) · output-templates.md#§20 (cross-layer notes). (OSINT/web competitive intelligence removed v1.4.0 → out of scope; external `pharmaintel`.)

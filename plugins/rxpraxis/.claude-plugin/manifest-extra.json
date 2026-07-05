@@ -1,0 +1,46 @@
+{
+  "_comment": "plugin.json'dan tasinan ev-konvansiyonu metadata. Claude Code semasinda TANINMAYAN ust-duzey alanlar (claude plugin validate --strict bunlari reddediyordu). Runtime'da hicbir script plugin.json'i okumuyor; tum bilgi burada BIREBIR korunuyor. Geri almak icin bu alanlari plugin.json'a geri tasiyin.",
+  "mcp": {
+    "note": "v1.2.1: rxpraxis connector TANIMLARINI ./.mcp.json içinde paketler — yalnız 7 NO-AUTH çekirdek (titck-cache, titck, mevzuat, midas, pubmed, clinical-trials, biorxiv); kurulumda Claude Code bunları auth-sürtünmesiz otomatik kaydeder. Auth gerektiren connector'lar (Türk Patent, YÖK Tez, ThoughtSpot, AdisInsight, Consensus, Exa) BUNDLE EDİLMEZ — kullanıcının Claude.ai/Claude Code bağlantıları üzerinden tüketilir (eksikse tarama-zamanı degrade mod). Tam connector envanteri (13), skill-eşlemesi, fallback zincirleri (§6), devre-kesici (§9) ve provenance için ./CONNECTORS.md tek doğruluk kaynağıdır.",
+    "bundled_servers": "./.mcp.json",
+    "connector_contract": "./CONNECTORS.md",
+    "tool_manifest": "./shared/tool-manifest.json"
+  },
+  "smp": {
+    "manifest_version": "1.0",
+    "role": "capability-cluster",
+    "orchestrator_skill": "rxos",
+    "source_skills": [
+      "medical-research",
+      "pharmaintel",
+      "pharmapatent",
+      "thoughtspot-roche"
+    ],
+    "router_skill": "start",
+    "shared_contracts": [
+      "./shared/canonical-cache-contract.md",
+      "./shared/provenance-standard.md",
+      "./shared/run-manifest-schema.json"
+    ],
+    "composes_with_external": [
+      "carbon-html-report",
+      "carbon-pptx",
+      "lex-sanitas",
+      "lex-mercator",
+      "onko-erisim",
+      "rxos"
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-06-14",
+      "summary": "R1 kod-düzeyi çözümü: TİTCK Cache proxy (titck.cureonics.com) bağlandı; tek-sefer TİTCK artık SingleFlight DO + KV TTL ile deterministik. CONNECTORS.md §1.A/§3/§6, run-manifest şeması, BUILD.md §4-R1/§7 güncellendi."
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-06-14",
+      "summary": "İlk süit: rxos orkestratör + 4 vendored skill + start router + 6 komut + paylaşılan sözleşmeler (CONNECTORS/canonical-cache/provenance/run-manifest)."
+    }
+  ]
+}

@@ -126,10 +126,15 @@ function redirectAllowed(env: AuthEnv, redirectUri: string): boolean {
 }
 
 // ---- RFC 9728 / RFC 8414 metadata + RFC 7591 register stub -----------------
+// RFC 9728: the PRM may be requested at the bare well-known path OR with the resource
+// path inserted (…/oauth-protected-resource/mcp). claude.ai uses the bare form; ChatGPT
+// uses the path-inserted form. Serve both so OAuth discovery succeeds on every client.
 function protectedResource(url: URL): Response {
   const base = `${url.protocol}//${url.host}`;
+  const suffix = url.pathname.slice("/.well-known/oauth-protected-resource".length); // "" | "/mcp" | "/sse"
+  const resourcePath = suffix === "/sse" ? "/sse" : "/mcp";
   return json({
-    resource: `${base}/mcp`,
+    resource: `${base}${resourcePath}`,
     authorization_servers: [base],
     bearer_methods_supported: ["header"],
     resource_name: REALM,
@@ -247,8 +252,12 @@ export function requireBearer(req: Request, env: AuthEnv): Response | null {
   const h = req.headers.get("authorization") || "";
   const m = /^Bearer\s+(.+)$/i.exec(h);
   if (!m || !constantTimeEqual(m[1], env.MCP_API_KEY)) {        // invariant (5)
+    // RFC 9728 §5.3: advertise the protected-resource metadata URL so OAuth discovery
+    // (claude.ai, ChatGPT, grok) can locate the authorization server from the 401 alone.
+    const u = new URL(req.url);
+    const prm = `${u.origin}/.well-known/oauth-protected-resource${u.pathname}`;
     return json({ error: "unauthorized" }, 401, {
-      "www-authenticate": `Bearer realm="${REALM}"`,
+      "www-authenticate": `Bearer realm="${REALM}", resource_metadata="${prm}"`,
     });
   }
   return null;
@@ -258,7 +267,7 @@ export function requireBearer(req: Request, env: AuthEnv): Response | null {
 export async function handleOAuth(req: Request, env: AuthEnv): Promise<Response> {
   const url = new URL(req.url);
   const p = url.pathname;
-  if (req.method === "GET" && p === "/.well-known/oauth-protected-resource") return protectedResource(url);
+  if (req.method === "GET" && (p === "/.well-known/oauth-protected-resource" || p.startsWith("/.well-known/oauth-protected-resource/"))) return protectedResource(url);
   if (req.method === "GET" && p === "/.well-known/oauth-authorization-server") return authorizationServer(url);
   if (req.method === "POST" && p === "/oauth/register") return registerStub(req);
   if (req.method === "GET" && p === "/oauth/authorize") return authorizeForm(url, env);

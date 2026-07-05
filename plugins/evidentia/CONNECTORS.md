@@ -40,7 +40,7 @@ hattını değil.
 **Tam-metin rung'u (P4, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
-| **openathens** (self-host) | — | OAuth/Bearer | `oa_resolve` · `oa_fetch_fulltext`(ingest) · `oa_list_databases` · `oa_batch_submit`/`oa_batch_result` — **tam-metin Tier 3: LİSANSLI kurumsal** (Millet Kütüphanesi/OpenAthens → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane…; **annas'ın ÖNÜNDE**, legal-öncelikli). **Deploy-bekliyor** (`openathens-mcp`); bağlı değilse cascade Tier 4/5'e düşer | operatör self-host | O |
+| **openathens** (self-host) | 🟢 | OAuth/Bearer | `oa_resolve` · `oa_fetch_fulltext`(ingest) · `oa_list_databases` · `oa_batch_submit`/`oa_batch_result` — **tam-metin Tier 3: LİSANSLI kurumsal** (Millet Kütüphanesi/OpenAthens → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane…; **annas'ın ÖNÜNDE**, legal-öncelikli). **CANLI** `https://openathens.cureonics.com/mcp` (`openathens-mcp`, 2026-07-03); anti-bot'suz yayıncılar (Springer/Nature) tam metin verir, anti-bot'lu (Wiley/Elsevier/OUP/Sage/T&F) → `manual_required` deep-link; bağlı değilse cascade Tier 4/5'e düşer | operatör self-host | O |
 | annas-mcp | 🟡 | — | article_search · article_download · book_search (**tam-metin Tier 5 — SON ÇARE**, lisanslı band'dan [OpenAthens+Wiley] sonra; **copyright kapısı**) | topluluk | A |
 | Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü; Tier 6 son legal-OA süpürmesi) | topluluk (cyanheads) | K |
 
@@ -168,7 +168,7 @@ dedup)** → **P4 (tam-metin zenginleştirme)**. P1/P2/P4 çekirdek merdivenleri
 
 | İhtiyaç | Merdiven |
 |---|---|
-| Tam-metin (legal-first) | EPMC `get_copyright_status` → EPMC `get_full_text_article` (PMC OA, Tier 1) → Paper Search `read_pubmed_paper` (Tier 2) → **OpenAthens/Millet Kütüphanesi** `oa_resolve`/`oa_fetch_fulltext` (**Tier 3 — LİSANSLI kurumsal, legal-öncelikli**; `openathens` HP self-host, **deploy-bekliyor** → bağlı değilse atla) → Wiley (opsiyonel OAuth, Tier 4) → **Annas Reader** `article_download`/`book_download` (**Tier 5 — SON ÇARE**, lisanslı band [OpenAthens+Wiley] getiremeyince) → **pubmed-epmc** `pubmed_fetch_fulltext` (Unpaywall YASAL-OA, Tier 6 son süpürme) **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
+| Tam-metin (legal-first) | EPMC `get_copyright_status` → EPMC `get_full_text_article` (PMC OA, Tier 1) → Paper Search `read_pubmed_paper` (Tier 2) → **OpenAthens/Millet Kütüphanesi** `oa_resolve`/`oa_fetch_fulltext` (**Tier 3 — LİSANSLI kurumsal, legal-öncelikli**; `openathens` HP self-host **CANLI** → bağlı değilse atla; anti-bot'lu yayıncı → `manual_required`) → Wiley (opsiyonel OAuth, Tier 4) → **Annas Reader** `article_download`/`book_download` (**Tier 5 — SON ÇARE**, lisanslı band [OpenAthens+Wiley] getiremeyince) → **pubmed-epmc** `pubmed_fetch_fulltext` (Unpaywall YASAL-OA, Tier 6 son süpürme) **→ anamnesis `ingest_document` → `semantic_search`/`hybrid_query`** (uzun metin bağlama DÖKÜLMEZ; indekslenir, sınırlı paket çekilir) |
 
 ### Opsiyonel modül merdivenleri (yalnız Adım 0.5 sinyaliyle)
 
@@ -250,7 +250,9 @@ içerir; OAuth keşfi **RFC 9728**'e göre sağlamlaştırıldı (401 `WWW-Authe
 `resource_metadata`; PRM **path-insertion** `…/oauth-protected-resource/mcp`). Tümü **additive** —
 claude.ai/grok yüzeyleri bozulmaz. ChatGPT istemcisi `/mcp`'yi sunucu tarafından çağırır → CORS
 gerekmez. Üçüncü-taraf keyless connector'ların (med-terminologies, pipeworx gateway'leri, caseyjhand)
-ChatGPT-uyumu **upstream operatöre** bağlıdır.
+ChatGPT-uyumu **upstream operatöre** bağlıdır. **openathens (HP self-host, 2026-07-03)** aynı
+OAuth 2.1 + Bearer desenini kullanan **5.** self-host connector'dur — ChatGPT bağımsız doğrulaması
+2026-06-30 batch'inin parçası DEĞİLDİR (yukarıdaki tarihli iddia orijinal 4 CF Worker'a özgüdür).
 
 **Yanılgı önleme:** "Plugin her yerde her şeyi otomatik bağlar" **yanlıştır**. claude.ai/ChatGPT
 web tarafında OAuth/operatör connector'ları manuel eklenir (mcp-scout
@@ -328,9 +330,9 @@ Yeni aday connector'lar **probe-verified-only** (DEĞİŞMEZ 2) ilkesiyle yargı
 
 | Aday | Probe (2026-06-28) | Karar | Gerekçe |
 |---|---|---|---|
-| **PopHIVE** (`mcp.pophive.org`) | 200 · `get_current_status(rsv,CT)` canlı | **WIRE** (Tier-K-epi, §1.3) | ABD epidemiyoloji boşluğunu kapatır (native). **YALNIZCA ABD** → global/TR yük hâlâ belgelenmiş boşluk; precomputed kanıt birebir aktarılır. |
+| **PopHIVE** (`https://mcp.pophive.org/mcp`) | 200 · `get_current_status(rsv,CT)` canlı | **WIRE** (Tier-K-epi, §1.3) | ABD epidemiyoloji boşluğunu kapatır (native). **YALNIZCA ABD** → global/TR yük hâlâ belgelenmiş boşluk; precomputed kanıt birebir aktarılır. |
 | **drugddx** (`drugddx-mcp…`) | 200 · `normalize_drug`/`interaction_label` canlı | **WIRE** (Tier-O, D-β) | Klinik-DDI boşluk-kapatıcı (pairwise motor DEĞİL); self_host bloğundan runtime'a terfi. |
-| **Mevzuat Bilgisi** (`mevzuat.surucu.dev`) | 200 · `search_kanun("ilaç")`→67 | **WIRE secondary** (opsiyonel, degradable) | Primer Mevzuat'a **çapraz-kontrol aynası** — kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak ekler (primer keyword-aramasında yok). **Primacy primer Mevzuat'ta**; tek-sefer cache'e tabi; yalnız primer-miss veya numara/gerekçe lookup'ında çağrılır. Tool whitelist: `search_kanun`, `search_mevzuat`. |
+| **Mevzuat Bilgisi** (`https://mevzuat.surucu.dev/mcp`) | 200 · `search_kanun("ilaç")`→67 | **WIRE secondary** (opsiyonel, degradable) | Primer Mevzuat'a **çapraz-kontrol aynası** — kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak ekler (primer keyword-aramasında yok). **Primacy primer Mevzuat'ta**; tek-sefer cache'e tabi; yalnız primer-miss veya numara/gerekçe lookup'ında çağrılır. Tool whitelist: `search_kanun`, `search_mevzuat`. |
 | **Elicit** (`elicit.com/api/mcp`) | **OAuth bağlandı → 2026-06-28 CANLI** (`search_papers`→JULIET NEJM PMID 30501490; `list_reports` canlı) | **WIRE secondary** (conditional/OAuth) | Sistematik-derleme/ekstraksiyon katmanı, **Consensus'a secondary**. Doğrulanmış araçlar: `search_papers`/`search_trials` (corpus arama — typeTags RCT/Meta/SR + quartile/yıl filtreleri), `list_reports`/`get_report`, `create_report` (SR-rapor üreteci — kota-yükü, ölçülü kullan). **Statik `elk_live_` anahtarı Elicit REST-API anahtarıdır, MCP-JWS DEĞİL** (MCP OAuth ile bağlanır). Wiley/Synapse gibi: claude.ai Settings ile bağlanır, statik `.mcp.json` URL'si YOK; zorunlu Adım 1 listesinde DEĞİL; çıkarılan iddialar çapraz-doğrulanır (DEĞİŞMEZ 4). Anahtar → Doppler `ELICIT_API_KEY` (rotate önerilir). |
 | **Yargı** (TR mahkeme) | (bağlı) | **WIRE ETME** | Hukuk içtihadı evidentia kapsamı dışı → **`lex-sanitas` / `ius-salutis`**'e devredilir (start Scope Guard + §7). |
 | **pipeworx generic** (`ask_pipeworx`/`discover_tools`/`remember`/`recall`/`polymarket_*`/`scan_*`/`subscribe`/`validate_claim`) | — | **WHITELIST-DIŞI** | En-az-yetki (DEĞİŞMEZ 5): yalnız tıbbi pack araçları çağrılır; jenerik orchestration/finans araçları asla. **G-WHITELIST** statik denetler. |

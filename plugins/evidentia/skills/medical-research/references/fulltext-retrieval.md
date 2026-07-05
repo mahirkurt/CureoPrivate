@@ -21,7 +21,7 @@ the first tier that delivers:
 > always tried before the grey-area annas (Tier 5). annas is never the primary paywall gate.
 
 **Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **openathens**
-(HP self-host — *deploy-pending*, §Tier 3), Wiley (`bio-research:wiley`, OAuth), **annas-mcp**
+(HP self-host — **LIVE** `openathens.cureonics.com/mcp`, §Tier 3), Wiley (`bio-research:wiley`, OAuth), **annas-mcp**
 (verified, last-resort), **pubmed-epmc** (`pubmed_fetch_fulltext` — EuropePMC + Unpaywall legal-OA).
 
 ---
@@ -53,10 +53,16 @@ PaperSearch: download_pubmed / download_biorxiv / download_semantic
 ```
 
 ### Tier 3 — OpenAthens / Millet Kütüphanesi (LICENSED institutional — primary paywall gate)
-**Status:** connector `openathens` — HP self-host (`openathens.cureonics.com/mcp`, hardened
-OAuth 2.1 + Bearer, `openathens-mcp` design 2026-07-01). **Deploy-pending:** if the connector is
-NOT connected, **skip Tier 3 → Tier 4/5** (graceful degrade, no error). When connected, it is the
-**primary paywall gate** and takes precedence over annas (legal-first).
+**Status:** connector `openathens` — HP self-host **LIVE** (`openathens.cureonics.com/mcp`, hardened
+OAuth 2.1 + Bearer; `openathens-mcp` deployed 2026-07-03, real OpenAthens SP-initiated SAML
+federation via Millet Kütüphanesi). It is the **primary paywall gate** and takes precedence over
+annas (legal-first). If the connector is NOT bound in the session, **skip Tier 3 → Tier 4/5**
+(graceful degrade, no error). **Live coverage reality (verified):** publishers reached through the
+OpenAthens federation *without* a browser anti-bot wall extract **real full text** (e.g. Springer
+`link.springer.com`, Nature `nature.com`); publishers behind a Cloudflare/JS anti-bot challenge
+(e.g. Wiley, Elsevier/ScienceDirect, OUP, Sage, Taylor & Francis) return a **`manual_required`**
+envelope with the OpenAthens redirector deep-link (the tool never defeats anti-bot, by doctrine —
+open the deep-link in a browser, or fall to Tier 4/5). Bind via `OPENATHENS_MCP_API_KEY`.
 
 **Coverage:** OpenAthens federation via Cumhurbaşkanlığı Millet Kütüphanesi → ProQuest, EBSCO,
 Gale, ScienceDirect/Elsevier, Wiley, Springer, Nature, JSTOR, Scopus, Web of Science, IEEE,
@@ -145,9 +151,14 @@ the anamnesis `doc_id::idx` provenance where ingested.
 1. **Downloads are host-side** — annas → user machine; OpenAthens → HP (server reads it). The
    pipeline validates retrieval; context sees only the anamnesis-indexed, provenance-stamped slice.
 2. **Copyright** — the dominant constraint; default to paraphrase + data extraction.
-3. **OpenAthens deploy-pending** — until `openathens-mcp` is live + connected, Tier 3 is skipped
-   and the ladder falls to Tier 4/5 (annas rises back toward primary paywall gate only in that
-   degraded state). `.mcp.json` wiring + `OPENATHENS_MCP_API_KEY` activate it at deploy time.
+3. **OpenAthens LIVE, partial publisher coverage** — `openathens-mcp` is deployed
+   (`openathens.cureonics.com/mcp`) with working OpenAthens SP-initiated SAML federation. Full-text
+   extraction succeeds for federation publishers *without* a browser anti-bot wall (Springer,
+   Nature verified); anti-bot-walled publishers (Wiley, Elsevier, OUP, Sage, T&F) return
+   `manual_required` + redirector deep-link (not defeated, by doctrine → open manually or Tier 4/5).
+   If the connector isn't bound in the session, Tier 3 is skipped and the ladder falls to Tier 4/5.
+   Bind with `OPENATHENS_MCP_API_KEY`. (anamnesis unbound on HP → excerpt-only delivery; full text
+   is still retrieved server-side.)
 4. **Publisher anti-bot / account suspension** — the main Tier-3 risk; mitigated by defensive
    pacing (sequential, jitter, per-run + daily caps, personal-use discipline). Persistent risk.
 5. **annas availability** — mirror/SciDB dependent; if a DOI fails, the licensed band + Tier 1/2/6

@@ -1,0 +1,9 @@
+# sci-audit deterministic core — NO third-party dependencies.
+#
+# Every axis core (claim-grounding, stats-forensics, hallucination-signals,
+# turkish-sci-style/tr_sciaudit, all hooks, gecturk_endpoint) runs on the
+# Python 3 standard library alone. There is intentionally nothing to install
+# here — this file documents that fact so CI can assert a stdlib-only core.
+#
+# Run the core tests with no venv:
+#   PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s plugins/sci-audit/tests

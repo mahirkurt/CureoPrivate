@@ -1,0 +1,31 @@
+# sci-audit OPTIONAL layer — CI / local venv only. NEVER required by the
+# deterministic core, and NEVER installed into the claude.ai-web path.
+#
+# Each package below powers an optional provider that degrades to
+# 'unavailable' when absent (the report is never blocked by its absence).
+
+# --- Turkish morphology (axis G7, Zemberek provider) ---
+# GOTCHA: zemberek-python 0.2.3 imports pkg_resources, removed in setuptools 81+.
+# Pin setuptools < 81 in the SAME venv or the import fails.
+setuptools<81
+zemberek-python==0.2.3
+
+# --- Claim-grounding faithfulness (axis B, CI escalation) ---
+# Optional RAGAS faithfulness scoring; claim_grounding.py probes availability
+# and skips gracefully when absent.
+ragas>=0.2
+datasets>=2.19
+
+# --- Semantic entropy NLI backend (axis D, optional) ---
+# Uncomment to wire a local NLI model instead of a Claude subagent:
+# transformers>=4.44
+# torch>=2.3
+
+# --- Observability (optional, CI) ---
+opentelemetry-sdk>=1.27
+opentelemetry-exporter-otlp>=1.27
+
+# Note: the Grok/xAI CI-eval judge (reliability/evals/) uses the stdlib
+# urllib/openai-compatible call and needs only GROK_API_KEY in the CI env —
+# no package pin here. It NEVER runs from the deterministic core, and sends no
+# text unless the key is explicitly present.

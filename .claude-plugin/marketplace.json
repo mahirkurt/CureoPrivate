@@ -206,6 +206,31 @@
         "no-fabrication"
       ],
       "strict": false
+    },
+    {
+      "name": "sci-audit",
+      "displayName": "Scientific Audit",
+      "source": "./plugins/sci-audit",
+      "version": "0.1.0",
+      "description": "LLM tarafından üretilmiş bilimsel metinleri (makale taslağı, tez bölümü, derleme, rapor, abstract) hem adli hem dilsel denetleyen genel amaçlı, alan-bağımsız araç. Yedi denetim ekseni: (A) referans bütünlüğü / uydurma-kaynak tespiti, (B) iddia temellendirme, (C) istatistik tutarlılığı (statcheck/GRIM), (D) halüsinasyon sinyalleri + semantic entropy, (E) raporlama kılavuzu uyumu (PRISMA/CONSORT/STROBE/COREQ/SRQR/JARS/TRIPOD), (F) AI-kullanım şeffaflığı, (G) Türkçe bilimsel dil ve imla (metin Türkçe algılandığında otomatik). Deterministik çekirdek SAF Python stdlib (claude.ai web dahil her ortamda çalışır); ağır bağımlılıklar (Zemberek/RAGAS) opsiyonel katmanda graceful-skip. Uzak-yalnız MCP (pubmed/openalex/semantic-scholar); LLM-yargıç Claude-native style-judge alt-ajanı. No-fabrication: çözülemeyen kaynak/erişilemeyen servis 'unverified' etiketi alır, asla 'geçti' olmaz.",
+      "author": {
+        "name": "Cureonics",
+        "url": "https://cureonics.com"
+      },
+      "category": "scientific-integrity",
+      "keywords": [
+        "scientific-integrity",
+        "hallucination",
+        "citations",
+        "turkish",
+        "imla",
+        "guardrails",
+        "reporting-guidelines",
+        "statcheck",
+        "claim-grounding",
+        "ai-transparency"
+      ],
+      "strict": false
     }
   ]
 }

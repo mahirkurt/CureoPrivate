@@ -1,0 +1,14 @@
+---
+# Example project-level config for sci-audit.
+# Copy to `.claude/sci-audit.local.md` at your project root and edit.
+# The Stop hook reads this frontmatter; absent file => safe defaults below.
+
+lang: auto                    # auto (detect) | tr | en
+gate_unsourced_numeric: true  # Stop-gate (a): block unsourced quantitative claims
+gate_tr_pvalue_dot: true      # Stop-gate (b): block English decimal-dot p-values in Turkish text
+---
+
+# sci-audit local config
+
+Body is free-form notes; only the YAML frontmatter above is read by hooks.
+Add project-specific reviewer notes here if you like — they are not parsed.

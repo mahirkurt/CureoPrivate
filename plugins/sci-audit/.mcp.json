@@ -1,0 +1,21 @@
+{
+  "$comment": "sci-audit bundled scientific-core connectors. REMOTE (HTTP) ONLY — no stdio/local binaries by design (claude.ai-web compatible). Only servers with an official/community REMOTE endpoint are embedded here; anything without one (e.g. crossref) is connected as a claude.ai connector instead — see README 'MCP & connectors'. All embedded servers below are keyless (public bibliographic data); a keyed server uses ${ENV_VAR} expansion, never plaintext. PLACEHOLDER (future): a self-hosted tr-sciaudit-mcp (FastMCP) would be added here as an env-gated remote entry, e.g. {\"type\":\"http\",\"url\":\"https://tr-sciaudit.<host>/mcp\",\"headers\":{\"Authorization\":\"Bearer ${TR_SCIAUDIT_MCP_API_KEY}\"}} — see README.",
+  "mcpServers": {
+    "pubmed": {
+      "type": "http",
+      "url": "https://pubmed.mcp.claude.com/mcp"
+    },
+    "pubmed-epmc": {
+      "type": "http",
+      "url": "https://pubmed.caseyjhand.com/mcp"
+    },
+    "openalex": {
+      "type": "http",
+      "url": "https://openalex.caseyjhand.com/mcp"
+    },
+    "semantic-scholar": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/semanticscholar/mcp"
+    }
+  }
+}

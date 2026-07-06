@@ -9,6 +9,7 @@
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.
 - **Companion skip'inin kapı etkisi manifesto satırında görünür:** `Yarg → skipped: companion bağlı değil ⇒ G5 CONDITIONAL` · `Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL (CELEX degrade: german-law→WebFetch)` · Ansvar skip'inde etkilenen yargı satırları `manual_required` kalır, tablodan silinmez.
+- **Koşullu companion satırları** (Fedlex_Swiss · YokTez · Turk_Patent) yalnız **ilgili bağlam tetiklendiğinde** zorunludur (CH karşılaştırması / tez-doktrin/YÖK-Tez atfı / IP-boyut); tetiklenmiş bağlamda bağlıyken atlanmaları G0 ihlalidir, bağlam yoksa satır yazılmayabilir (yazılırsa `skipped: bağlam dışı` biçiminde).
 - Manifesto, `legal-distiller`'ın döndürdüğü `coverage` bloğundan türetilir; alt-ajan çağrılmadıysa doğrudan araç çağrılarından derlenir.
 
 ## Örnek
@@ -32,9 +33,12 @@ Karşılaştırmalı katman
   oecd                 → hit 1   (sağlık Ar-Ge harcama göstergesi — RIA girdisi)
 Doktrin + companion
   yok-akademik         → hit 4   (ATMP regülasyon doktrin makaleleri)
+  YokTez               → hit 1   (koşullu companion — ATMP hukuku doktora tezi, tez-no teyitli)
   Yarg                 → hit 2   (Danıştay 10.D ruhsat iptali emsali)
   Open_Law             → skipped: companion bağlı değil ⇒ G6 CONDITIONAL (CELEX degrade: german-law get_eu_basis)
   Ansvar               → skipped: companion bağlı değil (Mod 7'de CH/FR/… yargısı yoktu — kapsam etkisi yok)
+  Fedlex_Swiss         → skipped: bağlam dışı (CH karşılaştırma kapsamında değil)
+  Turk_Patent          → skipped: bağlam dışı (IP-boyut yok)
 Delegasyon
   evidentia            → hit     (klinik kanıt: CAR-T/gen tedavi GRADE, sidecar reverse_signals okundu)
   sci-audit            → hit     (atıf-adli 0 uydurma; TR imla 3 düzeltme; istatistik N/A)

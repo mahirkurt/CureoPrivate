@@ -21,10 +21,10 @@ Her sorguda 4 shard'ı **paralel** dağıt (bağımsız görevler — tek turda)
 > "Konu: <T>. Mod: <M>. Şu server'ları süpür: mevzuat, mevzuat-bilgisi, resmi-gazete, saglikbakanligi, titck, tbmm, detsis. TR-mevzuatta KEYWORD arama. Büyük metinleri sen tüket; bana ≤15 bulgu + coverage (her server hit/empty/degraded/skipped) döndür. Kanonik id'leri (mevzuat_no+tur+tertip) not et."
 
 **S2 — Karşılaştırmalı** (`comparative-law-researcher`):
-> "Konu: <T>. Yabancı katman: health-policy, german-law, ich-guidelines, intl-treaty, eudamed, oecd (+bağlıysa Open_Law, Ansvar). Programatik kimlik (CELEX/ECLI/ELI/AKN) zorunlu; URL'siz bulgu döndürme. Mukayese matrisi + coverage döndür."
+> "Konu: <T>. Yabancı katman: health-policy, german-law, ich-guidelines, intl-treaty, eudamed, oecd (+bağlıysa Open_Law, Ansvar; CH kapsamdaysa Fedlex_Swiss — SR-numaralı birincil metin, Ansvar CH bulgusu çerçeve-teyit). Programatik kimlik (CELEX/ECLI/ELI/AKN/SR) zorunlu; URL'siz bulgu döndürme. Mukayese matrisi + coverage döndür."
 
 **S3 — Doktrin/içtihat** (`legal-distiller`):
-> "Konu: <T>. Server: yok-akademik, Yargı (bağlıysa). Doktrin + içtihat zinciri (AYM/Danıştay/Yargıtay). ≤10 bulgu + coverage. İçtihat reform-GEREKÇE sinyalidir; dava dilekçesi değil."
+> "Konu: <T>. Server: yok-akademik, Yargı (bağlıysa); tez-doktrin gerekiyorsa YokTez (bağlıysa — tez no/başlık/yazar teyidi); IP-boyut varsa Türk Patent (bağlıysa). Doktrin + içtihat zinciri (AYM/Danıştay/Yargıtay). ≤10 bulgu + coverage. İçtihat reform-GEREKÇE sinyalidir; dava dilekçesi değil."
 
 **S4 — Klinik** (evidentia `evidence-synthesizer` / `/evidentia`): zenginleştirilmiş sorgu (composition-contract §1).
 

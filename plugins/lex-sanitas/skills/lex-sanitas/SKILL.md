@@ -8,10 +8,11 @@ description: >-
   "yönetmelik/tebliğ taslağı hazırla", "şu maddeyi değiştir", "TBMM kanun teklifi", "1219 SK reform", "TİTCK
   yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki analizi/DEA",
   "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme". Klinik kanıt → evidentia, atıf-adli + Türkçe
-  hukuk dili → sci-audit (kuruluysa ZORUNLU); Yargı/Open Law/Ansvar companion'ları tam-filonun zorunlu üyeleri.
-  Şüphede Scope Guard önceliklidir; bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi
-  KAPSAM DIŞIDIR.
-version: 3.2.0
+  hukuk dili → sci-audit (kuruluysa ZORUNLU); Yargı/Open Law/Ansvar companion'ları tam-filonun zorunlu üyeleri;
+  koşullu companion: Fedlex Swiss (İsviçre/CH mevzuatı), YokTez (tez doktrini), Türk Patent (ilaç IP/SPC/veri
+  imtiyazı). Şüphede Scope Guard önceliklidir; bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon
+  denetimi KAPSAM DIŞIDIR.
+version: 3.3.0
 ---
 
 # Lex-Sanitas — Türkiye Sağlık Mevzuatı Reform Protokolü
@@ -60,11 +61,15 @@ Wire edilmiş 14 server `.mcp.json`'da rol notlarıyla tanımlıdır (bunların 
 - **Resmî metin/yürürlük:** `mcp__resmi-gazete__*`. **İkincil mevzuat/soft-law:** `mcp__saglikbakanligi__*`. **İlaç/cihaz reg:** `mcp__titck__*`. **Yasama tarihçesi:** `mcp__tbmm__*`. **Kurumsal atıf:** `mcp__detsis__*`.
 - **Karşılaştırmalı:** `mcp__health-policy__*` (yabancı ülke resmî-metin — US/CA/JP/AU/ES/IE/CN/MX), `mcp__german-law__*` (DE/AB), `mcp__ich-guidelines__*`, `mcp__intl-treaty__*` (Md.90/5), `mcp__eudamed__*` (AB cihaz), `mcp__oecd__*` (RIA nicel).
   - **Doğal-dil giriş kapısı (health-policy semantik arama):** yabancı sağlık-hukuku için önce `mcp__health-policy__semantic_search` (Türkçe/İngilizce serbest soru → çok-dilli planner native sorgu üretir [JP için Japonca vb.], aranabilir portallarda **US/JP/AU/CN** fan-out + bge-m3 rerank ile soruna göre sıralı sonuç; ID-only yargılar **ES/MX/CA/IE** `excluded_sources`'ta raporlanır → onlar için doğrudan fetch araçlarına düş). Çıktı `mcp_verified:false` + `_caveat` (sezgisel sıralama; yokluk ispat değil). Bir metnin **tam gövdesi/point-in-time hâli** gerekince anahtar-kelime/fetch araçlarına geç (`federal_register_search`, `ecfr_get`, `japan_elaws_fetch`, `australia_legislation_fetch`, `canada_justicelaws_fetch`, `spain_boe_fetch`, `mexico_dof_nota`, `china_law_detail`, `ireland_eisb_fetch`). Semantik arama **keşif**, fetch **doğrulama** katmanıdır.
-- **Doktrin:** `mcp__yok-akademik__*`.
-- **Companion (dış connector — tam-filonun ZORUNLU üyeleri; bkz. `/lex-connectors`):** Yargı içtihat (`mcp__Yarg__*`), Open Law (UK+EU, `mcp__Open_Law__*`), Ansvar (300+ reg korpus, `mcp__Ansvar__*`). Bunlar "bağlıysa opsiyonel" DEĞİLDİR — bağlı oldukları her oturumda, bağlam tetiklendiğinde **çağrılmaları zorunludur** ve kalite kapılarına bağlanmışlardır:
+- **Doktrin:** `mcp__yok-akademik__*` + bağlıysa **YokTez** (`mcp__YokTez_MCP__*`) — YÖK Ulusal Tez Merkezi tam-metin (tez arama + sayfa-sayfa Markdown; yok-akademik profil-metadata'sının tam-metin tamamlayıcısı).
+- **Companion (dış connector — tam-filonun ZORUNLU üyeleri; bkz. `/lex-connectors`):** Yargı içtihat (`mcp__Yarg__*`), Open Law (UK+EU, `mcp__Open_Law__*`), Ansvar (300+ reg korpus, `mcp__Ansvar__*`). *(Önek notu: claude.ai connector'larının araç öneki yüzeye göre `mcp__Yarg__*` ya da `mcp__claude_ai_Yarg__*` biçiminde görünebilir — eşleştirmeyi server ADINA göre yap, önek biçimine göre değil; gerekirse ToolSearch ile çöz.)* Bunlar "bağlıysa opsiyonel" DEĞİLDİR — bağlı oldukları her oturumda, bağlam tetiklendiğinde **çağrılmaları zorunludur** ve kalite kapılarına bağlanmışlardır:
   - **Yargı ↔ G5:** içtihat zinciri (AYM belirlilik/iptal emsali, Danıştay idari-işlem, Yargıtay) HER modda `mcp__Yarg__*` ile taranır (ANALYZE 7-boyut, gerekçe dayanağı, COMPLY K-2/K-17, OPINE mütalaa, TBMM genel gerekçe). Yargı bağlı değilse **G5 tam PASS olamaz → CONDITIONAL** + kullanıcıya connector'ı bağlaması önerilir.
   - **Open Law ↔ G6:** CELEX/EUR-Lex konsolide doğrulama (`fetch_eurlex`) + UK karşılaştırması (Mod 7) + AB müktesebat uyum satırı. Open Law bağlı değilse CELEX doğrulaması german-law `get_eu_basis`/WebFetch'e degrade eder ve **G6 CONDITIONAL** işaretlenir.
-  - **Ansvar ↔ Mod 7 + yatay çerçeveler:** CH/FR/IT/NL/SE/DK/FI/AT/PL + 58-yargı korpusu ve yatay çerçeve/standart sorguları (GDPR/NIS2/veri, `search(jurisdictions=…)` + `get_provision`) Ansvar'a gider. Bu yargılardan biri karşılaştırma kapsamındayken Ansvar atlanamaz; bağlı değilse o yargı satırı `manual_required` + kapsam boşluğu beyanı.
+  - **Ansvar ↔ Mod 7 + yatay çerçeveler:** CH/FR/IT/NL/SE/DK/FI/AT/PL + 58-yargı korpusu ve yatay çerçeve/standart sorguları (GDPR/NIS2/veri, `search(jurisdictions=…)` + `get_provision`) Ansvar'a gider. Bu yargılardan biri karşılaştırma kapsamındayken Ansvar atlanamaz; bağlı değilse o yargı satırı `manual_required` + kapsam boşluğu beyanı. **CH istisnası:** İsviçre federal mevzuatının *birincil metni* için bağlıysa **Fedlex Swiss** önceliklidir (aşağıda); Ansvar CH satırında çerçeve/yatay-tarama katmanı olarak kalır — çatışmada resmî portal (Fedlex) kazanır.
+- **Koşullu companion'lar (dış connector — bağlıyken İLGİLİ BAĞLAM tetiklendiğinde çağrılmaları zorunlu; her sorguda değil):**
+  - **Fedlex Swiss ↔ Mod 7 CH satırı:** `mcp__Fedlex_Swiss__*` — İsviçre federal hukuku resmî portalı (SR-numaralı: `search_by_title` → `get_law_text`/`get_article` → `list_amendments`). Karşılaştırma kapsamına **CH** girdiğinde birincil-metin kaynağı olarak zorunlu (Swissmedic/HMG-ilaç, KVG-sigorta, HFG-araştırma rejimleri); bağlı değilse CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + `manual_required` (Fedlex portal deep-link).
+  - **YokTez ↔ doktrin + G7:** `mcp__YokTez_MCP__*` — tez-düzeyi Türk doktrin gerektiğinde (gerekçe akademik dayanağı, ANALYZE doktrin taraması) yok-akademik ile birlikte taranır; **G7'deki YÖK-Tez atıfları bağlıysa bu connector'la doğrulanır** (tez no/başlık/yazar teyidi — uydurma tez atfı yakalanabilir hale gelir).
+  - **Türk Patent ↔ IP-boyutlu reform:** `mcp__T_rk_Patent__*` (patent/marka/tasarım arama + detay) — konu sınai-mülkiyet kesişimliyse (ilaç patenti, SPC/veri imtiyazı, patent linkage, biyobenzer lansmanı, 6769 SMK kesişimi) DRAFT/RIA/COMPARATIVE'de destek katmanı olarak zorunlu; bağlı değilse IP satırı `manual_required` (TÜRKPATENT portal deep-link).
 
 **Nasıl tam-filo tarama yapılır (retrieve-don't-dump ile):** getirimi **≤4 paralel shard**'a böl (§3.5) ve her shard'ı bir distiller alt-ajanına **tek görevde** ver; alt-ajanlar server'ları paralel süpürür, ham çıktıyı kendi bağlamlarında tüketir, ana bağlama yalnız kompakt `retrieval_distillate` zarfı (~15-20 bulgu, her biri identifier/url'li) + **`coverage` bloğu** (her server: hit/empty/degraded/skipped-with-reason) döner. Bu, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştırır: tüm araçlar ateşlenir, ana pencereye yalnız damıtılmış sonuç + kapsam kanıtı gelir. Bir server yoksa/boşsa → **veri boşluğu** olarak işaretle, doldurma; `degrade_and_label` (fetch fallback + `mcp_verified=false`).
 
@@ -89,7 +94,7 @@ Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır. Kriterler `references/06b-
 | **G2** | 5210 maddi-anayasal uyum (Md.4-9) | Üst-norm uygunluğu, AYM belirlilik, AB müktesebatı, kazanılmış hak, geriye yürümezlik |
 | **G3** | Türk hukuk dili (R9, 15-nokta) | Tabaka seçimi, Md.25 kuralları, yabancı sözcük yok, kısa cümle, ses-uyumu ekleri, anti-pattern temiz |
 | **G4** | Anti-pattern denetimi (27 kalem) | SKILL §7 yasak kalıpların hiçbiri yok |
-| **G5** | İçtihat + doktrin (R13) | AYM/Danıştay/Yargıtay/AİHM/ABAD zinciri (**Yargı companion `mcp__Yarg__*` ile taranmış**) + Türk doktrin (yok-akademik) atıflı. Yargı bağlı değil → en fazla CONDITIONAL |
+| **G5** | İçtihat + doktrin (R13) | AYM/Danıştay/Yargıtay/AİHM/ABAD zinciri (**Yargı companion `mcp__Yarg__*` ile taranmış**) + Türk doktrin (yok-akademik + bağlıysa YokTez tez tam-metni) atıflı. Yargı bağlı değil → en fazla CONDITIONAL |
 | **G6** | Uluslararası kaynak teyidi (R8/10/11/12) | CELEX konsolide doğrulanmış (**birincil araç: Open Law `fetch_eurlex`**; degrade: german-law `get_eu_basis`→WebFetch + CONDITIONAL); WHO/ICH/PIC/S/IMDRF güncel; ICESCR 12+AAAQ kontrol |
 | **G7** | Epistemik dürüstlük | Uydurma kanun/CELEX/AYM/Yargıtay yok; her atıf MCP- veya primer-kaynak-doğrulanmış |
 | **G8** | TBMM kapsam (Mod 8) | 5210 Md.1/3 kapsam-dışı notu; İçtüzük Md.74-91 primer; 9-bölüm iskelet tam |
@@ -120,7 +125,7 @@ Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki 
 ## 7. Çıktı sözleşmesi — kapsam manifestosu + no-fabrication + confidence_label
 
 - **Kapsam manifestosu (G0, zorunlu — çıktı başında veya sonunda):** tam-filonun kanıtı. Her wire'lı MCP + bağlı companion + evidentia + sci-audit için tek satır: `server → durum (hit N kayıt / empty / degraded / skipped: <gerekçe>)`. Bu blok, "hepsi her sorguda çalıştı" iddiasının doğrulanabilir kanıtıdır; eksik satır = G0 FAIL. Örnek biçim `../../shared/coverage-manifest.md`'de.
-- **No-fabrication (G7):** kanun maddesi, CELEX, AYM/Yargıtay/YÖK-Tez, PMID, NCT, NICE-TA, FDA-Guidance başlığı **asla uydurma**. Her referans MCP- veya primer-kaynak-doğrulanmış. Doğrulanamayan → `illustrative_placeholder_not_verified` etiketle, kullanma. Doğrulanamayan referans varsa → **"MCP üzerinden doğrulanamayan referans"** notu.
+- **No-fabrication (G7):** kanun maddesi, CELEX, AYM/Yargıtay/YÖK-Tez, PMID, NCT, NICE-TA, FDA-Guidance başlığı **asla uydurma**. Her referans MCP- veya primer-kaynak-doğrulanmış (YÖK-Tez atıfları bağlıysa YokTez connector'ıyla — tez no/başlık/yazar — doğrulanır). Doğrulanamayan → `illustrative_placeholder_not_verified` etiketle, kullanma. Doğrulanamayan referans varsa → **"MCP üzerinden doğrulanamayan referans"** notu.
 - **evidence_ledger:** her somut bilimsel/hukuki iddia → bir `E###` kaydı (kaynak, GRADE, `mcp_verified` bayrağı, desteklenen bölümler, Vancouver atıf). `status=verified` yalnız `mcp_verified=true` ise. Şema: `schemas/evidence_ledger.schema.json`. Kanıt işaretleri `[E1]/[E2]…` sıralı.
 - **confidence_label (zorunlu, çıktı sonu):** mod + `combined_confidence` (HIGH/MODERATE/LOW) + `human_review_required:true` + çift öz-beyan (lex-sanitas MCP-erişilemezliği & belirsiz yorumlar; evidentia bilgi-boşlukları & tek-kaynak bulgular) + `scope_disclaimer`. Şema: `schemas/confidence_label.schema.json`.
 - **Temiz-kopya doktrini:** nihai metin, süreç gürültüsünden (araç çağrıları, ham getirim) arınmış olmalı.

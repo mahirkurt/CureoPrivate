@@ -22,6 +22,8 @@ Kapılar:
     G-AUDIO         (FAIL) — ses varsa: susturulabilir + reduced-motion + otomatik-oynatma/döngü yok
     G-TOKEN         (WARN) — çekirdek --cds-* değerleri @carbon/themes otoritesiyle birebir; white support-info regresyonu FAIL
     G-CURRICULUM    (FAIL) — koşullu: CURRICULUM modu/curriculum bloğu varsa kazanım→segment izlenebilirliği
+    G-FLOW          (FAIL) — koşullu: gamification imzası varsa merak-boşluğu kapanışı, gain-only streak,
+                    kaygısız pacingDisk, etiketlemeyen uyarlanır zorluk
 """
 import sys, re, argparse
 
@@ -438,6 +440,27 @@ def gate_curriculum(html, R):
         R.add("G-CURRICULUM","PASS",
               f"{len(codes)} kazanım segmente izlenebilir; kaynak damgalı.")
 
+FLOW_LOSS_RE = re.compile(r"(seri(n|ni)?\s*(kaybett|sıfırla|bozdu)|kaybettin|streak\s*lost|başarısız oldun)", re.I)
+FLOW_LABEL_RE = re.compile(r"(zorlan[ıi]yorsun|çok kolay geliyor|seviyen düştü)", re.I)
+def gate_flow(html, R):
+    """Koşullu: gamification akış değişmezleri (merak-boşluğu kapanır, gain-only streak,
+    kaygısız pacingDisk, uyarlanır-zorluk etiketlemez). İmza yoksa uygulanmaz."""
+    has_hook = 'data-seg="hook"' in html or "data-hook" in html
+    has_streak = "streakChip" in html or "streak-chip" in html
+    has_disk = "pacingDisk" in html or "pacing-disk" in html
+    if not (has_hook or has_streak or has_disk):
+        R.add("G-FLOW","PASS","Gamification akış imzası yok (uygulanmaz)."); return
+    issues=[]
+    # açık merak-boşluğu: her hook 'data-hook-resolved' ile kapanmalı
+    n_hook = html.count('data-seg="hook"')
+    n_res  = html.count("data-hook-resolved")
+    if n_hook and n_res < n_hook: issues.append(f"{n_hook - n_res} merak-boşluğu kapanmıyor (data-hook-resolved eksik)")
+    if FLOW_LOSS_RE.search(html): issues.append("streak/kayıp cezalandırıcı dili (gain-only olmalı)")
+    if FLOW_LABEL_RE.search(html): issues.append("uyarlanır-zorluk kullanıcıyı etiketliyor")
+    if has_disk and re.search(r"pacing-disk[^>]*data-countdown", html): issues.append("tempo diski geri-sayım (kaygısız/kesintisiz olmalı)")
+    if issues: R.add("G-FLOW","FAIL","; ".join(issues))
+    else: R.add("G-FLOW","PASS","Akış değişmezleri: merak-boşluğu kapanıyor, gain-only streak, kaygısız disk.")
+
 def main():
     """CLI giriş noktası: HTML yolunu alır, kapıları çalıştırır, rapor basar, çıkış kodu döndürür."""
     ap=argparse.ArgumentParser(description="carbon-edupedia modül doğrulayıcı")
@@ -461,6 +484,7 @@ def main():
     gate_audio(html,R)
     gate_token_authority(html,R)
     gate_curriculum(html,R)
+    gate_flow(html,R)
     R.report()
 
     if R.fail or (args.strict and any(s=="WARN" for _,s,_ in R.rows)):

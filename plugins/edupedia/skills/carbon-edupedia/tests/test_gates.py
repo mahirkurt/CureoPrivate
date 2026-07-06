@@ -31,3 +31,10 @@ def test_gflow_fail_on_loss_streak_language():
 def test_gflow_pass_on_wellformed_flow():
     rows = run_gate(vm.gate_flow, open("tests/fixtures/flow_pass.html").read())
     assert status_of(rows, "G-FLOW") == "PASS"
+
+def test_gflow_skip_branch_when_truly_no_signature():
+    rows = run_gate(vm.gate_flow, open("tests/fixtures/flow_skip_nogami.html").read())
+    assert status_of(rows, "G-FLOW") == "PASS"
+    # skip branch specifically: message says the gate is not applicable
+    msg = next(m for g, s, m in rows if g == "G-FLOW")
+    assert "imza yok" in msg or "uygulanmaz" in msg

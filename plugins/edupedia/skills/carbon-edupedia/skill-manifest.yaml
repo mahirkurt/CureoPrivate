@@ -105,6 +105,8 @@ references:
     read_when: 'Müfredat MCP entegrasyonu (CURRICULUM modu veya herhangi bir modda Müfredat-duyarlılık): araç orkestrasyonu, kazanım çekme, beceri (KB2.x) → etkileşim deseni haritalama, curriculum veri bloğu, provenans + G-CURRICULUM, hata/geri-dönüş. edupedia plugin altında: connector envanteri + kimlik/PDF uyarıları + provenans normatif kaynağı ../../CONNECTORS.md; §2.1 Tier-1/Tier-2 görüntü-dayanak politikası + get_figure yetenek-probu.'
   - path: references/content-enrichment.md
     read_when: 'İçerik zenginleştirme: build-zamanı entegre edilebilir kaynaklar (Wikidata CC0, Wikimedia PD/CC-BY, MathML, spaced-rep) + lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi.'
+  - path: references/carbon-excellence.md
+    read_when: 'Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive, veri-viz palet); G-CARBON-GRID normatif kaynağı.'
 
 # -----------------------------------------------------------------------------
 # Inputs

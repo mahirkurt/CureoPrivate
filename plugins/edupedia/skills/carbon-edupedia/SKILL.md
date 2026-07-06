@@ -123,6 +123,7 @@ hatalardır. İlgili referansı **emisyondan önce** okuyun.
 | `references/audio-system.md` | İşitsel geri bildirim (earcon) tasarımı, kanıt ve sorumlu kullanım; ses + görsel oyunlaştırma. |
 | `references/curriculum-integration.md` | **Müfredat MCP entegrasyonu** (CURRICULUM modu veya herhangi bir modda Müfredat-duyarlılık): 19 aracın orkestrasyonu, kazanım çekme, **beceri (KB2.x) → etkileşim deseni haritalama tablosu**, `curriculum` veri bloğu şeması, provenans + G-CURRICULUM, hata/geri-dönüş. |
 | `references/content-enrichment.md` | İçerik zenginleştirme kaynağı/tekniği seçerken (Wikidata olgu-çipi, Wikimedia PD/CC-BY görsel, native MathML, çapraz-oturum aralıklı-tekrar veri modeli) veya PhET/GeoGebra/Desmos/Khan/EBA/Açık Ders gibi bir kaynağı gömme isteği geldiğinde — lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi + dyslexia-font miti. |
+| `references/carbon-excellence.md` | Görsel-yoğun bir modül (hero, `sim`, `conceptMap`, `vizChart`, çok kartlı düzen) üretirken veya gözden geçirirken — Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive tip-seti, veri-viz palet, ikon/piktogram disiplini); **G-CARBON-GRID** doğrulayıcı kapısının normatif kaynağı. |
 
 ## 6. Modlar (Modes)
 

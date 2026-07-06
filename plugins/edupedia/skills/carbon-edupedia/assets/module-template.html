@@ -163,6 +163,20 @@ body{font-family:var(--font-sans);font-size:var(--fs-body);line-height:1.6;
   border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:var(--sp-02) var(--sp-04)}
 .topbar .streak-chip .cds-icon{color:#ffd56b;width:1rem;height:1rem}
 .topbar .streak-float{color:#ffe9a8}
+/* v3.0.0 — Task 10: kaygısız tempo diski (opsiyonel/varsayılan KAPALI; gamified-flows.md §3.4).
+   Sayısız + kesintisiz: yalnız bir SVG yay, hiçbir sayısal metin/geri-sayım yok. */
+.pacing-disk{display:inline-flex;align-items:center;gap:var(--sp-02);
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:99px;padding:2px 2px 2px var(--sp-03)}
+.pacing-disk[hidden]{display:none}
+.pacing-disk__ring{flex:none}
+.pacing-disk__track{fill:none;stroke:rgba(255,255,255,.32);stroke-width:3}
+.pacing-disk__arc{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round}
+.pacing-disk__dismiss{width:22px;height:22px;border:none;background:transparent;color:#fff;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;opacity:.85}
+.pacing-disk__dismiss:hover{background:rgba(255,255,255,.18);opacity:1}
+.pacing-disk__dismiss:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.pacing-disk__dismiss .cds-icon{width:.8rem;height:.8rem}
 /* yardımcı düğmeler — Carbon ghost ikon düğme dili, ince ayraçla */
 .topbar__tools{display:inline-flex;align-items:center;gap:var(--sp-02);
   padding-left:var(--sp-03);border-left:1px solid rgba(255,255,255,.22)}
@@ -217,6 +231,16 @@ body{font-family:var(--font-sans);font-size:var(--fs-body);line-height:1.6;
 .badge--locked{opacity:.78}
 .badge--earned{border-color:transparent;color:var(--accent-strong);background:var(--accent-tint);font-weight:600}
 .badge--earned .pic,.badge--earned .cds-icon{color:var(--accent-strong)}
+/* v3.0.0 — Task 10: Sefer mini-haritası (opsiyonel; meta.quest.stations, üst-çubuk altında şerit).
+   İlk istasyon completed:true ile bahşedilmiş ilerleme (gamified-flows.md §3.2); gölgesiz düğümler. */
+.quest-map{margin:0 0 var(--sp-06)}
+.quest-map[hidden]{display:none}
+.quest-map__svg{display:block;width:100%;height:auto;max-width:280px;margin:0 auto}
+.quest-map__line{stroke:var(--cds-border-strong);stroke-width:2}
+.quest-map__line--done{stroke:var(--accent-strong)}
+.quest-map__node{fill:var(--cds-layer-02);stroke:var(--cds-border-strong);stroke-width:2}
+.quest-map__node--done{fill:var(--accent-strong);stroke:var(--accent-strong)}
+.quest-map__label{font-family:var(--font-sans);font-size:10px;fill:var(--cds-text-secondary)}
 /* sahne */
 .stage{background:var(--cds-layer-01);border:1px solid var(--cds-border-subtle);
   border-radius:var(--cds-radius);padding:var(--sp-07);flex:1}
@@ -619,6 +643,15 @@ table.viz-table caption{caption-side:top;text-align:left;font-size:var(--fs-labe
             <svg class="cds-icon" aria-hidden="true"><use href="#ic-flash"></use></svg>
             <span class="streak-chip__n">0</span>
           </div>
+          <div class="pacing-disk" id="pacingDisk" aria-label="Tempo diski — temponu görmen için, baskı yok" hidden>
+            <svg class="pacing-disk__ring" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+              <circle class="pacing-disk__track" cx="14" cy="14" r="11"></circle>
+              <circle class="pacing-disk__arc" cx="14" cy="14" r="11" transform="rotate(-90 14 14)"></circle>
+            </svg>
+            <button class="pacing-disk__dismiss" id="pacingDiskDismiss" type="button" aria-label="Tempo diskini gizle">
+              <svg class="cds-icon" aria-hidden="true"><use href="#ic-close"></use></svg>
+            </button>
+          </div>
           <div class="topbar__tools">
             <button class="icon-btn" id="soundBtn" type="button" aria-label="Sesi kapat">
               <svg class="cds-icon" aria-hidden="true"><use href="#ic-volume"></use></svg>
@@ -641,6 +674,8 @@ table.viz-table caption{caption-side:top;text-align:left;font-size:var(--fs-labe
       <div class="badges" id="badgeCase" aria-label="Rozetler"></div>
     </div>
   </header>
+
+  <div class="quest-map" id="questMap" aria-label="Sefer haritası" hidden></div>
 
   <div id="wellbeing" role="status" aria-live="polite"></div>
 
@@ -672,7 +707,7 @@ const MODULE_DATA = {
     accent:"#009d9a", estimatedMinutes:16, coverPictogram:"pic-microscope",
     sourceCitation:"ÖRNEK — gerçek modülde kaynağı buraya yazın (ders kitabı/kazanım)"
   },
-  learner:{ name:"", showTimer:false, breakReminderMin:20 },  // breakReminderMin: 0 = kapalı; nazik mola hatırlatıcı
+  learner:{ name:"", showTimer:false, breakReminderMin:20, pacingDisk:false },  // pacingDisk: v3.0.0 opsiyonel tempo diski, varsayılan KAPALI
   objectives:[
     "Maddenin üç hâlini (katı, sıvı, gaz) tanıyacaksın.",
     "Hâl değişimlerini doğru adlarıyla eşleştireceksin.",
@@ -960,6 +995,7 @@ const MODULE_DATA = {
       speakText(txt, b.getAttribute("data-lang")||defLang(), b);
     });
     renderStreak();
+    renderPacingDisk();
     const brm=(D.learner&&D.learner.breakReminderMin!=null)?D.learner.breakReminderMin:20;
     if(brm>0) breakTimer=setTimeout(showBreakReminder, brm*60000);
     render();
@@ -1085,6 +1121,33 @@ const MODULE_DATA = {
     const chip=$("#streakChip"); if(chip) chip.setAttribute("data-held","true");
   }
 
+  /* ---- v3.0.0 — Task 10: kaygısız tempo diski (opsiyonel; varsayılan KAPALI; gamified-flows.md §3.4).
+     Sayısız + kesintisiz: sayısal geri-sayım/alarm/hard-stop YOK; disk yalnız ortam ipucudur, bir
+     sınır değildir. data-countdown attribute'u KASITLI olarak asla yazılmaz (bkz. G-FLOW kural 3:
+     pacing-?[Dd]isk...data-countdown deseni FAIL üretir). ---- */
+  function renderPacingDisk(){
+    const box=$("#pacingDisk"); if(!box) return;
+    if(!(D.learner && D.learner.pacingDisk===true)){ box.hidden=true; return; }
+    const mins=(D.meta&&D.meta.estimatedMinutes)||20;
+    const totalMs=Math.max(1,mins)*60000, startedAt=Date.now();
+    const arc=box.querySelector(".pacing-disk__arc");
+    const r=11, C=2*Math.PI*r;
+    arc.setAttribute("stroke-dasharray", C.toFixed(2));
+    function paint(){
+      const frac=Math.max(0,Math.min(1,(Date.now()-startedAt)/totalMs));
+      arc.setAttribute("stroke-dashoffset", (C*frac).toFixed(2));
+      return frac;
+    }
+    box.hidden=false;
+    if(reduceMotion()){
+      paint(); // tek kare statik disk — requestAnimationFrame YOK (hareket-azaltma saygısı)
+    } else {
+      (function tick(){ if(paint()<1 && !box.hidden) requestAnimationFrame(tick); })();
+    }
+    const dismiss=$("#pacingDiskDismiss");
+    if(dismiss) dismiss.addEventListener("click",()=>{ box.hidden=true; });
+  }
+
   /* ---- v1.8.0: sesli oku (TTS) — opsiyonel, talep-üzerine, varsayılan KAPALI, otomatik-okuma YOK ---- */
   function defLang(){ return (D.meta&&D.meta.ttsLang) || "tr-TR"; }            // öğretim/anlatım dili
   function contentLang(){                                                      // hedef-dil içeriği (gloss/diyalog)
@@ -1164,8 +1227,34 @@ const MODULE_DATA = {
       if(i>=0){ const st=box.children[i]; if(st) st.classList.add("step--milestone"); }
     });
   }
+  /* ---- v3.0.0 — Task 10: Sefer mini-haritası (opsiyonel; meta.quest.stations,
+     gamified-flows.md §2.2/§3.2 — istasyon[0].completed=bahşedilmiş ilerleme) ---- */
+  function renderQuestMap(){
+    const box=$("#questMap"); if(!box) return;
+    const stations = D.meta && D.meta.quest && D.meta.quest.stations;
+    if(!stations || !stations.length){ box.hidden=true; box.innerHTML=""; return; }
+    box.hidden=false;
+    const n=stations.length, W=Math.max(220,n*70), H=56, cy=22, r=9, gap=W/n;
+    let lines="", nodes="", doneCount=0;
+    stations.forEach((st,i)=>{
+      const cx=gap*(i+0.5);
+      const done = st.completed===true || state.done.has(st.id);
+      if(done) doneCount++;
+      if(i>0){
+        const px=gap*(i-0.5);
+        lines+=`<line x1="${px.toFixed(1)}" y1="${cy}" x2="${cx.toFixed(1)}" y2="${cy}" class="quest-map__line${done?" quest-map__line--done":""}"></line>`;
+      }
+      nodes+=`<circle cx="${cx.toFixed(1)}" cy="${cy}" r="${r}" class="quest-map__node${done?" quest-map__node--done":""}"></circle>`
+        +`<text x="${cx.toFixed(1)}" y="${cy+r+14}" text-anchor="middle" class="quest-map__label">${esc(st.label||"")}</text>`;
+    });
+    const tid="qm"+Math.random().toString(36).slice(2,8);
+    box.innerHTML=`<svg class="quest-map__svg" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${tid}">`
+      +`<title id="${tid}">Sefer haritası: ${stations.length} istasyondan ${doneCount} tamamlandı</title>`
+      +lines+nodes+`</svg>`;
+  }
   function updateRail(){
     renderStepper();
+    renderQuestMap();
     $("#railText").textContent = state.idx>=segs.length
       ? "Tamamlandı" : `Bölüm ${Math.min(state.idx,segs.length-1)+1} / ${segs.length}`;
   }

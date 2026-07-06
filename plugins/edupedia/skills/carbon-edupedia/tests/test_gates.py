@@ -62,6 +62,16 @@ def test_gain_only_streak_no_reset_language():
     rows = run_gate(vm.gate_flow, html); assert status_of(rows, "G-FLOW") == "PASS"
     assert "streak=0" not in html.lower().replace(" ", "")  # resetStreak artık 0'a set etmez
 
+def test_pacingdisk_no_countdown():
+    # Task 10: pacing-disk render edilir, data-countdown YOK (sayısız/kesintisiz disk) → G-FLOW PASS
+    html = open("tests/fixtures/pacing_pass.html").read()
+    rows = run_gate(vm.gate_flow, html); assert status_of(rows, "G-FLOW") == "PASS"
+
+def test_pacingdisk_fail_on_countdown_attribute():
+    # değişmez kanıtı: aynı disk öğesine data-countdown eklenirse G-FLOW FAIL vermeli
+    html = open("tests/fixtures/pacing_fail_countdown.html").read()
+    rows = run_gate(vm.gate_flow, html); assert status_of(rows, "G-FLOW") == "FAIL"
+
 def test_gcarbongrid_spaced_css_shadow_handling():
     # genuine spaced elevation shadow on a static card -> FAIL
     r1 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: 0 2px 6px rgba(0,0,0,.2);}</style>")

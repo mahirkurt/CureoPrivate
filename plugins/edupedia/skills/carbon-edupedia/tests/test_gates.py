@@ -46,3 +46,14 @@ def test_gcarbongrid_fail_on_static_card_shadow():
 def test_gcarbongrid_pass_on_layered_flat():
     rows = run_gate(vm.gate_carbon_grid, open("tests/fixtures/grid_pass.html").read())
     assert status_of(rows, "G-CARBON-GRID") in ("PASS", "WARN")
+
+def test_gcarbongrid_spaced_css_shadow_handling():
+    # genuine spaced elevation shadow on a static card -> FAIL
+    r1 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: 0 2px 6px rgba(0,0,0,.2);}</style>")
+    assert status_of(r1, "G-CARBON-GRID") == "FAIL"
+    # explicit no-shadow (spaced) must NOT FAIL
+    r2 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: none;}</style>")
+    assert status_of(r2, "G-CARBON-GRID") != "FAIL"
+    # inset border-sim (spaced) must NOT FAIL
+    r3 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: inset 0 0 0 2px var(--accent);}</style>")
+    assert status_of(r3, "G-CARBON-GRID") != "FAIL"

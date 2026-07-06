@@ -470,7 +470,7 @@ def gate_flow(html, R):
 # bir derinlik hissi vermez, dolayısıyla madde 3/4'ün hedeflediği ihlal değildir (bkz.
 # assets/module-template.html .card/.card--back flashcard kullanımı — ampirik false-positive).
 STATIC_SHADOW_RE = re.compile(
-    r"\.(card|seg|tile|teach)[^{]*\{[^}]*box-shadow\s*:\s*(?!none)(?!inset)",
+    r"\.(card|seg|tile|teach)[^{]*\{[^}]*box-shadow\s*:(?!\s*(?:none|inset)\b)",
     re.I | re.S)
 
 def gate_carbon_grid(html, R):

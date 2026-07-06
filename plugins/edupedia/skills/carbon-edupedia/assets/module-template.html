@@ -196,9 +196,16 @@ body{font-family:var(--font-sans);font-size:var(--fs-body);line-height:1.6;
 .step--current .step__btn{background:transparent;color:var(--accent-strong);box-shadow:inset 0 0 0 2px var(--accent-strong)}
 .step__line{width:20px;height:1.5px;background:var(--cds-border-subtle);flex:none}
 .step--done .step__line{background:var(--accent-strong)}
+/* v3.0.0 — kilometre taşı (milestone) işareti: aksan nokta, gölgesiz (G-CARBON-GRID) */
+.step--milestone .step__btn{position:relative}
+.step--milestone .step__btn::after{content:"";position:absolute;left:50%;bottom:-5px;
+  transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--accent-strong)}
 .rail-label{font-size:.8125rem;color:var(--cds-text-secondary);display:flex;align-items:center;
   gap:var(--sp-03);flex:none;white-space:nowrap}
 .rail-label #railText{color:var(--cds-text-primary);font-weight:600}
+/* v3.0.0 — hedef-gradyanı: "son N durak" etiketi, yalnız dolu iken görünür */
+.rail-label #railGoal{color:var(--accent-strong);font-weight:600}
+.rail-label #railGoal:empty{display:none}
 /* Carbon Tag rozetleri — kilitli=nötr çip, kazanılan=aksan çip */
 .badges{display:flex;gap:var(--sp-03);flex-wrap:wrap}
 .badges:empty{display:none}
@@ -562,6 +569,8 @@ table.viz-table caption{caption-side:top;text-align:left;font-size:var(--fs-labe
   gap:var(--sp-03);background:var(--reward-bg);color:var(--cds-text-primary);border-radius:99px;
   padding:var(--sp-03) var(--sp-05);white-space:nowrap}
 .streak-chip[hidden]{display:none}
+/* v3.0.0 — gain-only: yanlış cevaptan sonra sıfırlanmaz, yalnız nötr "korundu" görünümü (opacity; ceza dili yok) */
+.streak-chip[data-held="true"]{opacity:.6}
 .streak-chip .cds-icon{color:var(--reward);width:1.1rem;height:1.1rem}
 .streak-chip__n{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .streak-float{position:absolute;left:50%;top:-6px;transform:translateX(-50%);font-family:var(--font-sans);
@@ -627,7 +636,7 @@ table.viz-table caption{caption-side:top;text-align:left;font-size:var(--fs-labe
     <div class="topbar__status">
       <div class="topbar__progress">
         <div class="stepper" id="stepper" role="list" aria-label="Bölüm ilerlemesi"></div>
-        <div class="rail-label"><span id="railText">Bölüm 0 / 0</span><span id="railTime"></span></div>
+        <div class="rail-label"><span id="railText">Bölüm 0 / 0</span><span id="railGoal"></span><span id="railTime"></span></div>
       </div>
       <div class="badges" id="badgeCase" aria-label="Rozetler"></div>
     </div>
@@ -1046,6 +1055,7 @@ const MODULE_DATA = {
     const chip=$("#streakChip"); if(!chip) return;
     if(state.streak>=2){
       chip.hidden=false;
+      chip.removeAttribute("data-held"); // aktif gösterim: nötr "korundu" durumu temizlenir
       const n=chip.querySelector(".streak-chip__n"); if(n) n.textContent=state.streak;
       chip.setAttribute("aria-label","Üst üste "+state.streak+" doğru");
       chip.setAttribute("title","Üst üste "+state.streak+" doğru");
@@ -1069,7 +1079,11 @@ const MODULE_DATA = {
       streakFloat(state.streak);
     }
   }
-  function resetStreak(){ if(state.streak===0) return; state.streak=0; renderStreak(); }
+  function resetStreak(){
+    // v3.0.0 — gain-only (G-FLOW): seri hiçbir zaman 0'a inmez; yalnız nötr "korundu"
+    // işaretine alınır (sayı yerinde kalır). Ceza/kaybetme dili YOK.
+    const chip=$("#streakChip"); if(chip) chip.setAttribute("data-held","true");
+  }
 
   /* ---- v1.8.0: sesli oku (TTS) — opsiyonel, talep-üzerine, varsayılan KAPALI, otomatik-okuma YOK ---- */
   function defLang(){ return (D.meta&&D.meta.ttsLang) || "tr-TR"; }            // öğretim/anlatım dili
@@ -1139,6 +1153,15 @@ const MODULE_DATA = {
       else { btn.disabled = true; }
       wrap.appendChild(btn);
       box.appendChild(wrap);
+    });
+    // v3.0.0 — hedef-gradyanı: son 1-2 durak kalınca "Son N durak" etiketi
+    const left = segs.length - 1 - state.idx;
+    const gg=$("#railGoal");
+    if(gg){ gg.textContent = (left>0 && left<=2) ? "Son "+left+" durak" : ""; }
+    // v3.0.0 — kilometre taşı (bahşedilmiş/hedef-gradyanı) düğümlerini işaretle
+    (D.meta.milestones||[]).forEach(m=>{
+      const i=segs.findIndex(x=>x.id===m.atSegmentId);
+      if(i>=0){ const st=box.children[i]; if(st) st.classList.add("step--milestone"); }
     });
   }
   function updateRail(){

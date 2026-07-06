@@ -55,6 +55,13 @@ def test_hook_segment_renders_and_closes():
     assert 'data-seg="hook"' in html and "data-hook-resolved" in html
     rows = run_gate(vm.gate_flow, html); assert status_of(rows, "G-FLOW") == "PASS"
 
+def test_gain_only_streak_no_reset_language():
+    # v3.0.0 Task 9: resetStreak() artık state.streak'i sıfırlamaz (gain-only);
+    # yalnızca nötr "korundu" (data-held) işaretine alır — kayıp/ceza dili yok.
+    html = open("tests/fixtures/streak_gainonly.html").read()
+    rows = run_gate(vm.gate_flow, html); assert status_of(rows, "G-FLOW") == "PASS"
+    assert "streak=0" not in html.lower().replace(" ", "")  # resetStreak artık 0'a set etmez
+
 def test_gcarbongrid_spaced_css_shadow_handling():
     # genuine spaced elevation shadow on a static card -> FAIL
     r1 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: 0 2px 6px rgba(0,0,0,.2);}</style>")

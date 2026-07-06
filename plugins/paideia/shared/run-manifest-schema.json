@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cureonics.com/paideia/run-manifest-schema.json",
+  "title": "paideia Run Manifest",
+  "description": "paideia (carbon-paideia + Maarif MCP) her modül üretim koşumu için üretilen kayıt. Kanonik artefakt önbelleğini, Maarif MCP connector call ledger'ını (çift-sorgu denetim kanıtı), Tier-2 görüntü-dayanak durumunu ve 11 kalite kapısını içerir. Normatif: CONNECTORS.md + canonical-cache-contract.md.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "ts",
+    "plugin_version",
+    "requested_scope",
+    "connector_call_ledger",
+    "canonical_artifacts",
+    "tier2_status",
+    "quality_gates"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Paideia-YYYYMMDD-<ders>-<konu>-v<N> (ör. Paideia-20260706-fen5-hucre-v1)"
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "plugin_version": {
+      "type": "string",
+      "description": "plugin.json version (ör. 0.1.0)"
+    },
+    "requested_scope": {
+      "type": "object",
+      "description": "Kullanıcı girdisi kapsamı.",
+      "properties": {
+        "command": {
+          "enum": ["modul", "mufredat", "kazanim-bul", "durum", "direct-skill"]
+        },
+        "mode": {
+          "enum": ["MODULE", "QUIZ", "FLASHCARDS", "GAME", "EXPLAINER", "ASSESSMENT", "SERIES", "CURRICULUM"]
+        },
+        "outcome_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "subject_slug": { "type": "string" },
+        "grade": { "type": "string" },
+        "topic": { "type": "string" }
+      }
+    },
+    "connector_call_ledger": {
+      "type": "array",
+      "description": "Her Maarif MCP çağrısı — çift-sorgu yasağı denetimi (canonical-cache-contract.md §6).",
+      "items": {
+        "type": "object",
+        "required": ["tool", "cache"],
+        "properties": {
+          "tool": {
+            "enum": [
+              "server_info", "list_education_levels", "list_subjects", "get_subject",
+              "list_curriculum_programs", "get_curriculum_program", "list_learning_outcomes",
+              "search_learning_outcomes", "search", "list_frameworks", "get_framework",
+              "list_document_kinds", "list_documents", "get_document_text", "list_textbooks",
+              "list_guides", "list_reports", "list_videos", "get_video", "search_figures",
+              "get_figure"
+            ]
+          },
+          "args_summary": { "type": "string" },
+          "cache": { "enum": ["hit", "miss"] }
+        }
+      }
+    },
+    "single_shot_enforced": {
+      "type": "boolean",
+      "description": "true ⇔ hiçbir (tool, scope) çifti iki kez cache:miss değil (aynı get_subject / list_learning_outcomes tek çağrı). false → A7 düşer, G-CURRICULUM raporunda uyarı."
+    },
+    "canonical_artifacts": {
+      "type": "object",
+      "description": "Kanonik artefakt önbelleği — tek-sefer çıkarım kanıtı.",
+      "properties": {
+        "subject_registry": { "$ref": "#/definitions/artifact" },
+        "outcomes_extract": { "$ref": "#/definitions/artifact" },
+        "framework_map": { "$ref": "#/definitions/artifact" },
+        "figure_probe": { "$ref": "#/definitions/artifact" }
+      }
+    },
+    "tier2_status": {
+      "enum": ["unavailable", "degraded", "embedded"],
+      "description": "get_figure yetenek-probu sonucu (CONNECTORS.md §3.1). unavailable=araç yok; degraded=include_image=true başarısız/atlandı, Tier-1'de kalındı; embedded=resmî görsel gömüldü."
+    },
+    "tier2_note": {
+      "type": "string",
+      "description": "Serbest metin: ör. 'tier2_degraded: 413_payload_too_large' veya 'tier2_unavailable: tool_absent'."
+    },
+    "quality_gates": {
+      "type": "object",
+      "description": "scripts/validate_module.py 11 kapısı (koşullu G-CURRICULUM dahil).",
+      "properties": {
+        "G-EMOJI": { "$ref": "#/definitions/gate" },
+        "G-CARBON": { "$ref": "#/definitions/gate" },
+        "G-A11Y": { "$ref": "#/definitions/gate" },
+        "G-INTERACT": { "$ref": "#/definitions/gate" },
+        "G-SELFCONTAINED": { "$ref": "#/definitions/gate" },
+        "G-CONTRAST": { "$ref": "#/definitions/gate" },
+        "G-SVG": { "$ref": "#/definitions/gate" },
+        "G-WELLBEING": { "$ref": "#/definitions/gate" },
+        "G-AUDIO": { "$ref": "#/definitions/gate" },
+        "G-CURRICULUM": { "$ref": "#/definitions/gate" },
+        "G-TOKEN": { "$ref": "#/definitions/gate" }
+      }
+    },
+    "deliverable_path": {
+      "type": "string",
+      "description": "Üretilen tek-dosya HTML modülünün yolu."
+    },
+    "caveats": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "definitions": {
+    "artifact": {
+      "type": "object",
+      "required": ["scope_hash", "status"],
+      "properties": {
+        "scope_hash": {
+          "type": "string",
+          "description": "<artifact_type>:<sha256(scope)[:12]>"
+        },
+        "status": { "enum": ["ok", "degraded"] },
+        "caveat": { "type": "string" }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["PASS", "FAIL", "WARN", "SKIPPED"] },
+        "detail": { "type": "string" }
+      }
+    }
+  }
+}

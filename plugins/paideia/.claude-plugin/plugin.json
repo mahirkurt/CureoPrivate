@@ -1,0 +1,29 @@
+{
+  "name": "paideia",
+  "displayName": "Paideia",
+  "version": "0.1.0",
+  "description": "carbon-paideia (DEHB-odaklı, IBM Carbon v11, tek-dosya etkileşimli öğrenim modülü üreticisi) + Maarif Modeli MCP entegrasyonu. MEB Türkiye Yüzyılı Maarif Modeli (2024) kazanımlarından kazanım-izlenebilir, erişilebilir (WCAG 2.1 AA), emojisiz ama ikon/piktogram/SVG zengini modüller üretir. carbon-paideia flagship skill'i (8 mod, 11 kalite kapısı) + start yönlendiricisi; paketli maarif-mufredat connector'ı (21 araç, kurulur-kurulmaz devrede). Dört komut: /paideia:modul (kazanım kodundan), /paideia:mufredat (ders+sınıf+konudan), /paideia:kazanim-bul (kazanım keşfi), /paideia:durum (connector sağlık). Tier-1 (yazar-üretimli tema-duyarlı SVG + kazanım provenansı) garanti; Tier-2 (get_figure ile resmî görsel gömme) best-effort yetenek-probuyla. Kapsam yalnız Türkiye MEB.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "license": "MIT",
+  "homepage": "https://cureonics.com",
+  "keywords": [
+    "education",
+    "maarif",
+    "meb",
+    "turkiye-yuzyili-maarif-modeli",
+    "adhd",
+    "dehb",
+    "carbon-design-system",
+    "interactive-learning",
+    "curriculum",
+    "kazanim-izlenebilir",
+    "wcag-2.1-aa",
+    "turkiye"
+  ],
+  "commands": "./commands",
+  "skills": "./skills",
+  "mcpServers": "./.mcp.json"
+}

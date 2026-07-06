@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "maarif-mufredat": {
+      "type": "http",
+      "url": "https://mufredat.cureonics.com/mcp"
+    }
+  }
+}

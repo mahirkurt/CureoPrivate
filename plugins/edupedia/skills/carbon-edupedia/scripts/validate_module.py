@@ -24,6 +24,8 @@ Kapılar:
     G-CURRICULUM    (FAIL) — koşullu: CURRICULUM modu/curriculum bloğu varsa kazanım→segment izlenebilirliği
     G-FLOW          (FAIL) — koşullu: gamification imzası varsa merak-boşluğu kapanışı, gain-only streak,
                     kaygısız pacingDisk, etiketlemeyen uyarlanır zorluk
+    G-CARBON-GRID   (FAIL) — statik kartta (gerçek/non-inset) drop-shadow (layer-elevation ihlali);
+                    (WARN) 2x-grid konteyneri, en-boy oranı (aspect-ratio), koreografi >500ms
 """
 import sys, re, argparse
 
@@ -461,6 +463,43 @@ def gate_flow(html, R):
     if issues: R.add("G-FLOW","FAIL","; ".join(issues))
     else: R.add("G-FLOW","PASS","Akış değişmezleri: merak-boşluğu kapanıyor, gain-only streak, kaygısız disk.")
 
+# item 3/4 (carbon-excellence.md §3): statik kart/segment/tile/teach seçicisinde GERÇEK
+# (non-inset) box-shadow = layer-elevation ihlali. `inset` gölgeler kasıtlı olarak dışlanır:
+# sıfır-blur/sıfır-offset bir inset box-shadow (ör. `inset 0 0 0 2px var(--accent)`) görsel
+# olarak `border`den ayırt edilemeyen bir sınır simülasyonu tekniğidir — "yüzen/yükselen"
+# bir derinlik hissi vermez, dolayısıyla madde 3/4'ün hedeflediği ihlal değildir (bkz.
+# assets/module-template.html .card/.card--back flashcard kullanımı — ampirik false-positive).
+STATIC_SHADOW_RE = re.compile(
+    r"\.(card|seg|tile|teach)[^{]*\{[^}]*box-shadow\s*:\s*(?!none)(?!inset)",
+    re.I | re.S)
+
+def gate_carbon_grid(html, R):
+    """WARN→FAIL: Carbon kompozisyon disiplini (carbon-excellence.md §3 makine-alt-kümesi).
+
+    Statik kart gölgesi = FAIL (layer-elevation ihlali; yalnız gerçek/non-inset drop-shadow —
+    bir inset box-shadow sınır simülasyonudur, derinlik hissi vermez, ihlal sayılmaz).
+    2x-grid konteyneri / en-boy oranı (aspect-ratio) yokluğu ve >500ms koreografi = WARN.
+
+    Kapsam notu: carbon-excellence.md §3 dört maddeyi kapsar (1 grid, 2 aspect-ratio,
+    3/4 layer-shadow, 9 koreografi-zamanlaması). Madde 10 (expressive/productive tip-seti
+    karışımı) bu kapıda YOK: aynı bileşen/kart alt-ağacında iki tip-setinin birlikteliğini
+    güvenilir tespit etmek DOM iç-içelik/düzen muhakemesi gerektirir — CSS metin sırası DOM
+    ağacındaki gerçek ebeveyn-çocuk ilişkisini garanti etmediğinden saf regex bunu güvenilir
+    yapamaz → module-auditor'a devredildi (regex ile güvenilir denetlenemez; madde 6 ile
+    aynı gerekçe kategorisi — bkz. carbon-excellence.md §3 "Not").
+    """
+    fails=[]; warns=[]
+    if STATIC_SHADOW_RE.search(html): fails.append("statik kartta drop-shadow (layer-elevation kullan; gölge yalnız floating)")
+    if "cds--grid" not in html and "carbon-grid" not in html and "grid-template-columns" not in html:
+        warns.append("2x grid konteyneri saptanmadı (ad-hoc genişlik riski)")
+    if "aspect-ratio" not in html:
+        warns.append("Carbon en-boy oranı (aspect-ratio) kullanılmıyor")
+    for m in re.finditer(r"transition[^;]*?(\d+)ms", html):
+        if int(m.group(1))>500: warns.append(f"koreografi {m.group(1)}ms >500ms"); break
+    if fails: R.add("G-CARBON-GRID","FAIL","; ".join(fails))
+    elif warns: R.add("G-CARBON-GRID","WARN","; ".join(warns[:3]))
+    else: R.add("G-CARBON-GRID","PASS","Carbon kompozisyon: layer-elevation, grid, en-boy oranı, koreografi <500ms.")
+
 def main():
     """CLI giriş noktası: HTML yolunu alır, kapıları çalıştırır, rapor basar, çıkış kodu döndürür."""
     ap=argparse.ArgumentParser(description="carbon-edupedia modül doğrulayıcı")
@@ -485,6 +524,7 @@ def main():
     gate_token_authority(html,R)
     gate_curriculum(html,R)
     gate_flow(html,R)
+    gate_carbon_grid(html,R)
     R.report()
 
     if R.fail or (args.strict and any(s=="WARN" for _,s,_ in R.rows)):

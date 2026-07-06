@@ -38,3 +38,11 @@ def test_gflow_skip_branch_when_truly_no_signature():
     # skip branch specifically: message says the gate is not applicable
     msg = next(m for g, s, m in rows if g == "G-FLOW")
     assert "imza yok" in msg or "uygulanmaz" in msg
+
+def test_gcarbongrid_fail_on_static_card_shadow():
+    rows = run_gate(vm.gate_carbon_grid, open("tests/fixtures/grid_fail_shadow.html").read())
+    assert status_of(rows, "G-CARBON-GRID") == "FAIL"
+
+def test_gcarbongrid_pass_on_layered_flat():
+    rows = run_gate(vm.gate_carbon_grid, open("tests/fixtures/grid_pass.html").read())
+    assert status_of(rows, "G-CARBON-GRID") in ("PASS", "WARN")

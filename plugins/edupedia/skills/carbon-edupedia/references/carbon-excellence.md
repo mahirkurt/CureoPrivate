@@ -181,27 +181,34 @@ kısmı statik metin/regex/heuristik ile güvenilir biçimde denetlenebilirken b
 (ör. "başlık gerçekten içgörü taşıyor mu", "aksan gerçekten anlam taşıyor mu")
 **anlam/yargı** gerektirir ve şimdilik `module-auditor` ajanının (spec §7)
 insan-benzeri değerlendirmesine bırakılır. **G-CARBON-GRID** kapısı (spec §6.2;
-WARN→FAIL) yalnız aşağıdaki beş maddenin **statik-metin-denetlenebilir** alt-kümesini
+WARN→FAIL) aşağıdaki **dört maddenin** **statik-metin-denetlenebilir** alt-kümesini
 kapsar — bu tablo Task 7'nin (kapı implementasyonu) tam olarak neyi denetleyeceğinin
-normatif sözleşmesidir:
+normatif sözleşmesidir (madde 10 aday olarak değerlendirilmiş, ancak Task 7'de
+`module-auditor`'a devredilmiştir — gerekçe için tablo altındaki Not'a bakın):
 
 | Madde | Kural | Heuristik yaklaşım | Sonuç sınıfı |
 |---|---|---|---|
 | **1** — Grid | 16-sütun grid konteyneri | HTML'de `cds--grid`/`carbon-grid` sınıfı **veya** CSS'te `grid-template-columns` varlığı; üçü de yoksa ad-hoc genişlik riski | WARN (yokluk) |
 | **2** — En-boy oranı | Media/figür/tile Carbon oranı kullanır | CSS'te `aspect-ratio` özelliği varlığı (altı standart değerden biri) | WARN (yokluk) |
-| **3/4** — Layer-elevation | Derinlik layer'la, gölge yalnız floating'de | Regex: statik kart/segment/tile/teach seçicilerinde (`.card`,`.seg`,`.tile`,`.teach`) `box-shadow` **≠ none** araması | **FAIL** (tek ağır-ihlal seviyeli madde — statik kartta gölge, en güçlü jenerik belirtisi) |
+| **3/4** — Layer-elevation | Derinlik layer'la, gölge yalnız floating'de | Regex: statik kart/segment/tile/teach seçicilerinde (`.card`,`.seg`,`.tile`,`.teach`) gerçek (non-inset) `box-shadow` **≠ none** araması — sıfır-blur `inset` gölgeler (border simülasyonu, ör. `inset 0 0 0 2px`) kasıtlı olarak dışlanır (derinlik/floating hissi vermez, bkz. `gate_carbon_grid` docstring) | **FAIL** (tek ağır-ihlal seviyeli madde — statik kartta gölge, en güçlü jenerik belirtisi) |
 | **9** — Koreografi zamanlaması | Stagger ~20ms, toplam <500ms, tek geçiş 100–300ms | Regex: `transition`/`animation` bildirimlerinde `Nms` süre yakala; `N>500` bulunursa bütçe aşımı | WARN (aşım) |
-| **10** — Tip-seti karışımı | Expressive yalnız hero/başlık, gövde/quiz productive | Heuristik: aynı bileşen/kart alt-ağacında hem expressive tipografi sınıfı/token'ı (ör. `--fs-display`, `.hero`, serif akışkan başlık) hem de productive gövde/soru sınıfı **birlikte** aranır — CSS metin sırası DOM iç-içeliğini garanti etmediğinden bu, saf regex'ten daha **DOM/heuristik-ağırlıklı** bir kontroldür (Task 7'de netleşecek) | WARN (eş-varlık saptanırsa) |
 
-**Not — madde 6 (ölçü-sınırlı gövde metni) neden bu alt-kümede değil:** tasarım spec'i
-§6.2'nin taslak nesir metni "edge-to-edge gövde metni"ni bir ağır-ihlal örneği olarak
-anar; ancak bunu güvenilir biçimde tespit etmek **render edilmiş sütun genişliğinin
-hesaplanmasını** gerektirir — statik metin/regex taraması bunu yapamaz. Bu yüzden
-madde 6, G-CARBON-GRID'in ilk sürümünün **dışında** tutulmuştur ve `module-auditor`
-ajanının görsel/semantik değerlendirmesine bırakılmıştır. Kalan maddeler (beşinci,
-yedinci, sekizinci, on birinci ilâ on beşinci arası) de aynı nedenle şimdilik
-ajan-denetimli kalır; bu tablo yalnız **bugün** regex/heuristik ile güvenilir
-yakalanabilecek beş maddeyi listeler — küme zamanla genişleyebilir, daralmaz.
+**Not — madde 6 (ölçü-sınırlı gövde metni) ve madde 10 (tip-seti karışımı) neden bu
+alt-kümede değil:** tasarım spec'i §6.2'nin taslak nesir metni "edge-to-edge gövde
+metni"ni bir ağır-ihlal örneği olarak anar; ancak bunu güvenilir biçimde tespit etmek
+**render edilmiş sütun genişliğinin hesaplanmasını** gerektirir — statik metin/regex
+taraması bunu yapamaz. Bu yüzden madde 6, G-CARBON-GRID'in ilk sürümünün **dışında**
+tutulmuştur. Madde 10 (expressive/productive tip-seti karışımı) de **module-auditor'a
+devredildi** (regex ile güvenilir denetlenemez): aynı bileşen/kart alt-ağacında hem
+expressive tipografi sınıfı/token'ı (ör. `--fs-display`, `.hero`, serif akışkan başlık)
+hem de productive gövde/soru sınıfının **birlikteliğini** güvenilir tespit etmek **DOM
+iç-içelik/düzen muhakemesi** gerektirir — CSS metin sırası DOM ağacındaki gerçek
+ebeveyn-çocuk ilişkisini garanti etmediğinden saf regex bunu yapamaz. Her iki madde de
+`module-auditor` ajanının görsel/semantik değerlendirmesine bırakılmıştır. Kalan
+maddeler (beşinci, yedinci, sekizinci, on birinci ilâ on beşinci arası) de aynı nedenle
+(statik regex'in aşamayacağı bir muhakeme gerektirdikleri için) şimdilik ajan-denetimli
+kalır; bu tablo yalnız **bugün** regex/heuristik ile güvenilir yakalanabilecek **dört**
+maddeyi listeler — küme zamanla genişleyebilir, daralmaz.
 
 ## 4. Jenerik belirtiler → uzman düzeltme (hızlı karşılaştırma)
 

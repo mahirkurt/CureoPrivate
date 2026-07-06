@@ -59,7 +59,7 @@ QID kaynak damgasına eklenir). Bu, Wikidata'yı yalnızca **atomik olgular** i�
 uygun kılar: tarih, miktar gibi kesin/sayısal değerler — uzun editoryal veya
 anlatı metni için değil (zaten Wikidata öyle bir kaynak sunmaz).
 
-Akış: derleme anında ilgili varlık sorgulanır → dönen değer `MODULE_DATA`'ya
+Akış: derleme anında build-zamanı SPARQL sorgusu ile ilgili varlık sorgulanır → dönen değer `MODULE_DATA`'ya
 **donmuş** biçimde yazılır (çalışma anında bir daha Wikidata'ya gidilmez) →
 kaynak damgasına **QID + çekim tarihi** eklenir. Kritik sınır: Wikidata olgusu,
 **Maarif kazanım metnine veya kullanıcı kaynağına uzlaştırılmalıdır** —
@@ -149,11 +149,10 @@ her zaman Tier-1 yazar-SVG'ye dönmektir (`svg-authoring.md`) — bu skill'in
 seçmek, disleksili/okuma güçlüğü olan öğrenciler için otomatik olarak okuma
 performansını iyileştirir.
 
-**Kanıt bunu desteklemiyor.** [PMC'de indekslenmiş bir çalışma](https://pmc.ncbi.nlm.nih.gov/articles/PMC5629233/),
-OpenDyslexic'in güvenilir bir okuma-performansı kazancı sağlamadığını; buna
-karşılık standart **sans-serif** fontların (Arial, Verdana) en az onun kadar
-iyi — bazı ölçümlerde daha iyi — test edildiğini bildirir. Özel bir "disleksi
-fontu" yatırımı, kanıtla desteklenmeyen bir sezgiye dayanır.
+**Kanıt bunu desteklemiyor.** [PMC'de indekslenmiş bir çalışma](https://pmc.ncbi.nlm.nih.gov/articles/PMC5629233/)
+özel disleksi fontunun (OpenDyslexic) okuma hızı/doğruluğunda güvenilir bir fayda
+sağlamadığını; standart fontların en az onun kadar — çoğu ölçümde daha iyi — okunduğunu
+bildirir. Özel bir "disleksi fontu" yatırımı, kanıtla desteklenmeyen bir sezgiye dayanır.
 
 **İyi haber:** `carbon-edupedia` zaten IBM Plex Sans/Mono kullanır — bu
 hâlihazırda kanıtla uyumlu bir humanist sans-serif seçimidir

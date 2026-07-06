@@ -126,12 +126,15 @@ meta: {
 ```
 
 **Kanıt:** oyunlaştırılmış seviye-ilerleme + uyarlanır zorluk birlikte
-uygulandığında 8 haftalık bir DEHB RCT'sinde dikkat (d≈0.92–0.98) ve akademik
-(d≈0.98–1.25) kazanımları **kalıcı** biçimde artırmıştır
+uygulandığında 8 haftalık bir DEHB RCT'sinde dikkat ve akademik kazanımlarda
+**büyük etki büyüklükleri (d>0.9) ve 8 hafta sonunda korunan kazanımlar**
+saptanmıştır
 ([Dai, Wufue & Zhang 2025, *Front. Educ.*](https://doi.org/10.3389/feduc.2025.1668260)).
-Bahşedilmiş ilerleme hedef-gradyanı etkisinin bir uzantısıdır
-([Kivetz, Urminsky & Zheng 2006](https://www.researchgate.net/publication/239776073);
-[LogRocket açıklaması](https://blog.logrocket.com/ux-design/goal-gradient-effect/)).
+Bahşedilmiş ilerleme hedef-gradyanı etkisinin bir uzantısıdır — hedef-gradyanı
+temeli için [Kivetz, Urminsky & Zheng 2006](https://www.researchgate.net/publication/239776073),
+bahşedilmiş ilerlemenin birincil kaynağı için Nunes & Drèze 2006 (*Journal of
+Consumer Research*), ikincil açıklama için
+[LogRocket](https://blog.logrocket.com/ux-design/goal-gradient-effect/).
 Avatar seçimi Proteus etkisiyle gerekçelenir — bir temsilci seçmek/kullanmak
 küçük-orta düzeyde davranış/motivasyon etkisi taşır (Yee & Bailenson 2007;
 [Ratan ve ark. 2020 meta-analiz](https://www.tandfonline.com/doi/full/10.1080/15213269.2019.1623698)).
@@ -243,7 +246,9 @@ henüz hiçbir şey yapmadan **önceden tamamlanmış** işaretlenir.
 arttığını gösterir ([Kivetz, Urminsky & Zheng 2006](https://www.researchgate.net/publication/239776073)).
 **Bahşedilmiş ilerleme** (endowed progress) bu etkinin bir uzantısıdır:
 kullanıcıya henüz hak etmediği bir baş-ilerleme verildiğinde tamamlama
-olasılığı artar ([LogRocket açıklaması](https://blog.logrocket.com/ux-design/goal-gradient-effect/)).
+olasılığı artar. Birincil kaynak Nunes & Drèze 2006'dır (*Journal of Consumer
+Research*; bkz. §6 Kaynakça); [LogRocket açıklaması](https://blog.logrocket.com/ux-design/goal-gradient-effect/)
+ikincil bir anlatı özetidir.
 
 **HTML/motor tezahürü:** `meta.milestones[]` üst-düzey ilerleme rayında
 düğümler olarak render edilir; son iki düğüme yaklaşıldığında ray "son iki
@@ -360,13 +365,16 @@ yoksa **atlanır**, geriye uyum) yalnız aşağıdaki **statik-metin/şema-
 denetlenebilir** dört kuralı kapsar — bu tablo, kapı implementasyonunun tam
 sözleşmesidir:
 
-| # | Kural | Heuristik yaklaşım | Sonuç sınıfı |
+| # | Kural | Kontrol (marker/regex) | Sonuç sınıfı |
 |---|---|---|---|
-| 1 | **Kanca kapanışı.** Her `hook` segmentinin `resolvesIn`'i `segments[]` içinde var olan bir `id`'ye karşılık gelir. | `MODULE_DATA` taraması: `type:"hook"` nesnelerinin `resolvesIn` değerini diğer segment `id`'leriyle eşleştir (`G-CURRICULUM`'un `mappedTo`↔`segments` deseniyle aynı teknik). | **FAIL** (eşleşme yoksa = açık merak-boşluğu, §4 madde 8) |
-| 2 | **Gain-only streak dili.** Streak/XP metinlerinde kayıp-çerçeveli dil yok. | Regex kara liste: "kaybettin", "serin bozuldu", "sıfırlandı", "-XP", "canını kaybet" vb. | **FAIL** (eşleşirse) |
-| 3 | **`pacingDisk` sayısız + kesintisiz.** `pacingDisk` etkinse sayısal geri-sayım/hard-stop deseni yok. | Regex: azalan sayaç metni (`\d+\s*sn` / `\d+\s*saniye`, `\d{1,2}:\d{2}` biçimi) veya geri-sayıma bağlı engelleyici olay (segment-kilit/otomatik-ilerleme) taraması. | **FAIL** (bulunursa) |
-| 4 | **Etiketlemeyen uyarlanır zorluk.** `tier` geçişiyle ilişkili ikinci-tekil etiketleyici/yargılayıcı dil yok. | Regex kara liste: "zorlanıyorsun", "yavaşsın", "başarısızsın", "kolay geldi çünkü…" vb. | **FAIL** (eşleşirse) |
+| 1 | **Kanca kapanışı.** Her `hook` segmentinin `resolvesIn`'i `segments[]` içinde var olan bir `id`'ye karşılık gelir. | Render edilmiş HTML'de her `[data-seg="hook"]` öğesinin karşılığında bir `data-hook-resolved="<hookId>"` markeri var mı taraması (§3.1'deki motor tezahürüyle aynı marker çifti). | **FAIL** (karşılık gelen marker yoksa = hiç kapanmayan kanca, §4 madde 8) |
+| 2 | **Gain-only streak dili.** Streak/XP metinlerinde kayıp-çerçeveli/ceza dili yok. | Regex kara liste: "kaybettin", "serin bozuldu", "sıfırlandı", "-XP", "canını kaybet" vb. | **FAIL** (eşleşirse) |
+| 3 | **`pacingDisk` sayısız + kesintisiz.** Etkin bir tempo-diski öğesi sayısal geri-sayım/hard-stop taşımaz. | Render edilmiş HTML'de tempo-diski öğesi bir `data-countdown` attribute'u **taşımaz** (ve yanında sayısal geri-sayım/hard-stop deseni yoktur). | **FAIL** (bulunursa) |
+| 4 | **Etiketlemeyen uyarlanır zorluk.** `tier` geçişiyle ilişkili ikinci-tekil etiketleyici/yargılayıcı dil yok ("zorlanıyorsun" vb. yok). | Regex kara liste: "zorlanıyorsun", "yavaşsın", "başarısızsın", "kolay geldi çünkü…" vb. | **FAIL** (eşleşirse) |
 | — | **İlgili alan yokluğu.** Modülde `hook`/`pacingDisk`/`tier`/`meta.quest`/`meta.milestones` alanlarının hiçbiri yoksa. | Alan taraması boş döner. | Kapı **atlanır** (geriye uyum — mevcut modüller kırılmaz) |
+
+Kesin regex/uygulama Task 6 `gate_flow`'da; bu bölüm denetlenen değişmezi
+tanımlar.
 
 **Not — Birlikte Odak (§2.4) neden bu alt-kümede yok:** bu şablon yeni bir
 segment tipi veya persist edilen alan taşımaz (yalnız var olan
@@ -390,33 +398,50 @@ yüzeyini (kanca, streak, disk, zorluk-etiketleme) ekler.
 - Loewenstein, G. (1994). The psychology of curiosity: A review and
   reinterpretation. *Psychological Bulletin*, 116(1). (bilgi-boşluğu kuramı;
   kanonik, URL yok)
-- Kao, D. ve ark. (2024). Curiosity as a Motivational Pathway. *CHI 2024*.
+- Kao, D. ve ark. (2024). How does Juicy Game Feedback Motivate? Testing
+  Curiosity, Competence, and Effectance. *CHI 2024*.
   https://dl.acm.org/doi/10.1145/3613904.3642656
-- Açık merak-boşluğu → frustrasyon bulgusu.
+- Schweitzer, V. M., Gerpott, F. H., Rivkin, W., & Stollberger, J. (2023).
+  (Don't) mind the gap? Information gaps compound curiosity yet also feed
+  frustration at work. *Organizational Behavior and Human Decision
+  Processes*, 178.
   https://www.sciencedirect.com/science/article/abs/pii/S0749597823000523
 - Kivetz, R., Urminsky, O., & Zheng, Y. (2006). The Goal-Gradient Hypothesis
-  Resurrected. *Journal of Marketing Research*.
+  Resurrected: Purchase Acceleration, Illusionary Goal Progress, and
+  Customer Retention. *Journal of Marketing Research*, 43(1).
   https://www.researchgate.net/publication/239776073
-- Bahşedilmiş ilerleme (endowed progress) — LogRocket açıklaması.
+- Nunes, J. C., & Drèze, X. (2006). The Endowed Progress Effect: How
+  Artificial Advancement Increases Effort. *Journal of Consumer Research*,
+  32(4). (bahşedilmiş ilerlemenin birincil kaynağı; kanonik, URL yok)
+- Bahşedilmiş ilerleme (endowed progress) — LogRocket açıklaması (ikincil).
   https://blog.logrocket.com/ux-design/goal-gradient-effect/
-- Dai, Wufue, & Zhang (2025). Gamified level-progression & adaptive
-  difficulty, 8-week ADHD RCT. *Frontiers in Education*, 8.
+- Dai, Wufue, & Zhang (2025). Effectiveness of a gamified educational
+  application on attention and academic performance in children with ADHD:
+  an 8-week randomized controlled trial. *Frontiers in Education*, 10.
   https://doi.org/10.3389/feduc.2025.1668260
 - Zohaib, M. (2018). Dynamic Difficulty Adjustment (DDA) in Computer Games:
   A Review. *Advances in Human-Computer Interaction*.
   https://onlinelibrary.wiley.com/doi/10.1155/2018/5681652
-- Hallez, Q., & Vallier, F. (2025). Non-anxious visual timer disk for
-  children. *European Journal of Investigation in Health, Psychology and
-  Education*. https://pmc.ncbi.nlm.nih.gov/articles/PMC12731990/
-- Eagle, L., Baltaxe-Admony, L. B., & Ringland, K. E. (2024). Body doubling
-  for neurodivergent focus. *ACM Transactions on Accessible Computing
-  (TACCESS)*. https://dl.acm.org/doi/full/10.1145/3689648
-- Yee, N., & Bailenson, J. (2007). The Proteus Effect. *Human Communication
+- Hallez, Q., & Vallier, F. (2025). Time on Their Side: How Visual Timers
+  Affect Anticipatory Anxiety, Performance, and On-Task Behavior in
+  Elementary Math Assessments. *European Journal of Investigation in Health,
+  Psychology and Education*. https://pmc.ncbi.nlm.nih.gov/articles/PMC12731990/
+- Eagle, L., Baltaxe-Admony, L. B., & Ringland, K. E. (2024). "It Was
+  Something I Naturally Found Worked and Heard About Later": An
+  Investigation of Body Doubling with Neurodivergent Participants. *ACM
+  Transactions on Accessible Computing (TACCESS)*, 17(3).
+  https://dl.acm.org/doi/full/10.1145/3689648
+- Yee, N., & Bailenson, J. (2007). The Proteus Effect: The Effect of
+  Transformed Self-Representation on Behavior. *Human Communication
   Research*, 33(3). (kanonik, URL yok)
-- Ratan, R. ve ark. (2020). Avatar characteristics & the Proteus effect,
-  meta-analysis. https://www.tandfonline.com/doi/full/10.1080/15213269.2019.1623698
+- Ratan, R. ve ark. (2020). Avatar Characteristics Induce Users' Behavioral
+  Conformity with Small-to-Medium Effect Sizes: A Meta-Analysis of the
+  Proteus Effect. *Media Psychology*, 23(5).
+  https://www.tandfonline.com/doi/full/10.1080/15213269.2019.1623698
 - Hanus, M. D., & Fox, J. (2015). Assessing the effects of gamification in
-  the classroom (leaderboard harms). *Computers & Education*.
+  the classroom: A longitudinal study on intrinsic motivation, social
+  comparison, satisfaction, effort, and academic performance. *Computers &
+  Education*, 80.
   https://www.sciencedirect.com/science/article/abs/pii/S0360131514002000
 - Duolingo streak = kayıp-aversiyonu vaka incelemesi.
   https://trophy.so/blog/duolingo-gamification-case-study

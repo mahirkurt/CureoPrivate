@@ -1,0 +1,31 @@
+{
+  // globocan-mcp — Cloudflare Worker (Cureonics self-host, evidentia Tier-K-epi). Deploy: `wrangler deploy`.
+  // KEYLESS by design: upstream IARC GLOBOCAN 2022 API (gco-api.iarc.fr) is authless + headerless and
+  // this Worker holds NO server-side secret. MCP_ALLOW_NO_AUTH="1" (who-gho/drugddx precedent).
+  // The hardened OAuth layer is retained (additive) for claude.ai/ChatGPT connector flows.
+  // SECRETS ARE NOT DECLARED HERE (invariant 6); only needed if you re-gate:
+  //   wrangler secret put MCP_API_KEY
+  //   wrangler secret put AUTH_HMAC_SECRET
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "globocan-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "MCP_OBJECT", "class_name": "Globocan" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Globocan"] }
+  ],
+
+  // NON-SECRET vars only. MCP_ALLOW_NO_AUTH="1" => keyless (read-only authless-upstream proxy).
+  "vars": {
+    "MCP_ALLOW_NO_AUTH": "1",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+  },
+
+  "observability": { "enabled": true }
+}

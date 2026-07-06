@@ -1,0 +1,29 @@
+{
+  "name": "ema-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Keyless Cloudflare Worker MCP exposing the EMA EPAR medicines dataset (European Public Assessment Reports) to the evidentia plugin: EU medicine authorisation status, CHMP opinion/decision dates, orphan/conditional/accelerated flags, ATC, INN, MAH, indication and EPAR URLs. Baked corpus (build_corpus.mjs) from the authless EMA XLSX; closes evidentia's EMA/CHMP-EPAR gap.",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build:corpus": "node scripts/build_corpus.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "agents": "^0.0.80",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/workers-types": "^4.20250620.0",
+    "typescript": "^5.6.0",
+    "vitest": "~3.2.0",
+    "wrangler": "^4.20.0",
+    "xlsx": "^0.18.5"
+  }
+}

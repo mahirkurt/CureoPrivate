@@ -54,19 +54,24 @@ Kontrol listesi (gruba göre):
 1. **Akademik çekirdek** — PubMed/EPMC, Clinical Trials, Consensus, Scholar Gateway, bioRxiv,
    YÖK Tez.
 2. **Curated + mekanizma** — AdisInsight, ChEMBL (+ Synapse/OpenTargets/Wiley koşullu).
-3. **Türkiye Dörtlüsü + IP** — TİTCK (+ Cache), Mevzuat, Türk Patent, openfda (latency!),
-   NPI, annas-mcp.
+3. **Türkiye Dörtlüsü + IP + AB regülatuar** — TİTCK (+ Cache), Mevzuat, Türk Patent, openfda (latency!),
+   **ema** (AB merkezi ruhsat + CHMP/EPAR, keyless — openFDA'nın AB muadili), NPI, annas-mcp.
 4. **Extended Tier-K (genişletme · first-class v8.5)** — med-terminologies, NIH Clinical Tables, NLM RxNorm,
    IUPHAR GtoPdb → **topluluk-yayıncı: least-privilege, sandbox-first; TOOL-whitelist + çapraz-doğrulama**
    (connector-registry §2.6; kırık D1/D2/D3/D6 araçları çağrılmaz, pipeworx jenerikleri whitelist-dışı).
-5. **Tier-K-epi** — PopHIVE (ABD sürveyans, eksen 0.5.K → §1.P/§21). **YALNIZCA ABD** (global/Türkiye yük = belgelenmiş boşluk; precomputed kanıt birebir aktarılır).
+5. **Tier-K-epi** — PopHIVE (ABD sürveyans, eksen 0.5.K → §1.P/§21; **YALNIZCA ABD**, precomputed kanıt birebir aktarılır) **+ who-gho** (WHO GHO OData, keyless self-host — **küresel/ülke hastalık yükü**, Türkiye dahil; PopHIVE'ın ABD-only boşluğunu kapatır) **+ globocan** (IARC GLOBOCAN 2022, keyless — **küresel/ülke kanser insidans+mortalite**, Türkiye dahil; who-gho'yu kanser-özelinde tamamlar; **IHME/GBD hâlâ boşluk**; değerler modellenmiş tahmin/GHO-karışımı → `ui`/caveat taşı).
 6. **Self-host (Tier-O)** — drugddx (**CANLI**, klinik-DDI), anamnesis (RAG/GraphRAG), evidentia-kb (kb_search booster), openfda (openFDA + WHO ICD-11; latency!).
 7. **İkincil / koşullu** — Mevzuat Bilgisi (primer Mevzuat'a çapraz-kontrol aynası), Elicit (OAuth, claude.ai-bağlı; tools/list canlı probe bekliyor — zorunlu listede değil).
 
-> **Yüzey ayrımı (kritik):** **Claude Code**'da plugin `.mcp.json` roster'ını otomatik bağlar.
-> **claude.ai web**'de Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom
-> connector** ile, Tier-A OAuth'u Advanced settings ile **manuel** eklenir. "Her şey otomatik
-> bağlı" varsaymayın; eksikse kullanıcıya hangi connector'ı nereden ekleyeceğini söyleyin.
+> **Yüzey ayrımı (kritik):** **Claude Code**'da plugin `.mcp.json` roster'ını otomatik bağlar
+> (who-gho, openfda, anamnesis, med-terminologies… — statik-URL Tier-K/Tier-O). **claude.ai web**'de
+> bu remote URL'ler **Settings → Connectors → Add custom connector** ile eklenir. **Directory/OAuth
+> connector'ları (PubMed, ClinicalTrials, Consensus, Elicit, bioRxiv, NPI, AdisInsight) `.mcp.json`'da
+> HİÇ görünmez** — hesap-düzeyinde Directory/Settings-OAuth ile bağlanır (kanonik tablo +
+> yüzey-adımları: `CONNECTORS.md §1.0`; kurulum: `docs/EVIDENTIA-KURULUM-VE-KEYLER.md` Yol D).
+> "Her şey otomatik bağlı" varsaymayın; eksikse kullanıcıya hangi connector'ı nereden ekleyeceğini
+> söyleyin. `known_connected:` (Adım 2.0) directory connector'ları bağlı-ilan edip probe gürültüsünü
+> keser (`docs/evidentia.local.md.example`).
 
 Eksik connector → graceful: o eksenin **fallback merdivenini** (CONNECTORS.md §2) belirtin,
 araştırmayı durdurmayın.

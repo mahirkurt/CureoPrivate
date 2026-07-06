@@ -1,0 +1,31 @@
+{
+  // ema-mcp — Cloudflare Worker (Cureonics self-host, evidentia Tier-O). Deploy: `wrangler deploy`.
+  // KEYLESS by design: serves a BAKED public dataset (EMA EPAR medicines, src/data.gen.ts) — no
+  // runtime upstream call, no server-side secret. MCP_ALLOW_NO_AUTH="1" (drugddx precedent).
+  // The hardened OAuth layer is retained (additive) for claude.ai/ChatGPT connector flows.
+  // SECRETS ARE NOT DECLARED HERE (invariant 6); only needed if you re-gate:
+  //   wrangler secret put MCP_API_KEY
+  //   wrangler secret put AUTH_HMAC_SECRET
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ema-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "MCP_OBJECT", "class_name": "Ema" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Ema"] }
+  ],
+
+  // NON-SECRET vars only. MCP_ALLOW_NO_AUTH="1" => keyless (baked public dataset, no secret).
+  "vars": {
+    "MCP_ALLOW_NO_AUTH": "1",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+  },
+
+  "observability": { "enabled": true }
+}

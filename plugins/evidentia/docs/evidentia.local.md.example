@@ -1,0 +1,46 @@
+---
+# evidentia proje ayarları — ÖRNEK ŞABLON.
+# Kullanım: bu dosyayı proje kökünde `.claude/evidentia.local.md` olarak kopyalayın ve düzenleyin.
+# `start` skill'inin Adım 2.0'ı bunu okur; frontmatter'ı preflight'a bağlam olarak uygular.
+
+# Süiti bu projede kapat (true bırakın; false → süit pasif, dosya yok sayılır).
+enabled: true
+
+# Bağlı KABUL edilecek connector'lar — preflight bunları tekrar PROBE ETMEZ.
+# Özellikle directory/OAuth connector'ları (CONNECTORS.md §1.0) buraya yazın: bunlar hesap
+# düzeyinde claude.ai Settings/Directory ile bağlanır, `.mcp.json`'da GÖRÜNMEZ, bu yüzden
+# preflight onları göremez → burada "bağlı" ilan edilmezse boşuna "neden veri yok" uyarısı verir.
+# Yalnızca claude.ai hesabınızda / Claude Code'unuzda GERÇEKTEN bağlı olanları listeleyin.
+known_connected:
+  - pubmed          # PubMed / Europe PMC (Anthropic HCLS directory)
+  - clinicaltrials  # ClinicalTrials v2 (directory)
+  - consensus       # Consensus (directory)
+  - scholar-gateway # Scholar Gateway (directory)
+  - biorxiv         # bioRxiv / medRxiv (directory)
+  - elicit          # Elicit (OAuth, secondary)
+  - npi             # NPI Registry (directory; yalnız ABD-KOL sinyalinde çağrılır)
+  # - adisinsight   # AdisInsight (OAuth; yalnız 0.5.I ilaç-zekası sinyalinde)
+
+# Varsayılan uzmanlık ekseni (boş = otomatik kapsam-belirleme). Kullanıcının açık niyeti override eder.
+# Onko | Heme | Regülatuar | HTA | MedAffairs | İmmün | Nöro | Nadir | DrugIntel | Epidemiyoloji
+default_axis: ""
+
+# Tam-metin kademe politikası: copyright_gated (varsayılan) | aggressive | oa_only
+fulltext_tier: copyright_gated
+
+# Completeness Gate: standard (varsayılan) | strict | off
+completeness_gate: standard
+
+# Tam-metin/uzun çıktıyı otomatik anamnesis'e ingest et (retrieve-don't-dump): true (varsayılan) | false
+auto_ingest_rag: true
+---
+
+# evidentia — proje ayarları (bu projeye özel)
+
+Bu dosya `.claude/evidentia.local.md` olarak proje kökünde durur ve **git'e girmez** (gitignore).
+Yalnız yukarıdaki YAML frontmatter işlevseldir; bu gövde serbest nottur.
+
+`known_connected` neden önemli: directory/OAuth connector'ları (`CONNECTORS.md §1.0`) `.mcp.json`'da
+statik bildirilmediği için preflight onları göremez. Burada bağlı ilan etmek çift-sorguyu ve yanlış
+"boşluk" uyarılarını önler. Bir connector'ı henüz bağlamadıysanız listeden çıkarın — akış onun
+fallback merdivenine (`CONNECTORS.md §2`) düşer, durmaz.

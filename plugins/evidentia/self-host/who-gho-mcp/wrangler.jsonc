@@ -1,0 +1,32 @@
+{
+  // who-gho-mcp — Cloudflare Worker (Cureonics self-host, evidentia Tier-O). Deploy: `wrangler deploy`.
+  // KEYLESS by design: upstream WHO GHO OData (ghoapi.azureedge.net) is authless and this Worker
+  // holds NO server-side secret, so there is no credential to protect. MCP_ALLOW_NO_AUTH="1"
+  // (drugddx precedent). The hardened OAuth layer is retained (additive) for claude.ai/ChatGPT
+  // connector flows. SECRETS ARE NOT DECLARED HERE (invariant 6); only needed if you re-gate:
+  //   wrangler secret put MCP_API_KEY
+  //   wrangler secret put AUTH_HMAC_SECRET
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "who-gho-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "MCP_OBJECT", "class_name": "WhoGho" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["WhoGho"] }
+  ],
+
+  // NON-SECRET vars only. MCP_ALLOW_NO_AUTH="1" => keyless (read-only authless-upstream proxy).
+  // OAUTH_ALLOWED_REDIRECT_ORIGINS keeps the additive OAuth surface working for web connectors.
+  "vars": {
+    "MCP_ALLOW_NO_AUTH": "1",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+  },
+
+  "observability": { "enabled": true }
+}

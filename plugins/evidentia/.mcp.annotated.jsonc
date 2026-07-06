@@ -101,6 +101,8 @@
 
     "__SELF_HOST__drugddx": "self-host/drugddx-mcp deploy edildiğinde Tier-O olarak buraya eklenir: 'drugddx': { type:http, url:https://drugddx-mcp.cureonics.workers.dev/mcp } — klinik DDI boşluğu (medical-research β-aday self-host çözümü, §6.5 / self-host/drugddx-mcp/BUILD-BRIEF.md)",
 
-    "__SELF_HOST__anamnesis": "self-host/anamnesis-mcp deploy edildiğinde Tier-O olarak buraya eklenir: 'anamnesis': { type:http, url:https://anamnesis-mcp.cureonics.workers.dev/mcp } — RAG/GraphRAG retrieval substratı: tam-metin ingest (semantik chunk + bge-m3 embed) + semantic_search + hybrid_query + bilgi grafiği. Bağlam-penceresi taşmasını önler (shared/canonical-cache-contract.md → evidence_index kanonik artefaktı). Deploy: self-host/anamnesis-mcp/BUILD-BRIEF.md (Vectorize 1024-d + D1 provizyon)"
+    "__SELF_HOST__anamnesis": "self-host/anamnesis-mcp deploy edildiğinde Tier-O olarak buraya eklenir: 'anamnesis': { type:http, url:https://anamnesis-mcp.cureonics.workers.dev/mcp } — RAG/GraphRAG retrieval substratı: tam-metin ingest (semantik chunk + bge-m3 embed) + semantic_search + hybrid_query + bilgi grafiği. Bağlam-penceresi taşmasını önler (shared/canonical-cache-contract.md → evidence_index kanonik artefaktı). Deploy: self-host/anamnesis-mcp/BUILD-BRIEF.md (Vectorize 1024-d + D1 provizyon)",
+
+    "__SELF_HOST__who_gho": "self-host/who-gho-mcp deploy edildiğinde Tier-K-epi (global) olarak .mcp.json'da bildirilir: 'who-gho': { type:http, url:https://who-gho-mcp.cureonics.workers.dev/mcp } — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1; upstream WHO GHO OData ghoapi.azureedge.net authless, server-side sır YOK). Küresel/ülke hastalık yükü — PopHIVE'ın ABD-only boşluğunu native kapatır (GLOBOCAN/IHME hâlâ boşluk). Araçlar: who_gho_search_indicators/who_gho_query/who_gho_dimensions. Deploy: self-host/who-gho-mcp/README.md"
   }
 }

@@ -27,12 +27,15 @@ MODE_SIGNALS = [
 # Zorunlu çıktı bileşenleri.
 HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b|hit \d|skipped:|empty\b)", re.IGNORECASE)
 HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_review_required|güven etiketi)", re.IGNORECASE)
-# Manifesto varsa içinde görünmesi ZORUNLU satırlar: 3 companion + 2 delegasyon plugin'i
+# Manifesto varsa içinde görünmesi ZORUNLU satırlar: 6 companion + 2 delegasyon plugin'i
 # (durum ne olursa olsun — hit/empty/degraded/skipped-with-reason — satır mevcut olmalı).
 MANDATORY_ROWS = {
     "Yargı (companion — G5 içtihat)": re.compile(r"\bYarg", re.IGNORECASE),
     "Open Law (companion — G6 CELEX)": re.compile(r"Open[_ ]?Law", re.IGNORECASE),
     "Ansvar (companion — Mod7 58-yargı)": re.compile(r"\bAnsvar", re.IGNORECASE),
+    "Fedlex Swiss (companion — Mod7 CH birincil metin)": re.compile(r"Fedlex", re.IGNORECASE),
+    "YokTez (companion — tez doktrini + G7 YÖK-Tez doğrulama)": re.compile(r"Yok[_ ]?Tez|Y[ÖO]K[- ]?Tez", re.IGNORECASE),
+    "Türk Patent (companion — IP/SPC/veri imtiyazı)": re.compile(r"T[üu]rk[_ ]?Patent", re.IGNORECASE),
     "evidentia (klinik delegasyon)": re.compile(r"\bevidentia", re.IGNORECASE),
     "sci-audit (çıktı-QA delegasyonu)": re.compile(r"\bsci[- ]?audit", re.IGNORECASE),
 }

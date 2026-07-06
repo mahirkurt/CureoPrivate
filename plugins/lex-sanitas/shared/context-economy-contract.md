@@ -23,8 +23,8 @@ Tek bir `legal-distiller`'a 14+ server vermek onun KENDİ penceresini de taşır
 | Shard | Server kümesi | Distiller |
 |---|---|---|
 | **S1 — TR çekirdek** | mevzuat · mevzuat-bilgisi · resmi-gazete · saglikbakanligi · titck · tbmm · detsis | `legal-distiller` |
-| **S2 — Karşılaştırmalı** | health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law · Ansvar · CH kapsamdaysa Fedlex Swiss) | `comparative-law-researcher` |
-| **S3 — Doktrin/içtihat** | yok-akademik · Yargı (+tez-doktrin gerekirse YokTez · IP-boyut varsa Türk Patent) | `legal-distiller` |
+| **S2 — Karşılaştırmalı** | health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law · Ansvar · Fedlex Swiss) | `comparative-law-researcher` |
+| **S3 — Doktrin/içtihat** | yok-akademik · Yargı · YokTez · Türk Patent (bağlıysa) | `legal-distiller` |
 | **S4 — Klinik** | evidentia | `evidence-synthesizer` (evidentia) |
 
 Shard'lar **paralel** dağıtılır (bağımsız görevler). Böylece tüm server'lar ateşlenir (tam-filo korunur) AMA hiçbir distiller penceresi taşmaz ve ana pencere yalnız 4 kompakt zarf görür.

@@ -81,9 +81,12 @@ partial = ("MADDE 1 - ... gerekçe ... Kapsam Manifestosu (G0): mevzuat → hit 
 rc, out = run("stop_coverage.py", {"last_assistant_message": partial, "stop_hook_active": False})
 reason = (out or {}).get("reason", "")
 check("manifesto var ama companion/delegasyon satırları eksik → block + isim listesi",
-      (out or {}).get("decision") == "block" and all(x in reason for x in ("Yargı", "Open Law", "Ansvar", "evidentia", "sci-audit")))
+      (out or {}).get("decision") == "block" and all(x in reason for x in (
+          "Yargı", "Open Law", "Ansvar", "Fedlex", "YokTez", "Türk Patent", "evidentia", "sci-audit")))
 full = ("MADDE 1 - ... gerekçe ... Kapsam Manifestosu (G0): mevzuat → hit 3; Yarg → hit 2; "
-        "Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL; Ansvar → empty; evidentia → hit; "
+        "Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL; Ansvar → empty; "
+        "Fedlex_Swiss → skipped: companion bağlı değil (CH satırı manual_required); "
+        "YokTez → hit 1; Turk_Patent → skipped: mod için N/A (IP-boyut yok); evidentia → hit; "
         "sci-audit → hit; confidence_label: combined_confidence MODERATE human_review_required:true")
 rc, out = run("stop_coverage.py", {"last_assistant_message": full, "stop_hook_active": False})
 check("tam çıktı-sözleşmesi → sessiz PASS", rc == 0 and not out)

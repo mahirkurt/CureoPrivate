@@ -5,8 +5,8 @@
 **Bağlam-güvenli dağıtım (zorunlu):** tek bir distiller'a 14+ server vermek onun penceresini de taşırabilir. Bu yüzden süpürme **≤4 paralel shard**'a bölünür (bkz. `references/16-baglamyonetimi-ve-buyuk-veri.md` §B + `shared/context-economy-contract.md` §2):
 
 - **S1 — TR çekirdek** (`legal-distiller`): mevzuat · mevzuat-bilgisi · resmi-gazete · saglikbakanligi · titck · tbmm · detsis.
-- **S2 — Karşılaştırmalı** (`comparative-law-researcher`): health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open_Law · Ansvar · CH kapsamdaysa Fedlex_Swiss).
-- **S3 — Doktrin/içtihat** (`legal-distiller`): yok-akademik · Yarg (+tez-doktrin gerekirse YokTez · IP-boyut varsa Turk_Patent).
+- **S2 — Karşılaştırmalı** (`comparative-law-researcher`): health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open_Law · Ansvar · Fedlex_Swiss).
+- **S3 — Doktrin/içtihat** (`legal-distiller`): yok-akademik · Yarg · YokTez · Turk_Patent (bağlıysa).
 - **S4 — Klinik** (evidentia `evidence-synthesizer`): zenginleştirilmiş sorgu.
 
 Her shard'a verilecek görev şablonu:
@@ -41,7 +41,7 @@ Ana pencere 4 zarfı tek G0 manifestosunda birleştirir; ham getirim distiller p
 **8 adım:** hedefleri netleştir (Md.26), etkilenen aktörleri haritala, yurtiçi benchmark (`list_mevzuat_by_type`), uluslararası benchmark (AB + üye devletler + US eCFR/FedReg via health-policy + Asya-Pasifik + HTA dörtlüsü + OECD.Stat), içtihat+doktrin, maliyet-fayda (uygunsa JCA), risk-belirsizlik senaryoları (iyimser/baz/kötümser), çıktı. **Klinik ◆:** evidentia §14.c ICER, §14.d BIA, §14.e MEA, §14.f SGK. **Kapılar:** G0-G7.
 
 ## Mod 7 — COMPARATIVE_LAW
-**Load-bearing:** health-policy (US/CA/JP/AU/ES/IE/CN/MX) · german-law (DE/AB) · ich-guidelines · intl-treaty · eudamed · Open_Law (UK+EU) · Ansvar (58-yargı) · Fedlex_Swiss (CH birincil metin, bağlıysa) · oecd. **Çapraz:** mevzuat (TR karşı-taraf) · Yarg · evidentia (+IP-boyut varsa Turk_Patent).
+**Load-bearing:** health-policy (US/CA/JP/AU/ES/IE/CN/MX) · german-law (DE/AB) · ich-guidelines · intl-treaty · eudamed · Open_Law (UK+EU) · Ansvar (58-yargı) · Fedlex_Swiss (CH birincil metin) · oecd. **Çapraz:** mevzuat (TR karşı-taraf) · Yarg · evidentia · Turk_Patent (IP kesişimi).
 **8 adım:** soruyu netleştir (benchmark/gap/policy/case-law tipi), yargı bölgelerini seç (R12 §9), TR-metin Tabaka tespiti (tarihsel-paralel vs akran-mukayese), yabancı metinleri çek (**programatik: CELLAR/legislation.gov.uk AKN/eCFR/DPD; ECLI tercih**), mukayese matrisi, gap analizi (usuli/maddi/kurumsal/şeffaflık), politika önerisi (4-boyut uyum + geçiş — tip C için zorunlu), rapor. **Kapılar:** G0-G7 (+ template'in koşullu G8/G9 notu).
 
 ## Mod 8 — TBMM_KANUN_TEKLIFI (çekirdek, en üst)

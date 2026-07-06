@@ -15,10 +15,11 @@
 
 ## İçindekiler
 1. Ne zaman Müfredat MCP kullanılır
-2. Araç envanteri ve rolleri — kimlik biçimi + PDF temizleme uyarıları (plugin: `../../CONNECTORS.md` normatif)
+2. Araç envanteri ve rolleri — kimlik biçimi + PDF temizleme uyarıları (plugin: `../../../CONNECTORS.md` normatif)
 2.1 Görüntü-dayanak politikası (Tier-1 / Tier-2) — plugin düzeyi, additif
 3. Keşif → çekme → haritalama → doğrulama iş akışı
 4. **Beceri → etkileşim deseni haritalama tablosu** (çekirdek katma değer)
+4.1 Keşif Döngüsü ile açılış (opsiyonel `hook`) — motivasyonel sarmalayıcı, beceri-eşlemesini değiştirmez
 5. `curriculum` veri bloğu şeması (MODULE_DATA uzantısı)
 6. Provenans ve G-CURRICULUM kapısı
 7. Kaynak-sadakati: MCP verisine özel kurallar
@@ -48,7 +49,7 @@ için MCP çağrılmaz; kullanıcının kaynağı veya yerleşik bilgi kullanıl
 
 > **Plugin-entegrasyon notu (edupedia).** Bu skill `edupedia` plugin'i altında paketlendiğinde,
 > connector envanterinin, kimlik/PDF uyarılarının ve provenans standardının **normatif kaynağı
-> `../../CONNECTORS.md`'dir**; bu bölüm oraya referans verir. CONNECTORS.md canlı introspeksiyonla
+> `../../../CONNECTORS.md`'dir**; bu bölüm oraya referans verir. CONNECTORS.md canlı introspeksiyonla
 > (2026-07-06) **otoritatif 21 araç** bildirir — aşağıdaki dokümante "19-araç" tabanına ek olarak
 > `search_figures` **ve** `get_figure` da canlıdır (bu ikisi Tier-2 görsel yolunu mümkün kılar,
 > §2.1). Aşağıdaki tablo pedagojik referans olarak korunur; connector adı/parametre değişikliği
@@ -128,7 +129,7 @@ Araçlar dört işlevsel kümeye ayrılır. **Çoğu modül için 3–6 çağrı
 > netleştirir. **Davranışı değiştirmez** — skill'in görsel arketipleri (`svgFigure`,
 > `labeledFigure`, `vizTable`, `numberLine`, `fractionBar`, `relationFlow`; bkz.
 > `svg-authoring.md`) yegâne varsayılan yoldur. Yalnız Müfredat MCP kaynaklı görsel dayanağın iki
-> katmanını ayırır. Tam normatif metin: `../../CONNECTORS.md §3` + `../../shared/canonical-cache-contract.md §4`.
+> katmanını ayırır. Tam normatif metin: `../../../CONNECTORS.md §3` + `../../../shared/canonical-cache-contract.md §4`.
 
 | Katman | Tanım | Durum | Davranış |
 |---|---|---|---|
@@ -230,6 +231,35 @@ süreçle hizalar (yapıcı hizalama / constructive alignment).
 > o kazanımın üst-fiiliyle hizalı olmalı (yapıcı hizalama). Asla kazanımın
 > gerektirdiğinden daha düşük bir bilişsel düzeye indirgeme (örn. "karşılaştır"
 > kazanımını yalnız tanıma quiz'iyle geçiştirme).
+
+### 4.1 Keşif Döngüsü ile açılış (opsiyonel `hook`)
+
+`gamified-flows.md` §2.1'deki **Keşif Döngüsü** şablonu (`hook → teach →
+interaction → mikro-kazanım`), CURRICULUM modunda yukarıdaki beceri-eşlemesini
+**değiştirmez** — üstüne opsiyonel bir motivasyonel sarmalayıcı ekler. Bir
+kazanımın teach+etkileşim çiftini bir `hook` ile açmak istiyorsanız:
+
+- `hook.question` kazanımın **öz** sorusunu meraklandırıcı biçimde sorar (ör.
+  "Sence hücrenin enerji santrali hangisi?" → FB.7.2.1.3 mitokondri kazanımı);
+  olgu **uydurmaz**, yalnız kazanımın kendi konusunu çerçeveler (SKILL.md §7).
+- `hook.resolvesIn`, o kazanımı öğreten `teach` segmentinin `id`'sini gösterir;
+  motor bu teach render edildiğinde kancayı **aynı akış içinde** kapatır
+  (`gamified-flows.md` §3.1). Bu, `curriculum.outcomes[].mappedTo` ile **ayrı
+  bir izlenebilirlik katmanıdır**: `mappedTo` kazanımı **hangi segmentin
+  öğrettiğini/sınadığını** işaretler (G-CURRICULUM), `resolvesIn` ise **hangi
+  kancanın nerede kapandığını** işaretler (G-FLOW). Kancanın kendi `id`'si
+  **`mappedTo`'ya eklenmez** — kanca kazanımı öğretmez/sınamaz, yalnızca ona
+  giriş yapar; hedeflenen `teach`/etkileşim id'leri `mappedTo`'da kalır.
+- `hook.predict.options` kullanılıyorsa yukarıdaki "(veriye/gözleme dayalı)
+  tahmin et → **KB2.11/KB2.12**" satırıyla doğal olarak eşleşir: kanca
+  **notsuz** bir ön-tahmin toplar, ardındaki `mcq` (tahmin→doğrula) aynı
+  kazanımı **puanlı** sınar — ikisi çelişmez, kanca sınavın ısınma turudur.
+
+Şema/mekanik/erişilebilirlik normatif kaynakları bu belgenin dışındadır:
+`module-architecture.md` §2 (`hook` alan şeması), `interaction-patterns.md`
+(mekanik özeti) ve `gamified-flows.md` §2.1/§3.1 (akış + kanıt). Bu alt-bölüm
+yalnız CURRICULUM-özel izlenebilirlik ayrımını (`mappedTo` vs `resolvesIn`)
+belgeler; blok yoksa/hook kullanılmıyorsa hiçbir etkisi yoktur (opsiyonel).
 
 ## 5. `curriculum` veri bloğu şeması (MODULE_DATA uzantısı)
 

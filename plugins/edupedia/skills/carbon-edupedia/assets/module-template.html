@@ -357,6 +357,27 @@ figure.viz figcaption{margin-top:var(--sp-04);font-size:var(--fs-label);color:va
 .chip-btn:hover:not([disabled]){background:var(--accent-tint);box-shadow:inset 0 0 0 2px var(--accent)}
 .chip-btn:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
 .chip-btn[disabled]{opacity:.4;cursor:default}
+/* merak-boşluğu (hook) — segment içinde kapanan kanca; katman+kenarlık, gölge yok */
+.hook-card{margin:var(--sp-06) 0;padding:var(--sp-06) var(--sp-07);border-radius:var(--cds-radius);
+  background:var(--accent-tint);border-left:4px solid var(--accent)}
+.hook-q{display:flex;align-items:flex-start;gap:var(--sp-04);margin:0 0 var(--sp-04);
+  font-size:var(--fs-h-sub);font-weight:600;color:var(--cds-text-primary);line-height:1.35}
+.hook-q .cds-icon{color:var(--accent-strong);flex:none;margin-top:2px;width:1.3rem;height:1.3rem}
+.hook-predict{display:flex;flex-wrap:wrap;gap:var(--sp-04);margin:var(--sp-05) 0}
+.hook-opt{font-family:var(--font-sans);font-size:var(--fs-compact);font-weight:500;min-height:var(--tap);
+  padding:0 var(--sp-06);border-radius:99px;cursor:pointer;background:var(--cds-layer-01);
+  box-shadow:inset 0 0 0 1px var(--cds-border-strong);color:var(--cds-text-primary);
+  transition:box-shadow var(--dur-fast) var(--ease-std),background var(--dur-fast) var(--ease-std)}
+.hook-opt:hover{box-shadow:inset 0 0 0 2px var(--accent);background:var(--cds-layer-02)}
+.hook-opt:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+.hook-opt--pick{box-shadow:inset 0 0 0 2px var(--accent);background:var(--cds-layer-02);
+  color:var(--accent-strong);font-weight:600}
+.hook-note{margin:var(--sp-05) 0 0;font-size:var(--fs-label);color:var(--cds-text-secondary)}
+.hook-hint{display:flex;align-items:flex-start;gap:var(--sp-03);margin:var(--sp-04) 0 0;
+  font-size:var(--fs-label);color:var(--cds-text-secondary);background:var(--cds-layer-02);
+  border-radius:var(--cds-radius);padding:var(--sp-03) var(--sp-05)}
+.hook-hint .cds-icon{color:var(--accent-strong);flex:none;margin-top:1px;width:1.1rem;height:1.1rem}
+.hook-hint[hidden]{display:none}
 /* mola */
 .break{text-align:center;padding:var(--sp-08) var(--sp-05)}
 .break .pic,.break .cds-icon{color:var(--accent-strong);margin-bottom:var(--sp-05);width:72px;height:72px}
@@ -1143,11 +1164,12 @@ const MODULE_DATA = {
   /* ---- ana render ---- */
   function render(){
     const stage=$("#stage"); stage.innerHTML=""; stage.removeAttribute("data-seg");
+    stage.removeAttribute("data-hook-resolved"); // her render'da temizlenir; yalnız çözen teach yeniden yazar
     updateRail();
     if(state.idx>=segs.length){ renderSummary(stage); return; }
     const s=segs[state.idx];
     stage.setAttribute("data-seg", s.type);
-    const fn = ({teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
+    const fn = ({hook:renderHook,teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
       match:renderMatch,fillblank:renderFillblank,brainbreak:renderBreak,
       checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,
       hotspot:renderHotspot,timeline:renderTimeline,chart:renderChart,
@@ -1188,7 +1210,37 @@ const MODULE_DATA = {
         s.keyTerms.map(t=>`<button class="def-term" type="button" data-term="${esc(t.term)}" data-def="${esc(t.def)}"${t.icon?` data-icon="${esc(t.icon)}"`:""}${t.example?` data-ex="${esc(t.example)}"`:""}>${icon(t.icon||"ic-info")}<span>${esc(t.term)}</span></button>`).join("")+`</div></div>`;
     }
     stage.innerHTML=html;
+    // merak-boşluğu kapanışı: bu teach bir hook'un resolvesIn hedefiyse, o hook'un
+    // kimliğini DOM'a yaz (gamified-flows.md §3.1 — data-hook-resolved="<hookId>")
+    const resolvedHook = segs.find(x=>x.type==="hook" && x.resolvesIn===s.id);
+    if(resolvedHook) stage.setAttribute("data-hook-resolved", resolvedHook.id);
     setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
+  }
+
+  /* ---- hook: merak-boşluğu (segment içinde kapanır; gamified-flows.md §2.1/§3.1) ---- */
+  function renderHook(stage,s){
+    const hasPredict = !!(s.predict && s.predict.options && s.predict.options.length);
+    const predictBlock = !hasPredict ? "" :
+      `<div class="hook-predict" role="group" aria-label="Tahmin">`
+      + s.predict.options.map((o,i)=>`<button class="hook-opt" type="button" data-i="${i}" aria-pressed="false">${esc(o)}</button>`).join("")
+      + `</div>`
+      + (s.predict.hintOnPick ? `<p class="hook-hint" id="hookHint" hidden>${icon("ic-info")}<span>${esc(s.predict.hintOnPick)}</span></p>` : "");
+    stage.innerHTML = segHead(s,"Merak") + instr(s)
+      + `<div class="hook-card" data-resolves="${esc(s.resolvesIn||"")}">`
+      +   `<p class="hook-q">${icon("ic-help")}<span>${esc(s.question)}</span></p>`
+      +   ttsRow(stripTags(s.question), defLang())
+      +   predictBlock
+      +   `<p class="hook-note">${hasPredict?"Tahminini seç — az sonra öğreneceğiz.":"Az sonra çözeceğiz."}</p>`
+      + `</div>`;
+    // tahmin ungraded: seçim yalnız vurgular, XP/puan/ceza yok (§2.1 — merak açık kalır, kapanış bir sonraki teach'te)
+    stage.querySelectorAll(".hook-opt").forEach(b=>{
+      b.addEventListener("click",()=>{
+        stage.querySelectorAll(".hook-opt").forEach(x=>{ x.classList.remove("hook-opt--pick"); x.setAttribute("aria-pressed","false"); });
+        b.classList.add("hook-opt--pick"); b.setAttribute("aria-pressed","true");
+        const hint=$("#hookHint"); if(hint) hint.hidden=false;
+      });
+    });
+    setNav({nextLabel:"Öğren"});
   }
 
   /* ---- mcq / checkpoint ortak akış ---- */

@@ -47,6 +47,14 @@ def test_gcarbongrid_pass_on_layered_flat():
     rows = run_gate(vm.gate_carbon_grid, open("tests/fixtures/grid_pass.html").read())
     assert status_of(rows, "G-CARBON-GRID") in ("PASS", "WARN")
 
+def test_hook_segment_renders_and_closes():
+    # hook_pass.html: hand-marked fixture — data-seg="hook" (kanca render'ı) + ayrı
+    # data-hook-resolved (hedef teach'in kapanış işareti); gerçek SPA'da bu ikisi hiç
+    # aynı statik dosyada bulunmaz (runtime marker'lar), fixture ikisini simüle eder.
+    html = open("tests/fixtures/hook_pass.html").read()
+    assert 'data-seg="hook"' in html and "data-hook-resolved" in html
+    rows = run_gate(vm.gate_flow, html); assert status_of(rows, "G-FLOW") == "PASS"
+
 def test_gcarbongrid_spaced_css_shadow_handling():
     # genuine spaced elevation shadow on a static card -> FAIL
     r1 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: 0 2px 6px rgba(0,0,0,.2);}</style>")

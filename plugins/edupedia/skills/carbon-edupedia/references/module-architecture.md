@@ -70,6 +70,13 @@ const MODULE_DATA = {
   },
 
   segments: [
+    // 0) opsiyonel kanca (hook) — merak-boşluğu açar; hedeflediği teach render
+    //    edilince AYNI akış içinde kapanır (Keşif Döngüsü, gamified-flows.md §2.1)
+    { type: "hook", id: "h1", title: "Merak Anı", pictogram: "pic-idea",
+      question: "Sence hücrenin enerji santrali hangisi?",
+      predict: { options: ["Çekirdek", "Mitokondri", "Hücre zarı"] },  // opsiyonel, notsuz
+      resolvesIn: "t1" },                       // zorunlu — aşağıdaki teach'in id'si
+
     // 1) öğretim
     { type: "teach", id: "t1", title: "Hücre nedir?", pictogram: "pic-idea",
       body: ["<p>...</p>", "<ul><li>...</li></ul>"],
@@ -113,6 +120,14 @@ const MODULE_DATA = {
 - `body` sade HTML; `<script>`/satır-içi olay yok (motor olayları bağlar).
 - `visual.ref` ya bir sprite ikon anahtarı (`"ic-idea"`) ya satır-içi `<svg>`.
 - Pictogram anahtarları sprite'taki `id`'ler veya gömülü Carbon piktogramı.
+- `hook` **opsiyoneldir** (yalnız Keşif Döngüsü kullanan modüllerde). Alanlar:
+  `id`, `title?`, `question` (zorunlu), `predict?:{options:[...]}` (opsiyonel,
+  notsuz ön-tahmin), `resolvesIn` (**zorunlu** — aynı `segments[]` içindeki bir
+  `teach`'in `id`'si). `resolvesIn` hedeflediği `teach` render edilince motor
+  kancayı **aynı akış içinde** kapatır (`data-hook-resolved`); açık bırakılan
+  bir kanca `validate_module.py`'nin **G-FLOW** kapısında FAIL üretir — her
+  `hook` mutlaka var olan bir `id`'yi hedeflemeli. Şema/mekanik ayrıntısı:
+  `interaction-patterns.md` + `gamified-flows.md` §2.1/§3.1.
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

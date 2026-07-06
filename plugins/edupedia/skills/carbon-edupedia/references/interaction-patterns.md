@@ -4,7 +4,7 @@
 > ilkesine hizmet eder, `MODULE_DATA` segment şeması, erişilebilirlik kuralları.
 > Şablon (`assets/module-template.html`) çekirdek desenleri (teach, mcq,
 > flashcards, match, fillblank, brainbreak, summary) hazır içerir; gelişmiş
-> desenler (order, sorting, hotspot, timeline) buradaki şemaya göre eklenir.
+> desenler (order, sorting, hotspot, timeline, hook) buradaki şemaya göre eklenir.
 
 ## Ortak segment alanları
 Her segment şu temel alanları taşır:
@@ -168,6 +168,39 @@ SVG `icon-pictogram-svg.md` kurallarına uygun; her hotspot klavyeyle odaklanabi
 > **✓ Motorda uygulandı (v1.2.0).** `renderTimeline`: dikey Carbon zaman çizelgesi —
 > numaralı düğüm + `date` (mono etiket) + `label` (kalın) + `detail` (ikincil). Bir
 > **display/başvuru materyalidir** (notsuz). Notlu sıralama gerekiyorsa `order` kullanın.
+
+## 12. `hook` — Kanca (merak-boşluğu; Keşif Döngüsü açılışı)
+**Pedagoji:** Bilgi-boşluğu kuramı (Loewenstein 1994) — merak, bilinen ile
+bilinmek istenen arasındaki boşluktan doğar ve öğrenme motivasyonunun en güçlü
+yollarından biridir; ama **kapanmadan bırakılırsa** hayal kırıklığına döner, bu
+yüzden segment **aynı akış içinde** kapanır (`gamified-flows.md` §2.1/§3.1).
+```js
+{
+  type: "hook", id, title?, pictogram,
+  question: "Sence hücrenin enerji santrali hangisi?",
+  predict: { options: ["Çekirdek", "Mitokondri", "Hücre zarı"] },  // opsiyonel, notsuz
+  resolvesIn: "teach-segment-id"   // zorunlu — aynı segments[] içinde var olan bir teach id'si
+}
+```
+**Mekanik:** Soru + opsiyonel `predict.options` (buton listesi) gösterilir; bir
+seçenek seçmek yalnız **vurgular** — puan, ceza ya da doğru/yanlış kaydı yok
+(notsuz ön-tahmin; §3 etik ile tutarlı). `resolvesIn` alanının hedeflediği
+`teach` render edildiğinde motor kancayı kapatır (kök öğeye
+`data-hook-resolved="<hookId>"` yazar); açık bırakılan bir kanca
+`validate_module.py`'nin **G-FLOW** kapısında FAIL üretir — her `hook`
+`segments[]` içinde gerçekten var olan bir `teach` id'sini hedeflemeli.
+**Erişilebilirlik:** Tahmin seçenekleri gerçek `<button>` (klavye-erişilebilir
+varsayılan); grup `role="group"`+`aria-label="Tahmin"`; seçim durumu
+`aria-pressed` ile taşınır ve renkle **birlikte** metin/kontur değişir (renk
+tek başına anlam taşımaz).
+
+> **✓ Motorda uygulandı (v3.0.0).** `renderHook`: `segHead`+`instr`+soru (+
+> `ttsRow`)+opsiyonel tahmin kartı+kapanış notu; `setNav({nextLabel:"Öğren"})`.
+> `renderTeach`, kendi `id`'sini `resolvesIn` ile hedefleyen bir `hook` bulursa
+> `#stage`'e `data-hook-resolved="<hookId>"` işaretini yazar — Keşif
+> Döngüsü'nün kapanış yarısı. `.hook-card`/`.hook-opt` mevcut Carbon
+> token'larıyla (accent-tint, layer-01/02, accent-strong) biçimlenir; statik
+> kartta **gölge yok** (yalnız sol kenarlık + katman rengi).
 
 ---
 

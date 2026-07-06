@@ -107,6 +107,8 @@ references:
     read_when: 'İçerik zenginleştirme: build-zamanı entegre edilebilir kaynaklar (Wikidata CC0, Wikimedia PD/CC-BY, MathML, spaced-rep) + lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi.'
   - path: references/carbon-excellence.md
     read_when: 'Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive, veri-viz palet); G-CARBON-GRID normatif kaynağı.'
+  - path: references/gamified-flows.md
+    read_when: '4 ADHD akış şablonu (Keşif/Sefer/Antrenman/Birlikte-Odak) + oyunlaştırma mekanikleri + atıflı YAPMA listesi; G-FLOW normatif kaynağı.'
 
 # -----------------------------------------------------------------------------
 # Inputs

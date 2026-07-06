@@ -8,7 +8,7 @@ description: >-
   EX_POST) uygun olduğu belirsizse. 14 hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder,
   9 modu ve 10 komutu tanıtır, niyet→komut yönlendirmesi yapar. Somut bir drafting talebi (ör. "yönetmelik taslağı
   hazırla") NET ise doğrudan flagship `lex-sanitas` skill'i devreye girer — bu router araya girmez.
-version: 3.0.0
+version: 3.2.0
 ---
 
 # Lex Sanitas — Başlangıç ve Yönlendirme

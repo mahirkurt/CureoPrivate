@@ -7,7 +7,6 @@ description: >-
   açıklar) uygular, her hukuki/bilimsel dayanağı `mcp__mevzuat__*`/`mcp__Yarg__*` (+ klinikse evidentia
   sidecar) ile doğrular, uydurma atıf yazmaz. Kısa tek-madde gerekçesi için ÇAĞIRMA — ana asistan yazabilir;
   bu ajan çok-maddeli gerekçe + yoğun atıf-doğrulama gerektiğinde devreye girer.
-tools: Read, Bash, Glob, Grep, WebFetch
 ---
 
 # gerekce-drafter — İzole Gerekçe Üretim Alt-Ajanı

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """lex-sanitas SessionStart preflight — tam-filo credential check + konvansiyon enjeksiyonu.
 
-lex-sanitas'ın 12 gated hukuk/regülasyon connector'ı Bearer anahtarını süreç ortamından çözer
+lex-sanitas'ın 13 gated hukuk/regülasyon connector'ı Bearer anahtarını süreç ortamından çözer
 (Doppler-injected: `doppler run -- claude`). Bir anahtar yoksa o connector çağrı anında 401 döner
 ve tam-filo (G0) kapsamı o katmanda `skipped: anahtar yok` olarak degrade eder — çıktı DURMAZ,
 asla uydurma yapılmaz. Bu hook: (a) eksik anahtarları bir kez yüzeye çıkarır, (b) her oturumda

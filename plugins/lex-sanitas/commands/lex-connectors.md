@@ -14,7 +14,7 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 2. **SessionStart preflight çıktısını oku** (varsa): `${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py` hangi Bearer anahtarlarının env'de olduğunu işaretler.
 3. **Canlı erişilebilirliği raporla** — üç kategori:
    - **TR primer/idari:** mevzuat · mevzuat-bilgisi (ikincil) · resmi-gazete · saglikbakanligi · titck · tbmm · detsis
-   - **Karşılaştırmalı/uluslararası:** health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd
+   - **Karşılaştırmalı/uluslararası:** health-policy (18 araç — **semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · ich-guidelines · intl-treaty · eudamed · oecd
    - **Doktrin + companion:** yok-akademik · Yargı (`mcp__Yarg__*`) · Open Law (`mcp__Open_Law__*`) · Ansvar (`mcp__Ansvar__*`)
    - **Büyük-veri substratı:** anamnesis (`mcp__anamnesis__*`) — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
    - **Delegasyon:** evidentia (klinik kanıt) · sci-audit (atıf-adli + dil)

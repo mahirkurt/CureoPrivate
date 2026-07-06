@@ -7,7 +7,6 @@ description: >-
   bağımsız doğrular, PASS/FAIL/CONDITIONAL/N/A skor-kartı + düzeltme reçetesi + verdict döndürür. Varsayılanı
   şüphecidir: belirsizse CONDITIONAL/FAIL yazar, hiçbir kontrolü "atıflı görünüyor" diye geçmez. Tek bir madde
   hızlı kontrolü için ÇAĞIRMA — /lex-comply zaten rubriği koşar; bu ajan bağımsız ikinci-göz gerektiğinde devreye girer.
-tools: Read, Bash, Glob, Grep, WebFetch
 ---
 
 # compliance-auditor — 5210 R6b Düşman-Doğrulama Alt-Ajanı

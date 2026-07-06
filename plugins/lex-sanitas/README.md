@@ -2,7 +2,7 @@
 
 En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağlık-farmasötik regülasyonunun her düzleminde — **kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge** — yeni mevzuat üretir, mevcut mevzuatı değiştirir, gerektiğinde çerçeveyi yeniden yazar. **5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12** çerçevesinde, **G0-G9 kalite kapıları** ve **no-fabrication** disipliniyle.
 
-> Eski `lex-sanitas` skill'inin (v2.9.0) mirasçısı. Yabancı-ülke mevzuat tarama işlevi ayrı bir MCP'ye (**health-policy**) taşındı; bu plugin onu *bir kaynak katmanı* olarak wire eder. Sürüm 3.0.0 = plugin mimarisi + tam-filo aktivasyonu. Sürüm 3.1.0 = bağlam-tetiklemeli ZORUNLU entegrasyon: evidentia/sci-audit kuruluysa atlanamaz; companion'lar (Yargı↔G5, Open Law↔G6, Ansvar↔Mod7) tam-filonun zorunlu üyeleri.
+> Eski `lex-sanitas` skill'inin (v2.9.0) mirasçısı. Yabancı-ülke mevzuat tarama işlevi ayrı bir MCP'ye (**health-policy**) taşındı; bu plugin onu *bir kaynak katmanı* olarak wire eder. Sürüm 3.0.0 = plugin mimarisi + tam-filo aktivasyonu. Sürüm 3.1.0 = bağlam-tetiklemeli ZORUNLU entegrasyon: evidentia/sci-audit kuruluysa atlanamaz; companion'lar (Yargı↔G5, Open Law↔G6, Ansvar↔Mod7) tam-filonun zorunlu üyeleri. Sürüm 3.2.0 = health-policy **semantic_search** doğal-dil giriş kapısı (çok-dilli keşif US/JP/AU/CN → fetch ile doğrulama), in-plugin **legal-distiller** ajanı, `start`→`lex-sanitas-start` skill yeniden adlandırması, hook test harness'ı + PostToolUse devre-kesicinin `additionalContext` kanalına taşınması.
 
 ## Öne çıkanlar
 
@@ -52,13 +52,13 @@ Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `ski
 
 ```
 lex-sanitas/
-├── .claude-plugin/plugin.json      # manifest (v3.0.0)
+├── .claude-plugin/plugin.json      # manifest (v3.2.0)
 ├── .mcp.json                       # 14 hukuk/regülasyon MCP + tam-filo rol notları
 ├── skills/
-│   ├── lex-sanitas/                # flagship (9 mod, G0-G9) + 18 referans + 12 template + 4 şema
-│   └── start/                      # router / oryantasyon
+│   ├── lex-sanitas/                # flagship (9 mod, G0-G9) + 19 referans + 12 template + 4 şema
+│   └── lex-sanitas-start/          # router / oryantasyon
 ├── commands/                       # 10 komut (9 mod + connectors)
-├── agents/                         # comparative-law-researcher · compliance-auditor · gerekce-drafter
+├── agents/                         # comparative-law-researcher · compliance-auditor · gerekce-drafter · legal-distiller
 ├── hooks/                          # SessionStart preflight · UserPromptSubmit scope-guard · PostToolUse retrieve-don't-dump · Stop G0-kapsam kapısı
 ├── shared/                         # composition-contract · coverage-manifest · context-economy-contract
 └── tests/                          # routing · scope-boundary · citation-hallucination · mod9

@@ -14,7 +14,7 @@ Talep: **$ARGUMENTS**
 1. **Scope Guard (§6).**
 2. **Tam-filo (G0).** `legal-distiller` ile Mod 7 server-listesi. Load-bearing yabancı katman: **health-policy · german-law · ich-guidelines · intl-treaty · eudamed · Open_Law · Ansvar · oecd**; TR karşı-taraf: mevzuat + Yarg.
 3. **Klinik ◆ → evidentia** (§6,9,13,14,20).
-4. **COMPARATIVE 8-adım:** soruyu netleştir (tip) → yargı bölgeleri seç (R12 §9) → TR-metin Tabaka tespiti → yabancı metinleri çek (**programatik: CELLAR/legislation.gov.uk AKN/eCFR/DPD; ECLI tercih** — no-fabrication, URL'siz atma) → mukayese matrisi → gap analizi (usuli/maddi/kurumsal/şeffaflık) → politika önerisi (tip C zorunlu) → 13-bölüm rapor.
+4. **COMPARATIVE 8-adım:** soruyu netleştir (tip) → yargı bölgeleri seç (R12 §9) → TR-metin Tabaka tespiti → **yabancı sağlık-hukukunda önce `mcp__health-policy__semantic_search`** (serbest-metin soru → çok-dilli fan-out US/JP/AU/CN + bge-m3 rerank; ES/MX/CA/IE `excluded_sources`→fetch) ile hedefle, sonra yabancı metinleri çek (**programatik: CELLAR/legislation.gov.uk AKN/eCFR/DPD; ECLI tercih** — no-fabrication, URL'siz atma; semantik `mcp_verified:false` → fetch ile doğrula) → mukayese matrisi → gap analizi (usuli/maddi/kurumsal/şeffaflık) → politika önerisi (tip C zorunlu) → 13-bölüm rapor.
 5. **Kapılar G0-G7** (+ template'in koşullu G8/G9 notu), `evidence_ledger`.
 6. **sci-audit'e delege et.**
 7. **Kapsam manifestosu + confidence_label** ile bitir.

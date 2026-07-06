@@ -97,7 +97,13 @@ def main():
             "İçtihat kaynakları reform-GEREKÇE sinyalidir; dava dilekçesi için değil."
         ).format(base=base, kb=round(n / 1024, 1))
 
-    sys.stdout.write(json.dumps({"systemMessage": msg}))
+    # PostToolUse'da modeli yönlendiren kanal `hookSpecificOutput.additionalContext`'tır;
+    # `systemMessage` yalnız kullanıcıya görünür. Devre-kesici modeli yönlendirmeli →
+    # additionalContext birincil; systemMessage kullanıcı-görünür ayna olarak korunur.
+    sys.stdout.write(json.dumps({
+        "hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": msg},
+        "systemMessage": msg,
+    }))
     sys.exit(0)
 
 

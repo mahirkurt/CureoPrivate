@@ -1,0 +1,302 @@
+# =============================================================================
+# Skill Manifest Protocol (SMP) v1.0  ·  carbon-edupedia
+# Makine-okunur composability sözleşmesi. İnsan kılavuzu: SKILL.md
+# =============================================================================
+manifest_version: '1.0'
+protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/main/SKILL_MANIFEST_PROTOCOL.md'
+
+skill:
+  name: carbon-edupedia
+  version: 3.0.0
+  title: Carbon Edupedia — DEHB-Odaklı Etkileşimli Öğrenim Modülü Üreticisi (IBM Carbon v11, WCAG 2.1 AA, Müfredat MCP)
+  description: >-
+    Kaynak metinden VEYA MEB Müfredat MCP'sinden (Türkiye Yüzyılı Maarif Modeli
+    kazanımları), DEHB/ADHD-odaklı, IBM Carbon Design System v11 ile biçimlendirilmiş,
+    emojisiz ama ikon/piktogram/SVG zengini, tek-dosya ETKİLEŞİMLİ öğrenim modülleri
+    (oyun/quiz/yarışma/flashcard + kaynağa sadık, kapsamlı öğretim katmanı) üretir.
+    Müfredat MCP entegrasyonu: kazanım kodundan/ders+sınıftan modül üretir, resmî
+    beceriyi (Kavramsal Beceriler KB2.x) etkileşim desenine haritalar, kazanım-izlenebilir
+    provenans damgalar (G-CURRICULUM). Ders-bağımsız (fen, matematik, sosyal
+    bilgiler, Türkçe, tarih, fizik, kimya, biyoloji); ortaokul/ilkokul/lise.
+    8 mod, 11 kalite kapısı; token katmanı @carbon/* npm otoritesiyle
+    doğrulanır (G-TOKEN + sync aracı), Figma Carbon v11 kütüphaneleri opsiyonel
+    görsel QA. Disambiguation: francais-coach → Fransızca React;
+    carbon-html-report → statik baskı HTML; carbon-pptx → slayt;
+    frontend-design → genel React UI; Müfredat MCP yalnız Türkiye MEB.
+  entry_point: ./SKILL.md
+  license: MIT
+  authors:
+    - Mahir Bey
+  changelog: ./docs/CHANGELOG.md
+
+# -----------------------------------------------------------------------------
+# Classification — taksonomik etiketler + orkestratör indeksleme için kanonik
+# tetikleyiciler (SMP v1.0 §4.2)
+# -----------------------------------------------------------------------------
+classification:
+  primary_category: education
+  secondary_categories:
+    - interactive-learning
+    - child-development
+    - design-system-application
+    - accessibility-compliance
+  complexity_tier: advanced
+  triggers:
+    - 'etkileşimli öğrenim modülü'
+    - 'interaktif ders'
+    - 'oyunlaştırılmış ders'
+    - 'ADHD için ders'
+    - 'DEHB için ders'
+    - 'konu anlatımı + oyun'
+    - 'konuyu oyunla öğret'
+    - 'quiz hazırla'
+    - 'yarışma hazırla'
+    - 'flashcard hazırla'
+    - 'eğitici oyun'
+    - 'interactive lesson'
+    - 'learning game'
+    - 'gamified lesson'
+    - 'şu konuyu eğlenceli hale getir'
+    - 'müfredata uygun ders'
+    - 'MEB kazanımına göre modül'
+    - 'şu kazanımla çalışma'
+    - 'Maarif Modeli'
+    - 'kazanım kodundan modül'
+
+domains:
+  - education
+  - child-development
+  - interactive-learning
+  - accessibility
+
+# -----------------------------------------------------------------------------
+# Audience
+# -----------------------------------------------------------------------------
+audience:
+  age_default: 12
+  context_default: 'ortaokul, DEHB tanılı'
+  language_primary: tr
+
+# -----------------------------------------------------------------------------
+# References — aşamalı açığa çıkarma (progressive disclosure)
+# -----------------------------------------------------------------------------
+references:
+  - path: references/adhd-pedagogy.md
+    read_when: 'Her modülden önce (zorunlu) — kanıt tabanı ve 8 tasarım ilkesi.'
+  - path: references/module-architecture.md
+    read_when: 'Omurga/segment akışı + MODULE_DATA şeması.'
+  - path: references/interaction-patterns.md
+    read_when: 'Etkileşim mekaniği seçimi ve veri şeması.'
+  - path: references/carbon-child-system.md
+    read_when: 'Renk/tip/spacing/hareket token''ları, çocuk uyarlaması. v2: @carbon/themes@11.75.0 otorite-doğrulanmış; etkileşim-durumu token''ları, tam hareket/spacing matrisi, resmî tag-çifti aksanları.'
+  - path: references/figma-carbon-interop.md
+    read_when: 'Opsiyonel görsel QA: Carbon v11 Figma kütüphaneleri üzerinden Figma MCP doğrulaması (get_libraries → search_design_system → get_variable_defs), Figma↔--cds-* eşlemesi, sapma triyajı, figma-forge composability.'
+  - path: references/icon-pictogram-svg.md
+    read_when: 'İkon/piktogram seçimi veya özgün SVG çizimi.'
+  - path: references/svg-authoring.md
+    read_when: 'Tema-duyarlı/erişilebilir SVG figür ve grafik (vizChart, svgFigure) üretimi; SVG arketipleri.'
+  - path: references/color-system.md
+    read_when: 'İşlevsel renk rolleri, wayfinding aksanı, kontrast/CVD.'
+  - path: references/subject-packs.md
+    read_when: 'Derse-özel güçler: Matematik/Fen/Sosyal/Dil paketleri (etiketli diyagram, ilişki akışı, kavram kartları, satır-arası çözümleme, çekim tablosu).'
+  - path: references/audio-system.md
+    read_when: 'İşitsel earcon tasarımı, kanıt ve sorumlu kullanım; ses + görsel oyunlaştırma.'
+  - path: references/curriculum-integration.md
+    read_when: 'Müfredat MCP entegrasyonu (CURRICULUM modu veya herhangi bir modda Müfredat-duyarlılık): araç orkestrasyonu, kazanım çekme, beceri (KB2.x) → etkileşim deseni haritalama, curriculum veri bloğu, provenans + G-CURRICULUM, hata/geri-dönüş. edupedia plugin altında: connector envanteri + kimlik/PDF uyarıları + provenans normatif kaynağı ../../CONNECTORS.md; §2.1 Tier-1/Tier-2 görüntü-dayanak politikası + get_figure yetenek-probu.'
+
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+inputs:
+  - id: source_material
+    description: >-
+      Ders kaynağı: ders kitabı bölümü, ders notu, müfredat kazanım metni, ya da
+      konu+referans. Tek doğruluk kaynağıdır (SKILL.md §7).
+    mime_types: [text/markdown]
+    required: true
+  - id: learner_profile
+    description: 'Ad, sınıf düzeyi, ders, süre, mod tercihi (opsiyonel).'
+    mime_types: [text/plain]
+    required: false
+  - id: mode
+    description: 'MODULE | QUIZ | FLASHCARDS | GAME | EXPLAINER | ASSESSMENT | SERIES | CURRICULUM (varsayılan MODULE). CURRICULUM: MEB kazanımından üretim; Müfredat-duyarlılık tüm modlarda opsiyonel.'
+    mime_types: [text/plain]
+    required: false
+  - id: curriculum_target
+    description: 'Opsiyonel Müfredat hedefi: kazanım kodu (örn. FB.5.3.1.1) veya ders+sınıf+konu. Verilirse Müfredat MCP çağrılır (bkz. references/curriculum-integration.md).'
+    mime_types: [text/plain]
+    required: false
+
+# -----------------------------------------------------------------------------
+# Outputs — bildirilen çıktı MIME'leri (D11 output-fidelity bunu okur)
+# -----------------------------------------------------------------------------
+outputs:
+  - id: interactive_module
+    description: >-
+      Tek-dosya, bağımsız, ETKİLEŞİMLİ HTML öğrenim modülü. /mnt/user-data/outputs/
+      altına kebab-case adla kaydedilir. Harici yerel dosya yok (IBM Plex + Carbon
+      ikon sprite satır içi / CDN). JS ile çalışan quiz/oyun/flashcard; durum bellekte.
+    mime_type: text/html
+  - id: validation_report
+    description: >-
+      Opsiyonel makine/insan okunur kalite kapısı raporu (scripts/validate_module.py).
+      11 kapı: G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
+      G-SVG, G-WELLBEING, G-AUDIO (earcon + TTS iki katman), G-CURRICULUM (koşullu —
+      Müfredat-temelli modüllerde kazanım→segment izlenebilirliği), G-TOKEN
+      (@carbon/themes otoritesine karşı tema bloğu denetimi).
+    mime_type: text/plain
+
+# -----------------------------------------------------------------------------
+# Composition — bildirilen SMP kenarları
+# Her kenar: skill, version_constraint, intermediate_format, rationale
+# -----------------------------------------------------------------------------
+composition:
+  pipe_from:
+    - skill: mufredat-mcp
+      version_constraint: '>=0.0.0'
+      intermediate_format: application/json
+      rationale: >-
+        Müfredat MCP (Türkiye MEB / Maarif Modeli): kazanım, program, beceri
+        çerçevesi ve ders kitabı kataloğu → CURRICULUM modunun ve Müfredat-duyarlı
+        modların primer kaynağı (kazanım çekme + beceri haritalama + provenans).
+        Bkz. references/curriculum-integration.md.
+    - skill: francais-coach
+      version_constraint: '>=1.0'
+      intermediate_format: text/markdown
+      rationale: >-
+        Fransızca ders içeriği → Carbon etkileşimli modül kabuğu.
+    - skill: medical-research
+      version_constraint: '>=7.0'
+      intermediate_format: text/markdown
+      rationale: >-
+        Yaş-uygun sağlık okuryazarlığı içeriği.
+    - skill: psychdev
+      version_constraint: '>=1.0'
+      intermediate_format: text/markdown
+      rationale: >-
+        Gelişim/davranış içeriği (uygun yaş düzeyinde).
+    - skill: vekayinuvis
+      version_constraint: '>=1.0'
+      intermediate_format: text/markdown
+      rationale: >-
+        Tarih konuları için kaynak-temelli anlatı (yaş-uygun).
+  pipe_to:
+    - skill: carbon-html-report
+      version_constraint: '>=4.0'
+      intermediate_format: text/markdown
+      rationale: >-
+        Aynı içeriğin baskıya hazır statik çalışma kâğıdı sürümü.
+    - skill: pdf
+      version_constraint: '>=1.0'
+      intermediate_format: text/html
+      rationale: >-
+        Özet/çalışma kâğıdı PDF'i (etkileşim baskıda kaybolur).
+    - skill: figma-forge
+      version_constraint: '>=1.0'
+      intermediate_format: application/json
+      rationale: >-
+        carbon-v11-authority.json token'larını Figma Variables'a, edupedia
+        bileşen desenlerini ComponentSet'lere aktarma (paydaş gözden
+        geçirmesi). Bkz. references/figma-carbon-interop.md §6.
+
+# -----------------------------------------------------------------------------
+# Runtime
+# -----------------------------------------------------------------------------
+runtime:
+  python_version: '>=3.10'
+  required_packages: []          # validate_module.py yalnız standart kütüphane
+  preinstalled_in_sandbox:
+    - node                       # şablon JS motoru sözdizimi doğrulaması (node --check)
+  mcp_servers:
+    optional:
+      - name: 'Müfredat MCP'
+        transport: 'streamable-http (MCP)'
+        tools: 19
+        when: >-
+          Müfredat-temelli modül istendiğinde (kazanım kodu, "MEB kazanımına göre",
+          ders+sınıf+konu, "Maarif Modeli"). Derleme anında çağrılır; çekilen içerik
+          kaynak olur, üretilmiş modül yine bağımsız/çevrimdışıdır. Erişilemezse
+          offline yola dönülür. Bkz. references/curriculum-integration.md.
+      - name: 'Figma MCP'
+        transport: 'streamable-http (MCP)'
+        tools: 8
+        when: >-
+          Opsiyonel görsel QA: kullanıcı Carbon v11 Figma kütüphane kopyasının
+          dosya URL'sini verdiğinde get_libraries → search_design_system →
+          get_variable_defs akışıyla bileşen anatomisi/değişken teyidi. Token
+          değerinin kaynağı değildir; npm otoritesi kazanır. Bkz.
+          references/figma-carbon-interop.md.
+
+# -----------------------------------------------------------------------------
+# Verification — kalite kapıları (scripts/validate_module.py)
+# -----------------------------------------------------------------------------
+verification:
+  gates:
+    - id: G-EMOJI
+      severity: FAIL
+      description: 'Çıktıda emoji yok.'
+    - id: G-CARBON
+      severity: FAIL
+      description: 'IBM Plex yüklü; çekirdek --cds-* token''ları tanımlı/kullanımda.'
+    - id: G-A11Y
+      severity: FAIL
+      description: 'lang, title, reduced-motion, aria-live, odak görünürlüğü, görsel rolleri.'
+    - id: G-INTERACT
+      severity: FAIL
+      description: 'Her quiz sorusunda correctIndex (explanation: WARN).'
+    - id: G-SELFCONTAINED
+      severity: FAIL
+      description: 'Yerel harici dosya bağımlılığı yok.'
+    - id: G-CONTRAST
+      severity: WARN
+      description: 'Gövde metni text-primary; aksan büyük/dolgu öğelerinde.'
+    - id: G-SVG
+      severity: WARN
+      description: 'Figür SVG''leri role="img"+başlık/etiket; token renk (ham-hex yok).'
+    - id: G-WELLBEING
+      severity: FAIL
+      description: 'Cezalandırıcı/süre-baskısı dili yok (FAIL); uzun modülde mola/azaltılmış hareket (WARN).'
+    - id: G-AUDIO
+      severity: FAIL
+      description: 'İşitsel katman(lar) — earcon ve/veya TTS — opsiyonel, susturulabilir/durdurulabilir, reduced-motion duyarlı, varsayılan kapalı; autoplay/loop/otomatik-okuma yok.'
+    - id: G-CURRICULUM
+      severity: FAIL
+      description: 'Koşullu (yalnız mode CURRICULUM veya curriculum bloğu varsa; aksi halde atlanır). CURRICULUM modunda curriculum bloğu zorunlu; outcomes[] code+text taşır; her mappedTo segment id''si segments[]''te mevcut (kazanım→segment izlenebilirliği); sourceCitation kazanım/korpus referansı içerir (eksikse WARN).'
+    - id: G-TOKEN
+      severity: WARN
+      description: 'Tema bloklarındaki --cds-* değerleri gömülü @carbon/themes@11.75.0 otorite haritasına (≈19 token × White/G100) karşı denetlenir. Sapma = WARN; White temada --cds-support-info:#4589ff = FAIL (bilinen AA kontrast regresyonu — doğrusu #0043ce). Otorite: assets/carbon-v11-authority.json + scripts/sync_carbon_tokens.py.'
+  runner: 'python scripts/validate_module.py <output.html> [--strict] · token otorite senkronu: python scripts/sync_carbon_tokens.py [--check|--refresh]'
+  evals: ./evals/evals.json
+
+# -----------------------------------------------------------------------------
+# Build
+# -----------------------------------------------------------------------------
+build:
+  version: 3.0.0
+  release_date: '2026-07-06'
+  smp_compliance: '1.0'
+  canonical_authorities:
+    - '@carbon/themes@11.75.0 (white + g100 token''ları — programatik çıkarım)'
+    - '@carbon/type@11.61.0 (IBM Plex Sans/Serif/Mono + tip ölçeği + letter-spacing)'
+    - '@carbon/motion@11.46.0 (6 süre × 6 easing tam matrisi)'
+    - '@carbon/layout@11.53.0 (spacing 01–13 + sizes ölçeği)'
+    - '@carbon/colors@11.52.0 (tam palet — ders aksanları)'
+    - '@carbon/icons (functional icons — inline sprite)'
+    - '@carbon/pictograms (conceptual illustrations)'
+    - 'assets/carbon-v11-authority.json — sürüm-damgalı makine-okunur anlık görüntü (sync_carbon_tokens.py --refresh ile tazelenir)'
+    - 'Figma "(v11) Carbon Design System" kütüphaneleri — opsiyonel görsel QA (references/figma-carbon-interop.md)'
+  shared_modules:
+    icon_vocabulary: 'carbon-html-report/references/icon-library.md ile hizalı'
+
+# -----------------------------------------------------------------------------
+# Constraints
+# -----------------------------------------------------------------------------
+constraints:
+  out_of_scope:
+    - 'Statik baskı dokümanı (→ carbon-html-report).'
+    - 'Backend/kalıcı veri (durum bellekte; opsiyonel window.storage).'
+    - 'Çalışma anında (runtime) MCP/gerçek-zamanlı veri çağrısı — üretilmiş modül offline''dır. (Derleme anında Müfredat MCP opsiyonel kaynak/doğrulama katmanı olarak çağrılabilir; içerik modüle gömülmez, kaynak olur.)'
+    - 'Olgu doğrulama (yukarı akış sorumluluğu; Müfredat MCP kullanılsa da kazanım metni izlenebilir olmalı, uydurma yasak).'
+    - 'Yetişkin/uzman içerik; yalnız çocuk/öğrenci yaş-uygun içerik.'
+    - 'Türkiye dışı müfredat (IB/Cambridge vb.); Müfredat MCP yalnız Türkiye MEB / Maarif Modeli.'
+  browser_support: 'Chromium >=120, Firefox >=115, Safari >=16'

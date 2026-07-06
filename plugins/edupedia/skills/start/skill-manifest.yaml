@@ -1,0 +1,81 @@
+# =============================================================================
+# Skill Manifest Protocol (SMP) v1.0  ·  start (edupedia yönlendirici)
+# Makine-okunur composability sözleşmesi. İnsan kılavuzu: SKILL.md
+# =============================================================================
+manifest_version: '1.0'
+protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/main/SKILL_MANIFEST_PROTOCOL.md'
+
+skill:
+  name: start
+  version: 1.0.0
+  title: edupedia — Başlangıç ve Yönlendirme
+  description: >-
+    edupedia süitine giriş: bağlı Maarif Modeli MCP connector'ını (maarif-mufredat)
+    kontrol eder, flagship carbon-edupedia skill'ini ve dört komutu (modul, mufredat,
+    kazanim-bul, durum) tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir.
+    Connector envanteri + Tier-1/Tier-2 görüntü-dayanak politikası için ../../CONNECTORS.md'ye
+    referans verir.
+  entry_point: ./SKILL.md
+  license: MIT
+  authors:
+    - Cureonics
+
+classification:
+  primary_category: education
+  secondary_categories:
+    - orchestration
+    - onboarding
+  complexity_tier: basic
+  triggers:
+    - 'edupedia başlat'
+    - 'edupedia nedir'
+    - 'nereden başlamalıyım'
+    - 'hangi komutu kullanmalıyım'
+    - 'connector kontrolü'
+    - 'Maarif MCP çalışıyor mu'
+    - 'Maarif Modeli modülü nasıl üretirim'
+    - 'kazanımdan modül nasıl'
+    - 'ne yapabilirsin'
+    - 'süit oryantasyonu'
+
+domains:
+  - education
+  - orchestration
+
+# -----------------------------------------------------------------------------
+# References — plugin-düzeyi sözleşmeler
+# -----------------------------------------------------------------------------
+references:
+  - path: ../../CONNECTORS.md
+    read_when: 'Connector envanteri, kimlik/PDF uyarıları, provenans ve Tier-1/Tier-2 görüntü-dayanak politikası — Adım 2 connector kontrolü.'
+  - path: ../../shared/canonical-cache-contract.md
+    read_when: 'Tek-sefer disiplini ve get_figure yetenek-probu — kanonik-önbellek durumu raporu.'
+
+# -----------------------------------------------------------------------------
+# Composition — yönlendirdiği hedefler
+# -----------------------------------------------------------------------------
+composition:
+  pipe_to:
+    - skill: carbon-edupedia
+      version_constraint: '>=2.8.0'
+      intermediate_format: text/plain
+      rationale: >-
+        Niyet çözümlendikten sonra flagship modül üreticisine yönlendirir
+        (kazanım kodu/ders+sınıf+konu/kaynak metin).
+
+runtime:
+  python_version: '>=3.10'
+  required_packages: []
+  mcp_servers:
+    optional:
+      - name: 'maarif-mufredat (Maarif Modeli MCP)'
+        transport: 'streamable-http (MCP)'
+        tools: 21
+        when: >-
+          Adım 2 connector canlılık kontrolü + Tier-2 (get_figure) yetenek probu.
+          Bağlı değilse offline yola işaret eder; üretim bloke olmaz.
+
+constraints:
+  out_of_scope:
+    - 'Modül üretimi (→ carbon-edupedia / komutlar).'
+    - 'Türkiye dışı müfredat (Maarif MCP yalnız Türkiye MEB).'

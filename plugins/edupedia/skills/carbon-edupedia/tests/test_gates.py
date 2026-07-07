@@ -198,3 +198,16 @@ def test_engine_untiered_gradekey_identity_preserved():
     src = open("assets/module-template.html", encoding="utf-8").read()
     assert 'gradeKey=s.id+"#"+oi' in src.replace(" ", "")
     assert 'gk=s.id+"#"+oi' in src.replace(" ", "")
+
+def test_new_segments_have_tts_coverage():
+    # Task 14: renderHook, renderWorked, renderSelfExplain her biride ttsRow(...)
+    # asil metne uygulu — hook: s.question; worked: steps[0].text; selfExplain: s.prompt.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    for func_name in ("renderHook", "renderWorked", "renderSelfExplain"):
+        # isimden başlayarak sonraki function'e kadar kesit al
+        start_idx = src.index(f"function {func_name}(")
+        # sonraki "function " bulana kadar gitme (body'nin sonu)
+        next_fn_start = src.index("\n  function ", start_idx + 1)
+        body = src[start_idx:next_fn_start]
+        # ttsRow çağrısı bu render'da olmalı
+        assert "ttsRow(" in body, f"{func_name} ttsRow() çağrısı yok"

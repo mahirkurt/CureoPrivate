@@ -1381,6 +1381,7 @@ const MODULE_DATA = {
     if(state.idx>=segs.length){ renderSummary(stage); return; }
     const s=segs[state.idx];
     stage.setAttribute("data-seg", s.type);
+    // NOTE: Tasks 17/18 (sim/conceptMap renderers) — when built, each must include ttsRow() on primary text
     const fn = ({hook:renderHook,teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
       match:renderMatch,fillblank:renderFillblank,worked:renderWorked,selfExplain:renderSelfExplain,
       brainbreak:renderBreak,checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,

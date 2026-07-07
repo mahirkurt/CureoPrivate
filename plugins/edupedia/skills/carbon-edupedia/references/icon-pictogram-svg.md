@@ -4,6 +4,13 @@
 > piktogramları ve özgün SVG çizimlerle taşınır. Tüm görseller **satır içi**
 > gömülür (çevrimdışı/güvenilir tek-dosya). Bu dosya üç kaynağı ve özgün çizim
 > kurallarını tanımlar.
+>
+> **Kanonik kaynak (esas).** İkon/piktogram **ad ve SVG path kaynağı** IBM'in resmî
+> **`@carbon/icons`** (v11.74.0 · 2584 ikon) ve **`@carbon/pictograms`** paketleridir
+> (bkz. `carbon-sources.md` §3). Motor sprite'ının `ic-*`/`pic-*` id'leri iç
+> anahtarlardır; her biri bir **kanonik Carbon ikonundan türetilir** (adlandırma
+> kebab-case, varyant ayracı `--`; ör. `arrow--right`, `volume--up`). Yeni ikon
+> eklerken kanonik addan türet — sprite→kanonik eşleme tablosu carbon-sources.md §3.
 
 ## İçindekiler
 1. Üç görsel kaynağı ve ne zaman hangisi

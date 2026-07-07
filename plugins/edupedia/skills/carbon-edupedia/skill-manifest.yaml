@@ -90,6 +90,8 @@ references:
     read_when: 'Etkileşim mekaniği seçimi ve veri şeması.'
   - path: references/carbon-child-system.md
     read_when: 'Renk/tip/spacing/hareket token''ları, çocuk uyarlaması. v2: @carbon/themes@11.75.0 otorite-doğrulanmış; etkileşim-durumu token''ları, tam hareket/spacing matrisi, resmî tag-çifti aksanları.'
+  - path: references/carbon-sources.md
+    read_when: 'KANONİK Carbon kaynak haritası — carbon-design-system/carbon monorepo + @carbon/* paketleri ESAS KAYNAK (token/renk/tip/motion/layout/icons/pictograms/charts). Doğrulanmış aksan değerleri (blue60 #0f62fe vb.), motor-sprite → kanonik @carbon/icons ad eşlemesi (2584 ikon; ic-info→information, ic-volume→volume--up vb.), @carbon/charts per-count palet (araştırma-türevi paleti düzeltir), sync protokolü. Token DEĞERİ için daima buraya bak; Figma üçüncül anatomi-QA.'
   - path: references/figma-carbon-interop.md
     read_when: 'Opsiyonel görsel QA: WIRE EDİLMİŞ 6 IBM Carbon Figma kütüphanesi (v11 Carbon Design System · IBM Color · UI Icon · Pictogram · Carbon Charts · Technical Diagram — §2 somut fileKey''ler) üzerinden Figma MCP anatomi/durum/ad doğrulaması. EMPİRİK erişim modeli: kopyalar MCP-erişilebilir ama search_design_system BOŞ döner (abone-kütüphane yok) → node-spesifik get_metadata→get_variable_defs/get_design_context. Figma↔--cds-* eşlemesi, sapma triyajı (npm kazanır), figma-forge composability. Token DEĞERİ kaynağı DEĞİL (npm otoritesi).'
   - path: references/icon-pictogram-svg.md

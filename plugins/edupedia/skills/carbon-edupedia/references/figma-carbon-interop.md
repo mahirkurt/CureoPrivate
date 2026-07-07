@@ -2,11 +2,12 @@
 
 > Bu referans, `carbon-edupedia` token otorite zincirinin **üçüncü (opsiyonel)
 > katmanını** tanımlar: IBM'in resmî **Carbon Design System v11 Figma
-> kütüphaneleri** üzerinden Figma MCP araçlarıyla görsel doğrulama. Birincil
-> otorite daima `npm @carbon/*` paketleridir (bkz.
-> `carbon-child-system.md` §1); Figma katmanı **bileşen anatomisi, durum
-> görselleri ve değişken adlandırması** için ek bir doğrulama yüzeyidir —
-> token değerinin kaynağı değildir.
+> kütüphaneleri** üzerinden Figma MCP araçlarıyla görsel doğrulama. **BİRİNCİL
+> (kanonik) otorite daima `carbon-design-system/carbon` monorepo'su + `@carbon/*`
+> npm paketleridir — bkz. `carbon-sources.md` (kanonik kaynak haritası).** Figma
+> katmanı yalnız **bileşen anatomisi, durum görselleri ve değişken adlandırması**
+> için üçüncül bir doğrulama yüzeyidir — token/renk/ikon **değerinin kaynağı
+> DEĞİLDİR** (Figma community kopyaları sürüm-geri olabilir).
 
 ## İçindekiler
 1. Ne zaman kullanılır (ve kullanılmaz)

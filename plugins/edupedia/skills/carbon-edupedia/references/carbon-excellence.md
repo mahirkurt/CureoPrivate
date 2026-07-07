@@ -138,6 +138,13 @@ Kaynak: [Data Viz — Color Palettes](https://carbondesignsystem.com/data-visual
     `Purple 70 → Cyan 50 → Teal 70 → Magenta 70 → Red 50 → Red 90 → Green 60 →
     Blue 80 → Magenta 50 → Yellow 50 → Teal 50 → Cyan 90 → Orange 70 → Purple 50`
 
+    > **Kanonik kaynak (esas).** Yukarıdaki sıra yaklaşık bir sezgiseldir;
+    > **kesin palet `@carbon/charts`'tır** ve **N-renk-başına optimize** edilmiştir
+    > (14 sabit sıra değil) — kanonik white-teması dizisi `purple70 #6929c4 →
+    > blue80 #002d9c → cyan50 #1192e8 → teal60 #007d79 → magenta70 #9f1853 …`
+    > biçimindedir. Grafik rengi kararı için `carbon-sources.md` §4 (@carbon/charts
+    > per-count palet) esas alınır; HEX değeri npm'den gelir.
+
     Sıralı (ordinal) veri **sequential/tek-tonlu** (ör. tek rengin açıktan koyuya
     tonları) bir palet kullanır; artı/eksi veya orta-noktalı veri (ör. bir eşiğin
     üstü/altı) **diverging** (iki uçtan orta-nötre giden) bir palet kullanır —

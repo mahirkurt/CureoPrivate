@@ -122,6 +122,18 @@ const MODULE_DATA = {
       prompt: "3x + 2 = 14 denkleminde neden önce 2'yi çıkarıyoruz? Kendi cümlelerinle açıkla.",
       modelExplanation: "<p>Denklemi çözmek için x'i yalnız bırakmalıyız; bu yüzden önce her iki taraftan da 2 çıkarılır.</p>" },
 
+    // 9) parametrik simülasyon (sim) — sanal manipülatif: 1-2 kaydırıcı canlı bir
+    //    SVG'yi yeniden çizer. simType motor-içi SABİT bir preset kütüphanesini
+    //    (SIM_PRESETS) seçer — MODULE_DATA asla render kodu taşımaz (Task 17,
+    //    gamified-flows.md §5.3.1). Keşfedici/puanlanmaz.
+    { type: "sim", id: "s1", title: "Sarkaç Uzunluğu", pictogram: "pic-idea",
+      instructions: "Kaydırıcıyı hareket ettir ve sarkacın nasıl değiştiğini gözlemle.",
+      simType: "pendulum",                      // pendulum|projectile|wave|numberScale|functionPlot
+      params: [
+        { key: "length", label: "Uzunluk (m)", min: 0.2, max: 2.2, step: 0.1, default: 1 },
+        { key: "angle",  label: "Açı (derece)", min: -60, max: 60,  step: 5,   default: 20 }
+      ] },
+
     // son) kontrol noktası (karma geri-getirme, ped İlke 8)
     { type: "checkpoint", id: "c1", title: "Kontrol Noktası", pictogram: "ic-trophy",
       recap: ["...", "..."],
@@ -184,6 +196,33 @@ const MODULE_DATA = {
   görünür zorluk-etiketi yazılmaz (G-FLOW `FLOW_LABEL_RE`). Tam şema/motor
   ayrıntısı: `interaction-patterns.md` §2/§5 + `runQuestionSet`/`renderFillblank`
   (module-template.html).
+- `sim` (parametrik simülasyon / sanal manipülatif, v3.0.0 — Task 17) **opsiyoneldir**.
+  Alanlar: `id`, `title?`, `instructions?`, `simType` (zorunlu —
+  `"pendulum"|"projectile"|"wave"|"numberScale"|"functionPlot"`),
+  `params:[{key,min,max,step,default,label}]` (zorunlu dizi, 1-2 öğe önerilir),
+  `labels?` (opsiyonel — yalnız `labels.title` SVG başlığını override eder).
+  **Kod-güvenli tasarım kararı** (gamified-flows.md §5.3.1): `simType` motor-içi
+  SABİT bir preset kütüphanesini (`SIM_PRESETS`) seçer — `MODULE_DATA` asla render
+  fonksiyonu/kod taşımaz, yalnız hangi preset'in hangi parametrelerle çağrılacağını
+  seçer (şema değişmezi: "motor olayları bağlar"). Motor her `params[]` öğesi için
+  klavye-erişilebilir bir `input type="range" aria-label` (native — ok tuşları
+  `step` kadar değiştirir, Home/End min/max'a atlar, ekstra kod gerekmez) + canlı
+  `output aria-live="polite"` değer okuması render eder; her kaydırıcı `input`
+  olayında (ve ilk çizimde) `SIM_PRESETS[simType](svgEl, values, labels)` çağrılır
+  ve hedef svg öğesinin `innerHTML`'ini **tamamen** değiştirir — bu yüzden CSS
+  transition/animasyon yoktur, yeniden çizim reduced-motion altında da üstünde de
+  mimari olarak **anındadır** (eski düğümler yok edilip yenileri kuruluyor).
+  **Bilinmeyen `simType`** → nazik/uydurmasız bir not ("Bu simülasyon için hazır
+  şablon yok.") render edilir, kaydırıcı/SVG hiç kurulmaz — çökme yok. Segment
+  **keşfedicidir/puanlanmaz** (`setNav` next hep etkin; `addXP`/`markMastered`/
+  `bumpStreak` dokunuşu yok; `totalGradeable` paydasına katkısı yok — `selfExplain`
+  ile aynı ilke). Beş başlangıç preset'i (tam katalog: `subject-packs.md` §2g):
+  `pendulum` (uzunluk + opsiyonel açı → pivot+kol+top), `projectile` (hız+açı →
+  yörünge yayı), `wave` (genlik+frekans → sinüs eğrisi), `numberScale` (değer →
+  sayı doğrusunda işaretli nokta), `functionPlot` (eğim m + kesişim b → y=mx+b
+  doğrusu). Yeni bir preset eklemek **motor genişletmesi**dir (yeni `SIM_PRESETS`
+  dalı + G-SVG erişilebilirliği), `MODULE_DATA` yeteneği değil. Şema/motor
+  ayrıntısı: `renderSim` + `SIM_PRESETS` (module-template.html).
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

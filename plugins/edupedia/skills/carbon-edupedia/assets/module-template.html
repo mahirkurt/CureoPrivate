@@ -523,6 +523,20 @@ figure.viz figcaption{margin-top:var(--sp-04);font-size:var(--fs-label);color:va
 .callout--warning .cds-icon{color:var(--reward)}
 .callout__t{font-weight:600;display:block;margin-bottom:2px}
 .callout p{margin:0}
+/* v3.0.0 — Task 17: parametrik simülasyon (sanal manipülatif). Kaydırıcı satırları
+   + SVG kanvası (.visual paylaşılan kutuyu miras alır). SVG'nin kendisi motorda
+   svg.innerHTML TAM değişimiyle güncellenir (bkz. renderSim/SIM_PRESETS) — bu
+   yüzden burada KASITLI olarak hiçbir transition/animasyon kuralı YOK (yeniden
+   çizim mimari olarak her zaman anında, reduced-motion'dan bağımsız). */
+.sim-controls{display:flex;flex-direction:column;gap:var(--sp-05);margin:var(--sp-05) 0}
+.sim-param{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-04);
+  background:var(--cds-layer-02);border-radius:var(--cds-radius);
+  padding:var(--sp-04) var(--sp-05);box-shadow:inset 0 0 0 1px var(--cds-border-tile)}
+.sim-param__lbl{flex:1 1 160px;font-size:var(--fs-compact);font-weight:500;color:var(--cds-text-primary)}
+.sim-param input[type="range"]{flex:2 1 200px;accent-color:var(--accent);cursor:pointer}
+.sim-param input[type="range"]:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+.sim-val{flex:none;min-width:64px;text-align:right;font-family:var(--font-mono);
+  font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent-strong)}
 /* ===== işlevsel renk: etkinlik-tipine göre wayfinding aksanı (signaling) ===== */
 .stage[data-seg="teach"]{--seg-accent:var(--cds-support-info)}
 .stage[data-seg="mcq"],.stage[data-seg="checkpoint"],.stage[data-seg="fillblank"],.stage[data-seg="match"],.stage[data-seg="order"],.stage[data-seg="sorting"],.stage[data-seg="hotspot"]{--seg-accent:var(--accent)}
@@ -1416,9 +1430,11 @@ const MODULE_DATA = {
     if(state.idx>=segs.length){ renderSummary(stage); return; }
     const s=segs[state.idx];
     stage.setAttribute("data-seg", s.type);
-    // NOTE: Tasks 17/18 (sim/conceptMap renderers) — when built, each must include ttsRow() on primary text
+    // NOTE: Task 18 (conceptMap renderer) — when built, must include ttsRow() on primary
+    //       text (Task 17's sim renderer already does — see renderSim below).
     const fn = ({hook:renderHook,teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
       match:renderMatch,fillblank:renderFillblank,worked:renderWorked,selfExplain:renderSelfExplain,
+      sim:renderSim,
       brainbreak:renderBreak,checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,
       hotspot:renderHotspot,timeline:renderTimeline,chart:renderChart,
       table:renderTable,numberline:renderNumberline,fraction:renderFraction,
@@ -1984,6 +2000,211 @@ const MODULE_DATA = {
     if(s.takeaway) html+=`<div class="callout">${icon("ic-info")}<div>${s.takeaway}</div></div>`;
     stage.innerHTML=html;
     setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
+  }
+
+  /* ---- sim: parametrik simülasyon (sanal manipülatif; Task 17) ----
+     gamified-flows.md §5.3/§5.3.1 kod-güvenli tasarım kararı: MODULE_DATA yalnız
+     VERİ taşır (simType + params[]) — motor olayları bağlar/render eder ilkesi
+     (module-architecture.md §2: "body sade HTML; motor olayları bağlar"). Bu
+     yüzden `sim` keyfi bir render fonksiyonu TAŞIMAZ; SIM_PRESETS ENGINE-sabit
+     bir preset kütüphanesidir — MODULE_DATA yalnız hangi preset'in (simType)
+     hangi parametrelerle (params[]) çağrılacağını seçer, asla kod/fonksiyon
+     taşımaz. Yeni bir preset eklemek = motor genişletmesi (yeni SIM_PRESETS dalı
+     + G-SVG erişilebilirliği), MODULE_DATA yeteneği DEĞİL.
+     Her preset (svg,v,labels)=>{ svg.innerHTML = "…" } imzasındadır: `v` o anki
+     kaydırıcı değerleri (params[].key → sayı), `labels` segmentin opsiyonel
+     `labels` alanı (yalnız `labels.title` ile SVG başlığını override eder — yoksa
+     preset kendi Türkçe açıklamasını üretir). Presetler svg.innerHTML'i TAMAMEN
+     değiştirir (kısmi öznitelik ayarı değil) — bu yüzden CSS transition/animasyon
+     YOKTUR ve yeniden çizim reduced-motion altında da üstünde de mimari olarak
+     ANINDADIR (eski düğümler yok edilip yenileri kuruluyor; ara-kare
+     interpolasyonu mümkün değil — bkz. .sim-* CSS yorumu). Her preset kendi
+     simSvgTitle (+ simSvgDesc) başlık/betimini yeniden yazar; dıştaki svg öğesi
+     (aria-labelledby=simSvgTitle+simSvgDesc) her redraw'da aynı sabit id'lere
+     işaret eder (sim segmenti aynı anda tek örnek olduğundan
+     vizId() gerekmez — #seModel/#pacingDisk deseniyle aynı ilke). Fiziksel
+     formüller (projectile/wave/functionPlot) kendi doğal aralığına göre SVG
+     çerçevesine OTOMATİK ölçeklenir — yazarın params[].min/max seçimi ne olursa
+     olsun taşma riski yok; pendulum/numberScale kırpma (clampNum) ile korunur. */
+  function numOr(x,fallback){ const n=+x; return isFinite(n)?n:fallback; }
+  function clampNum(x,lo,hi){ return Math.max(lo,Math.min(hi,x)); }
+  const SIM_PRESETS = {
+    // Sarkaç: uzunluk (+ opsiyonel açı) → pivot + kol + top. Gerçek-zamanlı
+    // fizik ANİMASYONU değil — seçilen değerlerdeki DURAĞAN konumu gösterir
+    // (ör. "daha uzun sarkaç" karşılaştırması).
+    pendulum: (svg, v, labels) => {
+      const Lm = clampNum(numOr(v.length, 1), 0.2, 2.2);
+      const hasAngle = v.angle != null;
+      const rawAngle = numOr(v.angle, 20);
+      const A = clampNum(rawAngle, -75, 75);
+      const pivotX = 240, pivotY = 26, pxPerM = 72;
+      const Lpx = Lm * pxPerM;
+      const rad = A * Math.PI / 180;
+      const bobX = pivotX + Lpx * Math.sin(rad);
+      const bobY = pivotY + Lpx * Math.cos(rad);
+      const title = (labels && labels.title) ? esc(labels.title)
+        : "Sarkaç: uzunluk " + Lm.toFixed(2) + " m" + (hasAngle ? ", açı " + Math.round(rawAngle) + "°" : "");
+      svg.innerHTML = `<title id="simSvgTitle">${title}</title>
+        <desc id="simSvgDesc">Kaydırıcıyı hareket ettirerek sarkacın ${hasAngle?"uzunluğunu ve açısını":"uzunluğunu"} değiştir.</desc>
+        <line x1="${pivotX}" y1="${pivotY}" x2="${pivotX}" y2="${(pivotY+Lpx).toFixed(1)}" class="viz-axis" stroke-width="1.5" stroke-dasharray="3 5"/>
+        <line x1="${pivotX}" y1="${pivotY}" x2="${bobX.toFixed(1)}" y2="${bobY.toFixed(1)}" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="${pivotX}" cy="${pivotY}" r="5" fill="var(--viz-axis)"/>
+        <circle cx="${bobX.toFixed(1)}" cy="${bobY.toFixed(1)}" r="14" fill="var(--accent)"/>
+        <text class="viz-muted" x="${pivotX}" y="16" text-anchor="middle" font-size="12">Sabit nokta</text>
+        <text x="${bobX.toFixed(1)}" y="${(bobY+26).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="600">L = ${Lm.toFixed(2)} m</text>`;
+    },
+    // Mermi hareketi: hız + açı → yörünge yayı (klasik parabolik hareket formülü;
+    // menzil/yükseklik SVG çerçevesine otomatik ölçeklenir).
+    projectile: (svg, v, labels) => {
+      const v0 = clampNum(numOr(v.speed, 20), 1, 60);
+      const angDeg = clampNum(numOr(v.angle, 45), 1, 89);
+      const g = 9.8, rad = angDeg * Math.PI / 180;
+      const R = Math.max(0.01, (v0*v0*Math.sin(2*rad))/g);
+      const W=480,H=240,PADL=30,PADR=20,PADT=20,PADB=32;
+      const plotW=W-PADL-PADR, plotH=H-PADT-PADB;
+      const N=40, hMax = (v0*v0*Math.pow(Math.sin(rad),2))/(2*g) || 0.01;
+      let d="";
+      for(let i=0;i<=N;i++){
+        const x = R*i/N;
+        let y = x*Math.tan(rad) - (g*x*x)/(2*v0*v0*Math.pow(Math.cos(rad),2));
+        if(y<0) y=0;
+        const px = PADL + plotW*(x/R);
+        const py = PADT + plotH*(1-(y/hMax));
+        d += (i?"L":"M")+px.toFixed(1)+" "+py.toFixed(1)+" ";
+      }
+      const groundY = PADT+plotH;
+      const title = (labels && labels.title) ? esc(labels.title)
+        : "Mermi hareketi: hız " + v0 + " m/sn, açı " + angDeg + "°, menzil " + R.toFixed(1) + " m";
+      svg.innerHTML = `<title id="simSvgTitle">${title}</title>
+        <desc id="simSvgDesc">Hız ve açı kaydırıcılarını değiştirerek menzilin nasıl değiştiğini gör.</desc>
+        <line x1="${PADL}" y1="${groundY}" x2="${W-PADR}" y2="${groundY}" class="viz-axis" stroke-width="1.5"/>
+        <path d="${d.trim()}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" marker-end="url(#vz-arrow)"/>
+        <text class="viz-muted" x="${W/2}" y="${H-8}" text-anchor="middle" font-size="12">menzil ≈ ${R.toFixed(1)} m</text>`;
+    },
+    // Dalga: genlik + frekans → sinüs eğrisi (sabit pencere üzerinde örneklenir).
+    wave: (svg, v, labels) => {
+      const amp = clampNum(numOr(v.amplitude, 40), 2, 100);
+      const freq = clampNum(numOr(v.frequency, 1.5), 0.2, 6);
+      const W=480,H=240,PADL=20,PADR=20, midY=H/2, plotW=W-PADL-PADR, N=80;
+      let d="";
+      for(let i=0;i<=N;i++){
+        const t=i/N, x=PADL+plotW*t, y=midY-amp*Math.sin(2*Math.PI*freq*t);
+        d += (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)+" ";
+      }
+      const title = (labels && labels.title) ? esc(labels.title)
+        : "Dalga: genlik " + amp.toFixed(0) + ", frekans " + freq.toFixed(1);
+      svg.innerHTML = `<title id="simSvgTitle">${title}</title>
+        <desc id="simSvgDesc">Genlik ve frekans kaydırıcılarını değiştirerek dalga şeklinin nasıl değiştiğini gör.</desc>
+        <line x1="${PADL}" y1="${midY}" x2="${W-PADR}" y2="${midY}" class="viz-axis" stroke-width="1.5" stroke-dasharray="3 5"/>
+        <path d="${d.trim()}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    },
+    // Sayı doğrusu / ölçek: tek değer → eksen üzerinde işaretli nokta; eksen
+    // alanı değer 0-10'un dışına taşarsa otomatik genişler.
+    numberScale: (svg, v, labels) => {
+      const val = numOr(v.value, 5);
+      const hi = Math.max(10, Math.ceil(val)+1);
+      const lo = Math.min(0, Math.floor(val)-1);
+      const W=480,H=240,PADX=30,Y=H/2,plotW=W-2*PADX, span=(hi-lo)||1;
+      const stepTick = Math.max(1, Math.ceil((hi-lo)/10));
+      const X = x => PADX+plotW*((x-lo)/span);
+      let ticks="";
+      for(let t=lo; t<=hi+1e-9; t+=stepTick){
+        const x=X(t);
+        ticks += `<line class="viz-axis" x1="${x.toFixed(1)}" y1="${Y-6}" x2="${x.toFixed(1)}" y2="${Y+6}" stroke-width="1.5"/>`
+          + `<text class="viz-muted" x="${x.toFixed(1)}" y="${Y+24}" text-anchor="middle" font-size="12">${Math.round(t)}</text>`;
+      }
+      const px=X(val);
+      const title = (labels && labels.title) ? esc(labels.title) : "Sayı doğrusu: değer " + val;
+      svg.innerHTML = `<title id="simSvgTitle">${title}</title>
+        <desc id="simSvgDesc">Kaydırıcıyı hareket ettirerek sayı doğrusundaki noktayı değiştir.</desc>
+        <line x1="${PADX}" y1="${Y}" x2="${W-PADX}" y2="${Y}" class="viz-axis" stroke-width="2" marker-end="url(#vz-arrow)"/>
+        ${ticks}
+        <circle cx="${px.toFixed(1)}" cy="${Y}" r="7" fill="var(--accent)"/>
+        <text x="${px.toFixed(1)}" y="${Y-16}" text-anchor="middle" font-size="13" font-weight="600">${val}</text>`;
+    },
+    // Fonksiyon grafiği: eğim (m) + kesişim (b) → y = mx + b doğrusu, sabit x
+    // eksenine (-5..5) göre çizilir; eksenler her zaman orijinden geçer.
+    functionPlot: (svg, v, labels) => {
+      const m = numOr(v.m, 1);
+      const b = clampNum(numOr(v.b, 0), -20, 20);
+      const xMin=-5, xMax=5;
+      const y1=m*xMin+b, y2=m*xMax+b;
+      let yLo=Math.min(y1,y2,0), yHi=Math.max(y1,y2,0);
+      if(yHi-yLo<1){ yHi+=1; yLo-=1; }
+      const W=480,H=240,PADL=34,PADR=20,PADT=20,PADB=30;
+      const plotW=W-PADL-PADR, plotH=H-PADT-PADB;
+      const X = x => PADL+plotW*((x-xMin)/(xMax-xMin));
+      const Y = y => PADT+plotH*(1-((y-yLo)/(yHi-yLo)));
+      const x0=X(0), y0=Y(0);
+      const d = `M${X(xMin).toFixed(1)} ${Y(y1).toFixed(1)} L${X(xMax).toFixed(1)} ${Y(y2).toFixed(1)}`;
+      const title = (labels && labels.title) ? esc(labels.title) : "Fonksiyon grafiği: y = " + m + "x + " + b;
+      svg.innerHTML = `<title id="simSvgTitle">${title}</title>
+        <desc id="simSvgDesc">Eğim (m) ve kesişim (b) kaydırıcılarını değiştirerek doğrunun nasıl hareket ettiğini gör.</desc>
+        <line x1="${PADL}" y1="${y0.toFixed(1)}" x2="${W-PADR}" y2="${y0.toFixed(1)}" class="viz-axis" stroke-width="1.5"/>
+        <line x1="${x0.toFixed(1)}" y1="${PADT}" x2="${x0.toFixed(1)}" y2="${H-PADB}" class="viz-axis" stroke-width="1.5"/>
+        <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="${x0.toFixed(1)}" cy="${y0.toFixed(1)}" r="5" fill="var(--viz-2)"/>`;
+    }
+  };
+
+  /* ---- sim segmenti: renderSim(stage,s) ----
+     Şema: {type:"sim", id, title?, instructions?, simType, params:[{key,min,max,
+     step,default,label}], labels?}. Kaydırıcı klavye-erişilebilirliği YERLEŞİKTİR
+     (native input type=range: ok tuşları step kadar değiştirir, Home/End
+     min/max'a atlar) — ayrı bir klavye-işleyici yazılmadı/gerekmiyor. Segment
+     KEŞFEDİCİDİR/puanlanmaz: setNav next hep etkin, addXP/markMastered/
+     bumpStreak YOK, totalGradeable paydasına katkısı yok (selfExplain'le aynı
+     ilke — bkz. yukarıdaki totalGradeable reduce, "sim" orada yok). */
+  function renderSim(stage,s){
+    const params = s.params||[];
+    const preset = SIM_PRESETS[s.simType];
+    let html = segHead(s,"Simülasyon") + instr(s);
+    html += ttsRow(stripTags(s.instructions||s.title||""), defLang());
+    if(!preset){
+      // Bilinmeyen simType: nazik/uydurmasız not — kaydırıcı/SVG hiç render edilmez, çökme yok.
+      html += `<div class="feedback feedback--info">${icon("ic-info")}<div>`
+        + `<b>Bu simülasyon için hazır şablon yok.</b> İstenen tür: «${esc(s.simType||"(belirtilmemiş)")}». `
+        + `Motorda tanımlı presetler: ${Object.keys(SIM_PRESETS).join(", ")}.</div></div>`;
+      stage.innerHTML = html;
+      setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
+      return;
+    }
+    html += `<div class="sim-controls" role="group" aria-label="Simülasyon kontrolleri">`;
+    params.forEach((p,i)=>{
+      const id = "simRange"+i;
+      const min = p.min!=null?p.min:0, max = p.max!=null?p.max:100, step = p.step||1;
+      const def = p.default!=null?p.default:min;
+      const label = p.label||p.key||("Değer "+(i+1));
+      html += `<div class="sim-param">`
+        + `<span class="sim-param__lbl" id="${id}Lbl">${esc(label)}</span>`
+        + `<input type="range" id="${id}" data-key="${esc(String(p.key||i))}" min="${min}" max="${max}" step="${step}" value="${def}" aria-label="${esc(label)}">`
+        + `<output class="sim-val" for="${id}" aria-live="polite">${def}</output>`
+        + `</div>`;
+    });
+    html += `</div>`;
+    html += `<div class="visual sim-canvas"><svg class="viz" id="simSvg" viewBox="0 0 480 240" role="img" aria-labelledby="simSvgTitle simSvgDesc"><title id="simSvgTitle">${esc(s.title||"Simülasyon")}</title><desc id="simSvgDesc">Kaydırıcıları hareket ettirerek görseli değiştir.</desc></svg></div>`;
+    stage.innerHTML = html;
+
+    const svgEl = stage.querySelector("#simSvg");
+    const sliders = Array.from(stage.querySelectorAll(".sim-param input[type=range]"));
+    function currentValues(){
+      const v={};
+      sliders.forEach(inp=>{ v[inp.dataset.key]=parseFloat(inp.value); });
+      return v;
+    }
+    function redraw(){
+      // svg.innerHTML TAM değişim: reduced-motion'dan bağımsız her zaman ANINDA
+      // (CSS transition/animasyon tanımlanmadı — eski düğümler her redraw'da yok
+      // edilip yenileri kuruluyor, ara-kare interpolasyonu mimari olarak yok).
+      try{ preset(svgEl, currentValues(), s.labels||{}); }
+      catch(e){ /* preset hata verirse canvas son geçerli kareyi korur — çökme yok */ }
+    }
+    sliders.forEach(inp=>{
+      const out = inp.parentElement.querySelector(".sim-val");
+      inp.addEventListener("input", ()=>{ if(out) out.textContent = inp.value; redraw(); });
+    });
+    redraw(); // ilk kare
+    setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"}); // keşfedici — sonraki hep etkin
   }
 
   /* ====== derse-özel görsel güçler ====== */

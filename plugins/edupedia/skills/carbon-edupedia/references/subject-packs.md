@@ -127,6 +127,35 @@ eklenmedi/eklenmemeli. Yazarlar MathML'de **yalnız yapısal etiketler** kullanm
 mtext, mspace, munder, mover, munderover`) — olay-tutucu (`on*`) veya `href`/
 `xlink:href` **eklenmemelidir** (yeni bir XSS yüzeyi açmamak için).
 
+### g) `sim` segmenti — parametrik simülasyon (sanal manipülatif, Task 17)
+Yeni bir **segment tipi** (`{type:"sim", simType, params[], labels?}`) — 1-2
+kaydırıcıyla canlı yeniden çizilen bir SVG "sanal manipülatif" (fizik/matematik
+kavramını elle-oynayarak keşfetme). Tam şema: `module-architecture.md` §2 (`sim`
+maddesi). **Kod-güvenli tasarım kararı:** `MODULE_DATA` yalnız `simType` (hangi
+preset) + `params[]` (hangi değerler) taşır; render fonksiyonunun kendisi
+`MODULE_DATA`'da **asla** yer almaz — motor-içi sabit bir preset kütüphanesi
+(`SIM_PRESETS`) taşır ve `simType` ile seçilir (`content-enrichment.md`'nin
+"entegre EDİLEMEZ" ilkesiyle aynı ruhta: keyfi kod/iframe yok, yalnız kürasyonlu/
+sabit motor yeteneği).
+
+Beş başlangıç preset'i:
+
+| Preset | Parametre(ler) | Ne çizer |
+| --- | --- | --- |
+| `pendulum` | `length` (+ opsiyonel `angle`) | Pivot + kol + top (sarkacın seçilen konumdaki durağan hâli) |
+| `projectile` | `speed`, `angle` | Klasik parabolik mermi yörüngesi (menzil/yükseklik çerçeveye otomatik ölçeklenir) |
+| `wave` | `amplitude`, `frequency` | Sinüs eğrisi |
+| `numberScale` | `value` | Sayı doğrusunda işaretli nokta (eksen değere göre otomatik genişler) |
+| `functionPlot` | `m`, `b` | `y = mx + b` doğrusu, orijinden geçen eksenler |
+
+Her preset yalnız token renk kullanır (`var(--accent)`, `var(--viz-axis)`,
+`var(--viz-2)` — ham hex yok) ve tek bir `svg#simSvg role="img" aria-labelledby`
+öğesinin `innerHTML`'ini tam değiştirir; bu yüzden yeniden çizim her zaman
+anındadır (CSS transition yok — G-CARBON-GRID koreografi kontrolünü etkilemez).
+**Bilinmeyen `simType`** → nazik "hazır şablon yok" notu (uydurma/çökme yok).
+Yeni preset eklemek motor genişletmesidir, ders paketi/`MODULE_DATA` yeteneği
+değil.
+
 ## 3. Fen Bilimleri paketi — etiketli şema, süreç, veri
 Fen öğreniminde **etiketli, sadeleştirilmiş ve sinyallenmiş** görseller anlamayı ve aktarımı
 artırır; yarar özellikle ön-bilgisi düşük öğrencilerde belirgindir (Mayer 1989, *J Educ Psychol*,
@@ -152,6 +181,9 @@ süreçleri etiketle, rehberlik ekle**.
 - **`vizChart` / `vizTable`** — deney verisi ve gözlem tabloları.
 - **Formül:** `visual:{ kind:"math" }` + `mathExpr` kimyasal alt indis/üs için de çalışır
   (`H_2O` → H₂O, `CO_2` → CO₂).
+- **`sim` segmenti** (`pendulum`/`projectile`/`wave` presetleri, §2g) — sarkaç,
+  mermi hareketi, dalga gibi fizik kavramlarını elle-oynanabilir bir kaydırıcı +
+  canlı SVG ile keşfettirir; tam katalog §2g ve `module-architecture.md` §2.
 
 ## 4. Sosyal Bilimler paketi — kavram/ilişki, kartlar, zaman çizelgesi
 Sosyal bilgiler, **din kültürü ve ahlak bilgisi** ve **yurttaşlık/insan hakları** için ortak

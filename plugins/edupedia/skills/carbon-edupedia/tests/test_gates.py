@@ -297,3 +297,65 @@ def test_engine_mathml_helper_wired_and_mathexpr_default_unchanged():
     assert "\\frac" in body  # kaynaktaki gerçek iki-ters-eğik-çizgi dizisi (regex literal \\frac)
     # .body render yolu: raw join, esc() YOK (whitelist/sanitizer olmadığının kanıtı)
     assert 'html += `<div class="seg-body">${(s.body||[]).join("")}</div>`;' in src
+
+def test_sim_fixture_has_signature():
+    # Task 17: sim_pass.html hand-marked static — renderSim()'in gerçek çıktısını
+    # taklit eder: data-seg="sim" + klavye-erişilebilir <input type=range aria-label>
+    # kaydırıcı(lar) + canlı <output aria-live="polite"> değer okuması + role="img"
+    # taşıyan SVG kanvası (gerçek motorda SIM_PRESETS tarafından çizilir).
+    html = open("tests/fixtures/sim_pass.html").read()
+    assert 'data-seg="sim"' in html
+    assert '<input type="range"' in html and "aria-label=" in html
+    assert "<output" in html and 'aria-live="polite"' in html
+    assert 'id="simSvg"' in html and 'role="img"' in html and "<title" in html
+
+def test_sim_fixture_ga11y_and_gsvg_pass():
+    # G-A11Y: lang/title/reduced-motion/aria-live/rol işaretleri elle donatıldı ki
+    # bu fixture gerçek PASS alsın (yalnızca "uygulanmaz" değil). G-SVG: sim
+    # kanvası role="img" + <title> taşır; dekoratif ikon svg'leri aria-hidden ile
+    # doğru dışlanır (ham hex renk yok — token'lı).
+    html = open("tests/fixtures/sim_pass.html").read()
+    rows_a = run_gate(vm.gate_a11y, html)
+    assert status_of(rows_a, "G-A11Y") == "PASS"
+    rows_s = run_gate(vm.gate_svg, html)
+    assert status_of(rows_s, "G-SVG") == "PASS"
+
+def test_sim_engine_wired_and_presets_defined():
+    # SIM_PRESETS motor-içi SABİT bir preset kütüphanesidir (MODULE_DATA kod
+    # taşımaz — yalnız simType+params seçer); renderSim dispatch'e bağlıdır;
+    # 5 başlangıç preset'inin tamamı tanımlı.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "const SIM_PRESETS" in src
+    for name in ("pendulum", "projectile", "wave", "numberScale", "functionPlot"):
+        assert re.search(re.escape(name) + r"\s*:\s*\(", src), f"SIM_PRESETS.{name} tanımlı değil"
+    assert "sim:renderSim" in src
+    assert "function renderSim(stage,s)" in src
+
+def test_sim_unknown_simtype_graceful_no_crash():
+    # Bilinmeyen simType → nazik/uydurmasız not, kaydırıcı/SVG hiç kurulmaz —
+    # çökme yok (brief: "no fabrication, no crash"). Segment keşfedici/puanlanmaz:
+    # addXP/markMastered/bumpStreak dokunuşu yok (selfExplain ile aynı ilke).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderSim(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert "Bu simülasyon için hazır şablon yok." in body
+    assert "if(!preset)" in body
+    assert "addXP(" not in body and "markMastered(" not in body and "bumpStreak(" not in body
+
+def test_sim_presets_no_raw_hex_colors():
+    # Token yetkesi: preset'ler yalnız var(--...)/currentColor kullanır, ham hex renk yok.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    i = src.index("const SIM_PRESETS")
+    j = src.index("function renderSim(stage,s)", i)
+    block = src[i:j]
+    assert not re.search(r'(?:fill|stroke)\s*=\s*"#[0-9a-fA-F]{3,6}"', block)
+
+def test_sim_new_segment_has_tts_coverage():
+    # Task 14'ün "Task 17/18 renderer'lar ttsRow taşımalı" notu (bkz. render()
+    # üstü yorum) — renderSim birincil metne (instructions/title) ttsRow uygular.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderSim(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert "ttsRow(" in body

@@ -219,7 +219,9 @@ def test_spacedrep_degrades_without_storage():
     # bloklu bir global kısıt — brief §"Global Constraints").
     src = open("assets/module-template.html", encoding="utf-8").read()
     assert "localStorage" in src, "Leitner localStorage kalıcılığı henüz uygulanmadı"
-    assert src.count("IndexedDB") == 0, "IndexedDB motor kaynağında YASAK (file:// bloklu)"
+    # Case-insensitive: gerçek API yüzeyi küçük harfle başlar (indexedDB/IDB*),
+    # yalnız "IndexedDB" büyük-küçük eşleşmesi yanlış güven verir.
+    assert re.search(r"indexeddb", src, re.I) is None, "IndexedDB motor kaynağında YASAK (file:// bloklu)"
     # en az bir try{...localStorage...}catch bloğu olmalı (lsGet/lsSet güvenli sarmalayıcılar)
     assert re.search(r"try\s*\{[^{}]*localStorage[^{}]*\}\s*catch", src), \
         "localStorage erişimi try/catch ile sarılı değil (degrade-safe olmalı)"
@@ -673,3 +675,56 @@ def test_teach_numberline_visual_forces_static():
     # the real type:"numberline" segment (renderNumberline) must stay wired and untouched
     assert 'html+=numberLine(nlSpec);' in src
     assert 'if(nlSpec.interactive) wireNumberlineInteractive(stage, nlSpec);' in src
+
+def test_gsvg_ignores_svg_fragments_inside_comments():
+    # Deferred-minor Fix 2: gate_svg's SVG_BLOCK_RE is non-greedy but scans the
+    # WHOLE file text, so an illustrative <svg>...</svg> fragment sitting inside a
+    # /* ... */ JS block comment (or an <!-- ... --> HTML comment) could bleed to a
+    # distant real </svg> and trip a false G-SVG finding. The scan must run on a
+    # comment-stripped working copy so comment-embedded fragments are ignored.
+    html_js_comment = '''<html><body>
+    <script>
+    /* örnek şekil, gerçek DOM değil: <svg viewBox="0 0 10 10"><rect/></svg> */
+    var x = 1;
+    </script>
+    </body></html>'''
+    rows = run_gate(vm.gate_svg, html_js_comment)
+    assert status_of(rows, "G-SVG") == "PASS"
+    msg = next(m for g, s, m in rows if g == "G-SVG")
+    assert "Figür SVG yok" in msg  # checked==0 dalı — yorumdaki parça hiç sayılmadı
+
+    html_html_comment = '''<html><body>
+    <!-- örnek: <svg viewBox="0 0 10 10"><rect/></svg> -->
+    <p>içerik</p>
+    </body></html>'''
+    rows2 = run_gate(vm.gate_svg, html_html_comment)
+    assert status_of(rows2, "G-SVG") == "PASS"
+
+def test_gsvg_still_catches_real_inaccessible_svg_outside_comments():
+    # Guard against the comment-stripping fix (Fix 2) accidentally neutering the
+    # gate for genuine, non-commented figure SVGs.
+    html = '''<html><body>
+    <svg viewBox="0 0 10 10"><rect fill="var(--accent)"/></svg>
+    </body></html>'''
+    rows = run_gate(vm.gate_svg, html)
+    assert status_of(rows, "G-SVG") == "FAIL"
+
+def test_numberline_w_padx_share_one_constant_source():
+    # Deferred-minor Fix 4: wireNumberlineInteractive used to hardcode its own
+    # W=480/PADX=28 literals, duplicating numberLine's X(v) scale constants — a
+    # silent-drift risk if one changes without the other. Both must now read a
+    # single shared source (NL_W/NL_PADX), and the scale itself must stay 480/28.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "const NL_W=480, NL_PADX=28;" in src, "paylaşımlı NL_W/NL_PADX sabiti bulunamadı"
+
+    i = src.index("function numberLine(spec)")
+    j = src.index("\n  function wireNumberlineInteractive", i)
+    numberline_body = src[i:j].replace(" ", "")
+    assert "W=NL_W" in numberline_body and "PADX=NL_PADX" in numberline_body
+    assert "W=480" not in numberline_body and "PADX=28" not in numberline_body
+
+    k = src.index("function wireNumberlineInteractive(stage, spec)")
+    next_fn = src.index("\n  function ", k + 1)
+    wire_body = src[k:next_fn].replace(" ", "")
+    assert "W=NL_W" in wire_body and "PADX=NL_PADX" in wire_body
+    assert "W=480" not in wire_body and "PADX=28" not in wire_body

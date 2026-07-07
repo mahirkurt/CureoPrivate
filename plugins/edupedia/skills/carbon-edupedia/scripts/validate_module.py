@@ -210,14 +210,26 @@ def _svg_report(R, checked, fails, warns):
     else:
         R.add("G-SVG","PASS", f"{checked} figür SVG erişilebilir ve tema-duyarlı (role+başlık, token renk).")
 
+def _strip_comments_for_svg_scan(html):
+    """G-SVG taraması için yorum-körlüğünü giderir: HTML ve JS blok yorumlarını
+    çalışma kopyasından siler (yalnız bu tarama için — diğer gate'ler orijinal
+    html'i görmeye devam eder). `//` satır yorumları KASTEN silinmez (URL'leri
+    bozar, ör. https://)."""
+    stripped = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    stripped = re.sub(r"/\*.*?\*/", "", stripped, flags=re.S)
+    return stripped
+
 def gate_svg(html, R):
     """Figür SVG'leri erişilebilir (role=img + başlık) ve tema-duyarlı (token renk) olmalı.
 
     Dekoratif SVG'ler (sprite, @carbon ikon/piktogram) aria-hidden / cds-icon / class=pic
-    ile dışlanır; yalnız diyagram ve grafik figürleri denetlenir.
+    ile dışlanır; yalnız diyagram ve grafik figürleri denetlenir. Tarama, HTML/JS yorumları
+    içindeki örnek <svg> parçalarını yok saymak için yorum-körlüğü giderilmiş bir çalışma
+    kopyası üzerinde çalışır (bkz. _strip_comments_for_svg_scan).
     """
     fails=[]; warns=[]; checked=0
-    for b in SVG_BLOCK_RE.findall(html):
+    scan_html = _strip_comments_for_svg_scan(html)
+    for b in SVG_BLOCK_RE.findall(scan_html):
         open_tag = b[:b.find(">")+1]
         if _svg_decorative(open_tag):
             continue

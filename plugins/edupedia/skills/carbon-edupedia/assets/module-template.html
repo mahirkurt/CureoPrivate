@@ -770,7 +770,7 @@ table.viz-table caption{caption-side:top;text-align:left;font-size:var(--fs-labe
             <svg class="cds-icon" aria-hidden="true"><use href="#ic-flash"></use></svg>
             <span class="streak-chip__n">0</span>
           </div>
-          <div class="pacing-disk" id="pacingDisk" aria-label="Tempo diski — temponu görmen için, baskı yok" hidden>
+          <div class="pacing-disk" id="pacingDisk" role="img" aria-label="Tempo diski — temponu görmen için, baskı yok" hidden>
             <svg class="pacing-disk__ring" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
               <circle class="pacing-disk__track" cx="14" cy="14" r="11"></circle>
               <circle class="pacing-disk__arc" cx="14" cy="14" r="11" transform="rotate(-90 14 14)"></circle>
@@ -2045,10 +2045,16 @@ const MODULE_DATA = {
      dizge kurucudur (motorun geneli "body sade HTML" ilkesi); olay bağlama
      renderNumberline'da stage.innerHTML atamasından SONRA yapılır (sim/conceptMap
      ile aynı desen: querySelector + addEventListener stage üzerinde). */
+  /* NL_W/NL_PADX: numberLine'ın SVG genişliği ve yatay dolgusu — tek kaynak.
+     wireNumberlineInteractive de AYNI X(v) ölçeğini (piksel<->değer) yeniden
+     kurmak zorunda (statik SVG'ye SONRADAN olay bağlıyor, bkz. yukarıdaki not);
+     iki fonksiyon aynı sabitleri BURADAN okur, böylece biri değişirse diğeri
+     sessizce kaymaz (480/28 değişmeden kalmalı — regresyon testine bkz.). */
+  const NL_W=480, NL_PADX=28;
   function numberLine(spec){
     const min=spec.min!=null?spec.min:0, max=spec.max!=null?spec.max:10;
     const step=spec.step||1, id=vizId(), tid=id+"t", did=id+"d";
-    const W=480,H=110,PADX=28,Y=64, plotW=W-2*PADX, span=(max-min)||1;
+    const W=NL_W,H=110,PADX=NL_PADX,Y=64, plotW=W-2*PADX, span=(max-min)||1;
     const X=v=>PADX+plotW*((v-min)/span);
     let ticks="";
     for(let v=min; v<=max+1e-9; v=+(v+step).toFixed(6)){
@@ -2108,7 +2114,7 @@ const MODULE_DATA = {
     const min = numOr(svg.getAttribute("data-nl-min"), 0);
     const max = numOr(svg.getAttribute("data-nl-max"), 10);
     const step = numOr(svg.getAttribute("data-nl-step"), 1) || 1;
-    const W=480,PADX=28,plotW=W-2*PADX, span=(max-min)||1;
+    const W=NL_W,PADX=NL_PADX,plotW=W-2*PADX, span=(max-min)||1;
     const X=v=>PADX+plotW*((v-min)/span);
     let val = numOr(handle.getAttribute("aria-valuenow"), (min+max)/2);
     function place(v){

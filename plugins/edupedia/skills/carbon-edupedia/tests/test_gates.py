@@ -102,3 +102,10 @@ def test_worked_segment_ginteract_ga11y_no_regression():
     assert status_of(rows_i, "G-INTERACT") != "FAIL"
     rows_a = run_gate(vm.gate_a11y, html)
     assert status_of(rows_a, "G-A11Y") == "PASS"
+
+def test_worked_zero_blank_not_counted_in_mastery():
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    # worked contributes to the mastery denominator ONLY when it has a real blank step
+    assert 's.fadeFrom < (s.steps||[]).length' in src
+    # and the naive always-+1 form must be gone
+    assert 'if(s.type==="worked") return n+1;' not in src

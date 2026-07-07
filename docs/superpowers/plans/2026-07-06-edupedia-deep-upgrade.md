@@ -502,7 +502,7 @@ const gg=$("#railGoal"); if(gg){ gg.textContent = (left>0 && left<=2) ? "Son "+l
 
 **Files:** Modify `assets/module-template.html` (renderWorked + dispatch), `module-architecture.md`, `tests/test_gates.py`
 
-**Interfaces:** `renderWorked(stage,s)`; `{type:"worked", id, title?, steps:[{text, html?}], fadeFrom:int}` — `fadeFrom` indeksinden itibaren adımlar boş input; öğrenci tamamlar; tümü doğru → XP + açıklama reveal.
+**Interfaces:** `renderWorked(stage,s)`; `{type:"worked", id, title?, steps:[{text, answer?}], fadeFrom:int}` — `fadeFrom` indeksinden itibaren adımlar boş input; öğrenci tamamlar; tümü doğru → XP + açıklama reveal.
 
 - [ ] **Step 1: Failing test** — `worked_pass.html` G-INTERACT/G-A11Y PASS + `data-seg="worked"`.
 - [ ] **Step 2: Run → fail**

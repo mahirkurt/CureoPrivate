@@ -2,6 +2,101 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.0.0] — 2026-07-07
+
+### edupedia 3.0.0 — derin motor + şema yükseltmesi (23 görevlik seri)
+
+Marka yeniden adlandırması + beş yeni segment tipi + iki yeni kalite kapısı +
+oyunlaştırma/erişilebilirlik/kalıcılık genişlemesi. **Davranış geriye-uyumludur:**
+mevcut 8 mod ve orijinal 11 kalite kapısı **korunur** (additif) — hiçbir mevcut
+alan/segment/kapı kaldırılmadı ya da anlamı değiştirilmedi; yeni alanların
+tamamı opsiyoneldir ve yoklukları eski modüllerde davranışı **birebir** aynı
+bırakır (bkz. her maddenin geriye-uyum notu).
+
+**Marka yeniden adlandırması**
+- `paideia` → `edupedia`, `carbon-paideia` → `carbon-edupedia` (plugin dizini,
+  skill adı/namespace, komut önekleri, sürüm damgaları). Bu CHANGELOG'un kendi
+  geçmiş girişleri de dahil (`carbon-paideia`/`paideia` prose'u) rebrand edildi.
+
+**Eklenen — 5 yeni segment tipi (`assets/module-template.html` + `references/module-architecture.md`)**
+- **`hook`** — merak-boşluğu (curiosity-gap) kancası; `resolvesIn` hedeflediği
+  `teach` render edilince **aynı akış içinde** kapanır (`data-hook-resolved`).
+- **`worked`** — soluk-çözümlü örnek (fading worked example); `fadeFrom`
+  altındaki adımlar salt-görünür, üzerindekiler `<input>` boşluğu + tek "Kontrol
+  et" ile toplu değerlendirilir (math g=0.48, çözümlü-örnek ailesinin en güçlü
+  alt-özelliği — Barbieri 2023).
+- **`selfExplain`** — düşük-baskı öz-açıklama; serbest/notsuz taslak + isteğe
+  bağlı model-açıklama aç/kapa. **Puanlama/XP/ceza YOK**, "Devam" koşulsuz etkin.
+- **`sim`** — parametrik simülasyon/sanal manipülatif; 5 motor-içi SABİT preset
+  (`pendulum`, `projectile`, `wave`, `numberScale`, `functionPlot` — `SIM_PRESETS`).
+  `MODULE_DATA` yalnız `simType`+`params` seçer, hiç render kodu taşımaz; bilinmeyen
+  `simType` → nazik/uydurmasız not, çökme yok. Keşfedici/puanlanmaz.
+- **`conceptMap`** — kavram haritası kurucu; düğümler gerçek `<button>` (klavye
+  yolu **zorunlu ve TEK yol** — sürükle-bırak hiç eklenmedi); kenarlar sırasız
+  karşılaştırılır (`[A,B]`≡`[B,A]`); tam eşleşince (eksiksiz+fazlasız) tek seferde
+  ödüllendirilir (`worked` ile aynı toplu-değerlendirme ilkesi).
+- Ayrıca **`numberline`/`numberLine(spec)`** `interactive:true` genişlemesi:
+  bayrak yoksa üretilen SVG byte-için-byte önceki sürümle aynıdır; bayrak varsa
+  klavye-zorunlu (`role="slider"`, Ok tuşları/Home/End) bir tutamaç eklenir.
+
+**Eklenen — 2 yeni kalite kapısı (`scripts/validate_module.py` → 11 → 13 kapı)**
+- **G-FLOW** (koşullu — gamification imzası yoksa atlanır): açık kalan
+  merak-boşluğu, kayıp-cezalandırıcı seri dili, uyarlanır-zorluk etiketlemesi,
+  kaygılı (geri-sayımlı) tempo diski FAIL üretir.
+- **G-CARBON-GRID**: statik kart/segment/tile'da gerçek (non-inset) `box-shadow`
+  = layer-elevation ihlali (FAIL); 2×-grid konteyneri, en-boy oranı
+  (`aspect-ratio`), >500ms koreografi eksikliği = WARN.
+
+**Eklenen — oyunlaştırma/motivasyon genişlemesi**
+- **Gain-only streak**: `resetStreak()` artık `state.streak`'i sıfırlamaz;
+  yalnızca nötr "korundu" (`data-held`) işaretine alır — kayıp/ceza dili yok.
+- **Stepper kilometre taşları + hedef-gradyanı**: `meta.milestones[]` →
+  ilerleme rayında aksan noktası; son 1-2 segmentte "Son N durak" ipucu.
+- **Opt-in tempo diski** (`learner.pacingDisk`, varsayılan **KAPALI**):
+  geri-sayımsız/kaygısız, kapatılabilir.
+- **Sefer mini-haritası** (`meta.quest.stations[]`): bahşedilmiş ilerleme
+  (station 1 tamamlanmış başlar), gölgesiz/token'lı.
+
+**Eklenen — görünmez taban-korumalı uyarlanır zorluk**
+- `mcq.questions[]`/`fillblank.items[]` opsiyonel `tier?:1|2|3`. `state.perf`
+  yuvarlanan penceresi: 2 ardışık yanlış-sonra-doğruda ipucu-önce + en-düşük-
+  kalan-tier tercihi; 2 ardışık ilk-denemede-doğruda opsiyonel/atlanabilir
+  "Meydan Oku" daveti. Kullanıcıya **hiçbir** görünür zorluk-etiketi yazılmaz
+  (`FLOW_LABEL_RE` motor kaynağının kendisinde de eşleşmez).
+
+**Eklenen — kalıcılık ve erişilebilirlik**
+- **Çapraz-oturum Leitner** (flashcards): kutu 1–5, `localStorage` (try/catch
+  degrade-safe, IndexedDB YASAK), modül-kimliği `D.meta.title`'dan türetilir.
+- **Native MathML**: `visual:{kind:"mathml"}` → `mathmlFigure()`; `.body` zaten
+  ham innerHTML olduğundan `<math>` motor değişikliği olmadan render olur.
+- **TTS kapsamı genişletildi**: `hook`/`worked`/`selfExplain`/`sim`/`conceptMap`
+  render'larının tamamı `ttsRow(...)` taşır.
+
+**Eklenen — 3 yeni referans dosyası**
+- `references/content-enrichment.md` — entegre-edilebilir zenginleştirme
+  kaynakları + yapılamaz listesi.
+- `references/carbon-excellence.md` — 15-madde uzman-vs-jenerik Carbon
+  checklist'i; G-CARBON-GRID'in normatif kaynağı.
+- `references/gamified-flows.md` — 4 akış şablonu (Keşif Döngüsü, Sefer,
+  Antrenman, Birlikte Odak) + atıflı YAPMA listesi; G-FLOW'un normatif kaynağı.
+
+**Eklenen — agent + hook'lar (plugin düzeyi)**
+- `agents/module-auditor.md` — 4 eksenli statik+canlı denetim (validate_module
+  13-kapı + carbon-excellence 15-madde + gamified-flows A/B/C/D + wellbeing/
+  kaynak-sadakati); static G-FLOW'un SPA'da yakalayamadığı canlı akış
+  değişmezlerini (hook kapanışı vb.) tamamlar.
+- `hooks/hooks.json` + `preflight.sh` + `validate-module.sh` — `SessionStart`
+  ve `PostToolUse` (Write|Edit) tetikleyicileri; her ikisi de **fail-open**
+  (hiçbir yol kullanıcı akışını bloklamaz).
+
+**Entegrasyon (bu sürüm)**
+- `assets/module-template.html` demo `MODULE_DATA`'sına beş yeni segmentin
+  birer canlı, kaynağa-sadık örneği eklendi (hook, worked, selfExplain,
+  sim:numberScale, conceptMap) — şablon artık **13/13 kalite kapısından 0
+  İHLAL, 0 uyarı** ile geçiyor (`tests/test_gates.py::test_full_template_passes_13_gates_with_new_segments`).
+- `shared/run-manifest-schema.json` `quality_gates` bloğuna `G-FLOW` +
+  `G-CARBON-GRID` eklendi (11 → 13 kapı).
+
 ## [2.8.0] — 2026-07-06
 
 ### edupedia PLUGIN ENTEGRASYONU

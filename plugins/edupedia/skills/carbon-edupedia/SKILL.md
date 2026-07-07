@@ -17,7 +17,7 @@ description: >-
 license: MIT
 metadata:
   version: 3.0.0
-  last_updated: 2026-07-06
+  last_updated: 2026-07-07
   manifest: ./skill-manifest.yaml
 ---
 
@@ -443,6 +443,16 @@ asla jenerik veya tek-tip değil:
   denetlenir. Sapma = **WARN**; White temada `--cds-support-info:#4589ff` =
   **FAIL** (bilinen AA kontrast regresyonu — doğrusu #0043ce). Otorite kaynağı
   ve tazeleme: `scripts/sync_carbon_tokens.py` + `assets/carbon-v11-authority.json`.
+- **G-FLOW (v3.0.0, koşullu):** Yalnız gamification imzası (`hook`/streak/
+  pacingDisk) varsa tetiklenir; aksi halde atlanır. Açık kalan merak-boşluğu
+  (bir `hook`'un `resolvesIn` hedefi hiç kapanmıyorsa), kayıp-cezalandırıcı seri
+  dili, uyarlanır-zorluğun kullanıcıyı etiketlemesi ("zorlanıyorsun" vb.) ve
+  kaygılı (geri-sayımlı) tempo diski **FAIL** üretir. Normatif kaynak:
+  `references/gamified-flows.md`.
+- **G-CARBON-GRID (v3.0.0):** Statik kart/segment/tile'da gerçek (non-inset)
+  `box-shadow` = layer-elevation ihlali (**FAIL**); 2×-grid konteyneri,
+  en-boy oranı (`aspect-ratio`) ve >500ms koreografi eksikliği (**WARN**).
+  Normatif kaynak: `references/carbon-excellence.md` §3.
 
 ## 13. Composability (SMP v1.0)
 

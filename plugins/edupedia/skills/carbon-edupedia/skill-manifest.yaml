@@ -18,9 +18,10 @@ skill:
     beceriyi (Kavramsal Beceriler KB2.x) etkileşim desenine haritalar, kazanım-izlenebilir
     provenans damgalar (G-CURRICULUM). Ders-bağımsız (fen, matematik, sosyal
     bilgiler, Türkçe, tarih, fizik, kimya, biyoloji); ortaokul/ilkokul/lise.
-    8 mod, 11 kalite kapısı; token katmanı @carbon/* npm otoritesiyle
-    doğrulanır (G-TOKEN + sync aracı), Figma Carbon v11 kütüphaneleri opsiyonel
-    görsel QA. Disambiguation: francais-coach → Fransızca React;
+    8 mod, 13 kalite kapısı (v3.0.0 — G-FLOW + G-CARBON-GRID eklendi), 5 ek
+    segment tipi (hook, worked, selfExplain, sim, conceptMap); token katmanı
+    @carbon/* npm otoritesiyle doğrulanır (G-TOKEN + sync aracı), Figma Carbon
+    v11 kütüphaneleri opsiyonel görsel QA. Disambiguation: francais-coach → Fransızca React;
     carbon-html-report → statik baskı HTML; carbon-pptx → slayt;
     frontend-design → genel React UI; Müfredat MCP yalnız Türkiye MEB.
   entry_point: ./SKILL.md
@@ -146,10 +147,12 @@ outputs:
   - id: validation_report
     description: >-
       Opsiyonel makine/insan okunur kalite kapısı raporu (scripts/validate_module.py).
-      11 kapı: G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
+      13 kapı: G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
       G-SVG, G-WELLBEING, G-AUDIO (earcon + TTS iki katman), G-CURRICULUM (koşullu —
       Müfredat-temelli modüllerde kazanım→segment izlenebilirliği), G-TOKEN
-      (@carbon/themes otoritesine karşı tema bloğu denetimi).
+      (@carbon/themes otoritesine karşı tema bloğu denetimi), G-FLOW (koşullu —
+      v3.0.0, gamification akış değişmezleri), G-CARBON-GRID (v3.0.0, Carbon
+      kompozisyon disiplini: layer-elevation/grid/en-boy oranı/koreografi).
     mime_type: text/plain
 
 # -----------------------------------------------------------------------------
@@ -271,6 +274,12 @@ verification:
     - id: G-TOKEN
       severity: WARN
       description: 'Tema bloklarındaki --cds-* değerleri gömülü @carbon/themes@11.75.0 otorite haritasına (≈19 token × White/G100) karşı denetlenir. Sapma = WARN; White temada --cds-support-info:#4589ff = FAIL (bilinen AA kontrast regresyonu — doğrusu #0043ce). Otorite: assets/carbon-v11-authority.json + scripts/sync_carbon_tokens.py.'
+    - id: G-FLOW
+      severity: FAIL
+      description: 'v3.0.0. Koşullu (yalnız gamification imzası — hook/streak/pacingDisk — varsa; aksi halde atlanır). Açık kalan merak-boşluğu (hook resolvesIn kapanmıyor), kayıp-cezalandırıcı seri dili, uyarlanır-zorluğun kullanıcıyı etiketlemesi, kaygılı (geri-sayımlı) tempo diski = FAIL. Normatif kaynak: references/gamified-flows.md.'
+    - id: G-CARBON-GRID
+      severity: FAIL
+      description: 'v3.0.0. Statik kart/segment/tile''da gerçek (non-inset) box-shadow = layer-elevation ihlali (FAIL). 2x-grid konteyneri, en-boy oranı (aspect-ratio), >500ms koreografi eksikliği = WARN. Normatif kaynak: references/carbon-excellence.md §3.'
   runner: 'python scripts/validate_module.py <output.html> [--strict] · token otorite senkronu: python scripts/sync_carbon_tokens.py [--check|--refresh]'
   evals: ./evals/evals.json
 
@@ -279,7 +288,7 @@ verification:
 # -----------------------------------------------------------------------------
 build:
   version: 3.0.0
-  release_date: '2026-07-06'
+  release_date: '2026-07-07'
   smp_compliance: '1.0'
   canonical_authorities:
     - '@carbon/themes@11.75.0 (white + g100 token''ları — programatik çıkarım)'

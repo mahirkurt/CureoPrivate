@@ -831,7 +831,7 @@ const MODULE_DATA = {
   meta:{
     title:"Maddenin Hâlleri ve Su Döngüsü",
     subject:"Fen Bilimleri", gradeLevel:"5. Sınıf", mode:"MODULE",
-    accent:"#009d9a", estimatedMinutes:16, coverPictogram:"pic-microscope",
+    accent:"#009d9a", estimatedMinutes:24, coverPictogram:"pic-microscope",
     sourceCitation:"ÖRNEK — gerçek modülde kaynağı buraya yazın (ders kitabı/kazanım)"
   },
   learner:{ name:"", showTimer:false, breakReminderMin:20, pacingDisk:false },  // pacingDisk: v3.0.0 opsiyonel tempo diski, varsayılan KAPALI
@@ -848,6 +848,11 @@ const MODULE_DATA = {
     ]
   },
   segments:[
+    { type:"hook", id:"h1", title:"Merak Anı", pictogram:"pic-idea",
+      question:"Bir buz küpü güneşte bir süre kalırsa ne olur dersin?",
+      predict:{ options:["Katı kalır","Suya döner (erir)","Doğrudan gaza dönüşür"] },
+      resolvesIn:"t2" },
+
     { type:"teach", id:"t1", title:"Maddenin Üç Hâli", pictogram:"pic-idea",
       lead:"Çevremizdeki her şey maddeden oluşur — ve madde üç farklı hâlde karşımıza çıkar.",
       body:[
@@ -912,6 +917,10 @@ const MODULE_DATA = {
         {term:"yoğuşma", def:"Gazın ısı vererek sıvıya dönüşmesi."}
       ] },
 
+    { type:"selfExplain", id:"se1", title:"Neden Böyle?", pictogram:"pic-idea",
+      prompt:"Maddenin katıdan sıvıya, sıvıdan gaza geçmesi için ısı gerekir. Sence ısı taneciklere tam olarak ne yapıyor da hâl değişiyor? Kendi cümlelerinle açıkla.",
+      modelExplanation:"<p>Isı alındığında tanecikler hızlanır ve birbirinden uzaklaşır; katıdaki sıkı düzen önce sıvının gevşek düzenine, sonra da gazın dağınık düzenine döner. Isı verildiğinde ise tanecikler yavaşlayıp birbirine yaklaşır.</p>" },
+
     { type:"brainbreak", id:"b1", title:"Hareket Molası", pictogram:"ic-pause",
       prompt:"Yaklaşık iki dakika ayağa kalk: esne, biraz yürü ya da zıpla, sonra su iç. Hazır olduğunda devam et.",
       durationSec:120 },
@@ -952,6 +961,15 @@ const MODULE_DATA = {
   <text class="viz-muted" x="402" y="210" font-size="13" font-weight="600">toplanma</text>
 </svg>` } },
 
+    { type:"conceptMap", id:"cm1", title:"Su Döngüsü İlişkileri", pictogram:"pic-puzzle",
+      instructions:"Bir düğüm seç, sonra bağlamak istediğin ikinci düğümü seç; su döngüsündeki doğru eşleşmeleri kur.",
+      nodes:[
+        { id:"n1", label:"Buharlaşma" }, { id:"n2", label:"Güneş suyu ısıtır, su buhar olur" },
+        { id:"n3", label:"Yoğuşma" }, { id:"n4", label:"Yükselen buhar soğuyup bulut olur" },
+        { id:"n5", label:"Yağış" }, { id:"n6", label:"Bulutlardan yağmur ya da kar düşer" }
+      ],
+      targetEdges:[ ["n1","n2"], ["n3","n4"], ["n5","n6"] ] },
+
     { type:"chart", id:"c1", title:"Erime Sıcaklıkları", pictogram:"pic-microscope",
       prompt:"Farklı katılar farklı sıcaklıklarda erir. Aşağıdaki çubuk grafik bunu karşılaştırır.",
       chart:{ kind:"bar", title:"Bazı katıların erime sıcaklığı (°C)",
@@ -959,6 +977,22 @@ const MODULE_DATA = {
         data:[{label:"Çikolata",value:34},{label:"Tereyağı",value:32},{label:"Bal mumu",value:62},{label:"Naftalin",value:80},{label:"Kükürt",value:115}],
         caption:"Şekil 3 — Maddeye göre erime sıcaklığı değişir." },
       takeaway:"Erime sıcaklığı maddenin türüne bağlıdır; her katı aynı sıcaklıkta erimez." },
+
+    { type:"worked", id:"w1", title:"Sıcaklık Farkını Hesapla", pictogram:"pic-microscope",
+      instructions:"Önce çözülmüş adımları oku, sonra boş adımı doldur.",
+      steps:[
+        { text:"Bal mumunun erime sıcaklığı 62°C'dir (bkz. grafik)." },
+        { text:"Odanın sıcaklığı 20°C'dir." },
+        { text:"Bal mumunun erimesi için kaç derece daha ısınması gerekir? 62 − 20 = ?", answer:["42"] }
+      ],
+      fadeFrom:2 },
+
+    { type:"sim", id:"s1", title:"Sıcaklık Ölçeği", pictogram:"pic-microscope",
+      instructions:"Kaydırıcıyı hareket ettir ve farklı sıcaklık değerlerinin sayı doğrusunda nereye düştüğünü gözlemle.",
+      simType:"numberScale",
+      params:[
+        { key:"value", label:"Sıcaklık (°C)", min:-10, max:120, step:5, default:20 }
+      ] },
 
     { type:"table", id:"tb1", title:"Hâllerin Karşılaştırması", pictogram:"pic-microscope",
       prompt:"Üç hâli temel özellikleriyle karşılaştıralım.",

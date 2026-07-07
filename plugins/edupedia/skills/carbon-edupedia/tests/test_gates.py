@@ -650,6 +650,17 @@ def test_numberline_css_no_static_card_shadow():
         m.group(1).strip().startswith("inset") for m in re.finditer(r'box-shadow\s*:\s*([^;]+);', block)
     )
 
+def test_full_template_passes_13_gates_with_new_segments():
+    # Task 22: 13-kapı tam entegrasyon — module-template.html'in demo MODULE_DATA'sı
+    # artık hook/worked/selfExplain/sim/conceptMap'in birer canlı örneğini taşır ve
+    # tüm 13 kapıdan (11 orijinal + G-FLOW + G-CARBON-GRID) sıfır İHLAL ile geçer.
+    import subprocess
+    r = subprocess.run(["python3", "scripts/validate_module.py", "assets/module-template.html"],
+                        capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout   # hiç FAIL yok
+    for g in ["G-FLOW", "G-CARBON-GRID"]:
+        assert g in r.stdout
+
 def test_teach_numberline_visual_forces_static():
     # WCAG 2.1.1 regression guard: renderTeach's generic visual.kind==="numberline"
     # path calls numberLine(...) inline but is never followed by

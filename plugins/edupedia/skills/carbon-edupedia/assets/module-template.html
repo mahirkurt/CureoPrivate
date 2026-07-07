@@ -1448,6 +1448,7 @@ const MODULE_DATA = {
     else if(s.visual && s.visual.kind==="numberline") html+=numberLine(s.visual);
     else if(s.visual && s.visual.kind==="fraction") html+=fractionBar(s.visual);
     else if(s.visual && s.visual.kind==="math") html+=mathFigure(s.visual.expr||s.visual.ref||"", s.visual.caption);
+    else if(s.visual && s.visual.kind==="mathml") html+=mathmlFigure(s.visual.math||s.visual.ref||"", s.visual.caption);
     else if(s.visual && s.visual.kind==="labeled") html+=labeledFigure(s.visual);
     else if(s.visual && s.visual.kind==="flow") html+=relationFlow(s.visual);
     else if(s.visual && s.visual.kind==="cards") html+=infoCards(s.visual);
@@ -1908,6 +1909,19 @@ const MODULE_DATA = {
   }
   function mathFigure(expr, caption){
     return `<figure class="viz"><p class="math block">${mathExpr(expr)}</p>${caption?`<figcaption>${esc(caption)}</figcaption>`:""}</figure>`;
+  }
+  /* ---- native MathML (ileri notasyon: matris/entegral/çok satırlı; sıfır JS/font/payload) ----
+     Task 16: mathExpr() VARSAYILAN kalır — bu yalnız mathExpr'in yetersiz kaldığı ileri
+     notasyonlar için tamamlayıcı bir figür sarmalayıcıdır (content-enrichment.md §2.3).
+     Motor <math>…</math>'i SANITIZE ETMEZ/İŞLEMEZ: `body` zaten yazar-güvenilir ham HTML
+     olarak innerHTML'e yazılır (interaction-patterns.md §1 "sade HTML"), bu yüzden inline
+     <math> body dizeleri içine doğrudan yazılabilir — bu sarmalayıcı yalnız isteğe bağlı
+     blok-figür/caption tutarlılığı için var (svgFigure ile aynı jenerik desen). Yazarlar
+     MathML'i yalnız yapısal etiketlerle kullanmalı — olay-tutucu (on*) veya href/xlink:href
+     EKLEMEMELİDİR (sanitizer olmadığından bu disiplin yazar sorumluluğundadır; yeni XSS
+     yüzeyi açmamak için). */
+  function mathmlFigure(mathml, caption){
+    return svgFigure(mathml, caption);
   }
 
   /* ---- sayı doğrusu (tema-duyarlı, erişilebilir) ---- */

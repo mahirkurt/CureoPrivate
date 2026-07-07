@@ -31,6 +31,20 @@ bonus; **yanlış ceza yok** (§3 etik).
 **Kural:** body ekran başına 4–6 kısa birimi aşmaz; aşarsa böl. Anahtar terimler
 görsel işaretlenir (`<mark class="term">`). Her teach'ten sonra etkileşim gelir.
 
+**Matematik notasyonu:** `mathExpr` (üs/alt indis/kesir/kök) **varsayılan** kalır —
+bkz. `subject-packs.md` §2. Motor `body` dizisini ham (esc()'siz) HTML olarak
+yazdığından ("sade HTML" = yazar-güvenilir model, yukarıda), `mathExpr`'in
+yetersiz kaldığı ileri notasyonlarda (matris, çok satırlı, entegral/toplam)
+inline native `<math>…</math>` (MathML) da doğrudan bir `body` dizesi içine
+yazılabilir — hiçbir motor/whitelist değişikliği gerekmez, tarayıcı-yerli sıfır
+JS/font/payload ile render edilir. Blok/başlıklı bir figür isteniyorsa alternatif
+olarak `visual:{ kind:"mathml", math:"<math>…</math>", caption:"…" }` kullanılabilir
+(`mathmlFigure()`). Yazarlar MathML'de yalnız yapısal etiketler kullanmalı —
+olay-tutucu (`on*`) veya `href`/`xlink:href` **eklememelidir** (body zaten
+sanitize edilmeyen ham HTML olduğundan, bu disiplin yeni bir XSS yüzeyi
+açmamak için yazar sorumluluğundadır). Ayrıntı: `subject-packs.md` §2(f),
+`content-enrichment.md` §2.3.
+
 ## 2. `mcq` — Çoktan seçmeli quiz / yarışma
 **Pedagoji:** Geri-getirme pratiği (İlke 8), OTR (İlke 2), anında ödül (İlke 3).
 ```js

@@ -246,3 +246,54 @@ def test_leitner_degrade_preserves_card_count():
     # totalGradeable/mastery paydası (s.cards.length) motor içinde DEĞİŞMEDEN kalmalı.
     src = open("assets/module-template.html", encoding="utf-8").read()
     assert 'if(s.type==="flashcards") return n+s.cards.length;' in src
+
+def test_mathml_fixture_ga11y_and_selfcontained_pass():
+    # Task 16: mathml_pass.html — teach body'sine gömülü inline native <math> (kök formülü)
+    # + visual:{kind:"mathml"} eşdeğeri bir <figure class="viz"> matris bloğu içerir.
+    # Motor `body`'yi ham (esc()'siz) innerHTML olarak yazdığından (bkz. investigation notu
+    # aşağıda) hiçbir whitelist değişikliği gerekmedi; bu test yalnızca MathML'in gate'leri
+    # gerçekten GEÇTİĞİNİ kanıtlar: G-A11Y (lang/title/reduced-motion/aria-live/aria-hidden)
+    # ve G-SELFCONTAINED (MathML sıfır src/href taşır — tarayıcı-yerli, harici bağımlılık yok).
+    html = open("tests/fixtures/mathml_pass.html").read()
+    assert "<math" in html and "</math>" in html
+    rows_a = run_gate(vm.gate_a11y, html)
+    assert status_of(rows_a, "G-A11Y") == "PASS"
+    rows_s = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows_s, "G-SELFCONTAINED") == "PASS"
+
+def test_mathml_fixture_no_interactive_or_link_attributes():
+    # Güvenlik: MathML içeriği yalnız yapısal etiketlerdir — olay-tutucu (on*) veya
+    # href/xlink:href YOK (body ham-HTML olduğundan sanitizer yok; disiplin yazar
+    # sorumluluğudur — brief'in "no XSS surface introduced" şartı).
+    # Not: HTML yorumları (açıklayıcı prova metni "<math>"/"href" sözcüklerinden söz
+    # edebilir) taramadan ÖNCE çıkarılır — yoksa yorum-metni yanlış-pozitif üretir.
+    html = open("tests/fixtures/mathml_pass.html").read()
+    html_no_comments = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    math_blocks = re.findall(r"<math\b.*?</math>", html_no_comments, re.S)
+    assert math_blocks, "fixture'da <math> bloğu bulunamadı"
+    for block in math_blocks:
+        assert not re.search(r'\bon[a-z]+\s*=', block, re.I), "MathML içinde olay-tutucu (on*) bulundu"
+        assert "href" not in block.lower(), "MathML içinde href/xlink:href bulundu"
+        assert "<script" not in block.lower()
+
+def test_engine_mathml_helper_wired_and_mathexpr_default_unchanged():
+    # Task 16 investigation: renderTeach()'in `.body` işleyişi ham join + innerHTML'dir
+    # (esc()'ten GEÇMEZ) — bu yüzden <math> zaten motor değişikliği olmadan render olur.
+    # Bu test iki şeyi kanıtlar: (1) yeni mathmlFigure() yardımcısı tanımlı ve
+    # visual:{kind:"mathml"} dispatch'ine bağlı; (2) mathExpr()'in KENDİSİ (varsayılan
+    # dizgi motoru) satır satır değişmeden kalmış — yalnız mathFigure'dan SONRA katkı
+    # olarak eklendi, mevcut "math" kind dalına dokunulmadı.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    # (1) yeni yardımcı tanımlı ve visual:{kind:"mathml"} dispatch'ine bağlı
+    assert "function mathmlFigure(mathml, caption)" in src
+    assert 'html+=mathmlFigure(s.visual.math||s.visual.ref||"", s.visual.caption);' in src
+    # (2) mathExpr varsayılan dal ve gövdesi dokunulmadan duruyor (satır satır aynı)
+    assert 'kind==="math") html+=mathFigure(s.visual.expr||s.visual.ref||"", s.visual.caption);' in src
+    i = src.index("function mathExpr(src)")
+    j = src.index("\n  }\n", i)
+    body = src[i:j]
+    assert "esc(String(src))" in body
+    assert "sqrt" in body
+    assert "\\frac" in body  # kaynaktaki gerçek iki-ters-eğik-çizgi dizisi (regex literal \\frac)
+    # .body render yolu: raw join, esc() YOK (whitelist/sanitizer olmadığının kanıtı)
+    assert 'html += `<div class="seg-body">${(s.body||[]).join("")}</div>`;' in src

@@ -92,6 +92,41 @@ ilkeli bir müdahalenin altıncı sınıf matematik güçlüğü olan öğrencil
 etkisini tamponladığı da gösterilmiştir — yapılandırılmış kesir çalışmasının DEHB bağlamındaki değerini
 destekleyen bir bulgu ([Barbieri ve ark. 2019, sayı doğrusu + bilişsel stratejiler](https://consensus.app/papers/details/9c1ca460656c5022bd3353f290e59439/)).
 
+### f) Native MathML — `mathExpr` yetersiz kaldığında ileri notasyon (Task 16)
+`mathExpr` (a) **varsayılan** dizgi motoru olarak kalır: üs/alt indis, kesir, kök ve
+temel operatör glifleri için hafif/bağımlılıksız çözümdür ve çoğu K-12 modülü için
+yeterlidir. **Yalnızca** `mathExpr`'in ifade edemediği ileri notasyonlarda — matris,
+determinant, çok satırlı denklem sistemi, toplam/entegral (Σ/∫) gösterimi gibi —
+tarayıcı-yerli **MathML** (`<math>…</math>`) escalation/tamamlayıcı olarak kullanılır.
+
+**Nasıl kullanılır — iki yol:**
+1. **Satır-içi (birincil, motor değişikliği gerekmez):** Motor `teach.body` dizisini
+   ham (esc()'siz) HTML olarak `innerHTML`'e yazar (bkz. `interaction-patterns.md` §1
+   "sade HTML" — yazar-güvenilir model). Bu yüzden `<math>…</math>` bir `body` dizesi
+   içine doğrudan yazılabilir ve **hiçbir whitelist/sanitizer değişikliği olmadan**
+   tarayıcıda render edilir:
+   ```
+   body: [ "<p>Kök formülü: <math><mrow><mi>x</mi><mo>=</mo>…</mrow></math></p>" ]
+   ```
+2. **Blok/başlıklı figür (isteğe bağlı yardımcı):** `visual:{ kind:"mathml", math:"<math>…</math>", caption:"…" }`
+   → `mathmlFigure(mathml, caption)` bunu `svgFigure` ile aynı jenerik desende
+   `<figure class="viz">…<figcaption>…</figcaption></figure>` olarak sarar (diğer
+   `visual.kind` archetype'larıyla —`math`, `svg`, `labeled`— tutarlı bir çağrı biçimi).
+
+**Sıfır payload / tarayıcı desteği.** MathML tarayıcı-yerlidir — harici kütüphane
+(KaTeX/MathJax), font veya CDN **gerekmez**; `G-SELFCONTAINED` etkilenmez. Render
+kalitesi tarayıcıya göre küçük farklar gösterebilir (bkz. `SKILL.md` §14 taban:
+Chromium ≥120, Firefox ≥115, Safari ≥16 — MathML Core desteği bu tabanın altında
+zaten mevcuttur); bu yüzden `mathExpr` varsayılan kalır, MathML yalnız onun
+yetersiz kaldığı durumlarda tamamlayıcıdır. Ayrıntı: `content-enrichment.md` §2.3.
+
+**Güvenlik disiplini (sanitizer YOK — yazar sorumluluğu).** `body` zaten ham/
+sanitize-edilmeyen yazar-HTML'i olduğundan, MathML için ayrı bir whitelist
+eklenmedi/eklenmemeli. Yazarlar MathML'de **yalnız yapısal etiketler** kullanmalı
+(`mrow, mi, mo, mn, msup, msub, msubsup, mfrac, msqrt, mroot, mtable, mtr, mtd,
+mtext, mspace, munder, mover, munderover`) — olay-tutucu (`on*`) veya `href`/
+`xlink:href` **eklenmemelidir** (yeni bir XSS yüzeyi açmamak için).
+
 ## 3. Fen Bilimleri paketi — etiketli şema, süreç, veri
 Fen öğreniminde **etiketli, sadeleştirilmiş ve sinyallenmiş** görseller anlamayı ve aktarımı
 artırır; yarar özellikle ön-bilgisi düşük öğrencilerde belirgindir (Mayer 1989, *J Educ Psychol*,

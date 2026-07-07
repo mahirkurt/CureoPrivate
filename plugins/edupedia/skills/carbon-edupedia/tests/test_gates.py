@@ -82,3 +82,23 @@ def test_gcarbongrid_spaced_css_shadow_handling():
     # inset border-sim (spaced) must NOT FAIL
     r3 = run_gate(vm.gate_carbon_grid, "<style>.card{box-shadow: inset 0 0 0 2px var(--accent);}</style>")
     assert status_of(r3, "G-CARBON-GRID") != "FAIL"
+
+def test_worked_segment_fixture_has_signature():
+    # Task 11: worked_pass.html hand-marked static — renderWorked()'in gerçek çıktısını taklit
+    # eder: fadeFrom öncesi salt-görünür adım + fadeFrom sonrası <input aria-label> boşluk.
+    html = open("tests/fixtures/worked_pass.html").read()
+    assert 'data-seg="worked"' in html
+    assert "worked-step--solved" in html and "worked-step--blank" in html
+    assert '<input' in html and 'aria-label=' in html
+
+def test_worked_segment_ginteract_ga11y_no_regression():
+    # worked bir MCQ değildir (stem/correctIndex yok) → G-INTERACT'in "uygulanmaz" WARN
+    # dalına düşmesi regresyon SAYILMAZ (bkz. brief: "do not regress", literal PASS değil —
+    # stems==0 iken gate_interact zaten hiçbir modülde FAIL veremez, bkz. validate_module.py).
+    # G-A11Y ise bu fixture'ın kendi taşıdığı lang/title/reduced-motion/aria-live/aria-hidden
+    # işaretleriyle gerçek PASS almalı (fixture bunun için elle donatıldı).
+    html = open("tests/fixtures/worked_pass.html").read()
+    rows_i = run_gate(vm.gate_interact, html)
+    assert status_of(rows_i, "G-INTERACT") != "FAIL"
+    rows_a = run_gate(vm.gate_a11y, html)
+    assert status_of(rows_a, "G-A11Y") == "PASS"

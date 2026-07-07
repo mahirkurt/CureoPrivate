@@ -388,6 +388,34 @@ figure.viz figcaption{margin-top:var(--sp-04);font-size:var(--fs-label);color:va
 .chip-btn:hover:not([disabled]){background:var(--accent-tint);box-shadow:inset 0 0 0 2px var(--accent)}
 .chip-btn:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
 .chip-btn[disabled]{opacity:.4;cursor:default}
+/* soluk-çözümlü örnek (worked, fading worked example) — math g=0.48, fading en güçlü
+   alt-özellik (Barbieri 2023); katman+inset kenarlık, gölge yok (G-CARBON-GRID) */
+.worked-steps{list-style:none;margin:var(--sp-05) 0;padding:0;display:flex;flex-direction:column;gap:var(--sp-04)}
+.worked-step{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-04) var(--sp-05);
+  background:var(--cds-layer-02);border-radius:var(--cds-radius);padding:var(--sp-05) var(--sp-06);
+  box-shadow:inset 0 0 0 1px var(--cds-border-tile)}
+.worked-step__num{flex:none;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;
+  justify-content:center;font-family:var(--font-mono);font-weight:600;font-size:.8rem;
+  background:var(--accent-tint);color:var(--accent-strong)}
+.worked-step--solved .worked-step__num{background:transparent;color:var(--cds-text-secondary);
+  box-shadow:inset 0 0 0 1.5px var(--cds-border-strong)}
+.worked-step__text{flex:1 1 160px;font-size:var(--fs-body);color:var(--cds-text-primary)}
+.worked-step--solved .worked-step__text{color:var(--cds-text-secondary)}
+.worked-step__field{display:flex;align-items:center;gap:var(--sp-03);flex:none}
+.worked-input{font-family:var(--font-sans);font-size:var(--fs-body);font-variant-numeric:tabular-nums;
+  min-height:var(--tap);width:140px;padding:0 var(--sp-05);border-radius:var(--radius-btn);
+  background:var(--cds-field-01);color:var(--cds-text-primary);
+  box-shadow:inset 0 0 0 1px var(--cds-border-strong);
+  transition:box-shadow var(--dur-fast) var(--ease-std)}
+.worked-input:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+.worked-input[disabled]{opacity:.75;cursor:default}
+.worked-mark{flex:none;width:1.4rem;height:1.4rem;display:inline-flex;align-items:center;justify-content:center;color:var(--cds-text-secondary)}
+.worked-step--correct{box-shadow:inset 0 0 0 2px var(--cds-support-success);
+  background:color-mix(in srgb,var(--cds-support-success) 14%,var(--cds-layer-02))}
+.worked-step--correct .worked-mark{color:var(--cds-support-success)}
+.worked-step--wrong .worked-input{box-shadow:inset 0 0 0 2px var(--cds-support-error)}
+.worked-step--wrong .worked-mark{color:var(--cds-support-error)}
+.worked-check{margin-top:var(--sp-05)}
 /* merak-boşluğu (hook) — segment içinde kapanan kanca; katman+kenarlık, gölge yok */
 .hook-card{margin:var(--sp-06) 0;padding:var(--sp-06) var(--sp-07);border-radius:var(--cds-radius);
   background:var(--accent-tint);border-left:4px solid var(--accent)}
@@ -945,6 +973,7 @@ const MODULE_DATA = {
     if(s.type==="mcq") return n+s.questions.length;
     if(s.type==="match") return n+s.pairs.length;
     if(s.type==="fillblank") return n+s.items.length;
+    if(s.type==="worked") return n+1;
     if(s.type==="flashcards") return n+s.cards.length;
     if(s.type==="order") return n+s.items.length;
     if(s.type==="sorting") return n+s.items.length;
@@ -1282,7 +1311,7 @@ const MODULE_DATA = {
     const s=segs[state.idx];
     stage.setAttribute("data-seg", s.type);
     const fn = ({hook:renderHook,teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
-      match:renderMatch,fillblank:renderFillblank,brainbreak:renderBreak,
+      match:renderMatch,fillblank:renderFillblank,worked:renderWorked,brainbreak:renderBreak,
       checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,
       hotspot:renderHotspot,timeline:renderTimeline,chart:renderChart,
       table:renderTable,numberline:renderNumberline,fraction:renderFraction,
@@ -1499,6 +1528,86 @@ const MODULE_DATA = {
       });
     }
     showItem();
+  }
+
+  /* ---- worked: soluk-çözümlü örnek (fading worked example; math g=0.48, fading en güçlü
+     alt-özellik — Barbieri 2023). fadeFrom öncesi adımlar salt-görünür (verilen çözüm),
+     fadeFrom'dan itibaren adımlar <input aria-label> ile boşluk; tek "Kontrol et" tüm
+     boşlukları birlikte değerlendirir (renderFillblank'in doğru-işareti deseni: token
+     renk + ikon + metin). Yanlış = nazik/tekrar-denenebilir, ceza yok (G-WELLBEING). ---- */
+  function renderWorked(stage,s){
+    const steps=s.steps||[];
+    const fadeFrom=(typeof s.fadeFrom==="number")?Math.max(0,s.fadeFrom):steps.length;
+    const blankIdx=steps.map((_,i)=>i).filter(i=>i>=fadeFrom);
+    let html=segHead(s,"Çözümlü Örnek")+instr(s);
+    html+=ttsRow(stripTags((steps[0]&&steps[0].text)||""), defLang());
+    html+=`<ol class="worked-steps">`;
+    steps.forEach((st,i)=>{
+      const solved=i<fadeFrom;
+      html+=`<li class="worked-step${solved?" worked-step--solved":" worked-step--blank"}" data-i="${i}">`
+        +`<span class="worked-step__num">${i+1}</span>`
+        +`<span class="worked-step__text">${st.text||""}</span>`;
+      if(!solved){
+        html+=`<span class="worked-step__field">`
+          +`<input class="worked-input" type="text" autocomplete="off" spellcheck="false" aria-label="Adım ${i+1} cevabı">`
+          +`<span class="worked-mark" aria-hidden="true"></span>`
+          +`</span>`;
+      }
+      html+=`</li>`;
+    });
+    html+=`</ol>`;
+    if(blankIdx.length){
+      html+=`<button class="btn btn--primary worked-check" type="button">${icon("ic-check")} Kontrol et</button>`;
+      html+=`<div id="wfb" aria-live="polite"></div>`;
+    }
+    stage.innerHTML=html;
+
+    if(!blankIdx.length){ setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"}); return; }
+    setNav({next:false});
+
+    const gk=s.id, solvedSet=new Set();
+    let everWrong=false;
+    function evalBlank(i){
+      const li=stage.querySelector('.worked-step[data-i="'+i+'"]');
+      const input=li.querySelector(".worked-input");
+      const mark=li.querySelector(".worked-mark");
+      const okList=[].concat(steps[i].answer==null?[]:steps[i].answer).map(norm);
+      const ok=okList.includes(norm(input.value));
+      li.classList.remove("worked-step--correct","worked-step--wrong");
+      if(ok){
+        li.classList.add("worked-step--correct");
+        input.disabled=true; input.setAttribute("aria-invalid","false");
+        mark.innerHTML=icon("ic-check"); solvedSet.add(i);
+      } else {
+        li.classList.add("worked-step--wrong");
+        input.setAttribute("aria-invalid","true");
+        mark.innerHTML=icon("ic-close");
+      }
+      return ok;
+    }
+    const checkBtn=stage.querySelector(".worked-check");
+    function runCheck(){
+      blankIdx.forEach(i=>{ if(!solvedSet.has(i) && !evalBlank(i)) everWrong=true; });
+      const fb=$("#wfb");
+      if(blankIdx.every(i=>solvedSet.has(i))){
+        fb.className="feedback feedback--ok";
+        fb.innerHTML=icon("ic-check")+`<div><b>Çözdün!</b> Tüm adımları doğru tamamladın.</div>`;
+        checkBtn.disabled=true;
+        if(!state.awarded.has(gk)){
+          state.awarded.add(gk);
+          addXP(D.rewards.xpPerCorrect+(everWrong?0:(D.rewards.firstTryBonus||0)));
+          markMastered(); bumpStreak();
+        }
+        setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
+      } else {
+        fb.className="feedback feedback--no"; playSound("retry"); resetStreak();
+        fb.innerHTML=icon("ic-close")+`<div><b>Neredeyse.</b> İşaretli adımları tekrar dene.</div>`;
+      }
+    }
+    checkBtn.addEventListener("click", runCheck);
+    stage.querySelectorAll(".worked-input").forEach(inp=>{
+      inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); runCheck(); } });
+    });
   }
 
   /* ---- brainbreak ---- */

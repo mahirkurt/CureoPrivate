@@ -104,6 +104,17 @@ const MODULE_DATA = {
 
     // 6) flashcard / fillblank / order / sorting / hotspot ... (interaction-patterns.md)
 
+    // 7) soluk-çözümlü örnek (worked) — tam çözüm fadeFrom'dan itibaren boşalır,
+    //    öğrenci son adım(lar)ı tamamlar (fading; en güçlü matematik alt-özelliği)
+    { type: "worked", id: "w1", title: "Denklemi Çöz", pictogram: "pic-idea",
+      instructions: "Önce çözülmüş adımları oku, sonra boş adımları doldur.",
+      steps: [
+        { text: "3x + 2 = 14" },                 // fadeFrom altı: salt-görünür (verilen)
+        { text: "3x = 12" },
+        { text: "x = ?", answer: ["4"] }          // fadeFrom ve üzeri: <input> ile boşluk
+      ],
+      fadeFrom: 2 },
+
     // son) kontrol noktası (karma geri-getirme, ped İlke 8)
     { type: "checkpoint", id: "c1", title: "Kontrol Noktası", pictogram: "ic-trophy",
       recap: ["...", "..."],
@@ -128,6 +139,19 @@ const MODULE_DATA = {
   bir kanca `validate_module.py`'nin **G-FLOW** kapısında FAIL üretir — her
   `hook` mutlaka var olan bir `id`'yi hedeflemeli. Şema/mekanik ayrıntısı:
   `interaction-patterns.md` + `gamified-flows.md` §2.1/§3.1.
+- `worked` (soluk-çözümlü örnek / fading worked example) **opsiyoneldir**. Alanlar:
+  `id`, `title?`, `instructions?`, `steps:[{text, answer?}]` (zorunlu dizi),
+  `fadeFrom:int` (zorunlu — bu indeksten itibaren adımlar boşluk). `fadeFrom`
+  **altındaki** adımlar salt-görünür verilen çözüm satırlarıdır (`answer` gerekmez);
+  `fadeFrom` ve **üzerindeki** adımlarda motor bir `<input aria-label>` boşluğu
+  render eder ve `answer` (dizi veya tekil string, `norm()` ile karşılaştırılır)
+  zorunludur — eksikse o adım hiçbir girdiyle eşleşmez (sessiz-yanlış değil,
+  güvenli varsayılan). Tek "Kontrol et" düğmesi `fadeFrom`+ adımların tamamını
+  birlikte değerlendirir (renderFillblank'in doğru-işareti deseni: token renk +
+  ikon + `aria-invalid`); yanlış girdi **tekrar denenebilir** (kilitlenmez, ceza
+  yok — G-WELLBEING); tümü doğru olunca `addXP`+ustalık+ilerleme açılır. En yüksek
+  kanıt ağırlıklı alt-özellik (matematik g=0.48 — Barbieri 2023); şema/motor
+  ayrıntısı: `renderWorked` (module-template.html).
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

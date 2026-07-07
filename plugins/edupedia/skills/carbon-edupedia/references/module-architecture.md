@@ -115,6 +115,13 @@ const MODULE_DATA = {
       ],
       fadeFrom: 2 },
 
+    // 8) öz-açıklama (selfExplain) — düşük-baskı metakognisyon: öğrenci kendi
+    //    açıklamasını serbestçe/notsuz yazar, sonra model açıklamayı kendi
+    //    isteğiyle açar; ilerleme asla bloklanmaz (puanlama/XP/ceza YOK)
+    { type: "selfExplain", id: "se1", title: "Neden Böyle?", pictogram: "pic-idea",
+      prompt: "3x + 2 = 14 denkleminde neden önce 2'yi çıkarıyoruz? Kendi cümlelerinle açıkla.",
+      modelExplanation: "<p>Denklemi çözmek için x'i yalnız bırakmalıyız; bu yüzden önce her iki taraftan da 2 çıkarılır.</p>" },
+
     // son) kontrol noktası (karma geri-getirme, ped İlke 8)
     { type: "checkpoint", id: "c1", title: "Kontrol Noktası", pictogram: "ic-trophy",
       recap: ["...", "..."],
@@ -152,6 +159,20 @@ const MODULE_DATA = {
   yok — G-WELLBEING); tümü doğru olunca `addXP`+ustalık+ilerleme açılır. En yüksek
   kanıt ağırlıklı alt-özellik (matematik g=0.48 — Barbieri 2023); şema/motor
   ayrıntısı: `renderWorked` (module-template.html).
+- `selfExplain` (öz-açıklama / self-explanation prompt) **opsiyoneldir**. Alanlar:
+  `id`, `title?`, `prompt` (zorunlu — öğrenciye yöneltilen açıklama istemi),
+  `modelExplanation` (zorunlu — güvenli HTML/metin, karşılaştırma için model
+  açıklama; `worked`'in `steps[].text`i gibi yazar-güvenilir işlenir, kaçışsız
+  yerleştirilir). Motor bir serbest `<textarea aria-label>` sunar (**opsiyonel,
+  notsuz, karakter zorunluluğu yok**) ve bir "Modeli gör"/"Modeli gizle" aç/kapa
+  düğmesi (`aria-expanded`, klavye-erişilebilir gerçek `<button>`) ile
+  `modelExplanation`'ı açar/kapatır. **Puanlama/XP/ceza YOK** — `setNav` next'i
+  render'da **koşulsuz** etkin bırakır; öğrenci taslak yazsa da yazmasa da,
+  modeli açsa da açmasa da "Devam" her zaman etkindir (G-WELLBEING — düşük-baskı
+  metakognisyon; ne "eksik"/"yanlış" uyarısı ne de gizli bir gating vardır).
+  Çözümlü-örnek ailesinin 2. en güçlü alt-özelliği (bkz. yukarıdaki `worked`
+  notu — Barbieri 2023 çözümlü-örnek alt-özellik sıralaması); şema/motor
+  ayrıntısı: `renderSelfExplain` (module-template.html).
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

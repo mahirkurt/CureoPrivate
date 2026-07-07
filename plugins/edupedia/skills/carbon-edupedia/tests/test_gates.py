@@ -109,3 +109,32 @@ def test_worked_zero_blank_not_counted_in_mastery():
     assert 's.fadeFrom < (s.steps||[]).length' in src
     # and the naive always-+1 form must be gone
     assert 'if(s.type==="worked") return n+1;' not in src
+
+def test_selfexplain_segment_fixture_has_signature():
+    # Task 12: selfexplain_pass.html hand-marked static — renderSelfExplain()'in gerçek
+    # çıktısını taklit eder: istem + serbest/notsuz <textarea aria-label> + "Modeli gör"
+    # aç/kapa düğmesi (aria-expanded, klavye-erişilebilir <button>).
+    html = open("tests/fixtures/selfexplain_pass.html").read()
+    assert 'data-seg="selfExplain"' in html
+    assert "<textarea" in html and "aria-label=" in html
+    assert 'aria-expanded="false"' in html and "se-reveal" in html
+
+def test_selfexplain_gwellbeing_pass_and_ga11y_no_regression():
+    # düşük-baskı metakognisyon: puanlama/ceza dili yok → G-WELLBEING gerçek PASS
+    # (yalnızca "uygulanmaz" değil). Fixture kendi lang/title/reduced-motion/aria-live/
+    # aria-hidden işaretleriyle G-A11Y'yi de gerçek PASS almalı (elle donatıldı).
+    html = open("tests/fixtures/selfexplain_pass.html").read()
+    rows_w = run_gate(vm.gate_wellbeing, html)
+    assert status_of(rows_w, "G-WELLBEING") == "PASS"
+    rows_a = run_gate(vm.gate_a11y, html)
+    assert status_of(rows_a, "G-A11Y") == "PASS"
+
+def test_selfexplain_engine_no_scoring_hooks():
+    # motorun renderSelfExplain'i addXP/markMastered/bumpStreak'e dokunmamalı (notsuz/ungraded)
+    # ve dispatch haritasına bağlanmış olmalı.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    i = src.index("function renderSelfExplain")
+    j = src.index("\n  }\n", i)
+    body = src[i:j]
+    assert "addXP(" not in body and "markMastered(" not in body and "bumpStreak(" not in body
+    assert "selfExplain:renderSelfExplain" in src

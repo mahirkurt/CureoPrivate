@@ -437,6 +437,30 @@ figure.viz figcaption{margin-top:var(--sp-04);font-size:var(--fs-label);color:va
   border-radius:var(--cds-radius);padding:var(--sp-03) var(--sp-05)}
 .hook-hint .cds-icon{color:var(--accent-strong);flex:none;margin-top:1px;width:1.1rem;height:1.1rem}
 .hook-hint[hidden]{display:none}
+/* öz-açıklama (selfExplain) — düşük-baskı metakognisyon: serbest/notsuz taslak + kendi
+   isteğiyle model karşılaştırma; puanlama yok, ilerleme asla bloklanmaz (G-WELLBEING).
+   Katman + inset kenarlık / tint zemin, gölge yok (G-CARBON-GRID) */
+.se-prompt{display:flex;align-items:flex-start;gap:var(--sp-04);margin:0 0 var(--sp-04);
+  font-size:var(--fs-h-sub);font-weight:600;color:var(--cds-text-primary);line-height:1.35}
+.se-prompt .cds-icon{color:var(--accent-strong);flex:none;margin-top:2px;width:1.3rem;height:1.3rem}
+.se-field{margin:var(--sp-05) 0}
+.se-field__lbl{font-size:var(--fs-label);color:var(--cds-text-secondary);margin:0 0 var(--sp-03)}
+.se-optional{color:var(--cds-text-helper)}
+.se-textarea{display:block;width:100%;font-family:var(--font-sans);font-size:var(--fs-body);
+  color:var(--cds-text-primary);background:var(--cds-field-01);border-radius:var(--cds-radius);
+  padding:var(--sp-05);resize:vertical;min-height:7.5rem;box-shadow:inset 0 0 0 1px var(--cds-border-strong);
+  transition:box-shadow var(--dur-fast) var(--ease-std)}
+.se-textarea:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+.se-textarea::placeholder{color:var(--cds-text-placeholder)}
+.se-reveal{margin:var(--sp-05) 0}
+.se-reveal[aria-expanded="true"]{background:var(--accent-tint);color:var(--accent-strong)}
+.se-model{margin-top:var(--sp-05);padding:var(--sp-06) var(--sp-07);border-radius:var(--cds-radius);
+  background:var(--accent-tint);border-left:4px solid var(--accent)}
+.se-model[hidden]{display:none}
+.se-model__lbl{display:flex;align-items:center;gap:var(--sp-03);margin:0 0 var(--sp-04);
+  font-size:var(--fs-label);font-weight:600;color:var(--accent-strong)}
+.se-model__lbl .cds-icon{width:1.1rem;height:1.1rem}
+.se-model__body{font-size:var(--fs-body);color:var(--cds-text-primary);line-height:1.6}
 /* mola */
 .break{text-align:center;padding:var(--sp-08) var(--sp-05)}
 .break .pic,.break .cds-icon{color:var(--accent-strong);margin-bottom:var(--sp-05);width:72px;height:72px}
@@ -1311,8 +1335,8 @@ const MODULE_DATA = {
     const s=segs[state.idx];
     stage.setAttribute("data-seg", s.type);
     const fn = ({hook:renderHook,teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
-      match:renderMatch,fillblank:renderFillblank,worked:renderWorked,brainbreak:renderBreak,
-      checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,
+      match:renderMatch,fillblank:renderFillblank,worked:renderWorked,selfExplain:renderSelfExplain,
+      brainbreak:renderBreak,checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,
       hotspot:renderHotspot,timeline:renderTimeline,chart:renderChart,
       table:renderTable,numberline:renderNumberline,fraction:renderFraction,
       diagram:renderDiagram,flow:renderFlow,cards:renderCards,gloss:renderGloss,dialogue:renderDialogue})[s.type];
@@ -1608,6 +1632,37 @@ const MODULE_DATA = {
     stage.querySelectorAll(".worked-input").forEach(inp=>{
       inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); runCheck(); } });
     });
+  }
+
+  /* ---- selfExplain: öz-açıklama (self-explanation prompt) ----
+     Düşük-baskı metakognisyon: öğrenci önce serbest/notsuz bir taslak yazar (opsiyonel,
+     karakter zorunluluğu yok), sonra kendi isteğiyle model açıklamayı açar/kapatır
+     ("Modeli gör", aria-expanded — klavye-erişilebilir aç/kapa). Çözümlü-örnek ailesinin
+     2. en güçlü alt-özelliği (bkz. `worked` fadeFrom notu — Barbieri 2023 sıralaması).
+     PUANLAMA/XP/CEZA YOK — setNav next HER ZAMAN etkin; yazsa da yazmasa da, modeli açsa
+     da açmasa da ilerleme asla bloklanmaz (G-WELLBEING). */
+  function renderSelfExplain(stage,s){
+    stage.innerHTML = segHead(s,"Öz-Açıklama") + instr(s)
+      + `<p class="se-prompt">${icon("ic-help")}<span>${esc(s.prompt||"")}</span></p>`
+      + ttsRow(stripTags(s.prompt||""), defLang())
+      + `<div class="se-field">`
+      +   `<p class="se-field__lbl">Kendi açıklaman <span class="se-optional">(opsiyonel, notlandırılmaz)</span></p>`
+      +   `<textarea class="se-textarea" aria-label="Kendi açıklaman (opsiyonel, notlandırılmaz)" rows="5" placeholder="Kendi cümlelerinle açıklamayı burada dene..."></textarea>`
+      + `</div>`
+      + `<button class="btn btn--ghost se-reveal" type="button" aria-expanded="false" aria-controls="seModel">${icon("ic-view")}<span>Modeli gör</span></button>`
+      + `<div class="se-model" id="seModel" hidden aria-live="polite">`
+      +   `<p class="se-model__lbl">${icon("pic-idea")}<span>Model açıklama</span></p>`
+      +   `<div class="se-model__body">${s.modelExplanation||""}</div>`
+      + `</div>`;
+    const revealBtn=stage.querySelector(".se-reveal"), modelBox=stage.querySelector("#seModel"),
+      revealLbl=revealBtn.querySelector("span");
+    revealBtn.addEventListener("click",()=>{
+      const open=revealBtn.getAttribute("aria-expanded")==="true";
+      revealBtn.setAttribute("aria-expanded", (!open).toString());
+      modelBox.hidden=open;
+      revealLbl.textContent = open ? "Modeli gör" : "Modeli gizle";
+    });
+    setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"}); // next hep etkin — notsuz/opsiyonel
   }
 
   /* ---- brainbreak ---- */

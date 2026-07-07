@@ -4,6 +4,55 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.0.0] — 2026-07-07
+
+### Eklendi
+- **`devlet-arsivleri` çekirdek connector** (`https://devarsiv.cureonics.com/mcp`):
+  resmî Devlet Arşivleri kataloğunda (Osmanlı/BOA · Cumhuriyet/BCA · Diplomatik ·
+  Askeri) doğrudan **fon/kutu/gömlek araması** + belge künyesi. `archive-landscape.md`
+  §1.1/§8.1/§8.4'teki "BETSİS sorgu önerisi / BCA için kayıt yok" boşluğunu kapatır.
+  Yeni referans: `references/devlet-arsivleri-katalog.md`.
+- **`literatur` (DergiPark) companion**: tam-metin (PDF→HTML) makale + referans;
+  ottoman `search_dergipark`'ı tamamlar. Hazır remote (`literatur-mcp.surucu.dev`, authless).
+- **`yok-akademik` destekleyici companion**: YÖK Akademik profilleri (modern prosopografi + ekol haritası).
+- **Kitap+makale tam-metin şelalesi**: `openathens` (Tier 3 lisanslı — Millet Kütüphanesi /
+  OpenAthens SAML, 309 DB; paywall'lı monograf/makale) → `annas-reader` (Tier 4 son-çare —
+  Anna's Archive efemer-RAG; out-of-print Osmanlı çalışmaları; yalnız analiz). Getirilen tam-metin
+  → anamnesis'e ingest. Böylece kitap ve makaleye tam-metin erişim tamamlandı.
+- **`anamnesis` substrat**: büyük-veri RAG/GraphRAG bağlam-ekonomisi altyapısı
+  (ingest→bounded query; kişi↔görev↔belge / olay↔tarih↔kaynak grafiği).
+- **`arsiv-tarama-distilleri` alt-ajanı** (`agents/`): ağır çok-connector arşiv
+  taramasını izole eder → tek `arsiv_distillate` zarfı (retrieve-don't-dump).
+- **4 hook** (`hooks/hooks.json` + `hooks/scripts/`): SessionStart connector-preflight
+  + tam-filo/bağlam-ekonomisi konvansiyonları; PostToolUse retrieve-don't-dump
+  (büyük gövde → Tier-1 distiller / Tier-2 anamnesis); Stop stop_coverage (G0 kapsam
+  manifestosu) + Stop citation_discipline (fon/kutu/gömlek + Hicrî/Miladî çift-tarih + katalog URL).
+- **Bağlam ekonomisi + tam-filo sözleşmeleri** (`shared/`): `context-economy-contract.md`
+  (Tier 0/1/2, sharding, kanonik cache, kör-getirme-yok chunking, devre-kesici) +
+  `coverage-manifest.md` (G0 manifesto biçimi + örnek).
+- **2 yeni komut**: `vekayinuvis-boa-katalog` (resmî katalog araması+künye) +
+  `vekayinuvis-literatur` (DergiPark tam-metin derin literatür).
+- **`userConfig`** (`plugin.json`): paper-search Smithery key'i enable-time'da (opsiyonel; girilmezse degrade).
+
+### Değiştirildi
+- **TAM-FİLO**: `.mcp.json` artık **11 server** bundle eder (çekirdek + akademik companion +
+  yok-akademik + anamnesis, `_tier`/`_role` annotasyonlu) — bağlama uygun her araç her koşumda
+  çalışır; iki-katmanlı "companion bundle edilmez" tasarımı full-fleet'e terfi etti.
+- Flagship skill **v1.3.0 → v2.0.0**: §1.2 restricted-kaynak notu (katalog araması artık doğrudan;
+  belge görüntüleri hâlâ kısıtlı), §3.1.b F. Resmî Katalog katmanı, §3.2 literatur+yok-akademik,
+  §3.5 Tam-Filo ve Bağlam Ekonomisi, §5 mod güncellemeleri (SOURCE_HUNT/ARCHIVE_DEEP_DIVE/
+  PROSOPOGRAPHY/HISTORIOGRAPHY/KANUN_GEREKÇESİ), §6.3 katalog URL atfı, §8 G0 kapsam manifestosu,
+  §10 shared referanslar.
+- CONNECTORS.md: §1 full-fleet, §2 devlet-arsivleri çekirdek + F. Resmî Katalog, §3 literatur/
+  yok-akademik/anamnesis + tam-filo notu, §6 auth, §7 mod-map, §8 preflight + güncellenmiş
+  restricted-kaynak kuralı. start/SKILL.md: connector kadrosu + tam-filo + anamnesis + degrade notları.
+
+### Not
+- **No-fabrication korunur**: resmî katalog kaydı (fon/kutu/gömlek + künye) doğrudan; belge
+  **görüntüleri/tam-metni** hâlâ eSatış/on-site/transkripsiyon-tezi kapısında — asla uydurma.
+  `devlet-arsivleri` **tek-cihaz oturum kilitli** (HP kalıcı authenticated tarayıcı); oturum düşükse
+  `session_required` → re-login yol haritası + degrade.
+
 ## [1.0.0] — 2026-06-17
 
 ### Eklendi

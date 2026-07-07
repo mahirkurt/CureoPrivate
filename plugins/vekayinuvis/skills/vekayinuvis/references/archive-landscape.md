@@ -22,9 +22,11 @@
 
 ### 1.1 BOA — Cumhurbaşkanlığı Devlet Arşivleri, Osmanlı Arşivi
 - **Kayıt id**: `boa-dab`
-- **Erişim**: restricted (BETSİS kataloğu açık; belge görüntüleri için
-  kayıt + on-site)
+- **Erişim**: katalog araması **doğrudan canlı** (`devlet-arsivleri` connector,
+  `arsiv=2`); belge görüntüleri için eSatış satın-alma + on-site akreditasyon
 - **URL**: <https://katalog.devletarsivleri.gov.tr>
+- **Bağlı connector**: `devlet-arsivleri` — `devarsiv_search(query, arsiv=2)` →
+  `devarsiv_get_belge(item_id, hash, arsiv=2)` (bkz. `devlet-arsivleri-katalog.md`)
 - **Ana fond grupları (özet)**:
 
 | Tasnif/Fond | Açılım | Dönem | İçerik |
@@ -44,15 +46,26 @@
 | ŞD | Şûrâ-yı Devlet | 1868–1922 | Danıştay öncesi |
 | BEO | Bâb-ı Âli Evrak Odası | 1892–1922 | Genel evrak akışı |
 
-- **Önemli not**: BOA katalog araması (BETSİS) tam metin değildir; başlık
-  + tasvirî özettir. Belge fotokopisi için akademik akreditasyon gerekir.
-- **vekayinuvis için yöntem**: `ottoman_get_source(boa-dab)` → erişim
-  yolunu kullanıcıya açıklar; ardından **YÖKtez** üzerinden ilgili belgelerin
-  transkripsiyonunu içeren tezleri bulur (genellikle yüksek lisans/doktora
-  tezleri 50–200 belge transkripsiyonu içerir).
+- **Önemli not**: BOA katalog kaydı tam metin değildir; başlık + tasvirî
+  özet + fon/kutu/gömlek referansıdır. `devlet-arsivleri` bu **katalog kaydını
+  doğrudan** getirir; belge **fotokopisi/görüntüsü** için eSatış satın-alma
+  veya akademik akreditasyon gerekir (uydurulmaz).
+- **vekayinuvis için yöntem (güncel)**:
+  1. `devarsiv_search("<konu/terim>", arsiv=2)` → resmî katalogda aday kayıtlar
+     (fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash). Geniş sorgu
+     `refine_required` dönerse daralt.
+  2. `devarsiv_get_belge(item_id, hash, arsiv=2)` → künye + erişim durumu.
+  3. Belge **tam-metni** gerekiyorsa: **YÖKtez** üzerinden o belgenin
+     transkripsiyonunu içeren tezleri ara (yüksek lisans/doktora tezleri
+     50–200 belge transkripsiyonu içerir) + on-site/eSatış yol haritası.
+  - Fallback (oturum düşükse): `ottoman_get_source(boa-dab)` erişim yolu +
+    YÖKtez (bkz. `devlet-arsivleri-katalog.md` § 3).
 
 ### 1.2 BCA — Cumhurbaşkanlığı Devlet Arşivleri, Cumhuriyet Arşivi (Ankara)
-- **Erişim**: restricted; Ankara'da on-site veya BETSİS sınırlı sayfa görüntüleme
+- **Erişim**: katalog araması **doğrudan canlı** (`devlet-arsivleri`, `arsiv=1`);
+  belge görüntüsü için Ankara on-site veya eSatış sınırlı sayfa görüntüleme
+- **Bağlı connector**: `devlet-arsivleri` — `devarsiv_search(query, arsiv=1)`
+  (BCA artık ottoman-archives'ta kayıtlı bir kaynak değil; bu connector doldurur)
 - **Ana fondlar**:
   - **030.10**: Başvekâlet/Başbakanlık Muamelat Genel Müdürlüğü
   - **030.18**: Bakanlar Kurulu Kararları
@@ -279,12 +292,17 @@
 
 ### 8.1 BOA Belgesi İçin Tam Yol Haritası
 ```
-1. ottoman_get_source(boa-dab) → erişim koşulları
-2. Konuya göre fond tahmini (HAT/Cevdet/A.MKT/İrade/Yıldız/DH/MV)
-3. https://katalog.devletarsivleri.gov.tr (BETSİS) sorgu önerisi
-4. search_yok_tez_detailed(keyword=<konu>) → mevcut transkripsiyon tezleri
-5. Tezler içinde aranan belge varsa → o transkripsiyona güvenle atıf
-6. Tezde yoksa → kullanıcıya BOA başvuru/akreditasyon talimatı
+1. devarsiv_session_status → oturum canlı mı? (değilse 1b'ye)
+2. devarsiv_search("<konu/terim>", arsiv=2) → resmî katalog kayıtları
+   (fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash);
+   geniş sorgu refine_required → daralt (fon/tarih ekle)
+3. devarsiv_get_belge(item_id, hash, arsiv=2) → künye + erişim/satın-alma durumu
+4. Belge TAM-METNİ için: search_yok_tez_detailed(keyword=<konu>) → o belgenin
+   transkripsiyonunu içeren tezler → varsa o transkripsiyona güvenle atıf
+5. Görüntü/tam-metin yoksa → eSatış satın-alma veya BOA akreditasyon talimatı
+   (belge görüntüsü ASLA uydurulmaz)
+1b. (oturum düşükse) session_required → kullanıcıya HP noVNC re-login yol
+    haritası; ottoman_get_source(boa-dab) + YÖKtez ile degrade devam
 ```
 
 ### 8.2 IIIF Manuscript İçin Tam Yol Haritası
@@ -309,11 +327,13 @@
 
 ### 8.4 Cumhuriyet Dönemi (BCA) Belgesi
 ```
-1. ottoman_get_source — BCA için kayıt yok; web_search ile fond tablosu
-2. Tahmini fond (030.10/030.18/490.1/180.9 vd.) ile sorgu önerisi
-3. search_yok_tez_detailed + ottoman_search_dergipark → transkripsiyonu
-   olan tezler/makaleler
-4. TBMM Zabıt Ceridesi paralel sorgu (eğer yasama bağlamı varsa) →
+1. devarsiv_search("<konu/terim>", arsiv=1) → resmî BCA katalog kayıtları
+   (fon 030.10/030.18/490.1/180.9 vd. + kutu/gömlek + özet + tarih + item_id/hash)
+   — BCA artık doğrudan aranabilir (ottoman-archives'ta kayıt yoktu, boşluk kapandı)
+2. devarsiv_get_belge(item_id, hash, arsiv=1) → künye + erişim durumu
+3. Belge tam-metni/desteği için: search_yok_tez_detailed + literatur (DergiPark
+   tam-metin) → transkripsiyonu/incelemesi olan tez/makaleler
+4. TBMM Zabıt Ceridesi paralel sorgu (yasama bağlamı varsa) →
    tbmm.gov.tr ya da Internet Archive
-5. BCA için Ankara on-site veya BETSİS sınırlı erişim talimatı
+5. Görüntü/tam-metin yoksa → Ankara on-site veya eSatış sınırlı erişim talimatı
 ```

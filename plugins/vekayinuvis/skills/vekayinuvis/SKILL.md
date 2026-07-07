@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 1.3.0
-last_updated: 2026-06-17
+version: 2.0.0
+last_updated: 2026-07-07
 changelog:
+  - "2.0.0 (2026-07-07): TAM-FİLO + RESMÎ KATALOG + BAĞLAM EKONOMİSİ. (a) devlet-arsivleri çekirdek connector eklendi (resmî BOA/BCA/Diplomatik/Askeri katalog — fon/kutu/gömlek + künye; §3.1.b F. Resmî Katalog + references/devlet-arsivleri-katalog.md); archive-landscape §1.1/§8.1/§8.4 boşluğu kapatıldı; §1.2/§6.3 no-fabrication güncellendi. (b) literatur (DergiPark tam-metin) + yok-akademik (destekleyici) companion + anamnesis substrat eklendi. (c) TAM-FİLO: .mcp.json 11 server bundle; §3.5 Tam-Filo ve Bağlam Ekonomisi (Tier-1 arsiv-tarama-distilleri ajanı + Tier-2 anamnesis ingest→bounded query); §8 G0 kapsam manifestosu (shared/coverage-manifest.md); shared/context-economy-contract.md. (d) 4 hook (SessionStart preflight, PostToolUse retrieve-don't-dump, Stop coverage + citation-discipline). (e) 2 yeni komut (boa-katalog, literatur). Mod sayısı (9) korundu; her mod devlet-arsivleri/literatur/anamnesis ile güçlendirildi."
   - "1.3.0 (2026-06-17): vekayinuvis PLUGIN ENTEGRASYONU. Standalone user-skill'den plugin flagship skill'ine dönüştürüldü. (a) Connector envanteri ve transport için plugin-düzeyi ../../CONNECTORS.md + ../../.mcp.json normatif kaynak olarak işaretlendi (§3 tabloları pedagojik referans olarak korundu — skill standalone da çalışır). (b) Süit oryantasyonu vekayinuvis:start skill'ine taşındı (connector preflight + mod yönlendirme). (c) /vekayinuvis-* slash komutları eklendi. Davranış/mod sayıları/kalite kapıları DEĞİŞMEDİ."
   - "1.2 (önceki): KANUN_GEREKÇESİ modu + Osmanlı tıp tarihi alt-modülü + Doğrulama Disiplini güçlendirildi; medical-history.md mevzuat korpusu birincil-kaynak doğrulamasından geçirildi."
 ---
@@ -91,16 +92,21 @@ Her çağrıda aşağıdaki **dört adım** önce uygulanır; bu adımlar atlanm
    her arşiv-merkezli sorguda; diğerleri sinyale göre.
 3. **Kaynak listesi planlama**: hangi 3–8 connector'ın paralel
    tetikleneceği, hangi sırayla.
-4. **Bilinmezliklerin önden beyanı**: erişim kısıtlı (BOA, TKGM, ATASE,
-   topkapi-arsiv, IRCICA, İSAM, Millet Yazma, Süleymaniye, Müteferriqa) olan
-   kaynakların **dijital olarak doğrudan getirilemeyeceği** önceden
-   bildirilir; bu kaynaklar için araştırmacıya **erişim yol haritası**
-   sunulur (BETSİS kataloğu, yazmalar.gov.tr, on-site başvuru, vd.).
+4. **Bilinmezliklerin önden beyanı**: BOA/BCA/Diplomatik/Askeri arşivlerin
+   **resmî katalog araması artık doğrudan canlı** yapılır (`devlet-arsivleri`
+   connector — fon/kutu/gömlek + künye). Ancak **belge görüntüleri/tam-metni**
+   erişim-kısıtlıdır (eSatış satın-alma / on-site akreditasyon); diğer kısıtlı
+   kaynaklar (TKGM, ATASE, topkapi-arsiv, IRCICA, İSAM, Millet Yazma, Süleymaniye,
+   Müteferriqa) için **dijital belge içeriği getirilemez** → araştırmacıya
+   **erişim yol haritası** sunulur (yazmalar.gov.tr, on-site başvuru, vd.).
+   `devlet-arsivleri` oturumu düşükse (`session_required`) bu da bildirilir.
 
-> **Önemli**: Bu skill, restricted (kısıtlı erişim) kaynaklarda **belge
-> içeriği üretmez**; yalnızca katalog-bilgisi, kayıt-numarası, fond-yapısı
-> ve erişim prosedürü sağlar. Atıfta bulunulan içerik, kullanıcının kendi
-> arşiv çalışmasından doğrulanmalıdır.
+> **Önemli (no-fabrication)**: Bu skill, kısıtlı kaynaklarda **belge görüntüsü/
+> tam-metin içeriği üretmez**. `devlet-arsivleri` ile **katalog kaydı, kayıt-numarası
+> (fon/kutu/gömlek), künye ve özet doğrudan** sağlanır; belgenin **görüntüsü** hâlâ
+> erişim-kısıtlıdır ve uydurulmaz — yalnız erişim/satın-alma durumu bildirilir.
+> Katalog kaydı dışındaki içerik, kullanıcının kendi arşiv çalışmasından/transkripsiyon
+> tezinden doğrulanmalıdır.
 
 ## 2. Domain Sınıflandırma — 6 Eksen
 
@@ -165,6 +171,24 @@ aynı turda çağrılır; sonuçlar Faz 2'de triangüle edilir.
 | **D. Hesaplama/Yardımcı** | `ottoman_convert_date` (Hicri↔Rumî↔Miladi), `ottoman_parse_ottoman_date`, `ottoman_parse_number`, `ottoman_calc_ebced`, `ottoman_tarih_dusur` (chronogram çözümü), `ottoman_get_defter_schema`, `ottoman_export_html` | Tarih/sayı/ebced/defter şeması ihtiyacı | Tarih dönüşümü, JSON şema, HTML rapor |
 | **E. HTR Pipeline** (opt-in) | `ottoman_escriptorium_list_projects/list_documents/list_models/create_document/import_iiif/segment/transcribe/get_document/get_transcription/list_tasks` | Yazma/baskı Osmanlıca metni dijitalleştirme | Segmentasyon + HTR çıktısı |
 
+### 3.1.b Devlet Arşivleri MCP — F. Resmî Katalog Katmanı (`devlet-arsivleri`)
+
+Resmî devlet arşivi kataloğunda (`katalog.devletarsivleri.gov.tr`) **doğrudan**
+fon/kutu/gömlek araması — ottoman-archives'ın **yapmadığı** BOA/BCA/Diplomatik/
+Askeri katalog erişimini doldurur. Referans: **`references/devlet-arsivleri-katalog.md`**.
+
+| Tool | Ne için | Çıktı |
+|---|---|---|
+| `devarsiv_search(query, arsiv?, limit?)` | Resmî katalog serbest-metin araması (arsiv: 1=Cumhuriyet/BCA · 2=Osmanlı/BOA · 3=Diplomatik · 4=Askeri) | Satırlar: arşiv·fon·kutu·gömlek·özet·Hicrî tarih·**item_id·hash**·belge_url + fon facet'leri |
+| `devarsiv_get_belge(item_id, hash, arsiv)` | Tek kaydın künyesi + erişim durumu | yer bilgisi (kutu-gömlek)·belge tarihi·kurum(fon)·dil·görüntü sayısı·access(purchased/purchasable) |
+| `devarsiv_detailed_search_fields(arsiv)` | Detaylı Arama'nın arşive-özel alanları | fon-üst · tarih türü · özel kod · özet |
+| `devarsiv_session_status` | Oturum canlı mı (pre-flight) | alive / session_required |
+| `devarsiv_server_info` | Kapsam + caveat | 4 arşiv + auth modeli |
+
+> **No-fabrication:** geniş sorgu → `refine_required` (daralt); `hash` daima
+> `devarsiv_search`'ten gelir (uydurulamaz); belge **görüntüsü** üretilmez; oturum
+> düşükse `session_required`. Hicrî tarihler `ottoman_convert_date` ile eşlenir.
+
 ### 3.2 Akademik Connector Katmanı
 
 | Connector | Tool | Ne için | Öncelik |
@@ -175,6 +199,10 @@ aynı turda çağrılır; sonuçlar Faz 2'de triangüle edilir.
 | **Scholar Gateway** | `semanticSearch` | Tam-metin akademik korpus + pasaj-düzeyi atıf | Belirli bir tezin desteklenmesi/çürütülmesi |
 | **Exa** | `web_search_exa`, `web_fetch_exa` | Akademik blog, kurum sayfası, ansiklopedi entries | İkincil web kaynaklarına derinlemesine erişim |
 | **Tavily** | `tavily_search`, `tavily_research`, `tavily_extract`, `tavily_crawl`, `tavily_map` | Geniş web tarama, çok-sayfa araştırma | Anlatı doğrulama, modern haber/blog |
+| **Literatür (DergiPark)** | `literatur` — makale arama (yıl/tür/dizin/sıralama filtreli), **PDF→HTML tam metin**, referans çekme | DergiPark Türk akademik dergi makaleleri — **tam metin**; ottoman `search_dergipark`'ı (curated OAI-PMH metadata) tamamlar | Türkçe dergi makalesi tam-metni sinyalinde (HISTORIOGRAPHY birincil) |
+| **YÖK Akademik** *(destekleyici)* | `yok-akademik` — `yok_search_academics`, `yok_get_publications/projects/supervised_theses/collaborators`, `yok_get_full_profile` | Akademisyen profilleri — uzman bulma, modern prosopografi, ekol/eş-yazar ağı | Modern akademisyen/ekol sinyalinde; **birincil işleve gerekli değil** (companion) |
+| **OpenAthens** *(tam-metin Tier 3)* | `openathens` — `oa_list_databases` (309 lisanslı DB), `oa_resolve`, `oa_fetch_fulltext`, `oa_batch_submit/result` | **Lisanslı kitap+makale tam-metni** — Millet Kütüphanesi/OpenAthens SAML; paywall'lı monograf/makale/ansiklopedi maddesi | Kitap/makale tam-metni gerektiğinde (literatur/paper-search'ten SONRA) |
+| **Anna's Reader** *(tam-metin Tier 4, son çare)* | `annas-reader` — `book_search`, `article_search`, `get_document_info`, `read_document`, `read_article`, `search_in_document` (BM25) | **Son-çare kitap+makale tam-metni** — out-of-print Osmanlı çalışmaları, nadir monograf; telif: yalnız analiz | Lisanslı band getiremeyince (openathens'ten SONRA) |
 
 ### 3.3 Genel Web ve Drive Katmanı
 
@@ -197,6 +225,33 @@ TUR 1 (paralel):
   ├─ search_yok_tez_detailed(keyword=<query>)
   └─ ottoman_get_islam_ansiklopedisi(<term>) [eğer kavram-tanım sorusu var ise]
 ```
+
+### 3.5 Tam-Filo ve Bağlam Ekonomisi (ZORUNLU)
+
+vekayinüvis **tam-filo** çalışır: `.mcp.json`'da bundled 11 server'ın bağlama
+uygun olanı **her substantif sorguda çalıştırılır** — hiçbiri sessizce atlanmaz.
+Bu kapsam, her çıktıya eklenen **G0 kapsam manifestosu** ile kanıtlanır
+(`shared/coverage-manifest.md`; eksik satır = Stop hook tamamlatır).
+
+Ancak tam-filo, ham hâliyle pencereyi taşırır. İki mekanizma **detayların
+atlanmadan, pencere taşmadan** kapsanmasını sağlar (`shared/context-economy-contract.md`):
+
+- **Tier 1 — `arsiv-tarama-distilleri` alt-ajanı:** ağır çok-connector süpürme
+  (SOURCE_HUNT / ARCHIVE_DEEP_DIVE / ACADEMIC_REPORT) bu ajana delege edilir
+  (gerekirse ≤4 paralel shard); ham çıktı ajanın kendi penceresinde tüketilir,
+  ana pencereye yalnız kompakt `arsiv_distillate` + `coverage` döner.
+- **Tier 2 — `anamnesis` RAG/GraphRAG substratı:** büyük tam-metin (belge
+  transkripsiyonu, tez PDF, DergiPark tam-metin makale, İА maddesi, within-manifest
+  bloğu) `ingest_document(doc_id=<kanonik id>)` ile bir kez indekslenir →
+  `hybrid_query`/`semantic_search` ile sınırlı, provenance-damgalı dilim çekilir;
+  `upsert_triples`/`graph_neighbors` prosopografi (kişi↔görev↔belge) ve kronoloji
+  (olay↔tarih↔kaynak) grafiğini kurar.
+
+**Değişmez:** ham araç çıktısı ana pencerede akıl yürütülmez; büyük çıktı (>~6KB)
+zorunlu olarak distiller/anamnesis'e yönlenir; büyük belge **kör getirilmez**
+(yapısal navigasyon → hedef chunk → gerekirse anamnesis). Bir katman yoksa
+(anahtar yok / oturum düşük / companion bağlı değil) alt katmana degrade eder ve
+manifestoda dürüstçe beyan edilir — asla ham döküm, asla uydurma, asla sessiz atlama.
 
 ## 4. Birincil Kaynak Disiplini
 
@@ -269,19 +324,24 @@ sorgudan otomatik çıkarılır; belirsizlikte kullanıcıya tek soru sorulur.
 ### 5.1 SOURCE_HUNT — Kaynak Avı
 *"X konusu hakkında hangi arşivler/kaynaklar var?"*
 
-Paralel: `ottoman_list_sources` + `ottoman_search_iiif` + `ottoman_search_
-dergipark` + `ottoman_search_dspace` + `search_yok_tez_detailed` +
-`tavily_search` (akademik filtre). Çıktı: kaynak matrisi (tür × erişim ×
-dil × kanıt-yoğunluğu).
+Paralel: `devarsiv_search` (resmî katalog kanıt-yoğunluğu — kaç kayıt, hangi
+fonlar) + `ottoman_list_sources` + `ottoman_search_iiif` + `ottoman_search_
+dergipark` + `ottoman_search_dspace` + `search_yok_tez_detailed` + `literatur`
+(DergiPark tam-metin) + `tavily_search` (akademik filtre). Çıktı: kaynak matrisi
+(tür × erişim × dil × kanıt-yoğunluğu; resmî katalogda kayıt sayısı dahil).
+Yoğun çok-connector taramada **`arsiv-tarama-distilleri` ajanına** delege et.
 
 ### 5.2 ARCHIVE_DEEP_DIVE — Arşiv Derin Dalış
 *"BOA'da II. Mahmud döneminde tıbbiye ile ilgili HAT kayıtları nelerdir?"*
 
-Paralel: `ottoman_get_source(boa-dab)` + `ottoman_search_literature` (HAT
-ile ilgili tezler) + `search_yok_tez_detailed("Hatt-ı Hümâyun Tıbbiye")` +
-`ottoman_get_islam_ansiklopedisi("Mekteb-i Tıbbiye-i Şâhâne")`. Çıktı:
-fond/tasnif yol haritası + BETSİS sorgu önerileri + ikincil literatür eşleştirmesi
-+ **erişim talimatı** (restricted kaynak için).
+Paralel: **`devarsiv_search("<konu> tıbbiye", arsiv=2)` → resmî katalog kayıtları
+(fon/kutu/gömlek + özet + item_id/hash); ilgili kayıtta `devarsiv_get_belge`** +
+`ottoman_search_literature` (ilgili tezler) + `search_yok_tez_detailed` (belgenin
+transkripsiyon tezi) + `ottoman_get_islam_ansiklopedisi(<kurum>)`. Çıktı:
+**canlı katalog kayıt seti** (fon/kutu/gömlek + künye) + fond/tasnif yol haritası
++ ikincil literatür eşleştirmesi + belge görüntüsü için **erişim/satın-alma talimatı**
+(no-fabrication). Referans: `devlet-arsivleri-katalog.md`. Oturum düşükse
+`session_required` → re-login yol haritası + degrade (ottoman/yoktez).
 
 ### 5.3 MANUSCRIPT_TRANSCRIBE — Yazma Transkripsiyon
 *"Bu yazma sayfayı dijital olarak transkripsiyonu mümkün mü?"*
@@ -296,10 +356,12 @@ Pipeline: kullanıcının yüklediği görüntü veya IIIF manifest URL →
 *"Mustafa Behçet Efendi'nin biyografisi ve hizmet kaydı."*
 
 Paralel: `ottoman_get_islam_ansiklopedisi(<isim>)` + Sicill-i Osmânî
-referansı (web_fetch ile İSAM elektronik baskı) + `ottoman_search_dergipark`
-(makale) + `search_yok_tez_detailed` (biyografik tez) + Sicill-i Ahval
-defterleri (BOA DH.SAİD) için yol haritası. Çıktı: yaşam çizelgesi (Hicrî
-+ Miladî), atama-azil zinciri, eser listesi, ikincil literatür.
+referansı (web_fetch ile İSAM elektronik baskı) + `ottoman_search_dergipark` /
+`literatur` (makale) + `search_yok_tez_detailed` (biyografik tez) +
+**`devarsiv_search("<isim> sicill-i ahval", arsiv=2)` → BOA DH.SAİD Sicill-i Ahval
+katalog kayıtları** (canlı; yol haritası yerine gerçek kayıt) + (modern kişi ise)
+**`yok-akademik`** akademisyen profili. Çıktı: yaşam çizelgesi (Hicrî + Miladî),
+atama-azil zinciri, eser listesi, ikincil literatür + fon/kutu/gömlek kayıtları.
 
 ### 5.5 EVENT_RECONSTRUCTION — Olay Kurgulaması
 *"31 Mart Vakası'nın günlük kronolojisi."*
@@ -313,10 +375,16 @@ perspektifleri + tartışmalı noktaların açık etiketlenmesi.
 ### 5.6 HISTORIOGRAPHY — Tarih Yazımı/Literatür Eleştirisi
 *"Tanzimat reformlarının iktisadi sonuçları üzerine literatürün durumu."*
 
-Paralel: `search_semantic` + `search_google_scholar` + `search_crossref` +
-`ottoman_search_dergipark` + Consensus + Scholar Gateway. Çıktı: ekol
-haritası (modernleşme, dünya-sistemi, post-kolonyal Osmanlı çalışmaları),
-ana tartışma eksenleri, dönüm noktası eserler, son 10 yılın eğilimi.
+Paralel: **`literatur` (DergiPark tam-metin makale + referans çekme)** +
+`search_semantic` + `search_google_scholar` + `search_crossref` +
+`ottoman_search_dergipark` (curated metadata) + Consensus + Scholar Gateway +
+**`yok-akademik`** (ekol/uzman haritası — kim, nerede, hangi ekolde çalışıyor).
+**Tam-metin şelalesi (kitap/makale, gerektiğinde):** literatur/paper-search →
+**`openathens`** (lisanslı — Millet Kütüphanesi 309 DB; `oa_resolve`→`oa_fetch_fulltext`) →
+**`annas-reader`** (son çare — `book_search`/`article_search`→`read_document`; yalnız analiz).
+Getirilen tam-metin > eşik → **anamnesis'e ingest** → bounded query (§ 3.5).
+Çıktı: ekol haritası (modernleşme, dünya-sistemi, post-kolonyal Osmanlı
+çalışmaları), ana tartışma eksenleri, dönüm noktası eserler, son 10 yılın eğilimi.
 
 ### 5.7 CHRONOLOGY_CONVERSION — Kronoloji Dönüşümü
 *"15 Receb 1287 hicrî tarihinin Rumî ve Miladî karşılığı nedir?"*
@@ -353,6 +421,14 @@ Mod, her çıktıda **beş katmanlı yasama tarihçesini** mutlaka kurar:
 | **L3. II. Meşrutiyet** | Düstûr II. Tertib + Meclis-i Mebusan | 1908–1922 |
 | **L4. Erken Cumhuriyet** | TBMM Zabıt + Düstûr III. Tertib + Resmî Gazete | 1923–1950 |
 | **L5. Modern Türkiye** | Resmî Gazete, AYM/Danıştay içtihatı, AB uyumu | 1950–güncel |
+
+**Arşiv kanıtı (`devlet-arsivleri`):** L1–L4 için resmî katalog kayıtları
+doğrudan çekilir — `devarsiv_search(arsiv=2)` ile BOA İrade/HAT/Y.PRK lâyiha ve
+müzakere kayıtları (klasik–geç Osmanlı), `devarsiv_search(arsiv=1)` ile BCA
+030.10 lâyiha/muamelat ve 030.18 Bakanlar Kurulu kararları (erken Cumhuriyet).
+Bu, önceki "BCA için kayıt yok" boşluğunu kapatır ve **G7.e** kapısını
+(her [D] iddiasının birincil-arşiv/akademik dış-doğrulaması) güçlendirir; belge
+görüntüsü erişim-kısıtlıysa yalnız katalog kaydı+URL atıflanır (no-fabrication).
 
 Bir katmanda kanıt boşluğu varsa **şeffaf olarak** belirtilir; varsayım
 üretilmez. Çıktı, `lex-sanitas` ile zincirlendiğinde TBMM İçtüzüğü m. 73-74
@@ -502,8 +578,12 @@ her tarih için Hicrî/Rumî ↔ Miladî dönüşüm açık]
 
 Her ACADEMIC_REPORT çıktısı şu kapılardan geçer:
 
-- **G0 — Kapsam**: Sorgunun her bileşeni (dönem, kurum, kişi, kavram, dönem
-  sınırı) raporda en az bir bölümde ele alındı mı?
+- **G0 — Kapsam (tam-filo)**: Sorgunun her bileşeni (dönem, kurum, kişi, kavram,
+  dönem sınırı) raporda en az bir bölümde ele alındı mı? **VE** bağlama uygun
+  tüm server'ların çalıştığını kanıtlayan **kapsam manifestosu** çıktıya eklendi
+  mi (`shared/coverage-manifest.md` biçimi; her server için hit/empty/degraded/
+  skipped-with-reason)? Sessiz atlama = G0 FAIL (Stop hook tamamlatır).
+  devlet-arsivleri oturumu düşükse `degraded: session_required` yazılır (skip değil).
 - **G1 — Kaynak çeşitliliği**: En az **iki** birincil + **üç** ikincil
   kaynak sınıfı kullanıldı mı?
 - **G2 — Triangülasyon**: Ana iddianın her birinin **en az iki** bağımsız
@@ -590,6 +670,7 @@ yüklenmez. SKILL.md'nin kompaktlığını korumak için ayrılmıştır.
 | Dosya | Ne zaman yükle |
 |---|---|
 | `references/archive-landscape.md` | Her arşiv-merkezli sorgu (BOA, VGM, TKGM, BCA, Süleymaniye, vd. tetiklendiğinde) |
+| `references/devlet-arsivleri-katalog.md` | `devlet-arsivleri` connector ile resmî BOA/BCA/Diplomatik/Askeri katalog araması gerektiğinde (ARCHIVE_DEEP_DIVE, SOURCE_HUNT, PROSOPOGRAPHY, KANUN_GEREKÇESİ): sorgu stratejisi, item_id/hash zinciri, no-fabrication, session_required degrade, fon/kutu/gömlek atıf |
 | `references/source-typology.md` | Belge türü sorularında (defter, sicil, salname, vakfiye, vd.) |
 | `references/citation-and-transliteration.md` | ACADEMIC_REPORT veya raporlama hazırlığı |
 | `references/chronology.md` | Tarih dönüşümü, ebced, takvim sorgularında |
@@ -597,6 +678,9 @@ yüklenmez. SKILL.md'nin kompaktlığını korumak için ayrılmıştır.
 | `references/report-template.md` | ACADEMIC_REPORT modunda (örnek tam metin) |
 | `references/kanun-gerekcesi-workflow.md` (v1.1) | KANUN_GEREKÇESİ modunda (§ 5.9) **zorunlu**: tam paralel-çağrı seti, beş-katmanlı zincir prosedürü, TBMM-uyumlu çıktı şablonu, G7-G8 kalite kapıları |
 | `references/medical-history.md` (v1.1) | § 2.6 tıp/bilim tarihi ekseni tetiklendiğinde **zorunlu**; KANUN_GEREKÇESİ modu sağlık alanında çalışıyorsa zorunlu; 1219, 6023, Hıfzıssıhha, Mekteb-i Tıbbiye, hekimbaşılık, Düstûr tıp tüzükleri sorgularında |
+| `shared/context-economy-contract.md` (v2.0) | **Her substantif çok-connector sorguda** (§ 3.5): Tier 0/1/2 bağlam ekonomisi, `arsiv-tarama-distilleri` delegasyonu, `anamnesis` ingest→bounded-query, kanonik cache, kör-getirme-yok chunking, devre-kesici |
+| `shared/coverage-manifest.md` (v2.0) | **Her substantif çıktı** (G0): tam-filo kapsam manifestosu biçimi + örnek; 11 server için hit/empty/degraded/skipped-with-reason satırları |
+| `agents/arsiv-tarama-distilleri.md` (alt-ajan, v2.0) | Ağır çok-connector arşiv taraması (SOURCE_HUNT/ARCHIVE_DEEP_DIVE/ACADEMIC_REPORT) → tek `arsiv_distillate` zarfı; ana pencere ekonomisi gerektiğinde delege et |
 
 Her referans dosyası kendi tablo-içeriği ile başlar; gerektiğinde yalnızca
 ilgili alt-bölümü yükleyin.

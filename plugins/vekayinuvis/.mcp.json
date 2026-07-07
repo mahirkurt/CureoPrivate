@@ -1,15 +1,101 @@
 {
+  "_comment": "vekayinuvis MCP wiring — Osmanlı/Türk tarih birincil-kaynak araştırma filosu. TAM-FİLO İLKESİ: bağlama uygun server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı; sessiz atlama yasak). Ağır çok-connector getirim `arsiv-tarama-distilleri` alt-ajanında toplanır (retrieve-don't-dump) ve büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin) `anamnesis` RAG substratına ingest edilir → bounded query; ana bağlama yalnız damıtılmış `arsiv_distillate` + coverage döner (shared/context-economy-contract.md). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa SessionStart preflight uyarır ve o katman graceful degrade eder (manifestoda 'skipped: anahtar yok'; asla uydurma). devlet-arsivleri ayrıca tek-cihaz oturum kilitlidir (upstream katalog oturumu HP'de kalıcı authenticated tarayıcıda yaşar; devarsiv_session_status ile pre-flight). paper-search Smithery key'i userConfig ile enable-time'da sorulur.",
   "mcpServers": {
     "ottoman-archives": {
       "type": "http",
       "url": "https://ottoman.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${OTTOMAN_ARCHIVES_MCP_API_KEY}"
-      }
+      },
+      "_tier": "core",
+      "_role": "ÇEKİRDEK Osmanlı arşiv keşfi — 33-kaynaklı registry + IIIF tam-metin (Gallica/LoC/IA/Princeton/SALT/Europeana/DPLA) + within-manifest search + DergiPark/DSpace curated + TDV İslâm Ansiklopedisi + Hicri/Rumî/Miladi çevirici + ebced/kronogram + defter şeması + eScriptorium HTR (opt-in). Her sorgunun keşif omurgası; kısıtlı-kaynak için erişim yol haritası."
+    },
+    "devlet-arsivleri": {
+      "type": "http",
+      "url": "https://devarsiv.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "ÇEKİRDEK resmî Devlet Arşivleri kataloğu (katalog.devletarsivleri.gov.tr) — Osmanlı/BOA (arsiv=2) · Cumhuriyet/BCA (arsiv=1) · Diplomatik (3) · Askeri (4). devarsiv_search → fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash + fon facet'leri; devarsiv_get_belge → künye + erişim/satın-alma durumu (hash zinciri aramadan gelir, uydurulamaz). ottoman-archives'ın YAPMADIĞI resmî katalog erişimini doldurur. TEK-CİHAZ OTURUM KİLİTLİ: devarsiv_session_status ile pre-flight; session_required → HP noVNC re-login + degrade. Geniş sorgu → refine_required. Belge GÖRÜNTÜLERİ eSatış/on-site (uydurulmaz)."
     },
     "yoktez": {
       "type": "http",
-      "url": "https://yoktezmcp.fastmcp.app/mcp"
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "_tier": "core",
+      "_role": "ÇEKİRDEK YÖK Ulusal Tez Merkezi — tahrir/mühimme/şer'iye sicili transkripsiyon tezleri (search_yok_tez_detailed/get_yok_tez_thesis_details/get_yok_tez_document_markdown/search_yok_tez_by_anabilim_dali). Bir BOA/BCA belgesinin tam-metnine erişimin birincil dolaylı yolu (tezler 50–200 belge transkripsiyonu içerir). Authless (FastMCP host)."
+    },
+    "literatur": {
+      "type": "http",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "_tier": "academic",
+      "_role": "DergiPark Türk akademik dergi makaleleri — makale arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. ottoman-archives search_dergipark'ı (curated OAI-PMH metadata) tam-metin ve tüm-dergi kapsamıyla tamamlar; HISTORIOGRAPHY birincil, KANUN_GEREKÇESİ L5. Authless hazır remote (surucu.dev); büyük tam-metin → anamnesis'e ingest."
+    },
+    "yok-akademik": {
+      "type": "http",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
+      },
+      "_tier": "support",
+      "_role": "DESTEKLEYİCİ YÖK Akademik profilleri (15 salt-okunur araç) — akademisyen arama, yayın/proje/tez danışmanlığı, eş-yazar ego-ağı. Modern prosopografi + ekol/uzman haritası (HISTORIOGRAPHY/PROSOPOGRAPHY). Birincil arşiv işlevine gerekli değil; bağlamı zenginleştirir."
+    },
+    "consensus": {
+      "type": "http",
+      "url": "https://mcp.consensus.app/mcp",
+      "_tier": "academic",
+      "_role": "Hakemli makale sentezi (search). Tartışmalı tarihyazımı konularında kanıt sentezi. OAuth 2.0 → /mcp tarayıcı akışı."
+    },
+    "scholar-gateway": {
+      "type": "http",
+      "url": "https://connector.scholargateway.ai/mcp",
+      "_tier": "academic",
+      "_role": "Tam-metin akademik korpus + pasaj-düzeyi atıf (semanticSearch). Belirli bir tezin desteklenmesi/çürütülmesi. OAuth/sağlayıcı key."
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp",
+      "_tier": "academic",
+      "_role": "Akademik blog, kurum sayfası, ansiklopedi entries (web_search_exa/web_fetch_exa). İkincil web kaynaklarına derinlemesine erişim. OAuth/Exa key."
+    },
+    "tavily": {
+      "type": "http",
+      "url": "https://mcp.tavily.com/mcp",
+      "_tier": "academic",
+      "_role": "Geniş web tarama + çok-sayfa araştırma + crawl (tavily_search/research/extract/crawl/map). Anlatı doğrulama, modern haber/blog. OAuth/Tavily key."
+    },
+    "paper-search": {
+      "type": "http",
+      "url": "https://server.smithery.ai/@adamamer20/paper-search-mcp-openai/mcp?api_key=${user_config.smithery_api_key}&profile=${user_config.smithery_profile}",
+      "_tier": "academic",
+      "_role": "Google Scholar tam aralığı + Semantic Scholar + CrossRef + PubMed (tıp tarihi) + arXiv (DH); read_*_paper/download_*. Anglofon scholarship. Smithery-host → api_key userConfig ile (anahtar yoksa graceful degrade → diğer akademik katman)."
+    },
+    "openathens": {
+      "type": "http",
+      "url": "https://openathens.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (kitap+makale) — Millet Kütüphanesi / OpenAthens SAML üzerinden 309 lisanslı veritabanından tam metin çeker. Tarih araştırmasında paywall'lı monograf/makale/ansiklopedi maddesine yasal erişim (Türk/Osmanlı çalışmaları için Millet Kütüphanesi kritik). 6 araç: oa_server_info · oa_list_databases · oa_resolve · oa_fetch_fulltext · oa_batch_submit · oa_batch_result. Tam-metin şelalesinde Tier 3 (literatur/paper-search'ten SONRA, annas'tan ÖNCE). Getirilen tam-metin > eşik → anamnesis'e ingest. Sunucu-taraflı SAML creds (claude.ai/grok'a GİRİLMEZ)."
+    },
+    "annas-reader": {
+      "type": "http",
+      "url": "https://annas.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "SON-ÇARE kitap+makale tam-metin (Anna's Archive efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. book_search/article_search → get_document_info → read_document/read_article/search_in_document (BM25). Out-of-print Osmanlı çalışmaları, nadir monograflar, paywall-dışı makaleler. Telif: yalnız ANALİZ, toplu birebir çoğaltma yok; getirilen tam-metin > eşik → anamnesis'e ingest → bounded query. DjVu=djvutxt. İndirmeler kullanıcının makinesine iner."
+    },
+    "anamnesis": {
+      "type": "http",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
+      },
+      "_tier": "substrate",
+      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin makale, İА maddesi, IIIF within-manifest bloğu) ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(doc_id=<kanonik id: fon/kutu/gömlek · tez-no · DOI · İА-madde>) ile BİR KEZ indekslenir → semantic_search/hybrid_query(queries[]) ile sınırlı, provenance-damgalı, graph-temelli dilim çekilir. Aynı doc_id iki kez ingest edilmez (kanonik cache). upsert_triples/graph_neighbors/subgraph = kişi↔görev↔belge / olay↔tarih↔kaynak ilişki grafiği (prosopografi/kronoloji). shared/context-economy-contract.md Tier 2. Anahtar yoksa → bounded-chunk fetch'e degrade (ottoman within-manifest + yoktez sayfa-bazlı), asla ham tam-metin dökümü."
     }
   }
 }

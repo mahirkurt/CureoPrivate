@@ -30,9 +30,10 @@ Tavily) birleştirir; IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle
 çalışır.
 
 Kapsam: Osmanlı dönemi (~1299–1922) + erken Cumhuriyet (1923–1950) öncelikli.
-Önemli sınır: erişim-kısıtlı arşivlerde (BOA, TKGM, ATASE, İSAM, Süleymaniye…)
-belge içeriği ÜRETİLMEZ — yalnız katalog, kayıt-no, fond-yapısı ve erişim
-yol haritası sağlanır.
+Önemli sınır: BOA/BCA/Diplomatik/Askeri arşivlerin resmî KATALOG araması artık
+doğrudan yapılır (devlet-arsivleri: fon/kutu/gömlek + künye); ancak belge
+GÖRÜNTÜLERİ (ve diğer kısıtlı kaynaklar: TKGM, ATASE, İSAM, Süleymaniye…)
+ÜRETİLMEZ — yalnız katalog, kayıt-no, künye ve erişim yol haritası sağlanır.
 ```
 
 ## Adım 2 — Bağlı MCP Connector'larını Kontrol Et
@@ -44,12 +45,32 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
 - `ottoman-archives` — 33-kaynaklı arşiv keşfi + IIIF tam-metin + Hicri/Rumî/
   Miladi çevirici + ebced + eScriptorium HTR + TDV İslâm Ansiklopedisi ·
   *pre-flight zorunlu* (yoksa çekirdek işlev devre dışı)
+- `devlet-arsivleri` — **resmî Devlet Arşivleri kataloğu** (Osmanlı/BOA · Cumhuriyet/
+  BCA · Diplomatik · Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi ·
+  *tek-cihaz oturum kilitli* → `devarsiv_session_status` ile canlılığı kontrol edin
 - `yoktez` — YÖK Ulusal Tez Merkezi (tahrir/mühimme/şer'iye sicili tezleri)
 
-**Tamamlayıcı katman (akademik triangülasyon — opsiyonel):**
-- `paper-search` (Google Scholar/Semantic Scholar/CrossRef/PubMed/arXiv) ·
+**Tamamlayıcı katman (akademik triangülasyon — full-fleet bundled):**
+- `literatur` (DergiPark **tam-metin** makale + PDF→HTML + referans) ·
+  `yok-akademik` (**destekleyici** — YÖK Akademik profilleri, uzman/ekol haritası) ·
+  `paper-search` (Google Scholar/Semantic Scholar/CrossRef/PubMed/arXiv) ·
   `consensus` (hakemli sentez) · `scholar-gateway` (pasaj-düzeyi atıf) ·
   `exa` (akademik web) · `tavily` (geniş web tarama)
+
+**Tam-metin şelalesi (kitap+makale):**
+- `openathens` (Tier 3 **lisanslı** — Millet Kütüphanesi/OpenAthens SAML, 309 DB) →
+  `annas-reader` (Tier 4 **son çare** — Anna's Archive; yalnız analiz). Paywall'lı
+  monograf/makale/ansiklopedi maddesine erişim; getirilen tam-metin → anamnesis'e ingest.
+
+**Substrat (bağlam ekonomisi altyapısı):**
+- `anamnesis` — büyük-veri RAG/GraphRAG; büyük tam-metin (belge transkripsiyonu,
+  tez PDF, DergiPark tam-metin) ingest→bounded query. Detayların atlanmadan,
+  pencere taşmadan kapsanması için (bkz. `shared/context-economy-contract.md`).
+
+> **TAM-FİLO.** Bu 11 server `.mcp.json`'da bundled'dır ve bağlama uygun olanı
+> **her substantif sorguda çalışır**; her çıktı **G0 kapsam manifestosu** taşır
+> (`shared/coverage-manifest.md`) — sessiz atlama yok. Ağır getirim
+> `arsiv-tarama-distilleri` alt-ajanına delege edilir (retrieve-don't-dump).
 
 **Anthropic yerleşik (her zaman mevcut):**
 - `web_search` · `web_fetch` · `google_drive_search` / `google_drive_fetch`
@@ -59,8 +80,17 @@ Settings → Connectors) etkinleştirebileceğini bildirin. Kritik eksiklerin
 etkisini söyleyin:
 - `ottoman-archives` yoksa → arşiv keşfi, IIIF tam-metin, tarih çevirici ve
   HTR **devre dışı**; süit yalnız akademik-literatür modunda degrade çalışır.
+- `devlet-arsivleri` oturumu düşükse (`session_required`) → resmî BOA/BCA katalog
+  araması atlanır; kullanıcıya HP noVNC re-login yol haritası bildirilir,
+  ottoman-archives/yoktez ile degrade devam edilir (asla uydurma).
 - `yoktez` yoksa → Türkçe tez triangülasyonu atlanır (web_search fallback).
-- tamamlayıcı katman yoksa → hakemli kanıt sentezi zayıflar; `web_search`
+- `literatur` yoksa → DergiPark **tam-metin** atlanır; ottoman `search_dergipark`
+  (metadata) fallback. `yok-akademik` yoksa → modern uzman/ekol haritası atlanır
+  (destekleyici; birincil işleve gerekli değil).
+- `openathens` yoksa → lisanslı kitap/makale tam-metni atlanır (paywall aşılamaz);
+  `annas-reader` son-çare fallback. `annas-reader` de yoksa → tam-metin yerine
+  yalnız metadata/atıf + kullanıcıya kütüphane erişim yol haritası (uydurma yok).
+- diğer tamamlayıcılar yoksa → hakemli kanıt sentezi zayıflar; `web_search`
   fallback devreye girer.
 
 ## Adım 3 — Flagship Skill'i ve Modları Tanıt

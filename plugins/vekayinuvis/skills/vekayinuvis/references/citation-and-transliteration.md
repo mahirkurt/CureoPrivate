@@ -231,6 +231,12 @@ Vakfiyesi", 15 Rebîülevvel 985 (2 Haziran 1577).*
 
 ### 6.3 Atıf Notu
 - Eğer belge **dijital olarak** erişim sağlanmışsa katalog URL'si dipnota eklenir.
+  **BOA/BCA için (`devlet-arsivleri` connector):** `devarsiv_get_belge`'den dönen
+  `belge_url` (`…BelgeGoster.aspx?ItemId=…`) doğrulanabilir katalog URL'i olarak
+  dipnota eklenir ve *"[devlet-arsivleri kataloğundan doğrulandı]"* etiketiyle
+  işaretlenir. Örn: `BOA, DH.İ.UM, 22/19, H-27-12-1337. <…ItemId=31664060…>`
+  (bkz. `devlet-arsivleri-katalog.md` § 5). Belgenin **görüntüsü** erişim-kısıtlıysa
+  yalnız katalog kaydı+URL atıflanır; görüntü içeriği aktarılmaz/uydurulmaz.
 - Eğer belge sadece **transkripsiyon edisyonundan** alıntılanmışsa, hem orijinal
   arşiv referansı hem de edisyon referansı verilir (ikili atıf).
 

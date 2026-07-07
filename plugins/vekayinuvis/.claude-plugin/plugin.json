@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "vekayinuvis",
   "displayName": "Vekayinüvis — Osmanlı/Türk Tarih Araştırma Protokolü",
-  "version": "1.0.0",
-  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + YÖK Tez çekirdek MCP katmanını akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ile birleştirir; IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu (kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi) sunar.",
+  "version": "2.0.0",
+  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO: Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ve kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu (kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi) sunar.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"
@@ -29,7 +29,34 @@
     "kanun-gerekcesi",
     "academic-research",
     "yoktez",
-    "ijmes-transliteration"
+    "ijmes-transliteration",
+    "devlet-arsivleri",
+    "bca-cumhuriyet-arsivi",
+    "fon-kutu-gomlek",
+    "dergipark",
+    "yok-akademik",
+    "anamnesis-rag",
+    "openathens",
+    "annas-reader",
+    "kitap-makale-tam-metin",
+    "millet-kutuphanesi",
+    "tam-filo",
+    "baglamlarda-context-economy"
   ],
+  "userConfig": {
+    "smithery_api_key": {
+      "type": "string",
+      "title": "Smithery API key",
+      "description": "Paper Search (Smithery host) için API anahtarı — girilmezse paper-search graceful degrade eder (diğer akademik katman devrede).",
+      "sensitive": true,
+      "required": false
+    },
+    "smithery_profile": {
+      "type": "string",
+      "title": "Smithery profile",
+      "description": "Smithery profil tanımlayıcısı (opsiyonel).",
+      "required": false
+    }
+  },
   "defaultEnabled": false
 }

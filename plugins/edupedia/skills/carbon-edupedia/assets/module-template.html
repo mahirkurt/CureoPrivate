@@ -1006,9 +1006,44 @@ const MODULE_DATA = {
     return n;
   },0);
   const prefersReduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  /* ---- v3.0.0 — Task 15: çapraz-oturum aralıklı tekrar (Leitner kutu sistemi, flashcards).
+     Güvenli localStorage sarmalayıcıları: private mod / kota aşımı / file:// erişim engeli
+     gibi HER türlü hatayı try/catch ile yutar (asla fırlatmaz) — null döner / sessizce
+     no-op olur, motor bu durumda mevcut in-session davranışa birebir düşer (degrade-safe).
+     Yalnız bu tek senkron web-depolama API'si kullanılır; başka hiçbir tarayıcı-içi veritabanı
+     API'si motora dahil edilmez (file:// kökeninde bloklu olabilen alternatifler — global kısıt,
+     bkz. brief) — kaynak metninde adı bile geçmez (denetim: sıfır referans). */
+  function lsGet(key){
+    try { const v = localStorage.getItem(key); return v==null ? null : JSON.parse(v); }
+    catch(e){ return null; }
+  }
+  function lsSet(key,val){
+    try { localStorage.setItem(key, JSON.stringify(val)); }
+    catch(e){ /* depolama yok / özel mod / kota dolu / file:// engeli — sessiz no-op */ }
+  }
+  // Açık bir modül id'si yok: D.meta.title'dan kararlı kısa hash (FNV-1a benzeri) türetilir —
+  // aynı modül (aynı başlık) her zaman aynı depolama anahtarını üretir, oturumlar arası kalıcı.
+  function hashStr(str){
+    str = String(str||"");
+    let h = 2166136261;
+    for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h,16777619); }
+    return (h>>>0).toString(36);
+  }
+  const LEITNER_STORE_KEY = "edupedia:"+hashStr((D.meta&&D.meta.title)||"module")+":leitner";
+  // Bozuk/yabancı-şemalı depolanmış veriye karşı savunma: beklenmedik şekil sessizce
+  // temiz varsayılana düşer (crash yok).
+  function normalizeLeitner(v){
+    if(v && typeof v==="object" && v.box && typeof v.box==="object"){
+      return { box:v.box, due: Array.isArray(v.due)?v.due:[] };
+    }
+    return { box:{}, due:[] };
+  }
+
   const state = { idx:0, xp:0, mastered:0, awarded:new Set(), done:new Set(),
     earnedBadges:new Set(), flawlessMcq:true, sound:!prefersReduceMotion,
-    streak:0, bestStreak:0, tts:false, perf:[] };
+    streak:0, bestStreak:0, tts:false, perf:[],
+    leitner: normalizeLeitner(lsGet(LEITNER_STORE_KEY)) };
   // v1.8.0 — seri kilometre taşları (Fibonacci ritmi) ve TTS yetenek bayrağı
   const STREAK_MILESTONES=[3,5,8,13,21,34];
   const TTS_OK = (typeof window!=="undefined") && ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
@@ -2113,9 +2148,22 @@ const MODULE_DATA = {
     $("#backBtn").style.visibility="visible";
   }
 
-  /* ---- flashcards (aralıklı tekrar: bilinmeyen sona atılır) ---- */
+  /* ---- flashcards (aralıklı tekrar: bilinmeyen sona atılır; v3.0.0 Task 15 — çapraz-oturum
+     Leitner kutu önceliklendirmesi + localStorage kalıcılığı, degrade-safe) ---- */
   function renderFlashcards(stage,s){
-    let queue = s.cards.map((c,i)=>({front:c.front,back:c.back,hint:c.hint,idx:i}));
+    // Kayıtlı kutulara göre İLK gösterim SIRASI önceliklenir (düşük kutu = az bilinen/hiç
+    // görülmemiş → önce gösterilir); kart SAYISI hiçbir zaman değişmez/atlanmaz — yalnız
+    // sıra. Depolama yoksa/boşsa boxOf her anahtar için 1 döner → sıralama no-op'tur
+    // (eşit anahtarlarda `a-b` kırılımı orijinal sırayı KORUR) → tam in-session degrade.
+    const boxOf = k => state.leitner.box[k]||1;
+    const order = s.cards.map((c,i)=>i);
+    order.sort((a,b)=> (boxOf(s.id+"#"+a)-boxOf(s.id+"#"+b)) || (a-b));
+    function persistBox(key,box){
+      state.leitner.box[key]=box;
+      state.leitner.due = Object.keys(state.leitner.box).filter(k=>state.leitner.box[k]<=2);
+      lsSet(LEITNER_STORE_KEY, state.leitner);
+    }
+    let queue = order.map(i=>({front:s.cards[i].front,back:s.cards[i].back,hint:s.cards[i].hint,idx:i}));
     const learned = new Set();
     const total = s.cards.length;
     function show(){
@@ -2146,9 +2194,13 @@ const MODULE_DATA = {
           const again=el("button","btn btn--ghost"); again.innerHTML=icon("ic-renew")+" Tekrar et";
           know.addEventListener("click",()=>{
             if(!learned.has(card.idx)){ learned.add(card.idx); addXP(D.rewards.xpPerCorrect); markMastered(); bumpStreak(); }
+            persistBox(s.id+"#"+card.idx, Math.min(5, boxOf(s.id+"#"+card.idx)+1));
             queue.shift(); show();
           });
-          again.addEventListener("click",()=>{ const c=queue.shift(); queue.push(c); show(); });
+          again.addEventListener("click",()=>{
+            persistBox(s.id+"#"+card.idx, 1);
+            const c=queue.shift(); queue.push(c); show();
+          });
           row.appendChild(know); row.appendChild(again); ctrl.appendChild(row);
         }
       }

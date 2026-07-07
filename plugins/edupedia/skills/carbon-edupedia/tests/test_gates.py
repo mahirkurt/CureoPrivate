@@ -1,5 +1,5 @@
 # tests/test_gates.py
-import sys, os
+import sys, os, re
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 import validate_module as vm
 
@@ -211,3 +211,38 @@ def test_new_segments_have_tts_coverage():
         body = src[start_idx:next_fn_start]
         # ttsRow çağrısı bu render'da olmalı
         assert "ttsRow(" in body, f"{func_name} ttsRow() çağrısı yok"
+
+def test_spacedrep_degrades_without_storage():
+    # Task 15: çapraz-oturum Leitner kutu sistemi — localStorage erişimi HER ZAMAN
+    # try/catch ile sarılı olmalı (private mod / kota aşımı / file:// engeli → sessizce
+    # null/no-op, asla fırlatmaz) ve IndexedDB KESİNLİKLE kullanılmamalı (file:// üzerinde
+    # bloklu bir global kısıt — brief §"Global Constraints").
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "localStorage" in src, "Leitner localStorage kalıcılığı henüz uygulanmadı"
+    assert src.count("IndexedDB") == 0, "IndexedDB motor kaynağında YASAK (file:// bloklu)"
+    # en az bir try{...localStorage...}catch bloğu olmalı (lsGet/lsSet güvenli sarmalayıcılar)
+    assert re.search(r"try\s*\{[^{}]*localStorage[^{}]*\}\s*catch", src), \
+        "localStorage erişimi try/catch ile sarılı değil (degrade-safe olmalı)"
+
+def test_leitner_boxes_persist_and_move_correctly():
+    # Task 15: renderFlashcards artık Leitner kutu numarasını (1..5) doğru/tekrar
+    # tuşlarında günceller ve her güncellemeden sonra lsSet ile kalıcı hale getirir;
+    # motor modül id'sini D.meta.title'dan kararlı biçimde türetir (açık id alanı yok).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderFlashcards(")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert "lsSet(" in body, "renderFlashcards lsSet() ile kalıcılaştırmıyor"
+    assert "state.leitner" in body, "renderFlashcards state.leitner'ı kullanmıyor"
+    assert "Math.min(5" in body, "kutu üst sınırı (5) yok — doğru tuşu üst kutuya taşımıyor"
+    # D.meta.title'dan kararlı modül-anahtarı türetimi (açık modül id'si yok)
+    assert re.search(r"D\.meta\s*&&\s*D\.meta\.title", src), \
+        "modül kimliği D.meta.title'dan türetilmeli"
+    assert '"edupedia:"' in src and '":leitner"' in src
+
+def test_leitner_degrade_preserves_card_count():
+    # Backward-compat/degrade garantisi: kutu-öncelikli sıralama kart SAYISINI hiçbir
+    # zaman değiştirmez/atlamaz — yalnız gösterim SIRASINI önceliklendirir. Bu yüzden
+    # totalGradeable/mastery paydası (s.cards.length) motor içinde DEĞİŞMEDEN kalmalı.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert 'if(s.type==="flashcards") return n+s.cards.length;' in src

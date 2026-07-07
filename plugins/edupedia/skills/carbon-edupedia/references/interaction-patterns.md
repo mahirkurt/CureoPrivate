@@ -91,6 +91,22 @@ ekran okuyucuya açık; renk dışı durum (ikon+metin).
 > (ic-view) → «Biliyorum» (öğrenildi, +XP) / «Tekrar et» (ic-renew, kartı deste
 > sonuna atar). Tüm kartlar öğrenilince segment biter. Her kart ustalığa sayılır.
 
+> **✓ Motorda uygulandı (v3.0.0 — Task 15, çapraz-oturum aralıklı tekrar / Leitner kutu
+> sistemi).** Açık bir modül id'si olmadığından, motor `D.meta.title`'dan kararlı bir kısa
+> hash türetir (FNV-1a benzeri, `hashStr`) ve kart durumunu
+> `localStorage["edupedia:"+hash+":leitner"]` altında `{box:{<segId>#<kartIdx>: 1..5}, due:[...]}`
+> şeklinde saklar. Segment her açıldığında kartlar **kutu numarasına göre önceliklenir**
+> (düşük kutu = az bilinen/hiç görülmemiş → önce gösterilir); «Biliyorum» kutuyu bir üste
+> taşır (üst sınır 5), «Tekrar et» kutuyu 1'e sıfırlar (ceza dili yok — yalnız nötr sıfırlama);
+> her güncelleme `lsSet` ile hemen kalıcı hale getirilir. **Kart SAYISI hiçbir zaman
+> değişmez/atlanmaz** — yalnız gösterim sırası değişir; deste-içi mekanik ("tekrar et" →
+> deste sonuna atma) birebir korunur. **Degrade:** `localStorage` erişilemezse (özel mod,
+> kota dolu, `file://` engeli) `lsGet`/`lsSet` güvenli sarmalayıcıları try/catch ile sessizce
+> `null`/no-op döner; bu durumda tüm kutular varsayılan `1` sayılır ve sıralama no-op'tur
+> (eşit anahtarlarda orijinal indeks kırılımı sırayı korur) — segment **birebir eski
+> in-session davranışına** düşer, hiçbir kart kaybolmaz/çökme olmaz. IndexedDB benzeri
+> tarayıcı-içi veritabanı API'leri motora **hiç dahil edilmez** (yalnız `localStorage`).
+
 ## 4. `match` — Eşleştirme
 **Pedagoji:** İlişkilendirme, OTR (İlke 2), ikili kodlama (görsel eşleştirme, İlke 7).
 ```js

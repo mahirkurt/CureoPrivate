@@ -262,6 +262,51 @@ tek başına anlam taşımaz).
 > token'larıyla (accent-tint, layer-01/02, accent-strong) biçimlenir; statik
 > kartta **gölge yok** (yalnız sol kenarlık + katman rengi).
 
+## 13. `conceptMap` — Kavram haritası kurucu
+**Pedagoji:** İlişkisel/yapısal bilgi kurma. Kavram haritaları ve grafik
+düzenleyiciler tutarlı meta-analitik yarar gösterir (Schroeder ve ark. 2018,
+g=0,58; **oluşturma/construction** g=0,72, daha da güçlü — bir hedef yapıyı
+kendi elleriyle *kurmak*, yalnız incelemekten daha etkili; bkz.
+`adhd-pedagogy.md` §"Sosyal"; Nesbit & Adesope 2006, düğüm-bağ diyagramları →
+kalıcılık); etkileşimli/kurucu düzenleyiciler daha derin işlemeye yol açar
+(Wang ve ark. 2021).
+```js
+{
+  type: "conceptMap", id, title?, instructions?,
+  nodes: [ { id: "n1", label: "Mitokondri" }, ... ],   // en az 2 düğüm
+  targetEdges: [ ["n1","n2"], ["n3","n4"] ]            // sırasız: [A,B]===[B,A]
+}
+```
+**Mekanik:** Düğümler alanda dağıtılmış gerçek `<button aria-label>`
+öğeleridir (DOM katmanı; SVG yalnız kenar-çizgilerini görsel olarak taşıyan
+dekoratif bir alt katmandır). Öğrenci bir **kaynak** düğüm seçer (tıkla/Enter/
+Space), ardından **farklı** bir **hedef** düğüm seçer → aralarında bir kenar
+(ilişki) kurulur; aynı düğüme ikinci kez basmak seçimi iptal eder. Kurulan
+kenarlar bir metin listesinde ("Bağlantılarım") gösterilir — her satırda
+klavye-erişilebilir bir "kaldır" düğmesi vardır. "Kontrol et" öğrencinin
+kenarlarını `targetEdges` ile **sırasız** karşılaştırır (`[A,B]` ile `[B,A]`
+eşdeğer); doğru kenarlar yeşil+onay ikonuyla işaretlenir, hedef-dışı ("fazla")
+kenarlar nötr bilgi rengiyle, eksik hedef kenarlar nazikçe (cezasız)
+listelenir — öğrenci listeden düzenleyip tekrar kontrol edebilir. **Tam
+eşleşince** (eksiksiz + fazlasız) XP kazanılır ve ilerleme açılır.
+
+**Erişilebilirlik (KRİTİK — WCAG 2.1 AA):** Sürükle-bırak bu sürümde **hiç
+eklenmedi**; klavye/tıklama yolu **TEK ve ZORUNLU** yoldur (gerçek `<button
+aria-label>` kullanıldığından Enter/Space etkinleştirme yerleşiktir, ayrı bir
+klavye-işleyici gerekmez — `match`/`order`'ın "gerçek buton = klavye bedava"
+ilkesiyle aynı). Kenar SVG çizgi katmanı yalnız **dekoratiftir** (`aria-hidden`)
+— erişilebilir kayıt metin listesidir (çift-temsil karmaşası yaratmamak için).
+Durum daima çift-kanal (renk + ikon + metin); hedefler ≥48px tap alanı taşır.
+
+> **✓ Motorda uygulandı (v3.0.0 — Task 18).** `renderConceptMap`: düğümler bir
+> elips üzerine dağıtılır (`nodes[]` sırasına göre, sabit yüzde-konumla —
+> konteyner `aspect-ratio:3/2` ile kilitli, böylece SVG çizgileri ve düğüm
+> butonları her zaman hizalı kalır). En az 2 düğüm yoksa veya `targetEdges`
+> boşsa → nazik/uydurmasız bir bilgi notu (`sim`'in bilinmeyen-`simType`
+> dalıyla aynı desen), çökme yok. Tam eşleşince (eksiksiz + fazlasız) tek
+> seferlik `addXP`+`markMastered` (`worked`'in tüm-adım-birlikte deseniyle aynı
+> ilke — `match`/`order`'ın kenar-başına ödülü değil).
+
 ---
 
 ## Akış kurgu kuralları (motor)

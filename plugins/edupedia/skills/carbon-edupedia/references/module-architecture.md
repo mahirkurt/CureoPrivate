@@ -134,6 +134,17 @@ const MODULE_DATA = {
         { key: "angle",  label: "Açı (derece)", min: -60, max: 60,  step: 5,   default: 20 }
       ] },
 
+    // 10) kavram haritası (conceptMap) — düğümleri bağlayarak ilişki kur, hedef
+    //     yapıyla sırasız karşılaştır (v3.0.0 — Task 18). Klavye yolu ZORUNLU
+    //     ve TEKTİR (sürükle-bırak bu sürümde hiç eklenmedi).
+    { type: "conceptMap", id: "cm1", title: "Hücre İlişkileri", pictogram: "pic-idea",
+      instructions: "Bir düğüm seç, sonra bağlamak istediğin ikinci düğümü seç.",
+      nodes: [
+        { id: "n1", label: "Mitokondri" }, { id: "n2", label: "Enerji üretir" },
+        { id: "n3", label: "Çekirdek" }, { id: "n4", label: "Yönetir" }
+      ],
+      targetEdges: [ ["n1","n2"], ["n3","n4"] ] },
+
     // son) kontrol noktası (karma geri-getirme, ped İlke 8)
     { type: "checkpoint", id: "c1", title: "Kontrol Noktası", pictogram: "ic-trophy",
       recap: ["...", "..."],
@@ -223,6 +234,34 @@ const MODULE_DATA = {
   doğrusu). Yeni bir preset eklemek **motor genişletmesi**dir (yeni `SIM_PRESETS`
   dalı + G-SVG erişilebilirliği), `MODULE_DATA` yeteneği değil. Şema/motor
   ayrıntısı: `renderSim` + `SIM_PRESETS` (module-template.html).
+- `conceptMap` (kavram haritası kurucu / concept-map builder, v3.0.0 — Task 18)
+  **opsiyoneldir**. Alanlar: `id`, `title?`, `instructions?`, `nodes:[{id,label}]`
+  (zorunlu dizi, **en az 2 düğüm**), `targetEdges:[[nodeIdA,nodeIdB],...]`
+  (zorunlu dizi — **sırasız** karşılaştırılır: `[A,B]` ile `[B,A]` eşdeğerdir).
+  **Klavye yolu ZORUNLUDUR ve bu sürümde TEKTİR** (WCAG 2.1 AA — sürükle-bırak
+  hiç eklenmedi; eklenseydi bile yalnız opsiyonel bir zenginleştirme olabilirdi,
+  asla tek yol olamazdı): her düğüm gerçek bir `<button aria-label>` —
+  kaynak-düğüm seç (tıkla/Enter/Space), ardından **farklı** bir hedef-düğüm seç
+  (tıkla/Enter/Space) → aralarında bir kenar kurulur; aynı düğüme ikinci kez
+  basmak seçimi iptal eder. Kurulan kenarlar hem salt-görsel bir SVG çizgi
+  katmanında (`aria-hidden` — dekoratif) hem de klavye-erişilebilir bir "kaldır"
+  `<button aria-label>` taşıyan bir metin listesinde ("Bağlantılarım",
+  gerçek erişilebilir kayıt) gösterilir. "Kontrol et" düğmesi kurulan kenarları
+  `targetEdges`'e karşı sırasız karşılaştırır; doğru kenarlar yeşil+onay
+  ikonuyla, hedef-dışı ("fazla") kenarlar nötr bilgi rengiyle işaretlenir,
+  eksik hedef kenarlar nazikçe (cezasız — G-WELLBEING) listelenir; öğrenci
+  listeden düzenleyip tekrar kontrol edebilir. **Tam eşleşince** (eksiksiz VE
+  fazlasız) `addXP`+`markMastered` **tek seferde** tetiklenir (`worked`'in
+  tüm-adım-birlikte deseniyle aynı ilke — `match`/`order`'ın kenar-başına
+  ödülü DEĞİL); `totalGradeable` paydasına katkısı da `worked`'in
+  fadeFrom-boş-korumasıyla birebir aynı ilke: gerçek bir `targetEdges` varsa
+  +1, yoksa +0. En az 2 düğüm yoksa veya `targetEdges` boşsa → nazik/uydurmasız
+  bir bilgi notu (`sim`'in bilinmeyen-`simType` dalıyla aynı desen), çökme yok.
+  Kanıt temeli: kavram haritası/grafik düzenleyici meta-analizleri (Schroeder
+  ve ark. 2018, g=0,58; oluşturma g=0,72; Nesbit & Adesope 2006) —
+  `adhd-pedagogy.md` §"Sosyal" ve `subject-packs.md` §4. Şema/motor ayrıntısı:
+  `renderConceptMap` (module-template.html); mekanik/erişilebilirlik ayrıntısı:
+  `interaction-patterns.md` §13.
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

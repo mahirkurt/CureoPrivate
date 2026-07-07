@@ -537,9 +537,57 @@ figure.viz figcaption{margin-top:var(--sp-04);font-size:var(--fs-label);color:va
 .sim-param input[type="range"]:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
 .sim-val{flex:none;min-width:64px;text-align:right;font-family:var(--font-mono);
   font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent-strong)}
+/* v3.0.0 — Task 18: kavram haritası kurucu (conceptMap). Düğümler gerçek <button>
+   (DOM katmanı, absolute + yüzde-konum); kenarlar SALT GÖRSEL bir SVG çizgi
+   katmanında (aria-hidden — erişilebilir kayıt aşağıdaki metin listesidir, çift-
+   temsil karmaşası yaratmamak için) + klavye-erişilebilir "kaldır" düğmesi taşıyan
+   bir metin listesinde gösterilir. .cmap-field'ın aspect-ratio:3/2'si SVG viewBox
+   (0 0 600 400, aynı 3:2 oran) ile kilitli tutulur ki düğüm yüzde-konumları ve SVG
+   çizgi uç noktaları her zaman hizalı kalsın. Gölge yok (yalnız inset — G-CARBON-GRID). */
+.cmap-field{position:relative;aspect-ratio:3/2;margin:var(--sp-05) 0;
+  background:var(--cds-layer-02);border:1px solid var(--cds-border-subtle);
+  border-radius:var(--cds-radius);overflow:hidden}
+.cmap-lines{position:absolute;inset:0;width:100%;height:100%}
+.cmap-line{stroke:var(--cds-border-strong);stroke-width:2.5}
+.cmap-line--correct{stroke:var(--cds-support-success)}
+.cmap-line--extra{stroke:var(--cds-support-info)}
+.cmap-node{position:absolute;transform:translate(-50%,-50%);max-width:136px;
+  font-family:var(--font-sans);font-size:var(--fs-label);font-weight:600;text-align:center;
+  min-height:var(--tap);padding:var(--sp-03) var(--sp-05);border-radius:var(--cds-radius);
+  cursor:pointer;background:var(--cds-layer-01);color:var(--cds-text-primary);
+  box-shadow:inset 0 0 0 1.5px var(--cds-border-strong);
+  transition:box-shadow var(--dur-fast) var(--ease-std),background var(--dur-fast) var(--ease-std)}
+.cmap-node:hover:not([disabled]){box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-tint)}
+.cmap-node:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+.cmap-node--sel{box-shadow:inset 0 0 0 2.5px var(--accent);background:var(--accent-tint);color:var(--accent-strong)}
+.cmap-node[disabled]{cursor:default;opacity:.85}
+.cmap-edges{margin:var(--sp-05) 0}
+.cmap-edges__lbl{font-size:var(--fs-label);color:var(--cds-text-secondary);font-weight:600;
+  text-transform:uppercase;letter-spacing:.03em;margin:0 0 var(--sp-03)}
+.cmap-edges__empty{font-size:var(--fs-compact);color:var(--cds-text-helper);margin:0 0 var(--sp-04)}
+.cmap-edges__empty[hidden]{display:none}
+.cmap-edges__list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-03)}
+.cmap-edge{display:flex;align-items:center;gap:var(--sp-04);background:var(--cds-layer-02);
+  border-radius:var(--radius-btn);padding:var(--sp-03) var(--sp-04);
+  box-shadow:inset 0 0 0 1px var(--cds-border-tile)}
+.cmap-edge__mark{flex:none;width:1.2rem;height:1.2rem;display:inline-flex;align-items:center;justify-content:center;color:var(--cds-text-secondary)}
+.cmap-edge__mark:empty::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cds-border-strong)}
+.cmap-edge--correct{box-shadow:inset 0 0 0 1.5px var(--cds-support-success)}
+.cmap-edge--correct .cmap-edge__mark{color:var(--cds-support-success)}
+.cmap-edge--extra{box-shadow:inset 0 0 0 1.5px var(--cds-support-info)}
+.cmap-edge--extra .cmap-edge__mark{color:var(--cds-support-info)}
+.cmap-edge__text{flex:1;font-size:var(--fs-compact);color:var(--cds-text-primary)}
+.cmap-edge__remove{flex:none;width:40px;height:40px;border:none;background:transparent;cursor:pointer;
+  color:var(--cds-icon-secondary);display:inline-flex;align-items:center;justify-content:center;border-radius:8px;
+  transition:background var(--dur-fast) var(--ease-std)}
+.cmap-edge__remove:hover:not([disabled]){background:var(--cds-background-hover);color:var(--cds-support-error)}
+.cmap-edge__remove:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+.cmap-edge__remove[disabled]{opacity:.4;cursor:default}
+.cmap-edge__remove .cds-icon{width:1rem;height:1rem}
+.cmap-check{margin:var(--sp-05) 0}
 /* ===== işlevsel renk: etkinlik-tipine göre wayfinding aksanı (signaling) ===== */
 .stage[data-seg="teach"]{--seg-accent:var(--cds-support-info)}
-.stage[data-seg="mcq"],.stage[data-seg="checkpoint"],.stage[data-seg="fillblank"],.stage[data-seg="match"],.stage[data-seg="order"],.stage[data-seg="sorting"],.stage[data-seg="hotspot"]{--seg-accent:var(--accent)}
+.stage[data-seg="mcq"],.stage[data-seg="checkpoint"],.stage[data-seg="fillblank"],.stage[data-seg="match"],.stage[data-seg="order"],.stage[data-seg="sorting"],.stage[data-seg="hotspot"],.stage[data-seg="conceptMap"]{--seg-accent:var(--accent)}
 .stage[data-seg="brainbreak"]{--seg-accent:var(--cds-support-success)}
 .stage[data-seg="chart"],.stage[data-seg="table"]{--seg-accent:var(--viz-2)}
 .stage[data-seg="flashcards"]{--seg-accent:var(--accent)}
@@ -1017,6 +1065,7 @@ const MODULE_DATA = {
     if(s.type==="sorting") return n+s.items.length;
     if(s.type==="hotspot") return n+s.spots.length;
     if(s.type==="checkpoint") return n+((s.mixedQuestions&&s.mixedQuestions.length)||0);
+    if(s.type==="conceptMap") return n + ((s.targetEdges&&s.targetEdges.length)?1:0);
     return n;
   },0);
   const prefersReduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -1430,11 +1479,9 @@ const MODULE_DATA = {
     if(state.idx>=segs.length){ renderSummary(stage); return; }
     const s=segs[state.idx];
     stage.setAttribute("data-seg", s.type);
-    // NOTE: Task 18 (conceptMap renderer) — when built, must include ttsRow() on primary
-    //       text (Task 17's sim renderer already does — see renderSim below).
     const fn = ({hook:renderHook,teach:renderTeach,mcq:renderMCQ,flashcards:renderFlashcards,
       match:renderMatch,fillblank:renderFillblank,worked:renderWorked,selfExplain:renderSelfExplain,
-      sim:renderSim,
+      sim:renderSim,conceptMap:renderConceptMap,
       brainbreak:renderBreak,checkpoint:renderCheckpoint,order:renderOrder,sorting:renderSorting,
       hotspot:renderHotspot,timeline:renderTimeline,chart:renderChart,
       table:renderTable,numberline:renderNumberline,fraction:renderFraction,
@@ -2205,6 +2252,178 @@ const MODULE_DATA = {
     });
     redraw(); // ilk kare
     setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"}); // keşfedici — sonraki hep etkin
+  }
+
+  /* ---- conceptMap: kavram haritası kurucu (Task 18) ----
+     Şema: {type:"conceptMap", id, title?, instructions?, nodes:[{id,label}]
+     (en az 2), targetEdges:[[nodeIdA,nodeIdB],...]}. KLAVYE YOLU ZORUNLU ve
+     bu sürümde TEK yoldur (sürükle-bırak eklenmedi — WCAG 2.1 AA gereği pointer
+     sürükle yalnız opsiyonel bir zenginleştirme OLABİLİR, hiçbir zaman tek yol
+     olamaz; burada hiç eklenmediği için sorun yok). Her düğüm gerçek bir
+     <button aria-label> — match/order'ın "gerçek buton = klavye bedava" ilkesi:
+     Enter/Space native olarak "click" üretir, ayrı bir keydown işleyici gerekmez.
+     Akış: kaynak-düğüm seç (tıkla/Enter/Space) → farklı bir hedef-düğüm seç
+     (tıkla/Enter/Space) → aralarında bir kenar kurulur; aynı düğüme ikinci kez
+     basmak seçimi iptal eder (match'in iki-sabit-sütun modelinden farklı olarak
+     burada her düğüm hem kaynak hem hedef rolü alabildiğinden bu iptal yolu
+     gerekli bir kaçış kapısıdır). Kurulan kenarlar hem SVG çizgi katmanında
+     (yalnız GÖRSEL — aria-hidden; erişilebilir kayıt aşağıdaki metin listesidir,
+     çift-temsil karmaşası yaratmamak için) hem de #cmapEdgeList metin listesinde
+     gösterilir — her satır klavye-erişilebilir bir "kaldır" düğmesi taşır.
+     "Kontrol et" öğrencinin kenarlarını targetEdges'e karşı SIRASIZ karşılaştırır
+     ([A,B]===[B,A]); doğru kenar yeşil+onay ikonu, hedef-dışı ("fazla") kenar
+     nötr bilgi rengi, eksik hedef kenar nazikçe (cezasız) listelenir — öğrenci
+     listeden düzenleyip tekrar kontrol edebilir. TAM eşleşince (eksiksiz VE
+     fazlasız) addXP+markMastered TEK SEFERDE tetiklenir — brief'in "tümü doğru
+     → addXP+markMastered" tekil-olay tarifi, worked'in runCheck desenidir
+     (match/order'ın kenar-başına ödülü DEĞİL). totalGradeable'a katkısı da
+     worked'in fadeFrom-boş-korumasıyla birebir aynı ilke: gerçek bir targetEdges
+     varsa +1, yoksa +0 (bkz. yukarıdaki totalGradeable reduce) — bu yüzden gk=s.id
+     (worked ile birebir aynı, alt-öğe başına değil). En az 2 düğüm veya boş
+     targetEdges → nazik/uydurmasız bir bilgi notu (sim'in bilinmeyen-simType
+     dalıyla aynı desen), çökme yok. */
+  function renderConceptMap(stage,s){
+    const nodes = s.nodes||[];
+    const targets = (s.targetEdges||[]).map(e=>[String(e[0]),String(e[1])]);
+    let html = segHead(s,"Kavram Haritası") + instr(s);
+    html += ttsRow(stripTags(s.instructions||s.title||""), defLang());
+    if(nodes.length<2 || !targets.length){
+      html += `<div class="feedback feedback--info">${icon("ic-info")}<div>`
+        + `<b>Bu kavram haritası için yeterli veri yok.</b> En az 2 düğüm ve 1 hedef bağlantı gerekir.</div></div>`;
+      stage.innerHTML = html;
+      setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
+      return;
+    }
+    // Düğümleri sabit bir elips üzerine dağıt (viewBox 0 0 600 400, oran 3:2 —
+    // .cmap-field'ın CSS aspect-ratio:3/2'siyle kilitli, böylece yüzde-konum
+    // her zaman aynı elipsi tarif eder). n>=2 burada garanti (yukarıdaki koruma).
+    const W=600, H=400, cx0=W/2, cy0=H/2, rx=210, ry=130, n=nodes.length;
+    const pos={};
+    nodes.forEach((nd,i)=>{
+      const ang = -Math.PI/2 + i*(2*Math.PI/n);
+      pos[nd.id] = {x:cx0+rx*Math.cos(ang), y:cy0+ry*Math.sin(ang)};
+    });
+    function labelOf(id){ const nd=nodes.find(x=>String(x.id)===String(id)); return nd?nd.label:String(id); }
+    function edgeEq(e1,e2){ return (e1[0]===e2[0]&&e1[1]===e2[1])||(e1[0]===e2[1]&&e1[1]===e2[0]); }
+    function hasEdge(list,e){ return list.some(x=>edgeEq(x,e)); }
+
+    html += `<div class="cmap-field" role="group" aria-label="Kavram düğümleri">`
+      + `<svg class="cmap-lines" viewBox="0 0 ${W} ${H}" aria-hidden="true"></svg>`;
+    nodes.forEach(nd=>{
+      const p = pos[nd.id]||{x:cx0,y:cy0};
+      html += `<button type="button" class="cmap-node" data-id="${esc(String(nd.id))}" `
+        + `style="left:${(p.x/W*100).toFixed(2)}%;top:${(p.y/H*100).toFixed(2)}%" `
+        + `aria-pressed="false" aria-label="${esc(nd.label)} — bağlantı için seç">${esc(nd.label)}</button>`;
+    });
+    html += `</div>`;
+    html += `<div class="cmap-edges">`
+      + `<h3 class="cmap-edges__lbl">Bağlantılarım</h3>`
+      + `<p class="cmap-edges__empty" id="cmapEmpty">Henüz bağlantı yok. Bir düğüm seç, sonra bağlamak istediğin ikinci düğümü seç.</p>`
+      + `<ul class="cmap-edges__list" id="cmapEdgeList" aria-live="polite"></ul>`
+      + `</div>`;
+    html += `<button type="button" class="btn btn--ghost cmap-check" id="cmapCheckBtn">${icon("ic-check")}<span>Kontrol et</span></button>`;
+    html += `<div id="cmfb" aria-live="polite"></div>`;
+    stage.innerHTML = html;
+    setNav({next:false});
+
+    const nodeButtons={};
+    stage.querySelectorAll(".cmap-node").forEach(b=>{ nodeButtons[b.dataset.id]=b; });
+    const svgLines = stage.querySelector(".cmap-lines");
+    const listEl = stage.querySelector("#cmapEdgeList");
+    const emptyEl = stage.querySelector("#cmapEmpty");
+    const fb = stage.querySelector("#cmfb");
+    const checkBtn = stage.querySelector("#cmapCheckBtn");
+    const edges=[]; // öğrencinin kurduğu kenarlar: [nodeIdA,nodeIdB][]
+    let selected=null, checked=false, everImperfect=false;
+    const gk=s.id; // worked ile birebir aynı ilke: tekil/toplu grade-key, alt-öğe başına değil
+
+    function redrawLines(){
+      svgLines.innerHTML = edges.map(e=>{
+        const p1=pos[e[0]], p2=pos[e[1]]; if(!p1||!p2) return "";
+        let cls="cmap-line";
+        if(checked) cls += hasEdge(targets,e) ? " cmap-line--correct" : " cmap-line--extra";
+        return `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" class="${cls}"></line>`;
+      }).join("");
+    }
+    function redrawList(){
+      emptyEl.hidden = edges.length>0;
+      listEl.innerHTML = edges.map((e,i)=>{
+        let stateCls="", mark="";
+        if(checked){
+          if(hasEdge(targets,e)){ stateCls=" cmap-edge--correct"; mark=icon("ic-check"); }
+          else { stateCls=" cmap-edge--extra"; mark=icon("ic-info"); }
+        }
+        const a=esc(labelOf(e[0])), b=esc(labelOf(e[1]));
+        return `<li class="cmap-edge${stateCls}">`
+          + `<span class="cmap-edge__mark">${mark}</span>`
+          + `<span class="cmap-edge__text">${a} ↔ ${b}</span>`
+          + `<button type="button" class="cmap-edge__remove" data-i="${i}" aria-label="${a} - ${b} bağlantısını kaldır">${icon("ic-close")}</button>`
+          + `</li>`;
+      }).join("");
+      listEl.querySelectorAll(".cmap-edge__remove").forEach(rb=>{
+        rb.addEventListener("click",()=>{
+          if(rb.disabled) return;
+          edges.splice(+rb.dataset.i,1);
+          checked=false; fb.className=""; fb.innerHTML="";
+          redrawLines(); redrawList();
+        });
+      });
+    }
+    function clearSelected(){
+      if(selected && nodeButtons[selected]){
+        nodeButtons[selected].setAttribute("aria-pressed","false");
+        nodeButtons[selected].classList.remove("cmap-node--sel");
+      }
+      selected=null;
+    }
+    function lockComplete(){
+      Object.keys(nodeButtons).forEach(id=>{ nodeButtons[id].disabled=true; });
+      listEl.querySelectorAll(".cmap-edge__remove").forEach(rb=>{ rb.disabled=true; });
+      checkBtn.disabled=true;
+    }
+    Object.keys(nodeButtons).forEach(id=>{
+      nodeButtons[id].addEventListener("click", ()=>{
+        if(nodeButtons[id].disabled) return;
+        if(!selected){
+          selected=id; nodeButtons[id].setAttribute("aria-pressed","true"); nodeButtons[id].classList.add("cmap-node--sel");
+          return;
+        }
+        if(selected===id){ clearSelected(); return; }
+        const newEdge=[selected,id];
+        clearSelected();
+        if(hasEdge(edges,newEdge)){
+          fb.className="feedback feedback--info";
+          fb.innerHTML=icon("ic-info")+`<div><b>Bu bağlantı zaten listende.</b> Aşağıdan kaldırabilirsin.</div>`;
+          return;
+        }
+        edges.push(newEdge); checked=false;
+        fb.className=""; fb.innerHTML="";
+        redrawLines(); redrawList();
+      });
+    });
+    checkBtn.addEventListener("click", ()=>{
+      checked=true; redrawLines(); redrawList();
+      const missing = targets.filter(t=>!hasEdge(edges,t));
+      const extra = edges.filter(e=>!hasEdge(targets,e));
+      if(!missing.length && !extra.length){
+        fb.className="feedback feedback--ok";
+        fb.innerHTML=icon("ic-check")+`<div><b>Kavram haritan doğru!</b> Tüm ilişkileri doğru kurdun.</div>`;
+        lockComplete();
+        if(!state.awarded.has(gk)){
+          state.awarded.add(gk);
+          addXP(D.rewards.xpPerCorrect+(everImperfect?0:(D.rewards.firstTryBonus||0)));
+          markMastered(); bumpStreak();
+        }
+        setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
+      } else {
+        everImperfect=true;
+        const bits=[];
+        if(missing.length) bits.push("Henüz eklenmedi: "+missing.map(m=>esc(labelOf(m[0]))+" ↔ "+esc(labelOf(m[1]))).join(", ")+".");
+        if(extra.length) bits.push("Hedef yapıda olmayan bağlantı(lar): "+extra.map(m=>esc(labelOf(m[0]))+" ↔ "+esc(labelOf(m[1]))).join(", ")+".");
+        fb.className="feedback feedback--info"; playSound("retry"); resetStreak();
+        fb.innerHTML=icon("ic-info")+`<div><b>Neredeyse!</b> ${bits.join(" ")} Listeden düzenleyip tekrar kontrol edebilirsin.</div>`;
+      }
+    });
   }
 
   /* ====== derse-özel görsel güçler ====== */

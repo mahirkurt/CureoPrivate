@@ -369,3 +369,157 @@ def test_sim_unknown_simtype_uses_ownproperty_guard():
     assert "Object.prototype.hasOwnProperty.call(SIM_PRESETS" in src
     # unsafe direct lookup must be gone
     assert "const preset = SIM_PRESETS[s.simType];" not in src
+
+def test_conceptmap_fixture_has_signature():
+    # Task 18: conceptmap_pass.html hand-marked static — renderConceptMap()'in gerçek
+    # çıktısını taklit eder: data-seg="conceptMap" + klavye-erişilebilir düğüm
+    # <button aria-label> (aria-pressed durum) + kenar metin listesi (her satırda
+    # klavye-erişilebilir "kaldır" <button aria-label>) + "Kontrol et" düğmesi.
+    html = open("tests/fixtures/conceptmap_pass.html").read()
+    assert 'data-seg="conceptMap"' in html
+    assert 'class="cmap-node' in html and "aria-pressed=" in html
+    assert html.count("<button") >= 4 + 2 + 1  # >=4 düğüm + >=2 kaldır + 1 Kontrol et
+    assert 'id="cmapEdgeList"' in html and 'id="cmapCheckBtn"' in html
+
+def test_conceptmap_fixture_not_drag_dependent():
+    # KRİTİK erişilebilirlik şartı: sürükle-bırak İMZASI fixture'da hiç YOK —
+    # klavye/tıklama (gerçek <button>) TEK yol olarak kanıtlanır (drag-only = FAIL).
+    # Not: HTML yorumları (açıklayıcı prova metni "draggable" sözcüğünden söz
+    # edebilir) taramadan ÖNCE çıkarılır — yoksa yorum-metni yanlış-pozitif üretir
+    # (mathml_pass.html testindeki aynı desen, bkz. test_mathml_fixture_no_interactive_or_link_attributes).
+    html = open("tests/fixtures/conceptmap_pass.html").read()
+    html_no_comments = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    low = html_no_comments.lower()
+    for token in ("draggable", "dragstart", "dragover", "ondrop", "data-drag"):
+        assert token not in low, f"fixture'da sürükle-bırak izi bulundu: {token}"
+    # düğümler gerçek <button> — role=button taklidi (div+tabindex) değil
+    assert '<button type="button" class="cmap-node' in html
+
+def test_conceptmap_fixture_ga11y_pass():
+    # G-A11Y: lang/title/reduced-motion/aria-live/görsel-rol işaretleri elle
+    # donatıldı ki bu fixture gerçek PASS alsın (yalnızca "uygulanmaz" değil).
+    html = open("tests/fixtures/conceptmap_pass.html").read()
+    rows = run_gate(vm.gate_a11y, html)
+    assert status_of(rows, "G-A11Y") == "PASS"
+
+def test_conceptmap_fixture_gwellbeing_pass():
+    # Eksik/fazla kenar geri bildirimi nazik/cezasız metin taşır → G-WELLBEING PASS.
+    html = open("tests/fixtures/conceptmap_pass.html").read()
+    rows = run_gate(vm.gate_wellbeing, html)
+    assert status_of(rows, "G-WELLBEING") == "PASS"
+
+def test_conceptmap_engine_wired_and_dispatch():
+    # renderConceptMap tanımlı ve dispatch haritasına conceptMap anahtarıyla bağlı.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "function renderConceptMap(stage,s)" in src
+    assert "conceptMap:renderConceptMap" in src
+
+def test_conceptmap_no_dragdrop_code_keyboard_is_the_path():
+    # Motorun renderConceptMap GÖVDESİ hiçbir sürükle-bırak olay-tutucusu
+    # taşımamalı — klavye/tıklama (gerçek <button> + native click) BİRİCİK
+    # yoldur, sürükle-bırak bu sürümde hiç eklenmedi (brief: "drag-only = FAIL",
+    # burada tam tersi kanıtlanıyor: drag YOK, klavye tek/tam yol).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderConceptMap(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    for token in ("dragstart", "dragover", "ondrop", "draggable", "addEventListener(\"drag"):
+        assert token not in body, f"renderConceptMap gövdesinde sürükle-bırak kodu bulundu: {token}"
+    # düğümler gerçek <button> olarak render edilir (Enter/Space native click üretir)
+    assert '<button type="button" class="cmap-node"' in body
+
+def test_conceptmap_edge_removal_is_keyboard_operable_button():
+    # "Kaldır" kontrolü gerçek bir <button aria-label> olmalı (klavye-erişilebilir);
+    # yalnızca tıklamayla çalışan bir div/span değil.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderConceptMap(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert 'class="cmap-edge__remove"' in body
+    assert '<button type="button" class="cmap-edge__remove"' in body
+
+def test_conceptmap_edgeeq_order_independent_and_totalgradeable_pairing():
+    # Task 18 brief: order-independent kenar eşitliği ([A,B]===[B,A]) + worked'in
+    # fadeFrom-boş-korumasıyla BİREBİR aynı totalGradeable/markMastered eşleme
+    # ilkesi (gerçek bir targetEdges varsa +1, yoksa +0 — alt-öğe başına DEĞİL).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert 'if(s.type==="conceptMap") return n + ((s.targetEdges&&s.targetEdges.length)?1:0);' in src
+    start_idx = src.index("function renderConceptMap(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert "function edgeEq(e1,e2){ return (e1[0]===e2[0]&&e1[1]===e2[1])||(e1[0]===e2[1]&&e1[1]===e2[0]); }" in body
+    # gk=s.id (worked ile aynı — tek/toplu grade-key, kenar başına DEĞİL)
+    assert "const gk=s.id;" in body
+    assert "markMastered();" in body
+    assert "state.awarded.has(gk)" in body
+
+def test_conceptmap_no_award_unless_all_correct_and_no_extra():
+    # "Tümü doğru" = eksiksiz VE fazlasız (missing.length ve extra.length ikisi de
+    # sıfır) — yalnızca eksik==0 kontrolü YETERSİZ olurdu (fazla kenarları görmezden
+    # gelirdi). addXP/markMastered çağrısı bu koşulun İÇİNDE olmalı.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderConceptMap(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    i = body.index("if(!missing.length && !extra.length){")
+    j = body.index("markMastered();", i)
+    assert j > i  # markMastered yalnızca eksiksiz+fazlasız dalının İÇİNDE çağrılır
+
+def test_conceptmap_graceful_no_crash_on_insufficient_data():
+    # En az 2 düğüm veya boş targetEdges → nazik/uydurmasız bilgi notu (sim'in
+    # bilinmeyen-simType dalıyla aynı desen), çökme yok; next hep etkin.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderConceptMap(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert "if(nodes.length<2 || !targets.length){" in body
+    assert "Bu kavram haritası için yeterli veri yok." in body
+    assert "addXP(" not in body.split("if(nodes.length<2")[0]  # guard öncesinde ödül yok
+
+def test_conceptmap_new_segment_has_tts_coverage():
+    # Task 14'ün ttsRow-hatırlatma yorumu artık gereksiz (Task 18 tamamlandı) —
+    # renderConceptMap birincil metne (instructions/title) ttsRow uygular.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function renderConceptMap(stage,s)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert "ttsRow(" in body
+
+def test_conceptmap_forward_note_retired():
+    # Task 14 motorda bıraktığı "Task 18 ... henüz yapılmadı" ileri-referans yorumu
+    # artık YOK — Task 18 tamamlandığından iz bırakılmadı (sim'in Task 17'de kendi
+    # notunu güncellemesiyle aynı disiplin).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "Task 18 (conceptMap renderer)" not in src
+
+def test_conceptmap_css_no_raw_hex_colors():
+    # Token yetkesi: .cmap-* kuralları yalnız var(--...) kullanır, ham hex renk yok.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    i = src.index(".cmap-field{")
+    j = src.index(".stage[data-seg=\"teach\"]", i)
+    block = src[i:j]
+    assert not re.search(r':\s*#[0-9a-fA-F]{3,6}\b', block)
+
+def test_conceptmap_css_no_static_card_shadow():
+    # G-CARBON-GRID: .cmap-* kuralları yalnız inset box-shadow kullanır (statik
+    # kartta gerçek drop-shadow yok — layer-elevation ihlali olmaz).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    i = src.index(".cmap-field{")
+    j = src.index(".stage[data-seg=\"teach\"]", i)
+    block = src[i:j]
+    for m in re.finditer(r'box-shadow\s*:\s*([^;]+);', block):
+        assert m.group(1).strip().startswith("inset"), f"non-inset box-shadow: {m.group(1)}"
+
+def test_conceptmap_wayfinding_accent_added():
+    # Yeni etkileşim tipi mevcut "işlevsel renk" wayfinding aksan grubuna eklendi
+    # (match/order/sorting/hotspot ile aynı görsel dil — tutarlılık).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert '.stage[data-seg="hotspot"],.stage[data-seg="conceptMap"]{--seg-accent:var(--accent)}' in src
+
+def test_validate_module_conceptmap_aspect_ratio_flips_warning_to_pass():
+    # Yan-etki: .cmap-field{aspect-ratio:3/2} eklenmesiyle G-CARBON-GRID'in
+    # önceden var olan (Task 7/9/16'dan beri izlenen) "aspect-ratio kullanılmıyor"
+    # UYARISI artık PASS'e döner — regresyon değil, gerçek bir iyileştirme.
+    html = open("assets/module-template.html", encoding="utf-8").read()
+    rows = run_gate(vm.gate_carbon_grid, html)
+    assert status_of(rows, "G-CARBON-GRID") == "PASS"

@@ -2,7 +2,7 @@
   "$schema": "carbon-edupedia/evals/1.0",
   "skill": "carbon-edupedia",
   "version": "2.7.0",
-  "description": "Tetikleyici + davranış test vakaları (skill-creator metodolojisi: girdi promptu + beklenen davranış). Üretilen her modül validate_module.py'nin 11 kapısından (G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST, G-SVG, G-WELLBEING, G-AUDIO, G-CURRICULUM, G-TOKEN) geçmeli; tek dosya, çevrimdışı, IBM Carbon v11 + IBM Plex.",
+  "description": "Tetikleyici + davranış test vakaları (skill-creator metodolojisi: girdi promptu + beklenen davranış). Üretilen her modül validate_module.py'nin 13 kapısından (G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST, G-SVG, G-WELLBEING, G-AUDIO, G-CURRICULUM, G-TOKEN, G-FLOW, G-CARBON-GRID) geçmeli; tek dosya, çevrimdışı, IBM Carbon v11 + IBM Plex.",
   "validation_command": "python scripts/validate_module.py <module.html>",
   "test_cases": [
     {

@@ -138,3 +138,63 @@ def test_selfexplain_engine_no_scoring_hooks():
     body = src[i:j]
     assert "addXP(" not in body and "markMastered(" not in body and "bumpStreak(" not in body
     assert "selfExplain:renderSelfExplain" in src
+
+def test_adaptive_difficulty_fixture_has_signature():
+    # Task 13: adaptive_pass.html hand-marked static — runQuestionSet()/renderFillblank()'ın
+    # tier-uyarlamalı çıktısını taklit eder: ipucu-önce callout (data-adaptive="hint", nötr
+    # "İpucu" başlığı) + opsiyonel/atlanabilir meydan okuma butonu (data-adaptive="challenge").
+    html = open("tests/fixtures/adaptive_pass.html").read()
+    assert 'data-seg="mcq"' in html
+    assert 'data-adaptive="hint"' in html and "İpucu" in html
+    assert 'data-adaptive="challenge"' in html and "Meydan Oku" in html
+
+def test_adaptive_difficulty_gflow_pass_no_labeling():
+    # Taban-korumalı uyarlanır zorluk kullanıcıyı ASLA etiketlemez. Fixture kasıtlı olarak
+    # streakChip imzası taşır ki G-FLOW "imza yok → uygulanmaz" atlama dalına değil, gerçek
+    # FLOW_LABEL_RE/FLOW_LOSS_RE taramasına girsin — yalnızca o zaman bu test anlamlıdır.
+    html = open("tests/fixtures/adaptive_pass.html").read()
+    assert "streakChip" in html  # gate_flow'un gerçek tarama dalına girdiğini garanti eder
+    rows = run_gate(vm.gate_flow, html)
+    assert status_of(rows, "G-FLOW") == "PASS"
+    assert not vm.FLOW_LABEL_RE.search(html)
+    assert not vm.FLOW_LOSS_RE.search(html)
+
+def test_adaptive_difficulty_gwellbeing_pass():
+    # Cezalandırıcı/süre-baskısı dili yok → G-WELLBEING gerçek PASS (yalnızca "uygulanmaz" değil).
+    html = open("tests/fixtures/adaptive_pass.html").read()
+    rows = run_gate(vm.gate_wellbeing, html)
+    assert status_of(rows, "G-WELLBEING") == "PASS"
+
+def test_engine_has_perf_window_and_tier_helpers():
+    # state.perf yuvarlanan pencere + tier/uyarlama yardımcı fonksiyonları motor kaynağında var.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "perf:[]" in src.replace(" ", "")
+    for fn in ("function itemTier(", "function perfPush(", "function perfTrailingRun(",
+               "function perfMissSignal(", "function perfChallengeSignal(",
+               "function tierAdaptSwap(", "function hasTierAhead("):
+        assert fn in src
+
+def test_engine_adaptive_layer_gated_by_hastiers():
+    # Uyarlama katmanı (hint-önce/tier-takas/meydan-okuma) yalnız segmentte gerçek tier(2|3)
+    # varsa erişilebilir — tier'sız modüllerde (mevcutların tamamı) davranış birebir korunur.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    flat = src.replace(" ", "").replace("\n", "")
+    assert "hasTiers=questions.some(q=>q.tier===2||q.tier===3)" in flat
+    assert "hasTiers=s.items.some(x=>x.tier===2||x.tier===3)" in flat
+    # hem ipucu/takas hem meydan-okuma dalları hasTiers/missSignal (hasTiers'tan türer) ile korunur
+    assert flat.count("hasTiers&&perfChallengeSignal()") == 2
+    assert flat.count("missSignal=hasTiers&&perfMissSignal()") == 2
+
+def test_engine_no_labeling_language_in_source():
+    # Motor KAYNAĞININ kendisinde de (yalnızca render edilmiş çıktıda değil) FLOW_LABEL_RE'ye
+    # eşleşen hiçbir dize yok — uyarlama sessiz kalır (gamified-flows.md §3.3).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert not vm.FLOW_LABEL_RE.search(src)
+
+def test_engine_untiered_gradekey_identity_preserved():
+    # Geriye-uyum kanıtı: gradeKey artık `oi` (order[qi]) üzerinden kurulur, `qi` üzerinden değil —
+    # ama tier'sız kümede order kimlik izdüşümünde kaldığından (hasTiers=false → swap hep no-op)
+    # oi===qi her zaman doğrudur, yani üretilen gradeKey dizgisi ESKİ modüllerle birebir aynıdır.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert 'gradeKey=s.id+"#"+oi' in src.replace(" ", "")
+    assert 'gk=s.id+"#"+oi' in src.replace(" ", "")

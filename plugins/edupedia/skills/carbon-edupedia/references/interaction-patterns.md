@@ -42,7 +42,8 @@ görsel işaretlenir (`<mark class="term">`). Her teach'ten sonra etkileşim gel
       options: ["A", "B", "C", "D"],   // 3–4 seçenek
       correctIndex: 2,
       explanation: "Doğru cevabın neden doğru olduğu (kaynaktan)",
-      sourceRef: "teach-segment-id"     // doğrulanabilirlik (SKILL.md §7)
+      sourceRef: "teach-segment-id",    // doğrulanabilirlik (SKILL.md §7)
+      tier: 1                           // opsiyonel — 1|2|3 (bkz. "Uyarlanır zorluk" notu altta)
     }
   ]
 }
@@ -52,6 +53,25 @@ seçilebilir (Tab + Enter/Space); seçim sonrası doğru yeşil+onay ikonu, yanl
 kırmızı+ikon ve doğru olan işaretlenir; açıklama `aria-live="polite"` ile okunur.
 **Yarışma varyantı:** Seri doğru (streak) sayacı; kişisel rekor; süre **opsiyonel**
 (varsayılan kapalı). Ceza yok; yanlışta açıklama + devam.
+
+> **✓ Motorda uygulandı (v3.0.0 — Task 13, görünmez taban-korumalı uyarlanır zorluk,
+> gamified-flows.md §2.3/§3.3).** `questions[].tier?: 1|2|3` opsiyoneldir (1=kolay
+> taban, 3=meydan okuma); **alan yoksa/geçersizse motor 1 varsayar** — mevcut
+> (tier'sız) modüllerde davranış **birebir korunur**: uyarlama katmanı yalnız bir
+> segmentte **en az bir** soru gerçek `tier:2`/`tier:3` taşıdığında etkinleşir
+> (`runQuestionSet`'teki `hasTiers` muhafızı). Etkinleştiğinde `state.perf`
+> (son 5 sonucun yuvarlanan penceresi: ilk-denemede-doğru/yanlıştan-sonra-doğru)
+> iki sessiz sinyal üretir: **2 ardışık yanlıştan-sonra-doğru** → bir sonraki soru
+> kalan sıradaki **en düşük** tier'a kayar + `explanation` yanıttan **önce** nötr
+> bir "İpucu" kutusunda gösterilir (soru zorlaşmaz, destek artar); **2 ardışık
+> ilk-denemede-doğru** → kalan sırada bir `tier:3` öğe varsa, doğru cevabın
+> yanında **opsiyonel/atlanabilir** bir "Meydan Oku" düğmesi belirir (öğrencinin
+> kendi seçimi; yoksayıp normal "Sonraki soru"ya tıklamak geçerli bir atlamadır).
+> Toplam soru sayısı ve `gradeKey` kimliği **değişmez** (yalnız kalan sıradaki
+> konumlar takas edilir — hiçbir soru atlanmaz/yinelenmez). Kullanıcıya görünür
+> **hiçbir** zorluk-etiketi/duyuru yazılmaz (G-FLOW `FLOW_LABEL_RE`). Aynı mekanik
+> `checkpoint.mixedQuestions`'ı da (aynı `runQuestionSet` çekirdeği üzerinden)
+> şeffafça kapsar. Motor ayrıntısı: `runQuestionSet`/`renderMCQ` (module-template.html).
 
 ## 3. `flashcards` — Aralıklı tekrar destesi
 **Pedagoji:** Geri-getirme + aralıklı tekrar (İlke 8).
@@ -91,7 +111,7 @@ zorunlu (klavye/dokunma erişilebilirliği); ARIA `aria-pressed`; her öğe meti
 {
   type: "fillblank", id, title, pictogram,
   items: [
-    { text: "Su, ___ derecede kaynar.", answer: ["100", "yüz"], hint: "iki haneli sayı" }
+    { text: "Su, ___ derecede kaynar.", answer: ["100", "yüz"], hint: "iki haneli sayı", tier: 1 }
   ],
   inputStyle: "type"|"choice"   // type: yazma; choice: kelime havuzundan seçme
 }
@@ -100,6 +120,16 @@ zorunlu (klavye/dokunma erişilebilirliği); ARIA `aria-pressed`; her öğe meti
 tıkla. `type` modunda cevap normalize edilir (büyük/küçük, boşluk, alternatifler).
 Anında geri bildirim + ipucu butonu. **Erişilebilirlik:** Input `<label>` ile
 ilişkili; choice havuzu buton listesi; ipucu `aria-live`.
+
+> **✓ Motorda uygulandı (v3.0.0 — Task 13).** `items[].tier?: 1|2|3` — `mcq`
+> (§2 üstteki not) ile **birebir aynı sözleşme**: alan yoksa/geçersizse 1
+> varsayılır, uyarlama katmanı yalnız segmentte gerçek `tier:2`/`tier:3` taşıyan
+> bir öğe varsa etkinleşir (`renderFillblank`'teki `hasTiers` muhafızı; tier'sız
+> modüllerde davranış birebir korunur). 2 ardışık yanlıştan-sonra-doğru → bir
+> sonraki cümle en düşük kalan tier'a kayar + `hint` alanı (varsa) yanıttan önce
+> nötr bir "İpucu" kutusunda gösterilir; 2 ardışık ilk-denemede-doğru → kalan
+> sırada bir `tier:3` öğe varsa opsiyonel/atlanabilir "Meydan Oku" düğmesi
+> belirir. Motor ayrıntısı: `renderFillblank` (module-template.html).
 
 ## 6. `brainbreak` — Mola noktası
 **Pedagoji:** Aşağı-uyarılma yönetimi, oturum-içi mola (ped §4; her ~8–10 dk).

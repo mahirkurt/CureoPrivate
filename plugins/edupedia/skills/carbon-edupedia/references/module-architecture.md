@@ -173,6 +173,17 @@ const MODULE_DATA = {
   Çözümlü-örnek ailesinin 2. en güçlü alt-özelliği (bkz. yukarıdaki `worked`
   notu — Barbieri 2023 çözümlü-örnek alt-özellik sıralaması); şema/motor
   ayrıntısı: `renderSelfExplain` (module-template.html).
+- `mcq.questions[]` ve `fillblank.items[]` **opsiyonel** bir `tier?: 1|2|3` alanı
+  taşıyabilir (1=kolay taban, 3=meydan okuma; yoksa/geçersizse 1 varsayılır —
+  mevcut tier'sız modüllerde davranış **birebir korunur**). Görünmez taban-
+  korumalı uyarlanır zorluk (v3.0.0 — Task 13, gamified-flows.md §2.3/§3.3):
+  `state.perf` yuvarlanan penceresi 2 ardışık yanlıştan-sonra-doğruda ipucu-önce
+  + en-düşük-kalan-tier tercihini, 2 ardışık ilk-denemede-doğruda opsiyonel/
+  atlanabilir bir "Meydan Oku" (tier 3) davetini tetikler; uyarlama yalnız
+  segmentte gerçek tier'lı bir soru/öğe varsa etkindir ve kullanıcıya **hiçbir**
+  görünür zorluk-etiketi yazılmaz (G-FLOW `FLOW_LABEL_RE`). Tam şema/motor
+  ayrıntısı: `interaction-patterns.md` §2/§5 + `runQuestionSet`/`renderFillblank`
+  (module-template.html).
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

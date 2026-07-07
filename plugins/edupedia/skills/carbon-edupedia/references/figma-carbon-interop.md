@@ -38,23 +38,40 @@
 - `G-TOKEN` kapısı veya `sync_carbon_tokens.py` yerine — bunlar deterministik
   ve çevrimdışıdır.
 
-## 2. Ön koşul: kütüphane erişimi
+## 2. Ön koşul: kütüphane erişimi — WIRE EDİLMİŞ 6 KOPYA (2026-07-07)
 
-IBM'in resmî v11 kütüphaneleri Figma Community'de yayımlanır:
+IBM'in resmî v11 kütüphaneleri Figma Community'de yayımlanır; **kullanıcının kendi
+hesabına kopyaladığı** altı dosya bu skill'e kanonik QA hedefi olarak bağlanmıştır.
+Bu `fileKey`'ler MCP araçlarıyla **doğrudan erişilebilir** (empirik doğrulandı —
+`get_metadata` sayfa yapısını döndürür):
 
-| Kütüphane | İçerik |
-|---|---|
-| **(v11) Carbon Design System — All themes** | 4 tema (White, G10, G90, G100) değişkenleri + çekirdek bileşenler |
-| **(v11) Carbon — Text styles** | Tip ölçeği stilleri (heading, body, label, code) |
-| **(v11) Carbon — Icons** | 16/20/24/32px ikon bileşenleri |
-| **(v11) Carbon — Pictograms** | 48px+ piktogram bileşenleri |
+| Kütüphane | `fileKey` | QA rolü / bağlı referans |
+|---|---|---|
+| **(v11) Carbon Design System** | `pqtFy76S5yq9EwRru3bNXT` | Bileşen anatomisi + değişken adlandırması (stepper/tile/notification/tag) → `carbon-child-system.md`, `carbon-excellence.md` |
+| **IBM® Color Library** | `Uu7QTLz6ERkFJPD7cVEWel` | Renk primitifi/token adları — npm değeriyle çapraz-teyit (§5) → `color-system.md` |
+| **IBM® UI Icon Library** | `LRj4xR57NbIBbMqH1qecJU` | 16/20/24/32px ikon **ad envanteri** + geometri → `icon-pictogram-svg.md` §2-3 |
+| **IBM® Pictogram Library** | `oKaWaMXm3uqxVRTh8mbk5y` | 48px+ piktogram **ad envanteri** + stroke stili → `icon-pictogram-svg.md` |
+| **Carbon Charts Library** | `503EVkMrbdCfkqBbfjLqA3` | Grafik anatomisi + kategorik/sıralı/diverging palet + tür seçimi → `carbon-excellence.md` §3 (madde 12-13), `subject-packs.md` vizChart |
+| **IBM Technical Diagram Library** | `RtZDc7pMQt8HcgYTiitspr` | Teknik diyagram/akış çizgi-oku/düğüm desenleri → `svg-authoring.md` relationFlow (opsiyonel anatomi-teyidi) |
 
-**Kritik kısıt:** Community dosyaları MCP araçlarıyla **doğrudan
-erişilemez** — kullanıcının dosyayı **kendi Figma hesabına kopyalaması**
-(Community → "Open in Figma") ve oluşan **kopyanın URL'sini** paylaşması
-gerekir. Topluluk anahtarıyla (`1157761560874207208` vb.) yapılan doğrudan
-çağrılar erişim hatası döndürür. Kullanıcıdan istenmesi gereken format:
-`https://www.figma.com/design/<fileKey>/<fileName>?node-id=<id>`
+**Erişim modeli (empirik, 2026-07-07):**
+1. Bu altı dosya kullanıcının **kopyalarıdır** → MCP doğrudan okur (`get_metadata`,
+   `get_design_context`, `get_screenshot`, `get_variable_defs`, `get_libraries`).
+2. **`search_design_system` bu bağımsız kopyalarda BOŞ döner** (`variables:[]`,
+   `components:[]`) — çünkü dosyalar **abone-kütüphane içermez** (`get_libraries` →
+   `libraries_added_to_file:[]`). Bulk asset araması bu dosyalarda **çalışmaz**;
+   bir dizine (org/team library) yayımlanmış kütüphane gerekir.
+3. Bu yüzden çıkarım **node-spesifiktir:** `get_metadata(fileKey)` → sayfa/düğüm
+   ağacını gez → hedef düğümde `get_variable_defs(fileKey, nodeId)` (değişken değeri)
+   veya `get_design_context(fileKey, nodeId)` (kod + ekran görüntüsü). Toplu
+   token/ikon dökümü için kullanıcının **o düğümleri kullanan bir frame URL'si**
+   (`…?node-id=<id>`) vermesi hızlandırır.
+
+**Token-değeri doktrini değişmez (kritik):** Bu Figma kopyaları IBM'in bir
+sürümünün *anlık görüntüsüdür* ve npm'den **eski olabilir**. Token **değerinin**
+kaynağı daima npm `@carbon/*`'dır (`carbon-v11-authority.json` + `G-TOKEN` +
+`sync_carbon_tokens.py`). Figma katmanı yalnız **anatomi/durum/ad** teyidi ve
+§5 çapraz-doğrulaması içindir — değer kaynağı **değildir**.
 
 ## 3. Doğrulama akışı (araç sırası)
 
@@ -142,13 +159,31 @@ skill'i ile yapılır:
 - Bu yol, öğretmen/veli paydaşlarına modül tasarımını Figma üzerinde gözden
   geçirtmek istendiğinde kullanılır.
 
+## 6.1 Carbon Charts + Technical Diagram (yeni bağlı iki kütüphane)
+
+- **Carbon Charts Library** (`503EVkMrbdCfkqBbfjLqA3`): `vizChart`/`vizTable`
+  arketiplerinin **ikinci-kaynak anatomi/palet teyidi**. `carbon-excellence.md`
+  §3 madde 12-13'ün (kategorik sabit sıra · sıralı/diverging · içgörü-başlığı ·
+  eksen/legend) Figma karşılığı buradadır. Grafik türü/palet kararı için
+  `get_screenshot(fileKey, nodeId)` ile bir örnek grafik anatomisini görsel
+  teyit et — **palet HEX değeri yine npm `@carbon/colors`'tan** alınır (§5).
+- **IBM Technical Diagram Library** (`RtZDc7pMQt8HcgYTiitspr`): `relationFlow`/
+  süreç-diyagramı çizgi-oku, düğüm-kutu ve bağlaç desenleri için opsiyonel
+  anatomi referansı (`svg-authoring.md` ok-ucu/`vz-arrow` marker'ıyla hizalı).
+  Diyagram *deseni* teyidi içindir; token değeri değil.
+
 ## 7. Bilinen sınırlamalar
 
-- Community dosyalarına kopyasız erişim yok (bkz. §2) — akış kullanıcı
-  URL'sine bağımlıdır.
-- `get_variable_defs` **node-spesifik** çalışır; dosya-geneli değişken dökümü
-  için kullanıcının değişkenleri kullanan bir frame URL'si gerekir.
+- **`search_design_system` bu bağımsız kopyalarda boş döner** (§2 madde 2):
+  bulk asset araması çalışmaz; çıkarım **node-spesifiktir** (`get_metadata` →
+  `get_variable_defs`/`get_design_context`). Toplu döküm için kullanıcının
+  o düğümleri kullanan bir frame URL'si (`…?node-id=<id>`) gerekir.
+- Bu altı dosya **kullanıcının kopyalarıdır** ve MCP-erişilebilir (§2); orijinal
+  Community anahtarlarıyla (`1157761560874207208` vb.) doğrudan çağrı **erişim
+  hatası** döndürür — daima §2'deki wire edilmiş `fileKey`'leri kullan.
 - Figma kütüphanesindeki tema modları (White/G10/G90/G100) 4'lüdür; edupedia
   yalnız White + G100 kullanır — G10/G90 değerleri karşılaştırma dışıdır.
 - Figma tarafındaki `light`/`dark` mod adlandırması kütüphane sürümüne göre
   değişebilir; eşlemeyi ada değil **değere** göre yapın.
+- Figma kopyası npm'den **eski olabilir** → değer farkı görülürse npm kazanır
+  (§5), Figma kopyasının güncellenmesi önerilir.

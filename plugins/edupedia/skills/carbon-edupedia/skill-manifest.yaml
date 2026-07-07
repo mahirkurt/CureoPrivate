@@ -91,7 +91,7 @@ references:
   - path: references/carbon-child-system.md
     read_when: 'Renk/tip/spacing/hareket token''ları, çocuk uyarlaması. v2: @carbon/themes@11.75.0 otorite-doğrulanmış; etkileşim-durumu token''ları, tam hareket/spacing matrisi, resmî tag-çifti aksanları.'
   - path: references/figma-carbon-interop.md
-    read_when: 'Opsiyonel görsel QA: Carbon v11 Figma kütüphaneleri üzerinden Figma MCP doğrulaması (get_libraries → search_design_system → get_variable_defs), Figma↔--cds-* eşlemesi, sapma triyajı, figma-forge composability.'
+    read_when: 'Opsiyonel görsel QA: WIRE EDİLMİŞ 6 IBM Carbon Figma kütüphanesi (v11 Carbon Design System · IBM Color · UI Icon · Pictogram · Carbon Charts · Technical Diagram — §2 somut fileKey''ler) üzerinden Figma MCP anatomi/durum/ad doğrulaması. EMPİRİK erişim modeli: kopyalar MCP-erişilebilir ama search_design_system BOŞ döner (abone-kütüphane yok) → node-spesifik get_metadata→get_variable_defs/get_design_context. Figma↔--cds-* eşlemesi, sapma triyajı (npm kazanır), figma-forge composability. Token DEĞERİ kaynağı DEĞİL (npm otoritesi).'
   - path: references/icon-pictogram-svg.md
     read_when: 'İkon/piktogram seçimi veya özgün SVG çizimi.'
   - path: references/svg-authoring.md

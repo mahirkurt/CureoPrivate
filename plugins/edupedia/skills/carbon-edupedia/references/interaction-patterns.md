@@ -309,6 +309,55 @@ Durum daima çift-kanal (renk + ikon + metin); hedefler ≥48px tap alanı taş�
 
 ---
 
+## 14. `numberline` — Etkileşimli sayı doğrusu (`interactive?:true`)
+**Pedagoji:** Sayı doğrusu üzerinde büyüklük/sıralama, bölme, negatif sayılar ve
+kesirler için güçlü bir zihinsel model kurar (bkz. `subject-packs.md` §2b'deki
+Hamdan & Gunderson 2017 / Sidney ve ark. 2019 kanıt tabanı). Statik sayı doğrusu
+zaten işaretli nokta/vurgulu aralık destekler; `interactive:true` öğrenciye
+**kendi elleriyle** bir noktayı hedef değere taşıma görevi ekler — kavram
+haritasındaki "oluşturma etkisi" (construction effect) ile aynı ruhta, ama
+sayı-doğrusu bağlamında.
+```js
+{ type: "numberline", id, title?, instructions?, prompt?, takeaway?,
+  numberline: {
+    min?, max?, step?,             // eksen (statik alanlarla aynı)
+    interactive: true,             // OPSİYONEL — yoksa/false ise motor eskisiyle BİREBİR aynı render eder
+    value?,                        // başlangıç değeri (yoksa min/max ortası, step'e yuvarlanır)
+    interactiveLabel?              // aria-label metni (yoksa "Değer")
+  }
+}
+```
+**Mekanik:** `numberLine(spec)` `interactive:true` iken statik eksen/tick/
+işaretli-nokta çizimine ek olarak gerçek bir `role="slider" tabindex="0"`
+`<circle class="nl-handle">` + görünür bir `aria-live="polite"` okuma satırı
+(`nl-readout`) üretir; olay bağlama (`wireNumberlineInteractive`)
+`stage.innerHTML` atamasından SONRA yapılır — `sim`/`conceptMap` ile aynı
+"motor olayları bağlar, body sade HTML" ilkesi.
+
+**Erişilebilirlik (KRİTİK — WCAG 2.1 AA):** Klavye **ZORUNLU ve BİRİNCİL**
+yoldur: `ArrowLeft`/`ArrowRight` (+`ArrowDown`/`ArrowUp`) noktayı `step` kadar
+kaydırır, `Home`/`End` min/max'a atlar; her hareket `aria-valuenow`'u VE ayrı
+görünür okuma satırını birlikte günceller (çift kanal — yalnız slider rolüne
+güvenmeyen ekran okuyucular için de). Pointer sürükle (`pointerdown`/`pointermove`/
+`pointerup`) YALNIZ isteğe bağlı bir zenginleştirmedir; klavye yoksa/bozuksa
+diye sürükleye bel bağlanmaz, klavye tek başına tam işlevseldir (`match`/
+`conceptMap`'in "sürükle asla tek yol olamaz" ilkesiyle aynı). `reduceMotion()`
+altında konum değişimi anında uygulanır (JS: `handle.style.transition="none"`;
+CSS: `.nl-handle` geçişi yalnız `prefers-reduced-motion:no-preference` altında
+tanımlı — çift-katmanlı garanti).
+
+**Geriye-uyum (backward compatibility):** `interactive` alanı yoksa/`false`
+ise `numberLine(spec)`'in ürettiği SVG **byte-için-byte** Task 19 öncesiyle
+aynıdır — el/okuma-satırı üretimi tek bir `if(spec.interactive){...}` bloğunun
+içindedir, blok dışında hiçbir koşulsuz katkı yoktur.
+
+> **✓ Motorda uygulandı (v3.0.0 — Task 19).** `numberLine`+
+> `wireNumberlineInteractive` (module-template.html); segment puanlanmaz/
+> keşfedicidir (`sim` ile aynı ilke — `addXP`/`markMastered`/`bumpStreak`
+> dokunuşu yok, `totalGradeable` paydasına katkısı yok).
+
+---
+
 ## Akış kurgu kuralları (motor)
 - Segment sırası `MODULE_DATA.segments` dizisinin sırasıdır; motor sırayla sunar.
 - **OTR kuralı:** İki `teach` arasında ≥1 etkileşim (mcq/match/fillblank/...).

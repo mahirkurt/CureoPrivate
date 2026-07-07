@@ -262,6 +262,31 @@ const MODULE_DATA = {
   `adhd-pedagogy.md` §"Sosyal" ve `subject-packs.md` §4. Şema/motor ayrıntısı:
   `renderConceptMap` (module-template.html); mekanik/erişilebilirlik ayrıntısı:
   `interaction-patterns.md` §13.
+- `numberline` / `numberLine(spec)`'in `interactive?:true` genişlemesi (v3.0.0 —
+  Task 19) **opsiyoneldir** ve **geriye-tam-uyumludur**: bayrak yoksa (mevcut
+  tüm çağrılar) üretilen SVG **byte-için-byte** Task 19 öncesiyle aynıdır —
+  `numberLine`'ın interactive üretimi (dıştaki svg'ye `data-nl-handle/-min/-max/
+  -step` öznitelikleri + bir `<circle class="nl-handle">` + görünür bir
+  `nl-readout` satırı) tamamen tek bir `if(spec.interactive){...}` bloğunun
+  içindedir; blok dışında hiçbir koşulsuz katkı yoktur. `interactive:true`
+  iken eklenen nokta gerçek bir `role="slider" tabindex="0"` taşır +
+  `aria-valuemin`/`aria-valuemax`/`aria-valuenow`/`aria-label`; opsiyonel
+  `value` (başlangıç değeri, yoksa min/max ortası `step`'e yuvarlanır) ve
+  `interactiveLabel`/`label` (aria-label metni) alanları vardır. **Klavye
+  ZORUNLU/BİRİNCİL yoldur** (`wireNumberlineInteractive`, stage.innerHTML
+  atamasından SONRA bağlanır — sim/conceptMap ile aynı "motor olayları bağlar"
+  deseni): `ArrowLeft`/`ArrowRight` (+`ArrowDown`/`ArrowUp`) `step` kadar,
+  `Home`/`End` min/max'a atlar; pointer sürükle (`pointerdown/move/up`) YALNIZ
+  isteğe bağlı bir zenginleştirmedir, WCAG 2.1 AA gereği asla tek yol olamaz
+  (burada değil — klavye tam işlevsel). Her hareket hem `aria-valuenow`'u hem
+  ayrı bir görünür `aria-live="polite"` okuma satırını (`nl-readout`) günceller
+  — çift kanal (yalnız slider rolüne güvenmeyen AT'ler için de). `reduceMotion()`
+  altında `handle.style.transition="none"` ile konum değişimi **anındadır**
+  (CSS'te de `.nl-handle` geçişi yalnız `prefers-reduced-motion:no-preference`
+  altında tanımlı — çift-katmanlı garanti). Şema/motor ayrıntısı: `numberLine`
+  + `wireNumberlineInteractive` (module-template.html); mekanik/erişilebilirlik
+  ayrıntısı: `interaction-patterns.md` §14; ders-paketi bağlamı:
+  `subject-packs.md` §2b.
 
 ## 3. Segment akışı kuralları (motor + planlama)
 

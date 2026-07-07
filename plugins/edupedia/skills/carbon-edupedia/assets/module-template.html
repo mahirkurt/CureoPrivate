@@ -315,6 +315,19 @@ figure.viz figcaption{margin-top:var(--sp-04);font-size:var(--fs-label);color:va
 .viz-legend{display:flex;flex-wrap:wrap;gap:var(--sp-03) var(--sp-05);justify-content:center;margin-top:var(--sp-05)}
 .viz-legend span{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-label);color:var(--cds-text-secondary)}
 .viz-legend i{width:12px;height:12px;border-radius:3px;display:inline-block;flex:none}
+/* v3.0.0 — Task 19: numberLine(spec) `interactive:true` iken üretilen sürüklenebilir/
+   klavye-adımlı nokta. Gölge yok (yalnız inset — G-CARBON-GRID); ok-renkli dolgu
+   token'lı (ham hex yok — G-SVG). Geçiş yalnızca hareket-azaltma TERCİH EDİLMEDİĞİNDE
+   tanımlıdır (reduceMotion() JS tarafında da handle.style.transition="none" ile
+   ikinci bir garanti kurar — bkz. wireNumberlineInteractive): reduced-motion altında
+   konum değişimi mimari olarak ANINDADIR. */
+.nl-handle{fill:var(--accent);stroke:var(--cds-background,transparent);stroke-width:2;cursor:grab;touch-action:none}
+.nl-handle:focus-visible{outline:2px solid var(--cds-focus);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){
+  .nl-handle{transition:cx var(--dur-fast) var(--ease-std)}
+}
+.nl-readout{margin-top:var(--sp-04);font-size:var(--fs-compact);font-weight:600;
+  color:var(--accent-strong);font-variant-numeric:tabular-nums}
 /* yüksek-etki ama sakin: segment başına tek, reduced-motion ile kapalı giriş */
 @media (prefers-reduced-motion:no-preference){
   @keyframes segIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -1987,7 +2000,17 @@ const MODULE_DATA = {
     return svgFigure(mathml, caption);
   }
 
-  /* ---- sayı doğrusu (tema-duyarlı, erişilebilir) ---- */
+  /* ---- sayı doğrusu (tema-duyarlı, erişilebilir) ----
+     v3.0.0 — Task 19: OPSİYONEL `interactive:true` dalı (numberline/geometri şeması
+     genişlemesi). Bayrak yoksa (varsayılan/eski tüm çağrılar) `handle`/`readout`/
+     `nlAttrs` boş dizge kalır ve üretilen SVG/figür BYTE-İÇİN-BYTE eskisiyle
+     aynıdır — geriye-uyum burada "davranışça benzer" değil harfiyen aynı çıktı
+     anlamına gelir (aşağıdaki her ekleme tek bir `if(spec.interactive)` bloğunun
+     İÇİNDE, gövdenin geri kalanına dokunulmadan). Sürüklenebilir/klavye-adımlı
+     noktanın DOM bağlama (keydown/pointer) tarafı burada YOK — numberLine saf bir
+     dizge kurucudur (motorun geneli "body sade HTML" ilkesi); olay bağlama
+     renderNumberline'da stage.innerHTML atamasından SONRA yapılır (sim/conceptMap
+     ile aynı desen: querySelector + addEventListener stage üzerinde). */
   function numberLine(spec){
     const min=spec.min!=null?spec.min:0, max=spec.max!=null?spec.max:10;
     const step=spec.step||1, id=vizId(), tid=id+"t", did=id+"d";
@@ -2010,8 +2033,82 @@ const MODULE_DATA = {
       return `<circle cx="${x.toFixed(1)}" cy="${Y}" r="6" fill="${c}"/>`
         +(p.label?`<text x="${x.toFixed(1)}" y="${Y-14}" text-anchor="middle" font-size="12" font-weight="600">${esc(p.label)}</text>`:"");
     }).join("");
-    const svg=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${tid} ${did}"><title id="${tid}">${esc(spec.title||"Sayı doğrusu")}</title><desc id="${did}">${esc(spec.desc||spec.title||"")}</desc>${hi}${axis}${ticks}${pts}</svg>`;
-    return svgFigure(svg, spec.caption);
+    let handle="", readout="", nlAttrs="";
+    if(spec.interactive){
+      const hid=id+"h";
+      const rawInit = numOr(spec.value, (min+max)/2);
+      const initVal = clampNum(+(Math.round(rawInit/step)*step).toFixed(6), min, max);
+      const label = esc(spec.interactiveLabel || spec.label || "Değer");
+      const hx = X(initVal);
+      nlAttrs = ` data-nl-handle="${hid}" data-nl-min="${min}" data-nl-max="${max}" data-nl-step="${step}"`;
+      handle = `<circle class="nl-handle" id="${hid}" cx="${hx.toFixed(1)}" cy="${Y}" r="9" tabindex="0" `
+        + `role="slider" aria-valuemin="${min}" aria-valuemax="${max}" aria-valuenow="${initVal}" aria-label="${label}"/>`;
+      readout = `<div class="nl-readout" id="${hid}out" aria-live="polite">${label}: <span class="nl-readout__val">${initVal}</span></div>`;
+    }
+    const svg=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${tid} ${did}"${nlAttrs}><title id="${tid}">${esc(spec.title||"Sayı doğrusu")}</title><desc id="${did}">${esc(spec.desc||spec.title||"")}</desc>${hi}${axis}${ticks}${pts}${handle}</svg>`;
+    return svgFigure(svg, spec.caption) + readout;
+  }
+  /* ---- sayı doğrusu: interactive el bağlama (Task 19) ----
+     numberLine(spec) `spec.interactive` iken bir `<circle class="nl-handle"
+     role="slider" tabindex="0">` + dıştaki svg'ye `data-nl-handle/min/max/step`
+     öznitelikleri + görünür bir aria-live okuma satırı üretir; bu fonksiyon
+     stage.innerHTML atamasından SONRA çağrılır (renderNumberline) ve o statik
+     iskeleye olay dinleyicisi TAKAR — hiçbir yeni DOM düğümü kurmaz. KLAVYE
+     ZORUNLU/BİRİNCİL yol: ArrowLeft/ArrowRight step kadar, Home/End min/max'a
+     atlar (ok-tuşu = match/conceptMap'teki "gerçek etkileşimli öğe" ilkesiyle
+     aynı ruh, burada native click yerine native olmayan bir role="slider" olduğu
+     için keydown ELLE yazılmak ZORUNDA — <input type=range> gibi tarayıcı-yerli
+     ok-tuşu davranışı YOK). Pointer sürükle YALNIZ isteğe bağlı bir zenginleştirme
+     (WCAG 2.1 AA: sürükle asla TEK yol olamaz — burada değil, klavye birincil ve
+     tam işlevsel). reduceMotion() altında handle.style.transition="none" ile
+     anında konumlanır (CSS tarafında da .nl-handle geçişi yalnızca
+     prefers-reduced-motion:no-preference altında tanımlı — çift-katmanlı garanti,
+     bkz. CSS bloğu). */
+  function wireNumberlineInteractive(stage, spec){
+    const svg = stage.querySelector("svg.viz[data-nl-handle]");
+    if(!svg) return;
+    const handle = svg.querySelector(".nl-handle");
+    if(!handle) return;
+    if(reduceMotion()) handle.style.transition = "none";
+    const readoutVal = stage.querySelector("#"+handle.id+"out .nl-readout__val");
+    const min = numOr(svg.getAttribute("data-nl-min"), 0);
+    const max = numOr(svg.getAttribute("data-nl-max"), 10);
+    const step = numOr(svg.getAttribute("data-nl-step"), 1) || 1;
+    const W=480,PADX=28,plotW=W-2*PADX, span=(max-min)||1;
+    const X=v=>PADX+plotW*((v-min)/span);
+    let val = numOr(handle.getAttribute("aria-valuenow"), (min+max)/2);
+    function place(v){
+      val = clampNum(+(Math.round(v/step)*step).toFixed(6), min, max);
+      handle.setAttribute("cx", X(val).toFixed(1));
+      handle.setAttribute("aria-valuenow", String(val));
+      if(readoutVal) readoutVal.textContent = String(val);
+    }
+    handle.addEventListener("keydown", e=>{
+      let nv;
+      if(e.key==="ArrowRight"||e.key==="ArrowUp") nv=val+step;
+      else if(e.key==="ArrowLeft"||e.key==="ArrowDown") nv=val-step;
+      else if(e.key==="Home") nv=min;
+      else if(e.key==="End") nv=max;
+      else return;
+      e.preventDefault();
+      place(nv);
+    });
+    // pointer sürükle: opsiyonel zenginleştirme, klavye yolunun YERİNE değil yanında
+    let dragging=false;
+    function valFromClientX(clientX){
+      const rect = svg.getBoundingClientRect();
+      const scale = rect.width ? (W/rect.width) : 1;
+      const svgX = (clientX-rect.left)*scale;
+      const t = clampNum((svgX-PADX)/plotW, 0, 1);
+      return min + t*span;
+    }
+    handle.addEventListener("pointerdown", e=>{
+      dragging=true; handle.focus();
+      if(handle.setPointerCapture) handle.setPointerCapture(e.pointerId);
+    });
+    handle.addEventListener("pointermove", e=>{ if(dragging) place(valFromClientX(e.clientX)); });
+    handle.addEventListener("pointerup", ()=>{ dragging=false; });
+    handle.addEventListener("pointercancel", ()=>{ dragging=false; });
   }
 
   /* ---- Carbon DataTable (anlamsal tablo) ---- */
@@ -2041,11 +2138,13 @@ const MODULE_DATA = {
     setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
   }
   function renderNumberline(stage,s){
+    const nlSpec = s.numberline||s;
     let html=segHead(s, s.kicker||"Sayı Doğrusu")+instr(s);
     if(s.prompt) html+=`<p class="lead">${s.prompt}</p>`;
-    html+=numberLine(s.numberline||s);
+    html+=numberLine(nlSpec);
     if(s.takeaway) html+=`<div class="callout">${icon("ic-info")}<div>${s.takeaway}</div></div>`;
     stage.innerHTML=html;
+    if(nlSpec.interactive) wireNumberlineInteractive(stage, nlSpec);
     setNav({nextLabel: state.idx===segs.length-1?"Bitir":"Devam"});
   }
 

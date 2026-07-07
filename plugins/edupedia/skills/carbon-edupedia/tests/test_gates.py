@@ -523,3 +523,129 @@ def test_validate_module_conceptmap_aspect_ratio_flips_warning_to_pass():
     html = open("assets/module-template.html", encoding="utf-8").read()
     rows = run_gate(vm.gate_carbon_grid, html)
     assert status_of(rows, "G-CARBON-GRID") == "PASS"
+
+def test_numberline_interactive_fixture_has_signature():
+    # Task 19: numberline_interactive_pass.html hand-marked static — numberLine()'ın
+    # interactive:true dalının gerçek çıktısını taklit eder: dıştaki svg'ye
+    # data-nl-handle/-min/-max/-step öznitelikleri + gerçek bir role="slider"
+    # tabindex="0" <circle> + aria-valuemin/max/now + aria-label, ve görünür bir
+    # aria-live okuma satırı (nl-readout).
+    html = open("tests/fixtures/numberline_interactive_pass.html").read()
+    assert 'data-seg="numberline"' in html
+    assert 'data-nl-handle=' in html and 'data-nl-min=' in html and 'data-nl-max=' in html and 'data-nl-step=' in html
+    assert 'class="nl-handle"' in html and 'role="slider"' in html and 'tabindex="0"' in html
+    assert 'aria-valuemin=' in html and 'aria-valuemax=' in html and 'aria-valuenow=' in html and 'aria-label=' in html
+    assert 'class="nl-readout"' in html and 'aria-live="polite"' in html
+
+def test_numberline_interactive_not_drag_dependent():
+    # WCAG 2.1 AA: pointer sürükle yalnız isteğe bağlı bir zenginleştirme olabilir,
+    # asla TEK yol olamaz. Bu fixture kasıtlı olarak hiçbir draggable/dragstart
+    # işareti taşımaz — klavye (role=slider + tabindex + ok-tuşu) BİRİNCİL/TAM yoldur.
+    html = open("tests/fixtures/numberline_interactive_pass.html").read()
+    html_no_comments = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    low = html_no_comments.lower()
+    for token in ("draggable", "dragstart", "dragover", "ondrop", "data-drag"):
+        assert token not in low, f"fixture'da sürükle-bırak izi bulundu: {token}"
+
+def test_numberline_interactive_ga11y_and_gsvg_pass():
+    # G-A11Y: lang/title/reduced-motion/aria-live/görsel-rol işaretleri elle
+    # donatıldı ki bu fixture gerçek PASS alsın. G-SVG: figür svg role="img" +
+    # <title> taşır; handle dolgusu token'lı (ham hex yok).
+    html = open("tests/fixtures/numberline_interactive_pass.html").read()
+    rows_a = run_gate(vm.gate_a11y, html)
+    assert status_of(rows_a, "G-A11Y") == "PASS"
+    rows_s = run_gate(vm.gate_svg, html)
+    assert status_of(rows_s, "G-SVG") == "PASS"
+
+def test_numberline_engine_interactive_branch_gated_by_spec_interactive():
+    # numberLine(spec)'in interactive üretimi TAMAMEN `if(spec.interactive){...}`
+    # bloğunun içinde olmalı — bayrak yoksa handle/readout/nlAttrs boş dizge kalır.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    i = src.index("function numberLine(spec)")
+    j = src.index("\n  function wireNumberlineInteractive", i)
+    body = src[i:j]
+    assert 'if(spec.interactive){' in body
+    assert 'let handle="", readout="", nlAttrs="";' in body
+    # svg açılış etiketi interactive olmayanda hiçbir ek öznitelik almaz (nlAttrs="")
+    assert 'aria-labelledby="${tid} ${did}"${nlAttrs}>' in body
+    assert 'return svgFigure(svg, spec.caption) + readout;' in body
+
+def test_numberline_static_path_byte_unchanged_when_interactive_absent():
+    # Geriye-uyum: interactive olmayan çağrıda (spec.interactive absent/false)
+    # numberLine()'ın ürettiği SVG, Task 19 öncesi ile BYTE-İÇİN-BYTE aynı olmalı —
+    # yani interactive dalı çalıştırılmadığında handle/readout/nlAttrs katkısı
+    # tamamen boş dizgedir ve orijinal svg açılış/gövde şablonu hiç değişmemiştir.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert (
+        'const svg=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" '
+        'aria-labelledby="${tid} ${did}"${nlAttrs}><title id="${tid}">${esc(spec.title||"Sayı doğrusu")}</title>'
+        '<desc id="${did}">${esc(spec.desc||spec.title||"")}</desc>${hi}${axis}${ticks}${pts}${handle}</svg>`;'
+    ) in src
+    # handle/readout/nlAttrs `let ...="";` ile boş başlar ve YALNIZ aşağıdaki
+    # `if(spec.interactive){...}` bloğunun İÇİNDE yeniden atanır — bloğun dışında
+    # koşulsuz bir atama yoksa spec.interactive=false/absent iken üçü de "" kalır,
+    # yani svg şablonuna hiçbir katkı yapmazlar (yukarıdaki şablon dizgesiyle kanıtlı).
+    i = src.index("function numberLine(spec)")
+    j = src.index("\n  function wireNumberlineInteractive", i)
+    body = src[i:j]
+    assert 'let handle="", readout="", nlAttrs="";' in body
+    block_start = body.index("if(spec.interactive){")
+    block_end = body.index("\n    }\n", block_start)
+    before_block = body[:block_start]
+    inner_block = body[block_start:block_end]
+    after_block = body[block_end:]
+    for name in ("handle=", "readout=", "nlAttrs="):
+        assert name in inner_block.replace(" ", ""), f"{name} interactive bloğunda atanmıyor"
+        assert name not in before_block.replace(" ", "").replace('lethandle="",readout="",nlAttrs="";', "")
+        assert name not in after_block.replace(" ", "")
+
+def test_numberline_engine_wired_and_keyboard_mandatory():
+    # renderNumberline dispatch'e bağlı ve interactive iken wireNumberlineInteractive
+    # çağrılır; klavye (ArrowLeft/ArrowRight/Home/End) ZORUNLU/birincil yol, pointer
+    # sürükle yalnız yanında opsiyonel bir zenginleştirmedir.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert "numberline:renderNumberline" in src
+    assert "if(nlSpec.interactive) wireNumberlineInteractive(stage, nlSpec);" in src
+    start_idx = src.index("function wireNumberlineInteractive(stage, spec)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    for key in ("ArrowRight", "ArrowLeft", "Home", "End"):
+        assert key in body, f"klavye adımı {key} eksik"
+    assert 'addEventListener("keydown"' in body
+    assert 'addEventListener("pointerdown"' in body  # opsiyonel zenginleştirme, klavyenin yanında
+
+def test_numberline_reduce_motion_instant():
+    # reduceMotion() reuse edilir: hareket-azaltma tercih edilince handle.style.transition
+    # anında ("none") ayarlanır (CSS'teki prefers-reduced-motion:no-preference geçiş
+    # kısıtlamasının JS tarafındaki ikinci/açık garantisi).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    start_idx = src.index("function wireNumberlineInteractive(stage, spec)")
+    next_fn_start = src.index("\n  function ", start_idx + 1)
+    body = src[start_idx:next_fn_start]
+    assert 'if(reduceMotion()) handle.style.transition = "none";' in body
+    # CSS: .nl-handle geçişi yalnız hareket-azaltma TERCİH EDİLMEDİĞİNDE tanımlı
+    css_i = src.index(".nl-handle{")
+    css_block = src[css_i:src.index("\n.nl-readout{", css_i)]
+    assert "@media (prefers-reduced-motion:no-preference){" in css_block
+
+def test_numberline_css_no_raw_hex_colors():
+    # Token yetkesi: .nl-* kuralları yalnız var(--...) kullanır, ham hex renk yok.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    i = src.index(".nl-handle{")
+    j = src.index(".viz-legend i{") if src.index(".viz-legend i{") < i else src.index("\n.nl-readout{", i)
+    # .nl-* bloğu .viz-legend i{...} kuralından SONRA eklendi; sınırları doğrudan al
+    block_start = src.index(".nl-handle{")
+    block_end = src.index("/* yüksek-etki ama sakin", block_start)
+    block = src[block_start:block_end]
+    assert not re.search(r':\s*#[0-9a-fA-F]{3,6}\b', block)
+
+def test_numberline_css_no_static_card_shadow():
+    # G-CARBON-GRID: .nl-* kuralları statik kartta gerçek drop-shadow taşımaz
+    # (bu görsel öğe için hiç box-shadow tanımlanmadı — zaten inset dahi yok).
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    block_start = src.index(".nl-handle{")
+    block_end = src.index("/* yüksek-etki ama sakin", block_start)
+    block = src[block_start:block_end]
+    assert "box-shadow" not in block or all(
+        m.group(1).strip().startswith("inset") for m in re.finditer(r'box-shadow\s*:\s*([^;]+);', block)
+    )

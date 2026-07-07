@@ -48,6 +48,15 @@ Motor üç araç sunar:
 ```
 Ok uçlu eksen, etiketli işaretler, vurgulu aralık ve işaretli noktalar; rakamlar tabular.
 
+**Etkileşimli mod (`interactive:true`, v3.0.0 — Task 19).** `numberline` segment
+şeması opsiyonel bir `interactive:true` (+ opsiyonel `value`, `interactiveLabel`)
+alanı taşıyabilir; bayrak verilirse eksenin üstüne gerçek `role="slider"
+tabindex="0"` sürüklenebilir/klavye-adımlı bir nokta + görünür bir canlı okuma
+satırı eklenir (`ArrowLeft`/`ArrowRight`/`Home`/`End` **zorunlu/birincil**
+klavye yolu; pointer sürükle yalnız opsiyonel zenginleştirme). Bayrak
+yoksa/`false` ise render **byte-için-byte** değişmez — tam mekanik/erişilebilirlik
+ayrıntısı `interaction-patterns.md` §14, motor ayrıntısı `module-architecture.md`.
+
 ### c) Geometri SVG (özgün, kurallı)
 `visual:{ kind:"svg", … }` ile `svg-authoring.md` kurallarına göre çiz:
 - Dik açı için **kare işaret**, açı için yay; köşe etiketleri (A/B/C), kenar etiketleri (a/b/c).

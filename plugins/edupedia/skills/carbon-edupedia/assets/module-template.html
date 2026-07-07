@@ -1521,7 +1521,7 @@ const MODULE_DATA = {
     else if(s.visual && s.visual.kind==="pictogram") html+=svgFigure(icon(s.visual.ref,"pic",96), s.visual.caption);
     else if(s.visual && s.visual.kind==="chart") html+=vizChart(s.visual);
     else if(s.visual && s.visual.kind==="table") html+=vizTable(s.visual);
-    else if(s.visual && s.visual.kind==="numberline") html+=numberLine(s.visual);
+    else if(s.visual && s.visual.kind==="numberline") html+=numberLine(Object.assign({}, s.visual, {interactive:false}));
     else if(s.visual && s.visual.kind==="fraction") html+=fractionBar(s.visual);
     else if(s.visual && s.visual.kind==="math") html+=mathFigure(s.visual.expr||s.visual.ref||"", s.visual.caption);
     else if(s.visual && s.visual.kind==="mathml") html+=mathmlFigure(s.visual.math||s.visual.ref||"", s.visual.caption);
@@ -2042,7 +2042,7 @@ const MODULE_DATA = {
       const hx = X(initVal);
       nlAttrs = ` data-nl-handle="${hid}" data-nl-min="${min}" data-nl-max="${max}" data-nl-step="${step}"`;
       handle = `<circle class="nl-handle" id="${hid}" cx="${hx.toFixed(1)}" cy="${Y}" r="9" tabindex="0" `
-        + `role="slider" aria-valuemin="${min}" aria-valuemax="${max}" aria-valuenow="${initVal}" aria-label="${label}"/>`;
+        + `role="slider" aria-orientation="horizontal" aria-valuemin="${min}" aria-valuemax="${max}" aria-valuenow="${initVal}" aria-label="${label}"/>`;
       readout = `<div class="nl-readout" id="${hid}out" aria-live="polite">${label}: <span class="nl-readout__val">${initVal}</span></div>`;
     }
     const svg=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${tid} ${did}"${nlAttrs}><title id="${tid}">${esc(spec.title||"Sayı doğrusu")}</title><desc id="${did}">${esc(spec.desc||spec.title||"")}</desc>${hi}${axis}${ticks}${pts}${handle}</svg>`;

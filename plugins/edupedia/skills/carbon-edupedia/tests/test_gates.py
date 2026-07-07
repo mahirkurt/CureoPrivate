@@ -649,3 +649,16 @@ def test_numberline_css_no_static_card_shadow():
     assert "box-shadow" not in block or all(
         m.group(1).strip().startswith("inset") for m in re.finditer(r'box-shadow\s*:\s*([^;]+);', block)
     )
+
+def test_teach_numberline_visual_forces_static():
+    # WCAG 2.1.1 regression guard: renderTeach's generic visual.kind==="numberline"
+    # path calls numberLine(...) inline but is never followed by
+    # wireNumberlineInteractive(...) — so an author-supplied interactive:true spec
+    # would otherwise produce a focusable role="slider" handle with zero keyboard/
+    # pointer handlers ("dead slider"). This path must strip interactive before
+    # calling numberLine, regardless of what the author's spec says.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    assert 'numberLine(Object.assign({}, s.visual, {interactive:false}))' in src
+    # the real type:"numberline" segment (renderNumberline) must stay wired and untouched
+    assert 'html+=numberLine(nlSpec);' in src
+    assert 'if(nlSpec.interactive) wireNumberlineInteractive(stage, nlSpec);' in src

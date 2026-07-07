@@ -2125,7 +2125,7 @@ const MODULE_DATA = {
     // Fonksiyon grafiği: eğim (m) + kesişim (b) → y = mx + b doğrusu, sabit x
     // eksenine (-5..5) göre çizilir; eksenler her zaman orijinden geçer.
     functionPlot: (svg, v, labels) => {
-      const m = numOr(v.m, 1);
+      const m = clampNum(numOr(v.m, 1), -20, 20);
       const b = clampNum(numOr(v.b, 0), -20, 20);
       const xMin=-5, xMax=5;
       const y1=m*xMin+b, y2=m*xMax+b;
@@ -2157,7 +2157,7 @@ const MODULE_DATA = {
      ilke — bkz. yukarıdaki totalGradeable reduce, "sim" orada yok). */
   function renderSim(stage,s){
     const params = s.params||[];
-    const preset = SIM_PRESETS[s.simType];
+    const preset = (Object.prototype.hasOwnProperty.call(SIM_PRESETS, s.simType) && typeof SIM_PRESETS[s.simType]==="function") ? SIM_PRESETS[s.simType] : null;
     let html = segHead(s,"Simülasyon") + instr(s);
     html += ttsRow(stripTags(s.instructions||s.title||""), defLang());
     if(!preset){

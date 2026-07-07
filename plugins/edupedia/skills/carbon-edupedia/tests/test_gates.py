@@ -359,3 +359,13 @@ def test_sim_new_segment_has_tts_coverage():
     next_fn_start = src.index("\n  function ", start_idx + 1)
     body = src[start_idx:next_fn_start]
     assert "ttsRow(" in body
+
+def test_sim_unknown_simtype_uses_ownproperty_guard():
+    # Prototype collision guard: builtin-named simType (e.g. "constructor", "toString",
+    # "hasOwnProperty") must not bypass the graceful-note guard by resolving to
+    # inherited Object.prototype members. The lookup must use an own-property + function-type guard.
+    src = open("assets/module-template.html", encoding="utf-8").read()
+    # builtin-named simType must not bypass — guard must be in place
+    assert "Object.prototype.hasOwnProperty.call(SIM_PRESETS" in src
+    # unsafe direct lookup must be gone
+    assert "const preset = SIM_PRESETS[s.simType];" not in src

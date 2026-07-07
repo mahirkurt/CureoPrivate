@@ -56,10 +56,10 @@ her biri bir **kanonik Carbon ikonundan türetilmelidir** (SVG path kaynağı):
 | `ic-check` | `checkmark` | ✓ (Carbon adı "checkmark") |
 | `ic-chevron-right` | `chevron--right` | ✓ |
 | `ic-close` · `ic-compass` · `ic-flag` · `ic-flash` · `ic-grid` · `ic-headphones` · `ic-help` · `ic-light` · `ic-locked` · `ic-moon` · `ic-pause` · `ic-renew` · `ic-restart` · `ic-ruler` · `ic-star` · `ic-trophy` · `ic-view` | aynı ad | ✓ birebir kanonik |
-| `ic-info` | **`information`** | ⚠ sprite kısa-ad; kanonik = "information" |
-| `ic-volume` | **`volume--up`** | ⚠ sprite kısa-ad; kanonik = "volume--up" |
-| `ic-volume-off` | **`volume--mute`** | ⚠ sprite kısa-ad; kanonik = "volume--mute" |
-| `ic-target` | **(kanonik-olmayan)** | ⚠ "target" @carbon/icons'ta yok — özel; adaylar `crosshair`/`center-circle`; SVG'yi kanonik bir ikondan türet veya özel-işaretle |
+| `ic-info` | **`information`** | SVG path'i kanonikten türetildi (2026-07-07); id kısa-alias korunur |
+| `ic-volume` | **`volume--up`** | SVG path'i kanonikten türetildi (2026-07-07); id kısa-alias korunur |
+| `ic-volume-off` | **`volume--mute`** | SVG path'i kanonikten türetildi (2026-07-07); id kısa-alias korunur |
+| `ic-target` | **`center--circle`** | SVG path'i kanonikten türetildi (2026-07-07); id kısa-alias korunur |
 
 **Kural:** `ic-*`/`pic-*` id'ler motorun **iç anahtarlarıdır** (render `icon("ic-info")`
 ile çağırır) — id'yi yeniden adlandırmak tüm çağrı-yerlerini kırar, bu yüzden kısa
@@ -89,10 +89,23 @@ White-teması ölçek dizisi (kanonik, hex çözümlü):
 > kullan (mümkünse @carbon/charts-react `getColors`/`ColorLegend` ile). Sıralı
 > (sequential mono) ve diverging paletleri de aynı pakette tanımlıdır.
 
+**Düzeltme (2026-07-07):** `assets/module-template.html`'deki motor `--viz-1..5`
+artık kanonik Carbon Charts kategorik-aile sırasına hizalıdır — light tema
+purple70→blue80→cyan50→teal60→magenta70 (`#6929c4 #002d9c #1192e8 #007d79
+#9f1853`), dark tema (G100) aynı ailenin scale-40 karşılığı
+purple40→blue40→cyan40→teal40→magenta40 (`#be95ff #78a9ff #33b1ff #08bdba
+#ff7eb6`). `--viz-*` G-TOKEN denetimine tabi değildir (§5); bu hizalama
+elle yapılmıştır, `sync_carbon_tokens.py` bu değerleri henüz otomatik
+denetlemez.
+
 ## 5. Senkron + doğrulama protokolü
 
 1. **Token:** `python scripts/sync_carbon_tokens.py --refresh` → `@carbon/{themes,
    type,motion,layout,colors}`'tan `authority.json`; `--check` (G-TOKEN) ile denetle.
+   `--refresh` artık ayrıca `@carbon/icons` ve `@carbon/charts`'ı (kuruluysa) okuyup
+   sürüm + ikon-sayısı bilgisini `authority.json`'un `canonical_sources` bloğuna
+   kaydeder — bunlar token değeri değil, envanter/sürüm izlenebilirliğidir; `npm`
+   üzerinden erişilemezlerse sessizce atlanır, `--check` yolunu etkilemez.
 2. **İkon/piktogram:** yeni sprite ikonu = kanonik `@carbon/icons`/`@carbon/pictograms`
    adından SVG path türet (§3); ad kanonik listeye karşı doğrula.
 3. **Grafik:** palet/tür kararı `@carbon/charts` per-count paletine dayan (§4).

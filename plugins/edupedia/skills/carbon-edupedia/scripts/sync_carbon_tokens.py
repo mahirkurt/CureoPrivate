@@ -11,6 +11,10 @@ Bu araç iki iş yapar:
   --refresh  Ağ + npm varsa @carbon/{themes,type,motion,layout,colors} paketlerini
              geçici dizine kurar, token'ları yeniden çıkarır ve
              assets/carbon-v11-authority.json dosyasını günceller; ardından --check.
+             Ayrıca @carbon/icons ve @carbon/charts paketlerini (varsa) kurup
+             sürüm/ikon-sayısı bilgisini "canonical_sources" bloğuna kaydeder —
+             bunlar token DEĞİL, envanter/sürüm izlenebilirliğidir (--check bu
+             blok üzerinde sapma denetimi yapmaz). Kurulamazsa sessizce atlanır.
 
 Çıkış kodu: 0 = sapma yok · 1 = sapma var · 2 = ortam/IO hatası.
 Kullanım:  python scripts/sync_carbon_tokens.py [--check|--refresh] [--template YOL]
@@ -72,6 +76,21 @@ for(const t of ['white','g10','g90','g100']) out.themes[t]=pick(themes[t],keys);
 const ts=['code01','code02','label01','label02','helperText01','bodyCompact02','body02',
   'heading03','heading04','heading05','expressiveParagraph01','quotation02'];
 out.type=pick(type,ts); out.type.fontFamilies=type.fontFamilies;
+// @carbon/icons + @carbon/charts: envanter/sürüm izlenebilirliği — token değil.
+// Kurulu değilse (npm varsa-değilse) sessizce atlanır, çıkarımı bozmaz.
+const canonicalSources={};
+try{
+  const iconsMeta=require('@carbon/icons/metadata.json');
+  const iconsPkg=require('@carbon/icons/package.json');
+  const iconCount=Array.isArray(iconsMeta) ? iconsMeta.length
+    : (Array.isArray(iconsMeta && iconsMeta.icons) ? iconsMeta.icons.length : undefined);
+  canonicalSources.icons={version:iconsPkg.version, count:iconCount};
+}catch(e){/* @carbon/icons kurulu değil — atla */}
+try{
+  const chartsPkg=require('@carbon/charts/package.json');
+  canonicalSources.charts={version:chartsPkg.version};
+}catch(e){/* @carbon/charts kurulu değil — atla */}
+if(Object.keys(canonicalSources).length) out.canonical_sources=canonicalSources;
 fs.writeFileSync('out.json',JSON.stringify(out,null,1));
 """
 
@@ -156,6 +175,15 @@ def refresh() -> int:
                             "@carbon/themes", "@carbon/type", "@carbon/motion",
                             "@carbon/layout", "@carbon/colors"],
                            cwd=td, capture_output=True, check=True, timeout=300)
+            # @carbon/icons + @carbon/charts opsiyoneldir (yalnızca canonical_sources
+            # envanteri için); kurulamazlarsa asıl token çıkarımını düşürmeden atla.
+            try:
+                subprocess.run(["npm", "i", "--no-audit", "--no-fund", "--legacy-peer-deps",
+                                "@carbon/icons", "@carbon/charts"],
+                               cwd=td, capture_output=True, check=True, timeout=300)
+            except (subprocess.SubprocessError, FileNotFoundError) as e:
+                print(f"UYARI: @carbon/icons/@carbon/charts kurulamadı ({e}) — "
+                      f"canonical_sources bu çalıştırmada atlanacak.")
             subprocess.run(["node", "extract.js"], cwd=td, capture_output=True, check=True)
         except (subprocess.SubprocessError, FileNotFoundError) as e:
             print(f"HATA: npm/node çıkarımı başarısız ({e}). --check çevrimdışı çalışmaya devam eder.")
@@ -166,17 +194,25 @@ def refresh() -> int:
         current = json.loads(AUTH.read_text(encoding="utf-8")) if AUTH.exists() else {}
         for k in ("themes", "type", "motion", "layout", "_provenance"):
             current[k] = fresh[k]
+        if "canonical_sources" in fresh:
+            current["canonical_sources"] = fresh["canonical_sources"]
         AUTH.write_text(json.dumps(current, ensure_ascii=False, indent=1), encoding="utf-8")
     except OSError as e:
         print(f"HATA: otorite dosyası okunamadı/yazılamadı ({e})."); return 2
+    cs = fresh.get("canonical_sources", {})
+    cs_note = (f" · ikonlar {cs['icons']['version']} ({cs['icons'].get('count','?')} adet)"
+               if "icons" in cs else "") + \
+              (f" · charts {cs['charts']['version']}" if "charts" in cs else "")
     print(f"Yenilendi: {AUTH.relative_to(ROOT)} "
-          f"(@carbon/themes {fresh['_provenance']['packages']['@carbon/themes']})\n")
+          f"(@carbon/themes {fresh['_provenance']['packages']['@carbon/themes']}{cs_note})\n")
     return 0
 
 def main() -> None:
     """CLI giriş noktası: --refresh/--template bayraklarını ayrıştırır ve uygun işi çalıştırır."""
     ap = argparse.ArgumentParser(description="carbon-edupedia Carbon token senkronizasyonu")
     ap.add_argument("--refresh", action="store_true", help="npm'den yeniden çıkar ve JSON'u güncelle")
+    ap.add_argument("--check", action="store_true",
+                     help="sapma denetimi (varsayılan davranış; bayrak açıkça da verilebilir, no-op)")
     ap.add_argument("--template", type=Path, default=TPL, help="denetlenecek şablon/modül HTML")
     args = ap.parse_args()
     if args.refresh:

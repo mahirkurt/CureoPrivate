@@ -4,6 +4,18 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.4.0] — 2026-07-08
+
+### Eklendi (çok-sayfa erişim)
+- **Derin sayfalara erişim** (satın-alınmış belgeler). devlet-arsivleri MCP 10→**12 araç**:
+  `devarsiv_list_purchased` (SatinAldiklarim → {t,hash,ozet,sayfa}) + `devarsiv_ocr_belge_pages`
+  (t,hash,arsiv,pages? → eSatış doküman-viewer'dan tam PDF → pdftoppm → her sayfa arşive-duyarlı
+  OCR/HTR: Osmanlı→Transkribus PyLaia, Latin→tesseract). 49-görüntülük dosyada eşleşme sayfasına
+  ulaşmanın yolu. `references/devlet-arsivleri-katalog.md` §8. MCP CureoHub `e78a8c1e`.
+- **Dürüst sınır:** çok-sayfa TAM erişim **yalnız satın-alınmış** belgelerde. Satın-alınmamışta
+  katalog yalnız 1 önizleme (sample_picture) sunar; 2..N sayfa satın-alma kapısında (5 açıdan
+  doğrulandı: Mi paginate etmez, per-page handler yok, seçim modalı yalnız checkbox) → **uydurulmaz**.
+
 ## [2.3.0] — 2026-07-08
 
 ### Eklendi (Transkribus Osmanlıca HTR CANLI)

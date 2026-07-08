@@ -227,3 +227,26 @@ devarsiv_search / semantic_search → item_id + hash
   tam satın-alınmış set eSatış *SatinAldiklarim* akışındadır (bugün önizleme sayfası okunur).
 - Getirilen tarama/transkripsiyon > eşik → **anamnesis'e ingest** (bağlam ekonomisi §3.5);
   büyük görüntü ana pencerede kör tutulmaz.
+
+---
+
+## 8. Çok-sayfa erişim (derin sayfalar)
+
+BelgeGoster **yalnız 1 temsilî önizleme** (sample_picture) verir; `devarsiv_ocr_belge`/
+`devarsiv_get_belge_image` bu tek sayfayı okur. Çok-sayfalı bir belgenin **derin sayfasına**
+(ör. 49-görüntülük bir dosyada bir eşleşme sayfası) ulaşmak için:
+
+| Belge durumu | Tüm sayfalar? | Nasıl |
+|---|---|---|
+| **Satın alınmış** (SatinAldiklarim) | ✅ EVET | `devarsiv_list_purchased` → `devarsiv_ocr_belge_pages(t, hash, arsiv, pages)` |
+| **Satın alınmamış** | ❌ HAYIR — yalnız 1 önizleme | katalog 2..N sayfayı satın-alma kapısında tutar (uydurulmaz) |
+
+**Akış:** `devarsiv_list_purchased` → satın-alınmış belgeler {`t`, `hash`, ozet, sayfa} →
+ilgili belgenin `t`+`hash`'i ile `devarsiv_ocr_belge_pages(t, hash, arsiv, pages="30-35")` →
+eSatış doküman-viewer'dan **tam PDF** çeker, `pdftoppm` ile sayfalara ayırır, her sayfayı
+**arşive-duyarlı OCR/HTR** ile okur (Osmanlı → Transkribus PyLaia; Latin → tesseract). `pages`
+verilmezse ilk ~5 sayfa (kör fan-out + Osmanlı'da kredi/sayfa koruması).
+
+**Değişmez (no-fabrication):** Çok-sayfa TAM erişim **yalnız satın-alınmış** belgelerde;
+satın-alınmamışta katalog 2..N sayfayı sunmaz (Mi paginate etmez, per-page handler yoktur) →
+o sayfalar **uydurulmaz**, yalnız 1 önizleme + "tüm sayfalar için satın alma gerekir" notu.

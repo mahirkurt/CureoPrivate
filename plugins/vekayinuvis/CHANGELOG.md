@@ -4,6 +4,14 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.2.2] — 2026-07-08
+
+### Değiştirildi
+- **`upstream_error` ≠ `session_required` ayrımı** (references §3): katalog backend'i sunucu-tarafı
+  "Runtime Error" (Server Error in '/' Application) verirse `upstream_error` döner — oturum değil,
+  upstream kesinti; **noVNC re-login çözmez**, bir süre sonra tekrar denenir. (MCP-tarafı tespit
+  CureoHub `a8f80a8c`'de; önceden yanlışlıkla alive:true + boş/timeout dönüyordu.)
+
 ## [2.2.1] — 2026-07-08
 
 ### Değiştirildi (OCR sonrası ince ayar)

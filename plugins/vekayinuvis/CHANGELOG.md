@@ -4,6 +4,31 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.2.0] — 2026-07-08
+
+### Eklendi (belge okuma — OCR/HTR + görsel)
+- **devlet-arsivleri MCP artık belge sayfa taramasını okuyor** (5→8→**10 araç**). BelgeGoster
+  full-res sayfa taramasını `<img id="sample_picture">`'da sunar — **satın-alma durumundan
+  BAĞIMSIZ** (satın alınmamış önizlemeler de okunur; ampirik doğrulandı 2026-07-08).
+  - **`devarsiv_get_belge_image`** — sayfa taraması ImageContent olarak → asistan **el yazması
+    Osmanlıca'yı doğrudan görüsüyle okur** (BOA el yazması için pratikteki en iyi tam-okuma).
+  - **`devarsiv_ocr_belge`** — deterministik OCR/HTR: Latin/Cumhuriyet tam-metin · Osmanlı basılı
+    damga+arşiv referans kodu (tesseract `tur+eng+ara`) · el yazması Arap-harfli gövde → Transkribus
+    HTR (creds-gated, SOTA) veya görsel-okuma. `mean_confidence`+`note`; no-fabrication.
+
+### Değiştirildi
+- **No-fabrication güncellendi:** belge görüntüsü artık **çekilir (gerçek tarama, uydurulmaz)** ve
+  OCR/görü ile okunur; OCR düşük-güvende dürüstçe raporlanır; el yazması transkripsiyon insan
+  doğrulamasına tabi; yalnız çok-sayfalı tam satın-alma seti (eSatış *SatinAldiklarim*) + diğer
+  kısıtlı arşivler erişim-kapısında kalır. SKILL §3.1.b (10 araç) + §1.2, ARCHIVE_DEEP_DIVE /
+  MANUSCRIPT_TRANSCRIBE / PROSOPOGRAPHY belge-okuma adımı, references/devlet-arsivleri-katalog.md §7
+  (motor tablosu + kanonik akış), CONNECTORS §2, boa-katalog + transkripsiyon komutları,
+  session_start hook konvansiyonu güncellendi.
+- Osmanlıca en iyi okuma iki yol: **asistan görüsü** (self-contained, hesap gerektirmez) +
+  **Transkribus HTR** (READ Coop hesabıyla deterministik SOTA); tesseract el yazmasını okumaz
+  (basılı+Latin okur) — bu sınır dürüstçe belgelenir.
+- Flagship skill **v2.1.0 → v2.2.0**. Davranış/mod sayısı (9) korundu.
+
 ## [2.1.0] — 2026-07-08
 
 ### Eklendi (devlet-arsivleri derin araç wire)

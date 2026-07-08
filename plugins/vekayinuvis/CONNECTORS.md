@@ -50,6 +50,9 @@ defter şeması) · E. HTR Pipeline (opt-in eScriptorium).
 bge-m3 rerank), **`devarsiv_detailed_search`** (hassas/enumerasyon — arşiv × üst-fon ×
 tarih × özet), **`devarsiv_list_fon_categories`** (üst-fon ekseni — 1000-tavan aşımı),
 `devarsiv_get_belge` (künye + erişim durumu; hash zinciri aramadan gelir),
+**`devarsiv_get_belge_image`** (sayfa taraması ImageContent — satın-almadan bağımsız; asistan
+el yazması Osmanlıca'yı görüsüyle okur), **`devarsiv_ocr_belge`** (deterministik OCR/HTR —
+Latin tam · Osmanlı damga+referans kodu · el yazması→Transkribus/görü),
 `devarsiv_detailed_search_fields`, `devarsiv_session_status`, `devarsiv_server_info`.
 **Kapsamlı erişim:** katalog en çok 1000 satır render eder (sayfalama yok) → tam 1000
 (`capped:true`) = *daha fazlası var*; her belgeye ulaşmak için `list_fon_categories` +

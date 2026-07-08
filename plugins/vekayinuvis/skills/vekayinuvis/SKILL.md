@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 2.1.0
+version: 2.2.0
 last_updated: 2026-07-08
 changelog:
+  - "2.2.0 (2026-07-08): BELGE OKUMA — OCR/HTR + GÖRSEL. devlet-arsivleri MCP artık BelgeGoster sayfa taramasını (full-res, satın-alma durumundan BAĞIMSIZ → satın alınmamış önizlemeler de okunur) sunuyor; 2 yeni araç wire edildi: (a) `devarsiv_get_belge_image` → tarama ImageContent olarak, asistan EL YAZMASI Osmanlıca'yı doğrudan görüsüyle okur (BOA el yazması için en iyi tam-okuma); (b) `devarsiv_ocr_belge` → deterministik OCR/HTR (Latin/Cumhuriyet tam · Osmanlı basılı damga+arşiv referans kodu tesseract · el yazması → Transkribus HTR creds-gated veya görü). §3.1.b tablosu (8→10 araç) + no-fabrication güncellendi (belge görüntüsü artık ÇEKİLİR/uydurulmaz, OCR düşük-güven dürüstçe raporlanır, çok-sayfalı tam set eSatış'ta); ARCHIVE_DEEP_DIVE/MANUSCRIPT_TRANSCRIBE/PROSOPOGRAPHY belge-okuma adımıyla güçlendirildi; references/devlet-arsivleri-katalog.md §7 (belge okuma motor tablosu + kanonik akış + no-fabrication). Osmanlıca en iyi okuma: asistan görüsü (self-contained) + Transkribus HTR (creds ile SOTA). Davranış/mod sayısı (9) korundu."
   - "2.1.0 (2026-07-08): DEVLET-ARSIVLERI DERİN ARAÇ WIRE + TAM-FİLO SAYIM DÜZELTMESİ. devlet-arsivleri MCP Faz-C'de 5→8 araca genişledi ama plugin yalnız 5'ini biliyordu; eksik 3 derin araç wire edildi: (a) `devarsiv_semantic_search` (diakronik/semantik — Osmanlıca eşdeğer genişletme + bge-m3 rerank) SOURCE_HUNT/ARCHIVE_DEEP_DIVE'a modern-terim birincil aracı olarak; (b) `devarsiv_detailed_search` + (c) `devarsiv_list_fon_categories` ile **1000-tavan aşan kapsamlı erişim** (üst-fon × tarih-penceresi enumerasyonu + item_id union) — §3.1.b tablosu, §5.1/§5.2 akışları, references/devlet-arsivleri-katalog.md §2/§2b/§2c, distiller ajanı, CONNECTORS §2/§7, boa-katalog/arsiv-dalis komutları, retrieve_dont_dump hook güncellendi. Ayrıca **11→13 server** sayım kayması giderildi (openathens+annas-reader sonradan eklendiği için stale kalmıştı: SKILL §3.5/§10, start, session_start.py, stop_coverage.py, hooks.json, CONNECTORS; sharding tablosuna fulltext katmanı eklendi). Davranış/mod sayısı (9) korundu."
   - "2.0.0 (2026-07-07): TAM-FİLO + RESMÎ KATALOG + BAĞLAM EKONOMİSİ. (a) devlet-arsivleri çekirdek connector eklendi (resmî BOA/BCA/Diplomatik/Askeri katalog — fon/kutu/gömlek + künye; §3.1.b F. Resmî Katalog + references/devlet-arsivleri-katalog.md); archive-landscape §1.1/§8.1/§8.4 boşluğu kapatıldı; §1.2/§6.3 no-fabrication güncellendi. (b) literatur (DergiPark tam-metin) + yok-akademik (destekleyici) companion + anamnesis substrat eklendi. (c) TAM-FİLO: .mcp.json 11 server bundle; §3.5 Tam-Filo ve Bağlam Ekonomisi (Tier-1 arsiv-tarama-distilleri ajanı + Tier-2 anamnesis ingest→bounded query); §8 G0 kapsam manifestosu (shared/coverage-manifest.md); shared/context-economy-contract.md. (d) 4 hook (SessionStart preflight, PostToolUse retrieve-don't-dump, Stop coverage + citation-discipline). (e) 2 yeni komut (boa-katalog, literatur). Mod sayısı (9) korundu; her mod devlet-arsivleri/literatur/anamnesis ile güçlendirildi."
   - "1.3.0 (2026-06-17): vekayinuvis PLUGIN ENTEGRASYONU. Standalone user-skill'den plugin flagship skill'ine dönüştürüldü. (a) Connector envanteri ve transport için plugin-düzeyi ../../CONNECTORS.md + ../../.mcp.json normatif kaynak olarak işaretlendi (§3 tabloları pedagojik referans olarak korundu — skill standalone da çalışır). (b) Süit oryantasyonu vekayinuvis:start skill'ine taşındı (connector preflight + mod yönlendirme). (c) /vekayinuvis-* slash komutları eklendi. Davranış/mod sayıları/kalite kapıları DEĞİŞMEDİ."
@@ -185,18 +186,29 @@ Askeri katalog erişimini doldurur. Referans: **`references/devlet-arsivleri-kat
 | `devarsiv_detailed_search(arsiv, ozet?, ust_fon?, kutu?, gomlek?, sira?, tarih_turu?, yil_bas?, yil_bit?, limit?)` | **Hassas/enumerasyon** (OzelArama) — konuyu 1000-tavanının altına daraltır (arşiv × üst-fon × tarih × özet) | Daraltılmış satır seti + `capped` (kapsamlı erişim omurgası) |
 | `devarsiv_list_fon_categories(arsiv)` | Arşivin **üst-fon** listesi (Osmanlı 49 grup; Cum. 16) — >1000 konuyu bölme ekseni | Fon grubu listesi (enumerasyon ekseni) |
 | `devarsiv_get_belge(item_id, hash, arsiv)` | Tek kaydın künyesi + erişim durumu | yer bilgisi (kutu-gömlek)·belge tarihi·kurum(fon)·dil·görüntü sayısı·access(purchased/purchasable) |
+| `devarsiv_get_belge_image(item_id, hash, arsiv)` | **Belge sayfa taraması** (önizleme) — satın-alma durumundan bağımsız full-res görüntü | ImageContent → **asistan Osmanlıca'yı doğrudan görüsüyle okur** (el yazması için en iyi tam-okuma) |
+| `devarsiv_ocr_belge(item_id, hash, arsiv, lang?)` | Sayfa taramasının **deterministik OCR/HTR** metni | `{text, mean_confidence, engine, note}`; Latin tam · Osmanlı basılı damga+referans kodu · el yazması→görü/Transkribus |
 | `devarsiv_detailed_search_fields(arsiv)` | Detaylı Arama'nın arşive-özel alanları (introspeksiyon) | fon-üst · tarih türü · özel kod · özet |
 | `devarsiv_session_status` | Oturum canlı mı (pre-flight) | alive / session_required |
-| `devarsiv_server_info` | Kapsam + caveat | 4 arşiv + auth modeli |
+| `devarsiv_server_info` | Kapsam + caveat + OCR dilleri | 4 arşiv + auth + tesseract_langs |
 
 > **Araç seçimi:** tam-eşleşen bilinen terim → `devarsiv_search`; modern/dönem-değişken
 > sözcük → `devarsiv_semantic_search`; belirli fon+tarih+özet daraltma → `devarsiv_detailed_search`;
 > konu >1000 (kapsamlı tarama) → `devarsiv_list_fon_categories` + `devarsiv_detailed_search`
 > (üst-fon × tarih-penceresi enumerasyonu, `item_id` ile union — bkz. `devlet-arsivleri-katalog.md` §2b).
 >
+> **Belge OKUMA (yeni):** BelgeGoster sayfa taramasını full-res sunar (satın-alma durumundan
+> **bağımsız** → satın alınmamış önizlemeler de okunur). `devarsiv_get_belge_image` taramayı
+> görüntü olarak döner (asistan **el yazması Osmanlıca'yı doğrudan görüsüyle** okur — en iyi
+> tam-okuma); `devarsiv_ocr_belge` deterministik metin (Latin/Cumhuriyet tam; Osmanlı basılı
+> damga+arşiv referans kodu; el yazması gövde → Transkribus HTR creds'liyse, aksi hâlde görü). Bkz.
+> `devlet-arsivleri-katalog.md` §7.
+>
 > **No-fabrication:** geniş sorgu → `refine_required` (daralt); tam 1000 → `capped:true`
 > (*daha fazlası var* → enumerasyon); `hash` daima arama sonucundan gelir (uydurulamaz); belge
-> **görüntüsü** üretilmez; oturum düşükse `session_required`. Hicrî tarihler `ottoman_convert_date` ile eşlenir.
+> **taraması GERÇEKtir, uydurulmaz** (OCR düşük-güvende dürüstçe raporlanır; el yazması insan/görü
+> doğrulamasına tabi; çok-sayfalı tam satın-alma seti eSatış kapısında); oturum düşükse
+> `session_required`. Hicrî tarihler `ottoman_convert_date` ile eşlenir.
 
 ### 3.2 Akademik Connector Katmanı
 
@@ -354,18 +366,26 @@ yil_bas/yil_bit])` → `item_id` ile union (bkz. `devlet-arsivleri-katalog.md` �
 fan-out **`arsiv-tarama-distilleri` ajanına** delege edilir. **Diakronik terim** (modern/
 dönem-değişken sözcük) → `devarsiv_search` yerine `devarsiv_semantic_search`. Çıktı:
 **canlı katalog kayıt seti** (fon/kutu/gömlek + künye) + fond/tasnif yol haritası
-+ ikincil literatür eşleştirmesi + belge görüntüsü için **erişim/satın-alma talimatı**
-(no-fabrication). Referans: `devlet-arsivleri-katalog.md`. Oturum düşükse
++ ikincil literatür eşleştirmesi. **BELGE OKUMA (yeni):** ilgili kayıt(lar)ın **sayfa taramasını**
+`devarsiv_get_belge_image` ile çek → Latin/Cumhuriyet için `devarsiv_ocr_belge` deterministik
+metin; **Osmanlı el yazması için taramayı asistan görüsüyle transkribe et** (basılı damga+referans
+kodu OCR ile doğrulanır). Tarama gerçek, uydurma yok; düşük-güven dürüstçe raporlanır
+(bkz. `devlet-arsivleri-katalog.md` §7). Referans: `devlet-arsivleri-katalog.md`. Oturum düşükse
 `session_required` → re-login yol haritası + degrade (ottoman/yoktez).
 
 ### 5.3 MANUSCRIPT_TRANSCRIBE — Yazma Transkripsiyon
 *"Bu yazma sayfayı dijital olarak transkripsiyonu mümkün mü?"*
 
-Pipeline: kullanıcının yüklediği görüntü veya IIIF manifest URL → 
-`ottoman_escriptorium_list_models` → `ottoman_escriptorium_create_document` 
-→ `ottoman_escriptorium_import_iiif` → `ottoman_escriptorium_segment` → 
-`ottoman_escriptorium_transcribe` → `ottoman_escriptorium_get_transcription`. 
-Çıktı: HTR ham metni + insan-revizyon önerileri + paleografik notlar.
+Üç kaynak: (a) kullanıcının yüklediği görüntü / IIIF manifest URL, (b) **resmî katalog belgesi**
+(`devarsiv_search` → `devarsiv_get_belge_image` ile sayfa taraması), (c) ottoman-archives IIIF nüshası.
+Pipeline: görüntü → `ottoman_escriptorium_list_models` → `ottoman_escriptorium_create_document`
+→ `ottoman_escriptorium_import_iiif` → `ottoman_escriptorium_segment` →
+`ottoman_escriptorium_transcribe` → `ottoman_escriptorium_get_transcription`.
+**Hızlı yol (katalog belgesi):** `devarsiv_get_belge_image` taramasını **asistan doğrudan
+görüsüyle transkribe eder** (el yazması Osmanlıca için pratikteki en iyi yol) veya
+`devarsiv_ocr_belge` (Transkribus HTR creds'liyse deterministik). Çıktı: HTR/transkripsiyon ham
+metni + insan-revizyon önerileri + paleografik notlar; **transkripsiyon insan doğrulamasına tabi**
+(uydurma yok, düşük-güven işaretlenir).
 
 ### 5.4 PROSOPOGRAPHY — Prosopografi
 *"Mustafa Behçet Efendi'nin biyografisi ve hizmet kaydı."*

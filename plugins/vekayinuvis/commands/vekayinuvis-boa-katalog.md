@@ -23,7 +23,12 @@ Akış:
      ust_fon=fon, ozet=<konu>[, tarih_turu/yil_bas/yil_bit])` → `item_id` union (§2b). Bu ağır fan-out
      `arsiv-tarama-distilleri` ajanına delege edilir.
 3. **`devarsiv_get_belge(item_id, hash, arsiv)`** — en ilgili 1–3 kayıt için künye + erişim/satın-alma durumu.
-4. Hicrî tarihleri `ottoman_convert_date` ile Miladî'ye eşle; ilgili transkripsiyon tezini
+4. **BELGE OKUMA (istenirse):** `devarsiv_get_belge_image(item_id, hash, arsiv)` → sayfa
+   taraması (önizleme, satın-almadan bağımsız). **Osmanlı el yazması** için taramayı **doğrudan
+   görünle transkribe et**; Latin/Cumhuriyet için `devarsiv_ocr_belge` deterministik metin
+   (basılı damga+referans kodu OCR ile doğrulanır). Tarama gerçek — uydurma yok; düşük-güven
+   dürüstçe belirtilir; transkripsiyon insan doğrulamasına tabi (bkz. `devlet-arsivleri-katalog.md` §7).
+5. Hicrî tarihleri `ottoman_convert_date` ile Miladî'ye eşle; ilgili transkripsiyon tezini
    `yoktez`'de ara.
 
 Çıktı: **atıf-hazır** katalog kayıtları (fon/kutu/gömlek + Hicrî(+Miladî) + katalog URL), erişim

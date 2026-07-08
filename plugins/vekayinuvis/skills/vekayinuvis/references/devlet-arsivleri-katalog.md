@@ -25,7 +25,7 @@ kapatır: resmî katalog araması artık **doğrudan canlı** yapılır.
 
 ---
 
-## 2. Araçlar ve akış (8 araç)
+## 2. Araçlar ve akış (10 araç)
 
 1. **`devarsiv_search(query, arsiv?, limit?)`** — resmî katalog serbest-metin (Basit Arama).
    - Sonuç satırı: `arsiv · fon · kutu · gömlek · yer_sira · ozet · tarih (Hicri) ·
@@ -47,10 +47,18 @@ kapatır: resmî katalog araması artık **doğrudan canlı** yapılır.
 5. **`devarsiv_get_belge(item_id, hash, arsiv)`** — tek kaydın künyesi
    (yer bilgisi = kutu-gömlek, belge tarihi, kurum=fon, dil, **görüntü sayısı**)
    + **erişim durumu** (`purchased` / `purchasable`).
-6. **`devarsiv_detailed_search_fields(arsiv)`** — Detaylı Arama'nın arşive-özel
+6. **`devarsiv_get_belge_image(item_id, hash, arsiv)`** — belgenin **sayfa taraması**
+   (önizleme görüntüsü) ImageContent olarak. Full-res tarama, satın-alma durumundan
+   BAĞIMSIZ sunulur → **asistan Osmanlıca'yı doğrudan görüsüyle okuyabilir** (el yazması
+   BOA belgeleri için en iyi tam-okuma yolu). Bkz. §7.
+7. **`devarsiv_ocr_belge(item_id, hash, arsiv, lang?)`** — sayfa taramasının **deterministik
+   OCR/HTR metni**. Arşive duyarlı: Latin/Cumhuriyet → tam metin; Osmanlı → basılı damga +
+   arşiv referans kodu tesseract, el yazması Arap-harfli gövde → Transkribus HTR (yapılandırıldıysa)
+   veya §7 görsel-okuma. `mean_confidence` + `note` taşır; düşük güven dürüstçe (no-fabrication). Bkz. §7.
+8. **`devarsiv_detailed_search_fields(arsiv)`** — Detaylı Arama'nın arşive-özel
    alanları (fon-üst, tarih türü, özel kod, özet) — introspeksiyon.
-7. **`devarsiv_session_status()`** — oturum canlı mı (pre-flight).
-8. **`devarsiv_server_info()`** — kapsam + caveat.
+9. **`devarsiv_session_status()`** — oturum canlı mı (pre-flight).
+10. **`devarsiv_server_info()`** — kapsam + caveat + OCR dilleri.
 
 **Kanonik akış (tekil kayıt):** `devarsiv_session_status` → `devarsiv_search` *veya*
 `devarsiv_semantic_search` (dar/diakronik sorgu) → ilgili satırın `item_id`+`hash`'i ile
@@ -61,6 +69,7 @@ kapatır: resmî katalog araması artık **doğrudan canlı** yapılır.
 - Modern terim / dönem-değişken sözcük / "hangi karşılıklar var" → `devarsiv_semantic_search`.
 - Belirli fon+tarih+özet ile hassas daraltma → `devarsiv_detailed_search`.
 - Konu >1000 kayıt (kapsamlı/tam tarama) → `devarsiv_list_fon_categories` + `devarsiv_detailed_search` (§2b).
+- **Belgeyi OKUMAK** (metin/içerik): `devarsiv_get_belge_image` (tarama → asistan görüsü, el yazması Osmanlıca dahil) + `devarsiv_ocr_belge` (deterministik OCR/HTR metni). Bkz. §7.
 
 ---
 
@@ -115,9 +124,13 @@ en umut vericisi için yine `get_belge` ile künye çekilir (hash zinciri korunu
 - **`hash` uydurulamaz.** `get_belge` çağrısı için `item_id` **ve** `hash`
   daima bir `devarsiv_search` sonucundan gelmelidir; hash bir per-belge sunucu
   token'ıdır, kurgulanmaz.
-- **Belge görüntüsü üretilmez.** `get_belge` yalnız künye + erişim/satın-alma
-  durumu verir; belge fotokopisi/tam-metni eSatış satın-alma veya on-site
-  akreditasyon kapısındadır. Görüntü içeriğini asla uydurma (§ kısıtlı-kaynak).
+- **Belge görüntüsü ÇEKİLİR (uydurulmaz), OCR/görü ile okunur.** `get_belge` künye +
+  erişim durumu verir; **`devarsiv_get_belge_image` sayfa taramasını (önizleme) GERÇEK
+  görüntü olarak çeker** (satın-alma durumundan bağımsız) ve `devarsiv_ocr_belge` metne
+  çevirir (§7). Görüntü uydurulmaz — gerçek taramadır; OCR düşük-güvende dürüstçe raporlanır.
+  Yalnız **çok-sayfalı satın-alınmış tam set** hâlâ eSatış *SatinAldiklarim* kapısındadır
+  (önizleme = temsilî sayfa). El yazması Osmanlıca deterministik OCR'ın ötesindedir → asistan
+  görüsü veya Transkribus HTR (§7).
 - **Oturum yoksa `session_required`.** Tek-cihaz oturum kilidi (HP'de kalıcı
   authenticated tarayıcı) düştüğünde araçlar `session_required` döner
   (portal deep-link + yankılanan sorgu). Bu durumda kullanıcıya bildir:
@@ -152,7 +165,8 @@ BCA, 030.10/57.376.4, 1932.
 
 Böylece BOA/BCA belgeleri artık — önceki "belge fotokopisi için akreditasyon
 gerekir; katalog URL'i verilemez" kısıtı yerine — **doğrulanabilir katalog
-URL'iyle** dipnotlanır. Görüntünün kendisi hâlâ erişim-kısıtlıdır.
+URL'iyle** dipnotlanır. Sayfa taraması `devarsiv_get_belge_image` ile çekilip okunabilir (§7);
+yalnız çok-sayfalı tam satın-alınmış set eSatış kapısındadır.
 
 ---
 
@@ -162,3 +176,40 @@ URL'iyle** dipnotlanır. Görüntünün kendisi hâlâ erişim-kısıtlıdır.
 `devarsiv_search("<ad> sicill-i ahval", arsiv=2)` veya doğrudan `DH.SAİD` fonunu
 tara → aday kayıtların `item_id`/künyesini al → hizmet çizelgesini kur. Modern
 akademisyen prosopografisi için `yok-akademik` (destekleyici) ile birleştir.
+Sicill-i Ahval kaydının **taramasını** `devarsiv_get_belge_image` ile çekip okuyarak
+görev/tarih zincirini doğrudan çıkar (§7).
+
+---
+
+## 7. Belge okuma — OCR / HTR + görsel okuma (yeni)
+
+Katalog artık salt-metadata değil: **BelgeGoster sayfa taramasını full-res base64 JPEG
+olarak sunar** (`<img id="sample_picture">`), **satın-alma durumundan bağımsız** → satın
+alınmamış belgelerin önizlemeleri de okunabilir. İki araç, **çok-motorlu, arşive-duyarlı,
+no-fabrication**:
+
+| İçerik | En iyi motor | Nasıl |
+|---|---|---|
+| **Latin / Cumhuriyet (BCA) + modern** | tesseract (`tur+eng`) | `devarsiv_ocr_belge` → tam makine metni + güven |
+| **Osmanlı taramasındaki basılı damga + arşiv referans kodu** | tesseract (`tur+eng+ara`) | `devarsiv_ocr_belge` → ör. `İ.SH.00001,00001.001` güvenilir okunur (~60 conf) |
+| **El yazması Osmanlıca Arap-harfli gövde** | **asistan görüsü** *veya* **Transkribus HTR** | `devarsiv_get_belge_image` → taramayı asistan doğrudan okur; *veya* `devarsiv_ocr_belge` (Transkribus creds'liyse) |
+
+**Kanonik okuma akışı:**
+```
+devarsiv_search / semantic_search → item_id + hash
+  ├─ devarsiv_ocr_belge(item_id, hash, arsiv)   → deterministik metin (Latin tam; Osmanlı damga+kod)
+  └─ devarsiv_get_belge_image(item_id, hash, arsiv) → tarama görüntüsü:
+        · Cumhuriyet/Latin: OCR metnini görsel doğrula
+        · Osmanlı EL YAZMASI: **asistan taramayı görüsüyle transkribe eder** (en iyi tam-okuma)
+```
+
+**Değişmezler (no-fabrication):**
+- Görüntü **gerçek taramadır, uydurulmaz**; OCR düşük-güvende `mean_confidence` + `note` ile
+  dürüstçe raporlanır — asla uydurma transkripsiyon.
+- tesseract **basılı/dizgi** metni okur; **el yazması Osmanlıca'yı OKUMAZ** (deterministik OCR sınırı).
+  El yazması için görsel-okuma (asistan) veya Transkribus HTR; çıktı her hâlde **insan
+  doğrulamasına** tabi (çift-tarih + fon/kutu/gömlek atıf disiplini).
+- Önizleme = **temsilî tek sayfa**; `goruntu_sayisi` gerçek sayfa sayısını verir. Çok-sayfalı
+  tam satın-alınmış set eSatış *SatinAldiklarim* akışındadır (bugün önizleme sayfası okunur).
+- Getirilen tarama/transkripsiyon > eşik → **anamnesis'e ingest** (bağlam ekonomisi §3.5);
+  büyük görüntü ana pencerede kör tutulmaz.

@@ -136,12 +136,13 @@ en umut vericisi için yine `get_belge` ile künye çekilir (hash zinciri korunu
   (portal deep-link + yankılanan sorgu). Bu durumda kullanıcıya bildir:
   *"Resmî katalog oturumu düştü; HP noVNC re-login gerekiyor"* — ve
   `ottoman-archives`/`yoktez`/`literatur` ile degrade araştırmaya devam et.
-- **`upstream_error` ≠ `session_required`.** Katalog backend'i sunucu-tarafı "Runtime Error"
-  (Server Error in '/' Application) döndürürse araçlar `status: upstream_error` verir — bu bir
-  OTURUM sorunu DEĞİL, kataloğun kendi uygulama kesintisidir (giriş sayfası çalışır ama app
-  sayfaları hata verir; çerezsiz istek bile aynı). **noVNC re-login BUNU ÇÖZMEZ** — kullanıcıya
-  "resmî katalog geçici sunucu hatası veriyor, bir süre sonra tekrar deneyin" de + ottoman/yoktez/
-  literatur ile degrade devam et. Yalnız `session_required`'da re-login öner.
+- **Katalog "Runtime Error" (HTTP 500) = büyük olasılıkla OTURUM SÜRESİ DOLDU → re-login.**
+  Katalog kimlik-korumalı sayfalarda geçersiz/expired oturuma temiz login-yönlendirmesi yerine
+  bir ASP.NET "Runtime Error" (500) verir; araçlar bunu `status: session_required` +
+  `reason: runtime_error` ile döner. **ÇÖZÜM: HP'de noVNC re-login** (2026-07-08 doğrulandı:
+  başka hesap çalışırken bizim expired oturum bu 500'ü aldı, re-login çözdü). Kullanıcıya
+  re-login yol haritasını ver + bu arada ottoman/yoktez/literatur ile degrade devam et. NADİR:
+  taze login DE 500 verirse gerçek bir upstream kesinti olabilir → o durumda bekle.
 - Her çıktı `mcp_verified: false` + `_caveat` taşır: bir kaydın bulunmaması,
   o belgenin arşivde olmadığının kesin kanıtı değildir.
 

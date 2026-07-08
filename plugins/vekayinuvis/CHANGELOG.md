@@ -4,6 +4,15 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.2.3] — 2026-07-08
+
+### Düzeltildi
+- **"Runtime Error" ayrımı düzeltildi** (§3): katalog kimlik-korumalı sayfalarda 'Runtime Error'
+  (500) = büyük olasılıkla **oturum süresi doldu → re-login** (önceki 2.2.2'deki "upstream, re-login
+  çözmez" yanlıştı). 2026-07-08 ampirik: başka hesap çalışırken bizim expired oturum bu 500'ü aldı,
+  noVNC re-login çözdü. MCP tarafı `status: session_required` + `reason: runtime_error` döner
+  (CureoHub `d2b30dcf`).
+
 ## [2.2.2] — 2026-07-08
 
 ### Değiştirildi

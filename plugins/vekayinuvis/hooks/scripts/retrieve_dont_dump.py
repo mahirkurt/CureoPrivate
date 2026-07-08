@@ -27,8 +27,9 @@ BIG_OUTPUT_TOOLS = {
     "ottoman_search_within_manifest", "ottoman_fetch_iiif_manifest",
     "ottoman_browse_iiif_collection", "ottoman_export_html",
     "ottoman_escriptorium_get_transcription",
-    # Devlet Arşivleri katalog
-    "devarsiv_search", "devarsiv_get_belge",
+    # Devlet Arşivleri katalog (semantic/detailed büyük havuz döndürebilir)
+    "devarsiv_search", "devarsiv_semantic_search", "devarsiv_detailed_search",
+    "devarsiv_get_belge",
     # Tam-metin (kitap+makale)
     "oa_fetch_fulltext", "oa_batch_result",
     "read_document", "read_article", "get_document_info", "search_in_document",

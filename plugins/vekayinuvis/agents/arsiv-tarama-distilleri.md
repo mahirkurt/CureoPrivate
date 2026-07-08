@@ -30,9 +30,18 @@ ACADEMIC_REPORT kaynak-temeli).
 1. **Oturum pre-flight:** `devarsiv_session_status`. `session_required` ise → resmî katalog
    katmanını `degraded` işaretle (uydurma yok), diğer katmanlarla devam.
 2. **Paralel tarama** (konuya göre 3–8 çağrı):
-   - `devarsiv_search(query, arsiv=?)` → resmî katalog (fon/kutu/gömlek + özet + Hicrî tarih +
-     item_id/hash). Geniş sorgu `refine_required` dönerse **daralt ve yeniden dene** (fon/tarih ekle).
-     En umut verici 1–3 kayıt için `devarsiv_get_belge(item_id, hash, arsiv)` ile künye.
+   - Resmî katalog — konuya göre doğru aracı seç:
+     · Bilinen tam terim → `devarsiv_search(query, arsiv=?)`.
+     · **Modern/dönem-değişken terim** (göç, salgın, karantina, belediye, eğitim) →
+       `devarsiv_semantic_search(query, arsiv=?)` → sorguyu Osmanlıca eşdeğerlerine genişletir +
+       bge-m3 rerank; `matched_variants` hangi karşılığın eşleştiğini gösterir (recall'ı artırır).
+     · Sonuç `refine_required` dönerse **daralt ve yeniden dene** (fon/tarih ekle).
+     · **Kapsamlı erişim (konu >1000 → `capped:true`):** `devarsiv_list_fon_categories(arsiv)` ile
+       üst-fon eksenini al → her fon için `devarsiv_detailed_search(arsiv, ust_fon=fon, ozet=<konu>)`;
+       hâlâ `capped` ise `tarih_turu`/`yil_bas`/`yil_bit` ile on-yıllık pencerelere böl → **`item_id`
+       ile union** (mükerrer at). Bu, 1000-tavanı aşıp *her* eşleşen belgeye ulaşmanın tek yoludur.
+     · En umut verici 1–3 kayıt için `devarsiv_get_belge(item_id, hash, arsiv)` ile künye
+       (`hash` daima arama sonucundan gelir).
    - `ottoman_list_sources` / `ottoman_search_iiif` / `ottoman_search_dergipark` /
      `ottoman_search_literature` → keşif + IIIF + curated literatür.
    - `search_yok_tez_detailed` → belgenin transkripsiyonunu içeren tezler.
@@ -63,7 +72,10 @@ arsiv_distillate:
     yoktez:             [ {tez başlık, yazar, yıl, ilgili belge/transkripsiyon, doküman id} … ]
     literatur/dergipark:[ {makale, dergi, yıl, doi/url, ilgili pasaj} … ]
   atıf_hazır: [ fon/kutu/gömlek + Hicrî(+Miladî) + katalog_url biçiminde satırlar ]
-  boşluklar/caveat: [ refine_required kalanlar, erişim-kısıtlı görüntüler, session degrade, vb. ]
+  kapsam: [ semantic_search matched_variants; enumerasyon yapıldıysa taranan üst-fon/tarih-pencere
+            sayısı + hâlâ `capped` kalan kova(lar) — kapsamın dürüst sınırı ]
+  boşluklar/caveat: [ refine_required kalanlar, capped (1000-tavan) kovalar, erişim-kısıtlı
+                      görüntüler, session degrade, vb. ]
 ```
 
 ## Değişmezler (ihlal etme)

@@ -50,7 +50,7 @@ CONVENTIONS = (
     "(3) ATIF DİSİPLİNİ — her arşiv iddiası fon/kutu/gömlek + orijinal takvim + Miladî çift-tarih; "
     "devlet-arsivleri-doğrulanmış kayıt için katalog URL'i (belge_url) dipnota eklenir. IJMES/TDV İA "
     "çeviriyazı. (bkz. references/citation-and-transliteration.md, references/devlet-arsivleri-katalog.md) "
-    "(4) TAM-FİLO + BAĞLAM EKONOMİSİ — `.mcp.json`'da bundled 11 server'ın bağlama uygun olanı "
+    "(4) TAM-FİLO + BAĞLAM EKONOMİSİ — `.mcp.json`'da bundled 13 server'ın bağlama uygun olanı "
     "HER substantif sorguda çalışır (sessiz atlama YOK); her çıktı G0 kapsam manifestosu taşır "
     "(shared/coverage-manifest.md: her server için hit/empty/degraded/skipped-with-reason). Ham veri "
     "ana pencerede akıl yürütülmez: ağır çok-connector süpürme → `arsiv-tarama-distilleri` alt-ajanı "

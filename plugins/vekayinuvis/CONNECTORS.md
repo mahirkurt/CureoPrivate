@@ -11,7 +11,7 @@
 ## 1. Connector Katmanları
 
 Vekayinüvis **tam-filo** çalışır: aşağıdaki katmanların **tamamı** artık
-`.mcp.json`'da bundled'dır (11 server) ve kurulduğunda otomatik başlar — amaç,
+`.mcp.json`'da bundled'dır (13 server) ve kurulduğunda otomatik başlar — amaç,
 bağlama uygun **her aracın her koşumda tam çalışması** (kullanıcı gereksinimi).
 Katman etiketleri artık aktivasyon kapısı değil, sentezde **rol/otorite** ayrımıdır:
 
@@ -44,14 +44,19 @@ varsayılanın kendisidir (tam roster bundled).
 B. Tam-Metin Arama · C. Belge/Metin Çekme · D. Hesaplama/Yardımcı (tarih, ebced,
 defter şeması) · E. HTR Pipeline (opt-in eScriptorium).
 
-**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog**):
-`devarsiv_search` (fon/kutu/gömlek + özet + tarih + item_id/hash),
+**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog** — 8 araç):
+`devarsiv_search` (fon/kutu/gömlek + özet + tarih + item_id/hash + `capped`),
+**`devarsiv_semantic_search`** (diakronik/semantik — Osmanlıca eşdeğer genişletme +
+bge-m3 rerank), **`devarsiv_detailed_search`** (hassas/enumerasyon — arşiv × üst-fon ×
+tarih × özet), **`devarsiv_list_fon_categories`** (üst-fon ekseni — 1000-tavan aşımı),
 `devarsiv_get_belge` (künye + erişim durumu; hash zinciri aramadan gelir),
-`devarsiv_detailed_search_fields`, `devarsiv_session_status`,
-`devarsiv_server_info`. **No-fabrication:** geniş sorgu → `refine_required`;
-canlı oturum yoksa → `session_required` (asla uydurma). ottoman-archives'ın
-**yapmadığı** resmî BOA/BCA katalog aramasını doldurur; belge görüntüleri hâlâ
-eSatış/on-site kapısında (§ 8).
+`devarsiv_detailed_search_fields`, `devarsiv_session_status`, `devarsiv_server_info`.
+**Kapsamlı erişim:** katalog en çok 1000 satır render eder (sayfalama yok) → tam 1000
+(`capped:true`) = *daha fazlası var*; her belgeye ulaşmak için `list_fon_categories` +
+`detailed_search` üst-fon × tarih-penceresi enumerasyonu + `item_id` union (skill
+`devlet-arsivleri-katalog.md` §2b). **No-fabrication:** geniş sorgu → `refine_required`;
+canlı oturum yoksa → `session_required` (asla uydurma). ottoman-archives'ın **yapmadığı**
+resmî BOA/BCA katalog aramasını doldurur; belge görüntüleri hâlâ eSatış/on-site kapısında (§ 8).
 
 ---
 
@@ -211,8 +216,8 @@ keychain'ine yazılır (settings.json'a değil).
 
 | Mod | Birincil connector seti | Fallback |
 |---|---|---|
-| `SOURCE_HUNT` | **devlet-arsivleri** (search — resmî katalog kanıt-yoğunluğu) + ottoman-archives (list_sources, search_iiif, search_dergipark, search_dspace) + yoktez + literatur | tavily/exa akademik filtre → web_search |
-| `ARCHIVE_DEEP_DIVE` | **devlet-arsivleri** (search + get_belge — fon/kutu/gömlek canlı katalog) + ottoman-archives (get_source, search_literature, get_islam_ansiklopedisi) + yoktez | web_fetch (İSAM e-baskı) |
+| `SOURCE_HUNT` | **devlet-arsivleri** (search / **semantic_search** modern terimde — kanıt-yoğunluğu; `capped` ise **list_fon_categories** kapsam-haritası) + ottoman-archives (list_sources, search_iiif, search_dergipark, search_dspace) + yoktez + literatur | tavily/exa akademik filtre → web_search |
+| `ARCHIVE_DEEP_DIVE` | **devlet-arsivleri** (search/semantic_search + get_belge; konu >1000 → **list_fon_categories + detailed_search** üst-fon×tarih enumerasyonu, item_id union) + ottoman-archives (get_source, search_literature, get_islam_ansiklopedisi) + yoktez | web_fetch (İSAM e-baskı) |
 | `MANUSCRIPT_TRANSCRIBE` | ottoman-archives eScriptorium pipeline (E katmanı) | — (HTR yerel; fallback yok) |
 | `PROSOPOGRAPHY` | **devlet-arsivleri** (DH.SAİD Sicill-i Ahval katalog kaydı) + ottoman-archives (get_islam_ansiklopedisi) + yoktez + **yok-akademik** (modern akademisyen) + **openathens/annas-reader** (biyografik monograf/Sicill-i Osmânî tam-metin) + web_fetch | consensus/paper-search |
 | `EVENT_RECONSTRUCTION` | ottoman-archives (IIIF gazete) + **devlet-arsivleri** (dönem belge kayıtları) + literatur + paper-search + tavily | web_search |

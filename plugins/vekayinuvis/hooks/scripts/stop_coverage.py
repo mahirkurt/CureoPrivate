@@ -113,7 +113,8 @@ def main():
         "[vekayinuvis G0/tam-filo] Bu substantif araştırma çıktısı şu ZORUNLU bileşen(ler)i "
         "taşımıyor: " + "; ".join(missing) + ". Ekleyerek tamamla. Bağlama uygun TÜM server'lar "
         "(ottoman-archives · devlet-arsivleri · yoktez · literatur · consensus · scholar-gateway · "
-        "exa · tavily · paper-search · yok-akademik · anamnesis) çalıştırılmalı ve durumu manifestoya "
+        "exa · tavily · paper-search · openathens · annas-reader · yok-akademik · anamnesis) "
+        "çalıştırılmalı ve durumu manifestoya "
         "yazılmalı — sessiz atlama G0 FAIL. Herhangi biri atlandıysa gerekçesi ('anahtar yok' / "
         "'mod için N/A' / 'session_required') yazılmalı. Biçim: shared/coverage-manifest.md."
     )

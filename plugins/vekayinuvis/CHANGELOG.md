@@ -4,6 +4,32 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.1.0] — 2026-07-08
+
+### Eklendi (devlet-arsivleri derin araç wire)
+- **`devarsiv_semantic_search`** — diakronik/semantik katalog araması wire edildi: modern
+  sorguyu Osmanlıca eşdeğerlerine genişletir (karantina→tahaffuzhane/sıhhiye/kordon;
+  göçmen→muhacir/mülteci) + Workers AI **bge-m3** rerank; `matched_variants` şeffaflığı.
+  SOURCE_HUNT/ARCHIVE_DEEP_DIVE modlarında modern-terim **birincil** arama aracı.
+- **`devarsiv_detailed_search`** + **`devarsiv_list_fon_categories`** — **1000-tavan aşan
+  kapsamlı erişim**: `list_fon_categories` (üst-fon ekseni) → her fon için `detailed_search`
+  (arşiv × üst-fon × tarih-penceresi × özet) → `item_id` union. Katalog sayfalama-yok 1000
+  satır render ettiği için `capped:true` = *daha fazlası var*; bu enumerasyon her belgeye
+  ulaşmanın tek yolu. Ağır fan-out `arsiv-tarama-distilleri` ajanına delege edilir.
+
+### Değiştirildi
+- Bu 3 araç şuralara işlendi: SKILL §3.1.b tablosu (5→8 araç) + §5.1/§5.2 mod akışları +
+  araç-seçim rehberi; `references/devlet-arsivleri-katalog.md` §2 (8 araç) + yeni §2b (kapsamlı
+  erişim enumerasyonu) + §2c (semantik/diakronik); `agents/arsiv-tarama-distilleri.md` (araç
+  seçimi + enumerasyon + `kapsam` çıktı alanı); `CONNECTORS.md` §2 + §7; `commands/vekayinuvis-
+  boa-katalog.md` + `vekayinuvis-arsiv-dalis.md`; `hooks/scripts/retrieve_dont_dump.py`
+  (semantic/detailed büyük-çıktı yönlendirmesi).
+- **11→13 server sayım kayması düzeltildi**: `openathens`+`annas-reader` v2.0.0'da eklendiği hâlde
+  bazı sayaçlar 11'de kalmıştı → SKILL §3.5/§10, `skills/start`, `session_start.py`,
+  `stop_coverage.py` (gerekçe listesine iki tam-metin server'ı eklendi), `hooks.json`, `CONNECTORS.md`
+  hepsi 13'e hizalandı; `context-economy-contract.md` sharding tablosuna **fulltext katmanı** (S3) eklendi.
+- Flagship skill **v2.0.0 → v2.1.0**. Davranış/mod sayısı (9) korundu.
+
 ## [2.0.0] — 2026-07-07
 
 ### Eklendi

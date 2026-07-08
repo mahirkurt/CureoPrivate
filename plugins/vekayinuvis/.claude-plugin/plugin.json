@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "vekayinuvis",
   "displayName": "Vekayinüvis — Osmanlı/Türk Tarih Araştırma Protokolü",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO: Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ve kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu (kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi) sunar.",
   "author": {
     "name": "Cureonics",

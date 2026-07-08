@@ -22,9 +22,9 @@ Tek bir distiller'a tüm fleet'i vermek onun KENDİ penceresini de taşırabilir
 
 | Shard | Server kümesi | Odağı |
 |---|---|---|
-| **S1 — Resmî katalog** | devlet-arsivleri (arsiv=1/2/3/4) | fon/kutu/gömlek + künye |
+| **S1 — Resmî katalog** | devlet-arsivleri (arsiv=1/2/3/4; search / semantic_search / list_fon_categories→detailed_search enumerasyon) | fon/kutu/gömlek + künye + 1000-tavan aşımı |
 | **S2 — Keşif + IIIF + takvim** | ottoman-archives (registry, IIIF, İА, convert_date, HTR) | dijital nüsha + kavram tabanı |
-| **S3 — Tez + literatür** | yoktez + literatur (DergiPark tam-metin) | transkripsiyon + hakemli makale |
+| **S3 — Tez + literatür + tam-metin** | yoktez + literatur (DergiPark tam-metin) + openathens (lisanslı) + annas-reader (son çare) | transkripsiyon + hakemli makale + kitap/makale tam-metin şelalesi |
 | **S4 — Akademik/doktrin** | consensus · scholar-gateway · exa · tavily · paper-search · yok-akademik | tarihyazımı + uzman/ekol |
 
 Shard'lar **paralel** dağıtılır. Tüm server'lar ateşlenir (tam-filo korunur) AMA hiçbir distiller penceresi taşmaz ve ana pencere yalnız ≤4 kompakt zarf görür.

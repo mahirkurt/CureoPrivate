@@ -4,6 +4,17 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.2.1] — 2026-07-08
+
+### Değiştirildi (OCR sonrası ince ayar)
+- **retrieve-don't-dump hook** artık `devarsiv_ocr_belge`'yi de tanıyor (büyük OCR/HTR metni →
+  Tier-1 distiller / Tier-2 anamnesis'e yönlendirilir). `devarsiv_get_belge_image` **kasıtlı
+  olarak hariç** — o bir görüntüdür, asistan görüsüyle okunur, dump edilmez.
+- **Transkribus HTR durumu netleştirildi** (`devlet-arsivleri-katalog.md` §7): model
+  `OttomanTurkish_generic` sunucuda yapılandırıldı ama **kredi-kapılı** (READ Coop kredisi
+  gerekir); kredisizken el yazması Osmanlıca için **birincil yol `devarsiv_get_belge_image` +
+  asistan görüsü**; kredi eklendiğinde `ocr_belge` gerçek HTR döner.
+
 ## [2.2.0] — 2026-07-08
 
 ### Eklendi (belge okuma — OCR/HTR + görsel)

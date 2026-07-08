@@ -199,7 +199,7 @@ no-fabrication**:
 |---|---|---|
 | **Latin / Cumhuriyet (BCA) + modern** | tesseract (`tur+eng`) | `devarsiv_ocr_belge` → tam makine metni + güven |
 | **Osmanlı taramasındaki basılı damga + arşiv referans kodu** | tesseract (`tur+eng+ara`) | `devarsiv_ocr_belge` → ör. `İ.SH.00001,00001.001` güvenilir okunur (~60 conf) |
-| **El yazması Osmanlıca Arap-harfli gövde** | **asistan görüsü** *veya* **Transkribus HTR** | `devarsiv_get_belge_image` → taramayı asistan doğrudan okur; *veya* `devarsiv_ocr_belge` (Transkribus creds'liyse) |
+| **El yazması Osmanlıca Arap-harfli gövde** | **Transkribus PyLaia HTR** (deterministik, aktif) *+ tamamlayıcı* asistan görüsü | `devarsiv_ocr_belge` → model 56496 ile çeviriyazır; düşük-kalite/çapraz-doğrulama için `devarsiv_get_belge_image` + asistan görüsü |
 
 **Kanonik okuma akışı:**
 ```
@@ -216,11 +216,13 @@ devarsiv_search / semantic_search → item_id + hash
 - tesseract **basılı/dizgi** metni okur; **el yazması Osmanlıca'yı OKUMAZ** (deterministik OCR sınırı).
   El yazması için görsel-okuma (asistan) veya Transkribus HTR; çıktı her hâlde **insan
   doğrulamasına** tabi (çift-tarih + fon/kutu/gömlek atıf disiplini).
-  **Not:** Transkribus HTR (model `OttomanTurkish_generic`) sunucuda yapılandırıldı ama
-  **kredi-kapılı** (READ Coop hesabına kredi gerekir); kredisizken `ocr_belge` sessizce
-  tesseract'a degrade eder → **el yazması için şu an birincil yol `devarsiv_get_belge_image`
-  + asistan görüsü**. Kredi eklendiğinde `ocr_belge` gerçek HTR döner (`devarsiv_server_info`
-  → `ottoman_htr` güncel durumu bildirir).
+  **Transkribus HTR AKTİF (2026-07-08):** `devarsiv_ocr_belge` arsiv=2'de el yazması Osmanlıca'yı
+  **Transkribus PyLaia + model 56496 (`OttomanTurkish_generic`)** ile deterministik olarak
+  çeviriyazır (legacy TrpServer REST: upload→HTR→export; ~50s, ~1 kredi/sayfa; IJMES-diakritikli
+  transliterasyon). ⇒ **el yazması için birincil deterministik yol `devarsiv_ocr_belge`.**
+  `devarsiv_get_belge_image` + asistan görüsü tamamlayıcı kalır (düşük-kalite/gürültülü tarama,
+  çapraz-doğrulama). HTR çıktısı **insan doğrulamasına tabidir** (model CER ~%12; gürültülü
+  taramada daha düşük). Durum: `devarsiv_server_info` → `ottoman_htr` (aktif/degrade).
 - Önizleme = **temsilî tek sayfa**; `goruntu_sayisi` gerçek sayfa sayısını verir. Çok-sayfalı
   tam satın-alınmış set eSatış *SatinAldiklarim* akışındadır (bugün önizleme sayfası okunur).
 - Getirilen tarama/transkripsiyon > eşik → **anamnesis'e ingest** (bağlam ekonomisi §3.5);

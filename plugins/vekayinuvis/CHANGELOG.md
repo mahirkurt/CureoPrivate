@@ -4,6 +4,19 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.3.0] — 2026-07-08
+
+### Eklendi (Transkribus Osmanlıca HTR CANLI)
+- **El yazması Osmanlıca artık deterministik olarak çeviriyazılıyor.** `devarsiv_ocr_belge` arsiv=2'de
+  **Transkribus PyLaia + model 56496 (`OttomanTurkish_generic`)** ile HTR yapıyor (legacy TrpServer
+  REST akışı; upload→HTR→export; ~50s, ~1 kredi/sayfa; IJMES-diakritikli transliterasyon). Uçtan uca
+  canlı doğrulandı (CureoHub `445db4ab`). ⇒ el yazması için **birincil deterministik yol
+  `devarsiv_ocr_belge`**; `devarsiv_get_belge_image` + asistan görüsü tamamlayıcı (düşük-kalite/
+  çapraz-doğrulama). Çıktı insan doğrulamasına tabidir (CER ~%12).
+- **Teşhis düzeltmesi:** önceki "kredi-kapılı (401)" tanısı yanlıştı — sorun kredi değil YANLIŞ API'ydi
+  (hesabın token audience'ı `TrpServer` → Metagrapho processing/v1→401 yerine legacy TrpServer REST).
+  §7 tablosu + notu güncellendi.
+
 ## [2.2.3] — 2026-07-08
 
 ### Düzeltildi

@@ -32,7 +32,7 @@ Claude Code oturumunda (REPL):
 | **brand-ecosystem-core** | 1.0.0 | Brand Ecosystem v1.0'ın stratejik + sözel + görsel katmanları: 10 skill (brand-audit, brand-platform, brand-story, brand-maker(-ecosystem), brand-visual(-ecosystem), figma-forge, brand-touchpoint, brand-launch) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa opsiyonel. Ses katmanı için `brand-voice` plugin'i ile kompoze olur. |
 | **bist-analyst** (BIST Uzmanı) | 1.1.8 | Borsa İstanbul analist kopilotu — çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini tek gerekçeli brifingde sentezler (tek hisse, haftalık tarama, KAP olayı, izleme listesi modları). Borsa MCP veri omurgası paket içinde. Karar destek; yatırım tavsiyesi değildir. |
 | **fon-uzmani** (Fon Uzmanı) | 1.3.0 | Türkiye yatırım (YAT) + emeklilik (EMK) fonları için çok-skill karar-destek süiti: 8-aşamalı `fon-analiz-orkestratoru` + 6 kaynak skill + 12-modül saf-Python kuant kütüphanesi (Sharpe…HRP). Borsa MCP + fon-mcp omurgası; beş mod. SPK yatırım tavsiyesi değildir. |
-| **vekayinuvis** (Vekayinüvis) | 1.0.0 | Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives (33 kaynak) + YÖK Tez çekirdek MCP + eScriptorium HTR + Hicrî-Rumî-Miladî/ebced + akademik triangülasyon. IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu (kaynak avı … kanun gerekçesi). `defaultEnabled:false` (opt-in). |
+| **vekayinuvis** (Vekayinüvis) | 2.4.0 | Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + resmî Devlet Arşivleri kataloğu + YÖK Tez + DergiPark tam-metin + YÖK Akademik + akademik triangülasyon + OpenAthens/Anna's Reader tam-metin şelalesi + anamnesis RAG/GraphRAG. Satın alınmış Devlet Arşivleri belgelerinde çok-sayfa OCR/HTR; IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu. `defaultEnabled:false` (opt-in). |
 
 ## Yapı
 
@@ -58,8 +58,8 @@ CureoPrivate/                             ← repo kökü (Claude Code'a EKLENEC
     ├── bist-analyst/ · fon-uzmani/        ← finans plugin'leri (Borsa/fon-mcp)
     └── vekayinuvis/                      ← Osmanlı/Türk tarih araştırma plugin'i
         ├── .claude-plugin/plugin.json · .mcp.json
-        ├── commands/   (7 slash komutu: kaynak-avi … kanun-gerekce)
-        ├── skills/   (start + vekayinuvis flagship + 8 referans)
+        ├── commands/   (9 slash komutu: kaynak-avi … literatur)
+        ├── skills/   (start + vekayinuvis flagship + 9 referans)
         └── CONNECTORS.md · README.md · CHANGELOG.md
 ```
 

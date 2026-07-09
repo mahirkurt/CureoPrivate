@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vekayinüvis"
+  short_description: "Osmanlı ve Türk tarihi için birincil kaynak öncelikli araştırma orkestratörü."
+  default_prompt: "Start an Ottoman or Turkish history source hunt."

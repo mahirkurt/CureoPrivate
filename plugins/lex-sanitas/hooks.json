@@ -1,0 +1,53 @@
+{
+  "description": "lex-sanitas runtime enforcement — üç düz-yazı invaryantını uygulanan davranışa çevirir: (1) SessionStart preflight, 13 gated hukuk MCP anahtarını kontrol eder + tam-filo/no-fabrication/Scope Guard konvansiyonlarını enjekte eder (fail-open); (2) UserPromptSubmit scope-guard, prompt'ta kapsam-dışı sinyali (bireysel dava / promosyon) + sağlık-mevzuat bağlamı birlikte görülürse yönlendirme hatırlatır, aksi halde SESSİZ; (3) PostToolUse retrieve-don't-dump, büyük hukuk-metni dökümünde legal-distiller'a yönlendirir; (4) Stop, bir reform modu koştuysa kapsam manifestosu (G0) + confidence_label + no-fabrication checklist'ini hatırlatır. TAM-FİLO gereği hiçbir MCP çağrısı BLOKLANMAZ. Hepsi deterministik ve fail-open.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
+            "timeout": 15,
+            "statusMessage": "lex-sanitas: hukuk MCP filosu preflight + reform konvansiyonları"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/scope_guard.py\"",
+            "timeout": 10,
+            "statusMessage": "lex-sanitas: Scope Guard taraması"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/retrieve_dont_dump.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/stop_coverage.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

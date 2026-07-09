@@ -1,0 +1,4 @@
+interface:
+  display_name: "Edupedia"
+  short_description: "MEB Maarif Modeli uyumlu, erişilebilir etkileşimli öğrenim modülü üreticisi."
+  default_prompt: "Create an accessible MEB-aligned interactive module."

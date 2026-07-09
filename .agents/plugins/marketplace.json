@@ -1,0 +1,116 @@
+{
+  "name": "cureonics-private",
+  "interface": {
+    "displayName": "Cureonics Private"
+  },
+  "plugins": [
+    {
+      "name": "rxpraxis",
+      "source": {
+        "source": "local",
+        "path": "./plugins/rxpraxis"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Pharma Intelligence"
+    },
+    {
+      "name": "brand-ecosystem-core",
+      "source": {
+        "source": "local",
+        "path": "./plugins/brand-ecosystem-core"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Brand Design"
+    },
+    {
+      "name": "bist-analyst",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bist-analyst"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Finance"
+    },
+    {
+      "name": "fon-uzmani",
+      "source": {
+        "source": "local",
+        "path": "./plugins/fon-uzmani"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Finance"
+    },
+    {
+      "name": "vekayinuvis",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vekayinuvis"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "evidentia",
+      "source": {
+        "source": "local",
+        "path": "./plugins/evidentia"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "sci-audit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/sci-audit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Scientific Integrity"
+    },
+    {
+      "name": "lex-sanitas",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lex-sanitas"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Regulatory Drafting"
+    },
+    {
+      "name": "edupedia",
+      "source": {
+        "source": "local",
+        "path": "./plugins/edupedia"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Education"
+    }
+  ]
+}

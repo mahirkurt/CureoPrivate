@@ -1,0 +1,62 @@
+{
+  "name": "sci-audit",
+  "version": "0.2.0",
+  "description": "Domain-agnostic forensic and linguistic auditor for LLM-generated scientific text. Seven audit axes: reference integrity, claim grounding (with legal open-access full-text resolution), document-internal statistical consistency (statcheck/GRIM/GRIMMER/SPRITE/CI/percentage/subgroup, Turkish decimals), hallucination signals (with ISBN/ORCID/arXiv checksums + entity verification), reporting-guideline conformance (14 guidelines + section pre-scan), AI-use transparency (ICMJE/COPE), and Turkish scientific writing/orthography. Deterministic stdlib core with graceful provider degrade; remote-only MCP; Claude-native judge; injection shield + privacy invariant + content-hashed evidence ledger.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://cureonics.com",
+  "license": "MIT",
+  "keywords": [
+    "scientific-integrity",
+    "hallucination",
+    "citations",
+    "turkish",
+    "imla",
+    "guardrails",
+    "reporting-guidelines",
+    "statcheck",
+    "claim-grounding",
+    "ai-transparency"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Scientific Audit",
+    "shortDescription": "Bilimsel metinler için atıf, iddia, istatistik ve Türkçe bilim dili denetimi.",
+    "longDescription": "LLM tarafından üretilmiş bilimsel metinleri hem adli hem dilsel denetleyen genel amaçlı, alan-bağımsız araç. Yedi eksen: (A) referans bütünlüğü, (B) iddia temellendirme + yasal açık-erişim TAM METİN doğrulama, (C) belge-içi istatistik tutarlılığı (statcheck/GRIM/GRIMMER/SPRITE/GA/yüzde/altgrup — ham veri gerektirmez, Türkçe ondalık virgül destekli; kaldırılan replicatio'nun sayısal-tutarlılık katmanını stdlib olarak konsolide eder), (D) halüsinasyon sinyalleri + ISBN/ORCID/arXiv checksum + varlık (ilaç/gen/hastalık) doğrulama, (E) 14 raporlama kılavuzu (PRISMA/PRISMA-ScR/CONSORT/CONSORT-AI/STROBE/COREQ/SRQR/JARS/TRIPOD/TRIPOD+AI/STARD/SPIRIT/CHEERS/ARRIVE) + bölüm ön-tarama, (F) AI-kullanım şeffaflığı (ICMJE/COPE), (G) Türkçe bilimsel dil ve imla (otomatik). Deterministik çekirdek SAF Python stdlib (claude.ai web dahil); uzak-yalnız MCP; Claude-native yargıç; injection kalkanı + gizlilik invariantı + content-hash kanıt defteri. No-fabrication: çözülemeyen kaynak 'unverified', asla 'geçti' olmaz.",
+    "developerName": "Cureonics",
+    "category": "Scientific Integrity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://cureonics.com",
+    "brandColor": "#B91C1C",
+    "defaultPrompt": [
+      "Audit this scientific report for citations and claims.",
+      "Check statistical consistency in this manuscript.",
+      "Review Turkish scientific style and AI transparency."
+    ],
+    "screenshots": []
+  },
+  "mcpServers": {
+    "pubmed": {
+      "type": "http",
+      "url": "https://pubmed.mcp.claude.com/mcp"
+    },
+    "pubmed-epmc": {
+      "type": "http",
+      "url": "https://pubmed.caseyjhand.com/mcp"
+    },
+    "openalex": {
+      "type": "http",
+      "url": "https://openalex.caseyjhand.com/mcp"
+    },
+    "semantic-scholar": {
+      "type": "http",
+      "url": "https://gateway.pipeworx.io/semanticscholar/mcp"
+    }
+  }
+}

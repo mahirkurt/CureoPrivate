@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scientific Audit"
+  short_description: "Bilimsel metinler için atıf, iddia, istatistik ve Türkçe bilim dili denetimi."
+  default_prompt: "Audit this scientific report for citations and claims."

@@ -1,0 +1,60 @@
+{
+  "name": "fon-uzmani",
+  "version": "1.3.0",
+  "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) ile fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa ve izleme kaynak-tipi skill'lerini tek paylaşılan connector sözleşmesi, kanonik-artefakt önbelleği ve deterministik saf-Python kuant betik kütüphanesi altında birleştirir. İki MCP omurgası: Borsa MCP (getiri/NAV/AUM/tarama/benchmark/makro) + fon-mcp (yeni resmî TEFAS API; varlık-sınıfı dağılımı + TER azami sınır + yönetim ücreti + fon akışı + EMK evreni — 12 araç). Beş mod: tek-fon analiz · tarama · karşılaştırma · portföy inşası · sürekli izleme. Karar-destek; SPK yatırım danışmanlığı değildir.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://cureonics.com",
+  "license": "Internal skill asset, not for external redistribution",
+  "keywords": [
+    "tefas",
+    "yatirim-fonu",
+    "emeklilik-fonu",
+    "yat",
+    "emk",
+    "fund-analysis",
+    "portfolio-construction",
+    "risk-adjusted-returns",
+    "fund-screener",
+    "watchlist-monitoring",
+    "spk-uyum",
+    "deterministic-orchestration",
+    "smp-v1.0"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Fon Uzmanı",
+    "shortDescription": "TEFAS yatırım ve emeklilik fonları için karar destek süiti.",
+    "longDescription": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için çok-skill karar-destek süiti. fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) + fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa, izleme kaynak skill'leri; tek paylaşılan connector sözleşmesi (CONNECTORS.md), kanonik-artefakt önbelleği ve 12-modüllük deterministik saf-Python kuant kütüphanesi. Beş mod: tek-fon analiz, tarama, karşılaştırma, portföy inşası, sürekli izleme. İki MCP omurgası: Borsa MCP + fon-mcp (yeni TEFAS/KAP detay sunucusu). Karar destek niteliğindedir; SPK yatırım danışmanlığı/tavsiyesi değildir.",
+    "developerName": "Cureonics",
+    "category": "Finance",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://cureonics.com",
+    "brandColor": "#0E7490",
+    "defaultPrompt": [
+      "Analyze this TEFAS fund with risk-adjusted metrics.",
+      "Compare these Turkish mutual or pension funds.",
+      "Build a fund portfolio with constraints and scenarios."
+    ],
+    "screenshots": []
+  },
+  "mcpServers": {
+    "borsa": {
+      "type": "http",
+      "url": "https://borsamcp.fastmcp.app/mcp"
+    },
+    "fon-mcp": {
+      "type": "http",
+      "url": "https://fon-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FON_MCP_MCP_API_KEY}"
+      }
+    }
+  }
+}

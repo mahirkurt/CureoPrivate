@@ -1,0 +1,61 @@
+{
+  "name": "brand-ecosystem-core",
+  "version": "1.0.0",
+  "description": "The strategic, verbal and visual layers of the Brand Ecosystem v1.0 as one module: brand-audit, brand-platform, brand-story, brand-touchpoint and brand-launch, the brand-maker and brand-visual ecosystem companions, plus brand-maker (naming), brand-visual (visual identity) and figma-forge (design-system to Figma). Composes with the brand-voice plugin for the voice layer.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://cureonics.com",
+  "license": "LicenseRef-Internal",
+  "keywords": [
+    "brand-strategy",
+    "brand-identity",
+    "brand-audit",
+    "positioning",
+    "storybrand",
+    "naming",
+    "visual-identity",
+    "design-system",
+    "figma",
+    "smp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Brand Ecosystem",
+    "shortDescription": "Strateji, isimlendirme, görsel kimlik ve Figma odaklı marka ekosistemi.",
+    "longDescription": "Brand Ecosystem v1.0'ın stratejik, sözel ve görsel katmanları tek modül olarak: brand-audit, brand-platform, brand-story, brand-touchpoint, brand-launch + brand-maker/brand-visual ekosistem yoldaşları + brand-maker (isimlendirme), brand-visual (görsel kimlik) ve figma-forge (tasarım sistemi → Figma). On skill + /pipeline komutu kanonik kurulum sırasını uçtan uca işletir. brand-voice plugin'i ile ses katmanı için kompoze olur. Her skill Claude.ai-native (mcp_servers_required: []); Figma/GoDaddy/Exa opsiyonel zenginleştiricidir.",
+    "developerName": "Cureonics",
+    "category": "Brand Design",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://cureonics.com",
+    "brandColor": "#0F766E",
+    "defaultPrompt": [
+      "Run the brand ecosystem pipeline for this project.",
+      "Audit this brand and propose a sharper platform.",
+      "Create a naming and visual identity direction."
+    ],
+    "screenshots": []
+  },
+  "mcpServers": {
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp",
+      "_use": "figma-forge (DS-to-Figma libraries, variables, Code Connect) and brand-visual (visual identity handoff to Figma)."
+    },
+    "godaddy": {
+      "type": "http",
+      "url": "https://api.godaddy.com/v1/domains/mcp",
+      "_use": "brand-maker — live domain availability checks during naming validation."
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp",
+      "_use": "brand-audit — competitive landscape and IP/web research."
+    }
+  }
+}

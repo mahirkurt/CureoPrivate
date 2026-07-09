@@ -1,0 +1,4 @@
+interface:
+  display_name: "Evidentia"
+  short_description: "PRISMA sistematik ve kapsam derlemeleri için tıbbi kanıt sentezi motoru."
+  default_prompt: "Create a PRISMA review protocol for this clinical question."

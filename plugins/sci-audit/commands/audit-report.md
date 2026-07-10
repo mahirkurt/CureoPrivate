@@ -1,6 +1,6 @@
 ---
 description: Compile per-axis findings into a single merged sci-audit report
-argument-hint: [--format md|json] [--out FILE]
+argument-hint: "[--format md|json] [--out FILE]"
 allowed-tools: Read, Bash, Write
 ---
 

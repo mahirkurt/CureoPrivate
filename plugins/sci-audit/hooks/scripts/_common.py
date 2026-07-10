@@ -126,3 +126,26 @@ def load_local_config() -> Dict[str, Any]:
             return _parse_frontmatter(fh.read())
     except Exception:
         return {}
+
+
+# Truthy/falsey spellings accepted for the master switch.
+_OFF_VALUES = {"false", "off", "0", "no", "disable", "disabled"}
+
+
+def hooks_enabled() -> bool:
+    """Project-level master switch for ALL sci-audit hooks.
+
+    Silences every sci-audit hook (SessionStart/UserPromptSubmit/PreToolUse/
+    PostToolUse/Stop) for a single project without touching the plugin's skills
+    or MCP servers. Useful where the host repo already ships its own equivalent
+    hook layer and the sci-audit hooks would duplicate it.
+
+    Off when either:
+      - env `SCI_AUDIT_HOOKS` is one of {off,0,false,no,disable,disabled}, or
+      - `.claude/sci-audit.local.md` frontmatter has `hooks_enabled: false`.
+    Default: enabled (fail-open — an unreadable config never silences hooks).
+    """
+    if os.environ.get("SCI_AUDIT_HOOKS", "").strip().lower() in _OFF_VALUES:
+        return False
+    cfg = load_local_config()
+    return str(cfg.get("hooks_enabled", "true")).strip().lower() not in _OFF_VALUES

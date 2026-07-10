@@ -15,7 +15,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import SECRET_PATTERNS, read_event  # noqa: E402
+from _common import SECRET_PATTERNS, hooks_enabled, read_event  # noqa: E402
 
 ERROR_SIGNATURES = ("Traceback (most recent call last)", "FATAL:", "segfault")
 
@@ -44,6 +44,8 @@ def extract_response_text(event: dict) -> str:
 
 
 def main() -> None:
+    if not hooks_enabled():
+        sys.exit(0)  # project master switch: skip output review
     event = read_event()
     text = extract_response_text(event)
 

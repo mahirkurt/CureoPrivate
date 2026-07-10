@@ -1,6 +1,6 @@
 {
   "name": "sci-audit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Domain-agnostic forensic and linguistic auditor for LLM-generated scientific text. Seven audit axes: reference integrity, claim grounding (with legal open-access full-text resolution), document-internal statistical consistency (statcheck/GRIM/GRIMMER/SPRITE/CI/percentage/subgroup, Turkish decimals), hallucination signals (with ISBN/ORCID/arXiv checksums + entity verification), reporting-guideline conformance (14 guidelines + section pre-scan), AI-use transparency (ICMJE/COPE), and Turkish scientific writing/orthography. Deterministic stdlib core with graceful provider degrade; remote-only MCP; Claude-native judge; injection shield + privacy invariant + content-hashed evidence ledger.",
   "author": {
     "name": "Cureonics",

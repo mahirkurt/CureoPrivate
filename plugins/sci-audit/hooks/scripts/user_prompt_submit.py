@@ -14,10 +14,12 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import SECRET_PATTERNS, allow, block, read_event  # noqa: E402
+from _common import SECRET_PATTERNS, allow, block, hooks_enabled, read_event  # noqa: E402
 
 
 def main() -> None:
+    if not hooks_enabled():
+        allow()  # project master switch: skip secret scan
     event = read_event()
     prompt = event.get("prompt", "") or ""
     for pattern, label in SECRET_PATTERNS:

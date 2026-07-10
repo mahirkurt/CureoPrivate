@@ -182,7 +182,7 @@
       "name": "sci-audit",
       "displayName": "Scientific Audit",
       "source": "./plugins/sci-audit",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "LLM tarafından üretilmiş bilimsel metinleri hem adli hem dilsel denetleyen genel amaçlı, alan-bağımsız araç. Yedi eksen: (A) referans bütünlüğü, (B) iddia temellendirme + yasal açık-erişim TAM METİN doğrulama, (C) belge-içi istatistik tutarlılığı (statcheck/GRIM/GRIMMER/SPRITE/GA/yüzde/altgrup — ham veri gerektirmez, Türkçe ondalık virgül destekli; kaldırılan replicatio'nun sayısal-tutarlılık katmanını stdlib olarak konsolide eder), (D) halüsinasyon sinyalleri + ISBN/ORCID/arXiv checksum + varlık (ilaç/gen/hastalık) doğrulama, (E) 14 raporlama kılavuzu (PRISMA/PRISMA-ScR/CONSORT/CONSORT-AI/STROBE/COREQ/SRQR/JARS/TRIPOD/TRIPOD+AI/STARD/SPIRIT/CHEERS/ARRIVE) + bölüm ön-tarama, (F) AI-kullanım şeffaflığı (ICMJE/COPE), (G) Türkçe bilimsel dil ve imla (otomatik). Deterministik çekirdek SAF Python stdlib (claude.ai web dahil); uzak-yalnız MCP; Claude-native yargıç; injection kalkanı + gizlilik invariantı + content-hash kanıt defteri. No-fabrication: çözülemeyen kaynak 'unverified', asla 'geçti' olmaz.",
       "author": {
         "name": "Cureonics",

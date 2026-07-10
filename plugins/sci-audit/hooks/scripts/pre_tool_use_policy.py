@@ -19,7 +19,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import read_event  # noqa: E402
+from _common import hooks_enabled, read_event  # noqa: E402
 
 # Domain-agnostic credential/secret path protection. Study-specific data
 # directories are intentionally NOT hardcoded here — projects add their own via
@@ -97,6 +97,8 @@ def deny(reason: str) -> None:
 
 
 def main() -> None:
+    if not hooks_enabled():
+        sys.exit(0)  # project master switch: allow without policy check
     event = read_event()
     command = extract_command(event)
 

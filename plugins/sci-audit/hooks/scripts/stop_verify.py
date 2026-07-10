@@ -26,7 +26,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import load_local_config, read_event  # noqa: E402
+from _common import hooks_enabled, load_local_config, read_event  # noqa: E402
 
 # Domain-agnostic scientific quantitative-claim signal.
 NUMERIC_CLAIM = re.compile(
@@ -100,6 +100,8 @@ def last_assistant_message(event: dict) -> str:
 
 
 def main() -> None:
+    if not hooks_enabled():
+        sys.exit(0)  # project master switch: allow stop without verification
     event = read_event()
 
     # Loop guard: if we already forced a continue this turn, let it stop.

@@ -15,7 +15,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import read_event  # noqa: E402
+from _common import hooks_enabled, read_event  # noqa: E402
 
 FALLBACK = (
     "sci-audit conventions: cite a verifiable source for every factual or "
@@ -30,6 +30,8 @@ FALLBACK = (
 
 
 def main() -> None:
+    if not hooks_enabled():
+        sys.exit(0)  # project master switch: inject nothing
     _ = read_event()  # source = startup|resume|compact (not used yet)
     root = os.environ.get("CLAUDE_PLUGIN_ROOT", "")
     conventions_path = os.path.join(

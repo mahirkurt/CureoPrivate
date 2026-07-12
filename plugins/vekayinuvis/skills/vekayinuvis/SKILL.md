@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 2.5.0
-last_updated: 2026-07-09
+version: 3.0.0
+last_updated: 2026-07-11
 changelog:
+  - "3.0.0 (2026-07-11): DEVARSIV 22-ARAÇ TAM ENTEGRASYON (SEPET→NOVNC→ARŞİV→ÇİFT-MOTOR OCR→ASYNC). §3.1.b devarsiv araç tablosu 10→22 araca genişledi (Arama/Belge/Sepet/Arşiv/Async/Durum, 6 grup) — eSatış sepeti (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart`, state-changing ama ödemesiz; ödeme DAİMA insan/noVNC), satın-alınmış belgenin yerel arşivi (`list_archive`/`get_archive_page` 300 DPI/`ocr_archive_pages`/`get_archive_pdf`) ve async OCR kuyruğu (`ocr_submit`/`ocr_result`) wire edildi. Yeni okuma-önceliği kuralı: satın alınmış belgede okuma DAİMA yerel arşivden başlar (katalog önizlemesi yalnız satın-alınmamıştır). Motor konvansiyonu netleşti: Osmanlı varsayılanı `engine=\"both\"` (görü birincil, Transkribus HTR yardımcı — taşra-kâtibi ellerinde gürültülü olabilir); sync/async kararı ≤5 sayfa/tek motor→sync, >5 sayfa veya `both` tam belge→async+anamnesis ingest. EVENT_RECONSTRUCTION modu devarsiv (`semantic_search`+`detailed_search` tarih-aralığı) ile birincil katman olarak güçlendirildi. §6.5 'Kanıt Disiplini (Murzi Kalıpları)' altı-maddelik prosopografik/toponimik disiplin eklendi. Üç yeni akış-skill'ine (`skills/satinalma`, `skills/arsiv-oku`, `skills/toplu-okuma`) işaret edildi. Mod sayısı (9) korundu."
   - "2.5.0 (2026-07-09): MARKETPLACE DOCTOR + G0/ATIF ENFORCEMENT. Claude marketplace ve Codex yerel kurulumları için `/vekayinuvis-durum` komutu + portable `scripts/vekayinuvis_doctor.py` eklendi; script `.mcp.json` tam-filo wiring'ini, env/userConfig/OAuth preflight durumunu ve 13 server satırlı G0 kapsam manifestosunu üretir; `--live` modunda `devlet-arsivleri` için streamable HTTP MCP initialize → initialized → `devarsiv_session_status` zinciriyle HP oturum canlılığını doğrular. Stop coverage hook'u artık yalnız çekirdek 4 satırı değil tüm 13 server'ı `hit/empty/degraded/skipped` durumuyla zorunlu arar. Atıf-disiplini hook'u görüntü/OCR/HTR iddialarında gerçek araç + sayfa/model/engine/confidence provenance'ı ister. Eski 'görüntü üretilemez' cümleleri 'yalnız gerçek araçla çekildiyse aktar; çekilmediyse katalog düzeyiyle kal' no-fabrication disiplinine hizalandı."
   - "2.2.0 (2026-07-08): BELGE OKUMA — OCR/HTR + GÖRSEL. devlet-arsivleri MCP artık BelgeGoster sayfa taramasını (full-res, satın-alma durumundan BAĞIMSIZ → satın alınmamış önizlemeler de okunur) sunuyor; 2 yeni araç wire edildi: (a) `devarsiv_get_belge_image` → tarama ImageContent olarak, asistan EL YAZMASI Osmanlıca'yı doğrudan görüsüyle okur (BOA el yazması için en iyi tam-okuma); (b) `devarsiv_ocr_belge` → deterministik OCR/HTR (Latin/Cumhuriyet tam · Osmanlı basılı damga+arşiv referans kodu tesseract · el yazması → Transkribus HTR creds-gated veya görü). §3.1.b tablosu (8→10 araç) + no-fabrication güncellendi (belge görüntüsü artık ÇEKİLİR/uydurulmaz, OCR düşük-güven dürüstçe raporlanır, çok-sayfalı tam set eSatış'ta); ARCHIVE_DEEP_DIVE/MANUSCRIPT_TRANSCRIBE/PROSOPOGRAPHY belge-okuma adımıyla güçlendirildi; references/devlet-arsivleri-katalog.md §7 (belge okuma motor tablosu + kanonik akış + no-fabrication). Osmanlıca en iyi okuma: asistan görüsü (self-contained) + Transkribus HTR (creds ile SOTA). Davranış/mod sayısı (9) korundu."
   - "2.1.0 (2026-07-08): DEVLET-ARSIVLERI DERİN ARAÇ WIRE + TAM-FİLO SAYIM DÜZELTMESİ. devlet-arsivleri MCP Faz-C'de 5→8 araca genişledi ama plugin yalnız 5'ini biliyordu; eksik 3 derin araç wire edildi: (a) `devarsiv_semantic_search` (diakronik/semantik — Osmanlıca eşdeğer genişletme + bge-m3 rerank) SOURCE_HUNT/ARCHIVE_DEEP_DIVE'a modern-terim birincil aracı olarak; (b) `devarsiv_detailed_search` + (c) `devarsiv_list_fon_categories` ile **1000-tavan aşan kapsamlı erişim** (üst-fon × tarih-penceresi enumerasyonu + item_id union) — §3.1.b tablosu, §5.1/§5.2 akışları, references/devlet-arsivleri-katalog.md §2/§2b/§2c, distiller ajanı, CONNECTORS §2/§7, boa-katalog/arsiv-dalis komutları, retrieve_dont_dump hook güncellendi. Ayrıca **11→13 server** sayım kayması giderildi (openathens+annas-reader sonradan eklendiği için stale kalmıştı: SKILL §3.5/§10, start, session_start.py, stop_coverage.py, hooks.json, CONNECTORS; sharding tablosuna fulltext katmanı eklendi). Davranış/mod sayısı (9) korundu."
@@ -22,8 +23,9 @@ changelog:
 > connector tabloları pedagojik referans olarak korunmuştur; skill standalone
 > (plugin dışı) ortamda da çalışır.
 
-> **Sürüm**: v2.5.0 (marketplace doctor + tam-filo G0/atıf enforcement; v2.x
-> tam-filo, bağlam ekonomisi ve belge-okuma davranışı korunur)
+> **Sürüm**: v3.0.0 (devarsiv 22-araç tam entegrasyon — sepet→noVNC→arşiv→
+> çift-motor OCR→async job; v2.x tam-filo, bağlam ekonomisi ve marketplace
+> doctor/G0 enforcement davranışı korunur)
 >
 > *Vekāyi'-nüvîs* (وقايع نويس): 1700'lerden 1922'ye kadar Osmanlı Devleti'nin
 > resmî tarih yazıcısı; arşivlere doğrudan erişimi, devlet arşivi/saray arşivi
@@ -177,37 +179,74 @@ aynı turda çağrılır; sonuçlar Faz 2'de triangüle edilir.
 | **D. Hesaplama/Yardımcı** | `ottoman_convert_date` (Hicri↔Rumî↔Miladi), `ottoman_parse_ottoman_date`, `ottoman_parse_number`, `ottoman_calc_ebced`, `ottoman_tarih_dusur` (chronogram çözümü), `ottoman_get_defter_schema`, `ottoman_export_html` | Tarih/sayı/ebced/defter şeması ihtiyacı | Tarih dönüşümü, JSON şema, HTML rapor |
 | **E. HTR Pipeline** (opt-in) | `ottoman_escriptorium_list_projects/list_documents/list_models/create_document/import_iiif/segment/transcribe/get_document/get_transcription/list_tasks` | Yazma/baskı Osmanlıca metni dijitalleştirme | Segmentasyon + HTR çıktısı |
 
-### 3.1.b Devlet Arşivleri MCP — F. Resmî Katalog Katmanı (`devlet-arsivleri`)
+### 3.1.b Devlet Arşivleri MCP — F. Resmî Katalog + Sepet + Yerel Arşiv Katmanı (`devlet-arsivleri`)
 
 Resmî devlet arşivi kataloğunda (`katalog.devletarsivleri.gov.tr`) **doğrudan**
 fon/kutu/gömlek araması — ottoman-archives'ın **yapmadığı** BOA/BCA/Diplomatik/
-Askeri katalog erişimini doldurur. Referans: **`references/devlet-arsivleri-katalog.md`**.
+Askeri katalog erişimini doldurur; artık eSatış sepeti (state-changing, ödemesiz)
+ve satın-alınmış belgelerin **yerel arşivini** (300 DPI + çift-motor OCR + async
+job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-katalog.md`**.
 
-| Tool | Ne için | Çıktı |
-|---|---|---|
-| `devarsiv_search(query, arsiv?, limit?)` | Resmî katalog serbest-metin (Basit Arama; arsiv: 1=Cumhuriyet/BCA · 2=Osmanlı/BOA · 3=Diplomatik · 4=Askeri) | Satırlar: arşiv·fon·kutu·gömlek·özet·Hicrî tarih·**item_id·hash**·belge_url + fon facet'leri + `total_rendered`/**`capped`** |
-| `devarsiv_semantic_search(query, arsiv?, limit?, rerank?)` | **Diakronik/semantik** arama — modern sorguyu Osmanlıca eşdeğerlerine genişletir (karantina→tahaffuzhane/sıhhiye/kordon), varyantları birleştirir, **bge-m3** ile yeniden sıralar | Birleşik satırlar + `matched_variants` (hangi Osmanlıca karşılık eşleşti) |
-| `devarsiv_detailed_search(arsiv, ozet?, ust_fon?, kutu?, gomlek?, sira?, tarih_turu?, yil_bas?, yil_bit?, limit?)` | **Hassas/enumerasyon** (OzelArama) — konuyu 1000-tavanının altına daraltır (arşiv × üst-fon × tarih × özet) | Daraltılmış satır seti + `capped` (kapsamlı erişim omurgası) |
-| `devarsiv_list_fon_categories(arsiv)` | Arşivin **üst-fon** listesi (Osmanlı 49 grup; Cum. 16) — >1000 konuyu bölme ekseni | Fon grubu listesi (enumerasyon ekseni) |
-| `devarsiv_get_belge(item_id, hash, arsiv)` | Tek kaydın künyesi + erişim durumu | yer bilgisi (kutu-gömlek)·belge tarihi·kurum(fon)·dil·görüntü sayısı·access(purchased/purchasable) |
-| `devarsiv_get_belge_image(item_id, hash, arsiv)` | **Belge sayfa taraması** (önizleme) — satın-alma durumundan bağımsız full-res görüntü | ImageContent → **asistan Osmanlıca'yı doğrudan görüsüyle okur** (el yazması için en iyi tam-okuma) |
-| `devarsiv_ocr_belge(item_id, hash, arsiv, lang?)` | Sayfa taramasının **deterministik OCR/HTR** metni | `{text, mean_confidence, engine, note}`; Latin tam · Osmanlı basılı damga+referans kodu · el yazması→görü/Transkribus |
-| `devarsiv_detailed_search_fields(arsiv)` | Detaylı Arama'nın arşive-özel alanları (introspeksiyon) | fon-üst · tarih türü · özel kod · özet |
-| `devarsiv_session_status` | Oturum canlı mı (pre-flight) | alive / session_required |
-| `devarsiv_server_info` | Kapsam + caveat + OCR dilleri | 4 arşiv + auth + tesseract_langs |
+| Grup | Araç | Not |
+| --- | --- | --- |
+| Arama | `devarsiv_search(query, arsiv?, limit?)` | Basit Arama; `capped:true`→enumerasyon, çok geniş→`refine_required` |
+| Arama | `devarsiv_semantic_search(query, arsiv?, limit?, rerank?)` | Diyakronik genişletme (karantina→tahaffuzhane) + bge-m3 rerank |
+| Arama | `devarsiv_detailed_search(arsiv, ozet?, ust_fon?, kutu?, gomlek?, sira?, tarih_turu?, yil_bas?, yil_bit?, limit?)` | OzelArama — 1000-cap altına daraltma/enumerasyon |
+| Arama | `devarsiv_list_fon_categories(arsiv)` | Üst-fon listesi (enumerasyon ekseni) |
+| Arama | `devarsiv_detailed_search_fields(arsiv)` | Form-alan introspeksiyonu |
+| Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + `access` (purchased/purchasable) |
+| Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma** |
+| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | OCR/HTR; Osmanlı varsayılanı `engine="both"` |
+| Sepet | `devarsiv_add_to_cart(item_id, hash, arsiv, pages?)` `[_RW]` | 1-tabanlı cbk sayfa seçimi ("1,3-5"; boş=tümü) |
+| Sepet | `devarsiv_list_cart()` `[_RO]` | Kalemler + **bağlayıcı Tutar** |
+| Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
+| Sepet | `devarsiv_checkout_cart()` `[_RO]` | Ödeme YAPMAZ; yalnız noVNC URL + sepet döner |
+| Arşiv | `devarsiv_list_purchased()` | SatinAldiklarim t/hash listesi |
+| Arşiv | `devarsiv_ocr_belge_pages(t, hash, arsiv?, pages?, lang?, engine?)` | Viewer temsilî-sayfa sınırlı; TAM yol = yerel arşiv |
+| Arşiv | `devarsiv_list_archive(query?)` | BOA-kodlu yerel PDF arşivi (code/yer/tarih/özet/sayfa) |
+| Arşiv | `devarsiv_get_archive_page(code, page)` | **300 DPI ImageContent — satın-alınmış belgede birincil okuma** |
+| Arşiv | `devarsiv_ocr_archive_pages(code, pages?, arsiv?, lang?, engine?)` | Sync OCR, ≤5 sayfa (MULTIPAGE_MAX_PAGES) |
+| Arşiv | `devarsiv_get_archive_pdf(code, include_base64?, max_bytes?)` | Künye + sınırlı base64 PDF |
+| Async | `devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)` `[_RW]` | İdempotent; job_id döner |
+| Async | `devarsiv_ocr_result(job_id, include_text?)` `[_RO]` | queued/running/done/error/**stale** |
+| Durum | `devarsiv_session_status()` | HP oturumu canlı mı |
+| Durum | `devarsiv_server_info()` | Araç envanteri + `ocr.engines` + `purchase_cart.manual_checkout_url` |
 
 > **Araç seçimi:** tam-eşleşen bilinen terim → `devarsiv_search`; modern/dönem-değişken
 > sözcük → `devarsiv_semantic_search`; belirli fon+tarih+özet daraltma → `devarsiv_detailed_search`;
 > konu >1000 (kapsamlı tarama) → `devarsiv_list_fon_categories` + `devarsiv_detailed_search`
 > (üst-fon × tarih-penceresi enumerasyonu, `item_id` ile union — bkz. `devlet-arsivleri-katalog.md` §2b).
->
-> **Belge OKUMA (yeni):** BelgeGoster sayfa taramasını full-res sunar (satın-alma durumundan
-> **bağımsız** → satın alınmamış önizlemeler de okunur). `devarsiv_get_belge_image` taramayı
-> görüntü olarak döner (asistan **el yazması Osmanlıca'yı doğrudan görüsüyle** okur — en iyi
-> tam-okuma); `devarsiv_ocr_belge` deterministik metin (Latin/Cumhuriyet tam; Osmanlı basılı
-> damga+arşiv referans kodu; el yazması gövde → Transkribus HTR creds'liyse, aksi hâlde görü). Bkz.
-> `devlet-arsivleri-katalog.md` §7.
->
+
+> **Okuma önceliği ve motor/async konvansiyonu:** Belge satın alınmışsa okuma DAİMA
+> yerel arşivden başlar: `devarsiv_list_archive` → `devarsiv_get_archive_page` (300 DPI +
+> görü); katalog önizlemesi (sample) yalnız satın-alınmamış belgeler içindir
+> (→ `skills/arsiv-oku`). Motor seçimi `engine`: `auto` (Osmanlı→both, diğerleri→tesseract) |
+> `both` | `transkribus` | `escriptorium` | `tesseract`. `both` → Transkribus (el yazması
+> PyLaia) + eScriptorium (basılı Kraken) PARALEL; iki transkripsiyon `transcriptions` altında
+> yan yana + tesseract damga katmanı. Düşen motor dürüst `unavailable` nedeni taşır. Latin
+> arşivler (1/3/4) daima tesseract. **Görü birincil, HTR yardımcı** — Transkribus taşra-kâtibi
+> ellerinde gürültülü olabilir (2026-07-09 canlı gözlem); bu yüzden Osmanlı OCR varsayılanı
+> `engine="both"` (görü birincil çapraz-kontrol, HTR yardımcı). Sync/async kararı: ≤5 sayfa
+> VE tek motor → `devarsiv_ocr_archive_pages` (sync). >5 sayfa VEYA `both` tam belge →
+> `devarsiv_ocr_submit` → `devarsiv_ocr_result(include_text=false)` ile poll → `done`'da
+> **tek sefer** `include_text=true` → anamnesis `ingest_document(doc_id="devarsiv:<code>", …)`
+> → sonraki sorgular `hybrid_query` (§ 3.5 Tam-Filo ve Bağlam Ekonomisi — Tier 0/1 bağlam-
+> ekonomisi; → `skills/toplu-okuma`). `stale` → aynı parametrelerle resubmit (arşiv PDF
+> yerel; maliyet tekrarlanmaz).
+
+> **State-changing araçlar (sepet) — no-fabrication/güvenlik:** `devarsiv_add_to_cart`
+> `[_RW]` ve `devarsiv_remove_from_cart` `[_DESTRUCTIVE]` devlet-değiştirici ("state-changing")
+> araçlardır ama **para harcamazlar** — yalnız eSatış sepetinin içeriğini değiştirirler.
+> `devarsiv_checkout_cart` de **ödeme YAPMAZ**; yalnızca noVNC URL'sini ve güncel sepeti döner
+> — ödeme **DAİMA insan** tarafından, tarayıcı üzerinden tamamlanır. Ödeme-öncesi **metin-onay
+> kapısı zorunludur**: sepet özeti (kalemler + `devarsiv_list_cart` çıktısındaki bağlayıcı
+> Tutar sütunu) kullanıcıya gösterilip açık onay alınmadan noVNC bağlantısı paylaşılmaz. Fiyat
+> dili: "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar `devarsiv_list_cart` çıktısındaki Tutar
+> sütunudur." Satın alma bağlamında tek-cihaz uyarısı **daima verbatim** aktarılır: "Kendi
+> cihazınızdan kataloğa GİRMEYİN — tek-cihaz kilidi HP oturumunu düşürür." Alt-ajan
+> (`arsiv-tarama-distilleri`) sepete **dokunmaz** — sepet mutasyonu yalnızca ana orkestratör
+> turunda, kullanıcı onayıyla yapılır. (→ `skills/satinalma`.)
+
 > **No-fabrication:** geniş sorgu → `refine_required` (daralt); tam 1000 → `capped:true`
 > (*daha fazlası var* → enumerasyon); `hash` daima arama sonucundan gelir (uydurulamaz); belge
 > **taraması GERÇEKtir, uydurulmaz** (OCR düşük-güvende dürüstçe raporlanır; el yazması insan/görü
@@ -405,11 +444,16 @@ atama-azil zinciri, eser listesi, ikincil literatür + fon/kutu/gömlek kayıtla
 ### 5.5 EVENT_RECONSTRUCTION — Olay Kurgulaması
 *"31 Mart Vakası'nın günlük kronolojisi."*
 
-Paralel: vakanüvis kaynakları (Lütfî, Cevdet, Aksiyon tarihi) + dönem
-gazeteleri (Tanin, İkdam, Servet-i Fünûn — Müteferriqa/Hakkı Tarık Us) +
-ikincil monograflar (Aykut Kansu, Bedross Der Matossian, Şükrü
-Hanioğlu) + BCA/BOA kayıt önerileri. Çıktı: gün-gün anlatı + tarafların
-perspektifleri + tartışmalı noktaların açık etiketlenmesi.
+**`devarsiv_semantic_search` (dönem terimleriyle) + `devarsiv_detailed_search`
+(tarih-aralığı — `yil_bas`/`yil_bit`) resmî katalog kanıtının birincil
+katmanıdır**: olayın gün-gün kronolojisi fon/kutu/gömlek düzeyinde BOA/BCA
+kayıtlarıyla sabitlenir. Paralel: yukarıdaki devarsiv çifti + öne çıkan
+kayıtların künye/görüntü teyidi için `devarsiv_get_belge`/`devarsiv_get_belge_image`
++ vakanüvis kaynakları (Lütfî, Cevdet, Aksiyon tarihi) + dönem gazeteleri
+(Tanin, İkdam, Servet-i Fünûn — Müteferriqa/Hakkı Tarık Us) + ikincil
+monograflar (Aykut Kansu, Bedross Der Matossian, Şükrü Hanioğlu). Çıktı:
+gün-gün anlatı + tarafların perspektifleri + tartışmalı noktaların açık
+etiketlenmesi + fon/kutu/gömlek katalog kanıtı eklenmiş kronoloji tablosu.
 
 ### 5.6 HISTORIOGRAPHY — Tarih Yazımı/Literatür Eleştirisi
 *"Tanzimat reformlarının iktisadi sonuçları üzerine literatürün durumu."*
@@ -547,6 +591,23 @@ Akademik tarihçi dürüstlüğü için aşağıdaki etiketleme **zorunlu**dur:
 - **[muhtemel]**: bir kaynakta açık, başka kaynakta dolaylı veya çıkarımsal.
 - **[tartışmalı]**: literatürde açık görüş ayrılığı (her iki taraf gösterilir).
 - **[bilinmiyor / kayıp]**: kaynak yok ya da erişilemiyor; spekülasyon yapılmaz.
+
+### 6.5 Kanıt Disiplini (Murzi Kalıpları)
+
+Prosopografik/toponimik araştırmada (soyad/köken tipi sorgularda özellikle
+kritik) aşağıdaki **altı kalıp** her zaman uygulanır:
+
+1. İki-seviye kanıt: toponim/bağlam eşleşmesi ≠ soyad/kişi belgesi — iddia
+   seviyesini ayır.
+2. Katalog arama token'i ≠ doğrulanmış içerik — görüntüsü açılmamış kayda
+   "görüntü teyidi bekliyor" etiketi.
+3. Çift-tarih: her Hicri/Rumi→Miladi çevirisine `ottoman_convert_date` ile
+   yeniden-teyit şerhi.
+4. Tarihsiz katalog kaydı kronolojik kanıt olarak kullanılamaz.
+5. Ham HTR metni rapora alıntılanmaz — görüyle doğrulanmış okuma alıntılanır,
+   HTR dipnotta.
+6. Katalog yazımı (özgün imlâ) ile toponimik/tarihsel yorum ayrı sütunlarda
+   tutulur.
 
 ## 7. Akademik Tarih Raporu Şablonu (ACADEMIC_REPORT modu)
 

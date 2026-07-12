@@ -16,7 +16,7 @@ description: >-
   etkileşimli öğrenimde USE.
 license: MIT
 metadata:
-  version: 3.1.0
+  version: 3.2.0
   last_updated: 2026-07-12
   manifest: ./skill-manifest.yaml
 ---
@@ -85,9 +85,14 @@ Yetkinlik **her zaman** şunu üretir:
    `hucre-ve-organeller-fen-7-modul.manifest.json`; sabit `run_manifest.json` adı KULLANILMAZ).
    İçerik `../../shared/run-manifest-schema.json`'a uyar: `run_id`, `ts`, `plugin_version`,
    `requested_scope`, `connector_call_ledger`, `canonical_artifacts`, `tier2_status`,
-   `quality_gates`, `deliverable_path`, `caveats`. `quality_gates` **yalnız**
-   `scripts/validate_module.py` koşumunun gerçek çıktısından doldurulur — uydurulmaz; bir
-   kapı koşulmadıysa `SKIPPED` yazılır. `run_id` **NORMATİF KALIP** ile (verbatim, başka bir
+   `quality_gates`, `deliverable_path`, `caveats`. **`quality_gates` alanı
+   `python scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisidir** — bu
+   komutu çalıştırın ve JSON çıktısını manifeste olduğu gibi yerleştirin. Kapı sonuçlarını
+   elle yazmayın, konsol raporundan (renkli/insan-okur mod) transkribe etmeyin, hiçbir
+   kapıyı PASS'a yükseltmeyin; bu deterministik köprü olmadan model dürüstlüğüne bağlı bir
+   "uydurma yok" ilkesi kalite kapısını fiilen atlanabilir kılar. `--json` çıktısı yalnız
+   `PASS`/`FAIL`/`WARN`/`SKIPPED` durumlarını içerir; koşturulmayan/uygulanamayan bir kapı
+   `--json` içinde kendiliğinden `SKIPPED` olarak gelir (asla `PASS`). `run_id` **NORMATİF KALIP** ile (verbatim, başka bir
    biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260706-fen5-hucre-v1`
    (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı
    `../../shared/run-manifest-schema.json` `properties.run_id.pattern`). Bu kalıba uymayan bir
@@ -243,12 +248,14 @@ gömün. Motoru yeniden yazmayın; veriyi doldurun.
 **Adım 5 — Doğrula.** `python scripts/validate_module.py <çıktı.html>` çalıştırın.
 Kapılar: emoji-yok, Carbon token kullanımı, IBM Plex yüklemesi, ARIA/erişilebilirlik
 asgarileri, etkileşim bütünlüğü (her quiz sorusunda doğru cevap + açıklama),
-satır-içi varlık (harici bağımlılık yok). İhlalleri giderin.
+satır-içi varlık (harici bağımlılık yok). İhlalleri giderin. İhlalsiz koşumdan sonra
+**aynı komutu `--json` bayrağıyla tekrar çalıştırın** — Adım 6'da manifeste gömülecek
+`quality_gates` verisi budur, konsol raporundan değil bu JSON çıktısından gelir.
 
 **Adım 6 — Kaydet, manifest yaz, sun.** `/mnt/user-data/outputs/` altına kaydedin; **aynı ad +
-`.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7 — `quality_gates` Adım 5'in
-`validate_module.py` çıktısından, uydurmadan). `present_files` ile sunun. Kısa bir özet ve
-"nasıl kullanılır" notu ekleyin.
+`.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7 — `quality_gates`, Adım 5'te
+üretilen `validate_module.py --json` çıktısının BİREBİR kendisi; elle yazma/transkribe/PASS'a
+yükseltme yok). `present_files` ile sunun. Kısa bir özet ve "nasıl kullanılır" notu ekleyin.
 
 ## 9. Etkileşim deseni kataloğu (özet)
 
@@ -435,7 +442,13 @@ asla jenerik veya tek-tip değil:
 
 ## 12. Kalite kapıları (Quality gates)
 
-`scripts/validate_module.py` aşağıdakileri denetler (ihlal = düzelt):
+`scripts/validate_module.py` aşağıdakileri denetler (ihlal = düzelt). İnsan-okur konsol
+raporu varsayılan moddur; **`--json` bayrağı** (v3.2.0) stdout'a yalnız geçerli JSON basar —
+`{"G-EMOJI": {"status": "PASS"}, ...}` şeklinde, manifest `quality_gates` alanına doğrudan
+gömülebilir biçimde (bkz. §3 madde 7, Adım 5-6). `status` yalnız `PASS`/`FAIL`/`WARN`/`SKIPPED`
+olur; koşturulmayan/uygulanamayan bir kapı `SKIPPED` yazılır (asla `PASS`) — bu, "quality_gates
+yalnız gerçek çıktıdan doldurulur" ilkesini modelin dürüstlüğüne değil deterministik bir CLI
+sözleşmesine bağlar.
 - **G-EMOJI:** Çıktıda hiçbir emoji yok (Unicode emoji aralıkları taranır).
 - **G-CARBON:** IBM Plex yüklü; çekirdek `--cds-*` token'ları tanımlı ve kullanımda.
 - **G-A11Y:** `lang`, `<title>`, odak görünürlüğü, ARIA rolleri, reduced-motion bloğu.

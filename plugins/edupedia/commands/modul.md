@@ -37,8 +37,11 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
 5. **Manifest'i yaz (yayın için zorunlu ön koşul):** HTML ile **aynı dizine**, aynı ad +
    `.manifest.json` uzantısıyla (örn. `hucre-modul.html` → `hucre-modul.manifest.json`) bir
    run-manifest yaz — şema `../shared/run-manifest-schema.json`, dosya adı sözleşmesi
-   `../shared/canonical-cache-contract.md §1`. `quality_gates` **yalnız** bir önceki adımdaki
-   `validate_module.py` çıktısından doldurulur (uydurma yok); koşulmayan kapı `SKIPPED`.
+   `../shared/canonical-cache-contract.md §1`. **`quality_gates` alanı
+   `python scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisidir** — bu
+   komutu çalıştır, JSON'unu manifeste olduğu gibi yerleştir; kapı sonuçlarını elle yazma,
+   konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme. Koşturulmayan/uygulanamayan
+   kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`).
    `connector_call_ledger`/`canonical_artifacts` bu komutun Adım 1'inde yapılan Müfredat MCP
    çağrılarından gelir. `run_id` **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA):
    `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>`

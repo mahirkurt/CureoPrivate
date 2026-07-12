@@ -2,6 +2,49 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.2.0] — 2026-07-12
+
+### Düzeltildi (kök neden) — `quality_gates` için deterministik köprü: `validate_module.py --json`
+
+İnceleme bulgusu: 3.1.0'da manifest'in `quality_gates` alanını yayın-sunucusunun fail-closed
+kalite kapısı besliyordu, ama `scripts/validate_module.py` yalnız ANSI-renkli konsol raporu
+basıyordu — hiçbir JSON/yapılandırılmış çıktı modu yoktu. SKILL.md "`quality_gates` yalnız
+`validate_module.py`'nin gerçek çıktısından doldurulur — uydurulmaz" diyordu ama bunu hiçbir
+kod yolu ZORLAMIYORDU: model konsol metnini okuyup JSON'a elle transkribe ediyordu. Somut risk:
+model betiği hiç çalıştırmadan (ya da yanlış okuyarak) tüm kapılara `"PASS"` yazabilir —
+sunucunun fail-closed mantığı bunu yakalayamaz (girdi zaten "PASS" görünür), emojili/
+erişilemez/kazanım-izlenemez bir modül siteye düşebilirdi. Bu davranışsal bir değişikliktir
+(yeni CLI yeteneği, mevcut davranış korunur) → **SemVer MINOR bump**.
+
+- **`scripts/validate_module.py` — yeni `--json` bayrağı:** stdout'a YALNIZ geçerli JSON
+  basar — `{"G-EMOJI": {"status": "PASS"}, "G-A11Y": {"status": "FAIL", "detail": "..."}, ...}`
+  — manifest `quality_gates` alanına doğrudan gömülebilir biçimde. `status` yalnız
+  `PASS`/`FAIL`/`WARN`/`SKIPPED` olur; koşturulmayan/uygulanamayan bir kapı (imza yok /
+  mod uymuyor / uygulanmaz dalı) `--json` çıktısında **her zaman `SKIPPED`** yazılır — iç
+  konsol mesajı "PASS" dese bile (bu ayrım `Result.add(..., applicable=False)` ile izlenir;
+  `R.rows`'un 3'lü tuple şekli — mevcut testlerin `for g,s,_ in rows` açımı için — DEĞİŞMEDİ).
+  Aynı gate adı altında birden çok satır üreten tek kapı (`G-INTERACT`: correctIndex
+  PASS/FAIL + opsiyonel açıklama-WARN'ı) en kötü duruma (FAIL>WARN>PASS) göre birleştirilir.
+  Varsayılan (bayraksız) insan-okur konsol raporu ve çıkış kodu sözleşmesi (0=tüm FAIL
+  kapıları geçti, 1=ihlal) **birebir** korunur — `--json` yalnız ek bir moddur.
+- **`SKILL.md` §3 (madde 7) + Adım 5-6 + §12** — `quality_gates` alanının normatif tanımı
+  değişti: artık `python scripts/validate_module.py --json <html>` çıktısının BİREBİR
+  kendisi olarak tanımlanır ("elle yazma, konsol raporundan transkribe etme, hiçbir kapıyı
+  PASS'a yükseltme").
+- **`commands/modul.md` (Adım 5) + `commands/mufredat.md` (Adım 4)** — aynı normatif
+  `--json` köprüsüne güncellendi; `mufredat.md`'deki eski "11 kapı" ifadesi mevcut 13 kapıya
+  düzeltildi (davranışsal değil, belge tutarlılığı).
+- **`shared/run-manifest-schema.json`** — `gate.status` enum'u zaten `PASS`/`FAIL`/`WARN`/
+  `SKIPPED` idi (dokunulmadı — şema önceden de doğruydu, yalnız üretim tarafında zorlanmıyordu).
+- **`skill-manifest.yaml`** — yeni `verification.json_output` girdisi; `outputs.run_manifest`
+  açıklaması `--json` köprüsünü yansıtacak şekilde güncellendi; `skill.version` +
+  `build.version` → 3.2.0.
+- **`README.md`** — sürüm damgası 3.2.0'a hizalandı.
+
+**Değişmedi:** 13 kalite kapısının adları, mantığı ve varsayılan konsol raporu (`R.report()`)
+birebir korunur; `assets/module-template.html`; etkileşim motoru; pedagojik içerik;
+`tests/test_gates.py`'nin tamamı (70 test) hiçbir değişiklik olmadan yeşil kalır.
+
 ## [3.1.0] — 2026-07-12
 
 ### Düzeltildi (kök neden) — run-manifest artık DİSKE yazılıyor (`/edupedia:yayinla` kırıktı)

@@ -20,7 +20,8 @@ get_islam_ansiklopedisi) + yoktez (transkripsiyon tezi) + literatur ekle.
 satın alınmamış) ve kullanıcı belgenin **tüm** sayfalarına ihtiyaç duyuyorsa → **`/vekayinuvis:satinalma`**
 akışına yönlendir (yalnız önizleme yeterliyse `devarsiv_get_belge_image`/`devarsiv_ocr_belge` ile
 devam edilir, satın alma zorunlu değildir). `access=="purchased"` ise okuma DAİMA yerel arşivden
-başlar (§ "BELGE OKUMA" altında). **Çok-sayfa okumada K4 kararı:** ≤5 sayfa VE tek motor →
+başlar: `devarsiv_list_archive` → `devarsiv_get_archive_page` (300 DPI + görü) — adım-adım okuma
+akışı için `boa-katalog/SKILL.md` (adım 3–4). **Çok-sayfa okumada K4 kararı:** ≤5 sayfa VE tek motor →
 `devarsiv_ocr_archive_pages` (sync); >5 sayfa VEYA `engine="both"` tam belge → `devarsiv_ocr_submit`
 → `devarsiv_ocr_result` ile poll → **`/vekayinuvis:toplu-okuma`** akışına devret.
 

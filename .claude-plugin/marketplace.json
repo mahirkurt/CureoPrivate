@@ -141,8 +141,7 @@
         "g0-coverage-manifest",
         "mcp-doctor",
         "citation-provenance"
-      ],
-      "strict": false
+      ]
     },
     {
       "name": "evidentia",

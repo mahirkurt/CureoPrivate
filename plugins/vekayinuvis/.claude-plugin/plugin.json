@@ -56,10 +56,50 @@
       "title": "Smithery profile",
       "description": "Smithery profil tanımlayıcısı (opsiyonel).",
       "required": false
+    },
+    "devarsiv_api_key": {
+      "type": "string",
+      "title": "Devlet Arşivleri API key",
+      "description": "devlet-arsivleri MCP anahtarı — NOT: .mcp.json header'ı ${DEVARSIV_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${DEVARSIV_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "ottoman_api_key": {
+      "type": "string",
+      "title": "Ottoman Archives API key",
+      "description": "ottoman-archives MCP anahtarı — NOT: .mcp.json header'ı ${OTTOMAN_ARCHIVES_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${OTTOMAN_ARCHIVES_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "yok_akademik_api_key": {
+      "type": "string",
+      "title": "YÖK Akademik API key",
+      "description": "yok-akademik MCP anahtarı — NOT: .mcp.json header'ı ${YOK_AKADEMIK_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${YOK_AKADEMIK_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "openathens_api_key": {
+      "type": "string",
+      "title": "OpenAthens API key",
+      "description": "openathens MCP anahtarı — NOT: .mcp.json header'ı ${OPENATHENS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${OPENATHENS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "annas_api_key": {
+      "type": "string",
+      "title": "Anna's Reader API key",
+      "description": "annas-reader MCP anahtarı — NOT: .mcp.json header'ı ${ANNAS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANNAS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "anamnesis_api_key": {
+      "type": "string",
+      "title": "Anamnesis API key",
+      "description": "anamnesis MCP anahtarı — NOT: .mcp.json header'ı ${ANAMNESIS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANAMNESIS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
     }
   },
-  "agents": "./agents",
-  "skills": "./skills",
   "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json",
   "defaultEnabled": false

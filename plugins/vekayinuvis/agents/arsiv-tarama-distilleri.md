@@ -11,6 +11,7 @@ description: >-
   invaryantlarına tabidir. Tek-connector/hızlı sorgular için ÇAĞIRMA — doğrudan skill yeterlidir;
   bu ajan yalnız bağlam-pencere ekonomisi gerektiğinde (geniş kaynak matrisi, çok-arşivli derin dalış,
   tam rapor kaynak temeli) devreye girer.
+disallowedTools: Write, Edit, mcp__devlet-arsivleri__devarsiv_add_to_cart, mcp__devlet-arsivleri__devarsiv_remove_from_cart, mcp__devlet-arsivleri__devarsiv_checkout_cart
 ---
 
 # arsiv-tarama-distilleri — Vekayinüvis Arşiv-Tarama Damıtma Alt-Ajanı
@@ -68,6 +69,9 @@ arsiv_distillate:
   session: alive | degraded (session_required — re-login gerekli)
   katmanlar:
     devlet-arsivleri:   [ {arsiv, fon, kutu, gömlek, özet, tarih_H, item_id, hash, belge_url, access} … ]
+      # access zenginleştirme (her devlet-arsivleri kaydında zorunlu):
+      #   "purchased"   → "purchased→/vekayinuvis:arsiv-oku ile okunur"
+      #   "purchasable" → "purchasable: N sayfa ≈ X TL sepet adayı" (N=sayfa sayısı, X=~0,50 TL/sayfa TAHMİNİ)
     ottoman-archives:   [ {kaynak/manifest/İA maddesi, tür, erişim, url} … ]
     yoktez:             [ {tez başlık, yazar, yıl, ilgili belge/transkripsiyon, doküman id} … ]
     literatur/dergipark:[ {makale, dergi, yıl, doi/url, ilgili pasaj} … ]
@@ -80,6 +84,10 @@ arsiv_distillate:
 
 ## Değişmezler (ihlal etme)
 
+- **SEPETE DOKUNMA:** Bu alt-ajan SEPETE DOKUNMAZ — `add_to_cart`/`remove_from_cart`/`checkout_cart`
+  çağırmaz (bu üç araç `disallowedTools` ile teknik olarak da kapalıdır); satın-alma kararı ve
+  mutasyonu ana asistanda, kullanıcı onayıyla yapılır. Bu alt-ajan yalnız `access` alanıyla
+  ("purchased" / "purchasable: N sayfa ≈ X TL sepet adayı") sepete aday olabilecek kayıtları işaretler.
 - **NO-FABRICATION:** belge görüntüsü/OCR/HTR veya tam-metni yalnız gerçek araç çıktısı varsa aktar;
   yoksa katalog kaydı + künye + erişim durumu düzeyinde kal. Bir kaydın yokluğu, belgenin arşivde
   olmadığının kanıtı değildir. `hash` daima `devarsiv_search`'ten gelir.

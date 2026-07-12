@@ -250,7 +250,7 @@ keychain'ine yazılır (settings.json'a değil).
 | `KANUN_GEREKÇESİ` | **devlet-arsivleri** (BCA lâyiha/BOA İrade katalog kayıtları — L1–L4) + ottoman-archives (Düstûr/İA) + yoktez + literatur/paper-search (L5); sağlık alanında medical-history.md | web_search/web_fetch (Resmî Gazete, TBMM zabıt) |
 | `SEPET/SATIN-ALMA` | **devlet-arsivleri** sepet 4'lüsü (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart` — ödeme YALNIZ insan/noVNC; skills/satinalma) | — (ödeme asla otonom değil; fallback yok) |
 | `ARŞİV OKUMA` | **devlet-arsivleri** (`list_archive`/`get_archive_page`/`ocr_archive_pages`/`get_archive_pdf` — 300 DPI, arşiv-öncelikli okuma; skills/arsiv-oku) | `devarsiv_ocr_belge_pages` (viewer temsilî-sayfa sınırlı) |
-| `ASYNC OCR` | **devlet-arsivleri** (`ocr_submit`/`ocr_result`) + **anamnesis** ingest (skills/toplu-okuma) | — (uzun-koşum job; poll dışında fallback yok) |
+| `ASYNC OCR` | **devlet-arsivleri** (`ocr_submit`/`ocr_result`) + **anamnesis** ingest (skills/toplu-okuma) — >5 sayfa VEYA `both` tam belge | ≤5 sayfa VE tek motor → sync `ARŞİV OKUMA`'daki `ocr_archive_pages`'e düş (K4 karar kuralı) |
 
 ---
 

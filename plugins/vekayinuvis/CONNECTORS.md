@@ -222,6 +222,21 @@ API-key gerektiren sunucular `userConfig` ile parametrelenir; bu durumda
     "paper-search": {
       "type": "http",
       "url": "https://server.smithery.ai/@adamamer20/paper-search-mcp-openai/mcp?api_key=${user_config.smithery_api_key}&profile=${user_config.smithery_profile}"
+    },
+    "openathens": {
+      "type": "http",
+      "url": "https://openathens.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}" }
+    },
+    "annas-reader": {
+      "type": "http",
+      "url": "https://annas.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${ANNAS_MCP_API_KEY}" }
+    },
+    "anamnesis": {
+      "type": "http",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}" }
     }
   }
 }

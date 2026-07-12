@@ -107,7 +107,6 @@
       "required": false
     }
   },
-  "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json",
   "defaultEnabled": false
 }

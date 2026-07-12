@@ -11,6 +11,8 @@ description: >-
   invaryantlarına tabidir. Tek-connector/hızlı sorgular için ÇAĞIRMA — doğrudan skill yeterlidir;
   bu ajan yalnız bağlam-pencere ekonomisi gerektiğinde (geniş kaynak matrisi, çok-arşivli derin dalış,
   tam rapor kaynak temeli) devreye girer.
+model: inherit
+color: cyan
 disallowedTools: Write, Edit, mcp__devlet-arsivleri__devarsiv_add_to_cart, mcp__devlet-arsivleri__devarsiv_remove_from_cart, mcp__devlet-arsivleri__devarsiv_checkout_cart
 ---
 

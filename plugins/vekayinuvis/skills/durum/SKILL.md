@@ -18,21 +18,47 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/vekayinuvis_doctor.py" --topic "$TOPIC" -
 ```
 
 3. Çıktıyı özetle:
-   - 13 zorunlu server satırı var mı?
+   - 17 zorunlu server satırı var mı? (çekirdek 3 · akademik 6 · tam-metin 2 ·
+     yasama/mevzuat 3 · destekleyici 2 · substrat 1; `marmara` bu turda wire
+     edilmedi — manifestoya dahil değil, bkz. CONNECTORS.md § 1 not.)
    - Hangi connector `hit`, hangisi `degraded`, hangisi `skipped`?
    - `devlet-arsivleri` için `devarsiv_session_status` canlı probe sonucunu bildir
      (`session alive` veya `session_required`).
-   - `devarsiv_server_info` çıktısındaki `tools` uzunluğunun **22** olduğunu doğrula
-     (10→22 araç genişlemesi; eksikse connector'ı claude.ai'da yeniden bağla uyarısı
-     ver) ve SEPET/SATIN-ALMA, ARŞİV OKUMA, ASYNC OCR mod-map satırlarının
-     (CONNECTORS.md § 7) G0 manifestosunda ayrı satır olarak yer aldığını kontrol et.
+   - `--live` çıktısındaki üç ek satırı oku ve raporla (§ Doctor çıktı biçimi):
+     `[envanter]`, `[engines]`, `[vnc]`.
    - Eksik anahtarları secret değeri göstermeden env var adıyla bildir.
 
 Bu skill araştırma çıktısı üretmez; belge görüntüsü, OCR/HTR veya tam metin çekmez. Yalnız
 marketplace kurulumunun connector wiring / credential / G0 manifest ön-denetimini ve
 `devlet-arsivleri` oturum canlılığını kontrol eder.
 
-> **Not (ileri-referans — Task 8).** Bu skill'in doctor-çıktı **format** bölümü Task 8'de
-> genişletilecektir: `scripts/vekayinuvis_doctor.py` v3'e eklenecek SEPET/SATIN-ALMA,
-> ARŞİV OKUMA ve ASYNC OCR canlılık raporlama biçimleri bu bölüme işlenecektir. Şimdilik
-> yukarıdaki dört maddelik özet ve mevcut G0 manifest çıktısı geçerlidir.
+## Doctor çıktı biçimi — `--live` ek bölümleri (v3.0.0)
+
+Mevcut server satırlarının altına (`--json` modunda `live_checks` dizisi olarak,
+metin modunda "Canlı ek kontroller" başlığı altında) `devlet-arsivleri` üzerinden
+tek bir `devarsiv_server_info` çağrısı + bir noVNC HEAD isteğiyle üretilen üç
+etiketli bölüm eklenir. Yalnız `--live` bayrağıyla görünür; offline modda yoktur.
+
+- **`[envanter]`** — `devarsiv_server_info` yanıtındaki `tools` dizisinin
+  uzunluğunu **22** beklenen araç sayısıyla (K1 tablosu) karşılaştırır:
+  - `[envanter] OK (22/22)` — sürüklenme yok.
+  - `[envanter] DRIFT: N/22 — claude.ai connector'ını yeniden bağlayın` — N≠22;
+    araç listesi client tarafında cache'lenmiş olabilir, kullanıcıya connector'ı
+    claude.ai'da kopar/yeniden bağla uyarısı ver.
+  - `[envanter] SORUN: <gerekçe>` — handshake/call başarısız (curl hatası, http
+    kodu, parse hatası, yanıtta `tools` alanı yok); bu bir drift kanıtı değil,
+    probe'un kendisinin çalışmadığının kanıtıdır — `devlet-arsivleri` satırının
+    G0 durumunu (hit/degraded/skipped) etkilemez, ayrı bir tanı sinyalidir.
+- **`[engines]`** — aynı `devarsiv_server_info` yanıtından `ocr.engines.transkribus`
+  ve `ocr.engines.escriptorium` durum string'lerini olduğu gibi iki satır hâlinde
+  basar (örn. `[engines] transkribus: available`, `[engines] escriptorium:
+  unavailable: ...`). `ocr.engines` alanı yoksa/parse edilemezse tek satır
+  `[engines] SORUN: <gerekçe>` yazılır.
+- **`[vnc]`** — `https://devarsiv-vnc.cureonics.com/vnc.html` adresine (satın alma
+  akışının noVNC girişi) HEAD isteği atar:
+  - `302` (Cloudflare Access yönlendirmesi) → `[vnc] OK (Access-gated)`.
+  - timeout / 5xx / herhangi beklenmedik kod → `[vnc] SORUN`.
+
+Bu üç satır belge görüntüsü, OCR/HTR veya tam metin üretmez — yalnız connector
+envanter-drift'i, OCR motor sağlığı ve noVNC erişilebilirliğinin dürüst, otomatik
+kanıtıdır.

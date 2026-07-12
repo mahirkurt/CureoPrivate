@@ -22,8 +22,10 @@ from typing import Any, Iterable
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 MCP_PATH = PLUGIN_ROOT / ".mcp.json"
-DEFAULT_MANIFEST_PATH = Path.cwd() / "shared" / "coverage-manifest.md"
 MCP_PROTOCOL_VERSION = "2024-11-05"
+DOCTOR_CLIENT_VERSION = "3.0.0"
+DEVARSIV_EXPECTED_TOOLS = 22
+DEVARSIV_VNC_URL = "https://devarsiv-vnc.cureonics.com/vnc.html"
 
 ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
 USER_CONFIG_RE = re.compile(r"\$\{user_config\.([a-zA-Z0-9_]+)\}")
@@ -54,7 +56,11 @@ FLEET: tuple[ServerSpec, ...] = (
     ServerSpec("paper-search", "Akademik", "user_config", "Smithery userConfig"),
     ServerSpec("openathens", "Tam-metin", "env", "lisansli tam-metin Tier 3"),
     ServerSpec("annas-reader", "Tam-metin", "env", "son-care tam-metin Tier 4"),
+    ServerSpec("resmigazete", "Yasama/mevzuat", "env", "erken-Cumhuriyet RG arsivi; rg-ocr cift-motor"),
+    ServerSpec("mevzuat", "Yasama/mevzuat", "env", "TR mevzuat + mulga + gerekce + RG capraz-referans"),
+    ServerSpec("tbmm", "Yasama/mevzuat", "env", "TBMM yasama tarihcesi + Acik Erisim DSpace"),
     ServerSpec("yok-akademik", "Destekleyici", "env", "uzman/ekol haritasi"),
+    ServerSpec("detsis", "Destekleyici", "env", "kurumsal prosopografi; Cumhuriyet-sinirli"),
     ServerSpec("anamnesis", "Buyuk-veri substrati", "env", "RAG/GraphRAG ingest ve bounded query"),
 )
 
@@ -196,6 +202,36 @@ def curl_post_json(
     return status_code, response_headers, body, ""
 
 
+def curl_head(url: str, timeout: int) -> tuple[int, str]:
+    """HEAD-only probe (no MCP envelope). Mirrors curl_post_json's subprocess pattern."""
+    cmd = [
+        "curl",
+        "-sS",
+        "--max-time",
+        str(timeout),
+        "-o",
+        "/dev/null",
+        "-w",
+        "%{http_code}",
+        "-I",
+        url,
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        return 0, "curl executable not found"
+
+    if result.returncode != 0:
+        return 0, result.stderr.strip() or f"curl exit {result.returncode}"
+
+    stdout = result.stdout.strip()
+    try:
+        status_code = int(stdout)
+    except ValueError:
+        status_code = 0
+    return status_code, ""
+
+
 def devarsiv_live_status(config: dict, timeout: int) -> tuple[str, str]:
     url = config.get("url")
     if not isinstance(url, str) or not url:
@@ -213,7 +249,7 @@ def devarsiv_live_status(config: dict, timeout: int) -> tuple[str, str]:
         "params": {
             "protocolVersion": MCP_PROTOCOL_VERSION,
             "capabilities": {},
-            "clientInfo": {"name": "vekayinuvis-doctor", "version": "2.5.0"},
+            "clientInfo": {"name": "vekayinuvis-doctor", "version": DOCTOR_CLIENT_VERSION},
         },
     }
     code, response_headers, _body, error = curl_post_json(
@@ -287,6 +323,156 @@ def devarsiv_live_status(config: dict, timeout: int) -> tuple[str, str]:
     return "degraded", f"live devarsiv_session_status unexpected status={status or 'unknown'}"
 
 
+def envanter_line(content: dict[str, Any]) -> str:
+    """[envanter] line: devarsiv_server_info tool-count drift check (K1: 22 tools)."""
+    tools = content.get("tools")
+    if isinstance(tools, list):
+        count = len(tools)
+    elif isinstance(tools, int):
+        count = tools
+    else:
+        return "[envanter] SORUN: devarsiv_server_info yanitinda tools alani yok"
+    if count != DEVARSIV_EXPECTED_TOOLS:
+        return (
+            f"[envanter] DRIFT: {count}/{DEVARSIV_EXPECTED_TOOLS} — "
+            "claude.ai connector'ını yeniden bağlayın"
+        )
+    return f"[envanter] OK ({count}/{DEVARSIV_EXPECTED_TOOLS})"
+
+
+def engine_lines(content: dict[str, Any]) -> list[str]:
+    """[engines] lines: transkribus/escriptorium status strings from ocr.engines."""
+    ocr = content.get("ocr")
+    engines = ocr.get("engines") if isinstance(ocr, dict) else None
+    if not isinstance(engines, dict):
+        return ["[engines] SORUN: devarsiv_server_info yanitinda ocr.engines alani yok"]
+    lines = []
+    for name in ("transkribus", "escriptorium"):
+        status = engines.get(name)
+        lines.append(f"[engines] {name}: {status if status is not None else 'bilinmiyor'}")
+    return lines
+
+
+def devarsiv_envanter_engines_lines(config: dict, timeout: int) -> list[str]:
+    """Run the devarsiv_server_info tools/call (same initialize/initialized/tools_call
+    HTTP+JSON-RPC pattern as devarsiv_live_status) and format [envanter]+[engines] lines."""
+    url = config.get("url")
+    if not isinstance(url, str) or not url:
+        reason = "live devarsiv_server_info icin MCP URL yok"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    headers = []
+    for key, value in config.get("headers", {}).items():
+        if isinstance(value, str):
+            headers.append(f"{key}: {expand_env_template(value)}")
+
+    init_payload: dict[str, Any] = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": MCP_PROTOCOL_VERSION,
+            "capabilities": {},
+            "clientInfo": {"name": "vekayinuvis-doctor", "version": DOCTOR_CLIENT_VERSION},
+        },
+    }
+    code, response_headers, _body, error = curl_post_json(
+        url,
+        headers,
+        init_payload,
+        timeout=timeout,
+    )
+    if error:
+        reason = f"live initialize curl_failed ({error})"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+    if code != 200:
+        reason = f"live initialize http {code}"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    session_id = header_value(response_headers, "mcp-session-id")
+    if not session_id:
+        reason = "live initialize mcp-session-id dondurmedi"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    initialized_payload = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+    code, _, _, error = curl_post_json(
+        url,
+        headers,
+        initialized_payload,
+        session_id=session_id,
+        timeout=timeout,
+    )
+    if error:
+        reason = f"live initialized notification curl_failed ({error})"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+    if code not in {200, 202, 204}:
+        reason = f"live initialized notification http {code}"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    call_payload = {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/call",
+        "params": {"name": "devarsiv_server_info", "arguments": {}},
+    }
+    code, _, body, error = curl_post_json(
+        url,
+        headers,
+        call_payload,
+        session_id=session_id,
+        timeout=timeout,
+    )
+    if error:
+        reason = f"live devarsiv_server_info curl_failed ({error})"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+    if code != 200:
+        reason = f"live devarsiv_server_info http {code}"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    response = mcp_response_json(body)
+    if response is None:
+        reason = "live devarsiv_server_info parse_failed"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+    if response.get("error"):
+        reason = "live devarsiv_server_info jsonrpc_error"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    result = response.get("result")
+    if isinstance(result, dict) and result.get("isError") is True:
+        reason = "live devarsiv_server_info tool_error"
+        return [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+
+    content = structured_content(response)
+    return [envanter_line(content), *engine_lines(content)]
+
+
+def devarsiv_vnc_line(timeout: int) -> str:
+    """[vnc] line: HEAD probe against the noVNC login surface.
+
+    302 (Cloudflare Access redirect) = OK; timeout/5xx (or any other unexpected
+    response) = SORUN — the noVNC surface is only ever fronted by an Access
+    redirect, so anything else signals a problem.
+    """
+    code, error = curl_head(DEVARSIV_VNC_URL, timeout)
+    if error or code == 0:
+        return "[vnc] SORUN"
+    if code == 302:
+        return "[vnc] OK (Access-gated)"
+    return "[vnc] SORUN"
+
+
+def live_extra_checks(servers: dict, timeout: int) -> list[str]:
+    """Task 8 --live additions: [envanter]/[engines] (devarsiv_server_info) + [vnc] (HEAD)."""
+    config = servers.get("devlet-arsivleri")
+    if config is None:
+        reason = "devlet-arsivleri .mcp.json'da tanimli degil"
+        lines = [f"[envanter] SORUN: {reason}", f"[engines] SORUN: {reason}"]
+    else:
+        lines = devarsiv_envanter_engines_lines(config, timeout)
+    lines.append(devarsiv_vnc_line(timeout))
+    return lines
+
+
 def classify(
     spec: ServerSpec,
     config: dict | None,
@@ -332,6 +518,10 @@ def rows(topic: str, *, live: bool = False, timeout: int = 20) -> list[str]:
             out.append(current_group)
         status, reason = classify(spec, servers.get(spec.name), live=live, timeout=timeout)
         out.append(f"  {spec.name:<19} -> {status:<8} ({reason}; {spec.note})")
+    if live:
+        out.append("")
+        out.append("Canli ek kontroller (devlet-arsivleri: envanter/engines/vnc)")
+        out.extend(f"  {line}" for line in live_extra_checks(servers, timeout))
     out.extend(
         [
             "",
@@ -362,7 +552,24 @@ def json_report(topic: str, *, live: bool = False, timeout: int = 20) -> dict:
                 "note": spec.note,
             }
         )
-    return {"topic": topic, "mcp_path": str(MCP_PATH), "live": live, "entries": entries}
+    report = {"topic": topic, "mcp_path": str(MCP_PATH), "live": live, "entries": entries}
+    if live:
+        report["live_checks"] = live_extra_checks(servers, timeout)
+    return report
+
+
+def out_dir() -> Path:
+    """Base directory for --write-manifest output.
+
+    Single helper for the output-home decision (Task 8 Step 3): honors
+    ``CLAUDE_PLUGIN_DATA`` (Claude Code's per-plugin persistent data dir) when
+    set; otherwise preserves the pre-v3 default of the invoking workspace's
+    ``shared/`` directory — fully backward-compatible.
+    """
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data).expanduser() / "shared"
+    return Path.cwd() / "shared"
 
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
@@ -383,12 +590,15 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--write-manifest",
         action="store_true",
-        help="Write preflight manifest to the current workspace shared/coverage-manifest.md",
+        help="Write preflight manifest to out_dir()/coverage-manifest.md",
     )
     parser.add_argument(
         "--output",
-        default=str(DEFAULT_MANIFEST_PATH),
-        help="Output path used with --write-manifest",
+        default=None,
+        help=(
+            "Output path used with --write-manifest (default: out_dir()/coverage-manifest.md; "
+            "out_dir() = $CLAUDE_PLUGIN_DATA/shared if set, else <cwd>/shared)"
+        ),
     )
     return parser.parse_args(argv)
 
@@ -407,7 +617,7 @@ def main() -> int:
 
     text = "\n".join(rows(args.topic, live=args.live, timeout=args.timeout)) + "\n"
     if args.write_manifest:
-        output = Path(args.output).expanduser()
+        output = Path(args.output).expanduser() if args.output else out_dir() / "coverage-manifest.md"
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(text, encoding="utf-8")
         print(f"wrote {output}")

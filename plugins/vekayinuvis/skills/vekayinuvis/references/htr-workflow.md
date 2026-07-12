@@ -52,18 +52,32 @@ tanır.
 
 ## 3. Standart 7-Adımlı İş Akışı
 
-### Adım 0 — Hedef yazmayı IIIF üzerinde tespit et
+### Adım 0 — Hedef yazmayı tespit et (IIIF veya resmî katalog)
+
+Yazma **iki ayrı yolla** tespit edilebilir; ikisi de Adım 1'e aynı şekilde
+akar (bir IIIF manifest'i veya bir devarsiv sayfa taraması, HTR pipeline'ının
+girdisi olabilir):
 
 ```text
+(a) IIIF yolu:
 ottoman_search_iiif(query="risale-i tıbbiye", sources=["gallica","internet_archive","princeton"])
 ↓
 ottoman_fetch_iiif_manifest(manifest_url="<adayın manifest URL'i>")
 ↓
 [Manifest metadata doğrulanır: dil, tarih, hat türü, folio sayısı]
+
+(b) Resmî katalog (devarsiv) yolu — BOA/BCA/Diplomatik/ATASE el yazmaları:
+devarsiv_search("<konu/terim>", arsiv=2)  → resmî katalog kayıtları (item_id/hash)
+↓
+devarsiv_get_belge_image(item_id, hash, arsiv=2) → sayfa taraması ImageContent
+   (satın-alma durumundan bağımsız önizleme; satın-alınmışsa bkz. §7 devarsiv çift-motor)
+↓
+[Görüntü, IIIF manifest sayfası yerine doğrudan eScriptorium'a import edilebilir
+ veya §7'deki devarsiv çift-motor OCR/HTR yoluna (Transkribus+eScriptorium) yönlendirilir]
 ```
 
-> **Manifest seçim kriterleri**: (i) tek yazma olmalı (compilation manifest
-> değil) — değilse `ottoman_browse_iiif_collection` ile parçalanmalı;
+> **Manifest seçim kriterleri (IIIF yolu)**: (i) tek yazma olmalı (compilation
+> manifest değil) — değilse `ottoman_browse_iiif_collection` ile parçalanmalı;
 > (ii) folio görselleri yüksek çözünürlük (≥ 2000 px en uzun kenar) olmalı;
 > (iii) telif/kullanım hakkı `rights` veya `attribution` alanında açık
 > belirtilmiş olmalı.
@@ -100,6 +114,24 @@ ara:
 > **Önemli uyarı.** **Siyâkat** ve **celî divânî**, paleografi uzmanları
 > bile zaman alarak okuduğu özel kalem yazılarıdır. Bu hatlarda HTR çıktısı
 > yaklaşık bir okuma olarak değerlendirilmeli, asla doğrudan yayınlanmamalı.
+
+#### 2.1 devarsiv çift-motor için Transkribus model seçim tablosu (K3)
+
+Adım 0'da **(b) devarsiv yolu** izlendiyse (BOA/BCA belgesi, eScriptorium'a
+değil doğrudan `devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr_submit`'e
+`engine=` parametresiyle gidilir), model seçimi eScriptorium'un kendi Kraken
+modelleri yerine **Transkribus** tarafında yapılır:
+
+| Belge türü | Model | CER | Not |
+| --- | --- | --- | --- |
+| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
+| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | %5.94 | Fetva/kadı-sicili tipi eller için alternatif |
+| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | %7.2 | Matbu Osmanlıca; eScriptorium OpenITI print ile çapraz-kontrol |
+
+`engine="both"` seçildiğinde Transkribus (bu tablo) + eScriptorium (yukarıdaki
+Kraken tablosu) **paralel** koşar ve iki çıktı `transcriptions` altında yan
+yana döner — bkz. `devlet-arsivleri-katalog.md` §7.1/§7.2 (K2/K3) ve §8.3
+(üç-sütun transkripsiyon).
 
 ### Adım 3 — Belge oluştur ve IIIF'ten import et
 
@@ -241,6 +273,29 @@ function wait_for_task(document_id, task_kind, timeout=600):
 Pratikte skill, segment + transcribe çağrılarından sonra **15 saniyelik
 aralıklarla** polling yapar ve durumu kullanıcıya raporlar.
 
+### 6.1 devarsiv yolunda sync/async kararı (K4)
+
+Adım 0'daki **(b) devarsiv yolu** izlendiğinde, eScriptorium'un kendi
+task/polling mantığı yerine devarsiv'in **kendi sync/async kuralı** uygulanır:
+
+```text
+≤5 sayfa VE tek motor  → devarsiv_ocr_archive_pages (sync, MULTIPAGE_MAX_PAGES)
+>5 sayfa VEYA engine="both" tam belge → async kuyruk:
+    devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)         → job_id
+    ↓ poll
+    devarsiv_ocr_result(job_id, include_text=false)                   → queued/running/done/error/stale
+    ↓ done'da TEK SEFER
+    devarsiv_ocr_result(job_id, include_text=true)
+    ↓
+    anamnesis ingest_document(doc_id="devarsiv:<code>", …)
+    ↓
+    sonraki sorgular anamnesis hybrid_query (bağlam ekonomisi)
+```
+
+`stale` dönerse **aynı parametrelerle resubmit** (arşiv PDF yerel; maliyet
+tekrarlanmaz — yalnız OCR işi yeniden kuyruklanır). Bkz.
+`devlet-arsivleri-katalog.md` §8.4 (async akış, → `skills/toplu-okuma`).
+
 ---
 
 ## 7. Fallback Yolu — eScriptorium Erişimi Yoksa
@@ -249,6 +304,14 @@ Eğer `ottoman_escriptorium_*` tool'ları konfigüre edilmemişse veya
 `ESCRIPTORIUM_NOT_CONFIGURED` hatası dönüyorsa, MANUSCRIPT_TRANSCRIBE modu
 düşük-erişim moduna geçer:
 
+0. **BOA/BCA belgesi → devarsiv çift-motor (K2), önce bunu dene.** Kaynak
+   Adım 0'daki (b) devarsiv yolundan geliyorsa (resmî katalogtan bir BOA/BCA
+   kaydı), eScriptorium konfigüre olmasa bile **bağımsız bir yol** vardır:
+   `devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr_submit`'i
+   `engine="both"` ile çağır — Transkribus (el yazması, K3 model tablosu) +
+   eScriptorium (basılı, Kraken) **paralel** koşar (bkz. § 2.1, § 6.1 K4,
+   `devlet-arsivleri-katalog.md` §7.1/§8.3). Bu yol başarısız/kullanılamaz
+   dönerse aşağıdaki 1-5 adımlarına düş.
 1. IIIF manifest'i `ottoman_fetch_iiif_manifest` ile getir.
 2. İlgili sayfaların yüksek-çözünürlüklü görsel URL'lerini topla.
 3. **Vision-tabanlı satır okuma** ile sınırlı transkripsiyon yap
@@ -318,7 +381,11 @@ Aşağıda Gallica'da bulunan bir XVIII. yy. matbu Osmanlıca risâlenin
 
 ```mermaid
 flowchart TD
-    A[Kullanıcı yazmadan transkripsiyon istedi] --> B{IIIF manifest var mı?}
+    A[Kullanıcı yazmadan transkripsiyon istedi] --> A1{Kaynak BOA/BCA resmî devarsiv kataloğu mu?}
+    A1 -- Evet --> K[devarsiv çift-motor engine="both" dene — K2/K3; Transkribus+eScriptorium paralel]
+    K -- Başarılı --> H
+    K -- Kullanılamaz/degrade --> B
+    A1 -- Hayır/Bilinmiyor --> B{IIIF manifest var mı?}
     B -- Hayır --> Z[Yazmanın IIIF olarak yayınlandığı yeri sor; aksi halde manuel transkripsiyon öner]
     B -- Evet --> C{eScriptorium konfigüre mi?}
     C -- Hayır --> Y[Fallback: vision-tabanlı sınırlı okuma + uyarı]
@@ -339,3 +406,31 @@ değildir. Vekayinüvis, transkribe edilen metni **anlamak**, bağlamlandırmak
 ve ikincil literatürle ilişkilendirmek için **insan tarihçi** rolünü
 üstlenmeye devam eder; transkripsiyon yalnızca o sürecin hızlandırıcı bir
 katmanıdır.
+
+---
+
+## 11. LLM Görü-Okuma Güvenlik-Reddi Notu (Safety-Degrade)
+
+Tarihî şiddet/esaret anlatılarında (savaş, sürgün, kıtlık, cariyelik, esaret
+gibi konuları içeren belgeler) görü-tabanlı okuma/çeviri bazen bir güvenlik-
+reddi (safety refusal) verebilir — bu davranış literatürde tanımlanmıştır
+(**arXiv 2503.11898, likely**; kesin model/koşul eşlemesi bu skill için
+doğrulanmamıştır, dolayısıyla "likely" işaretlidir). Karşılaşıldığında:
+
+1. **Parça-böl**: pasajı daha küçük, tarafsız çerçeveli parçalara ayırıp
+   yeniden dene (ör. tek cümle/tek satır bazında).
+2. **Yeniden dene**: farklı bir çerçeveleme ile (akademik/arşivsel bağlam
+   açıkça belirtilerek) tekrar iste.
+3. **Olmadıysa dürüst "okunamadı" işareti**: içerik **asla atlanmış gibi
+   gösterilmez** — hangi pasajın hangi nedenle okunamadığı raporda açıkça
+   belirtilir (no-fabrication disiplini; sessiz atlama yasak).
+
+### DUDU Teyit Notu (SPECULATIVE)
+
+`UD_Ottoman_Turkish-DUDU` treebank'inin (Universal Dependencies projesi
+kapsamında Osmanlı Türkçesi için önerilen bir bağımlılık ağacı bankası)
+Universal Dependencies deposunda **teyit edilmesi gerekir** — bu skill için
+varlığı/güncel durumu **doğrulanmamıştır (SPECULATIVE)**. Kullanılmadan önce
+`universaldependencies.org` veya UD GitHub organizasyonu üzerinden canlı
+teyit yapılmalı; teyit edilmeden bir HTR/paleografi iddiasının dayanağı
+olarak sunulmaz.

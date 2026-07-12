@@ -107,6 +107,14 @@ KANUN_GEREKÇESİ modu üç turda çalışır.
 ```
 TUR 1 (paralel, 6-8 connector):
 
+  ├─ devarsiv_search("<kanun konusu>", arsiv="2")
+  │     → BOA İrade/HAT/DH.* grubu — klasik–geç Osmanlı lâyiha ve müzakere
+  │       kayıtları (canlı resmî katalog, fon/kutu/gömlek + item_id/hash)
+  │
+  ├─ devarsiv_search("<kanun konusu>", arsiv="1")
+  │     → BCA 030.10 lâyiha/muamelat ve 030.18 Bakanlar Kurulu kararnameleri
+  │       (erken Cumhuriyet; ottoman-archives'ta kayıt yoktu, boşluk kapandı)
+  │
   ├─ ottoman_search_iiif(
   │     query="<kanun konusu> nizamname",
   │     sources=["internet_archive","gallica"],
@@ -344,23 +352,29 @@ Mahir Bey'in **1219 sayılı Kanun reform teklifi** için tipik komut:
 
 Bu komutta skill paralel olarak şu çağrıları yapar:
 
-1. `ottoman_search_dspace("İcra-yı Tababet Şuabatı", repository="isam-makaleler")`
+1. `devarsiv_search("tababet icrası", arsiv="2")`
+   → BOA İrade/HAT/DH.* grubu — klasik–geç Osmanlı lâyiha/müzakere kayıtları
+     (canlı resmî katalog, L1–L3 katmanlarının arşiv kanıtı)
+2. `devarsiv_search("tababet icrası", arsiv="1")`
+   → BCA 030.10 lâyiha/muamelat ve 030.18 Bakanlar Kurulu kararnameleri
+     (erken Cumhuriyet, L4 katmanının arşiv kanıtı)
+3. `ottoman_search_dspace("İcra-yı Tababet Şuabatı", repository="isam-makaleler")`
    → İSAM Makaleler Veri Tabanı (osmed, Belleten, OTAM)
-2. `ottoman_search_iiif("Düstur Tertib Sani", sources=["loc","internet_archive"])`
+4. `ottoman_search_iiif("Düstur Tertib Sani", sources=["loc","internet_archive"])`
    → LoC Hamid II Düstûr koleksiyonu (Birinci ve İkinci Tertib ciltleri
      IIIF erişimi)
-3. `web_search("TBMM Zabıt Ceridesi 1219 müzakere Adnan Adıvar Refik Saydam")`
+5. `web_search("TBMM Zabıt Ceridesi 1219 müzakere Adnan Adıvar Refik Saydam")`
    → acikerisim.tbmm.gov.tr TBMM ZC Devre III, İçtima 1, C.6, B.65,
      14.4.1928 sayfaları
-4. `web_fetch("https://www.mevzuat.gov.tr/mevzuatmetin/1.3.1219.pdf")`
+6. `web_fetch("https://www.mevzuat.gov.tr/mevzuatmetin/1.3.1219.pdf")`
    → 1219 sayılı Kanun konsolide metni (Madde 78 ilga zinciri verifikasyonu)
-5. `search_yok_tez_detailed("1219 sayılı Kanun tıp hukuku tarihçe")`
+7. `search_yok_tez_detailed("1219 sayılı Kanun tıp hukuku tarihçe")`
    → Türk doktora tezleri
-6. `references/medical-history.md` paralel olarak yüklenir
+8. `references/medical-history.md` paralel olarak yüklenir
    → [D] doğrulanmış zincir: 1861 → 1871 → 1888 → 1894 → 1928
    → [T] tartışmalı dönem: 1908–1922 (II. Meşrutiyet sonrası tababet
      yasaması)
-7. `search_semantic("Ottoman medical regulation Tanzimat modernization comparative")`
+9. `search_semantic("Ottoman medical regulation Tanzimat modernization comparative")`
    → uluslararası karşılaştırmalı literatür
 
 Çıktı, doğrudan lex-sanitas'a beslenecek beş-katmanlı bir markdown

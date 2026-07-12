@@ -14,6 +14,7 @@
 6. [Uluslararası IIIF Kütüphaneleri](#international-iiif)
 7. [Uluslararası Tertier ve Aggregator Kaynaklar](#international-aggr)
 8. [Erişim Akış Şemaları](#access-flows)
+9. [Diğer Dijital Yüzeyler (Spekülatif / Teyitsiz)](#other-surfaces)
 
 ---
 
@@ -23,8 +24,10 @@
 ### 1.1 BOA — Cumhurbaşkanlığı Devlet Arşivleri, Osmanlı Arşivi
 - **Kayıt id**: `boa-dab`
 - **Erişim**: katalog araması **doğrudan canlı** (`devlet-arsivleri` connector,
-  `arsiv=2`); tek sayfa önizleme/OCR gerçek araçla, satın alınmış çok-sayfa set
-  eSatış akışıyla; diğer içerik için on-site/eSatış yol haritası
+  `arsiv=2`); tek sayfa önizleme/OCR gerçek araçla; `access=purchasable` bir
+  belgede tüm sayfalar gerekiyorsa sepet akışı (`add_to_cart`→`list_cart`→
+  ONAY→`checkout_cart`→noVNC, bkz. `devlet-arsivleri-katalog.md` §8.1); satın
+  alınmışsa okuma yerel arşivden (§8.2)
 - **URL**: <https://katalog.devletarsivleri.gov.tr>
 - **Bağlı connector**: `devlet-arsivleri` — `devarsiv_search(query, arsiv=2)` →
   `devarsiv_get_belge(item_id, hash, arsiv=2)` (bkz. `devlet-arsivleri-katalog.md`)
@@ -65,8 +68,9 @@
 
 ### 1.2 BCA — Cumhurbaşkanlığı Devlet Arşivleri, Cumhuriyet Arşivi (Ankara)
 - **Erişim**: katalog araması **doğrudan canlı** (`devlet-arsivleri`, `arsiv=1`);
-  belge sayfa taraması/OCR gerçek araçla; çok-sayfalı set için satın-alma/on-site
-  erişim durumu dürüstçe belirtilir
+  belge sayfa taraması/OCR gerçek araçla; çok-sayfalı set için sepet akışı
+  (`add_to_cart`→`list_cart`→ONAY→`checkout_cart`→noVNC) veya (satın alınmışsa)
+  yerel arşiv (§8.4 aşağıda)
 - **Bağlı connector**: `devlet-arsivleri` — `devarsiv_search(query, arsiv=1)`
   (BCA artık ottoman-archives'ta kayıtlı bir kaynak değil; bu connector doldurur)
 - **Ana fondlar**:
@@ -299,14 +303,22 @@
 2. devarsiv_search("<konu/terim>", arsiv=2) → resmî katalog kayıtları
    (fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash);
    geniş sorgu refine_required → daralt (fon/tarih ekle)
-3. devarsiv_get_belge(item_id, hash, arsiv=2) → künye + erişim/satın-alma durumu
-4. Belge TAM-METNİ için: devarsiv_get_belge_image/devarsiv_ocr_belge ile gerçek
-   sayfa/provenance; satın alınmış çok-sayfada devarsiv_ocr_belge_pages; ayrıca
-   search_yok_tez_detailed(keyword=<konu>) → transkripsiyon içeren tezler
-5. Görüntü/tam-metin çekilmediyse → eSatış satın-alma veya BOA akreditasyon
-   talimatı (belge görüntüsü ASLA uydurulmaz)
+3. devarsiv_get_belge(item_id, hash, arsiv=2) → künye + access (purchased/purchasable)
+4. access=purchased ise: OKUMA DAİMA yerel arşivden başlar — devarsiv_list_archive →
+   devarsiv_get_archive_page (300 DPI + görü); katalog önizlemesi (sample) yalnız
+   satın-alınmamış belgeler içindir (devlet-arsivleri-katalog.md §8.2, → skills/arsiv-oku)
+5. access=purchasable ise ve tüm sayfalar gerekiyorsa: devarsiv_add_to_cart →
+   devarsiv_list_cart (bağlayıcı Tutar) → kullanıcı ONAYI → devarsiv_checkout_cart →
+   noVNC (https://devarsiv-vnc.cureonics.com/vnc.html; § 8.1, → skills/satinalma).
+   Tek-cihaz uyarısı verbatim: "Kendi cihazınızdan kataloğa GİRMEYİN — tek-cihaz
+   kilidi HP oturumunu düşürür." Önizleme yeterliyse devarsiv_get_belge_image/
+   devarsiv_ocr_belge ile gerçek sayfa/provenance; ayrıca search_yok_tez_detailed
+   (keyword=<konu>) → transkripsiyon içeren tezler paralel aranır
+6. Görüntü/tam-metin gerçek araçla çekilmediyse → yalnız katalog düzeyinde kal
+   (belge görüntüsü ASLA uydurulmaz)
 1b. (oturum düşükse) session_required → kullanıcıya HP noVNC re-login yol
-    haritası; ottoman_get_source(boa-dab) + YÖKtez ile degrade devam
+    haritası (bkz. devlet-arsivleri-katalog.md §3); ottoman_get_source(boa-dab)
+    + YÖKtez ile degrade devam
 ```
 
 ### 8.2 IIIF Manuscript İçin Tam Yol Haritası
@@ -334,10 +346,53 @@
 1. devarsiv_search("<konu/terim>", arsiv=1) → resmî BCA katalog kayıtları
    (fon 030.10/030.18/490.1/180.9 vd. + kutu/gömlek + özet + tarih + item_id/hash)
    — BCA artık doğrudan aranabilir (ottoman-archives'ta kayıt yoktu, boşluk kapandı)
-2. devarsiv_get_belge(item_id, hash, arsiv=1) → künye + erişim durumu
-3. Belge tam-metni/desteği için: search_yok_tez_detailed + literatur (DergiPark
+2. devarsiv_get_belge(item_id, hash, arsiv=1) → künye + access (purchased/purchasable)
+3. access=purchased ise: OKUMA DAİMA yerel arşivden başlar — devarsiv_list_archive →
+   devarsiv_get_archive_page (300 DPI + görü); önizleme yalnız satın-alınmamış
+   belgeler içindir (devlet-arsivleri-katalog.md §8.2, → skills/arsiv-oku)
+4. access=purchasable ise: devarsiv_add_to_cart → devarsiv_list_cart (bağlayıcı
+   Tutar) → kullanıcı ONAYI → devarsiv_checkout_cart → noVNC
+   (https://devarsiv-vnc.cureonics.com/vnc.html; § 8.1, → skills/satinalma); tek-cihaz
+   uyarısı verbatim: "Kendi cihazınızdan kataloğa GİRMEYİN — tek-cihaz kilidi HP
+   oturumunu düşürür."
+5. Belge tam-metni/desteği için: search_yok_tez_detailed + literatur (DergiPark
    tam-metin) → transkripsiyonu/incelemesi olan tez/makaleler
-4. TBMM Zabıt Ceridesi paralel sorgu (yasama bağlamı varsa) →
+6. TBMM Zabıt Ceridesi paralel sorgu (yasama bağlamı varsa) →
    tbmm.gov.tr ya da Internet Archive
-5. Görüntü/tam-metin yoksa → Ankara on-site veya eSatış sınırlı erişim talimatı
+7. Görüntü/tam-metin gerçek araçla çekilmediyse → yalnız katalog düzeyinde kal
+   (uydurulmaz)
 ```
+
+---
+
+<a id="other-surfaces"></a>
+## 9. Diğer Dijital Yüzeyler (Spekülatif / Teyitsiz)
+
+> Bu bölümdeki iki kaynak, henüz `vekayinuvis`'in hiçbir connector'ıyla
+> **bağlı değildir**; buradaki bilgi kaynağın kamuya açık tanıtımına
+> dayanır ve **doğrulanmamıştır**. No-fabrication disiplini gereği,
+> asistan bu kaynaklardan doğrudan içerik **uydurmaz**; yalnız manuel
+> deep-link + sorgu-yankısı kalıbını sunar.
+
+### 9.1 Wikilala (SPEKÜLATİF / TEYİTSİZ)
+
+- **İddia edilen kapsam**: ~8 milyon sayfa matbu Osmanlıca tam-metin arama,
+  1729–1928 dönemi (Müteferrika sonrası matbu külliyat).
+- **Durum**: API yüzeyi **DOĞRULANMADI** — `vekayinuvis`'in hiçbir connector'ı
+  Wikilala'ya bağlı değildir; programatik erişim/kimlik doğrulama şartları
+  test edilmemiştir.
+- **Kullanım kalıbı (yalnız manuel)**: kullanıcıya kaynağın kendi arama
+  arayüzüne bir **deep-link** + **sorgu-yankısı** (aratılan terimin aynen
+  yansıtılması) sunulur; sonuç kümesi asistan tarafından **görülmeden**
+  içerik iddiası üretilmez.
+
+### 9.2 Qalamos (SPEKÜLATİF / TEYİTSİZ)
+
+- **İddia edilen kapsam**: 147.000+ Doğu yazması (Almanya merkezli birleşik
+  yazma eser kataloğu).
+- **Durum**: IIIF uçları **teyitsiz** — manifest URL şeması, canlılığı ve
+  erişim lisansı bu skill için doğrulanmamıştır.
+- **Önerilen ilk adım (canlı probe)**: bir entegrasyon denemesinden önce
+  `web_fetch`/`ottoman_fetch_iiif_manifest` ile tek bir aday manifest **canlı
+  test edilmeli**; test geçmeden Qalamos hiçbir çıktıya birincil kaynak
+  olarak eklenmez.

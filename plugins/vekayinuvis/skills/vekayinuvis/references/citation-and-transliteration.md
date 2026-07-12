@@ -240,6 +240,8 @@ Vakfiyesi", 15 Rebîülevvel 985 (2 Haziran 1577).*
   katalog kaydı+URL atıflanır, görüntü içeriği uydurulmaz.
 - Eğer belge sadece **transkripsiyon edisyonundan** alıntılanmışsa, hem orijinal
   arşiv referansı hem de edisyon referansı verilir (ikili atıf).
+- Kanıt-seviyesi etiketleri (görüntü teyidi bekliyor / görüyle doğrulandı /
+  HTR-yalnız) için SKILL §Kanıt-disiplini (Murzi kalıpları).
 
 ---
 

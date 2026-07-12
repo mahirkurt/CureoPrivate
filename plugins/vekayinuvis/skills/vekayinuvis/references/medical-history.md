@@ -485,10 +485,11 @@ TUR 1 (paralel):
   ├─ ottoman_get_islam_ansiklopedisi("<kurum adı>")
   ├─ search_yok_tez_detailed(keyword="<kurum adı> kuruluş")
   ├─ ottoman_search_dergipark(query="<kurum adı> kuruluş tarih")
-  └─ web_search("BOA HAT <kurum adı>")
-     # BOA Açık Katalog (katalog.devletarsivleri.gov.tr) için ipucu
+  └─ devarsiv_search("<kurum adı>", arsiv="2")
+     # veya modern/dönem-değişken terimde devarsiv_semantic_search("<kurum adı>", arsiv="2")
+     # resmî katalog (katalog.devletarsivleri.gov.tr) — canlı fon/kutu/gömlek + item_id/hash
 
-ARŞİV ÖNERİSİ (restricted erişim için fiilî tetkik):
+FON DARALTMASI (devarsiv_detailed_search ile tarih-aralığı/üst-fon daraltması):
   - BOA HAT (1808-1839 dönemi için)
   - BOA İrade.Mesail-i Mühimme (1839-1876)
   - BOA Y.PRK.SH (Sıhhiye, 1876-1909)
@@ -504,9 +505,11 @@ TUR 1 (paralel):
   ├─ ottoman_search_dergipark(query="<hekim adı>")
   ├─ search_yok_tez_detailed(keyword="<hekim adı> tıp tarihi")
   ├─ web_fetch URL Sicill-i Osmânî (İSAM elektronik baskısı)
-  └─ search_semantic(query="<hekim adı> Ottoman physician")
+  ├─ search_semantic(query="<hekim adı> Ottoman physician")
+  └─ devarsiv_search("<hekim adı> sicill-i ahval", arsiv="2")
+     # BOA DH.SAİD Sicill-i Ahval — canlı resmî katalog kaydı (bkz. § 6 katalog.md)
 
-ARŞİV ÖNERİSİ:
+FON DARALTMASI (devarsiv_detailed_search ile ust_fon daraltması):
   - BOA DH.SAİD (Sicill-i Ahval Defterleri) — devlet memurları
     için zorunlu otobiyografi
   - BOA Sicill-i Etibba (varsa)
@@ -526,7 +529,9 @@ TUR 1 (paralel):
   │   ← TBMM Açık Erişim Düstûr koleksiyonu (II. ve III. Tertib)
   ├─ web_fetch(url="resmigazete.gov.tr arşiv ...")
   │   ← 1921 sonrası mevzuat
-  └─ ottoman_get_islam_ansiklopedisi("Hıfzıssıhha" / "Tabâbet" / ...)
+  ├─ ottoman_get_islam_ansiklopedisi("Hıfzıssıhha" / "Tabâbet" / ...)
+  └─ devarsiv_search("<nizamname adı>", arsiv="2")
+     # BOA İrade/A.MKT lâyiha ve müzakere kayıtları — canlı resmî katalog
 
 DOĞRULANMIŞ ATIFLAR (v1.2 — birincil-kaynak çapraz doğrulamasından geçti):
   [D] 1861 Tabâbet-i Belediye Nizamnâmesi
@@ -587,9 +592,11 @@ TUR 1 (paralel):
   │     sources=["gallica"])
   │   ← Gazette Médicale d'Orient orijinal sayıları
   ├─ ottoman_search_dergipark(query="Cemiyet-i Tıbbiye-i Şâhâne")
-  └─ search_yok_tez_detailed(keyword="Cemiyet-i Tıbbiye tarihi")
+  ├─ search_yok_tez_detailed(keyword="Cemiyet-i Tıbbiye tarihi")
+  └─ devarsiv_search("Cemiyet-i Tıbbiye-i Şâhâne", arsiv="2")
+     # BOA HR.MKT/İrade.Hâriciye/Y.PRK.HR — canlı resmî katalog
 
-ARŞİV ÖNERİSİ:
+FON DARALTMASI (devarsiv_detailed_search ile ust_fon daraltması):
   - BOA HR.MKT (Hâriciye, yabancı uyruklu üyeler için)
   - BOA İrade.Hâriciye
   - Cemiyet'in kendi nizamnâmeleri için: BOA Y.PRK.HR

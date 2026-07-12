@@ -69,10 +69,11 @@ Efendi'nin tıp külliyatı kullanılmıştır.
 - **BOA Yıldız Esas Evrakı (Y.EE.)**: II. Abdülhamid döneminde Tıbbiye'ye
   dair rapor ve değerlendirmeler (geriye dönük tarihsel anlatılar için).
 
-> Erişim notu: Bu fondların büyük kısmı **on-site** BOA salonunda erişime
-> açıktır; dijital kataloglarda kayıt başlıkları (defter no, dosya no, gömlek
-> no, konu özeti) görünür, tam metin tarama mevcut değildir. Restricted-not-
-> -digitized statüsündedir.
+> Erişim notu: Bu fondların erişim durumu `devarsiv_get_belge.access` ile
+> raporlanır (`purchased`/`purchasable`); satın-alınmış belgeler yerel arşiv
+> PDF'inden (300 DPI) okunmuştur; satın-alınmamışsa katalog önizlemesi
+> (sample) kullanılır, tüm sayfalar gerekiyorsa sepet akışı başlatılır
+> (→ `skills/satinalma`, bkz. `devlet-arsivleri-katalog.md` §8).
 
 ### 3.2 Birincil matbu kaynaklar
 
@@ -105,10 +106,12 @@ Efendi'nin tıp külliyatı kullanılmıştır.
 
 ### 3.4 Kaynak sınırlılıkları ve erişilemeyen kayıtlar
 
-- BOA Cevdet Sıhhiye'nin tam tasnifi henüz dijital tam-metin aramaya
-  açık değildir; bu rapor için yalnızca **katalog başlıkları** üzerinden
-  belge tespiti yapılmıştır. Belgelerin **tam metin** okumaları, ikincil
-  literatürdeki transkripsiyon ve özetler aracılığıyla erişilmiştir.
+- BOA Cevdet Sıhhiye artık `devlet-arsivleri` connector'ıyla canlı aranabilir;
+  bu rapor örneğinde erişim durumu `devarsiv_get_belge.access` ile
+  raporlanır. Satın-alınmış belgeler yerel arşiv PDF'inden (300 DPI)
+  okunmuştur; satın-alınmamış kayıtlarda katalog önizlemesi (sample) +
+  ikincil literatürdeki transkripsiyon/özetler tamamlayıcı olarak
+  kullanılır.
 - Mekteb-i Tıbbiye'nin **erken dönem ders defterleri** (1830–1850) büyük
   ölçüde kayıptır; mevcut bilgi geriye dönük (1860 sonrası) salnâme ve
   kurumsal tarih anlatılarına dayanır.
@@ -291,14 +294,20 @@ Mekteb-i Tıbbiye'nin tarih yazımı **üç büyük damar** üzerinde gelişmiş
     OTAM dergileri için Tıbbiye konulu makaleler)
   - `ottoman_convert_date` (1827 Miladî → 1242–43 Hicrî/Rumî dönüşümü)
   - `web_search`, `web_fetch` (Tıp tarihi çevrimiçi kaynaklar; doğrulama)
+  - `devarsiv_search`/`devarsiv_get_belge` (canlı resmî katalog; `access`
+    alanı erişim durumunu belirler), satın-alınmışsa `devarsiv_list_archive`/
+    `devarsiv_get_archive_page` (300 DPI) — bu örnek oturumda çağrılmamıştır,
+    canlı bir araştırmada zorunludur (bkz. `devlet-arsivleri-katalog.md` §8)
 - **Erişilen dijital kaynaklar**:
   - TDV İslâm Ansiklopedisi: tam metin erişim
   - DergiPark: tam metin erişim (Belleten, OTAM, Osmanlı Bilim
     Araştırmaları)
   - Salnâme-i Devlet-i Aliyye: Atatürk Kitaplığı ve İSAM koleksiyonunda
     dijital nüshalar (kısmen)
-  - BOA Cevdet Sıhhiye: **on-site / katalog başlığı erişimi** (tam metin
-    sayfa görsel taraması bu oturumda erişilebilir değildi)
+  - BOA Cevdet Sıhhiye: erişim durumu `devarsiv_get_belge.access` ile
+    raporlanır; satın-alınmış belgeler yerel arşiv PDF'inden (300 DPI)
+    okunmuştur (bu örnek oturumda `devlet-arsivleri` çağrısı gösterilmemiştir
+    — canlı bir araştırmada bu adım zorunludur, bkz. `devlet-arsivleri-katalog.md` §8)
 - **HTR/transkripsiyon**: Bu raporda manuscript HTR akışı kullanılmamıştır;
   birincil belgelerin tam metni ikincil literatürdeki transkripsiyon ve
   özetler üzerinden okunmuştur.
@@ -311,8 +320,9 @@ Mekteb-i Tıbbiye'nin tarih yazımı **üç büyük damar** üzerinde gelişmiş
 
 ### 9.1 Birincil arşiv kaynakları
 
-- **BOA, Cevdet Sıhhiye (C.SH.)**, dosya 5/206, 12/596 (katalog
-  başlıkları üzerinden tespit; tam metin erişimi: on-site).
+- **BOA, Cevdet Sıhhiye (C.SH.)**, dosya 5/206, 12/596 (katalog başlıkları
+  üzerinden tespit; erişim durumu `devarsiv_get_belge.access` ile
+  raporlanır — satın-alınmışsa yerel arşiv PDF'inden 300 DPI okunur).
 - **BOA, Hatt-ı Hümâyûn (HAT)**, 1242–1255 dönemine ait sıhhiye-
   konulu iradeler.
 - **BOA, İrade Tasnifleri (İ.DH., İ.MVL.)**, 1256 sonrası tıp eğitim

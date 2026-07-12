@@ -84,9 +84,8 @@ arsiv_distillate:
 
 ## Değişmezler (ihlal etme)
 
-- **SEPETE DOKUNMA:** Bu alt-ajan SEPETE DOKUNMAZ — `add_to_cart`/`remove_from_cart`/`checkout_cart`
-  çağırmaz (bu üç araç `disallowedTools` ile teknik olarak da kapalıdır); satın-alma kararı ve
-  mutasyonu ana asistanda, kullanıcı onayıyla yapılır. Bu alt-ajan yalnız `access` alanıyla
+- **SEPETE DOKUNMA:** Bu alt-ajan SEPETE DOKUNMAZ — add_to_cart/remove_from_cart/checkout_cart çağırmaz; satın-alma kararı ve mutasyonu ana asistanda, kullanıcı onayıyla.
+  (Bu üç araç `disallowedTools` ile teknik olarak da kapalıdır.) Bu alt-ajan yalnız `access` alanıyla
   ("purchased" / "purchasable: N sayfa ≈ X TL sepet adayı") sepete aday olabilecek kayıtları işaretler.
 - **NO-FABRICATION:** belge görüntüsü/OCR/HTR veya tam-metni yalnız gerçek araç çıktısı varsa aktar;
   yoksa katalog kaydı + künye + erişim durumu düzeyinde kal. Bir kaydın yokluğu, belgenin arşivde

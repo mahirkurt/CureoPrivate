@@ -11,11 +11,11 @@ belgesi (`devarsiv_search` → `item_id`/`hash`). **Üç girdi tipi** ve her bir
 1. **Katalog önizlemesi (satın-alınmamış belge):** `devarsiv_get_belge_image(item_id, hash, arsiv)`
    — sample_picture'ı önizleme taraması olarak çeker; satın-alma durumundan bağımsız, ama yalnız
    **1 temsilî sayfa**. Deterministik metin katmanı için `devarsiv_ocr_belge(item_id, hash, arsiv,
-   lang?, engine?)`: **Latin/Cumhuriyet belgede tam-metin OCR** (`engine="auto"` → tesseract;
-   basılı damga + arşiv referans kodu da bu katmanla doğrulanır); **Osmanlı el yazmasında**
-   varsayılan `engine="both"` → aşağıdaki üç-sütun protokol. Bkz.
-   references/devlet-arsivleri-katalog.md §7. Çok-sayfa gerekiyorsa önce
-   `/vekayinuvis:satinalma` akışı başlatılır.
+   lang?, engine?)`: **Latin/Cumhuriyet belgeler (arsiv 1/3/4)** → tam-metin OCR (varsayılan
+   `engine="tesseract"`; `mean_confidence` raporlanır; basılı damga + arşiv referans kodu da bu
+   katmanla doğrulanır); **Osmanlı** → aşağıdaki üç-sütun protokol (varsayılan `engine="both"`).
+   Bkz. references/devlet-arsivleri-katalog.md §7 (motor tablosu ve engine parametresi). Çok-sayfa
+   gerekiyorsa önce `/vekayinuvis:satinalma` akışı başlatılır.
 2. **Satın-alınmış belge (yerel arşiv):** `devarsiv_get_archive_page(code, page)` — 300 DPI
    ImageContent, **birincil okuma** kalitesi.
    Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_archive → devarsiv_get_archive_page (300 DPI + görü); katalog önizlemesi (sample) yalnız satın-alınmamış belgeler içindir.

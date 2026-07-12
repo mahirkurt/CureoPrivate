@@ -4,6 +4,175 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [3.0.0] — 2026-07-12
+
+### BREAKING — commands→skills göçü
+
+Slash komutları artık önek almadan doğrudan skill adıyla çağrılır:
+`commands/` dizini kaldırıldı, 10 komut `skills/<ad>/SKILL.md`'e taşındı.
+
+| Eski | Yeni |
+|---|---|
+| `/vekayinuvis:vekayinuvis-durum` | `/vekayinuvis:durum` |
+| `/vekayinuvis:vekayinuvis-arsiv-dalis` | `/vekayinuvis:arsiv-dalis` |
+| `/vekayinuvis:vekayinuvis-boa-katalog` | `/vekayinuvis:boa-katalog` |
+| `/vekayinuvis:vekayinuvis-kanun-gerekce` | `/vekayinuvis:kanun-gerekce` |
+| `/vekayinuvis:vekayinuvis-kaynak-avi` | `/vekayinuvis:kaynak-avi` |
+| `/vekayinuvis:vekayinuvis-kronoloji` | `/vekayinuvis:kronoloji` |
+| `/vekayinuvis:vekayinuvis-literatur` | `/vekayinuvis:literatur` |
+| `/vekayinuvis:vekayinuvis-prosopografi` | `/vekayinuvis:prosopografi` |
+| `/vekayinuvis:vekayinuvis-rapor` | `/vekayinuvis:rapor` |
+| `/vekayinuvis:vekayinuvis-transkripsiyon` | `/vekayinuvis:transkripsiyon` |
+
+`transkripsiyon` skill'i ayrıca üç-sütun HTR protokolüne kavuştu (Sütun 1
+Görü — birincil, çelişkide kazanır — | Sütun 2 Transkribus | Sütun 3
+eScriptorium; gürültülü sütun "kullanılmadı (gürültülü)" olarak işaretlenir,
+boş bırakılmaz) ve K3 Transkribus model seçim tablosuna (aşağıda).
+
+### Eklendi — devlet-arsivleri 10→22 araç (sepet→noVNC→arşiv→çift-motor OCR→async)
+
+- **eSatış sepeti 4'lüsü** `[_RW/_RO/_DESTRUCTIVE]`: `devarsiv_add_to_cart`
+  (1-tabanlı sayfa seçimi, örn. "1,3-5"; boş=tümü), `devarsiv_list_cart`
+  (kalemler + **bağlayıcı Tutar**), `devarsiv_remove_from_cart` (satır
+  sil/boşalt), `devarsiv_checkout_cart` (ödeme **YAPMAZ** — yalnız noVNC
+  URL + sepet döner; ödeme **DAİMA insan/noVNC**, asla otonom).
+- **Satın-alınmış/yerel-arşiv 6'lısı**: `devarsiv_list_purchased`
+  (SatinAldiklarim t/hash listesi), `devarsiv_ocr_belge_pages` (viewer
+  temsilî-sayfa sınırlı), `devarsiv_list_archive` (BOA-kodlu yerel PDF
+  arşivi — code/yer/tarih/özet/sayfa), **`devarsiv_get_archive_page`**
+  (**300 DPI ImageContent — arşiv-öncelikli okuma**), `devarsiv_ocr_archive_pages`
+  (sync OCR, ≤5 sayfa), `devarsiv_get_archive_pdf` (künye + sınırlı base64
+  PDF).
+- **Async OCR 2'lisi** `[_RW/_RO]`: `devarsiv_ocr_submit` (idempotent,
+  job_id döner) + `devarsiv_ocr_result` (queued/running/done/error/**stale**).
+- **`engine` parametresi** tüm OCR araçlarında: `auto|both|transkribus|
+  escriptorium|tesseract`. Osmanlı varsayılanı `both` — Transkribus PyLaia
+  (el yazması) + eScriptorium Kraken (basılı) PARALEL, iki transkripsiyon
+  `transcriptions` altında yan yana + tesseract damga katmanı; düşen motor
+  dürüst `unavailable` nedeni taşır. Latin arşivler daima `tesseract`. Görü
+  birincil, HTR yardımcı — Transkribus taşra-kâtibi ellerinde gürültülü
+  olabilir (2026-07-09 canlı gözlem).
+- **Yeni okuma-önceliği kuralı**: satın-alınmış belgede okuma DAİMA yerel
+  arşivden başlar; katalog önizlemesi yalnız satın-alınmamış belgeler
+  içindir.
+- **Sync/async karar kuralı (K4)**: ≤5 sayfa VE tek motor → sync
+  `devarsiv_ocr_archive_pages`; >5 sayfa VEYA `both` tam belge → async
+  `devarsiv_ocr_submit` → `devarsiv_ocr_result(include_text=false)` poll →
+  `done`'da tek-sefer `include_text=true` → anamnesis `ingest_document` →
+  sonraki sorgular `hybrid_query`. `stale` → aynı parametrelerle resubmit.
+- **§6.5 "Kanıt Disiplini (Murzi Kalıpları)"** — altı-maddelik prosopografik/
+  toponimik kanıt disiplini: iki-seviye kanıt (toponim eşleşmesi ≠ kişi
+  belgesi), katalog-token ≠ doğrulanmış içerik, çift-tarih yeniden-teyit
+  (`ottoman_convert_date`), tarihsiz kayıt kronolojik kanıt değildir, ham
+  HTR alıntılanmaz (görüyle doğrulanmış okuma alıntılanır), katalog imlâsı
+  ile toponimik/tarihsel yorum ayrı sütunlarda.
+- **Transkribus model seçim tablosu (K3)**: **56496** OttomanTurkish_generic
+  (el yazması genel divani/rika, CER ~%12, üretim varsayılanı) ·
+  **169801** Ottoman Fatwa Manuscript (fetva/ilmiye el yazması, %5.94) ·
+  **52502** OttomanTurkish_Print_1 (matbu salname/gazete/nizamname, %7.2).
+
+### Eklendi — üç yeni akış-skill'i
+
+- **`/vekayinuvis:satinalma`** — eSatış sepet + noVNC satın-alma: karar
+  matrisi → sepet → metin-onay kapısı → noVNC (`https://devarsiv-vnc.
+  cureonics.com/vnc.html`; tek-cihaz uyarısı: "Kendi cihazınızdan kataloğa
+  GİRMEYİN — tek-cihaz kilidi HP oturumunu düşürür."). Ödeme **DAİMA
+  insan**; fiyat dili "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar
+  `devarsiv_list_cart` çıktısındaki Tutar sütunudur."
+- **`/vekayinuvis:arsiv-oku`** — satın-alınmış belgeyi yerel BOA-kodlu
+  arşivden 300 DPI görüyle, sayfa-sayfa okuma (arşiv-öncelikli).
+- **`/vekayinuvis:toplu-okuma`** — çok-sayfalı satın-alınmış belgede async
+  çift-motor OCR + anamnesis ingest (K4 kararına göre).
+
+### Eklendi — filo genişlemesi 13→17 server (yasama/mevzuat + destekleyici)
+
+| Server | Rol |
+|---|---|
+| `resmigazete` | Erken-Cumhuriyet Resmî Gazete arşivi (`/eskiler/` 1920+) — tarih-bazlı ilan/kanun kaydı + `rg_search`/`rg_list_recent`; taranmış sayfa rg-ocr çift-motor async kuyruk. KANUN_GEREKÇESİ L4/L5, EVENT_RECONSTRUCTION |
+| `mevzuat` | mevzuat.gov.tr — `search_mulga_mevzuat` (mülga kanun/KHK/CBK) + `get_mevzuat_gerekce` (madde gerekçesi) + `resolve_resmi_gazete` (RG çapraz-referans). KANUN_GEREKÇESİ antecedant-mevzuat zinciri |
+| `tbmm` | TBMM yasama tarihçesi — kanun teklifi→komisyon raporu→kabul edilmiş kanun soyağacı + Açık Erişim DSpace (geç-Osmanlı/erken-Cumhuriyet zabıt). KANUN_GEREKÇESİ L3/L4, SOURCE_HUNT |
+| `detsis` | DETSİS kurumsal prosopografi (`detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar`). PROSOPOGRAPHY — **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez** |
+
+**Dürüst not: `marmara-mcp` v3.1'e ERTELENDİ.** Turcademy/hukuk tam-metin
+Tier-3b companion olarak tasarlanmıştı (spec §4.4); 2026-07-12 canlı-probede
+`marmara.cureonics.com` üç bağımsız çözümleyiciyle **NXDOMAIN** doğrulandı
+(DNS kaydı henüz yayınlanmamış) → bu turda wire edilmedi. HISTORIOGRAPHY
+tam-metin şelalesi şimdilik `openathens→annas-reader` (2 katman) olarak
+kalır; DNS/tunnel yayınlandığında `openathens→marmara→annas-reader`'a
+genişletilecek.
+
+### Değiştirildi — hook katmanı
+
+- **SessionStart 'clear' BUG düzeltildi**: matcher `"startup|resume|compact"`
+  → `"startup|resume|clear|compact"` (oturum `/clear` ile başlatıldığında
+  connector preflight hiç çalışmıyordu).
+- **`devarsiv_degrade` hook'u (yeni)**: `PostToolUse` + `PostToolUseFailure`
+  üzerinde `devarsiv_*` araç yanıtında `session_required`/
+  `viewer_runtime_error` görürse K5 re-login runbook'unun kompakt 6-satırlık
+  hâlini `additionalContext` olarak enjekte eder.
+- **`retrieve_dont_dump`**: `BIG_OUTPUT_TOOLS`'a `devarsiv_ocr_belge_pages`,
+  `devarsiv_ocr_archive_pages`, `devarsiv_get_archive_pdf`,
+  `devarsiv_ocr_result` eklendi; `devarsiv_get_archive_page` bilinçli
+  istisna (görüntü ana pencerede görüyle okunur, dump edilmez).
+- **`citation_discipline`**: provenance regex'i async/arşiv araçlarını da
+  tanır (`ocr_archive_pages|ocr_submit|ocr_result|job_id|get_archive_page|
+  get_archive_pdf`); çift-motor kullanıldıysa iki motorun çıktısının **ayrı
+  raporlanması** zorunlu (tek birleşik metin yasak).
+- Kök `plugins/vekayinuvis/hooks.json` inert kopyası silindi — tek doğruluk
+  kaynağı artık `hooks/hooks.json`.
+
+### Değiştirildi — doctor v3
+
+- `scripts/vekayinuvis_doctor.py`: filo listesi 17 server'a genişledi,
+  `clientInfo` sürümü `3.0.0`'a güncellendi.
+- `--live` modu üç yeni bölüm kazandı: `[envanter]` (`devarsiv_server_info`
+  tool-count'un 22'ye göre drift kontrolü — eksikse claude.ai connector'ını
+  yeniden bağlama uyarısı), `[engines]` (Transkribus/eScriptorium motor
+  durumu), `[vnc]` (noVNC Access-gate HEAD probu — 302=OK).
+- Manifest çıktı ev dizini artık `CLAUDE_PLUGIN_DATA` env var'ını onurlandırır
+  (yoksa geriye-uyumlu `cwd()` davranışı korunur).
+
+### Değiştirildi — userConfig + hijyen
+
+- **`userConfig`'e 6 yeni alan**: `devarsiv_api_key`, `ottoman_api_key`,
+  `yok_akademik_api_key`, `openathens_api_key`, `annas_api_key`,
+  `anamnesis_api_key` (hepsi `sensitive:true`, `required:false`). **Önemli
+  sınır**: host'ta `userConfig`→`.mcp.json` header enjeksiyon fallback
+  sözdizimi (`${user_config.field:-${ENV}}` gibi) belgelenmemiş olduğu
+  doğrulandı (code.claude.com/docs) → bu alanlar `.mcp.json` header'larını
+  OTOMATİK beslemez; buraya değer girilirse AYNI ZAMANDA ilgili ortam
+  değişkeni de (Doppler/secrets.env) dışa aktarılmalıdır — description'lar
+  bu şartı açıkça belirtir. Keychain bütçesi ölçüldü: 6 anahtarın toplamı
+  374 bayt (≪1800 bayt eşiği) — kesinti gerekmedi, 6 alanın tamamı kaldı.
+- **Hijyen**: `plugin.json`'dan default'u tekrarlayan `"agents": "./agents"`
+  ve `"skills": "./skills"` alanları silindi (auto-discovery zaten aynı
+  yolu tarar); `agents/openai.yaml` → `.codex-plugin/openai.yaml` taşındı;
+  hook/script `.py` dosyaları `755`'e normalize edildi; `marketplace.json`
+  vekayinuvis girdisindeki `"strict": false` kaldırıldı.
+- **`arsiv-tarama-distilleri` alt-ajanı**: `disallowedTools`'a sepet-mutasyon
+  araçları eklendi (`devarsiv_add_to_cart`/`devarsiv_remove_from_cart`/
+  `devarsiv_checkout_cart`) + açık invariant: "Bu alt-ajan SEPETE DOKUNMAZ —
+  add_to_cart/remove_from_cart/checkout_cart çağırmaz; satın-alma kararı ve
+  mutasyonu ana asistanda, kullanıcı onayıyla." Zarf çıktısına `access`
+  zenginleştirmesi eklendi ("purchased→`/vekayinuvis:arsiv-oku` ile okunur"
+  / "purchasable: N sayfa ≈ X TL sepet adayı").
+
+### Değiştirildi — SKILL çekirdeği
+
+- Flagship `vekayinuvis` SKILL.md **v2.5.0 → v3.0.0**: §3.1.b devarsiv araç
+  tablosu 10→22 araca genişledi (6 grup: Arama/Belge/Sepet/Arşiv/Async/
+  Durum); motor konvansiyonu (K2) ve sync/async karar kuralı (K4)
+  belgelendi; EVENT_RECONSTRUCTION modu devarsiv (`semantic_search` +
+  `detailed_search` tarih-aralığı) ile birincil katman olarak güçlendirildi.
+  Mod sayısı (9) korundu.
+- `references/devlet-arsivleri-katalog.md`: 22-araç envanteri + K5 re-login
+  runbook + Transkribus model tablosu + çift-motor güvenilirlik şerhleri
+  güncellendi.
+- `plugin.json` (Claude + Codex) `version` → `3.0.0`, description v3
+  içeriğiyle yeniden yazıldı, `keywords`'e 7 yeni terim eklendi
+  (`esatis-sepet`, `novnc-satinalma`, `cift-motor-ocr`, `escriptorium-kraken`,
+  `async-ocr`, `resmigazete`, `mulga-mevzuat`).
+
 ## [2.5.0] — 2026-07-09
 
 ### Eklendi

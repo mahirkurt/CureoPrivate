@@ -32,7 +32,7 @@ Claude Code oturumunda (REPL):
 | **brand-ecosystem-core** | 1.0.0 | Brand Ecosystem v1.0'ın stratejik + sözel + görsel katmanları: 10 skill (brand-audit, brand-platform, brand-story, brand-maker(-ecosystem), brand-visual(-ecosystem), figma-forge, brand-touchpoint, brand-launch) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa opsiyonel. Ses katmanı için `brand-voice` plugin'i ile kompoze olur. |
 | **bist-analyst** (BIST Uzmanı) | 1.1.8 | Borsa İstanbul analist kopilotu — çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini tek gerekçeli brifingde sentezler (tek hisse, haftalık tarama, KAP olayı, izleme listesi modları). Borsa MCP veri omurgası paket içinde. Karar destek; yatırım tavsiyesi değildir. |
 | **fon-uzmani** (Fon Uzmanı) | 1.3.0 | Türkiye yatırım (YAT) + emeklilik (EMK) fonları için çok-skill karar-destek süiti: 8-aşamalı `fon-analiz-orkestratoru` + 6 kaynak skill + 12-modül saf-Python kuant kütüphanesi (Sharpe…HRP). Borsa MCP + fon-mcp omurgası; beş mod. SPK yatırım tavsiyesi değildir. |
-| **vekayinuvis** (Vekayinüvis) | 2.5.0 | Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + resmî Devlet Arşivleri kataloğu + YÖK Tez + DergiPark tam-metin + YÖK Akademik + akademik triangülasyon + OpenAthens/Anna's Reader tam-metin şelalesi + anamnesis RAG/GraphRAG. v2.5: `/vekayinuvis-durum` doctor komutu, 13-server G0 kapsam hook'u ve görüntü/OCR provenance atıf denetimi; IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu. `defaultEnabled:false` (opt-in). |
+| **vekayinuvis** (Vekayinüvis) | 3.0.0 | Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + resmî Devlet Arşivleri kataloğu (22 araç — eSatış sepeti/noVNC satın-alma/yerel BOA-kodlu arşiv/çift-motor OCR/HTR/async job) + YÖK Tez + DergiPark tam-metin + YÖK Akademik + akademik triangülasyon + yasama/mevzuat katmanı (Resmî Gazete, mevzuat.gov.tr, TBMM, DETSİS) + OpenAthens/Anna's Reader tam-metin şelalesi + anamnesis RAG/GraphRAG. v3.0: devlet-arsivleri 10→22 araca genişledi (sepet→noVNC→arşiv-öncelikli okuma→çift-motor OCR→async zinciri), filo 13→17 server, komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>`, BREAKING); IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu + 3 akış-skill'i. `defaultEnabled:false` (opt-in). |
 
 ## Yapı
 
@@ -57,9 +57,8 @@ CureoPrivate/                             ← repo kökü (Claude Code'a EKLENEC
     │   └── mcp.optional.json · README.md · CHANGELOG.md
     ├── bist-analyst/ · fon-uzmani/        ← finans plugin'leri (Borsa/fon-mcp)
     └── vekayinuvis/                      ← Osmanlı/Türk tarih araştırma plugin'i
-        ├── .claude-plugin/plugin.json · .mcp.json
-        ├── commands/   (9 slash komutu: kaynak-avi … literatur)
-        ├── skills/   (start + vekayinuvis flagship + 9 referans)
+        ├── .claude-plugin/plugin.json · .codex-plugin/plugin.json · .mcp.json
+        ├── skills/   (start + vekayinuvis flagship + 10 önek-siz mod-skill + 3 akış-skill: satinalma/arsiv-oku/toplu-okuma)
         └── CONNECTORS.md · README.md · CHANGELOG.md
 ```
 

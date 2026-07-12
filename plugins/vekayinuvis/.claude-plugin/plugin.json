@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "vekayinuvis",
   "displayName": "Vekayinüvis — Osmanlı/Türk Tarih Araştırma Protokolü",
-  "version": "2.5.0",
-  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO: Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ve kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. v2.5: marketplace-portable `/vekayinuvis-durum` doctor komutu, 13 satırlı G0 hook sıkılaştırması ve görüntü/OCR provenance atıf denetimi eklendi. IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu sunar.",
+  "version": "3.0.0",
+  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO (17 server): Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek, artık 22 araç: arama 5'lisi + belge 3'lüsü + eSatış sepeti 4'lüsü + satın-alınmış/yerel-arşiv 6'lısı + async OCR 2'lisi + durum 2'lisi) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily), kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ve yasama/mevzuat katmanı (Resmî Gazete erken-Cumhuriyet arşivi, mevzuat.gov.tr mülga/gerekçe, TBMM yasama soyağacı, DETSİS kurumsal prosopografi) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. v3.0: devlet-arsivleri 10→22 araca genişledi — eSatış sepet→noVNC satın-alma (ödeme DAİMA insan, asla otonom) → satın-alınmış belgenin yerel BOA-kodlu arşivinden 300 DPI arşiv-öncelikli okuma → Transkribus+eScriptorium çift-motor OCR/HTR (`engine=auto|both|transkribus|escriptorium|tesseract`, Osmanlı varsayılanı `both`) → async OCR job kuyruğu zinciri; üç yeni akış-skill'i (`satinalma`, `arsiv-oku`, `toplu-okuma`); filo 13→17 server'a genişledi (yasama/mevzuat katmanı + DETSİS); komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>` — eski `/vekayinuvis:vekayinuvis-<ad>` biçimi BREAKING kaldırıldı). IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu sunar.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"
@@ -41,7 +41,14 @@
     "kitap-makale-tam-metin",
     "millet-kutuphanesi",
     "tam-filo",
-    "baglamlarda-context-economy"
+    "baglamlarda-context-economy",
+    "esatis-sepet",
+    "novnc-satinalma",
+    "cift-motor-ocr",
+    "escriptorium-kraken",
+    "async-ocr",
+    "resmigazete",
+    "mulga-mevzuat"
   ],
   "userConfig": {
     "smithery_api_key": {

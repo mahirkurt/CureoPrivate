@@ -55,8 +55,9 @@ araçlardır ama **para harcamazlar** — yalnız eSatış sepetinin içeriğini
 Adım 7'deki metin-onay kapısı bu akışın en kritik güvenlik kontrolüdür: sepet özeti
 ve `devarsiv_list_cart` çıktısındaki bağlayıcı Tutar kullanıcıya gösterilip açık
 onay alınmadan ne `checkout_cart` ne de sepeti boşaltan `remove_from_cart(clear=true)`
-çağrılır. Fiyat dili daima: "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar
-`devarsiv_list_cart` çıktısındaki Tutar sütunudur." Tek-cihaz uyarısı adım 8'de
+çağrılır.
+Fiyat dili daima: "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar `devarsiv_list_cart` çıktısındaki Tutar sütunudur."
+Tek-cihaz uyarısı adım 8'de
 **daima verbatim** aktarılır — kullanıcının kendi cihazından kataloğa paralel giriş
 yapması HP'deki kalıcı oturumu düşürür ve tüm filoyu `session_required`'a sokar.
 

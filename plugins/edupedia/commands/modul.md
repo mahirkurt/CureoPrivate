@@ -44,3 +44,10 @@ onay iste — uydurma kodla üretme.
 Girdi bir kazanım kodu değil, ders+sınıf+konu ise → bu komut yerine `/edupedia:mufredat`; yalnız
 "hangi kazanımlar" keşfi isteniyorsa → `/edupedia:kazanim-bul`. Kaynak metin yapıştırıldıysa MCP'siz
 doğrudan skill yeterlidir.
+
+## Yayın teklifi
+
+Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
+"Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
+`/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
+ısrar etme.

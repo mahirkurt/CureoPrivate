@@ -33,3 +33,10 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
 Tek bir kazanım kodu verildiyse → `/edupedia:modul` (doğrulama+çekme kısayolu). Yalnız keşif
 (üretim yok) isteniyorsa → `/edupedia:kazanim-bul`. Ders Türkiye MEB dışıysa (IB/Cambridge) →
 kapsam dışı, connector çağrılmaz.
+
+## Yayın teklifi
+
+Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
+"Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
+`/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
+ısrar etme.

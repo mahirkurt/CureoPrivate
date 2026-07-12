@@ -21,13 +21,14 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 | `/edupedia:modul` | Bir MEB kazanım kodundan kazanım-izlenebilir etkileşimli modül üretir | `<kazanım-kodu>` (örn. `FB.5.3.1.1`) |
 | `/edupedia:mufredat` | Ders + sınıf + konudan kazanım keşfi → modül üretir | `<ders> <sınıf> <konu>` (örn. `Fen 5 hücre`) |
 | `/edupedia:kazanim-bul` | Konuya denk gelen kazanımları KB becerisi ↔ etkileşim desenine haritalar (**üretim yok**) | `<konu> [sınıf] [ders]` |
+| `/edupedia:yayinla` | Üretilen modülü `edupedia.cureonics.com`'da yayınlar, public bağlantı verir | `<modul.html yolu>` |
 | `/edupedia:durum` | `maarif-mufredat` connector sağlığı + Tier-2 (`get_figure`) yeteneği + önbellek durumu | — |
 
 İlk kez mi? `edupedia:start` skill'i oryantasyon + connector kontrolü + niyet→komut yönlendirmesi yapar.
 
 ## Skill'ler
 
-- **carbon-edupedia** (flagship, v3.0.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
+- **carbon-edupedia** (flagship, v3.0.1) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
   modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 11 kalite
   kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-AUDIO/
   G-CURRICULUM/G-TOKEN). Token otoritesi `@carbon/*` npm.
@@ -54,6 +55,19 @@ Tek-sefer disiplini ve `get_figure` yetenek-probu: **[shared/canonical-cache-con
 **Yalnız Türkiye MEB.** Yabancı müfredat (IB/Cambridge), üniversite içeriği, genel React UI, statik
 baskı raporu (→ `carbon-html-report`) veya slayt (→ `carbon-pptx`) kapsam dışıdır. Erişilebilirlik
 (WCAG 2.1 AA) ve emojisizlik skill sözleşmesi gereği korunur.
+
+## Yayınlama
+
+Üretilen modüller `/edupedia:yayinla` ile **edupedia.cureonics.com**'a yayınlanır
+(Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı).
+
+- Modül kalıcı bir adres alır: `edupedia.cureonics.com/m/<slug>` — link asla değişmez.
+- Yeniden yayın sürümü artırır; eski sürüm `/m/<slug>/v<N>` altında kalır.
+- Manifest'te bir kalite kapısı `FAIL` ise yayın reddedilir (`force` ile geçilebilir) —
+  siteye emojili, erişilemez veya kazanım-izlenemez modül düşmez.
+
+Yayın token'ı Doppler'da (`cureohub` / `dev_personal` / `EDUPEDIA_PUBLISH_TOKEN`);
+oturumu `doppler run -p cureohub -c dev_personal -- claude` ile başlatın.
 
 ## Genişleme
 

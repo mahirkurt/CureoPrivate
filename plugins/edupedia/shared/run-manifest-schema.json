@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://cureonics.com/edupedia/run-manifest-schema.json",
   "title": "edupedia Run Manifest",
-  "description": "edupedia (carbon-edupedia + Maarif MCP) her modül üretim koşumu için üretilen kayıt. Kanonik artefakt önbelleğini, Maarif MCP connector call ledger'ını (çift-sorgu denetim kanıtı), Tier-2 görüntü-dayanak durumunu ve 13 kalite kapısını içerir (carbon-edupedia 3.0.0 — G-FLOW + G-CARBON-GRID eklendi). Normatif: CONNECTORS.md + canonical-cache-contract.md.",
+  "description": "edupedia (carbon-edupedia + Maarif MCP) her modül üretim koşumu için üretilen kayıt. Kanonik artefakt önbelleğini, Maarif MCP connector call ledger'ını (çift-sorgu denetim kanıtı), Tier-2 görüntü-dayanak durumunu ve 13 kalite kapısını içerir (carbon-edupedia 3.0.0 — G-FLOW + G-CARBON-GRID eklendi). Dosya adı sözleşmesi (normatif tanım: canonical-cache-contract.md §1): üretilen HTML ile aynı dizine, aynı ad + '.manifest.json' uzantısıyla yazılır (ör. modul.html -> modul.manifest.json) — sabit 'run_manifest.json' adı KULLANILMAZ. Normatif: CONNECTORS.md + canonical-cache-contract.md.",
   "type": "object",
   "required": [
     "run_id",

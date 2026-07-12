@@ -26,8 +26,14 @@ Koşu başına bir kez çekilir, içerik-adresli anahtarla önbelleğe alınır:
 | **`framework_map`** | `get_framework("beceriler/kavramsal-beceriler")` | KB2.x → etkileşim deseni haritalama (skill §4) | 1 çağrı (yalnız resmî beceri modülde gösterilecekse) |
 | **`figure_probe`** *(opsiyonel, Tier-2)* | `search_figures` + `get_figure(include_image=false→true)` | Görsel dayanağı / gömme (CONNECTORS.md §3) | 1–2 çağrı, yalnız yetenek-probu ile |
 
-Her artefakt `run_manifest.json` `canonical_artifacts{}` bloğuna kaydedilir ve içerik-adresli
-anahtarla işaretlenir.
+Her artefakt koşumun run-manifest dosyasının `canonical_artifacts{}` bloğuna kaydedilir ve
+içerik-adresli anahtarla işaretlenir. **Dosya adı sözleşmesi (normatif, tek tanım yeri):** run
+manifest, üretilen HTML ile **aynı dizine**, aynı ad + `.manifest.json` uzantısıyla yazılır
+(örn. `hucre-ve-organeller-fen-7-modul.html` → `hucre-ve-organeller-fen-7-modul.manifest.json`).
+Çok-modüllü dizinlerde bu, `run_manifest.json` gibi sabit bir ad kullanmaktan farklı olarak
+belirsizlik yaratmaz. Yazan adım: `/edupedia:modul` / `/edupedia:mufredat` üretim akışının son
+adımı (bkz. `../commands/modul.md`, `../commands/mufredat.md`); tüketen: `/edupedia:yayinla`
+(bkz. `../commands/yayinla.md`). Şema: `./run-manifest-schema.json`.
 
 ---
 

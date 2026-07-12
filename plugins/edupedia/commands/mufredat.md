@@ -23,10 +23,14 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
    artefaktı (tek-sefer). Boş dönerse sorguyu genişlet (eş anlamlı/kısa terim) veya
    `list_learning_outcomes(distinct_codes=true)` ile üniteyi tara; hâlâ yoksa doğru ders/sınıf/konu sor.
 
-4. **`/edupedia:modul` akışının 2–4. adımlarını uygula:** beceri → etkileşim haritalama
+4. **`/edupedia:modul` akışının 2–5. adımlarını uygula:** beceri → etkileşim haritalama
    (`framework_map`, skill §4) · **§3 görüntü-dayanak politikası** (Tier-1 varsayılan, Tier-2
    yetenek-probuyla) · modülü üret + `scripts/validate_module.py` 11 kapı (G-CURRICULUM + G-SVG) +
-   `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet.
+   `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
+   `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
+   sözleşmesi `../shared/canonical-cache-contract.md §1`; `quality_gates` yalnız
+   `validate_module.py` çıktısından, uydurma yok — koşulmayan kapı `SKIPPED`). Manifest'siz
+   `/edupedia:yayinla` çalışamaz.
 
 ## Sınırlılık
 

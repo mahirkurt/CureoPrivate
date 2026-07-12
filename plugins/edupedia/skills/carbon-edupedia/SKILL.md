@@ -16,8 +16,8 @@ description: >-
   etkileşimli öğrenimde USE.
 license: MIT
 metadata:
-  version: 3.0.0
-  last_updated: 2026-07-07
+  version: 3.1.0
+  last_updated: 2026-07-12
   manifest: ./skill-manifest.yaml
 ---
 
@@ -80,6 +80,15 @@ Yetkinlik **her zaman** şunu üretir:
 4. **Emoji içermez.** Tüm görsel anlam ikon, piktogram ve SVG çizimle taşınır.
 5. **IBM Carbon v11** token sistemine ve IBM Plex tipografisine uyar.
 6. WCAG 2.1 AA: klavye erişimi, ARIA, `prefers-reduced-motion`, ≥44px hedef.
+7. **Run-manifest'i DİSKE yazar.** HTML'in yanına, **aynı ad + `.manifest.json`** ile (aynı
+   dizin; örn. `hucre-ve-organeller-fen-7-modul.html` →
+   `hucre-ve-organeller-fen-7-modul.manifest.json`; sabit `run_manifest.json` adı KULLANILMAZ).
+   İçerik `../../shared/run-manifest-schema.json`'a uyar: `run_id`, `ts`, `plugin_version`,
+   `requested_scope`, `connector_call_ledger`, `canonical_artifacts`, `tier2_status`,
+   `quality_gates`, `deliverable_path`, `caveats`. `quality_gates` **yalnız**
+   `scripts/validate_module.py` koşumunun gerçek çıktısından doldurulur — uydurulmaz; bir
+   kapı koşulmadıysa `SKIPPED` yazılır. Bu manifest, `/edupedia:yayinla`'nın okuduğu tek
+   girdidir (bkz. `../../shared/canonical-cache-contract.md §1`, `../../commands/yayinla.md`).
 
 > **Neden tek-dosya etkileşimli HTML, React değil?** Claude.ai artifact ortamı
 > React'te yalnız Tailwind çekirdek sınıflarına izin verir; Carbon token sistemi
@@ -231,8 +240,10 @@ Kapılar: emoji-yok, Carbon token kullanımı, IBM Plex yüklemesi, ARIA/erişil
 asgarileri, etkileşim bütünlüğü (her quiz sorusunda doğru cevap + açıklama),
 satır-içi varlık (harici bağımlılık yok). İhlalleri giderin.
 
-**Adım 6 — Kaydet ve sun.** `/mnt/user-data/outputs/` altına kaydedin,
-`present_files` ile sunun. Kısa bir özet ve "nasıl kullanılır" notu ekleyin.
+**Adım 6 — Kaydet, manifest yaz, sun.** `/mnt/user-data/outputs/` altına kaydedin; **aynı ad +
+`.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7 — `quality_gates` Adım 5'in
+`validate_module.py` çıktısından, uydurmadan). `present_files` ile sunun. Kısa bir özet ve
+"nasıl kullanılır" notu ekleyin.
 
 ## 9. Etkileşim deseni kataloğu (özet)
 

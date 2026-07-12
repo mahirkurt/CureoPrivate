@@ -34,6 +34,14 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
    `meta.sourceCitation`'ı kazanım kodu + korpus sürümüyle (`server_info.corpus_version`) damgala,
    `/mnt/user-data/outputs/` altına kebab-case adla kaydet.
 
+5. **Manifest'i yaz (yayın için zorunlu ön koşul):** HTML ile **aynı dizine**, aynı ad +
+   `.manifest.json` uzantısıyla (örn. `hucre-modul.html` → `hucre-modul.manifest.json`) bir
+   run-manifest yaz — şema `../shared/run-manifest-schema.json`, dosya adı sözleşmesi
+   `../shared/canonical-cache-contract.md §1`. `quality_gates` **yalnız** bir önceki adımdaki
+   `validate_module.py` çıktısından doldurulur (uydurma yok); koşulmayan kapı `SKIPPED`.
+   `connector_call_ledger`/`canonical_artifacts` bu komutun Adım 1'inde yapılan Müfredat MCP
+   çağrılarından gelir. Bu manifest olmadan `/edupedia:yayinla` çalışamaz.
+
 ## Belirsiz / hatalı kod
 
 Kod belirsiz veya geçersizse `search_learning_outcomes` ile en yakın kanonik kazanımı öner ve

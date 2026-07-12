@@ -2,6 +2,42 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.1.0] — 2026-07-12
+
+### Düzeltildi (kök neden) — run-manifest artık DİSKE yazılıyor (`/edupedia:yayinla` kırıktı)
+
+`/edupedia:yayinla` komutu, üretilen HTML'in yanında bir run-manifest JSON'u bulmayı bekliyordu,
+ama üretim zincirinin (`SKILL.md` §3 çıktı sözleşmesi, `commands/modul.md`, `commands/mufredat.md`,
+`scripts/validate_module.py`) HİÇBİR ADIMI manifesti diske yazmıyordu — yalnız `.html` kaydediliyor,
+kalite kapısı sonuçları yalnız konsola basılıyordu. Sonuç: `/edupedia:modul` koşumundan sonra
+`/edupedia:yayinla` her zaman "manifest yok" dalına düşüyor, kullanıcıyı elle-CLI'ye yönlendiriyordu
+(orada kalite kapıları `SKIPPED` yazılır) — "gerçek kalite-kapısı sonucuyla otomatik yayın" özelliği
+fiilen çalışmıyordu. Bu davranışsal bir değişikliktir (yeni zorunlu artefakt) → **SemVer MINOR bump**.
+
+- **Dosya adı sözleşmesi netleştirildi (tek tanım yeri):** üretilen HTML `<ad>.html` ise run-manifest
+  **`<ad>.manifest.json`** (aynı dizin, yan yana) — sabit `run_manifest.json` adı **kullanılmaz**
+  (çok-modüllü dizinlerde belirsizlik yaratmaz). Normatif tanım: `shared/canonical-cache-contract.md §1`;
+  şema `shared/run-manifest-schema.json` (ve description'ı) bu sözleşmeye atıf yapacak şekilde güncellendi.
+- **`SKILL.md` §3 (Çıktı sözleşmesi)** — madde 7 eklendi: üretim artık HTML ile birlikte
+  `<ad>.manifest.json`'ı da yazar; `quality_gates` **yalnız** `scripts/validate_module.py`'nin gerçek
+  çıktısından doldurulur (uydurma yok — koşulmayan kapı `SKIPPED`). Adım 6 (Kaydet ve sun) manifest
+  yazma adımını yansıtacak şekilde güncellendi.
+- **`commands/modul.md`** — yeni Adım 5 ("Manifest'i yaz") eklendi; yayın teklifi bölümünden ÖNCE
+  gelir (yayın ona dayanır).
+- **`commands/mufredat.md`** — Adım 4, `/edupedia:modul`'ün 2-5. adımlarını (manifest yazma dahil)
+  uygulayacak şekilde güncellendi.
+- **`commands/yayinla.md`** — manifest yolu iddiası netleştirildi: varsayılan ve tek sözleşme
+  `<html-adı>.manifest.json`; bulunamazsa kullanıcıya sor / elle-CLI'ye yönlendir (mevcut
+  no-fabrication davranışı korunur).
+- **`skill-manifest.yaml`** — yeni `outputs.run_manifest` girdisi (mime `application/json`);
+  `skill.version` + `build.version` → 3.1.0.
+- **`README.md`** — carbon-edupedia sürüm damgası 3.1.0'a hizalandı; Yayınlama bölümüne
+  manifest-yazma adımının açıklaması eklendi.
+
+**Değişmedi:** `scripts/validate_module.py` kapı mantığı (13 kapı davranışı birebir korunur —
+yalnız çıktısı artık ayrıca manifest'e de yazılıyor); `assets/module-template.html`; etkileşim
+motoru; pedagojik içerik.
+
 ## [3.0.0] — 2026-07-07
 
 ### edupedia 3.0.0 — derin motor + şema yükseltmesi (23 görevlik seri)

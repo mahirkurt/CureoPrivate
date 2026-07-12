@@ -28,7 +28,7 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 
 ## Skill'ler
 
-- **carbon-edupedia** (flagship, v3.0.1) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
+- **carbon-edupedia** (flagship, v3.1.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
   modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 11 kalite
   kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-AUDIO/
   G-CURRICULUM/G-TOKEN). Token otoritesi `@carbon/*` npm.
@@ -59,7 +59,10 @@ baskı raporu (→ `carbon-html-report`) veya slayt (→ `carbon-pptx`) kapsam d
 ## Yayınlama
 
 Üretilen modüller `/edupedia:yayinla` ile **edupedia.cureonics.com**'a yayınlanır
-(Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı).
+(Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı). `/edupedia:modul` ve
+`/edupedia:mufredat` üretim akışlarının son adımı, HTML ile aynı dizine aynı ad +
+`.manifest.json` ile bir run-manifest yazar (gerçek `validate_module.py` kalite-kapısı
+sonuçlarıyla); `/edupedia:yayinla` yalnız bu manifesti okur (bkz. `shared/canonical-cache-contract.md §1`).
 
 - Modül kalıcı bir adres alır: `edupedia.cureonics.com/m/<slug>` — link asla değişmez.
 - Yeniden yayın sürümü artırır; eski sürüm `/m/<slug>/v<N>` altında kalır.

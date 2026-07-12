@@ -17,8 +17,13 @@ argument-hint: <modul.html yolu>
 1. `EDUPEDIA_PUBLISH_TOKEN` ortam değişkeni gerekir. Yoksa **dur** ve kullanıcıya söyle:
    oturumu `doppler run -p cureohub -c dev_personal -- claude` ile başlatması gerekir.
    Token'ı kullanıcıdan isteme, uydurma.
-2. HTML dosyasının yanında run-manifest JSON'u olmalı (aynı ad + `.manifest.json`, veya
-   koşumun ürettiği manifest yolu). **Manifest yoksa** kullanıcıya söyle: elle yayın için
+2. HTML dosyasının yanında (aynı dizin) run-manifest JSON'u olmalı: **varsayılan ve tek
+   sözleşme** `<html-adı>.manifest.json` (örn. `hucre-modul.html` →
+   `hucre-modul.manifest.json`; dosya adı sözleşmesi normatif olarak
+   `../shared/canonical-cache-contract.md §1`'de tanımlıdır; şema
+   `../shared/run-manifest-schema.json`). Bu dosya `/edupedia:modul` / `/edupedia:mufredat`
+   üretim akışının son adımında yazılır (bkz. `../commands/modul.md` Adım 5,
+   `../commands/mufredat.md` Adım 4). **Manifest yoksa** kullanıcıya söyle: elle yayın için
    CureoHub'daki `scripts/publish_edupedia_module.py` bayraklı modunu kullanabilir.
    Manifest'i sen uydurma.
 

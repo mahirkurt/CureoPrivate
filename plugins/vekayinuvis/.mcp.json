@@ -17,7 +17,7 @@
         "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
       },
       "_tier": "core",
-      "_role": "ÇEKİRDEK resmî Devlet Arşivleri kataloğu (katalog.devletarsivleri.gov.tr) — Osmanlı/BOA (arsiv=2) · Cumhuriyet/BCA (arsiv=1) · Diplomatik (3) · Askeri (4). devarsiv_search → fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash + fon facet'leri; devarsiv_get_belge → künye + erişim/satın-alma durumu (hash zinciri aramadan gelir, uydurulamaz). Belge sayfa taraması/OCR/HTR yalnız gerçek devarsiv_get_belge_image / devarsiv_ocr_belge / satın alınmış çok-sayfada devarsiv_ocr_belge_pages çıktısı ve provenance ile aktarılır. ottoman-archives'ın YAPMADIĞI resmî katalog erişimini doldurur. TEK-CİHAZ OTURUM KİLİTLİ: devarsiv_session_status ile pre-flight; session_required → HP noVNC re-login + degrade. Geniş sorgu → refine_required."
+      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + belge 3'lüsü (engine paramlı çift-motor OCR) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 6'lısı (300 DPI, arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 22 araç; tek-cihaz oturum kilidi (HP)."
     },
     "yoktez": {
       "type": "http",

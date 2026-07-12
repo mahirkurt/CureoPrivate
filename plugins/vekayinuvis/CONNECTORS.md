@@ -44,24 +44,42 @@ varsayılanın kendisidir (tam roster bundled).
 B. Tam-Metin Arama · C. Belge/Metin Çekme · D. Hesaplama/Yardımcı (tarih, ebced,
 defter şeması) · E. HTR Pipeline (opt-in eScriptorium).
 
-**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog** — 8 araç):
-`devarsiv_search` (fon/kutu/gömlek + özet + tarih + item_id/hash + `capped`),
-**`devarsiv_semantic_search`** (diakronik/semantik — Osmanlıca eşdeğer genişletme +
-bge-m3 rerank), **`devarsiv_detailed_search`** (hassas/enumerasyon — arşiv × üst-fon ×
-tarih × özet), **`devarsiv_list_fon_categories`** (üst-fon ekseni — 1000-tavan aşımı),
-`devarsiv_get_belge` (künye + erişim durumu; hash zinciri aramadan gelir),
-**`devarsiv_get_belge_image`** (sayfa taraması ImageContent — satın-almadan bağımsız; asistan
-el yazması Osmanlıca'yı görüsüyle okur), **`devarsiv_ocr_belge`** (deterministik OCR/HTR —
-Latin tam · Osmanlı damga+referans kodu · el yazması→Transkribus/görü),
-`devarsiv_detailed_search_fields`, `devarsiv_session_status`, `devarsiv_server_info`.
+**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog — 22 araç, 6 grup**):
+
+- **Arama 5'lisi** — `devarsiv_search` (fon/kutu/gömlek + özet + tarih + item_id/hash +
+  `capped`), **`devarsiv_semantic_search`** (diakronik/semantik — Osmanlıca eşdeğer
+  genişletme + bge-m3 rerank), **`devarsiv_detailed_search`** (hassas/enumerasyon —
+  arşiv × üst-fon × tarih × özet), **`devarsiv_list_fon_categories`** (üst-fon ekseni —
+  1000-tavan aşımı), `devarsiv_detailed_search_fields` (form-alan introspeksiyonu).
+- **Belge 3'lüsü** — `devarsiv_get_belge` (künye + erişim/satın-alma durumu; hash zinciri
+  aramadan gelir, uydurulamaz), **`devarsiv_get_belge_image`** (önizleme taraması
+  ImageContent — satın-almadan bağımsız, **görüyle okuma**), **`devarsiv_ocr_belge`**
+  (`engine` paramlı çift-motor OCR/HTR — Osmanlı varsayılanı `both`, Latin arşivler daima
+  `tesseract`).
+- **eSatış sepeti 4'lüsü** `[_RW/_RO/_DESTRUCTIVE]` — `devarsiv_add_to_cart` (1-tabanlı
+  sayfa seçimi, örn. "1,3-5"), `devarsiv_list_cart` (kalemler + **bağlayıcı Tutar**),
+  `devarsiv_remove_from_cart` (satır sil/boşalt), `devarsiv_checkout_cart` (ödeme
+  **YAPMAZ** — yalnız noVNC URL + sepet döner; ödeme **YALNIZ insan/noVNC**, asla
+  otonom).
+- **Satın-alınmış/yerel-arşiv 6'lısı** — `devarsiv_list_purchased` (SatinAldiklarim t/hash
+  listesi), `devarsiv_ocr_belge_pages` (viewer temsilî-sayfa sınırlı), `devarsiv_list_archive`
+  (BOA-kodlu yerel PDF arşivi — code/yer/tarih/özet/sayfa), **`devarsiv_get_archive_page`**
+  (**300 DPI ImageContent — arşiv-öncelikli okuma**), `devarsiv_ocr_archive_pages` (sync
+  OCR, ≤5 sayfa/MULTIPAGE_MAX_PAGES), `devarsiv_get_archive_pdf` (künye + sınırlı base64 PDF).
+- **Async OCR 2'lisi** `[_RW/_RO]` — `devarsiv_ocr_submit` (idempotent, job_id döner) +
+  `devarsiv_ocr_result` (queued/running/done/error/**stale**).
+- **Durum 2'lisi** — `devarsiv_session_status` (HP oturumu canlı mı) + `devarsiv_server_info`
+  (araç envanteri + `ocr.engines` + `purchase_cart.manual_checkout_url`).
+
 **Kapsamlı erişim:** katalog en çok 1000 satır render eder (sayfalama yok) → tam 1000
 (`capped:true`) = *daha fazlası var*; her belgeye ulaşmak için `list_fon_categories` +
 `detailed_search` üst-fon × tarih-penceresi enumerasyonu + `item_id` union (skill
 `devlet-arsivleri-katalog.md` §2b). **No-fabrication:** geniş sorgu → `refine_required`;
-canlı oturum yoksa → `session_required` (asla uydurma). ottoman-archives'ın **yapmadığı**
-resmî BOA/BCA katalog aramasını doldurur; belge sayfa taraması/OCR/HTR yalnız gerçek
-`devarsiv_get_belge_image`, `devarsiv_ocr_belge` veya satın alınmış çok-sayfada
-`devarsiv_ocr_belge_pages` çıktısı varsa aktarılır (§ 8).
+canlı oturum yoksa → `session_required`; ödeme asla otonom değil (yalnız insan/noVNC);
+görü birincil, HTR yardımcı; yokluk kanıt değildir (asla uydurma). ottoman-archives'ın
+**yapmadığı** resmî BOA/BCA/Diplomatik/Askeri katalog aramasını + eSatış sepeti + satın-
+alınmış/yerel-arşiv okuma + async OCR job akışını doldurur; belge/arşiv sayfa taraması ve
+OCR/HTR yalnız gerçek araç çıktısı ve provenance ile aktarılır (§ 8).
 
 ---
 
@@ -230,6 +248,9 @@ keychain'ine yazılır (settings.json'a değil).
 | `CHRONOLOGY_CONVERSION` | ottoman-archives (convert_date, parse_ottoman_date, calc_ebced, tarih_dusur) | — |
 | `ACADEMIC_REPORT` | tüm katmanların birleşimi (devlet-arsivleri + ottoman-archives + yoktez + literatur + akademik companion) | katman degrade |
 | `KANUN_GEREKÇESİ` | **devlet-arsivleri** (BCA lâyiha/BOA İrade katalog kayıtları — L1–L4) + ottoman-archives (Düstûr/İA) + yoktez + literatur/paper-search (L5); sağlık alanında medical-history.md | web_search/web_fetch (Resmî Gazete, TBMM zabıt) |
+| `SEPET/SATIN-ALMA` | **devlet-arsivleri** sepet 4'lüsü (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart` — ödeme YALNIZ insan/noVNC; skills/satinalma) | — (ödeme asla otonom değil; fallback yok) |
+| `ARŞİV OKUMA` | **devlet-arsivleri** (`list_archive`/`get_archive_page`/`ocr_archive_pages`/`get_archive_pdf` — 300 DPI, arşiv-öncelikli okuma; skills/arsiv-oku) | `devarsiv_ocr_belge_pages` (viewer temsilî-sayfa sınırlı) |
+| `ASYNC OCR` | **devlet-arsivleri** (`ocr_submit`/`ocr_result`) + **anamnesis** ingest (skills/toplu-okuma) | — (uzun-koşum job; poll dışında fallback yok) |
 
 ---
 
@@ -244,7 +265,10 @@ keychain'ine yazılır (settings.json'a değil).
    kontrol edilir. **Tek-cihaz oturum kilidi** nedeniyle oturum HP'de yaşayan
    kalıcı tarayıcıya bağlıdır; `alive:false` ise resmî katalog araması
    `session_required` döner → kullanıcıya HP noVNC re-login yol haritası
-   bildirilir (ottoman-archives/yoktez ile degrade çalışma sürer).
+   bildirilir (ottoman-archives/yoktez ile degrade çalışma sürer). Ayrıca
+   `devarsiv_server_info` çağrısının `tools` uzunluğu **22** değilse:
+   connector'ı claude.ai'da yeniden bağla (araç listesi cache'lenmiş
+   olabilir) uyarısı verilir.
 3. `yoktez` **canlı mı?** — değilse Türkçe tez triangülasyonu atlanır
    (degrade çalışma; web_search fallback).
 4. Tamamlayıcı katman durumu raporlanır; eksiklerin etkisi belirtilir (örn.

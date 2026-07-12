@@ -1,12 +1,13 @@
 ---
+name: boa-katalog
 description: Resmî Devlet Arşivleri kataloğunda (BOA/BCA/Diplomatik/Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi çeker (devlet-arsivleri connector).
-argument-hint: <konu/terim [+ arşiv: Osmanlı|Cumhuriyet|Diplomatik|Askeri], örn. "veba tahaffuzhane 1890 Osmanlı">
 ---
 
 `vekayinuvis` skill'ini **ARCHIVE_DEEP_DIVE** modunda, **`devlet-arsivleri`** connector'ı
 odağıyla çalıştır. Referans: `references/devlet-arsivleri-katalog.md`.
 
-Hedef: "$ARGUMENTS" için resmî katalog kaydı bul ve künyele.
+Hedef: kullanıcının belirttiği konu/terim (+ opsiyonel arşiv: Osmanlı|Cumhuriyet|Diplomatik|Askeri,
+örn. "veba tahaffuzhane 1890 Osmanlı") için resmî katalog kaydı bul ve künyele.
 
 Akış:
 1. **`devarsiv_session_status`** — oturum canlı mı? `session_required` ise: kullanıcıya
@@ -22,12 +23,20 @@ Akış:
      erişim:** `devarsiv_list_fon_categories(arsiv)` → her üst-fon için `devarsiv_detailed_search(arsiv,
      ust_fon=fon, ozet=<konu>[, tarih_turu/yil_bas/yil_bit])` → `item_id` union (§2b). Bu ağır fan-out
      `arsiv-tarama-distilleri` ajanına delege edilir.
-3. **`devarsiv_get_belge(item_id, hash, arsiv)`** — en ilgili 1–3 kayıt için künye + erişim/satın-alma durumu.
+3. **`devarsiv_get_belge(item_id, hash, arsiv)`** — en ilgili 1–3 kayıt için künye + erişim/satın-alma
+   durumu (`access`). **`access=="purchasable"`** dönerse ve kullanıcı belgenin tüm sayfalarına
+   ihtiyaç duyuyorsa → **`/vekayinuvis:satinalma`** akışına yönlendir (yalnız önizleme yeterliyse
+   satın alma zorunlu değil, adım 4'e devam edilir). **`access=="purchased"`** ise okuma DAİMA
+   yerel arşivden başlar (`devarsiv_list_archive` → `devarsiv_get_archive_page`, 300 DPI + görü);
+   katalog önizlemesi yalnız satın-alınmamış belgeler içindir.
 4. **BELGE OKUMA (istenirse):** `devarsiv_get_belge_image(item_id, hash, arsiv)` → sayfa
    taraması (önizleme, satın-almadan bağımsız). **Osmanlı el yazması** için taramayı **doğrudan
    görünle transkribe et**; Latin/Cumhuriyet için `devarsiv_ocr_belge` deterministik metin
-   (basılı damga+referans kodu OCR ile doğrulanır). Tarama gerçek — uydurma yok; düşük-güven
-   dürüstçe belirtilir; transkripsiyon insan doğrulamasına tabi (bkz. `devlet-arsivleri-katalog.md` §7).
+   (basılı damga+referans kodu OCR ile doğrulanır). **Çok-sayfa okumada K4 kararı:** ≤5 sayfa
+   VE tek motor → `devarsiv_ocr_archive_pages` (sync); >5 sayfa VEYA `engine="both"` tam belge →
+   `devarsiv_ocr_submit` → `devarsiv_ocr_result` ile poll → **`/vekayinuvis:toplu-okuma`** akışına
+   devret. Tarama gerçek — uydurma yok; düşük-güven dürüstçe belirtilir; transkripsiyon insan
+   doğrulamasına tabi (bkz. `devlet-arsivleri-katalog.md` §7).
 5. Hicrî tarihleri `ottoman_convert_date` ile Miladî'ye eşle; ilgili transkripsiyon tezini
    `yoktez`'de ara.
 

@@ -1,12 +1,13 @@
 ---
+name: literatur
 description: DergiPark'ta tam-metin akademik literatür taraması yapar (literatur connector — PDF→HTML + referans) ve tarihyazımı sentezi kurar (HISTORIOGRAPHY modu).
-argument-hint: <konu/soru [+ dönem/dizin], örn. "19. yüzyıl Osmanlı karantina politikaları">
 ---
 
 `vekayinuvis` skill'ini **HISTORIOGRAPHY** modunda, **`literatur`** (DergiPark) connector'ı
 odağıyla çalıştır.
 
-Hedef: "$ARGUMENTS" için Türk akademik dergi literatürünü tam-metin tara ve ekol/tartışma
+Hedef: kullanıcının belirttiği konu/soru (+ opsiyonel dönem/dizin, örn. "19. yüzyıl Osmanlı
+karantina politikaları") için Türk akademik dergi literatürünü tam-metin tara ve ekol/tartışma
 haritası kur.
 
 Akış:

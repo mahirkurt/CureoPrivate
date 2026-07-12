@@ -31,13 +31,23 @@ CONNECTOR_MENTIONS = re.compile(
 # Manifesto imzası.
 HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b)", re.IGNORECASE)
 # Manifesto içinde durum satırı imzası.
-HAS_STATUS_ROWS = re.compile(r"→\s*(hit|empty|degraded|skipped)", re.IGNORECASE)
-# Manifestoda görünmesi ZORUNLU çekirdek + substrat satırları (durum ne olursa olsun).
+HAS_STATUS_ROWS = re.compile(r"(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE)
+# Manifestoda görünmesi ZORUNLU tam-filo satırları (durum ne olursa olsun).
+# Satır yalnız server adını değil, hit/empty/degraded/skipped durumunu da taşımalı.
 MANDATORY_ROWS = {
-    "ottoman-archives": re.compile(r"ottoman[-_]archives", re.IGNORECASE),
-    "devlet-arsivleri": re.compile(r"devlet[-_]arsivleri|devarsiv", re.IGNORECASE),
-    "yoktez": re.compile(r"\byoktez\b", re.IGNORECASE),
-    "anamnesis": re.compile(r"\banamnesis\b", re.IGNORECASE),
+    "ottoman-archives": re.compile(r"ottoman[-_]archives\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "devlet-arsivleri": re.compile(r"(devlet[-_]arsivleri|devarsiv)\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "yoktez": re.compile(r"\byoktez\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "literatur": re.compile(r"\bliteratur\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "consensus": re.compile(r"\bconsensus\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "scholar-gateway": re.compile(r"scholar[-_]gateway\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "exa": re.compile(r"\bexa\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "tavily": re.compile(r"\btavily\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "paper-search": re.compile(r"paper[-_]search\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "openathens": re.compile(r"\bopenathens\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "annas-reader": re.compile(r"annas[-_]reader\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "yok-akademik": re.compile(r"yok[-_]akademik\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "anamnesis": re.compile(r"\banamnesis\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
 }
 
 
@@ -101,9 +111,10 @@ def main():
         absent = [name for name, pat in MANDATORY_ROWS.items() if not pat.search(text)]
         if absent:
             missing.append(
-                "manifestoda zorunlu satır(lar): " + ", ".join(absent)
-                + " (her biri hit/empty/degraded/skipped-with-reason olarak yazılmalı; "
-                "devlet-arsivleri oturumu düşükse 'degraded: session_required')"
+                "manifestoda zorunlu tam-filo satır(lar): " + ", ".join(absent)
+                + " (13 server'ın her biri 'server → hit/empty/degraded/skipped: gerekçe' "
+                "biçiminde yazılmalı; devlet-arsivleri oturumu düşükse "
+                "'degraded: session_required')"
             )
 
     if not missing:

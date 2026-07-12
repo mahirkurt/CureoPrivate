@@ -18,7 +18,8 @@ ve Chicago atıf disipliniyle **9 çalışma modu** sunar.
 |---------|-----|----------|
 | Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v2.4.0) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod yönlendirme |
-| Slash komutları | `commands/*.md` | 9 komut: `/vekayinuvis-kaynak-avi`, `-arsiv-dalis`, `-boa-katalog`, `-literatur`, `-transkripsiyon`, `-prosopografi`, `-kronoloji`, `-rapor`, `-kanun-gerekce` |
+| Slash komutları | `commands/*.md` | 10 komut: `/vekayinuvis-durum`, `-kaynak-avi`, `-arsiv-dalis`, `-boa-katalog`, `-literatur`, `-transkripsiyon`, `-prosopografi`, `-kronoloji`, `-rapor`, `-kanun-gerekce` |
+| Doctor script | `scripts/vekayinuvis_doctor.py` | Marketplace-portable tam-filo preflight + G0 kapsam manifestosu; `--live` ile `devlet-arsivleri` oturum probe'u |
 | Connector envanteri | `CONNECTORS.md` | Tek doğruluk kaynağı — tam-filo, auth modeli, degrade kuralları |
 | Transport | `.mcp.json` | 13 MCP sunucusu: çekirdek, akademik, tam-metin ve RAG substratı |
 
@@ -56,6 +57,17 @@ Auth'lu endpoint'ler bearer env var bekler; eksik anahtar veya kapalı oturum
 SessionStart preflight'ta görünür ve ilgili katman manifestoda gerekçeli
 degrade edilir. Ayrıntı için **CONNECTORS.md § 6**'ya bakın.
 
+Kurulum sonrası hızlı sağlık kontrolü:
+
+```bash
+/vekayinuvis-durum
+```
+
+Komut, `scripts/vekayinuvis_doctor.py --live --write-manifest` ile 13 server
+satırlı G0 preflight manifestosu üretir ve `devlet-arsivleri` için
+`devarsiv_session_status` canlılığını kontrol eder. Bu bir araştırma koşusu
+değildir; belge görüntüsü, OCR/HTR veya tam metin çekmez.
+
 ## Önemli Sınırlar
 
 - **Restricted-kaynak disiplini**: erişim-kısıtlı arşivlerde plugin katalog
@@ -79,9 +91,10 @@ degrade edilir. Ayrıntı için **CONNECTORS.md § 6**'ya bakın.
 
 ```bash
 claude plugin validate ./plugins/vekayinuvis --strict
+python3 ./plugins/vekayinuvis/scripts/vekayinuvis_doctor.py --topic preflight --live
 ```
 
 ## Sürüm
 
-- Plugin paketi: `v2.4.0`
-- Flagship skill: `v2.4.0` (bkz. `CHANGELOG.md`)
+- Plugin paketi: `v2.5.0`
+- Flagship skill: `v2.5.0` (bkz. `CHANGELOG.md`)

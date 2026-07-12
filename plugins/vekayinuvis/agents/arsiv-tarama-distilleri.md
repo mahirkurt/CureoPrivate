@@ -80,8 +80,9 @@ arsiv_distillate:
 
 ## Değişmezler (ihlal etme)
 
-- **NO-FABRICATION:** belge GÖRÜNTÜSÜ/tam-metni üretme; yalnız katalog kaydı + künye + erişim durumu.
-  Bir kaydın yokluğu, belgenin arşivde olmadığının kanıtı değildir. `hash` daima `devarsiv_search`'ten gelir.
+- **NO-FABRICATION:** belge görüntüsü/OCR/HTR veya tam-metni yalnız gerçek araç çıktısı varsa aktar;
+  yoksa katalog kaydı + künye + erişim durumu düzeyinde kal. Bir kaydın yokluğu, belgenin arşivde
+  olmadığının kanıtı değildir. `hash` daima `devarsiv_search`'ten gelir.
 - **Çift-tarih:** atıf_hazır satırlarda orijinal takvim + (çözülebiliyorsa) Miladî ver; Hicrî tarihleri
   `ottoman_convert_date` ile eşle.
 - **Bağlam ekonomisi:** ham tool çıktısı dönme — yalnız yukarıdaki zarf. Tam-metin gerekiyorsa

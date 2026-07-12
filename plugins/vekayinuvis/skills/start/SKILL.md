@@ -1,8 +1,8 @@
 ---
 name: start
 description: Vekayinüvis süitine giriş ve yönlendirme. Bağlı MCP connector'larını (Ottoman Archives, YÖK Tez + tamamlayıcı akademik katman) kontrol eder, flagship vekayinuvis skill'ini ve dokuz çalışma modunu tanıtır, kullanıcının niyetine göre doğru moda veya slash komutuna yönlendirir. İlk kez süitle çalışırken, hangi connector'ların bağlı olduğunu görmek için, ya da "vekayinuvis nedir / nereden başlamalıyım / hangi modu kullanmalıyım" türü oryantasyon sorularında kullanın. Tetikleyiciler — vekayinuvis başlat, süit oryantasyonu, connector kontrolü, Osmanlı arşivi bağlı mı, "ne yapabilirsin", "nereden başlayayım", "hangi mod".
-version: 1.0.0
-last_updated: 2026-06-17
+version: 1.1.0
+last_updated: 2026-07-09
 ---
 
 # Vekayinüvis — Başlangıç ve Yönlendirme
@@ -31,9 +31,11 @@ Tavily) birleştirir; IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle
 
 Kapsam: Osmanlı dönemi (~1299–1922) + erken Cumhuriyet (1923–1950) öncelikli.
 Önemli sınır: BOA/BCA/Diplomatik/Askeri arşivlerin resmî KATALOG araması artık
-doğrudan yapılır (devlet-arsivleri: fon/kutu/gömlek + künye); ancak belge
-GÖRÜNTÜLERİ (ve diğer kısıtlı kaynaklar: TKGM, ATASE, İSAM, Süleymaniye…)
-ÜRETİLMEZ — yalnız katalog, kayıt-no, künye ve erişim yol haritası sağlanır.
+doğrudan yapılır (devlet-arsivleri: fon/kutu/gömlek + künye). Belge sayfa
+taraması/OCR/HTR yalnız gerçek `devarsiv_get_belge_image` / `devarsiv_ocr_belge`
+çıktısı ve provenance ile aktarılır; çekilmediyse katalog düzeyinde kalınır.
+Diğer kısıtlı kaynaklar (TKGM, ATASE, İSAM, Süleymaniye…) için içerik uydurulmaz;
+yalnız erişim yol haritası sağlanır.
 ```
 
 ## Adım 2 — Bağlı MCP Connector'larını Kontrol Et
@@ -114,6 +116,7 @@ seçilir; belirsizlikte kullanıcıya tek soru sorulur.
 
 | Komut | Mod | Ne yapar |
 |-------|-----|----------|
+| `/vekayinuvis-durum` | PREFLIGHT | Tam-filo MCP wiring/env/userConfig preflight + G0 manifest + `devlet-arsivleri` canlı session probe |
 | `/vekayinuvis-kaynak-avi` | SOURCE_HUNT | Kaynak matrisi (tür × erişim × dil × kanıt-yoğunluğu) |
 | `/vekayinuvis-arsiv-dalis` | ARCHIVE_DEEP_DIVE | Fond/tasnif yol haritası + erişim talimatı |
 | `/vekayinuvis-transkripsiyon` | MANUSCRIPT_TRANSCRIBE | IIIF → eScriptorium HTR pipeline |

@@ -59,7 +59,9 @@ Latin tam · Osmanlı damga+referans kodu · el yazması→Transkribus/görü),
 `detailed_search` üst-fon × tarih-penceresi enumerasyonu + `item_id` union (skill
 `devlet-arsivleri-katalog.md` §2b). **No-fabrication:** geniş sorgu → `refine_required`;
 canlı oturum yoksa → `session_required` (asla uydurma). ottoman-archives'ın **yapmadığı**
-resmî BOA/BCA katalog aramasını doldurur; belge görüntüleri hâlâ eSatış/on-site kapısında (§ 8).
+resmî BOA/BCA katalog aramasını doldurur; belge sayfa taraması/OCR/HTR yalnız gerçek
+`devarsiv_get_belge_image`, `devarsiv_ocr_belge` veya satın alınmış çok-sayfada
+`devarsiv_ocr_belge_pages` çıktısı varsa aktarılır (§ 8).
 
 ---
 
@@ -251,12 +253,10 @@ keychain'ine yazılır (settings.json'a değil).
    metadata fallback; `yok-akademik` yoksa modern uzman/ekol haritası atlanır).
 
 > **Restricted-kaynak kuralı (güncellenmiş, değişmez çekirdek).** Erişim-kısıtlı
-> arşivlerde (BOA, BCA, TKGM, ATASE, topkapi-arsiv, IRCICA, İSAM, Millet Yazma,
-> Süleymaniye, Müteferriqa) plugin **belge görüntüsü/tam-metin içeriği üretmez**.
-> **YENİ (`devlet-arsivleri` ile):** BOA/BCA/Diplomatik/Askeri **katalog araması,
-> kayıt-numarası (fon/kutu/gömlek), künye ve özet artık DOĞRUDAN canlı çekilir**
-> (`devarsiv_search`/`devarsiv_get_belge`) — "BETSİS sorgu önerisi" adımı gerçek
-> katalog sorgusuna terfi etti. Ancak **belge görüntüleri** hâlâ eSatış satın-alma
-> / on-site akreditasyon kapısındadır; bu görüntüler uydurulmaz, `get_belge` yalnız
-> erişim/satın-alma durumunu bildirir. No-fabrication invariant'ı korunur; bu, skill
-> § 1.2'deki disiplinin connector-düzeyi yansımasıdır.
+> arşivlerde (TKGM, ATASE, topkapi-arsiv, IRCICA, İSAM, Millet Yazma, Süleymaniye,
+> Müteferriqa) plugin **belge görüntüsü/tam-metin içeriği üretmez**; yalnız erişim
+> yol haritası verir. **`devlet-arsivleri` istisnası:** BOA/BCA/Diplomatik/Askeri
+> katalog araması, kayıt-numarası (fon/kutu/gömlek), künye ve özet doğrudan canlı
+> çekilir. Belge sayfa taraması/OCR/HTR de yalnız gerçek araç çıktısı ve provenance
+> ile aktarılır; araç çağrısı yoksa katalog düzeyinde kalınır. No-fabrication
+> invariant'ı korunur; bu, skill § 1.2'deki disiplinin connector-düzeyi yansımasıdır.

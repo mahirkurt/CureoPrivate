@@ -30,6 +30,16 @@ HAS_DOUBLE_DATE = re.compile(r"\(\s*(M\.\s*)?\d{3,4}\s*\)|\bMil[aâ]dî?\b|\bM\.
 # devlet-arsivleri kaydı imzası → katalog URL'i beklenir.
 HAS_DEVARSIV = re.compile(r"devarsiv|katalog\.devletarsivleri|BelgeGoster", re.IGNORECASE)
 HAS_CATALOG_URL = re.compile(r"katalog\.devletarsivleri\.gov\.tr|BelgeGoster\.aspx", re.IGNORECASE)
+# Belge goruntusu/OCR/HTR iddiasi varsa katalog kaydi tek basina yetmez; gercek arac/provenance gerekir.
+IMAGE_OR_OCR_CLAIM = re.compile(
+    r"belge\s+(görüntüsü|goruntusu|taraması|taramasi)|\bOCR\b|\bHTR\b|transkripsiyon",
+    re.IGNORECASE,
+)
+HAS_IMAGE_OR_OCR_PROVENANCE = re.compile(
+    r"devarsiv_get_belge_image|devarsiv_ocr_belge|devarsiv_ocr_belge_pages|"
+    r"mean_confidence|engine|Transkribus|model\s*56496|image[_-]?url|canvas|page",
+    re.IGNORECASE,
+)
 
 
 def last_assistant_message(event):
@@ -91,6 +101,12 @@ def main():
             "devlet-arsivleri-doğrulanmış kayıt için **katalog URL'i** (belge_url / BelgeGoster.aspx) "
             "dipnota eklenmeli (citation §6.3)"
         )
+    if IMAGE_OR_OCR_CLAIM.search(text) and not HAS_IMAGE_OR_OCR_PROVENANCE.search(text):
+        issues.append(
+            "belge görüntüsü/OCR/HTR iddiası varsa hangi gerçek araçla alındığı "
+            "(`devarsiv_get_belge_image`, `devarsiv_ocr_belge` veya `devarsiv_ocr_belge_pages`) "
+            "+ sayfa/model/engine/confidence provenance'ı yazılmalı"
+        )
 
     if not issues:
         sys.exit(0)  # disiplin tam → sessiz
@@ -98,9 +114,11 @@ def main():
     reason = (
         "[vekayinuvis atıf-disiplini] Bu çıktı arşiv belgesine atıfta bulunuyor ama şu disiplin "
         "eksik: " + "; ".join(issues) + ". Tamamla. Ayrıca NO-FABRICATION teyidi: kısıtlı kaynağın "
-        "(BOA/BCA/TKGM/ATASE/İSAM…) belge GÖRÜNTÜSÜ/tam-metni ÜRETİLMEDİĞİNDEN emin ol — yalnız "
-        "katalog kaydı (fon/kutu/gömlek), künye ve erişim durumu aktarılır; belge metni ancak "
-        "transkripsiyon tezinden (yoktez) veya kullanıcının kendi çalışmasından doğrulanır. "
+        "(BOA/BCA/TKGM/ATASE/İSAM…) belge görüntüsü/OCR/HTR veya tam-metni ancak gerçekten "
+        "çekildiyse aktarılır; çekilmediyse yalnız katalog kaydı (fon/kutu/gömlek), künye ve "
+        "erişim durumu aktarılır. Devlet Arşivleri görüntü/OCR iddiasında araç adı, sayfa, engine/"
+        "model ve confidence/provenance yazılmalı; belge metni aksi hâlde transkripsiyon tezinden "
+        "(yoktez), gerçek OCR/HTR çıktısından veya kullanıcının kendi çalışmasından doğrulanır. "
         "Referans: references/citation-and-transliteration.md §6, references/devlet-arsivleri-katalog.md §5."
     )
     sys.stdout.write(json.dumps({"decision": "block", "reason": reason}))

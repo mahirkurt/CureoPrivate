@@ -17,7 +17,7 @@
         "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
       },
       "_tier": "core",
-      "_role": "ÇEKİRDEK resmî Devlet Arşivleri kataloğu (katalog.devletarsivleri.gov.tr) — Osmanlı/BOA (arsiv=2) · Cumhuriyet/BCA (arsiv=1) · Diplomatik (3) · Askeri (4). devarsiv_search → fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash + fon facet'leri; devarsiv_get_belge → künye + erişim/satın-alma durumu (hash zinciri aramadan gelir, uydurulamaz). ottoman-archives'ın YAPMADIĞI resmî katalog erişimini doldurur. TEK-CİHAZ OTURUM KİLİTLİ: devarsiv_session_status ile pre-flight; session_required → HP noVNC re-login + degrade. Geniş sorgu → refine_required. Belge GÖRÜNTÜLERİ eSatış/on-site (uydurulmaz)."
+      "_role": "ÇEKİRDEK resmî Devlet Arşivleri kataloğu (katalog.devletarsivleri.gov.tr) — Osmanlı/BOA (arsiv=2) · Cumhuriyet/BCA (arsiv=1) · Diplomatik (3) · Askeri (4). devarsiv_search → fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash + fon facet'leri; devarsiv_get_belge → künye + erişim/satın-alma durumu (hash zinciri aramadan gelir, uydurulamaz). Belge sayfa taraması/OCR/HTR yalnız gerçek devarsiv_get_belge_image / devarsiv_ocr_belge / satın alınmış çok-sayfada devarsiv_ocr_belge_pages çıktısı ve provenance ile aktarılır. ottoman-archives'ın YAPMADIĞI resmî katalog erişimini doldurur. TEK-CİHAZ OTURUM KİLİTLİ: devarsiv_session_status ile pre-flight; session_required → HP noVNC re-login + degrade. Geniş sorgu → refine_required."
     },
     "yoktez": {
       "type": "http",

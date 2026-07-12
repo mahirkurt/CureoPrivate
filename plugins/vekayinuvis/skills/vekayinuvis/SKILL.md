@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 2.2.0
-last_updated: 2026-07-08
+version: 2.5.0
+last_updated: 2026-07-09
 changelog:
+  - "2.5.0 (2026-07-09): MARKETPLACE DOCTOR + G0/ATIF ENFORCEMENT. Claude marketplace ve Codex yerel kurulumları için `/vekayinuvis-durum` komutu + portable `scripts/vekayinuvis_doctor.py` eklendi; script `.mcp.json` tam-filo wiring'ini, env/userConfig/OAuth preflight durumunu ve 13 server satırlı G0 kapsam manifestosunu üretir; `--live` modunda `devlet-arsivleri` için streamable HTTP MCP initialize → initialized → `devarsiv_session_status` zinciriyle HP oturum canlılığını doğrular. Stop coverage hook'u artık yalnız çekirdek 4 satırı değil tüm 13 server'ı `hit/empty/degraded/skipped` durumuyla zorunlu arar. Atıf-disiplini hook'u görüntü/OCR/HTR iddialarında gerçek araç + sayfa/model/engine/confidence provenance'ı ister. Eski 'görüntü üretilemez' cümleleri 'yalnız gerçek araçla çekildiyse aktar; çekilmediyse katalog düzeyiyle kal' no-fabrication disiplinine hizalandı."
   - "2.2.0 (2026-07-08): BELGE OKUMA — OCR/HTR + GÖRSEL. devlet-arsivleri MCP artık BelgeGoster sayfa taramasını (full-res, satın-alma durumundan BAĞIMSIZ → satın alınmamış önizlemeler de okunur) sunuyor; 2 yeni araç wire edildi: (a) `devarsiv_get_belge_image` → tarama ImageContent olarak, asistan EL YAZMASI Osmanlıca'yı doğrudan görüsüyle okur (BOA el yazması için en iyi tam-okuma); (b) `devarsiv_ocr_belge` → deterministik OCR/HTR (Latin/Cumhuriyet tam · Osmanlı basılı damga+arşiv referans kodu tesseract · el yazması → Transkribus HTR creds-gated veya görü). §3.1.b tablosu (8→10 araç) + no-fabrication güncellendi (belge görüntüsü artık ÇEKİLİR/uydurulmaz, OCR düşük-güven dürüstçe raporlanır, çok-sayfalı tam set eSatış'ta); ARCHIVE_DEEP_DIVE/MANUSCRIPT_TRANSCRIBE/PROSOPOGRAPHY belge-okuma adımıyla güçlendirildi; references/devlet-arsivleri-katalog.md §7 (belge okuma motor tablosu + kanonik akış + no-fabrication). Osmanlıca en iyi okuma: asistan görüsü (self-contained) + Transkribus HTR (creds ile SOTA). Davranış/mod sayısı (9) korundu."
   - "2.1.0 (2026-07-08): DEVLET-ARSIVLERI DERİN ARAÇ WIRE + TAM-FİLO SAYIM DÜZELTMESİ. devlet-arsivleri MCP Faz-C'de 5→8 araca genişledi ama plugin yalnız 5'ini biliyordu; eksik 3 derin araç wire edildi: (a) `devarsiv_semantic_search` (diakronik/semantik — Osmanlıca eşdeğer genişletme + bge-m3 rerank) SOURCE_HUNT/ARCHIVE_DEEP_DIVE'a modern-terim birincil aracı olarak; (b) `devarsiv_detailed_search` + (c) `devarsiv_list_fon_categories` ile **1000-tavan aşan kapsamlı erişim** (üst-fon × tarih-penceresi enumerasyonu + item_id union) — §3.1.b tablosu, §5.1/§5.2 akışları, references/devlet-arsivleri-katalog.md §2/§2b/§2c, distiller ajanı, CONNECTORS §2/§7, boa-katalog/arsiv-dalis komutları, retrieve_dont_dump hook güncellendi. Ayrıca **11→13 server** sayım kayması giderildi (openathens+annas-reader sonradan eklendiği için stale kalmıştı: SKILL §3.5/§10, start, session_start.py, stop_coverage.py, hooks.json, CONNECTORS; sharding tablosuna fulltext katmanı eklendi). Davranış/mod sayısı (9) korundu."
   - "2.0.0 (2026-07-07): TAM-FİLO + RESMÎ KATALOG + BAĞLAM EKONOMİSİ. (a) devlet-arsivleri çekirdek connector eklendi (resmî BOA/BCA/Diplomatik/Askeri katalog — fon/kutu/gömlek + künye; §3.1.b F. Resmî Katalog + references/devlet-arsivleri-katalog.md); archive-landscape §1.1/§8.1/§8.4 boşluğu kapatıldı; §1.2/§6.3 no-fabrication güncellendi. (b) literatur (DergiPark tam-metin) + yok-akademik (destekleyici) companion + anamnesis substrat eklendi. (c) TAM-FİLO: .mcp.json 11 server bundle; §3.5 Tam-Filo ve Bağlam Ekonomisi (Tier-1 arsiv-tarama-distilleri ajanı + Tier-2 anamnesis ingest→bounded query); §8 G0 kapsam manifestosu (shared/coverage-manifest.md); shared/context-economy-contract.md. (d) 4 hook (SessionStart preflight, PostToolUse retrieve-don't-dump, Stop coverage + citation-discipline). (e) 2 yeni komut (boa-katalog, literatur). Mod sayısı (9) korundu; her mod devlet-arsivleri/literatur/anamnesis ile güçlendirildi."
@@ -21,8 +22,8 @@ changelog:
 > connector tabloları pedagojik referans olarak korunmuştur; skill standalone
 > (plugin dışı) ortamda da çalışır.
 
-> **Sürüm**: v1.3 (plugin entegrasyonu; v1.2 davranışı korundu — KANUN_GEREKÇESİ
-> modu + Osmanlı tıp tarihi alt-modülü + Doğrulama Disiplini)
+> **Sürüm**: v2.5.0 (marketplace doctor + tam-filo G0/atıf enforcement; v2.x
+> tam-filo, bağlam ekonomisi ve belge-okuma davranışı korunur)
 >
 > *Vekāyi'-nüvîs* (وقايع نويس): 1700'lerden 1922'ye kadar Osmanlı Devleti'nin
 > resmî tarih yazıcısı; arşivlere doğrudan erişimi, devlet arşivi/saray arşivi
@@ -96,19 +97,22 @@ Her çağrıda aşağıdaki **dört adım** önce uygulanır; bu adımlar atlanm
    tetikleneceği, hangi sırayla.
 4. **Bilinmezliklerin önden beyanı**: BOA/BCA/Diplomatik/Askeri arşivlerin
    **resmî katalog araması artık doğrudan canlı** yapılır (`devlet-arsivleri`
-   connector — fon/kutu/gömlek + künye). Ancak **belge görüntüleri/tam-metni**
-   erişim-kısıtlıdır (eSatış satın-alma / on-site akreditasyon); diğer kısıtlı
+   connector — fon/kutu/gömlek + künye). Devlet Arşivleri kayıtlarında belge
+   sayfa taraması/OCR/HTR ancak gerçek araç çağrısıyla (`devarsiv_get_belge_image`,
+   `devarsiv_ocr_belge`, satın alınmış çok-sayfada `devarsiv_ocr_belge_pages`)
+   çekildiyse aktarılır; çekilmediyse katalog düzeyinde kalınır. Diğer kısıtlı
    kaynaklar (TKGM, ATASE, topkapi-arsiv, IRCICA, İSAM, Millet Yazma, Süleymaniye,
    Müteferriqa) için **dijital belge içeriği getirilemez** → araştırmacıya
    **erişim yol haritası** sunulur (yazmalar.gov.tr, on-site başvuru, vd.).
    `devlet-arsivleri` oturumu düşükse (`session_required`) bu da bildirilir.
 
-> **Önemli (no-fabrication)**: Bu skill, kısıtlı kaynaklarda **belge görüntüsü/
-> tam-metin içeriği üretmez**. `devlet-arsivleri` ile **katalog kaydı, kayıt-numarası
-> (fon/kutu/gömlek), künye ve özet doğrudan** sağlanır; belgenin **görüntüsü** hâlâ
-> erişim-kısıtlıdır ve uydurulmaz — yalnız erişim/satın-alma durumu bildirilir.
-> Katalog kaydı dışındaki içerik, kullanıcının kendi arşiv çalışmasından/transkripsiyon
-> tezinden doğrulanmalıdır.
+> **Önemli (no-fabrication)**: Bu skill, kısıtlı kaynaklarda belge görüntüsü veya
+> tam-metin **uydurmaz**. `devlet-arsivleri` ile katalog kaydı, kayıt-numarası
+> (fon/kutu/gömlek), künye ve özet doğrudan sağlanır; belge sayfa taraması/OCR/HTR
+> ancak gerçek araç çıktısı ve provenance ile aktarılır. Araç çağrısı yoksa içerik
+> katalog düzeyiyle sınırlıdır; katalog kaydı dışındaki metin kullanıcının kendi
+> arşiv çalışmasından, transkripsiyon tezinden veya gerçek OCR/HTR çıktısından
+> doğrulanmalıdır.
 
 ## 2. Domain Sınıflandırma — 6 Eksen
 
@@ -463,7 +467,8 @@ müzakere kayıtları (klasik–geç Osmanlı), `devarsiv_search(arsiv=1)` ile B
 030.10 lâyiha/muamelat ve 030.18 Bakanlar Kurulu kararları (erken Cumhuriyet).
 Bu, önceki "BCA için kayıt yok" boşluğunu kapatır ve **G7.e** kapısını
 (her [D] iddiasının birincil-arşiv/akademik dış-doğrulaması) güçlendirir; belge
-görüntüsü erişim-kısıtlıysa yalnız katalog kaydı+URL atıflanır (no-fabrication).
+görüntüsü/OCR/HTR gerçek araçla çekilmediyse yalnız katalog kaydı+URL atıflanır
+(no-fabrication); çekildiyse sayfa/model/engine/confidence provenance'ı yazılır.
 
 Bir katmanda kanıt boşluğu varsa **şeffaf olarak** belirtilir; varsayım
 üretilmez. Çıktı, `lex-sanitas` ile zincirlendiğinde TBMM İçtüzüğü m. 73-74

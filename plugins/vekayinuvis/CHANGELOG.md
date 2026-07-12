@@ -4,6 +4,30 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [2.5.0] — 2026-07-09
+
+### Eklendi
+- **Marketplace-portable doctor:** `/vekayinuvis-durum` komutu ve
+  `scripts/vekayinuvis_doctor.py`. Script `.mcp.json` tam-filo wiring'ini,
+  env/userConfig/OAuth preflight durumunu ve 13 server satırlı G0 kapsam
+  manifestosu iskeletini üretir; belge görüntüsü, OCR/HTR veya tam-metin çekmez.
+- **Canlı `devlet-arsivleri` oturum probe'u:** doctor `--live` modunda streamable
+  HTTP MCP initialize → initialized → `devarsiv_session_status` zincirini çalıştırır;
+  `/vekayinuvis-durum` artık `session alive` ise satırı `hit 1`, oturum düşmüşse
+  `degraded: session_required` olarak yazar.
+
+### Değiştirildi
+- **G0 hook sıkılaştırıldı:** `stop_coverage.py` artık yalnız çekirdek dört satırı
+  değil, 13 server'ın tamamını `hit/empty/degraded/skipped` durum satırıyla arar.
+- **Atıf hook'u güçlendirildi:** görüntü/OCR/HTR iddiası varsa gerçek araç adı
+  (`devarsiv_get_belge_image`, `devarsiv_ocr_belge`, `devarsiv_ocr_belge_pages`)
+  ve sayfa/model/engine/confidence provenance'ı ister.
+- **No-fabrication metinleri hizalandı:** eski "belge görüntüsü üretilemez"
+  ifadeleri, "yalnız gerçek araçla çekildiyse aktar; çekilmediyse katalog düzeyinde
+  kal" disiplinine güncellendi.
+- **Claude marketplace metadata:** `.claude-plugin/plugin.json` component path'leri
+  (`commands`, `agents`, `skills`, `hooks`, `mcpServers`) açık yazıldı.
+
 ## [2.4.0] — 2026-07-08
 
 ### Eklendi (çok-sayfa erişim)
@@ -143,7 +167,8 @@ Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatt
   yok-akademik + anamnesis, `_tier`/`_role` annotasyonlu) — bağlama uygun her araç her koşumda
   çalışır; iki-katmanlı "companion bundle edilmez" tasarımı full-fleet'e terfi etti.
 - Flagship skill **v1.3.0 → v2.0.0**: §1.2 restricted-kaynak notu (katalog araması artık doğrudan;
-  belge görüntüleri hâlâ kısıtlı), §3.1.b F. Resmî Katalog katmanı, §3.2 literatur+yok-akademik,
+  belge görüntüleri o sürümde kısıtlıydı; güncel davranış için 2.5.0 no-fabrication notuna bakın),
+  §3.1.b F. Resmî Katalog katmanı, §3.2 literatur+yok-akademik,
   §3.5 Tam-Filo ve Bağlam Ekonomisi, §5 mod güncellemeleri (SOURCE_HUNT/ARCHIVE_DEEP_DIVE/
   PROSOPOGRAPHY/HISTORIOGRAPHY/KANUN_GEREKÇESİ), §6.3 katalog URL atfı, §8 G0 kapsam manifestosu,
   §10 shared referanslar.

@@ -119,8 +119,8 @@
       "name": "vekayinuvis",
       "displayName": "Vekayinüvis",
       "source": "./plugins/vekayinuvis",
-      "version": "2.4.0",
-      "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives (33 kaynak — BOA, Süleymaniye, İSAM, BCA, Topkapı, TDV İA + Gallica/BL/BSB/LoC/IIIF) + YÖK Tez çekirdek MCP katmanını eScriptorium HTR, Hicrî-Rumî-Miladî çevirici, ebced ve akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily) ile birleştirir. IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu: kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi. Birincil → ikincil → tertier kaynak triangülasyonu.",
+      "version": "2.5.0",
+      "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + resmî Devlet Arşivleri kataloğu + YÖK Tez çekirdek MCP katmanını DergiPark tam-metin, YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily), OpenAthens/Anna's Reader tam-metin şelalesi ve anamnesis RAG/GraphRAG ile birleştirir. v2.5: marketplace-portable /vekayinuvis-durum doctor komutu, 13-server G0 kapsam hook sıkılaştırması ve belge görüntüsü/OCR/HTR provenance atıf denetimi. IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu.",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"
@@ -137,7 +137,10 @@
         "legislative-history",
         "academic-research",
         "yoktez",
-        "ijmes-transliteration"
+        "ijmes-transliteration",
+        "g0-coverage-manifest",
+        "mcp-doctor",
+        "citation-provenance"
       ],
       "strict": false
     },

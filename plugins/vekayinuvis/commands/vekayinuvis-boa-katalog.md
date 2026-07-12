@@ -32,6 +32,7 @@ Akış:
    `yoktez`'de ara.
 
 Çıktı: **atıf-hazır** katalog kayıtları (fon/kutu/gömlek + Hicrî(+Miladî) + katalog URL), erişim
-durumu ve varsa transkripsiyon-tezi köprüsü. **No-fabrication:** belge görüntüleri/tam-metni
-üretilmez (eSatış/on-site); `hash` daima arama sonucundan gelir. Çıktıya **G0 kapsam manifestosu**
-ekle (shared/coverage-manifest.md); ağır getirimde `arsiv-tarama-distilleri` ajanına delege et.
+durumu ve varsa transkripsiyon-tezi köprüsü. **No-fabrication:** belge görüntüsü/OCR/HTR yalnız
+gerçek araç çıktısı ve provenance ile aktarılır; çekilmediyse katalog düzeyinde kal. `hash` daima
+arama sonucundan gelir. Çıktıya **G0 kapsam manifestosu** ekle (shared/coverage-manifest.md);
+ağır getirimde `arsiv-tarama-distilleri` ajanına delege et.

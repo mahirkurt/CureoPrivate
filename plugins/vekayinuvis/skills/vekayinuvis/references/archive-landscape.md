@@ -23,7 +23,8 @@
 ### 1.1 BOA — Cumhurbaşkanlığı Devlet Arşivleri, Osmanlı Arşivi
 - **Kayıt id**: `boa-dab`
 - **Erişim**: katalog araması **doğrudan canlı** (`devlet-arsivleri` connector,
-  `arsiv=2`); belge görüntüleri için eSatış satın-alma + on-site akreditasyon
+  `arsiv=2`); tek sayfa önizleme/OCR gerçek araçla, satın alınmış çok-sayfa set
+  eSatış akışıyla; diğer içerik için on-site/eSatış yol haritası
 - **URL**: <https://katalog.devletarsivleri.gov.tr>
 - **Bağlı connector**: `devlet-arsivleri` — `devarsiv_search(query, arsiv=2)` →
   `devarsiv_get_belge(item_id, hash, arsiv=2)` (bkz. `devlet-arsivleri-katalog.md`)
@@ -48,22 +49,24 @@
 
 - **Önemli not**: BOA katalog kaydı tam metin değildir; başlık + tasvirî
   özet + fon/kutu/gömlek referansıdır. `devlet-arsivleri` bu **katalog kaydını
-  doğrudan** getirir; belge **fotokopisi/görüntüsü** için eSatış satın-alma
-  veya akademik akreditasyon gerekir (uydurulmaz).
+  doğrudan** getirir; belge sayfa taraması/OCR/HTR yalnız gerçek araç çıktısı ve
+  provenance ile aktarılır. Araç çağrısı yoksa katalog düzeyinde kalınır.
 - **vekayinuvis için yöntem (güncel)**:
   1. `devarsiv_search("<konu/terim>", arsiv=2)` → resmî katalogda aday kayıtlar
      (fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash). Geniş sorgu
      `refine_required` dönerse daralt.
   2. `devarsiv_get_belge(item_id, hash, arsiv=2)` → künye + erişim durumu.
-  3. Belge **tam-metni** gerekiyorsa: **YÖKtez** üzerinden o belgenin
-     transkripsiyonunu içeren tezleri ara (yüksek lisans/doktora tezleri
-     50–200 belge transkripsiyonu içerir) + on-site/eSatış yol haritası.
+  3. Belge **tam-metni** gerekiyorsa: önce `devarsiv_get_belge_image` /
+     `devarsiv_ocr_belge` ile gerçek sayfa/provenance denetle; çok-sayfalı
+     satın alınmış sette `devarsiv_ocr_belge_pages`; ayrıca **YÖKtez** üzerinden
+     transkripsiyon içeren tezleri ara.
   - Fallback (oturum düşükse): `ottoman_get_source(boa-dab)` erişim yolu +
     YÖKtez (bkz. `devlet-arsivleri-katalog.md` § 3).
 
 ### 1.2 BCA — Cumhurbaşkanlığı Devlet Arşivleri, Cumhuriyet Arşivi (Ankara)
 - **Erişim**: katalog araması **doğrudan canlı** (`devlet-arsivleri`, `arsiv=1`);
-  belge görüntüsü için Ankara on-site veya eSatış sınırlı sayfa görüntüleme
+  belge sayfa taraması/OCR gerçek araçla; çok-sayfalı set için satın-alma/on-site
+  erişim durumu dürüstçe belirtilir
 - **Bağlı connector**: `devlet-arsivleri` — `devarsiv_search(query, arsiv=1)`
   (BCA artık ottoman-archives'ta kayıtlı bir kaynak değil; bu connector doldurur)
 - **Ana fondlar**:
@@ -297,10 +300,11 @@
    (fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash);
    geniş sorgu refine_required → daralt (fon/tarih ekle)
 3. devarsiv_get_belge(item_id, hash, arsiv=2) → künye + erişim/satın-alma durumu
-4. Belge TAM-METNİ için: search_yok_tez_detailed(keyword=<konu>) → o belgenin
-   transkripsiyonunu içeren tezler → varsa o transkripsiyona güvenle atıf
-5. Görüntü/tam-metin yoksa → eSatış satın-alma veya BOA akreditasyon talimatı
-   (belge görüntüsü ASLA uydurulmaz)
+4. Belge TAM-METNİ için: devarsiv_get_belge_image/devarsiv_ocr_belge ile gerçek
+   sayfa/provenance; satın alınmış çok-sayfada devarsiv_ocr_belge_pages; ayrıca
+   search_yok_tez_detailed(keyword=<konu>) → transkripsiyon içeren tezler
+5. Görüntü/tam-metin çekilmediyse → eSatış satın-alma veya BOA akreditasyon
+   talimatı (belge görüntüsü ASLA uydurulmaz)
 1b. (oturum düşükse) session_required → kullanıcıya HP noVNC re-login yol
     haritası; ottoman_get_source(boa-dab) + YÖKtez ile degrade devam
 ```

@@ -239,9 +239,9 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 > `devarsiv_checkout_cart` de **ödeme YAPMAZ**; yalnızca noVNC URL'sini ve güncel sepeti döner
 > — ödeme **DAİMA insan** tarafından, tarayıcı üzerinden tamamlanır. Ödeme-öncesi **metin-onay
 > kapısı zorunludur**: sepet özeti (kalemler + `devarsiv_list_cart` çıktısındaki bağlayıcı
-> Tutar sütunu) kullanıcıya gösterilip açık onay alınmadan noVNC bağlantısı paylaşılmaz. Fiyat
-> dili: "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar `devarsiv_list_cart` çıktısındaki Tutar
-> sütunudur." Satın alma bağlamında tek-cihaz uyarısı **daima verbatim** aktarılır:
+> Tutar sütunu) kullanıcıya gösterilip açık onay alınmadan noVNC bağlantısı paylaşılmaz.
+> Fiyat dili: "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar `devarsiv_list_cart` çıktısındaki Tutar sütunudur."
+> Satın alma bağlamında tek-cihaz uyarısı **daima verbatim** aktarılır:
 >
 > Kendi cihazınızdan kataloğa GİRMEYİN — tek-cihaz kilidi HP oturumunu düşürür.
 >

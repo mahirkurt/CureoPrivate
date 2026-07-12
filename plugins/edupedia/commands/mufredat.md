@@ -29,8 +29,11 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
    `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
    `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
    sözleşmesi `../shared/canonical-cache-contract.md §1`; `quality_gates` yalnız
-   `validate_module.py` çıktısından, uydurma yok — koşulmayan kapı `SKIPPED`). Manifest'siz
-   `/edupedia:yayinla` çalışamaz.
+   `validate_module.py` çıktısından, uydurma yok — koşulmayan kapı `SKIPPED`). `run_id`
+   **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>`
+   — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>`
+   sürüm tamsayısı; şema kısıtı `run-manifest-schema.json` `properties.run_id.pattern`).
+   Manifest'siz `/edupedia:yayinla` çalışamaz.
 
 ## Sınırlılık
 

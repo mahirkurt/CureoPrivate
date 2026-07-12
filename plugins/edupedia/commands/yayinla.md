@@ -32,15 +32,54 @@ argument-hint: <modul.html yolu>
 1. HTML + manifest'i oku.
 2. Manifest'teki `quality_gates` içinde `FAIL` varsa **önce kullanıcıya söyle** (hangi
    kapılar düştü) ve yine de yayınlansın mı diye sor. Onaylarsa `force: true` gönder.
-3. `POST https://edupedia.cureonics.com/api/publish`:
+3. `POST https://edupedia.cureonics.com/api/publish` — istekte **HER ZAMAN açık bir `slug`
+   alanı gönder** (sunucunun `run_id`'den slug türetmesine güvenme; bkz. "Slug türetme"
+   aşağıda). `force` argümanı, Adım 2'de kullanıcı onaylarsa `True` yapılır:
 
 ```bash
 python3 - <<'PY'
-import json, os, sys, urllib.request, urllib.error
+import json, os, re, sys, urllib.request, urllib.error
+
+_TR_MAP = str.maketrans({
+    "ç": "c", "Ç": "c",
+    "ğ": "g", "Ğ": "g",
+    "ı": "i", "İ": "i",
+    "ö": "o", "Ö": "o",
+    "ş": "s", "Ş": "s",
+    "ü": "u", "Ü": "u",
+})
+_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
+
+
+def derive_slug_from_filename(html_path):
+    """Dosya adından slug türetir. Kalıba uymazsa None döner — asla uydurmaz."""
+    stem = os.path.splitext(os.path.basename(html_path))[0]
+    s = stem.translate(_TR_MAP).lower()
+    s = re.sub(r"[\s_]+", "-", s)       # boşluk/alt-çizgi -> tire
+    s = re.sub(r"[^a-z0-9-]", "", s)    # kalan geçersiz karakterleri at
+    s = re.sub(r"-{2,}", "-", s)        # ardışık tireleri tekille
+    s = s.strip("-")[:64].rstrip("-")   # baş/son tire kırp, 64 ile sınırla
+    return s if _SLUG_RE.fullmatch(s) else None
+
+
 html_path, manifest_path = sys.argv[1], sys.argv[2]
+explicit_slug = sys.argv[3] if len(sys.argv) > 3 else None
+
+slug = explicit_slug or derive_slug_from_filename(html_path)
+if not slug:
+    print(
+        "HATA: dosya adından geçerli bir slug türetilemedi ('"
+        + os.path.basename(html_path)
+        + "'). Lütfen kullanıcıdan açık bir slug isteyin (^[a-z0-9][a-z0-9-]{1,63}$ deseni) "
+        "ve bu betiği 3. argüman olarak o slug ile tekrar çalıştırın.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
+
 payload = {
     "html": open(html_path, encoding="utf-8").read(),
     "manifest": json.load(open(manifest_path, encoding="utf-8")),
+    "slug": slug,
     "force": False,   # kapı düştüyse ve kullanıcı onayladıysa True
 }
 req = urllib.request.Request(
@@ -60,12 +99,29 @@ except urllib.error.HTTPError as e:
 PY
 ```
 
+**Slug türetme:** slug HER ZAMAN HTML dosya adından türetilir (uzantısız, küçük harf,
+Türkçe karakterler ASCII'ye normalize edilmiş — ç→c, ğ→g, ı/İ→i, ö→o, ş→s, ü→u — boşluk/
+alt-çizgi tireye çevrilmiş, geçersiz karakterler atılmış, baş/son tire kırpılmış, 64
+karakterle sınırlanmış). Türetilen sonuç `^[a-z0-9][a-z0-9-]{1,63}$` desenine uymuyorsa
+(ör. dosya adı `---.html` gibi tamamen geçersizse) **betik DURUR** ve kullanıcıdan açık bir
+slug ister — asla uydurmaz. Kullanıcı bir slug verirse betiği 3. argüman olarak o slug ile
+çalıştırın. **Not — slug ile run_id gövdesi çelişebilir:** dosya adından türetilen slug ile
+manifest'teki `run_id`'nin gövdesi (`Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` kalıbındaki
+`<ders>-<konu>` kısmı) farklı olabilir (ör. dosya `hucre-fen5.html` → slug `hucre-fen5`,
+ama run_id gövdesi `fen5-hucre`) — bu bir hata değildir. Sunucu açık `slug` gönderildiğinde
+onu kullanır, `run_id`'yi slug türetmek için hiç ayrıştırmaz; `run_id` yalnız manifest kimliği
+olarak kalır.
+
 4. Başarılıysa dönen `url`'yi kullanıcıya göster (paylaşılabilir public bağlantı) ve
    sürüm numarasını söyle. Bu bir yeniden yayınsa (`version > 1`), eski sürümün
    `/m/<slug>/v<N-1>` altında durduğunu belirt.
 
 ## Hata durumları
 
+- **400** — geçersiz manifest veya slug (ör. `slug` deseni `^[a-z0-9][a-z0-9-]{1,63}$`'a
+  uymuyor, ya da manifest zorunlu alan eksik/hatalı tip). Adım 3'teki slug türetmesi zaten
+  bunu önlemeye çalışır; yine de 400 dönerse hata mesajını kullanıcıya göster ve açık,
+  geçerli bir `slug` ile tekrar deneyin.
 - **401** — token geçersiz. Doppler'daki `EDUPEDIA_PUBLISH_TOKEN`'ı doğrula.
 - **422** — kalite kapısı düştü. Hangi kapılar olduğunu göster; modülü düzeltmeyi öner.
   Kullanıcı ısrar ederse `force: true` ile tekrar dene.

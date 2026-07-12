@@ -87,8 +87,13 @@ Yetkinlik **her zaman** şunu üretir:
    `requested_scope`, `connector_call_ledger`, `canonical_artifacts`, `tier2_status`,
    `quality_gates`, `deliverable_path`, `caveats`. `quality_gates` **yalnız**
    `scripts/validate_module.py` koşumunun gerçek çıktısından doldurulur — uydurulmaz; bir
-   kapı koşulmadıysa `SKIPPED` yazılır. Bu manifest, `/edupedia:yayinla`'nın okuduğu tek
-   girdidir (bkz. `../../shared/canonical-cache-contract.md §1`, `../../commands/yayinla.md`).
+   kapı koşulmadıysa `SKIPPED` yazılır. `run_id` **NORMATİF KALIP** ile (verbatim, başka bir
+   biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260706-fen5-hucre-v1`
+   (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı
+   `../../shared/run-manifest-schema.json` `properties.run_id.pattern`). Bu kalıba uymayan bir
+   run_id, `/edupedia:yayinla` açık bir `slug` göndermezse sunucu tarafında 400 ile reddedilir.
+   Bu manifest, `/edupedia:yayinla`'nın okuduğu tek girdidir (bkz.
+   `../../shared/canonical-cache-contract.md §1`, `../../commands/yayinla.md`).
 
 > **Neden tek-dosya etkileşimli HTML, React değil?** Claude.ai artifact ortamı
 > React'te yalnız Tailwind çekirdek sınıflarına izin verir; Carbon token sistemi

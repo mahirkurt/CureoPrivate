@@ -40,7 +40,10 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
    `../shared/canonical-cache-contract.md §1`. `quality_gates` **yalnız** bir önceki adımdaki
    `validate_module.py` çıktısından doldurulur (uydurma yok); koşulmayan kapı `SKIPPED`.
    `connector_call_ledger`/`canonical_artifacts` bu komutun Adım 1'inde yapılan Müfredat MCP
-   çağrılarından gelir. Bu manifest olmadan `/edupedia:yayinla` çalışamaz.
+   çağrılarından gelir. `run_id` **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA):
+   `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>`
+   yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı `run-manifest-schema.json`
+   `properties.run_id.pattern`). Bu manifest olmadan `/edupedia:yayinla` çalışamaz.
 
 ## Belirsiz / hatalı kod
 

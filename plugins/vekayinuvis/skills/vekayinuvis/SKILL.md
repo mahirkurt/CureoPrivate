@@ -217,10 +217,9 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 > konu >1000 (kapsamlı tarama) → `devarsiv_list_fon_categories` + `devarsiv_detailed_search`
 > (üst-fon × tarih-penceresi enumerasyonu, `item_id` ile union — bkz. `devlet-arsivleri-katalog.md` §2b).
 
-> **Okuma önceliği ve motor/async konvansiyonu:** Belge satın alınmışsa okuma DAİMA
-> yerel arşivden başlar: `devarsiv_list_archive` → `devarsiv_get_archive_page` (300 DPI +
-> görü); katalog önizlemesi (sample) yalnız satın-alınmamış belgeler içindir
-> (→ `skills/arsiv-oku`). Motor seçimi `engine`: `auto` (Osmanlı→both, diğerleri→tesseract) |
+> **Okuma önceliği ve motor/async konvansiyonu:** Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_archive → devarsiv_get_archive_page (300 DPI + görü); katalog önizlemesi (sample) yalnız satın-alınmamış belgeler içindir. (→ `skills/arsiv-oku`.)
+>
+> Motor seçimi `engine`: `auto` (Osmanlı→both, diğerleri→tesseract) |
 > `both` | `transkribus` | `escriptorium` | `tesseract`. `both` → Transkribus (el yazması
 > PyLaia) + eScriptorium (basılı Kraken) PARALEL; iki transkripsiyon `transcriptions` altında
 > yan yana + tesseract damga katmanı. Düşen motor dürüst `unavailable` nedeni taşır. Latin
@@ -242,10 +241,12 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 > kapısı zorunludur**: sepet özeti (kalemler + `devarsiv_list_cart` çıktısındaki bağlayıcı
 > Tutar sütunu) kullanıcıya gösterilip açık onay alınmadan noVNC bağlantısı paylaşılmaz. Fiyat
 > dili: "~0,50 TL/sayfa TAHMİNDİR; bağlayıcı tutar `devarsiv_list_cart` çıktısındaki Tutar
-> sütunudur." Satın alma bağlamında tek-cihaz uyarısı **daima verbatim** aktarılır: "Kendi
-> cihazınızdan kataloğa GİRMEYİN — tek-cihaz kilidi HP oturumunu düşürür." Alt-ajan
-> (`arsiv-tarama-distilleri`) sepete **dokunmaz** — sepet mutasyonu yalnızca ana orkestratör
-> turunda, kullanıcı onayıyla yapılır. (→ `skills/satinalma`.)
+> sütunudur." Satın alma bağlamında tek-cihaz uyarısı **daima verbatim** aktarılır:
+>
+> Kendi cihazınızdan kataloğa GİRMEYİN — tek-cihaz kilidi HP oturumunu düşürür.
+>
+> Alt-ajan (`arsiv-tarama-distilleri`) sepete **dokunmaz** — sepet mutasyonu yalnızca ana
+> orkestratör turunda, kullanıcı onayıyla yapılır. (→ `skills/satinalma`.)
 
 > **No-fabrication:** geniş sorgu → `refine_required` (daralt); tam 1000 → `capped:true`
 > (*daha fazlası var* → enumerasyon); `hash` daima arama sonucundan gelir (uydurulamaz); belge

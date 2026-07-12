@@ -4,7 +4,7 @@
 
 ## Kurallar
 
-- Wire edilmiş **13 server** için (çekirdek: ottoman-archives · devlet-arsivleri · yoktez; akademik: literatur · consensus · scholar-gateway · exa · tavily · paper-search; tam-metin: openathens · annas-reader; destekleyici: yok-akademik; substrat: anamnesis) **birer satır** — bağlı olsun olmasın.
+- Wire edilmiş **17 server** için (çekirdek: ottoman-archives · devlet-arsivleri · yoktez; akademik: literatur · consensus · scholar-gateway · exa · tavily · paper-search; tam-metin: openathens · annas-reader; yasama/mevzuat: resmigazete · mevzuat · tbmm; destekleyici: yok-akademik · detsis; substrat: anamnesis) **birer satır** — bağlı olsun olmasın. (`marmara` bu turda wire edilmedi — DNS yayınlanmadı, bkz. CONNECTORS.md § 1 not; manifestoya dahil değil.)
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false` / session_required) · `skipped: <gerekçe>` (anahtar yok / mod için N/A / oturum düşük).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "mod için N/A", "session_required — re-login gerekli", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Bağlı/kurulu katman atlanamaz:** bir connector bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL). `skipped: … bağlı değil` yalnız gerçek yoklukta doğrudur.
@@ -31,8 +31,13 @@ Akademik
 Tam-metin (kitap+makale)
   openathens           → hit 2   (Millet Kütüphanesi: 19.yy karantina monografı tam-metin → anamnesis)
   annas-reader         → skipped: gerekmedi (lisanslı band yeterli)
+Yasama/mevzuat
+  resmigazete          → skipped: mod için N/A (ARCHIVE_DEEP_DIVE — KANUN_GEREKÇESİ değil)
+  mevzuat              → skipped: mod için N/A (ARCHIVE_DEEP_DIVE — KANUN_GEREKÇESİ değil)
+  tbmm                 → skipped: mod için N/A (ARCHIVE_DEEP_DIVE — KANUN_GEREKÇESİ değil)
 Destekleyici
   yok-akademik         → skipped: mod için N/A (modern akademisyen prosopografisi kapsamda değil)
+  detsis               → skipped: mod için N/A (kurumsal prosopografi kapsamda değil; ayrıca Cumhuriyet-sınırlı)
 Büyük-veri substratı (Tier 2)
   anamnesis            → ingest 2 belge (yoktez:<tez-no>, devarsiv:2/DH.İ.UM/22-19) · 7 bounded query
 ```

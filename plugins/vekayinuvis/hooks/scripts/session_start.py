@@ -14,7 +14,7 @@ import json
 import os
 import sys
 
-# Gated çekirdek + companion + substrat connector → env var
+# Gated çekirdek + companion + substrat + yasama/mevzuat connector → env var
 # (yoktez/literatur/consensus/scholar-gateway/exa/tavily authless veya OAuth → env-key yok;
 #  paper-search Smithery key'i userConfig ile enable-time'da).
 GATED = {
@@ -24,6 +24,10 @@ GATED = {
     "openathens": "OPENATHENS_MCP_API_KEY",
     "annas-reader": "ANNAS_MCP_API_KEY",
     "anamnesis": "ANAMNESIS_MCP_API_KEY",
+    "resmigazete": "RESMI_GAZETE_MCP_API_KEY",
+    "mevzuat": "MEVZUAT_MCP_API_KEY",
+    "tbmm": "TBMM_MCP_API_KEY",
+    "detsis": "DETSIS_MCP_API_KEY",
 }
 
 CONVENTIONS = (
@@ -32,9 +36,12 @@ CONVENTIONS = (
     "takvim/ebced + HTR + TDV İA), `devlet-arsivleri` (**resmî BOA/BCA/Diplomatik/Askeri "
     "katalog araması** — fon/kutu/gömlek + künye), `yoktez` (YÖK Tez transkripsiyon tezleri); "
     "COMPANION: `literatur` (DergiPark tam-metin), `yok-akademik` (destekleyici — akademisyen "
-    "profilleri), paper-search/consensus/scholar-gateway/exa/tavily; TAM-METİN ŞELALESİ (kitap+makale): "
+    "profilleri), `detsis` (destekleyici — kurumsal prosopografi, Cumhuriyet-sınırlı), "
+    "paper-search/consensus/scholar-gateway/exa/tavily; YASAMA/MEVZUAT (v3.0): `resmigazete` "
+    "(erken-Cumhuriyet /eskiler/ + rg-ocr), `mevzuat` (mülga mevzuat + gerekçe), `tbmm` (teklif→kanun "
+    "soyağacı + Açık Erişim DSpace) — KANUN_GEREKÇESİ omurgası; TAM-METİN ŞELALESİ (kitap+makale): "
     "`openathens` (Tier 3 lisanslı — Millet Kütüphanesi 309 DB) → `annas-reader` (Tier 4 son çare; yalnız "
-    "analiz). Getirilen tam-metin > eşik → anamnesis'e ingest. "
+    "analiz; `marmara` Tier 3b wire bekliyor — DNS yayınlanmadı). Getirilen tam-metin > eşik → anamnesis'e ingest. "
     "Çekirdek invaryantlar: "
     "(1) DEVLET-ARSIVLERI TEK-CİHAZ OTURUM — resmî katalog oturumu HP'de kalıcı authenticated "
     "tarayıcıda yaşar; arşiv-katalog sorgusundan ÖNCE `devarsiv_session_status` ile canlılığı "
@@ -53,7 +60,7 @@ CONVENTIONS = (
     "(3) ATIF DİSİPLİNİ — her arşiv iddiası fon/kutu/gömlek + orijinal takvim + Miladî çift-tarih; "
     "devlet-arsivleri-doğrulanmış kayıt için katalog URL'i (belge_url) dipnota eklenir. IJMES/TDV İA "
     "çeviriyazı. (bkz. references/citation-and-transliteration.md, references/devlet-arsivleri-katalog.md) "
-    "(4) TAM-FİLO + BAĞLAM EKONOMİSİ — `.mcp.json`'da bundled 13 server'ın bağlama uygun olanı "
+    "(4) TAM-FİLO + BAĞLAM EKONOMİSİ — `.mcp.json`'da bundled 17 server'ın bağlama uygun olanı "
     "HER substantif sorguda çalışır (sessiz atlama YOK); her çıktı G0 kapsam manifestosu taşır "
     "(shared/coverage-manifest.md: her server için hit/empty/degraded/skipped-with-reason). Ham veri "
     "ana pencerede akıl yürütülmez: ağır çok-connector süpürme → `arsiv-tarama-distilleri` alt-ajanı "

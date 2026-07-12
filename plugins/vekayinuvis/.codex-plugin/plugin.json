@@ -158,6 +158,42 @@
       },
       "_tier": "substrate",
       "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin makale, İА maddesi, IIIF within-manifest bloğu) ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(doc_id=<kanonik id: fon/kutu/gömlek · tez-no · DOI · İА-madde>) ile BİR KEZ indekslenir → semantic_search/hybrid_query(queries[]) ile sınırlı, provenance-damgalı, graph-temelli dilim çekilir. Aynı doc_id iki kez ingest edilmez (kanonik cache). upsert_triples/graph_neighbors/subgraph = kişi↔görev↔belge / olay↔tarih↔kaynak ilişki grafiği (prosopografi/kronoloji). shared/context-economy-contract.md Tier 2. Anahtar yoksa → bounded-chunk fetch'e degrade (ottoman within-manifest + yoktez sayfa-bazlı), asla ham tam-metin dökümü."
+    },
+    "resmigazete": {
+      "type": "http",
+      "url": "https://resmi-gazete-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RESMI_GAZETE_MCP_API_KEY}"
+      },
+      "_tier": "legislative",
+      "_role": "T.C. Resmî Gazete erken-Cumhuriyet arşivi (`/eskiler/` 1920+) — `rg_resolve_date`→`rg_get_item` ile tarih-bazlı ilan/kanun yayın kaydı çekimi + `rg_search`/`rg_list_recent`; taranmış sayfalar rg-ocr çift-motor (pdftotext/tesseract tur+eng) ile metne çevrilir (`rg_ocr_submit`→`rg_ocr_result` async kuyruk büyük belgede). KANUN_GEREKÇESİ L4/L5 birincil yayın kaydı + EVENT_RECONSTRUCTION dönem gazetesi doğrulaması. CF Worker, mevzuat HP relay reuse ile canlı; `/mcp` Bearer."
+    },
+    "mevzuat": {
+      "type": "http",
+      "url": "https://mevzuat.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
+      },
+      "_tier": "legislative",
+      "_role": "mevzuat.gov.tr Türkiye Mevzuat Bilgi Sistemi — `search_mulga_mevzuat` (mülga kanun/KHK/CBK arşivi) + `get_mevzuat_gerekce` (madde gerekçesi metni) + `resolve_resmi_gazete` (RG çapraz-referans). KANUN_GEREKÇESİ modunun antecedant-mevzuat zincirinin (L4/L5) birincil kaynağı; resmigazete/tbmm ile aynı turda paralel. HP self-host (systemd), `/mcp` Bearer."
+    },
+    "tbmm": {
+      "type": "http",
+      "url": "https://tbmm.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TBMM_MCP_API_KEY}"
+      },
+      "_tier": "legislative",
+      "_role": "TBMM yasama tarihçesi — kanun teklifi→komisyon raporu→kabul edilmiş kanun soyağacı (`tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi`) + Açık Erişim DSpace (`tbmm_search_acik_erisim`/`tbmm_get_acik_erisim_document`) geç-Osmanlı/erken-Cumhuriyet meclis zabıtları. KANUN_GEREKÇESİ L3/L4 birincil kaynağı + SOURCE_HUNT DSpace kanıt-yoğunluğu. Pi self-host (systemd), `/mcp` Bearer."
+    },
+    "detsis": {
+      "type": "http",
+      "url": "https://detsis.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DETSIS_MCP_API_KEY}"
+      },
+      "_tier": "support",
+      "_role": "DESTEKLEYİCİ DETSİS (Devlet Teşkilatı Merkezi Kayıt Sistemi) — kurumsal prosopografi zinciri `detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar` (teşkilat tarihçesi + kuruluş mevzuatı). PROSOPOGRAPHY modunda modern kurumsal soyağacı tamamlayıcısı — **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez**. `/mcp` Bearer."
     }
   }
 }

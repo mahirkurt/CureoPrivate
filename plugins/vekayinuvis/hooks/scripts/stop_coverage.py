@@ -25,7 +25,8 @@ MODE_SIGNALS = [
 ]
 # Birden fazla connector adının geçmesi de substantif-çıktı sinyalidir (tekil connector sohbeti değil).
 CONNECTOR_MENTIONS = re.compile(
-    r"ottoman[-_]archives|ottoman_|devlet[-_]arsivleri|devarsiv|yoktez|yok_tez|literatur|dergipark|anamnesis",
+    r"ottoman[-_]archives|ottoman_|devlet[-_]arsivleri|devarsiv|yoktez|yok_tez|literatur|dergipark|anamnesis|"
+    r"resmigazete|rg_get_item|\bmevzuat\b|mulga_mevzuat|\btbmm\b|\bdetsis\b",
     re.IGNORECASE,
 )
 # Manifesto imzası.
@@ -48,6 +49,10 @@ MANDATORY_ROWS = {
     "annas-reader": re.compile(r"annas[-_]reader\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
     "yok-akademik": re.compile(r"yok[-_]akademik\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
     "anamnesis": re.compile(r"\banamnesis\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "resmigazete": re.compile(r"\bresmigazete\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "mevzuat": re.compile(r"\bmevzuat\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "tbmm": re.compile(r"\btbmm\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
+    "detsis": re.compile(r"\bdetsis\b\s*(?:→|->)\s*(hit|empty|degraded|skipped)", re.IGNORECASE),
 }
 
 
@@ -112,7 +117,7 @@ def main():
         if absent:
             missing.append(
                 "manifestoda zorunlu tam-filo satır(lar): " + ", ".join(absent)
-                + " (13 server'ın her biri 'server → hit/empty/degraded/skipped: gerekçe' "
+                + " (17 server'ın her biri 'server → hit/empty/degraded/skipped: gerekçe' "
                 "biçiminde yazılmalı; devlet-arsivleri oturumu düşükse "
                 "'degraded: session_required')"
             )
@@ -124,7 +129,8 @@ def main():
         "[vekayinuvis G0/tam-filo] Bu substantif araştırma çıktısı şu ZORUNLU bileşen(ler)i "
         "taşımıyor: " + "; ".join(missing) + ". Ekleyerek tamamla. Bağlama uygun TÜM server'lar "
         "(ottoman-archives · devlet-arsivleri · yoktez · literatur · consensus · scholar-gateway · "
-        "exa · tavily · paper-search · openathens · annas-reader · yok-akademik · anamnesis) "
+        "exa · tavily · paper-search · openathens · annas-reader · resmigazete · mevzuat · tbmm · "
+        "yok-akademik · detsis · anamnesis) "
         "çalıştırılmalı ve durumu manifestoya "
         "yazılmalı — sessiz atlama G0 FAIL. Herhangi biri atlandıysa gerekçesi ('anahtar yok' / "
         "'mod için N/A' / 'session_required') yazılmalı. Biçim: shared/coverage-manifest.md."

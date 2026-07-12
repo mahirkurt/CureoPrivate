@@ -20,6 +20,23 @@ ottoman_get_islam_ansiklopedisi, web_search, search_semantic, ottoman_search_dsp
 tavily_search) aynı turda **paralel** koşar (tam set için
 `references/kanun-gerekcesi-workflow.md` §3.1).
 
+**Yasama/mevzuat kanıtı (`resmigazete`/`mevzuat`/`tbmm`, v3.0 — TUR-1 tool seti, aynı ilk
+paralel tur):**
+
+- **`resmigazete`**: `rg_resolve_date` → `rg_get_item` — kanun/kararnamenin yayımlandığı
+  erken-Cumhuriyet Resmî Gazete (`/eskiler/` 1920+) sayısını tarihten bulup ilan/kanun kaydını
+  çeker (L4/L5); taranmış sayfa gerekirse `rg_ocr_submit`→`rg_ocr_result` ile metne çevrilir.
+- **`mevzuat`**: `search_mulga_mevzuat` + `get_mevzuat_gerekce` — antecedant mevzuat zincirinde
+  yürürlükten kalkmış kanun/KHK/CBK'yı bulur ve madde gerekçesi metnini çeker (L4/L5,
+  **zorunlu birincil**); `resolve_resmi_gazete` ile RG çapraz-referansı doğrular.
+- **`tbmm`**: `tbmm_search_kanun_teklifi` → `tbmm_get_kanun_teklifi` — kanun teklifinin
+  komisyon havalesi, müzakere süreci ve kabul edilmiş metnini soyağacı halinde getirir
+  (L3 II. Meşrutiyet/L4 erken Cumhuriyet).
+
+Anahtar yoksa veya sonuç boşsa katman şeffaf `degraded`/`skipped` olarak beyan edilir (G0);
+önceden yalnız `web_search`/`web_fetch` fallback'i olan bu üç kaynak artık **canlı birincil
+connector**'dır.
+
 references/kanun-gerekcesi-workflow.md **zorunlu** yükle. Sağlık mevzuatı
 alanındaysa (1219, 6023, Hıfzıssıhha…) references/medical-history.md de yükle.
 Bir katmanda kanıt boşluğu varsa şeffaf belirt; varsayım üretme. Çıktı,

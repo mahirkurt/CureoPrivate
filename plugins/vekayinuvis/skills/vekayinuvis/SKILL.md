@@ -254,6 +254,23 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 > doğrulamasına tabi; çok-sayfalı tam satın-alma seti eSatış kapısında); oturum düşükse
 > `session_required`. Hicrî tarihler `ottoman_convert_date` ile eşlenir.
 
+### 3.1.c Yasama/Mevzuat Arşivleri Katmanı (`resmigazete` · `mevzuat` · `tbmm` — v3.0 genişlemesi)
+
+Resmî yayın/mevzuat/yasama-tarihçesi arşivleri; KANUN_GEREKÇESİ modunun L3–L5
+katmanlarını (§ 5.9) canlı bağlar, `devlet-arsivleri`nin L1–L4 kayıtlarını
+tamamlar. Detaylı rol için CONNECTORS.md § 2.5.
+
+| Connector | Tool | Ne için | Öncelik |
+|---|---|---|---|
+| `resmigazete` | `rg_resolve_date`→`rg_get_item`, `rg_search`, `rg_list_recent`, `rg_ocr_submit`→`rg_ocr_result` | Erken-Cumhuriyet Resmî Gazete arşivi (`/eskiler/` 1920+) — tarih-bazlı ilan/kanun yayın kaydı + rg-ocr çift-motor taranmış sayfa metni | KANUN_GEREKÇESİ L4/L5; EVENT_RECONSTRUCTION dönem gazetesi |
+| `mevzuat` | `search_mulga_mevzuat`, `get_mevzuat_gerekce`, `resolve_resmi_gazete` | mevzuat.gov.tr — mülga kanun/KHK/CBK arşivi + madde gerekçesi + RG çapraz-referans | KANUN_GEREKÇESİ antecedant-mevzuat zinciri (L4/L5) — **zorunlu birincil** |
+| `tbmm` | `tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi`, `tbmm_search_acik_erisim`/`tbmm_get_acik_erisim_document` | TBMM yasama tarihçesi — teklif→komisyon→kabul edilmiş kanun soyağacı + Açık Erişim DSpace (geç-Osmanlı/erken-Cumhuriyet zabıt) | KANUN_GEREKÇESİ L3/L4; SOURCE_HUNT DSpace kanıt-yoğunluğu |
+
+> **Tam-eşleşen üçlü tur:** KANUN_GEREKÇESİ modunda `resmigazete`/`mevzuat`/`tbmm`
+> `devlet-arsivleri` ile **aynı ilk paralel turda** çağrılır (§ 5.9). Anahtar
+> yoksa katman degrade eder → `web_search`/`web_fetch` fallback; sessiz
+> atlama yasak (G0).
+
 ### 3.2 Akademik Connector Katmanı
 
 | Connector | Tool | Ne için | Öncelik |
@@ -266,6 +283,7 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 | **Tavily** | `tavily_search`, `tavily_research`, `tavily_extract`, `tavily_crawl`, `tavily_map` | Geniş web tarama, çok-sayfa araştırma | Anlatı doğrulama, modern haber/blog |
 | **Literatür (DergiPark)** | `literatur` — makale arama (yıl/tür/dizin/sıralama filtreli), **PDF→HTML tam metin**, referans çekme | DergiPark Türk akademik dergi makaleleri — **tam metin**; ottoman `search_dergipark`'ı (curated OAI-PMH metadata) tamamlar | Türkçe dergi makalesi tam-metni sinyalinde (HISTORIOGRAPHY birincil) |
 | **YÖK Akademik** *(destekleyici)* | `yok-akademik` — `yok_search_academics`, `yok_get_publications/projects/supervised_theses/collaborators`, `yok_get_full_profile` | Akademisyen profilleri — uzman bulma, modern prosopografi, ekol/eş-yazar ağı | Modern akademisyen/ekol sinyalinde; **birincil işleve gerekli değil** (companion) |
+| **DETSİS** *(destekleyici, v3.0)* | `detsis` — `detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar` | Kurumsal prosopografi — teşkilat tarihçesi + kuruluş mevzuatı zinciri | Modern kurumsal/teşkilat soyağacı sinyalinde; **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez** |
 | **OpenAthens** *(tam-metin Tier 3)* | `openathens` — `oa_list_databases` (309 lisanslı DB), `oa_resolve`, `oa_fetch_fulltext`, `oa_batch_submit/result` | **Lisanslı kitap+makale tam-metni** — Millet Kütüphanesi/OpenAthens SAML; paywall'lı monograf/makale/ansiklopedi maddesi | Kitap/makale tam-metni gerektiğinde (literatur/paper-search'ten SONRA) |
 | **Anna's Reader** *(tam-metin Tier 4, son çare)* | `annas-reader` — `book_search`, `article_search`, `get_document_info`, `read_document`, `read_article`, `search_in_document` (BM25) | **Son-çare kitap+makale tam-metni** — out-of-print Osmanlı çalışmaları, nadir monograf; telif: yalnız analiz | Lisanslı band getiremeyince (openathens'ten SONRA) |
 
@@ -293,7 +311,7 @@ TUR 1 (paralel):
 
 ### 3.5 Tam-Filo ve Bağlam Ekonomisi (ZORUNLU)
 
-vekayinüvis **tam-filo** çalışır: `.mcp.json`'da bundled 13 server'ın bağlama
+vekayinüvis **tam-filo** çalışır: `.mcp.json`'da bundled 17 server'ın bağlama
 uygun olanı **her substantif sorguda çalıştırılır** — hiçbiri sessizce atlanmaz.
 Bu kapsam, her çıktıya eklenen **G0 kapsam manifestosu** ile kanıtlanır
 (`shared/coverage-manifest.md`; eksik satır = Stop hook tamamlatır).
@@ -393,9 +411,10 @@ Paralel: `devarsiv_search` **veya** modern/dönem-değişken terimde `devarsiv_s
 (resmî katalog kanıt-yoğunluğu — kaç kayıt, hangi fonlar; `capped:true` ise konu >1000 →
 `devarsiv_list_fon_categories` ile kapsam-haritası) + `ottoman_list_sources` +
 `ottoman_search_iiif` + `ottoman_search_dergipark` + `ottoman_search_dspace` +
-`search_yok_tez_detailed` + `literatur` (DergiPark tam-metin) + `tavily_search` (akademik
-filtre). Çıktı: kaynak matrisi (tür × erişim × dil × kanıt-yoğunluğu; resmî katalogda kayıt
-sayısı + `capped` durumu dahil). Yoğun çok-connector taramada **`arsiv-tarama-distilleri` ajanına** delege et.
+`search_yok_tez_detailed` + `literatur` (DergiPark tam-metin) + **`tbmm_search_acik_erisim`**
+(Açık Erişim DSpace — geç-Osmanlı/erken-Cumhuriyet zabıt kanıt-yoğunluğu) + `tavily_search`
+(akademik filtre). Çıktı: kaynak matrisi (tür × erişim × dil × kanıt-yoğunluğu; resmî katalogda
+kayıt sayısı + `capped` durumu dahil). Yoğun çok-connector taramada **`arsiv-tarama-distilleri` ajanına** delege et.
 
 ### 5.2 ARCHIVE_DEEP_DIVE — Arşiv Derin Dalış
 *"BOA'da II. Mahmud döneminde tıbbiye ile ilgili HAT kayıtları nelerdir?"*
@@ -439,8 +458,14 @@ referansı (web_fetch ile İSAM elektronik baskı) + `ottoman_search_dergipark` 
 `literatur` (makale) + `search_yok_tez_detailed` (biyografik tez) +
 **`devarsiv_search("<isim> sicill-i ahval", arsiv=2)` → BOA DH.SAİD Sicill-i Ahval
 katalog kayıtları** (canlı; yol haritası yerine gerçek kayıt) + (modern kişi ise)
-**`yok-akademik`** akademisyen profili. Çıktı: yaşam çizelgesi (Hicrî + Miladî),
-atama-azil zinciri, eser listesi, ikincil literatür + fon/kutu/gömlek kayıtları.
+**`yok-akademik`** akademisyen profili. **Kurumsal/teşkilat prosopografisi** (bir
+kurum/teşkilatın tarihçesi sorgulandığında, modern/Cumhuriyet dönemi): **`detsis_resolve_birim`
+→ `detsis_get_gecmis_birim` → `detsis_list_milestones` → `detsis_get_mevzuatlar`** zinciri —
+teşkilatın adı/numarasından geçmiş-birim kaydına, kilometre taşlarına ve kuruluş mevzuatına
+iner. **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez** (Osmanlı kurumsal tarihi için
+`ottoman_get_islam_ansiklopedisi` + devarsiv kalır birincil). Çıktı: yaşam çizelgesi
+(Hicrî + Miladî), atama-azil zinciri, eser listesi, ikincil literatür + fon/kutu/gömlek
+kayıtları (+ kurumsal sorgularda DETSİS teşkilat soyağacı).
 
 ### 5.5 EVENT_RECONSTRUCTION — Olay Kurgulaması
 *"31 Mart Vakası'nın günlük kronolojisi."*
@@ -466,6 +491,10 @@ Paralel: **`literatur` (DergiPark tam-metin makale + referans çekme)** +
 **Tam-metin şelalesi (kitap/makale, gerektiğinde):** literatur/paper-search →
 **`openathens`** (lisanslı — Millet Kütüphanesi 309 DB; `oa_resolve`→`oa_fetch_fulltext`) →
 **`annas-reader`** (son çare — `book_search`/`article_search`→`read_document`; yalnız analiz).
+Tasarım hedefi Tier-3b olarak `openathens→marmara→annas-reader` (marmara-mcp: Turcademy Türkçe
+monograf + hukuk DB'leri); `marmara` bu turda **wire edilmedi** (`marmara.cureonics.com`
+NXDOMAIN, 2026-07-12 probe — CONNECTORS.md § 1) → şelale şimdilik iki katmanlı
+(`openathens→annas-reader`); wire edildiğinde otomatik üç katmana genişler.
 Getirilen tam-metin > eşik → **anamnesis'e ingest** → bounded query (§ 3.5).
 Çıktı: ekol haritası (modernleşme, dünya-sistemi, post-kolonyal Osmanlı
 çalışmaları), ana tartışma eksenleri, dönüm noktası eserler, son 10 yılın eğilimi.
@@ -514,6 +543,17 @@ Bu, önceki "BCA için kayıt yok" boşluğunu kapatır ve **G7.e** kapısını
 (her [D] iddiasının birincil-arşiv/akademik dış-doğrulaması) güçlendirir; belge
 görüntüsü/OCR/HTR gerçek araçla çekilmediyse yalnız katalog kaydı+URL atıflanır
 (no-fabrication); çekildiyse sayfa/model/engine/confidence provenance'ı yazılır.
+
+**Yasama/mevzuat kanıtı (`resmigazete`/`mevzuat`/`tbmm`, v3.0):** L3–L5 için
+resmî yayın/mevzuat/yasama-tarihçesi kayıtları doğrudan çekilir — **`mevzuat`
+`search_mulga_mevzuat`+`get_mevzuat_gerekce`** ile antecedant mevzuat zinciri
+(mülga kanun/KHK/CBK + madde gerekçesi metni), **`tbmm` `tbmm_search_kanun_teklifi`
+→`tbmm_get_kanun_teklifi`** ile teklif→komisyon→kabul edilmiş kanun soyağacı (L3
+II. Meşrutiyet/L4 erken Cumhuriyet), **`resmigazete` `rg_resolve_date`→`rg_get_item`**
+ile erken-Cumhuriyet resmî yayın kaydı (L4/L5). Bu üçlü, `devlet-arsivleri`nin L1–L4
+katalog kayıtlarını **canlı mevzuat metni + yasama süreci** ile tamamlar (önceden
+yalnız `web_search`/`web_fetch` fallback'iydi — artık birincil connector). Anahtar
+yoksa/degrade ise şeffaf beyan edilir (G0); asla uydurma.
 
 Bir katmanda kanıt boşluğu varsa **şeffaf olarak** belirtilir; varsayım
 üretilmez. Çıktı, `lex-sanitas` ile zincirlendiğinde TBMM İçtüzüğü m. 73-74
@@ -781,7 +821,7 @@ yüklenmez. SKILL.md'nin kompaktlığını korumak için ayrılmıştır.
 | `references/kanun-gerekcesi-workflow.md` (v1.1) | KANUN_GEREKÇESİ modunda (§ 5.9) **zorunlu**: tam paralel-çağrı seti, beş-katmanlı zincir prosedürü, TBMM-uyumlu çıktı şablonu, G7-G8 kalite kapıları |
 | `references/medical-history.md` (v1.1) | § 2.6 tıp/bilim tarihi ekseni tetiklendiğinde **zorunlu**; KANUN_GEREKÇESİ modu sağlık alanında çalışıyorsa zorunlu; 1219, 6023, Hıfzıssıhha, Mekteb-i Tıbbiye, hekimbaşılık, Düstûr tıp tüzükleri sorgularında |
 | `shared/context-economy-contract.md` (v2.0) | **Her substantif çok-connector sorguda** (§ 3.5): Tier 0/1/2 bağlam ekonomisi, `arsiv-tarama-distilleri` delegasyonu, `anamnesis` ingest→bounded-query, kanonik cache, kör-getirme-yok chunking, devre-kesici |
-| `shared/coverage-manifest.md` (v2.0) | **Her substantif çıktı** (G0): tam-filo kapsam manifestosu biçimi + örnek; 13 server için hit/empty/degraded/skipped-with-reason satırları |
+| `shared/coverage-manifest.md` (v2.0) | **Her substantif çıktı** (G0): tam-filo kapsam manifestosu biçimi + örnek; 17 server için hit/empty/degraded/skipped-with-reason satırları |
 | `agents/arsiv-tarama-distilleri.md` (alt-ajan, v2.0) | Ağır çok-connector arşiv taraması (SOURCE_HUNT/ARCHIVE_DEEP_DIVE/ACADEMIC_REPORT) → tek `arsiv_distillate` zarfı; ana pencere ekonomisi gerektiğinde delege et |
 
 Her referans dosyası kendi tablo-içeriği ile başlar; gerektiğinde yalnızca

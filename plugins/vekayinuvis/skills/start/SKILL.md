@@ -1,8 +1,8 @@
 ---
 name: start
-description: Vekayinüvis süitine giriş ve yönlendirme. Bağlı MCP connector'larını (Ottoman Archives, YÖK Tez + tamamlayıcı akademik katman) kontrol eder, flagship vekayinuvis skill'ini ve dokuz çalışma modunu tanıtır, kullanıcının niyetine göre doğru moda veya slash komutuna yönlendirir. İlk kez süitle çalışırken, hangi connector'ların bağlı olduğunu görmek için, ya da "vekayinuvis nedir / nereden başlamalıyım / hangi modu kullanmalıyım" türü oryantasyon sorularında kullanın. Tetikleyiciler — vekayinuvis başlat, süit oryantasyonu, connector kontrolü, Osmanlı arşivi bağlı mı, "ne yapabilirsin", "nereden başlayayım", "hangi mod".
-version: 1.1.0
-last_updated: 2026-07-09
+description: Vekayinüvis süitine giriş ve yönlendirme. Bağlı MCP connector'larını (Ottoman Archives, Devlet Arşivleri, YÖK Tez + tamamlayıcı akademik katman) kontrol eder, flagship vekayinuvis skill'ini, dokuz çalışma modunu ve sepet→satın-alma→arşiv-okuma→async-OCR akış üçlüsünü tanıtır, kullanıcının niyetine göre doğru moda/akışa veya slash komutuna yönlendirir. İlk kez süitle çalışırken, hangi connector'ların bağlı olduğunu görmek için, ya da "vekayinuvis nedir / nereden başlamalıyım / hangi modu kullanmalıyım" türü oryantasyon sorularında kullanın. Tetikleyiciler — vekayinuvis başlat, süit oryantasyonu, connector kontrolü, Osmanlı arşivi bağlı mı, "ne yapabilirsin", "nereden başlayayım", "hangi mod".
+version: 1.2.0
+last_updated: 2026-07-11
 ---
 
 # Vekayinüvis — Başlangıç ve Yönlendirme
@@ -34,8 +34,12 @@ Kapsam: Osmanlı dönemi (~1299–1922) + erken Cumhuriyet (1923–1950) önceli
 doğrudan yapılır (devlet-arsivleri: fon/kutu/gömlek + künye). Belge sayfa
 taraması/OCR/HTR yalnız gerçek `devarsiv_get_belge_image` / `devarsiv_ocr_belge`
 çıktısı ve provenance ile aktarılır; çekilmediyse katalog düzeyinde kalınır.
-Diğer kısıtlı kaynaklar (TKGM, ATASE, İSAM, Süleymaniye…) için içerik uydurulmaz;
-yalnız erişim yol haritası sağlanır.
+Çok-sayfalı TAM erişim artık eSatış'a çıkmadan araç-içi çözülür: sepet→satın-alma
+(`/vekayinuvis:satinalma` — karar matrisi, metin-onay kapısı, ödeme DAİMA insan/
+noVNC) → yerel BOA-kodlu arşivden 300 DPI görüyle okuma (`/vekayinuvis:arsiv-oku`)
+→ gerekirse çok-sayfalı belgede async çift-motor OCR + anamnesis ingest
+(`/vekayinuvis:toplu-okuma`) zinciriyle. Diğer kısıtlı kaynaklar (TKGM, ATASE,
+İSAM, Süleymaniye…) için içerik uydurulmaz; yalnız erişim yol haritası sağlanır.
 ```
 
 ## Adım 2 — Bağlı MCP Connector'larını Kontrol Et
@@ -48,8 +52,13 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
   Miladi çevirici + ebced + eScriptorium HTR + TDV İslâm Ansiklopedisi ·
   *pre-flight zorunlu* (yoksa çekirdek işlev devre dışı)
 - `devlet-arsivleri` — **resmî Devlet Arşivleri kataloğu** (Osmanlı/BOA · Cumhuriyet/
-  BCA · Diplomatik · Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi ·
-  *tek-cihaz oturum kilitli* → `devarsiv_session_status` ile canlılığı kontrol edin
+  BCA · Diplomatik · Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi +
+  eSatış sepet/satın-alma + yerel BOA-kodlu arşiv/async çift-motor OCR (22 araç,
+  6 grup — `/vekayinuvis:satinalma` · `/vekayinuvis:arsiv-oku` ·
+  `/vekayinuvis:toplu-okuma`) · *tek-cihaz oturum kilitli* → `devarsiv_session_status`
+  ile canlılığı kontrol edin; **preflight'ta** `devarsiv_server_info` çağrısının
+  `tools` uzunluğunun **22** olduğunu doğrulayın (eksikse connector'ı claude.ai'da
+  yeniden bağlama uyarısı verin — araç listesi cache'lenmiş olabilir)
 - `yoktez` — YÖK Ulusal Tez Merkezi (tahrir/mühimme/şer'iye sicili tezleri)
 
 **Tamamlayıcı katman (akademik triangülasyon — full-fleet bundled):**
@@ -114,29 +123,47 @@ seçilir; belirsizlikte kullanıcıya tek soru sorulur.
 
 ## Adım 4 — Slash Komutlarını Tanıt
 
-| Komut | Mod | Ne yapar |
+> **İsimlendirme.** Komutlar önek almadan doğrudan skill adıyla çağrılır:
+> `/vekayinuvis:<ad>` (dash-önekli eski `/vekayinuvis-<ad>` biçimi terk edildi —
+> `commands/` dizini `skills/`'e göçtü). 13 satır: 10 mevcut mod-skill + 3 yeni
+> sepet/arşiv/OCR akış-skill'i.
+
+| Komut | Mod/Akış | Ne yapar |
 |-------|-----|----------|
-| `/vekayinuvis-durum` | PREFLIGHT | Tam-filo MCP wiring/env/userConfig preflight + G0 manifest + `devlet-arsivleri` canlı session probe |
-| `/vekayinuvis-kaynak-avi` | SOURCE_HUNT | Kaynak matrisi (tür × erişim × dil × kanıt-yoğunluğu) |
-| `/vekayinuvis-arsiv-dalis` | ARCHIVE_DEEP_DIVE | Fond/tasnif yol haritası + erişim talimatı |
-| `/vekayinuvis-transkripsiyon` | MANUSCRIPT_TRANSCRIBE | IIIF → eScriptorium HTR pipeline |
-| `/vekayinuvis-prosopografi` | PROSOPOGRAPHY | Yaşam çizelgesi + atama-azil zinciri + eser listesi |
-| `/vekayinuvis-kronoloji` | CHRONOLOGY_CONVERSION | Üç-takvim tablosu + ebced/kronogram |
-| `/vekayinuvis-rapor` | ACADEMIC_REPORT | Tam-uzunlukta atıflı akademik rapor |
-| `/vekayinuvis-kanun-gerekce` | KANUN_GEREKÇESİ | TBMM-uyumlu 5-katmanlı tarihî gerekçe |
+| `/vekayinuvis:durum` | PREFLIGHT | Tam-filo MCP wiring/env/userConfig preflight + G0 manifest + `devlet-arsivleri` canlı session probe + 22-araç kontrolü |
+| `/vekayinuvis:kaynak-avi` | SOURCE_HUNT | Kaynak matrisi (tür × erişim × dil × kanıt-yoğunluğu) |
+| `/vekayinuvis:arsiv-dalis` | ARCHIVE_DEEP_DIVE | Fond/tasnif yol haritası + erişim talimatı |
+| `/vekayinuvis:boa-katalog` | ARCHIVE_DEEP_DIVE | Resmî katalogda (BOA/BCA/Diplomatik/Askeri) doğrudan fon/kutu/gömlek araması + künye (`devlet-arsivleri` odaklı) |
+| `/vekayinuvis:transkripsiyon` | MANUSCRIPT_TRANSCRIBE | Görü + Transkribus + eScriptorium üç-sütun HTR pipeline |
+| `/vekayinuvis:prosopografi` | PROSOPOGRAPHY | Yaşam çizelgesi + atama-azil zinciri + eser listesi |
+| `/vekayinuvis:kronoloji` | CHRONOLOGY_CONVERSION | Üç-takvim tablosu + ebced/kronogram |
+| `/vekayinuvis:literatur` | HISTORIOGRAPHY | DergiPark tam-metin literatür taraması + tarihyazımı sentezi |
+| `/vekayinuvis:rapor` | ACADEMIC_REPORT | Tam-uzunlukta atıflı akademik rapor |
+| `/vekayinuvis:kanun-gerekce` | KANUN_GEREKÇESİ | TBMM-uyumlu 5-katmanlı tarihî gerekçe |
+| `/vekayinuvis:satinalma` | SEPET/SATIN-ALMA | eSatış sepet + noVNC satın-alma — karar matrisi, metin-onay kapısı, ödeme daima insan |
+| `/vekayinuvis:arsiv-oku` | ARŞİV OKUMA | Satın-alınmış belgeyi yerel BOA-kodlu arşivden 300 DPI görüyle okuma |
+| `/vekayinuvis:toplu-okuma` | ASYNC OCR | Çok-sayfalı satın-alınmış belgede async çift-motor OCR + anamnesis ingest |
 
 ## Adım 5 — Niyete Göre Yönlendir
 
 Kullanıcının ne üzerinde çalıştığını sorun. Yaygın iş akışları:
 
-1. **"X konusunda hangi kaynaklar var?"** → `/vekayinuvis-kaynak-avi`.
-2. **"Belirli bir arşivde/fonda ne var?"** → `/vekayinuvis-arsiv-dalis`.
-3. **"Bir kişinin biyografisi/hizmet kaydı?"** → `/vekayinuvis-prosopografi`.
-4. **"Bir tarihin takvim karşılığı / kronogram çözümü?"** → `/vekayinuvis-kronoloji`.
-5. **"Tam bir akademik tarih raporu?"** → `/vekayinuvis-rapor`.
-6. **"Bir kanunun tarihî gerekçe bölümü?"** → `/vekayinuvis-kanun-gerekce`
+1. **"X konusunda hangi kaynaklar var?"** → `/vekayinuvis:kaynak-avi`.
+2. **"Belirli bir arşivde/fonda ne var?"** → `/vekayinuvis:arsiv-dalis`
+   (veya doğrudan resmî katalog odağı için `/vekayinuvis:boa-katalog`).
+3. **"Bir kişinin biyografisi/hizmet kaydı?"** → `/vekayinuvis:prosopografi`.
+4. **"Bir tarihin takvim karşılığı / kronogram çözümü?"** → `/vekayinuvis:kronoloji`.
+5. **"Tam bir akademik tarih raporu?"** → `/vekayinuvis:rapor`.
+6. **"Bir kanunun tarihî gerekçe bölümü?"** → `/vekayinuvis:kanun-gerekce`
    (sağlık alanında `medical-history.md` otomatik yüklenir; `lex-sanitas` ile
    composable).
+7. **"Bu belgenin tüm sayfalarını satın almak istiyorum."** → `/vekayinuvis:satinalma`
+   (karar matrisi + metin-onay kapısı; ödeme daima insan/noVNC).
+8. **"Satın aldığım belgeyi okumak istiyorum."** → `/vekayinuvis:arsiv-oku`
+   (yerel BOA-kodlu arşivden 300 DPI görüyle, sayfa-sayfa).
+9. **"Çok-sayfalı satın-alınmış belgenin tam metnini/OCR'ını istiyorum."** →
+   `/vekayinuvis:toplu-okuma` (async çift-motor OCR + anamnesis ingest, K4 kararı
+   >5 sayfa veya `engine="both"` tam belgede devreye girer).
 
 **Ayrım rehberi (scope guard):**
 - Mevzuat reformu/taslak yazımı → `lex-sanitas` (vekayinuvis yalnız tarihî

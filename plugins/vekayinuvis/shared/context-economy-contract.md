@@ -66,6 +66,9 @@ anamnesis.graph_neighbors(node="kişi:Mustafa Behçet", rel="görev")
 
 Aynı `doc_id` iki kez ingest edilmez (kanonik cache §3). Getirim daima provenance-damgalı (doc_id + fon/kutu/gömlek/sayfa) döner → `evidence_ledger` `E###` kaydına bağlanır → atıf disiplinine (fon/kutu/gömlek + çift-tarih) beslenir.
 
+**Devarsiv async-OCR + arşiv-sayfa disiplini** (`skills/toplu-okuma`, `skills/arsiv-oku`):
+Async OCR sonucu: `ocr_result(include_text=true)` TEK SEFER okunur → anamnesis `ingest_document(doc_id='devarsiv:<code>')` → ham metin ana pencereden düşürülür; izleyen erişim `hybrid_query`. `get_archive_page` görüntüleri ana pencerede sayfa-sayfa tüketilir (distiller'a gönderilmez — görü ana asistanda).
+
 ## 7. Özet — beş değişmez
 
 1. **Ham veri Tier 0'ı geçmez** — distiller (Tier 1) veya anamnesis (Tier 2) üzerinden.

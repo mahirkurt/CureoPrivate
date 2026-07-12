@@ -37,6 +37,7 @@ IMAGE_OR_OCR_CLAIM = re.compile(
 )
 HAS_IMAGE_OR_OCR_PROVENANCE = re.compile(
     r"devarsiv_get_belge_image|devarsiv_ocr_belge|devarsiv_ocr_belge_pages|"
+    r"ocr_archive_pages|ocr_submit|ocr_result|job_id|get_archive_page|get_archive_pdf|"
     r"mean_confidence|engine|Transkribus|model\s*56496|image[_-]?url|canvas|page",
     re.IGNORECASE,
 )
@@ -119,6 +120,7 @@ def main():
         "erişim durumu aktarılır. Devlet Arşivleri görüntü/OCR iddiasında araç adı, sayfa, engine/"
         "model ve confidence/provenance yazılmalı; belge metni aksi hâlde transkripsiyon tezinden "
         "(yoktez), gerçek OCR/HTR çıktısından veya kullanıcının kendi çalışmasından doğrulanır. "
+        "Çift-motor kullanıldıysa iki motorun çıktısı ayrı raporlanmalı (tek birleşik metin YASAK). "
         "Referans: references/citation-and-transliteration.md §6, references/devlet-arsivleri-katalog.md §5."
     )
     sys.stdout.write(json.dumps({"decision": "block", "reason": reason}))

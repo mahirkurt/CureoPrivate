@@ -33,6 +33,9 @@ BIG_OUTPUT_TOOLS = {
     # Belge OCR/HTR metni büyük olabilir → distiller/anamnesis'e yönlendir
     # (devarsiv_get_belge_image KASITLI görüntüdür — asistan görüsüyle okunur, dump edilmez → HARİÇ)
     "devarsiv_ocr_belge",
+    # devarsiv_get_archive_page BİLİNÇLİ İSTİSNA: görüntü ana pencerede görüyle okunur (get_belge_image gibi)
+    "devarsiv_ocr_belge_pages", "devarsiv_ocr_archive_pages", "devarsiv_get_archive_pdf",
+    "devarsiv_ocr_result",
     # Tam-metin (kitap+makale)
     "oa_fetch_fulltext", "oa_batch_result",
     "read_document", "read_article", "get_document_info", "search_in_document",

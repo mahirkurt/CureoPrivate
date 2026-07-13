@@ -23,13 +23,30 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
    artefaktı (tek-sefer). Boş dönerse sorguyu genişlet (eş anlamlı/kısa terim) veya
    `list_learning_outcomes(distinct_codes=true)` ile üniteyi tara; hâlâ yoksa doğru ders/sınıf/konu sor.
 
-4. **`/edupedia:modul` akışının 2–4. adımlarını uygula:** beceri → etkileşim haritalama
+4. **`/edupedia:modul` akışının 2–5. adımlarını uygula:** beceri → etkileşim haritalama
    (`framework_map`, skill §4) · **§3 görüntü-dayanak politikası** (Tier-1 varsayılan, Tier-2
-   yetenek-probuyla) · modülü üret + `scripts/validate_module.py` 11 kapı (G-CURRICULUM + G-SVG) +
-   `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet.
+   yetenek-probuyla) · modülü üret + `scripts/validate_module.py` 13 kapı (G-CURRICULUM + G-SVG dahil) +
+   `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
+   `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
+   sözleşmesi `../shared/canonical-cache-contract.md §1`). **`quality_gates` alanı
+   `python scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisidir** — bu
+   komutu çalıştır, JSON'unu manifeste olduğu gibi yerleştir; kapı sonuçlarını elle yazma,
+   konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme. Koşturulmayan/uygulanamayan
+   kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`). `run_id`
+   **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>`
+   — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>`
+   sürüm tamsayısı; şema kısıtı `run-manifest-schema.json` `properties.run_id.pattern`).
+   Manifest'siz `/edupedia:yayinla` çalışamaz.
 
 ## Sınırlılık
 
 Tek bir kazanım kodu verildiyse → `/edupedia:modul` (doğrulama+çekme kısayolu). Yalnız keşif
 (üretim yok) isteniyorsa → `/edupedia:kazanim-bul`. Ders Türkiye MEB dışıysa (IB/Cambridge) →
 kapsam dışı, connector çağrılmaz.
+
+## Yayın teklifi
+
+Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
+"Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
+`/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
+ısrar etme.

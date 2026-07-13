@@ -8,7 +8,15 @@ kapılarına göre denetler. Salt-metin (regex/heuristik) denetimdir;
 tarayıcı gerektirmez. Çıkış kodu: 0 = tüm FAIL kapıları geçti, 1 = ihlal.
 
 Kullanım:
-    python scripts/validate_module.py <modul.html> [--strict]
+    python scripts/validate_module.py <modul.html> [--strict] [--json]
+
+    --json  stdout'a YALNIZ geçerli JSON basar (renk/banner/insan-okur metin YOK);
+            şekil manifest'in `quality_gates` alanına DOĞRUDAN gömülebilir:
+            {"G-EMOJI": {"status": "PASS"}, "G-A11Y": {"status": "FAIL", "detail": "..."}, ...}
+            `status` yalnız PASS/FAIL/WARN/SKIPPED olur; koşturulmayan/uygulanamayan
+            kapı (imza yok / uygulanmaz dalı) her zaman SKIPPED'dir (asla PASS).
+            Varsayılan (bayraksız) insan-okur konsol raporu bu bayraktan etkilenmez;
+            çıkış kodu sözleşmesi de (0=tüm FAIL kapıları geçti, 1=ihlal) aynen korunur.
 
 Kapılar:
     G-EMOJI         (FAIL) — çıktıda emoji bulunmamalı
@@ -27,7 +35,7 @@ Kapılar:
     G-CARBON-GRID   (FAIL) — statik kartta (gerçek/non-inset) drop-shadow (layer-elevation ihlali);
                     (WARN) 2x-grid konteyneri, en-boy oranı (aspect-ratio), koreografi >500ms
 """
-import sys, re, argparse
+import sys, re, argparse, json
 
 # ---- Emoji aralıkları (yaygın bloklar) ----
 EMOJI_RE = re.compile(
@@ -54,10 +62,50 @@ class Result:
     def __init__(self):
         """Boş bulgu listesi ve fail bayrağı başlatır."""
         self.rows=[]; self.fail=False
-    def add(self, gate, status, msg):
-        """Bir kapı sonucunu (PASS|FAIL|WARN) kaydeder; FAIL ise fail bayrağını kaldırır."""
+        # gate id'leri: bu koşumda "uygulanmaz/koşturulmayan" dala düşenler.
+        # (rows tuple şekli — (gate,status,msg) — testlerin `for g,s,_ in rows`
+        # 3'lü açımı için KASTEN 3 alanlı kalır; uygulanabilirlik ayrı izlenir.)
+        self.not_applicable=set()
+    def add(self, gate, status, msg, applicable=True):
+        """Bir kapı sonucunu (PASS|FAIL|WARN) kaydeder; FAIL ise fail bayrağını kaldırır.
+
+        applicable=False: bu çağrı kapının "uygulanmaz/koşturulmayan" (skip) dalından
+        geliyor demektir (imza yok, mod uymuyor, vb.) — konsol raporunda mevcut
+        PASS/WARN metni AYNEN kalır, ama --json çıktısında bu kapı SKIPPED olarak
+        yazılır (asla PASS).
+        """
         self.rows.append((gate,status,msg))
         if status=="FAIL": self.fail=True
+        if not applicable: self.not_applicable.add(gate)
+    def to_json_gates(self):
+        """--json modu için: R.rows'u {gate: {status, detail}} sözlüğüne indirger.
+
+        Aynı gate adı altında birden çok satır varsa (yalnız G-INTERACT: PASS/FAIL +
+        opsiyonel açıklama-WARN'ı) en kötü durum (FAIL>WARN>PASS) seçilir ve mesajlar
+        birleştirilir. `not_applicable` işaretli kapılar iç durumdan bağımsız SKIPPED
+        yazılır (asla PASS) — "koşturulmayan/uygulanamayan kapı" sözleşmesi.
+        """
+        severity = {"FAIL": 3, "WARN": 2, "PASS": 1, "SKIPPED": 0}
+        grouped = {}
+        order = []
+        for gate, status, msg in self.rows:
+            if gate not in grouped:
+                grouped[gate] = []
+                order.append(gate)
+            grouped[gate].append((status, msg))
+        gates = {}
+        for gate in order:
+            entries = grouped[gate]
+            if gate in self.not_applicable:
+                status = "SKIPPED"
+            else:
+                status = max((s for s, _ in entries), key=lambda s: severity.get(s, 0))
+            detail = "; ".join(m for _, m in entries if m)
+            gate_obj = {"status": status}
+            if detail:
+                gate_obj["detail"] = detail
+            gates[gate] = gate_obj
+        return gates
     def report(self):
         """Renkli, hizalı denetim raporunu stdouta basar."""
         print(f"\n{BOLD}carbon-edupedia · Modül Doğrulama Raporu{RESET}")
@@ -124,7 +172,8 @@ def gate_interact(html, R):
     correct=len(re.findall(r'\bcorrectIndex\s*:', html))
     expl=len(re.findall(r'\bexplanation\s*:', html))
     if stems==0:
-        R.add("G-INTERACT","WARN","MODULE_DATA'da quiz sorusu (stem) bulunamadı (mod quiz değilse normal).")
+        R.add("G-INTERACT","WARN","MODULE_DATA'da quiz sorusu (stem) bulunamadı (mod quiz değilse normal).",
+              applicable=False)
         return
     if correct < stems:
         R.add("G-INTERACT","FAIL",
@@ -202,7 +251,7 @@ def _svg_accessible(block, open_tag):
 def _svg_report(R, checked, fails, warns):
     """G-SVG sonucunu Result'a yazar."""
     if checked == 0:
-        R.add("G-SVG","PASS","Figür SVG yok; yalnız dekoratif ikon/sprite mevcut.")
+        R.add("G-SVG","PASS","Figür SVG yok; yalnız dekoratif ikon/sprite mevcut.", applicable=False)
     elif fails:
         R.add("G-SVG","FAIL", f"{len(fails)} figür SVG erişilemez: " + "; ".join(fails[:3]))
     elif warns:
@@ -285,7 +334,7 @@ def gate_audio(html, R):
     uses_earcon = bool(re.search(r"\b(?:webkit)?AudioContext\b", html)) or ("<audio" in html)
     uses_tts    = bool(re.search(r"\bspeechSynthesis\b", html)) or ("SpeechSynthesisUtterance" in html)
     if not uses_earcon and not uses_tts:
-        R.add("G-AUDIO","PASS","İşitsel katman kullanılmıyor (uygulanmaz).")
+        R.add("G-AUDIO","PASS","İşitsel katman kullanılmıyor (uygulanmaz).", applicable=False)
         return
     issues=[]
     if "prefers-reduced-motion" not in html:
@@ -432,7 +481,7 @@ def gate_curriculum(html, R):
     is_curr_mode = bool(re.search(r'\bmode\s*:\s*["\']CURRICULUM["\']', html))
     has_curr_block = bool(re.search(r'\bcurriculum\s*:\s*\{', html))
     if not is_curr_mode and not has_curr_block:
-        R.add("G-CURRICULUM","PASS","Müfredat-temelli modül değil (uygulanmaz).")
+        R.add("G-CURRICULUM","PASS","Müfredat-temelli modül değil (uygulanmaz).", applicable=False)
         return
     if is_curr_mode and not has_curr_block:
         R.add("G-CURRICULUM","FAIL",
@@ -463,7 +512,7 @@ def gate_flow(html, R):
     has_streak = "streakChip" in html or "streak-chip" in html
     has_disk = "pacingDisk" in html or "pacing-disk" in html
     if not (has_hook or has_streak or has_disk):
-        R.add("G-FLOW","PASS","Gamification akış imzası yok (uygulanmaz)."); return
+        R.add("G-FLOW","PASS","Gamification akış imzası yok (uygulanmaz).", applicable=False); return
     issues=[]
     # açık merak-boşluğu: her hook 'data-hook-resolved' ile kapanmalı
     n_hook = html.count('data-seg="hook"')
@@ -517,11 +566,17 @@ def main():
     ap=argparse.ArgumentParser(description="carbon-edupedia modül doğrulayıcı")
     ap.add_argument("html", help="modül HTML dosyası")
     ap.add_argument("--strict", action="store_true", help="WARN'ları da ihlal say")
+    ap.add_argument("--json", action="store_true",
+                    help="stdout'a yalnız geçerli JSON bas (manifest quality_gates alanına gömülebilir)")
     args=ap.parse_args()
     try:
         html=open(args.html, encoding="utf-8").read()
     except OSError as e:
-        print(f"{RED}Dosya okunamadı:{RESET} {e}"); sys.exit(2)
+        if args.json:
+            print(json.dumps({"error": f"Dosya okunamadı: {e}"}, ensure_ascii=False))
+        else:
+            print(f"{RED}Dosya okunamadı:{RESET} {e}")
+        sys.exit(2)
 
     R=Result()
     gate_emoji(html,R)
@@ -537,7 +592,11 @@ def main():
     gate_curriculum(html,R)
     gate_flow(html,R)
     gate_carbon_grid(html,R)
-    R.report()
+
+    if args.json:
+        print(json.dumps(R.to_json_gates(), ensure_ascii=False, indent=2))
+    else:
+        R.report()
 
     if R.fail or (args.strict and any(s=="WARN" for _,s,_ in R.rows)):
         sys.exit(1)

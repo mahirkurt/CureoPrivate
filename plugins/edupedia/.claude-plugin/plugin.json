@@ -1,8 +1,8 @@
 {
   "name": "edupedia",
   "displayName": "Edupedia",
-  "version": "0.2.0",
-  "description": "carbon-edupedia (DEHB-odaklı, IBM Carbon v11, tek-dosya etkileşimli öğrenim modülü üreticisi) + Maarif Modeli MCP entegrasyonu. MEB Türkiye Yüzyılı Maarif Modeli (2024) kazanımlarından kazanım-izlenebilir, erişilebilir (WCAG 2.1 AA), emojisiz ama ikon/piktogram/SVG zengini modüller üretir. carbon-edupedia flagship skill'i (8 mod, 13 kalite kapısı) + start yönlendiricisi; paketli maarif-mufredat connector'ı (21 araç, kurulur-kurulmaz devrede). Dört komut: /edupedia:modul (kazanım kodundan), /edupedia:mufredat (ders+sınıf+konudan), /edupedia:kazanim-bul (kazanım keşfi), /edupedia:durum (connector sağlık). Tier-1 (yazar-üretimli tema-duyarlı SVG + kazanım provenansı) garanti; Tier-2 (get_figure ile resmî görsel gömme) best-effort yetenek-probuyla. Kapsam yalnız Türkiye MEB.",
+  "version": "0.3.0",
+  "description": "carbon-edupedia (DEHB-odaklı, IBM Carbon v11, tek-dosya etkileşimli öğrenim modülü üreticisi) + Maarif Modeli MCP entegrasyonu. MEB Türkiye Yüzyılı Maarif Modeli (2024) kazanımlarından kazanım-izlenebilir, erişilebilir (WCAG 2.1 AA), emojisiz ama ikon/piktogram/SVG zengini modüller üretir. carbon-edupedia flagship skill'i (8 mod, 13 kalite kapısı) + start yönlendiricisi; paketli maarif-mufredat connector'ı (21 araç, kurulur-kurulmaz devrede). Beş komut: /edupedia:modul (kazanım kodundan), /edupedia:mufredat (ders+sınıf+konudan), /edupedia:kazanim-bul (kazanım keşfi), /edupedia:yayinla (modülü edupedia.cureonics.com'da yayınla), /edupedia:durum (connector sağlık). Tier-1 (yazar-üretimli tema-duyarlı SVG + kazanım provenansı) garanti; Tier-2 (get_figure ile resmî görsel gömme) best-effort yetenek-probuyla. Kapsam yalnız Türkiye MEB.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"

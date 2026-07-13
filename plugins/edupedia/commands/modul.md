@@ -34,6 +34,20 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
    `meta.sourceCitation`'ı kazanım kodu + korpus sürümüyle (`server_info.corpus_version`) damgala,
    `/mnt/user-data/outputs/` altına kebab-case adla kaydet.
 
+5. **Manifest'i yaz (yayın için zorunlu ön koşul):** HTML ile **aynı dizine**, aynı ad +
+   `.manifest.json` uzantısıyla (örn. `hucre-modul.html` → `hucre-modul.manifest.json`) bir
+   run-manifest yaz — şema `../shared/run-manifest-schema.json`, dosya adı sözleşmesi
+   `../shared/canonical-cache-contract.md §1`. **`quality_gates` alanı
+   `python scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisidir** — bu
+   komutu çalıştır, JSON'unu manifeste olduğu gibi yerleştir; kapı sonuçlarını elle yazma,
+   konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme. Koşturulmayan/uygulanamayan
+   kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`).
+   `connector_call_ledger`/`canonical_artifacts` bu komutun Adım 1'inde yapılan Müfredat MCP
+   çağrılarından gelir. `run_id` **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA):
+   `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>`
+   yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı `run-manifest-schema.json`
+   `properties.run_id.pattern`). Bu manifest olmadan `/edupedia:yayinla` çalışamaz.
+
 ## Belirsiz / hatalı kod
 
 Kod belirsiz veya geçersizse `search_learning_outcomes` ile en yakın kanonik kazanımı öner ve
@@ -44,3 +58,10 @@ onay iste — uydurma kodla üretme.
 Girdi bir kazanım kodu değil, ders+sınıf+konu ise → bu komut yerine `/edupedia:mufredat`; yalnız
 "hangi kazanımlar" keşfi isteniyorsa → `/edupedia:kazanim-bul`. Kaynak metin yapıştırıldıysa MCP'siz
 doğrudan skill yeterlidir.
+
+## Yayın teklifi
+
+Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
+"Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
+`/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
+ısrar etme.

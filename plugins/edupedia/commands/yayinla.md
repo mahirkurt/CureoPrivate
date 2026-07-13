@@ -88,6 +88,9 @@ req = urllib.request.Request(
     headers={
         "Content-Type": "application/json",
         "Authorization": "Bearer " + os.environ["EDUPEDIA_PUBLISH_TOKEN"],
+        # ZORUNLU: Cloudflare, urllib'in varsayilan "Python-urllib/x.y" User-Agent'ini
+        # bot sayip 403 (error code 1010) dondurur. Bu satiri kaldirma.
+        "User-Agent": "edupedia-publisher/1.0 (+https://edupedia.cureonics.com)",
     },
     method="POST",
 )

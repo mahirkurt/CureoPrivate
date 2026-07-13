@@ -200,9 +200,9 @@ runtime:
     - name: NPI Registry              # 64557ced — US PI/KOL verification
       status: wired
       tools: [npi_search, npi_lookup, npi_validate]
-    - name: openathens               # openathens.cureonics.com/mcp — full-text Tier 3 LICENSED (Millet Kütüphanesi/OpenAthens SAML; legal-first, ahead of annas Tier 5). Bearer ${OPENATHENS_MCP_API_KEY} (Doppler). Anti-bot publisher → manual_required; unbound → skip Tier 4/5.
+    - name: openathens               # openathens.cureonics.com/mcp — full-text Tier 3 LICENSED (Millet Kütüphanesi/OpenAthens SAML; legal-first, ahead of annas Tier 5). Bearer ${OPENATHENS_MCP_API_KEY} (Doppler). Anti-bot v2 (Xvfb headed profile): non-interactive CF challenge self-clears → full text; interactive reCAPTCHA/Turnstile → challenge_required (operator noVNC, distinct from manual_required); unbound → skip Tier 4/5.
       status: conditional
-      tools: [oa_server_info, oa_list_databases, oa_resolve, oa_fetch_fulltext, oa_batch_submit, oa_batch_result]
+      tools: [oa_server_info, oa_session_status, oa_list_databases, oa_resolve, oa_fetch_fulltext, oa_batch_submit, oa_batch_result]
     - name: annas-mcp                 # full-text cascade tier 5 — LAST RESORT (verified), after the licensed band (OpenAthens Tier 3 + Wiley Tier 4); copyright discipline
       status: wired
       tools: [article_search, book_search, article_download, book_download]

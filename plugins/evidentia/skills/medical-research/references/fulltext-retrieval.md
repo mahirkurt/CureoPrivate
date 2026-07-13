@@ -57,12 +57,17 @@ PaperSearch: download_pubmed / download_biorxiv / download_semantic
 OAuth 2.1 + Bearer; `openathens-mcp` deployed 2026-07-03, real OpenAthens SP-initiated SAML
 federation via Millet Kütüphanesi). It is the **primary paywall gate** and takes precedence over
 annas (legal-first). If the connector is NOT bound in the session, **skip Tier 3 → Tier 4/5**
-(graceful degrade, no error). **Live coverage reality (verified):** publishers reached through the
-OpenAthens federation *without* a browser anti-bot wall extract **real full text** (e.g. Springer
-`link.springer.com`, Nature `nature.com`); publishers behind a Cloudflare/JS anti-bot challenge
-(e.g. Wiley, Elsevier/ScienceDirect, OUP, Sage, Taylor & Francis) return a **`manual_required`**
-envelope with the OpenAthens redirector deep-link (the tool never defeats anti-bot, by doctrine —
-open the deep-link in a browser, or fall to Tier 4/5). Bind via `OPENATHENS_MCP_API_KEY`.
+(graceful degrade, no error). **Live coverage reality (anti-bot v2, 2026-07-13):** fetches run a
+**headed** Chromium under Xvfb with a persistent profile (real browser fingerprint + a stored
+`cf_clearance`). Publishers without a browser anti-bot wall extract **real full text** (e.g. Springer
+`link.springer.com`, Nature `nature.com`); publishers behind a Cloudflare/JS wall (Wiley,
+Elsevier/ScienceDirect, OUP, Sage, Taylor & Francis) now **wait out the non-interactive managed
+challenge** (it self-clears → most yield full text). Only an **interactive** challenge
+(reCAPTCHA/Turnstile) that will not self-clear returns the new **`challenge_required`** envelope
+(host + operator-noVNC hint; **distinct from `manual_required`**, body-less — no fabrication): the
+operator solves it once via `deploy/oa-vnc.sh up` on HP, the `cf_clearance` persists in the profile,
+and subsequent fetches pass unattended. On `challenge_required`, tell the user an operator noVNC
+solve is needed and degrade to Tier 4/5 (never silently skip). Bind via `OPENATHENS_MCP_API_KEY`.
 
 **Coverage:** OpenAthens federation via Cumhurbaşkanlığı Millet Kütüphanesi → ProQuest, EBSCO,
 Gale, ScienceDirect/Elsevier, Wiley, Springer, Nature, JSTOR, Scopus, Web of Science, IEEE,
@@ -76,6 +81,7 @@ openathens: oa_resolve(doi="10.xxxx/…" | pmid="…" | title="…")
                                                           # → target URL + OpenAthens redirector URL(s) + covering DB/publisher (mcp_verified:false)
 openathens: oa_fetch_fulltext(doi="10.xxxx/…", ingest=true)
                                                           # copyright-gated delivery; long text → anamnesis manifest + provenance-stamped slices; short → cited quote; reports which DB served it
+openathens: oa_session_status()                           # session warmth: validated, session_age_s, headless, pending_challenge{host,age_s} — check before/after an anti-bot fetch
 ```
 - **Delivery (retrieve-don't-dump):** the download happens server-side on HP, so the server reads
   the text. Long (≳1–2 pages) → anamnesis `ingest_document(doc_id=<DOI>, source="openathens:<db>")`
@@ -86,8 +92,9 @@ openathens: oa_fetch_fulltext(doi="10.xxxx/…", ingest=true)
   `oa_batch_submit(refs[])` → `oa_batch_result(job_id)`; sequential (concurrency = 1), jittered
   20–60 s delay, per-run cap 25, daily cap 100. Goal: never trip a publisher anti-bot and suspend
   the whole institutional account. Over-cap items are `deferred` (not a gap), reported in the caveat.
-- **Failure** (auth/fetch/SAML) → `manual_required` (redirector deep-link + echoed identifier) —
-  never fabricated. Every output carries a robots/ToS + copyright caveat.
+- **Failure** (auth/fetch/SAML) → `manual_required` (redirector deep-link + echoed identifier);
+  **unsolvable interactive anti-bot** → `challenge_required` (host + operator-noVNC hint, body-less,
+  distinct from `manual_required`) — never fabricated. Every output carries a robots/ToS + copyright caveat.
 
 ### Tier 4 — Wiley (publisher full text, OAuth-gated)
 `Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals) for publishers the

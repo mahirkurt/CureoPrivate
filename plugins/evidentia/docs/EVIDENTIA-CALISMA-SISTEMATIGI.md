@@ -159,11 +159,14 @@ kararnamesi) · TÜRKPATENT (IP/FTO) · YÖK Tez. + α-katman **TİTCK Cache** (
   `openathens.cureonics.com/mcp` (`openathens-mcp`, 2026-07-03; hardened OAuth 2.1 + Bearer,
   `OPENATHENS_MCP_API_KEY`). Cumhurbaşkanlığı Millet Kütüphanesi üzerinden gerçek OpenAthens
   SP-initiated SAML federasyonu → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/Springer/JSTOR/
-  Cochrane/Scopus/WoS/IEEE. **5 araç:** `oa_server_info` · `oa_list_databases` · `oa_resolve`
-  (DOI/PMID/başlık → hedef + redirector URL + kapsayan DB) · `oa_fetch_fulltext`(ingest=true) ·
-  `oa_batch_submit`/`oa_batch_result`. Anti-bot'suz yayıncı (Springer/Nature) → **gerçek tam
-  metin**; anti-bot'lu (Wiley/Elsevier/OUP/Sage/T&F) → `manual_required` deep-link (araç anti-bot
-  duvarını doktrinen aşmaz). Bağlı değilse cascade Tier 4/5'e düşer.
+  Cochrane/Scopus/WoS/IEEE. **7 araç:** `oa_server_info` · `oa_session_status` · `oa_list_databases`
+  · `oa_resolve` (DOI/PMID/başlık → hedef + redirector URL + kapsayan DB) · `oa_fetch_fulltext`(ingest=true)
+  · `oa_batch_submit`/`oa_batch_result`. **Anti-bot v2 (2026-07-13):** getirme Xvfb altında **headed**
+  kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + `cf_clearance`). Anti-bot'suz yayıncı
+  (Springer/Nature) → **gerçek tam metin**; anti-bot'lu (Wiley/Elsevier/OUP/Sage/T&F) → non-interactive
+  CF challenge kendiliğinden geçer (çoğu tam metin verir); yalnız interactive reCAPTCHA/Turnstile →
+  `challenge_required` (host + operatör noVNC ipucu, `manual_required`'dan ayrı) → operatör `oa-vnc.sh`
+  ile çözer, `cf_clearance` kalıcı. Bağlı değilse cascade Tier 4/5'e düşer.
 
 ### 3.7 Tam-metin kademesi (legal-first, 6 katman — ilk başarıda dur)
 Bir DOI/PMID için tam metin **legal-first** merdivende çözülür (`fulltext-retrieval.md` v9.0;
@@ -174,7 +177,7 @@ daima gri-alan annas'tan (Tier 5) önce denenir; annas asla birincil paywall kap
 |---|---|---|
 | **1** | EuropePMC PMC (`get_copyright_status` → `get_full_text_article`) | Ücretsiz açık erişim (native); önce lisans belirle |
 | **2** | Paper Search download (`read_pubmed_paper`) | PMC metin çıkarımı |
-| **3** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → `oa_fetch_fulltext`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); bağlı değilse atla; anti-bot'lu yayıncı → `manual_required` |
+| **3** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → `oa_fetch_fulltext`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); bağlı değilse atla; anti-bot v2: Xvfb headed profil non-interactive CF challenge'ı geçer, interactive → `challenge_required` (operatör noVNC) |
 | **4** | **Wiley** (`authenticate`, OAuth) | OpenAthens'ın kapsamadığı yayıncı tam metni (Cochrane/Wiley); hâlâ **lisanslı band** içinde |
 | **5** | **annas-mcp** (`article_download`/`book_download`) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 3+4) getiremeyince; copyright-kapılı |
 | **6** | **pubmed-epmc** (`pubmed_fetch_fulltext`) | Unpaywall yasal-OA son süpürme |

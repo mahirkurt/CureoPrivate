@@ -24,12 +24,19 @@ besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
    bağlı değilse bu adımı atla, Tier 4/5'e düş). `oa_resolve(doi/pmid/title)` → kapsayan DB +
    OpenAthens redirector; `oa_fetch_fulltext(doi, ingest=true)` → copyright-gated teslim (uzun metin
    **HP'de** iner → anamnesis manifest; verbatim bağlama dökülmez; hangi DB'nin verdiği raporlanır).
-   **Kapsam gerçeği:** anti-bot duvarı OLMAYAN yayıncılar (Springer, Nature) tam metin verir;
-   Cloudflare/JS anti-bot'lu yayıncılar (Wiley, Elsevier, OUP, Sage, T&F) → `manual_required`
-   redirector deep-link (anti-bot AŞILMAZ — doktrin gereği; elle aç veya Tier 4/5).
-   Referans-listesi için `oa_batch_submit`/`oa_batch_result` (**savunmacı pacing:** sıralı, 20–60 s
-   jitter, per-run 25 / günlük 100 cap — kurum hesabını koru). Başarısız → `manual_required`
-   (redirector deep-link + echoed identifier); uydurma yok.
+   **Kapsam gerçeği (anti-bot v2, 2026-07-13):** getirme, Xvfb altında **headed** kalıcı-profilli
+   Chromium ile sürer (gerçek tarayıcı parmak-izi + `cf_clearance` profilde saklı). Anti-bot duvarı
+   OLMAYAN yayıncılar (Springer, Nature) doğrudan; Cloudflare/JS anti-bot'lu yayıncılar (Wiley,
+   Elsevier, OUP, Sage, T&F) → **non-interactive** managed challenge kendiliğinden temizlenene kadar
+   beklenir (çoğu artık **tam metin verir**). Yalnız **interactive** challenge (reCAPTCHA/Turnstile)
+   çözülemezse → yeni `challenge_required` zarfı (host + operatör noVNC ipucu; `manual_required`'dan
+   AYRI, **gövdesiz** — uydurma yok): operatör HP'de `deploy/oa-vnc.sh up` ile challenge'ı çözer,
+   `cf_clearance` profilde kalır → sonraki getirmeler insan müdahalesiz geçer. Sentez akışında
+   `challenge_required` → kullanıcıya "operatör noVNC gerekiyor" bildir + Tier 4/5'e degrade et (asla
+   sessiz atlama). Oturum sıcaklığı/bekleyen-challenge için `oa_session_status` (`validated` /
+   `session_age_s` / `pending_challenge`). Referans-listesi için `oa_batch_submit`/`oa_batch_result`
+   (**savunmacı pacing:** sıralı, 20–60 s jitter, per-run 25 / günlük 100 cap — kurum hesabını koru).
+   Başarısız → `manual_required` (redirector deep-link + echoed identifier); uydurma yok.
 6. **Wiley** (koşullu OAuth `authenticate`) — Tier 4, OpenAthens'in kapsamadığı yayıncılar için
    (lisanslı band'ın parçası).
 7. **Annas Reader** (Tier 5 — **SON ÇARE**; yalnız lisanslı band [OpenAthens + Wiley] getiremeyince).

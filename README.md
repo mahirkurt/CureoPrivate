@@ -1,9 +1,8 @@
 # CureoPrivate
 
 **Cureonics özel Claude Code plugin kataloğu** — Mahir Kurt tarafından geliştirilen Claude
-plugin'lerinin private yayın deposu. Bu repo (`mahirkurt/CureoPrivate`), birden fazla
-**kurulabilir Claude Code plugin'ini** tek bir katalog altında barındırır; yeni plugin'ler
-eklendikçe genişler.
+plugin'lerinin private yayın deposu. Bu repo (`mahirkurt/CureoPrivate`), **dokuz kurulabilir
+Claude Code plugin'ini** tek bir katalog altında barındırır; yeni plugin'ler eklendikçe genişler.
 
 > **Adlandırma notu.** Repo ve dokümantasyon adı **CureoPrivate**'tir. Claude Code'un
 > gördüğü **fonksiyonel katalog kimliği** ise `cureonics-marketplace` olarak korunur —
@@ -25,14 +24,39 @@ Claude Code oturumunda (REPL):
 
 ## Katalog
 
-| Plugin | Sürüm | Açıklama |
-|---|---|---|
-| **evidentia** (Evidentia) | 1.6.0 | Çok-kaynaklı bilimsel/klinik kanıt sentezi + Türkiye-pazarı araştırma motoru — RAG/GraphRAG ile context-window-güvenli. Saf yapısal-otoriter kanıt (native kaynakta yoksa "VERİ YOK", web-scrape/uydurma yok). `medical-research` v8.4.0 flagship skill (semantik-kapsam: knowledge-map + Semantic Scope Scan + Completeness Gate + G-COVERAGE) + start skill + evidence-synthesizer alt-ajan + 5 komut + 14-server connector roster (PubMed/EuropePMC, ClinicalTrials, AdisInsight, ChEMBL, TİTCK, Mevzuat, Türk Patent, openFDA, WHO ICD-11, NPI, RxNorm/GtoPdb, OpenAlex, PubMed-EPMC, Semantic Scholar) + operatör-bağlı Annas Reader tam-metin + dört self-host Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG + multi-query hybrid retrieval · drugddx klinik-DDI · openfda+ICD-11 · evidentia-kb recall booster). 12 doğrulama kapısı (G-RAG dahil). |
-| **rxpraxis** (Rx Analyzer) | 1.2.1 | Türkiye-merkezli farmasötik jenerik/biyobenzer fırsat tarama süiti (`rxos` orkestratörü + medical-research, pharmaintel, pharmapatent, thoughtspot-roche kaynak skill'leri; 6 komut). v1.2: 7 no-auth çekirdek connector `.mcp.json` ile tanımlı (auth'lular kullanıcı bağlantılarından), L1 tool-manifest pin-load, §9 devre-kesici + extract-then-evict. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV kapsam dışı. |
-| **brand-ecosystem-core** | 1.0.0 | Brand Ecosystem v1.0'ın stratejik + sözel + görsel katmanları: 10 skill (brand-audit, brand-platform, brand-story, brand-maker(-ecosystem), brand-visual(-ecosystem), figma-forge, brand-touchpoint, brand-launch) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa opsiyonel. Ses katmanı için `brand-voice` plugin'i ile kompoze olur. |
-| **bist-analyst** (BIST Uzmanı) | 1.1.8 | Borsa İstanbul analist kopilotu — çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini tek gerekçeli brifingde sentezler (tek hisse, haftalık tarama, KAP olayı, izleme listesi modları). Borsa MCP veri omurgası paket içinde. Karar destek; yatırım tavsiyesi değildir. |
-| **fon-uzmani** (Fon Uzmanı) | 1.3.0 | Türkiye yatırım (YAT) + emeklilik (EMK) fonları için çok-skill karar-destek süiti: 8-aşamalı `fon-analiz-orkestratoru` + 6 kaynak skill + 12-modül saf-Python kuant kütüphanesi (Sharpe…HRP). Borsa MCP + fon-mcp omurgası; beş mod. SPK yatırım tavsiyesi değildir. |
-| **vekayinuvis** (Vekayinüvis) | 3.0.0 | Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives + resmî Devlet Arşivleri kataloğu (22 araç — eSatış sepeti/noVNC satın-alma/yerel BOA-kodlu arşiv/çift-motor OCR/HTR/async job) + YÖK Tez + DergiPark tam-metin + YÖK Akademik + akademik triangülasyon + yasama/mevzuat katmanı (Resmî Gazete, mevzuat.gov.tr, TBMM, DETSİS) + OpenAthens/Anna's Reader tam-metin şelalesi + anamnesis RAG/GraphRAG. v3.0: devlet-arsivleri 10→22 araca genişledi (sepet→noVNC→arşiv-öncelikli okuma→çift-motor OCR→async zinciri), filo 13→17 server, komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>`, BREAKING); IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu + 3 akış-skill'i. `defaultEnabled:false` (opt-in). |
+Sürümler her plugin'in `.claude-plugin/plugin.json` dosyasından gelir; `marketplace.json`
+bunlarla senkron tutulur (tek doğruluk kaynağı = plugin.json).
+
+| Plugin | Sürüm | Alan | Açıklama |
+|---|---|---|---|
+| **evidentia** (Evidentia) | 2.3.2 | araştırma | Genel-amaçlı **PRISMA 2020 / PRISMA-ScR** tıbbi literatür inceleme motoru — her soru tipi (tedavi/tanı/prognoz/etiyoloji/önleme). `medical-research` v9.0.0 flagship: P0 protokol/PICO → P1 arama → P2 getirim+dedup → P3 tarama → P4 çıkarım → P5 yanlılık riski (RoB2/ROBINS-I/QUADAS-2/NOS/PROBAST) → P6 GRADE → P7 PRISMA akış + SoF. Bibliyografik çekirdek her-zaman-açık; 6-katman legal-first tam-metin şelalesi (EPMC OA → Paper Search → OpenAthens Tier 3 → Wiley → Anna's Reader → Unpaywall); anamnesis RAG/GraphRAG. Tedavi-alanı/HTA/KOL/Türkiye-pazarı/epidemiyoloji katmanları **opsiyonel** (de-skew invariantı). Sekiz self-host connector. |
+| **lex-sanitas** (Lex Sanitas) | 3.4.0 | regülasyon | Türkiye **sağlık mevzuatı norm-üretim** protokolü (kanun · CBK · CB kararı · yönetmelik · tebliğ · genelge). Dokuz mod: DRAFT · AMEND · ANALYZE · COMPLY (5210 uyum) · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION. 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation çerçevesi; G0–G9 kalite kapıları + `evidence_ledger` no-fabrication disiplini. Tam-filo: 15 wire'lı MCP + 6 zorunlu companion. Bireysel dava/malpraktis **kapsam dışı** (Scope Guard). |
+| **vekayinuvis** (Vekayinüvis) | 3.0.0 | araştırma | Birincil-kaynak-öncelikli **Osmanlı/Türk tarih** araştırma orkestratörü. Devlet Arşivleri resmî kataloğu (22 araç — eSatış sepeti → noVNC satın-alma → yerel BOA-kodlu arşiv → çift-motor OCR/HTR → async job) + Ottoman Archives + YÖK Tez + DergiPark + yasama/mevzuat katmanı + tam-metin şelalesi + anamnesis RAG/GraphRAG. 17-server filo; IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu. **`defaultEnabled: false`** (opt-in). |
+| **rxpraxis** (Rx Analyzer) | 1.2.1 | farma | Türkiye-merkezli **jenerik/biyobenzer fırsat tarama** süiti. `rxos` orkestratörü (7-aşamalı deterministik boru hattı, G0–G6 kapıları) + medical-research · pharmaintel · pharmapatent · thoughtspot-roche kaynak skill'leri. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV **kapsam dışı**. |
+| **fon-uzmani** (Fon Uzmanı) | 1.3.0 | finans | Türkiye yatırım (YAT) + emeklilik (EMK) fonları **karar-destek** süiti: 8-aşamalı `fon-analiz-orkestratoru` (G0–G7) + 6 kaynak skill + 12-modül saf-Python kuant kütüphanesi (Sharpe…HRP). Borsa MCP + fon-mcp omurgası; beş mod. SPK yatırım tavsiyesi **değildir**. |
+| **bist-analyst** (BIST Uzmanı) | 1.1.8 | finans | **Borsa İstanbul** analist kopilotu — çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini tek gerekçeli brifingde sentezler (tek hisse, haftalık tarama, KAP olayı, izleme listesi modları). Borsa MCP omurgası paket içinde. Yatırım tavsiyesi **değildir**. |
+| **sci-audit** (Scientific Audit) | 0.2.1 | bilimsel bütünlük | LLM-üretimi bilimsel metinler için **alan-bağımsız adli + dilsel denetçi**. Yedi eksen: (A) referans bütünlüğü · (B) iddia temellendirme + tam-metin doğrulama · (C) belge-içi istatistik tutarlılığı (statcheck/GRIM/GRIMMER/SPRITE) · (D) halüsinasyon sinyalleri + varlık doğrulama · (E) 14 raporlama kılavuzu (PRISMA/CONSORT/STROBE/TRIPOD…) · (F) AI-şeffaflığı (ICMJE/COPE) · (G) Türkçe bilimsel dil. Deterministik çekirdek **saf Python stdlib**. Çözülemeyen kaynak `unverified` olur, asla "geçti" olmaz. |
+| **edupedia** (Edupedia) | 0.4.0 | eğitim | MEB **Türkiye Yüzyılı Maarif Modeli** (2024) kazanımlarından kazanım-izlenebilir, WCAG 2.1 AA erişilebilir, tek-dosya etkileşimli **HTML öğrenim modülleri** üretir (DEHB-odaklı, IBM Carbon v11). `carbon-edupedia` flagship (8 mod, 13 kalite kapısı). Paketli `maarif-mufredat` connector'ı (21 araç) + OAuth'lu `edupedia` yayın connector'ı (`edupedia.cureonics.com`). Kapsam yalnız Türkiye MEB. |
+| **brand-ecosystem-core** (Brand Ecosystem) | 1.0.0 | marka | Brand Ecosystem v1.0'ın stratejik + sözel + görsel katmanları: 10 skill (brand-audit · brand-platform · brand-story · brand-maker · brand-visual · figma-forge · brand-touchpoint · brand-launch …) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa **opsiyonel**. Ses katmanı ayrı `brand-voice` plugin'ine aittir. |
+
+### Bileşen envanteri
+
+| Plugin | Komut | Skill | Alt-ajan | Hook | Paketli MCP |
+|---|---:|---:|---:|:---:|---:|
+| evidentia | 7 | 2 | 1 | ✅ | 20 |
+| lex-sanitas | 10 | 2 | 4 | ✅ | 15 |
+| vekayinuvis | — | 15 | 1 | ✅ | 17 |
+| rxpraxis | 6 | 6 | — | — | 7 |
+| fon-uzmani | 5 | 8 | — | — | 2 |
+| bist-analyst | — | 2 | — | — | 1 |
+| sci-audit | 7 | 7 | 8 | ✅ | 4 |
+| edupedia | 5 | 2 | 1 | ✅ | 2 |
+| brand-ecosystem-core | 1 | 10 | — | — | — (opsiyonel) |
+
+**Komutu olmayan plugin'ler** (vekayinuvis, bist-analyst) önek-siz **skill mimarisi** kullanır:
+`/vekayinuvis:<ad>` biçiminde skill olarak çağrılırlar. **Paketli MCP** sütunu plugin'in
+`.mcp.json` dosyasındaki server sayısıdır; auth gerektiren connector'lar kullanıcının kendi
+Claude.ai/Claude Code bağlantılarından tüketilir ve eksiklerse **degrade mod** ile bildirilir.
 
 ## Yapı
 
@@ -40,78 +64,135 @@ Claude Code oturumunda (REPL):
 CureoPrivate/                             ← repo kökü (Claude Code'a EKLENECEK)
 ├── .claude-plugin/
 │   └── marketplace.json                  ← katalog (plugin → ./plugins/<plugin>)
+├── docs/superpowers/                     ← tasarım spec'leri + uygulama planları
 └── plugins/
-    ├── evidentia/                        ← kanıt-sentezi motoru
-    │   ├── .claude-plugin/plugin.json · .mcp.json
-    │   ├── commands/   skills/ (start + medical-research)   shared/
-    │   ├── self-host/ (anamnesis · drugddx · openfda · evidentia-kb Worker'ları)
+    ├── evidentia/                        ← PRISMA kanıt-sentezi motoru
+    │   ├── .claude-plugin/plugin.json · .mcp.json · hooks/
+    │   ├── commands/ (7)   skills/ (start · medical-research)   agents/   shared/
+    │   ├── self-host/ (anamnesis · drugddx · openfda · evidentia-kb · who-gho · globocan · ema)
     │   └── CONNECTORS.md · README.md
+    ├── lex-sanitas/                      ← sağlık mevzuatı norm-üretimi
+    │   ├── .claude-plugin/plugin.json · .mcp.json · hooks/
+    │   ├── commands/ (10: lex-draft … lex-expost)   skills/   agents/ (4)
+    │   └── README.md
+    ├── vekayinuvis/                      ← Osmanlı/Türk tarih araştırması
+    │   ├── .claude-plugin/plugin.json · .codex-plugin/plugin.json · .mcp.json · hooks/
+    │   ├── skills/ (15: start · vekayinuvis flagship · 10 mod + 3 akış-skill'i)
+    │   └── CONNECTORS.md · README.md · CHANGELOG.md
     ├── rxpraxis/                         ← farmasötik fırsat-tarama
-    │   ├── .claude-plugin/plugin.json
-    │   ├── commands/   skills/   shared/   evals/
+    │   ├── commands/ (6)   skills/ (6)   shared/   evals/
     │   └── CONNECTORS.md · BUILD.md · README.md
-    ├── brand-ecosystem-core/             ← marka ekosistemi
-    │   ├── .claude-plugin/plugin.json
-    │   ├── commands/pipeline.md
-    │   ├── skills/   (10 skill: brand-audit … figma-forge)
-    │   └── mcp.optional.json · README.md · CHANGELOG.md
-    ├── bist-analyst/ · fon-uzmani/        ← finans plugin'leri (Borsa/fon-mcp)
-    └── vekayinuvis/                      ← Osmanlı/Türk tarih araştırma plugin'i
-        ├── .claude-plugin/plugin.json · .codex-plugin/plugin.json · .mcp.json
-        ├── skills/   (start + vekayinuvis flagship + 10 önek-siz mod-skill + 3 akış-skill: satinalma/arsiv-oku/toplu-okuma)
-        └── CONNECTORS.md · README.md · CHANGELOG.md
+    ├── fon-uzmani/ · bist-analyst/       ← finans plugin'leri (Borsa MCP / fon-mcp)
+    ├── sci-audit/                        ← bilimsel metin denetçisi
+    │   ├── commands/ (7)   skills/ (7)   agents/ (8)   hooks/   scripts/
+    │   └── README.md
+    ├── edupedia/                         ← Maarif Modeli öğrenim modülü üreticisi
+    │   ├── commands/ (5)   skills/ (carbon-edupedia · start)   agents/   hooks/
+    │   └── CONNECTORS.md · README.md
+    └── brand-ecosystem-core/             ← marka ekosistemi
+        ├── commands/pipeline.md   skills/ (10)
+        └── mcp.optional.json · README.md · CHANGELOG.md
 ```
 
-## evidentia — hızlı başlangıç
+## Hızlı başlangıç
+
+Her plugin kurulduktan sonra **Claude Code'u yeniden başlatın** (yeni skill/agent/MCP
+kayıtları ancak restart'ta görünür), sonra `/help` ile komutları doğrulayın.
+
+**evidentia** — PRISMA sistematik/kapsam derlemesi
 
 ```
 /plugin install evidentia@cureonics-marketplace
-/help                                      # /evidentia komutları görünmeli
+/evidentia                                 # 7 komut: -protocol -fulltext -synthesize -appraise -kol -connectors
 ```
 
-evidentia, dört self-host Cloudflare Worker'ı (anamnesis · drugddx · openfda · evidentia-kb)
-paketli `.mcp.json` ile static-Bearer kimlikli getirir; akademik/klinik connector'lar (PubMed,
-ClinicalTrials, TİTCK, OpenAlex, …) Claude.ai/Claude Code bağlantılarınızdan tüketilir. Anahtar
-kurulumu için (operatöre özel, repo dışı) `EVIDENTIA-KURULUM-VE-KEYLER.md` notuna bakın.
+Sekiz self-host connector'ı (anamnesis · drugddx · openfda · evidentia-kb · who-gho ·
+globocan · ema · openathens) paketli `.mcp.json` ile static-Bearer kimlikli getirir;
+akademik/klinik connector'lar (PubMed, ClinicalTrials, OpenAlex, …) sizin bağlantılarınızdan
+tüketilir. Anahtarlar için (operatöre özel, repo dışı) `EVIDENTIA-KURULUM-VE-KEYLER.md`.
 
-## brand-ecosystem-core — hızlı başlangıç
+**lex-sanitas** — sağlık mevzuatı taslak/reform
 
 ```
-/plugin install brand-ecosystem-core@cureonics-marketplace
-/help                                      # /brand-ecosystem-core:pipeline görünmeli
+/plugin install lex-sanitas@cureonics-marketplace
+/lex-connectors                            # tam-filo sağlık kontrolü
+/lex-draft <konu>                          # · /lex-amend · /lex-comply · /lex-ria · /lex-bill …
 ```
 
-Uçtan uca kanonik kurulum sırası için `/brand-ecosystem-core:pipeline`; her skill tek
-başına da çağrılabilir (örn. `brand-ecosystem-core:brand-platform`). Skill'ler
-Claude.ai-native (`mcp_servers_required: []`); Figma / GoDaddy / Exa zenginleştiricileri
-opsiyoneldir (`plugins/brand-ecosystem-core/mcp.optional.json`). Ses & ton katmanı ayrı
-`brand-voice` plugin'ine aittir.
+**vekayinuvis** — Osmanlı/Türk tarih araştırması (opt-in)
 
-## rxpraxis — hızlı başlangıç
+```
+/plugin install vekayinuvis@cureonics-marketplace
+/plugin enable vekayinuvis                 # defaultEnabled:false — açıkça etkinleştirin
+/vekayinuvis:start                         # filo durumu + mod seçimi
+```
 
-Kurulumdan sonra Claude Code'u yeniden başlatın, sonra:
+Devlet Arşivleri kataloğu **tek-cihaz oturum** kilidiyle çalışır: HP'deki authenticated
+tarayıcı oturumu canlı olmalıdır (`devarsiv_session_status`). Ödeme **daima insanda**.
+
+**sci-audit** — bilimsel metin denetimi
+
+```
+/plugin install sci-audit@cureonics-marketplace
+/audit <metin>                             # · /verify-citations · /check-stats · /check-turkish
+```
+
+**edupedia** — Maarif kazanımından etkileşimli modül
+
+```
+/plugin install edupedia@cureonics-marketplace
+/edupedia:kazanim-bul <konu>               # kazanım keşfi
+/edupedia:modul <kazanım-kodu>             # modül üret → /edupedia:yayinla ile yayınla
+```
+
+**rxpraxis** — jenerik/biyobenzer fırsat taraması
 
 ```
 /plugin install rxpraxis@cureonics-marketplace
-/help                                      # 6 rxpraxis komutu görünmeli
+/rxpraxis-scan                             # · -validate · -regulatory · -patent · -midas · -evidence
 ```
 
-Beklenen **6 komut**: `/rxpraxis-scan` · `/rxpraxis-validate` · `/rxpraxis-regulatory` ·
-`/rxpraxis-patent` · `/rxpraxis-midas` · `/rxpraxis-evidence`.
+**fon-uzmani** / **bist-analyst** — finans
 
-**Duman testi:** yeni sohbet → `rxpraxis nedir, nereden başlayayım?` → `start` skill'i bağlı
-connector'ları ve komutları raporlar. Tek-asset:
-`/rxpraxis-validate dapagliflozin 10 mg film tablet`.
+```
+/plugin install fon-uzmani@cureonics-marketplace
+/fon-analiz <fon-kodu>                     # · /fon-tara · /fon-karsilastir · /fon-portfoy · /fon-izle
 
-rxpraxis canlı MCP **paketlemez**; connector'ları Claude.ai/Claude Code bağlantılarınız
-üzerinden tüketir (eşleme: `plugins/rxpraxis/CONNECTORS.md`). Eksik connector tarama-zamanı
-**degrade mod** ile bildirilir.
+/plugin install bist-analyst@cureonics-marketplace   # skill mimarisi — komut yok, doğal dille çağrılır
+```
+
+**brand-ecosystem-core** — marka ekosistemi
+
+```
+/plugin install brand-ecosystem-core@cureonics-marketplace
+/brand-ecosystem-core:pipeline             # uçtan uca kanonik kurulum sırası
+```
+
+## Ortak sözleşmeler
+
+Katalogdaki araştırma/regülasyon plugin'leri (evidentia · lex-sanitas · vekayinuvis ·
+rxpraxis · sci-audit) aynı invariantları paylaşır:
+
+- **No-fabrication.** Native kaynakta veri yoksa çıktı "VERİ YOK"/`unverified` olur; asla
+  uydurulmaz. Erişilemeyen yüzeyler deterministik `manual_required` zarfı döner.
+- **Kapsam manifestosu (G0).** Her substantif çıktı, hangi connector'ın çalıştığını /
+  boş döndüğünü / degrade ettiğini gerekçesiyle beyan eder — sessiz atlama yok.
+- **Retrieve-don't-dump.** Ağır çok-connector süpürmeler alt-ajanlara (evidence-synthesizer,
+  arsiv-tarama-distilleri, legal/medical distiller) izole edilir; ana bağlama yalnız
+  damıtılmış zarf döner. Büyük tam-metinler anamnesis'e ingest edilip sınırlı sorgulanır.
+- **İnsan denetimi.** Hepsi karar-destek niteliğindedir — klinik tavsiye, resmî hukuki
+  mütalaa veya yatırım danışmanlığı **değildir**.
+- **Degrade, çökme değil.** Eksik connector/anahtar çalışmayı durdurmaz; ilgili katman
+  degrade eder ve bunu manifestoda beyan eder.
 
 ## Yeni plugin ekleme
 
-1. `plugins/<yeni-plugin>/.claude-plugin/plugin.json` + bileşenleri (commands/skills) ekle.
+1. `plugins/<yeni-plugin>/.claude-plugin/plugin.json` + bileşenleri ekle (`commands/`,
+   `skills/`, `agents/`, `hooks/hooks.json`, `.mcp.json` — anahtarlar `plugin.json`'da
+   belirtilmezse konvansiyonel yollardan otomatik keşfedilir).
 2. `.claude-plugin/marketplace.json` → `plugins[]` dizisine girdi ekle
    (`name`, `source: ./plugins/<yeni-plugin>`, `version`, `description`).
+   **Sürüm ve açıklama plugin.json ile senkron olmalıdır.**
 3. Commit + push → `/plugin marketplace update cureonics-marketplace`.
 
 ## Güncelleme / kaldırma

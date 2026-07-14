@@ -154,8 +154,8 @@
       "name": "evidentia",
       "displayName": "Evidentia",
       "source": "./plugins/evidentia",
-      "version": "2.2.0",
-      "description": "Genel-amaçlı PRISMA 2020 / PRISMA-ScR tıbbi literatür inceleme motoru — tüm tıp ve her soru tipi (tedavi/tanı/prognoz/etiyoloji/önleme) için uçtan uca sistematik/kapsam derlemesi. medical-research v9.0.0 flagship: P0 protokol/PICO → P1 arama/MeSH-Emtree → P2 getirim+dedup → P3 tarama → P4 çıkarım → P5 yanlılık riski (RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST) → P6 GRADE → P7 PRISMA akış diyagramı + Summary-of-Findings. Bibliyografik çekirdek HER SORGUDA always-on (PubMed/EuropePMC, ClinicalTrials, Consensus, Scholar Gateway, Paper Search, bioRxiv/medRxiv, YÖK Tez, OpenAlex, Semantic Scholar, pubmed-epmc) + legal-first 6-katman tam-metin (EPMC OA → Paper Search → OpenAthens/Millet Kütüphanesi [Tier 3 LİSANSLI kurumsal, birincil paywall kapısı] → Wiley [Tier 4] → annas [Tier 5 son çare] → Unpaywall [Tier 6]) + anamnesis RAG/GraphRAG (retrieve-don't-dump, evidence_index). Opsiyonel, bağlam-tetiklemeli zenginleştirme modülleri (tedavi-alanı, ilaç/regülatuar/openFDA+ICD-11, HTA, KOL, Türkiye-pazarı/TİTCK, epidemiyoloji/PopHIVE) — varsayılanı ASLA belirlemez (de-skew invariant). Saf yapısal-otoriter kanıt; web/OSINT tier yok; native kaynakta yoksa 'VERİ YOK', uydurma yok; temiz-kopya doktrini; klinik çapraz-doğrulama. BEŞ self-host connector: dört Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search recall booster) + openathens HP self-host (tam-metin Tier 3 lisanslı, Millet Kütüphanesi/OpenAthens SAML). Runtime enforcement hook katmanı (v2.2): PreToolUse guard pipeworx-generic + kırık-araç (D1/D2/D6) çağrılarını deny→redirect eder, PostToolUse retrieve-don't-dump hatırlatır, SessionStart credential preflight yapar (deterministik, fail-open). Karar/araştırma destek niteliğindedir; klinik tavsiye değildir.",
+      "version": "2.3.2",
+      "description": "Genel-amaçlı tıbbi literatür inceleme motoru — tüm tıp ve her soru tipi (tedavi/tanı/prognoz/etiyoloji/önleme) için uçtan uca PRISMA 2020 / PRISMA-ScR sistematik/kapsam derlemesi. medical-research v9.0.0 flagship (P0 protokol/PICO → P1 arama/MeSH-Emtree → P2 getirim+dedup → P3 tarama → P4 çıkarım → P5 yanlılık riski [RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST] → P6 GRADE → P7 PRISMA akış diyagramı + Summary-of-Findings) + start skill + 7 komut (/evidentia · /evidentia-protocol · /evidentia-fulltext · /evidentia-synthesize · /evidentia-appraise · /evidentia-kol · /evidentia-connectors) + evidence-synthesizer alt-ajan. Bibliyografik çekirdek her-zaman-açık (PubMed/EuropePMC, ClinicalTrials, OpenAlex, Semantic Scholar, Consensus, bioRxiv/medRxiv, Paper Search, YÖK Tez + legal-first 6-katman tam-metin [OpenAthens/Millet Kütüphanesi Tier 3 lisanslı → Wiley → annas Tier 5 son çare → Unpaywall] + anamnesis RAG/GraphRAG). Opsiyonel, bağlam-tetiklemeli zenginleştirme modülleri (tedavi-alanı, ilaç/regülatuar/openFDA+ICD-11, AB-ruhsat+CHMP/EPAR/ema, HTA, KOL, Türkiye-pazarı/TİTCK, epidemiyoloji [ABD/PopHIVE + küresel-yük/who-gho + kanser-yükü/globocan]) — varsayılanı asla belirlemez (de-skew). Saf yapısal-otoriter kanıt; web/OSINT tier yok; native kaynakta yoksa 'VERİ YOK', uydurma yok; retrieve-don't-dump; temiz-kopya. SEKİZ self-host connector: yedi Cloudflare Worker (anamnesis · drugddx · openfda · evidentia-kb · who-gho [küresel GHO yük] · globocan [IARC kanser insidans/mortalite] · ema [AB ruhsat+CHMP/EPAR]) + openathens HP self-host (tam-metin Tier 3 lisanslı — Millet Kütüphanesi/OpenAthens SAML). Runtime enforcement hook katmanı: PreToolUse guard (en-az-yetki/G-WHITELIST + kırık-araç D1/D2/D6 deny→redirect) · PostToolUse retrieve-don't-dump · SessionStart credential preflight (fail-open, deterministik).",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"
@@ -175,15 +175,20 @@
         "medical-research",
         "clinical-trials",
         "full-text",
-        "openathens",
         "rag",
         "graphrag",
         "icd-11",
         "openfda",
+        "openalex",
+        "europepmc",
         "turkiye",
         "titck",
+        "epidemiology",
+        "kol",
+        "pharmacovigilance",
+        "drug-intelligence",
         "hta",
-        "kol"
+        "orchestrator"
       ],
       "strict": false
     },
@@ -245,8 +250,8 @@
       "name": "edupedia",
       "displayName": "Edupedia",
       "source": "./plugins/edupedia",
-      "version": "0.2.0",
-      "description": "carbon-edupedia (DEHB-odaklı, IBM Carbon v11, tek-dosya etkileşimli öğrenim modülü üreticisi) + Maarif Modeli MCP entegrasyonu. MEB Türkiye Yüzyılı Maarif Modeli (2024) kazanımlarından kazanım-izlenebilir, erişilebilir (WCAG 2.1 AA), emojisiz ama ikon/piktogram/SVG zengini tek-dosya etkileşimli HTML modüller üretir. Flagship carbon-edupedia skill'i (8 mod, 11 kalite kapısı) + start yönlendiricisi; paketli maarif-mufredat connector'ı (21 araç, kurulur-kurulmaz devrede). Dört komut: /edupedia:modul (kazanım kodundan), /edupedia:mufredat (ders+sınıf+konudan), /edupedia:kazanim-bul (kazanım keşfi), /edupedia:durum (connector sağlık). Tier-1 (yazar-üretimli tema-duyarlı SVG + kazanım provenansı) garanti; Tier-2 (get_figure ile resmî görsel gömme) best-effort yetenek-probuyla, hatada sessizce Tier-1'e düşer. Connector envanteri + provenans tek doğruluk kaynağı CONNECTORS.md; tek-sefer disiplini + get_figure yetenek-probu canonical-cache-contract.md. Kapsam yalnız Türkiye MEB.",
+      "version": "0.4.0",
+      "description": "carbon-edupedia (DEHB-odaklı, IBM Carbon v11, tek-dosya etkileşimli öğrenim modülü üreticisi) + Maarif Modeli MCP entegrasyonu + edupedia yayın connector'ı. MEB Türkiye Yüzyılı Maarif Modeli (2024) kazanımlarından kazanım-izlenebilir, erişilebilir (WCAG 2.1 AA), emojisiz ama ikon/piktogram/SVG zengini modüller üretir. carbon-edupedia flagship skill'i (8 mod, 13 kalite kapısı) + start yönlendiricisi; paketli maarif-mufredat connector'ı (21 araç, kurulur-kurulmaz devrede) ve OAuth'lu edupedia connector'ı (4 araç: edupedia_publish/edupedia_list/edupedia_unpublish/edupedia_server_info — bağlıysa /edupedia:yayinla ve claude.ai akışı bunu tercih eder, aksi halde REST yedeği). Beş komut: /edupedia:modul (kazanım kodundan), /edupedia:mufredat (ders+sınıf+konudan), /edupedia:kazanim-bul (kazanım keşfi), /edupedia:yayinla (modülü edupedia.cureonics.com'da yayınla — MCP tercihli, REST yedekli), /edupedia:durum (connector sağlık). Tier-1 (yazar-üretimli tema-duyarlı SVG + kazanım provenansı) garanti; Tier-2 (get_figure ile resmî görsel gömme) best-effort yetenek-probuyla. Kapsam yalnız Türkiye MEB.",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"

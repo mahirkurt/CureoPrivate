@@ -12,7 +12,70 @@ argument-hint: <modul.html yolu>
 `$ARGUMENTS` — yayınlanacak `.html` dosyasının yolu. Verilmemişse bu oturumda en son
 üretilen modülü kullan; o da yoksa kullanıcıdan yol iste (tahmin etme).
 
-## Ön koşullar
+## Yol seçimi (ÖNCE BUNU KARAR VER)
+
+Bu komutun iki yolu vardır — hangisi kullanılacağı, oturumda bağlı araç listesinde
+`edupedia_publish` aracının görünüp görünmediğine göre belirlenir (`../.mcp.json`'daki
+`edupedia` connector'ı bağlıysa görünür):
+
+- **Yol A — MCP aracı (TERCİH EDİLEN):** `edupedia_publish` aracı mevcutsa doğrudan onu
+  çağır. Manifest KURMA — sunucu manifesti `run_id`/`requested_scope` alanlarından kendisi
+  kurar; sen yalnız düz alanları (`html`, `run_id`, `subject_slug`, `grade`, `topic`,
+  `mode`, `outcome_codes`, opsiyonel `slug`/`title`) verirsin.
+- **Yol B — REST (yedek):** `edupedia_publish` aracı yoksa (connector eklenmemiş — tipik
+  Claude Code oturumu), mevcut `POST /api/publish` + `EDUPEDIA_PUBLISH_TOKEN` akışı
+  kullanılır.
+
+Her iki yolda da: **sunucudan `url` dönmediyse ASLA "yayınlandı" deme.**
+
+---
+
+## Yol A — MCP aracı (`edupedia_publish`)
+
+### Ön koşul
+
+HTML dosyasının yanında (varsa) run-manifest JSON'u okunur:
+`<html-adı>.manifest.json` (bkz. `../shared/canonical-cache-contract.md §1`, şema
+`../shared/run-manifest-schema.json`). **Manifest bu yolda ZORUNLU değildir** — claude.ai'de
+model HTML'i doğrudan üretip dosyaya hiç yazmadan `edupedia_publish`'i çağırabilir; o
+durumda aşağıdaki alanlar geçerli üretim koşumunun bağlamından (kazanım kodu, ders/sınıf/
+konu, üretilen mod) alınır. Hangi kaynaktan gelirse gelsin **hiçbir alan uydurulmaz** —
+eksik/belirsizse kullanıcıya sor.
+
+### Adımlar
+
+1. HTML içeriğini oku (dosya varsa) veya üretim çıktısındaki HTML metnini doğrudan kullan.
+2. Aşağıdaki alanları belirle — manifest varsa `manifest.run_id` ve
+   `manifest.requested_scope.*`'tan, yoksa geçerli üretim koşumundan:
+   - `run_id` — manifest'ten; yoksa `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` NORMATİF kalıbında
+     üret (bkz. `../shared/run-manifest-schema.json` `properties.run_id.pattern`).
+   - `subject_slug`, `grade`, `topic`, `mode`, `outcome_codes` — `requested_scope`'tan
+     (manifest yoksa: `/edupedia:modul`/`/edupedia:mufredat` üretim akışında zaten çözülmüş
+     olan ders slug'ı, sınıf, konu, mod ve kazanım kodları).
+   - `slug` (opsiyonel ama önerilir) — HTML dosya adından veya konu başlığından, `yayinla.md`
+     Yol B'deki "Slug türetme" kuralıyla aynı normalize kurallarla (`^[a-z0-9][a-z0-9-]{1,63}$`);
+     boş bırakılırsa sunucu `run_id`'den türetmeyi dener.
+   - `title` (opsiyonel) — genellikle gerekmez; sunucu HTML `<title>`'ından çıkarır.
+3. `edupedia_publish` aracını çağır:
+   `edupedia_publish(html=<html metni>, run_id=<run_id>, subject_slug=<slug>, grade=<sınıf>,
+   topic=<konu>, mode=<mod>, outcome_codes=<kod listesi>, slug=<opsiyonel>, force=false)`.
+4. Dönen JSON'u ayrıştır:
+   - **`{"error": ..., "status_code": ...}`** ise yayın reddedildi:
+     - `status_code == 422` → kalite kapısı sunucuda düştü. Hata mesajındaki düşen
+       kapıları kullanıcıya göster, yine de yayınlansın mı diye sor. Onaylarsa aynı çağrıyı
+       `force=true` ile tekrarla.
+     - Diğer kodlar (400/401/413) → hata mesajını olduğu gibi göster, uydurma açıklama
+       ekleme; gerekiyorsa (ör. 400 geçersiz slug) düzeltip tekrar dene.
+   - **`{"slug", "version", "url", "forced", "gates"}`** içeriyorsa BAŞARILI: dönen `url`'yi
+     kullanıcıya göster (paylaşılabilir public bağlantı), sürüm numarasını söyle. `version > 1`
+     ise eski sürümün `/m/<slug>/v<N-1>` altında durduğunu belirt. `forced: true` ise
+     kullanıcıya bu sürümün kapı-atlamalı işaretlendiğini hatırlat.
+
+---
+
+## Yol B — REST (`POST /api/publish`, yedek)
+
+### Ön koşullar
 
 1. `EDUPEDIA_PUBLISH_TOKEN` ortam değişkeni gerekir. Yoksa **dur** ve kullanıcıya söyle:
    oturumu `doppler run -p cureohub -c dev_personal -- claude` ile başlatması gerekir.
@@ -27,7 +90,7 @@ argument-hint: <modul.html yolu>
    CureoHub'daki `scripts/publish_edupedia_module.py` bayraklı modunu kullanabilir.
    Manifest'i sen uydurma.
 
-## Adımlar
+### Adımlar
 
 1. HTML + manifest'i oku. Manifest'teki olası `quality_gates` alanı (varsa) yalnız
    istemcinin yerel ön-kontrol notudur — **kapıların OTORİTESİ değildir**: sunucu HTML'i
@@ -124,7 +187,7 @@ olarak kalır.
    sürüm numarasını söyle. Bu bir yeniden yayınsa (`version > 1`), eski sürümün
    `/m/<slug>/v<N-1>` altında durduğunu belirt.
 
-## Hata durumları
+### Hata durumları (Yol B)
 
 - **400** — geçersiz manifest veya slug (ör. `slug` deseni `^[a-z0-9][a-z0-9-]{1,63}$`'a
   uymuyor, ya da manifest zorunlu alan eksik/hatalı tip). Adım 2'deki slug türetmesi zaten
@@ -138,4 +201,11 @@ olarak kalır.
 - **Sunucuya ulaşılamıyor** — Pi kapalı olabilir. Yerel HTML dosyasına dokunma; kullanıcıya
   durumu bildir, sonra tekrar denemesini söyle.
 
-Hiçbir durumda başarı uydurma — sunucudan `url` dönmediyse "yayınlandı" deme.
+---
+
+## Genel hata durumu (her iki yol)
+
+Hiçbir durumda başarı uydurma — sunucudan `url` dönmediyse "yayınlandı" deme. Yol A'da
+hata `edupedia_publish`'in JSON gövdesindeki `error`/`status_code` alanlarında gelir; Yol
+B'de HTTP durum koduyla gelir — anlamları (400/401/413/422/erişilemez) aynıdır, yukarıdaki
+"Hata durumları (Yol B)" listesi her iki yol için de geçerlidir.

@@ -52,3 +52,8 @@ Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
 "Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
 `/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
 ısrar etme.
+
+**claude.ai'de:** modülü dosyaya yazmak yerine, HTML'i doğrudan `edupedia_publish`
+aracının `html` argümanına üret. Böylece modül tek seferde üretilir ve yayınlanır;
+ikinci kez emit edilmesi gerekmez. Kullanıcı modülü siteden indirebilir.
+**Claude Code'da:** mevcut akış korunur (dosyaya yaz, sonra `/edupedia:yayinla`).

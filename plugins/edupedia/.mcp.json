@@ -3,6 +3,11 @@
     "maarif-mufredat": {
       "type": "http",
       "url": "https://mufredat.cureonics.com/mcp"
+    },
+    "edupedia": {
+      "type": "http",
+      "url": "https://edupedia.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${EDUPEDIA_PUBLISH_TOKEN}" }
     }
   }
 }

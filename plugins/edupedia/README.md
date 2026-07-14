@@ -36,11 +36,20 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 
 ## Connector
 
-Tek connector: **Maarif Modeli MCP** — `maarif-mufredat` · `https://mufredat.cureonics.com/mcp` ·
-**yalnız Türkiye MEB / Türkiye Yüzyılı Maarif Modeli (2024)** · 21 araç (dört küme: Keşif · Kazanım ·
-Beceri çerçevesi · Belge+medya). Tam envanter, kimlik/PDF uyarıları, provenans standardı ve
-Tier-1/Tier-2 görüntü-dayanak politikası: **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk kaynağı).
-Tek-sefer disiplini ve `get_figure` yetenek-probu: **[shared/canonical-cache-contract.md](./shared/canonical-cache-contract.md)**.
+İki connector paketlenmiştir:
+
+- **Maarif Modeli MCP** — `maarif-mufredat` · `https://mufredat.cureonics.com/mcp` ·
+  **yalnız Türkiye MEB / Türkiye Yüzyılı Maarif Modeli (2024)** · 21 araç (dört küme: Keşif ·
+  Kazanım · Beceri çerçevesi · Belge+medya). Auth yok (public read-only).
+- **edupedia** — `edupedia` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
+  araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`).
+  Tek-kiracılı OAuth 2.1; Claude Code'da `.mcp.json` üzerinden `EDUPEDIA_PUBLISH_TOKEN`
+  bearer'ı, claude.ai'de connector ayarlarında OAuth ile bağlanır.
+
+Tam envanter, kimlik/PDF uyarıları, provenans standardı ve Tier-1/Tier-2 görüntü-dayanak
+politikası (Maarif MCP): **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk kaynağı — ikinci
+connector olarak `edupedia` de burada tanımlıdır). Tek-sefer disiplini ve `get_figure`
+yetenek-probu: **[shared/canonical-cache-contract.md](./shared/canonical-cache-contract.md)**.
 
 ### Görüntü-dayanak (Tier-1 / Tier-2)
 
@@ -59,18 +68,32 @@ baskı raporu (→ `carbon-html-report`) veya slayt (→ `carbon-pptx`) kapsam d
 ## Yayınlama
 
 Üretilen modüller `/edupedia:yayinla` ile **edupedia.cureonics.com**'a yayınlanır
-(Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı). `/edupedia:modul` ve
-`/edupedia:mufredat` üretim akışlarının son adımı, HTML ile aynı dizine aynı ad +
-`.manifest.json` ile bir run-manifest yazar (gerçek `validate_module.py` kalite-kapısı
-sonuçlarıyla); `/edupedia:yayinla` yalnız bu manifesti okur (bkz. `shared/canonical-cache-contract.md §1`).
+(Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı). İki yol vardır —
+komut hangisinin bağlı olduğuna göre otomatik seçer:
+
+- **MCP yolu (tercih edilen):** `edupedia` connector'ı (`.mcp.json`, OAuth'lu) bağlıysa
+  `edupedia_publish` aracı doğrudan çağrılır. Manifest dosyası istemci tarafında
+  kurulmaz — sunucu manifesti `run_id`/`requested_scope` düz alanlarından (html, run_id,
+  subject_slug, grade, topic, mode, outcome_codes) kendisi kurar ve kalite kapılarını
+  kendisi ölçer. claude.ai'de bu yol tek başına yeterlidir: HTML dosyaya hiç yazılmadan
+  doğrudan `edupedia_publish`'in `html` argümanına üretilip yayınlanabilir.
+- **REST yolu (yedek):** `edupedia_publish` aracı yoksa (tipik salt Claude Code oturumu),
+  `/edupedia:modul` / `/edupedia:mufredat` üretim akışlarının son adımında yazılan
+  HTML + aynı ad + `.manifest.json` run-manifest ikilisi `POST /api/publish` ile
+  `EDUPEDIA_PUBLISH_TOKEN` bearer'ıyla gönderilir (bkz. `shared/canonical-cache-contract.md §1`).
+
+Her iki yolda da kalite kapılarının OTORİTESİ sunucudur — istemcinin beyanı yok sayılır.
 
 - Modül kalıcı bir adres alır: `edupedia.cureonics.com/m/<slug>` — link asla değişmez.
 - Yeniden yayın sürümü artırır; eski sürüm `/m/<slug>/v<N>` altında kalır.
-- Manifest'te bir kalite kapısı `FAIL` ise yayın reddedilir (`force` ile geçilebilir) —
+- Bir kalite kapısı `FAIL` ise yayın reddedilir (`force` ile geçilebilir) —
   siteye emojili, erişilemez veya kazanım-izlenemez modül düşmez.
+- Her iki yolda da: sunucudan `url` dönmediyse "yayınlandı" denmez.
 
-Yayın token'ı Doppler'da (`cureohub` / `dev_personal` / `EDUPEDIA_PUBLISH_TOKEN`);
-oturumu `doppler run -p cureohub -c dev_personal -- claude` ile başlatın.
+Yayın token'ı Doppler'da (`cureohub` / `dev_personal` / `EDUPEDIA_PUBLISH_TOKEN`); Claude
+Code'da REST yolu için oturumu `doppler run -p cureohub -c dev_personal -- claude` ile
+başlatın. claude.ai'de aynı token, connector ayarlarında OAuth ile bağlanır — sohbete
+hiç girmez.
 
 ## Genişleme
 

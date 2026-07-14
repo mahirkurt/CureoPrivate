@@ -1,10 +1,14 @@
 # edupedia — Paylaşılan Connector Sözleşmesi (CONNECTORS.md)
 
 **Belge sınıfı:** Normatif connector envanteri — plugin-düzeyi tek doğruluk kaynağı
-**Sürüm:** 1.0.0
-**Kapsam:** `edupedia` plugin'inin flagship `carbon-edupedia` skill'inin (ve ileride
-`carbon-html-report` / `carbon-pptx` sibling skill'lerinin) tükettiği TEK MCP
-connector'ı: **Maarif Modeli MCP** (`maarif-mufredat`).
+**Sürüm:** 1.1.0
+**Kapsam:** `edupedia` plugin'inin paketlediği İKİ MCP connector'ı:
+1. **Maarif Modeli MCP** (`maarif-mufredat`) — flagship `carbon-edupedia` skill'inin (ve
+   ileride `carbon-html-report` / `carbon-pptx` sibling skill'lerinin) tükettiği kazanım/
+   müfredat kaynağı (§0-§6 aşağıda, değişmedi).
+2. **edupedia** (`edupedia`) — `/edupedia:yayinla` komutunun ve claude.ai üretim akışının
+   tercih ettiği yayın connector'ı (§8 aşağıda, yeni).
+
 **Birlikte normatif:** `./shared/canonical-cache-contract.md` (tek-sefer disiplini +
 `get_figure` yetenek-probu) · `./shared/run-manifest-schema.json` (çift-sorgu denetim kanıtı)
 
@@ -198,3 +202,56 @@ paylaşılabilir:
 Bu skill'ler eklendiğinde `maarif-mufredat` envanterini, kimlik/PDF uyarılarını ve provenans
 standardını **buradan** tüketir — kendi içlerinde yeniden tanımlamazlar. Bu brief'te **yalnız**
 `carbon-edupedia` + `start` paketlenmiştir.
+
+---
+
+## 8. `edupedia` connector'ı — yayın (ikinci connector, plugin 0.4.0)
+
+| Alan | Değer |
+|---|---|
+| **Connector adı** | `edupedia` (`.mcp.json`'da bildirilir) |
+| **Endpoint** | `https://edupedia.cureonics.com/mcp` |
+| **Transport** | `http` (streamable-HTTP MCP, stateless) |
+| **Auth** | Tek-kiracılı OAuth 2.1 (RFC 8414/7591/9728) — sunucunun tek sırrı
+  `EDUPEDIA_PUBLISH_TOKEN` hem `/mcp` bearer kapısını hem `/api/publish` REST kapısını
+  korur (ayrı bir `AUTH_HMAC_SECRET` YOK — bu servis Python-filo'nun "access_token = master
+  key" desenini izler, `mcp-servers/` altındaki Cloud-Run-lineage servislerin çoğuyla aynı).
+  Claude Code'da `.mcp.json`'daki `Authorization: Bearer ${EDUPEDIA_PUBLISH_TOKEN}` başlığı
+  ortam değişkeninden okunur; claude.ai'de kullanıcı connector ayarlarında OAuth ile bağlanır
+  ve token sohbete hiç girmez. |
+| **Kapsam** | Yalnız `edupedia.cureonics.com`'da modül yayınlama/listeleme/kaldırma —
+  Maarif MCP'nin kazanım/müfredat kapsamıyla ilgisizdir. |
+| **Public okuma yolları** | `/`, `/m/<slug>`, `/api/index.json`, `/health` token'sız açık
+  (bearer yalnız `/mcp` ve mutasyon REST uçlarına uygulanır). |
+
+### 8.1 Araç Envanteri (4 araç)
+
+| Araç | İmza | Rol |
+|---|---|---|
+| `edupedia_publish` | `(html, run_id, subject_slug, grade, topic, mode, outcome_codes, subject?, slug?, title?, force?) → JSON` | Modülü yayınla. **Manifest istemci tarafında kurulmaz** — sunucu `run_id`/`requested_scope`'u bu düz alanlardan kendisi kurar. Kalite kapılarını **sunucu** ölçer (istemci beyanı yok sayılır). Başarıda `{slug, version, url, forced, gates}`; kapı FAIL'de (ve `force` yoksa) `{"error": ..., "status_code": 422}` — asla `url` uydurmaz. |
+| `edupedia_list` | `(subject?, grade?, mode?, query?) → JSON` | Yayınlanmış modülleri filtreli listele (`/edupedia:durum` ve keşif için). |
+| `edupedia_unpublish` | `(slug) → JSON` | Modülü katalogdan gizle (dosyalar diskte kalır — geri döndürülebilir işlem değildir ama veri kaybı da değildir). |
+| `edupedia_server_info` | `() → JSON` | `gate_count`, `max_upload_bytes`, `base_url`, `gates_measured_by:"server"` — canlılık + kapasite pre-flight'ı. |
+
+**Araç şeması kısıtı:** grok.com uyumluluğu için `minLength`/`maxLength`/`pattern`/`allOf`
+JSON-schema anahtarları KULLANILMAZ (fleet-genel kural, bkz. CureoHub `reference_grok_mcp.md`);
+doğrulama yalnız sunucu tarafında (`app/gates.py`, `app/publish.py`) yapılır.
+
+### 8.2 `/edupedia:yayinla` ve claude.ai için tercih sırası
+
+`edupedia_publish` bağlı araç listesinde görünüyorsa **her zaman tercih edilir** —
+`../commands/yayinla.md` Yol A. Görünmüyorsa (connector eklenmemiş, tipik Claude Code
+oturumu) `../commands/yayinla.md` Yol B'deki REST akışına (`POST /api/publish` +
+`EDUPEDIA_PUBLISH_TOKEN`) düşülür. claude.ai'de dosya sistemi yoktur — model HTML'i
+`edupedia_publish`'in `html` argümanına doğrudan üretir (`../commands/modul.md` /
+`../commands/mufredat.md` "Yayın teklifi" bölümü); bu sürüm hiçbir zaman diske yazılmaz,
+kullanıcı modülü yayınlandıktan sonra siteden indirir.
+
+### 8.3 Fallback / Graceful Degradation
+
+- **`edupedia_publish` yok / connector kopuk:** `/edupedia:yayinla` sessizce Yol B'ye düşer;
+  hard-fail yok, kullanıcı token'ı zaten Doppler'dan sağlıyorsa akış aynı sonuca ulaşır.
+- **Kapı FAIL (422):** her iki yolda da aynı anlam — sunucu ölçtü, düşen kapı adları
+  yanıtta gelir, kullanıcı onayı olmadan `force` denenmez.
+- **Sunucuya ulaşılamıyor:** yerel HTML dosyasına (varsa) dokunulmaz; kullanıcıya durum
+  bildirilir, sonra tekrar denenir.

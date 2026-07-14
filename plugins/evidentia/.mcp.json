@@ -111,23 +111,29 @@
     "yok-akademik": {
       "type": "http",
       "url": "https://yok-akademik.cureonics.com/mcp",
-      "headers": { "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
+      },
       "_tier": "O",
       "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
     },
     "openathens": {
       "type": "http",
       "url": "https://openathens.cureonics.com/mcp",
-      "headers": { "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
+      },
       "_tier": "O",
       "_trust": "operator self-host (HP systemd — hardened OAuth 2.1 + Bearer; yok-akademik/annas ile aynı desen)",
-      "_probe": "2026-07-03 HTTP 401 SECURED (Bearer kapısı aktif) · openathens-mcp CANLI (SP-initiated OpenAthens SAML via Millet Kütüphanesi)",
-      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE): oa_resolve/oa_fetch_fulltext(ingest)/oa_list_databases/oa_batch_submit/oa_batch_result. Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane; anti-bot yayıncı → manual_required deep-link; bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok"
+      "_probe": "2026-07-14 CANLI + claude.ai-optimize: OAuth 2.1 tam dans doğrulandı (DCR→authorize→S256 PKCE→token), CORS preflight 204 + WWW-Authenticate expose (browser bootstrap), 401 mutlak resource_metadata (RFC 9728), 7 araç. Anti-bot v2 canlı (Xvfb headed profil; gerçek PDF tam-metin teyitli).",
+      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE). 7 araç: oa_resolve · oa_fetch_fulltext(ingest) · oa_session_status · oa_list_databases · oa_server_info · oa_batch_submit/oa_batch_result. Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: getirme Xvfb altında headed kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + cf_clearance) → anti-bot'lu yayıncılarda (Wiley/Elsevier/OUP/Sage/T&F) non-interactive Cloudflare challenge kendiliğinden temizlenir ve TAM METİN gelir; yalnız interactive reCAPTCHA/Turnstile çözülemezse `challenge_required` zarfı döner (host + operatör noVNC ipucu; manual_required'dan AYRI, gövdesiz — uydurma yok) → kullanıcıya 'operatör noVNC gerekiyor' bildir + Tier 4/5'e degrade et (sessiz atlama YOK). Oturum sıcaklığı/bekleyen challenge: oa_session_status (validated/session_age_s/pending_challenge). Bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok"
     },
     "annas-reader": {
       "type": "http",
       "url": "https://annas.cureonics.com/mcp",
-      "headers": { "Authorization": "Bearer ${ANNAS_MCP_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
+      },
       "_tier": "O",
       "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",
       "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)",
@@ -136,7 +142,9 @@
     "anamnesis": {
       "type": "http",
       "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
+      },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
       "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)",
@@ -153,7 +161,9 @@
     "openfda": {
       "type": "http",
       "url": "https://openfda-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}"
+      },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
       "_probe": "2026-06-28 RE-GATED Bearer (icd11_search WHO ICD-11 server-side OAuth cred → confused-deputy önlemi; açık değil) · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
@@ -162,7 +172,9 @@
     "evidentia-kb": {
       "type": "http",
       "url": "https://evidentia-kb-mcp.cureonics.workers.dev/mcp",
-      "headers": { "Authorization": "Bearer ${EVIDENTIA_KB_MCP_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${EVIDENTIA_KB_MCP_API_KEY}"
+      },
       "_tier": "O",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; origins claude.ai/claude.com/grok.com/chatgpt.com)",
       "_probe": "2026-06-26 HTTP 401 SECURED · authenticated initialize 200 · kb_search canlı (244 chunk/24 dosya; bge-m3 Vectorize; layer-file recall doğrulandı)",

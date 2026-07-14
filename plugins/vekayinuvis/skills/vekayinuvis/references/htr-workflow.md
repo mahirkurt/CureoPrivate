@@ -133,6 +133,15 @@ Kraken tablosu) **paralel** koşar ve iki çıktı `transcriptions` altında yan
 yana döner — bkz. `devlet-arsivleri-katalog.md` §7.1/§7.2 (K2/K3) ve §8.3
 (üç-sütun transkripsiyon).
 
+**4. motor — Transleyt (`engine="transleyt"`, 2026-07-14 eklendi).** transleyt.com AI/LLM
+tabanlı Osmanlıca+Arapça OCR SaaS'ı; Transkribus'a bir **alternatif/çapraz-kontrol** motoru
+(model seçimi yok — motorun kendi AI'ı otomatik çalışır). `both` semantiği **değişmez**
+(Transkribus+eScriptorium); Transleyt yalnız açık `engine="transleyt"` ile devreye girer.
+**Kredi ölçümlü** (~1 kredi/sayfa; kurumsal kota ayrı) → keşif taramasında değil, yalnız
+görünün değerli bulduğu sayfada. Kimlik/kredi yoksa dürüst `unavailable` (uydurma yok).
+Ampirik: login + uçtan uca OCR canlı doğrulandı (endpoint: `POST /api/ocr/to-text/` →
+`task_id` → `GET /api/ocr/result/{id}/`).
+
 ### Adım 3 — Belge oluştur ve IIIF'ten import et
 
 ```text

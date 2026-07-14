@@ -34,6 +34,13 @@ Düşen motor dürüst `unavailable` nedeni taşır; çıktı her hâlde **insan
 `engine=tesseract` veya `escriptorium` kullanılır (Transkribus kredi tüketimini gereksiz
 sayfalarda harcamamak için).
 
+**4. motor — Transleyt (`engine="transleyt"`):** transleyt.com AI/LLM tabanlı Osmanlıca+Arapça
+OCR; Transkribus'a bir alternatif/çapraz-kontrol katmanı. **Kredi ölçümlü** (~1 kredi/sayfa) →
+aynı kredi disiplini: yalnız görünün değerli bulduğu sayfada, keşif taramasında değil. Osmanlı
+varsayılanı `both` (Transkribus+eScriptorium) **değişmez** — Transleyt opt-in'dir. Çıktısı da
+insan doğrulamasına tabidir; taşra-kâtibi/gürültülü ellerde Transkribus veya görü ile
+çapraz-kontrol önerilir. Kimlik/kredi yoksa dürüstçe `unavailable` döner (uydurma yok).
+
 ## K3 — Transkribus model seçim tablosu
 
 | Belge türü | Model | CER | Not |

@@ -28,10 +28,12 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
    yetenek-probuyla) · modülü üret + `scripts/validate_module.py` 13 kapı (G-CURRICULUM + G-SVG dahil) +
    `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
    `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
-   sözleşmesi `../shared/canonical-cache-contract.md §1`). **`quality_gates` alanı
-   `python scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisidir** — bu
-   komutu çalıştır, JSON'unu manifeste olduğu gibi yerleştir; kapı sonuçlarını elle yazma,
-   konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme. Koşturulmayan/uygulanamayan
+   sözleşmesi `../shared/canonical-cache-contract.md §1`). **`python scripts/validate_module.py
+   --json <html>` çıktısını manifeste yazmak İSTEĞE BAĞLI bir yerel ön-kontroldür.** Kalite
+   kapılarının OTORİTESİ yayın sunucusudur: yayın sırasında sunucu HTML'i kendisi ölçer ve
+   istemcinin `quality_gates` beyanını yok sayar; kapı düşerse yayın 422 ile reddedilir
+   (bkz. `../commands/yayinla.md`). Manifeste yine de yazılıyorsa kapı sonuçlarını elle yazma,
+   konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme — koşturulmayan/uygulanamayan
    kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`). `run_id`
    **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>`
    — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>`

@@ -2,6 +2,38 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.3.0] — 2026-07-14
+
+### Değiştirildi — Kapı otoritesi yayın sunucusuna taşındı; `--json` artık isteğe bağlı ön-kontrol
+
+Yayın sunucusu (`services/edupedia_site`, CureoHub) artık kalite kapılarını HTML üzerinde
+**kendisi ölçüyor** ve `POST /api/publish` isteğindeki `manifest.quality_gates` alanını tümüyle
+yok sayıyor (kapı düşerse 422, `force=true` ile geçilebilir). Bu, 3.2.0'ın kurduğu
+`validate_module.py --json` → manifest köprüsünü normatif zorunluluk olmaktan çıkarıp isteğe
+bağlı bir yerel ön-kontrole indirger — istemcinin beyanı artık hiçbir yerde güven sınırı
+olarak kullanılmıyor. Davranışsal bir sözleşme değişikliği (zorunlu alan opsiyonel oldu,
+belge normatif dili güncellendi) → **SemVer MINOR bump**.
+
+- **`shared/run-manifest-schema.json`** — `required` dizisinden `quality_gates` çıkarıldı
+  (alan tanımı ve `gate` şeması korunur, artık opsiyonel); `description`'a sunucu-otoritesi
+  notu eklendi.
+- **`SKILL.md`** (§3 madde 7, Adım 5-6, §12) — "`quality_gates` alanı `--json` çıktısının
+  BİREBİR kendisidir" normatif kuralı kaldırıldı; yerine "OTORİTE yayın sunucusudur, bu alan
+  isteğe bağlı bir yerel ön-kontroldür, kapı düşerse yayın 422 ile reddedilir" ifadesi
+  yazıldı. `metadata.version` → 3.3.0.
+- **`commands/modul.md` + `commands/mufredat.md`** — manifest yazma adımındaki aynı normatif
+  değişiklik uygulandı.
+- **`commands/yayinla.md`** — "kalite kapısı FAIL varsa önce kullanıcıya söyle" akışı
+  korunur, ama kaynağı düzeltildi: düşen kapılar artık **sunucudan** (POST sonrası 422
+  yanıtından) öğrenilir, manifestten okunarak değil. Adım sırası buna göre yeniden
+  numaralandı (POST → 422 ise sor/force → başarı).
+- **`skill-manifest.yaml`** — `outputs.run_manifest` ve `verification.json_output`
+  açıklamaları opsiyonel-ön-kontrol diline güncellendi; `skill.version` + `build.version` →
+  3.3.0, `build.release_date` → 2026-07-14.
+- **CureoHub tarafı (ayrı repo, aynı program):** elle yayın CLI'ı
+  (`scripts/publish_edupedia_module.py`) artık sahte bir "13 kapı SKIPPED" manifest alanı
+  üretmiyor — `build_manifest()` `quality_gates` üretmiyor, dürüst bir caveat bırakıyor.
+
 ## [3.2.0] — 2026-07-12
 
 ### Düzeltildi (kök neden) — `quality_gates` için deterministik köprü: `validate_module.py --json`

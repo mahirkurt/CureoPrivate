@@ -29,12 +29,13 @@ argument-hint: <modul.html yolu>
 
 ## Adımlar
 
-1. HTML + manifest'i oku.
-2. Manifest'teki `quality_gates` içinde `FAIL` varsa **önce kullanıcıya söyle** (hangi
-   kapılar düştü) ve yine de yayınlansın mı diye sor. Onaylarsa `force: true` gönder.
-3. `POST https://edupedia.cureonics.com/api/publish` — istekte **HER ZAMAN açık bir `slug`
-   alanı gönder** (sunucunun `run_id`'den slug türetmesine güvenme; bkz. "Slug türetme"
-   aşağıda). `force` argümanı, Adım 2'de kullanıcı onaylarsa `True` yapılır:
+1. HTML + manifest'i oku. Manifest'teki olası `quality_gates` alanı (varsa) yalnız
+   istemcinin yerel ön-kontrol notudur — **kapıların OTORİTESİ değildir**: sunucu HTML'i
+   yayın sırasında kendisi ölçer ve bu alanı yok sayar. Bu yüzden burada manifest'i okuyup
+   FAIL arama; hangi kapıların düştüğü ancak Adım 3'teki 422 yanıtından öğrenilir.
+2. `POST https://edupedia.cureonics.com/api/publish` — `force: false` ile — istekte **HER
+   ZAMAN açık bir `slug` alanı gönder** (sunucunun `run_id`'den slug türetmesine güvenme;
+   bkz. "Slug türetme" aşağıda):
 
 ```bash
 python3 - <<'PY'
@@ -115,6 +116,10 @@ ama run_id gövdesi `fen5-hucre`) — bu bir hata değildir. Sunucu açık `slug
 onu kullanır, `run_id`'yi slug türetmek için hiç ayrıştırmaz; `run_id` yalnız manifest kimliği
 olarak kalır.
 
+3. Yanıt **422** dönerse: kalite kapısı sunucu tarafında düştü demektir — hangi kapıların
+   düştüğü yanıt gövdesinde gelir (bu bilgi SUNUCUDAN öğrenilir, manifestten değil). Düşen
+   kapıları kullanıcıya göster ve yine de yayınlansın mı diye sor. Onaylarsa Adım 2'deki
+   isteği `force: true` ile tekrarla.
 4. Başarılıysa dönen `url`'yi kullanıcıya göster (paylaşılabilir public bağlantı) ve
    sürüm numarasını söyle. Bu bir yeniden yayınsa (`version > 1`), eski sürümün
    `/m/<slug>/v<N-1>` altında durduğunu belirt.
@@ -122,12 +127,12 @@ olarak kalır.
 ## Hata durumları
 
 - **400** — geçersiz manifest veya slug (ör. `slug` deseni `^[a-z0-9][a-z0-9-]{1,63}$`'a
-  uymuyor, ya da manifest zorunlu alan eksik/hatalı tip). Adım 3'teki slug türetmesi zaten
+  uymuyor, ya da manifest zorunlu alan eksik/hatalı tip). Adım 2'deki slug türetmesi zaten
   bunu önlemeye çalışır; yine de 400 dönerse hata mesajını kullanıcıya göster ve açık,
   geçerli bir `slug` ile tekrar deneyin.
 - **401** — token geçersiz. Doppler'daki `EDUPEDIA_PUBLISH_TOKEN`'ı doğrula.
-- **422** — kalite kapısı düştü. Hangi kapılar olduğunu göster; modülü düzeltmeyi öner.
-  Kullanıcı ısrar ederse `force: true` ile tekrar dene.
+- **422** — kalite kapısı sunucuda düştü (bkz. Adım 3). Hangi kapılar olduğunu göster;
+  modülü düzeltmeyi öner. Kullanıcı ısrar ederse `force: true` ile tekrar dene.
 - **413** — modül 25 MB'ı aştı (muhtemelen Tier-2 gömülü görseller). Görselleri
   seyreltmeyi öner.
 - **Sunucuya ulaşılamıyor** — Pi kapalı olabilir. Yerel HTML dosyasına dokunma; kullanıcıya

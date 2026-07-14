@@ -11,8 +11,7 @@
     "requested_scope",
     "connector_call_ledger",
     "canonical_artifacts",
-    "tier2_status",
-    "quality_gates"
+    "tier2_status"
   ],
   "properties": {
     "run_id": {
@@ -93,7 +92,7 @@
     },
     "quality_gates": {
       "type": "object",
-      "description": "scripts/validate_module.py 13 kapısı (koşullu G-CURRICULUM + G-FLOW dahil; carbon-edupedia 3.0.0'da G-FLOW + G-CARBON-GRID eklendi).",
+      "description": "scripts/validate_module.py 13 kapısı (koşullu G-CURRICULUM + G-FLOW dahil; carbon-edupedia 3.0.0'da G-FLOW + G-CARBON-GRID eklendi). Yayın sırasında kapılar SUNUCUDA ölçülür; bu alan yalnız yerel ön-kontrol kaydıdır ve sunucu tarafından yok sayılır.",
       "properties": {
         "G-EMOJI": { "$ref": "#/definitions/gate" },
         "G-CARBON": { "$ref": "#/definitions/gate" },

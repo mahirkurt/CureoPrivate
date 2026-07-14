@@ -58,7 +58,7 @@ bloke olmadığını söyleyin.
 
 | Bileşen | Ne Yapar |
 |---|---|
-| **carbon-edupedia** (flagship skill) | 8 mod, 11 kalite kapısı — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
+| **carbon-edupedia** (flagship skill) | 8 mod, 13 kalite kapısı (yayında SUNUCU ölçer) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
 | **start** (bu skill) | Oryantasyon + connector kontrolü + niyet→komut yönlendirme |
 
 ## Adım 4 — Komutları Tanıt

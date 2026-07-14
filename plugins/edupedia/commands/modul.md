@@ -4,7 +4,7 @@ argument-hint: "<kazanım-kodu> (örn. FB.5.3.1.1) [+ opsiyonel öğrenci profil
 ---
 
 `edupedia:carbon-edupedia` skill'ini **CURRICULUM modunda** çağır. Mantığı burada tekrarlama —
-skill'in 8 modu, 11 kalite kapısı ve pedagojik davranışı olduğu gibi geçerlidir; bu komut yalnız
+skill'in 8 modu, 13 kalite kapısı ve pedagojik davranışı olduğu gibi geçerlidir; bu komut yalnız
 kazanım-kodu → modül giriş noktasını kanonikleştirir.
 
 **Hedef kazanım:** $ARGUMENTS
@@ -30,7 +30,7 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
    gömme) yalnız yetenek-probuyla; herhangi bir hatada sessizce Tier-1'e düş, `tier2_status` raporla.
 
 4. **Üret + doğrula + damgala:** Modülü kur (segmentleri hedef kazanıma göre kurgula), 
-   `scripts/validate_module.py` ile **11 kalite kapısını** (G-CURRICULUM + G-SVG dahil) geçir,
+   `scripts/validate_module.py` ile **13 kalite kapısını** (G-CURRICULUM + G-SVG dahil) geçir,
    `meta.sourceCitation`'ı kazanım kodu + korpus sürümüyle (`server_info.corpus_version`) damgala,
    `/mnt/user-data/outputs/` altına kebab-case adla kaydet.
 

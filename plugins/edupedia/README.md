@@ -4,7 +4,7 @@
 etkileşimli öğrenim modülü üreticisi.**
 
 `edupedia`, flagship `carbon-edupedia` skill'ini (IBM Carbon Design System v11 · WCAG 2.1 AA ·
-8 mod · 11 kalite kapısı) **Maarif Modeli MCP** (`maarif-mufredat`) connector'ıyla paketleyen,
+8 mod · 13 kalite kapısı) **Maarif Modeli MCP** (`maarif-mufredat`) connector'ıyla paketleyen,
 kurulur-kurulmaz connector'ı devreye alan, komut-yüzeyli bir Claude plugin'idir. Modüller
 tek-dosya, bağımsız (offline çalışır), emojisiz ama ikon/piktogram/SVG zengindir; her olgusal
 iddia bir MEB kazanım koduna izlenebilir (G-CURRICULUM provenansı).
@@ -29,9 +29,9 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 ## Skill'ler
 
 - **carbon-edupedia** (flagship, v3.3.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
-  modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 11 kalite
+  modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 13 kalite
   kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-AUDIO/
-  G-CURRICULUM/G-TOKEN). Token otoritesi `@carbon/*` npm.
+  G-CURRICULUM/G-TOKEN/G-FLOW/G-CARBON-GRID). Token otoritesi `@carbon/*` npm.
 - **start** (yönlendirici, v1.0.0) — süit girişi ve yönlendirme.
 
 ## Connector

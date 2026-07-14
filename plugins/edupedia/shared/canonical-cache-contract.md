@@ -1,7 +1,7 @@
 # edupedia — Kanonik Artefakt Önbellek Sözleşmesi
 
 **Belge sınıfı:** Normatif orkestrasyon sözleşmesi — plugin-düzeyi
-**Sürüm:** 1.0.0
+**Sürüm:** 1.1.0
 **Birlikte normatif:** `../CONNECTORS.md` §1 (araç envanteri) + §3 (Tier-1/Tier-2 görüntü-dayanak
 politikası) · `./run-manifest-schema.json`
 
@@ -137,5 +137,15 @@ görünmez (ikinci özdeş çağrı `cache:"hit"` olmalı). `false` ise A7 kabul
 ## 7. Minimal Koşu Manifesti
 
 Şema: `./run-manifest-schema.json`. Zorunlu alanlar: `run_id`, `ts`, `plugin_version`,
-`requested_scope`, `connector_call_ledger[]`, `canonical_artifacts{}`, `tier2_status`,
-`quality_gates{}`.
+`requested_scope`, `connector_call_ledger[]`, `canonical_artifacts{}`, `tier2_status`.
+
+> **`quality_gates{}` zorunlu DEĞİLDİR.** Kalite kapılarının OTORİTESİ yayın sunucusudur:
+> `/edupedia:yayinla` sırasında sunucu üretilen HTML'i **kendisi** `app/gates/` altındaki
+> validator kopyasıyla ölçer. Manifestteki `quality_gates` alanı — varsa — yalnız istemci
+> tarafında üretilmiş bir **yerel ön-kontrol notudur**; sunucu bu alanı okumaz, doğrulamaz ve
+> **tamamen yok sayar**. Bir ajan bu alanı üretmek/uydurmak zorunda değildir; alanın
+> yokluğu yayını engellemez, yalnızca sunucunun kendi ölçümü (422 red dahil) geçerlidir.
+
+**Sürüm notu (1.1.0):** `quality_gates{}` zorunlu-alan listesinden çıkarıldı ve yukarıdaki
+otorite notu eklendi — sunucu tarafı ölçüme geçişten (bkz. `run-manifest-schema.json`
+`required[]`) sonra istemcinin beyanına zorunluluk atfeden bir çelişki giderildi.

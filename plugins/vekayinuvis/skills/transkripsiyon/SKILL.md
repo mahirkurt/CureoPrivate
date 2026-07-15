@@ -24,6 +24,14 @@ belgesi (`devarsiv_search` → `item_id`/`hash`). **Üç girdi tipi** ve her bir
    ottoman-archives eScriptorium pipeline (CONNECTORS.md E katmanı): list_models →
    create_document → import_iiif → segment → transcribe → get_transcription.
 
+## Katman 0 — görüntü kalitesi (otomatik)
+
+Motorlara giden her sayfa artık **arşiv çözünürlüğünde (300 DPI)** raster'lanır ve deterministik
+bir OpenCV ön-işlemeden (deskew + CLAHE kontrast + denoise) geçer — kredi harcamaz, dört motoru
+birden yükseltir. Asistan-görü sütunu **ham 300 DPI** alır (VLM ham yüksek-çözünürlüğü en iyi
+okur). Uygulanan filtreler her OCR çıktısının `preprocess` alanında raporlanır; opencv yoksa
+dürüst passthrough (ham görüntü, uydurma yok). Durum: `devarsiv_server_info` → `ocr.preprocess`.
+
 ## Üç-sütun protokol
 
 Osmanlı el yazması sayfalarda varsayılan `engine="both"`:

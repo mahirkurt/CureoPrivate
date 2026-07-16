@@ -1,13 +1,17 @@
 # edupedia — Paylaşılan Connector Sözleşmesi (CONNECTORS.md)
 
 **Belge sınıfı:** Normatif connector envanteri — plugin-düzeyi tek doğruluk kaynağı
-**Sürüm:** 1.1.0
-**Kapsam:** `edupedia` plugin'inin paketlediği İKİ MCP connector'ı:
+**Sürüm:** 1.2.0
+**Kapsam:** `edupedia` plugin'inin paketlediği ÜÇ MCP connector'ı:
 1. **Maarif Modeli MCP** (`maarif-mufredat`) — flagship `carbon-edupedia` skill'inin (ve
    ileride `carbon-html-report` / `carbon-pptx` sibling skill'lerinin) tükettiği kazanım/
    müfredat kaynağı (§0-§6 aşağıda, değişmedi).
-2. **edupedia** (`edupedia`) — `/edupedia:yayinla` komutunun ve claude.ai üretim akışının
-   tercih ettiği yayın connector'ı (§8 aşağıda, yeni).
+2. **Eğitim Kaynak RAG MCP** (`egitim-kaynak`) — açık eğitsel kaynak (OER) getirme katmanı;
+   modül üretirken **konu içeriği, açıklayıcı materyal ve (Faz 2'den) kazanıma-hizalı pasaj**
+   çeker. Kazanımı `maarif-mufredat` verir, İÇERİĞİ `egitim-kaynak` zenginleştirir (§9 aşağıda, yeni).
+3. **Modül Yayın MCP** (`modul-yayin`) — `/edupedia:yayinla` komutunun ve claude.ai üretim
+   akışının tercih ettiği yayın connector'ı (§8 aşağıda). **Not:** eski adı `edupedia` idi;
+   MCP connector'ı plugin adıyla çakışmasın diye `modul-yayin`'e alındı — endpoint/token aynı.
 
 **Birlikte normatif:** `./shared/canonical-cache-contract.md` (tek-sefer disiplini +
 `get_figure` yetenek-probu) · `./shared/run-manifest-schema.json` (çift-sorgu denetim kanıtı)
@@ -205,11 +209,16 @@ standardını **buradan** tüketir — kendi içlerinde yeniden tanımlamazlar. 
 
 ---
 
-## 8. `edupedia` connector'ı — yayın (ikinci connector, plugin 0.4.0)
+## 8. `modul-yayin` connector'ı — yayın (yayın connector'ı, plugin 0.5.0)
+
+> **Yeniden adlandırma (plugin 0.5.0):** bu connector'ın adı `edupedia` → `modul-yayin`
+> oldu (MCP connector'ı `edupedia` plugin adıyla çakışmasın diye). **Endpoint, token, araçlar
+> ve davranış birebir aynı** — yalnız `.mcp.json` anahtarı ve connector kimliği değişti.
+> Araç adları (`edupedia_publish` vb.) sunucu tarafı olduğundan DEĞİŞMEDİ.
 
 | Alan | Değer |
 |---|---|
-| **Connector adı** | `edupedia` (`.mcp.json`'da bildirilir) |
+| **Connector adı** | `modul-yayin` (`.mcp.json`'da bildirilir; eski ad `edupedia`) |
 | **Endpoint** | `https://edupedia.cureonics.com/mcp` |
 | **Transport** | `http` (streamable-HTTP MCP, stateless) |
 | **Auth** | Tek-kiracılı OAuth 2.1 (RFC 8414/7591/9728) — sunucunun tek sırrı
@@ -255,3 +264,46 @@ kullanıcı modülü yayınlandıktan sonra siteden indirir.
   yanıtta gelir, kullanıcı onayı olmadan `force` denenmez.
 - **Sunucuya ulaşılamıyor:** yerel HTML dosyasına (varsa) dokunulmaz; kullanıcıya durum
   bildirilir, sonra tekrar denenir.
+
+---
+
+## 9. `egitim-kaynak` connector'ı — açık eğitsel kaynak RAG (içerik zenginleştirme, plugin 0.5.0)
+
+**Rol:** kazanımı `maarif-mufredat` verir; modülün İÇERİĞİNİ (konu anlatımı, açıklayıcı
+materyal, pedagojik örnek, ileride etkileşim deseni) `egitim-kaynak` **kaynaklandırılmış,
+lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİSİ burada DEĞİL
+(o `maarif-mufredat`) — bu connector onu tamamlar, kopyalamaz.
+
+| Alan | Değer |
+|---|---|
+| **Connector adı** | `egitim-kaynak` (`.mcp.json`'da bildirilir) |
+| **Endpoint** | `https://egitim-kaynak.cureonics.com/mcp` |
+| **Transport** | `http` (streamable-HTTP MCP, stateless) |
+| **Auth** | Tek-kiracılı OAuth 2.1 (RFC 8414/7591/9728); access_token = `EGITIM_KAYNAK_MCP_API_KEY` (ayrı `AUTH_HMAC_SECRET` yok). `.mcp.json` `Authorization: Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` başlığını ortamdan okur; claude.ai'de kullanıcı connector ayarlarında OAuth ile bağlar. |
+| **Node** | Pi :8312 (systemd `egitim-kaynak-mcp`); CureoHub `mcp-servers/egitim-kaynak-mcp/`. |
+| **Faz** | **Faz 0 (canlı 2026-07-16):** yalnız BM25/FTS5 + Vikipedi-TR. Embedding/vektör (Faz 1) ve kazanım hizalaması (Faz 2) YOK. |
+
+### 9.1 Araç Envanteri (6 salt-okunur araç)
+
+| Araç | Rol |
+|---|---|
+| `kb_search` | Eğitsel korpusta arama → **belge başına EN İYİ pasaj** (`top_k` BELGE sayar). Her sonuç `license` + `quote_allowed` + `match_kind` (`text`/`title_only`) taşır. Sıralama metin-kanıtı önce; `score` ham BM25, listede monoton azalmaz → **yeniden sıralanmaz**. |
+| `kb_for_outcome` | Bir MEB kazanım koduna hizalanmış pasajlar. Faz 0'da dürüstçe `degraded/alignment_not_built` (Faz 2'de gerçek pasaj) — asla sahte hizalama. |
+| `kb_get` | Bir belgenin tam/kısmi metni (bağlam genişletme; `kb_search` bir pasaj döner, gerisini bununla aç). Bilinmeyen `doc_id` → `not_found`. |
+| `kb_patterns` | Etkileşim/oyunlaştırma desen kartları (Faz 4; şimdilik boş + caveat). |
+| `kb_sources` | Kaynak envanteri: lisans, `quote_allowed`, belge/chunk sayısı. |
+| `kb_server_info` | Sürüm, faz, getirme yöntemi, hizalama durumu, korpus sayımları. |
+
+### 9.2 Kullanım akışı (flagship skill için)
+
+Kazanım al (`maarif-mufredat` `list_learning_outcomes`) → **içerik zenginleştir**
+(`egitim-kaynak` `kb_for_outcome(kod)` hazırsa, aksi halde `kb_search(konu)`) → modülü yaz.
+Her çıktı `mcp_verified:false` + `caveat` taşır. **Lisans disiplini:** `quote_allowed:false`
+bir kaynaktan birebir uzun alıntı yapılmaz (yalnız öğrenilir); yayın kapısı (Faz 4) bunu uygular.
+
+### 9.3 Fallback / Graceful Degradation
+
+- **Connector kopuk / anahtar yok:** kb_* araçları görünmez → skill yerleşik bilgiyle devam eder,
+  kaynak zenginleştirme atlanır (hard-fail yok, asla uydurma kaynak).
+- **`kb_for_outcome` degraded (Faz 0/1):** `kb_search` ile serbest arama yapılır; hizalama iddia edilmez.
+- **Boş sonuç:** dürüst boş — konunun korpusta yokluğu, konunun yokluğunun kanıtı değildir.

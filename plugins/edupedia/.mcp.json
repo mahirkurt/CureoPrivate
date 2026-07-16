@@ -4,7 +4,12 @@
       "type": "http",
       "url": "https://mufredat.cureonics.com/mcp"
     },
-    "edupedia": {
+    "egitim-kaynak": {
+      "type": "http",
+      "url": "https://egitim-kaynak.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${EGITIM_KAYNAK_MCP_API_KEY}" }
+    },
+    "modul-yayin": {
       "type": "http",
       "url": "https://edupedia.cureonics.com/mcp",
       "headers": { "Authorization": "Bearer ${EDUPEDIA_PUBLISH_TOKEN}" }

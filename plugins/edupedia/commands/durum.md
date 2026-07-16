@@ -1,9 +1,9 @@
 ---
-description: Maarif Modeli MCP connector'ının sağlığını ve Tier-2 (get_figure) yeteneğini raporlar
+description: Üç MCP connector'ının (maarif-mufredat, egitim-kaynak, modul-yayin) sağlığını ve Tier-2 (get_figure) yeteneğini raporlar
 argument-hint: "(argüman gerekmez)"
 ---
 
-`maarif-mufredat` connector'ının sağlık kontrolünü yap. Bu, `edupedia:start` skill'inin Adım 2'sini
+Plugin'in **üç MCP connector'ının** sağlık kontrolünü yap. Bu, `edupedia:start` skill'inin Adım 2'sini
 komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
 
 ## Yürütme protokolü
@@ -23,12 +23,25 @@ komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
    `get_figure(figure_id, include_image=false)` metadata yolunu (Tier-1 zenginleştirme) doğrula.
    Yoksa `tier2_status: unavailable` (yalnız Tier-1).
 
-4. **Kanonik-önbellek durumu:** Bu oturumda üretilmiş kanonik artefaktları (`subject_registry`,
+4. **Eğitim Kaynak RAG (`egitim-kaynak`) sağlığı:** `kb_server_info` çağır. Yanıt verirse
+   **canlı** — faz (`phase`), getirme yöntemi (`retrieval`), hizalama durumu (`alignment_built`)
+   ve korpus sayımlarını (`stats.chunk_count`) raporla. Yoksa **bağlı değil** → modül üretimi
+   yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır (asla uydurma kaynak). Faz 0'da
+   `kb_for_outcome`'ın dürüstçe `alignment_not_built` döndüğünü hatırlat (kazanım hizalaması Faz 2).
+
+5. **Modül Yayın (`modul-yayin`) sağlığı:** `edupedia_server_info` araç listesinde varsa çağır
+   (`gate_count`, `max_upload_bytes`, `base_url`); yayın MCP yolu **canlı**. Yoksa `/edupedia:yayinla`
+   `POST /api/publish` REST yedeğine düşer (`EDUPEDIA_PUBLISH_TOKEN` ile) — yayın yine mümkün.
+
+6. **Kanonik-önbellek durumu:** Bu oturumda üretilmiş kanonik artefaktları (`subject_registry`,
    `outcomes_extract`, `framework_map`, `figure_probe`) ve `connector_call_ledger`'ı
    (`single_shot_enforced`) özetle.
 
 ## Çıktı
 
-Kısa durum kartı: connector canlılığı + korpus sürümü · çağrılabilir araç kümeleri (A/B/C/D, 21) ·
-`get_figure` mevcut mu (Tier-2 yeteneği) · kanonik-önbellek durumu. Eksik connector'ın etkisini
-söyle (yoksa modül offline yola döner, üretim bloke olmaz).
+Kısa durum kartı, **üç connector** için canlılık:
+- `maarif-mufredat`: korpus sürümü · araç kümeleri (A/B/C/D, 21) · `get_figure` (Tier-2 yeteneği)
+- `egitim-kaynak`: faz · getirme yöntemi · hizalama durumu · chunk sayısı
+- `modul-yayin`: MCP yolu mu REST yedeği mi
+Ayrıca kanonik-önbellek durumu. Her eksik connector'ın etkisini söyle — hiçbiri üretimi bloke etmez
+(Maarif yoksa offline yol; egitim-kaynak yoksa zenginleştirme atlanır; modul-yayin yoksa REST yayın).

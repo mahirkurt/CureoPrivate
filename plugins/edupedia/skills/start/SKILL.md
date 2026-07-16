@@ -1,6 +1,6 @@
 ---
 name: start
-description: edupedia süitine giriş ve yönlendirme. Bağlı Maarif Modeli MCP connector'ını (maarif-mufredat) kontrol eder, flagship carbon-edupedia skill'ini ve dört komutu tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
+description: edupedia süitine giriş ve yönlendirme. Bağlı ÜÇ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme, modul-yayin yayın) kontrol eder, flagship carbon-edupedia skill'ini ve dört komutu tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
 version: 1.0.0
 last_updated: 2026-07-06
 ---
@@ -49,6 +49,19 @@ Dört işlevsel araç kümesi (otoritatif **21 araç**):
 Canlılık için `server_info` çağırıp korpus sürümünü (bilinen: corpus v1.4, build 2026-06-14)
 raporlayın. **`get_figure` mevcut mu** doğrulayın: varsa Tier-2 (resmî ders-kitabı görseli gömme)
 mevcuttur; yoksa yalnız Tier-1 (yazar-üretimli SVG) — her iki durumda da üretim çalışır.
+
+**Eğitim Kaynak RAG MCP (`egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp`) — içerik zenginleştirme:**
+6 salt-okunur araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`, `kb_sources`,
+`kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu connector kaynaklandırılmış lisans-etiketli
+pasajlarla zenginleştirir (MEB programının KENDİSİ değil — onu tamamlar). Bağlıysa modül üretiminde
+kazanım→`kb_for_outcome(kod)` (Faz 0'da `kb_search(konu)`) ile açıklayıcı materyal çekin; bağlı
+değilse yerleşik bilgiyle devam, kaynak zenginleştirme atlanır (asla uydurma kaynak). `kb_server_info`
+ile faz/korpus durumunu raporlayın. **Faz 0:** BM25/FTS5 + Vikipedi-TR; kazanım hizalaması Faz 2.
+
+**Modül Yayın MCP (`modul-yayin` · `https://edupedia.cureonics.com/mcp`) — yayın:**
+4 araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`);
+`/edupedia:yayinla`'nın tercih ettiği yol. Bağlı değilse `POST /api/publish` REST yedeğine düşülür.
+*(Eski connector adı `edupedia` idi — plugin adıyla çakışmasın diye `modul-yayin` oldu; endpoint/token aynı.)*
 
 Connector bağlı değilse: kullanıcıya Settings → Connectors'tan etkinleştirmesini bildirin ve
 `carbon-edupedia`'nın **MCP olmadan da** (kullanıcının verdiği ders metniyle) çalıştığını, üretimin

@@ -16,7 +16,7 @@ argument-hint: <modul.html yolu>
 
 Bu komutun iki yolu vardır — hangisi kullanılacağı, oturumda bağlı araç listesinde
 `edupedia_publish` aracının görünüp görünmediğine göre belirlenir (`../.mcp.json`'daki
-`edupedia` connector'ı bağlıysa görünür):
+`modul-yayin` connector'ı bağlıysa görünür):
 
 - **Yol A — MCP aracı (TERCİH EDİLEN):** `edupedia_publish` aracı mevcutsa doğrudan onu
   çağır. Manifest KURMA — sunucu manifesti `run_id`/`requested_scope` alanlarından kendisi

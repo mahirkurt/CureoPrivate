@@ -41,14 +41,20 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 - **Maarif Modeli MCP** — `maarif-mufredat` · `https://mufredat.cureonics.com/mcp` ·
   **yalnız Türkiye MEB / Türkiye Yüzyılı Maarif Modeli (2024)** · 21 araç (dört küme: Keşif ·
   Kazanım · Beceri çerçevesi · Belge+medya). Auth yok (public read-only).
-- **edupedia** — `edupedia` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
+- **egitim-kaynak** — `egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp` · açık
+  eğitsel kaynak (OER) RAG · 6 araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`,
+  `kb_sources`, `kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu zenginleştirir
+  (kaynaklandırılmış, lisans-etiketli pasaj). Tek-kiracılı OAuth 2.1; `EGITIM_KAYNAK_MCP_API_KEY`
+  bearer'ı. **Faz 0:** yalnız BM25/FTS5 + Vikipedi-TR.
+- **modul-yayin** — `modul-yayin` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
   araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`).
   Tek-kiracılı OAuth 2.1; Claude Code'da `.mcp.json` üzerinden `EDUPEDIA_PUBLISH_TOKEN`
-  bearer'ı, claude.ai'de connector ayarlarında OAuth ile bağlanır.
+  bearer'ı, claude.ai'de connector ayarlarında OAuth ile bağlanır. *(Eski adı `edupedia`;
+  MCP connector'ı plugin adıyla çakışmasın diye yeniden adlandırıldı — endpoint/token aynı.)*
 
 Tam envanter, kimlik/PDF uyarıları, provenans standardı ve Tier-1/Tier-2 görüntü-dayanak
-politikası (Maarif MCP): **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk kaynağı — ikinci
-connector olarak `edupedia` de burada tanımlıdır). Tek-sefer disiplini ve `get_figure`
+politikası (Maarif MCP): **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk kaynağı — yayın
+connector'ı `modul-yayin` ve RAG connector'ı `egitim-kaynak` de burada tanımlıdır). Tek-sefer disiplini ve `get_figure`
 yetenek-probu: **[shared/canonical-cache-contract.md](./shared/canonical-cache-contract.md)**.
 
 ### Görüntü-dayanak (Tier-1 / Tier-2)
@@ -71,7 +77,7 @@ baskı raporu (→ `carbon-html-report`) veya slayt (→ `carbon-pptx`) kapsam d
 (Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı). İki yol vardır —
 komut hangisinin bağlı olduğuna göre otomatik seçer:
 
-- **MCP yolu (tercih edilen):** `edupedia` connector'ı (`.mcp.json`, OAuth'lu) bağlıysa
+- **MCP yolu (tercih edilen):** `modul-yayin` connector'ı (`.mcp.json`, OAuth'lu) bağlıysa
   `edupedia_publish` aracı doğrudan çağrılır. Manifest dosyası istemci tarafında
   kurulmaz — sunucu manifesti `run_id`/`requested_scope` düz alanlarından (html, run_id,
   subject_slug, grade, topic, mode, outcome_codes) kendisi kurar ve kalite kapılarını

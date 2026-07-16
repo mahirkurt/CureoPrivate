@@ -71,7 +71,17 @@ toplamak tek seçenekle mümkün: **429513**. Detay: references/htr-workflow.md.
 Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` → `DEVARSIV_TRANSKRIBUS_HTR_ID=<id>` +
 `systemctl restart devarsiv-mcp`.
 
-## Katman 3 — kanıt-temelli satır hakemliği (`arbitrate=true`)
+## Katman 3 — kanıt-temelli satır hakemliği (`arbitrate=true`) — **yalnız MATBU sayfada**
+
+**Kapsam (2026-07-16 ölçümüyle daraltıldı).** Hakemlik yalnız **matbu** Osmanlıca sayfalarda
+(salname/gazete/nizamname) anlam taşır. **El yazması BOA belgesinde `arbitrate=true` KULLANMA** —
+orada `agreement_rate` düşük değil, **daima 0.0**'dır ve hakemlik hiçbir şey katmaz. İki bağımsız
+ölçülmüş neden: (1) iki motor **ayrı alfabelerde** yazar (TK → Latin çeviriyazı, ES → Arap harfli;
+yukarıdaki alfabe uyarısı) → metin uzlaşması tanım gereği imkânsız; (2) eScriptorium'un OpenITI
+modelleri **matbu** içindir → BOA divanî/rika diyagonal ellerinde tam satır bulamaz, parça bulur
+(ölçüm: 4 koşulun hiçbirinde tam-genişlik satır yok; TK 4 tam satır buluyor). El yazmasında geçerli
+yol değişmedi ve zaten doğrudur: **üç-sütun protokolü — görü birincil, çelişkide kazanır**; gürültülü
+HTR sütunu "kullanılmadı (gürültülü)" işaretlenir.
 
 `engine="both"` + `arbitrate=true` (OCR araçlarında opsiyonel bayrak) çıktıya bir `arbitration`
 zarfı ekler: motor satırları koordinatla (dikey bbox örtüşmesi) hizalanır, her satır uzlaşma
@@ -82,8 +92,9 @@ birlikte sunulur. Transleyt tam-metni `block_reference` olarak eklenir (koordina
 **Asistan rolü = hakem.** Sadece `CONFLICT`/`SINGLE` satırların `crop_image`'ını görüyle oku,
 adaylarla karşılaştır, **en olası okumayı seç**; hiçbir aday doğru değilse görüden oku. Uzlaşan
 (`IDENTICAL`/`MINOR`) satırlar zaten kırpılmaz — onlara güven. **MCP tek-birleşik-metin ÜRETMEZ**
-(adaylar ayrı; birleştirme asistanın insan-denetimli işidir). `agreement_rate` düşükse (zorlu el /
-Latin-damga ile Arap-metin karışımı) bu normaldir — hakemlik tam da bunun için. Degrade dürüst
+(adaylar ayrı; birleştirme asistanın insan-denetimli işidir). Matbu sayfada `agreement_rate`
+düşükse (zor baskı/soluk mürekkep) bu normaldir — hakemlik tam da bunun için; ama **0.0 görüyorsan
+belge muhtemelen el yazmasıdır → yukarıdaki kapsam notu, hakemliği bırak, görüyle oku.** Degrade dürüst
 (`degrade[]`; opencv yoksa `crop_image` yok, metin-only; <2 koordinatlı motor →
 `insufficient_engines`). Durum: `devarsiv_server_info` → `ocr.arbitration`.
 

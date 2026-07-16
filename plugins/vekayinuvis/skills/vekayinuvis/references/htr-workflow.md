@@ -172,6 +172,18 @@ opsiyonel `arbitrate=true` bayrağı — yalnız `engine="both"` (Osmanlı arsiv
 çift-motor çıktısını asistanın (VLM) **kanıt-temelli hakemliğine** hazır bir zarfa dönüştürür.
 MCP hakemlik YAPMAZ; asistanı besler. Canlı doğrulandı (2026-07-16, HP).
 
+> **⚠ Kapsam: yalnız MATBU sayfa (2026-07-16 ölçümüyle daraltıldı).** El yazması BOA belgesinde
+> `arbitrate=true` **kullanma** — orada `agreement_rate` *düşük* değil, **daima 0.0**'dır ve
+> hakemlik hiçbir şey katmaz. İki bağımsız ölçülmüş neden: (1) **alfabe** — TK Latin çeviriyazı,
+> ES Arap harfli yazar (bkz. "Alfabe uyarısı") → metin uzlaşması tanım gereği imkânsız;
+> (2) **segmentasyon** — ES'in OpenITI modelleri matbu içindir, BOA divanî/rika diyagonal
+> ellerinde tam satır bulamaz. 2×2 ölçüm ({ham, Katman-0} × {print-seg, Kraken blla varsayılanı}):
+> dört koşulun **hiçbirinde** tam-genişlik satır yok; TK aynı sayfada 4 tam satır buluyor.
+> Konfigürasyonla düzelmez — Kraken'i bu ellere uydurmak özel model eğitimi (Katman 5) ister.
+> El yazmasında geçerli yol değişmedi ve zaten doğrudur: **üç-sütun protokolü, görü birincil**.
+> Katman 3 kodu zararsızdır (opt-in; `arbitrate=false` varsayılan; kırpmalar koordinat-doğru;
+> dürüst `insufficient_engines`/`not_applicable` degrade) ve matbuda değerli kalır.
+
 **İş akışı.** (1) Her motorun satırları koordinatla çıkarılır (Transkribus PAGE-XML `<Coords>`;
 eScriptorium `/parts/{pk}/` `mask` poligonu → bbox; tesseract TSV; Transleyt satır vermez →
 `block_reference`). (2) Satırlar dikey bbox örtüşmesiyle (eşik 0.5) fiziksel satıra hizalanır —
@@ -188,8 +200,9 @@ sıfır davranış değişikliği, ek maliyet yok — `capture_lines`/`return_ts
 **Asistan hakemlik protokolü.** Yalnız `CONFLICT`/`SINGLE` satırların `crop_image`'ını görüyle
 oku → adaylarla karşılaştır → **en olası okumayı seç** (hiçbiri doğru değilse görüden oku).
 **Tek-birleşik-metin ÜRETME** — adayları ayrı raporla, seçim insan doğrulamasına tabidir.
-`agreement_rate` düşükse (motorlar farklı katman okur: tesseract Latin damga, HTR Arap metin)
-normaldir — çelişkileri hakemle. Degrade: `<2` koordinatlı motor → `insufficient_engines`;
+Matbu sayfada `agreement_rate` düşükse (zor baskı / soluk mürekkep) normaldir — çelişkileri
+hakemle. **0.0 görüyorsan belge muhtemelen el yazmasıdır** → yukarıdaki kapsam uyarısı: hakemliği
+bırak, üç-sütun protokolüyle görüden oku. Degrade: `<2` koordinatlı motor → `insufficient_engines`;
 koordinatsız motor `degrade[]`'e düşer + `block_reference`. `devarsiv_server_info.ocr.arbitration`
 durum verir.
 

@@ -142,6 +142,34 @@ görünün değerli bulduğu sayfada. Kimlik/kredi yoksa dürüst `unavailable` 
 Ampirik: login + uçtan uca OCR canlı doğrulandı (endpoint: `POST /api/ocr/to-text/` →
 `task_id` → `GET /api/ocr/result/{id}/`).
 
+## Katman 3 — kanıt-temelli satır hakemliği (`arbitrate=true`, 2026-07-16 eklendi)
+
+OCR araçlarındaki (`devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr_submit`)
+opsiyonel `arbitrate=true` bayrağı — yalnız `engine="both"` (Osmanlı arsiv=2) ile etkin —
+çift-motor çıktısını asistanın (VLM) **kanıt-temelli hakemliğine** hazır bir zarfa dönüştürür.
+MCP hakemlik YAPMAZ; asistanı besler. Canlı doğrulandı (2026-07-16, HP).
+
+**İş akışı.** (1) Her motorun satırları koordinatla çıkarılır (Transkribus PAGE-XML `<Coords>`;
+eScriptorium `/parts/{pk}/` `mask` poligonu → bbox; tesseract TSV; Transleyt satır vermez →
+`block_reference`). (2) Satırlar dikey bbox örtüşmesiyle (eşik 0.5) fiziksel satıra hizalanır —
+en çok satırlı motor çapa; eşleşmeyen satır kaybolmaz (kendi satırını doğurur). (3) Her satır
+`normalize_arabic` (hemze/te-merbuta/kef/ye fold — yalnız karşılaştırma; ham metin korunur) ile
+`IDENTICAL`/`MINOR`/`CONFLICT`/`SINGLE` sınıflanır. (4) Yalnız `CONFLICT`/`SINGLE` satırlar
+Katman-0 (300 DPI) görüntüsünden kırpılır (`crop_image`, gerçek PNG; opencv yoksa metin-only).
+
+**Zarf** (`arbitration`): `{status, engines_aligned, block_reference, line_count, agreement_rate,
+conflicts:[line_id], lines:[{line_id, bbox, status, candidates:{motor:metin}, crop_image?}],
+degrade[], guidance}`. Mevcut `transcriptions` bloğuna **additive** (arbitrate=false → hiç üretilmez,
+sıfır davranış değişikliği, ek maliyet yok — `capture_lines`/`return_tsv` gate'li).
+
+**Asistan hakemlik protokolü.** Yalnız `CONFLICT`/`SINGLE` satırların `crop_image`'ını görüyle
+oku → adaylarla karşılaştır → **en olası okumayı seç** (hiçbiri doğru değilse görüden oku).
+**Tek-birleşik-metin ÜRETME** — adayları ayrı raporla, seçim insan doğrulamasına tabidir.
+`agreement_rate` düşükse (motorlar farklı katman okur: tesseract Latin damga, HTR Arap metin)
+normaldir — çelişkileri hakemle. Degrade: `<2` koordinatlı motor → `insufficient_engines`;
+koordinatsız motor `degrade[]`'e düşer + `block_reference`. `devarsiv_server_info.ocr.arbitration`
+durum verir.
+
 ### Adım 3 — Belge oluştur ve IIIF'ten import et
 
 ```text

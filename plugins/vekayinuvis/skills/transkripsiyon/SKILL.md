@@ -60,6 +60,22 @@ insan doğrulamasına tabidir; taşra-kâtibi/gürültülü ellerde Transkribus 
 Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` → `DEVARSIV_TRANSKRIBUS_HTR_ID=<id>` +
 `systemctl restart devarsiv-mcp`.
 
+## Katman 3 — kanıt-temelli satır hakemliği (`arbitrate=true`)
+
+`engine="both"` + `arbitrate=true` (OCR araçlarında opsiyonel bayrak) çıktıya bir `arbitration`
+zarfı ekler: motor satırları koordinatla (dikey bbox örtüşmesi) hizalanır, her satır uzlaşma
+durumuna göre sınıflanır (`IDENTICAL`/`MINOR`/`CONFLICT`/`SINGLE`), ve **çelişki satırlarının
+kırpılmış görüntüsü** (`crop_image`, gerçek PNG) motor adaylarıyla (`candidates: {motor: metin}`)
+birlikte sunulur. Transleyt tam-metni `block_reference` olarak eklenir (koordinatsız).
+
+**Asistan rolü = hakem.** Sadece `CONFLICT`/`SINGLE` satırların `crop_image`'ını görüyle oku,
+adaylarla karşılaştır, **en olası okumayı seç**; hiçbir aday doğru değilse görüden oku. Uzlaşan
+(`IDENTICAL`/`MINOR`) satırlar zaten kırpılmaz — onlara güven. **MCP tek-birleşik-metin ÜRETMEZ**
+(adaylar ayrı; birleştirme asistanın insan-denetimli işidir). `agreement_rate` düşükse (zorlu el /
+Latin-damga ile Arap-metin karışımı) bu normaldir — hakemlik tam da bunun için. Degrade dürüst
+(`degrade[]`; opencv yoksa `crop_image` yok, metin-only; <2 koordinatlı motor →
+`insufficient_engines`). Durum: `devarsiv_server_info` → `ocr.arbitration`.
+
 Çıktı: HTR/transkripsiyon ham metni (üç-sütun) + insan-revizyon önerileri + paleografik notlar.
 **Tarama gerçektir, transkripsiyon uydurulmaz**; HTR/OCR hata payını ve düşük-güveni açıkça
 belirt; transkripsiyon insan doğrulamasına tabi. Detaylı prosedür için references/htr-workflow.md

@@ -24,10 +24,14 @@ komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
    Yoksa `tier2_status: unavailable` (yalnız Tier-1).
 
 4. **Eğitim Kaynak RAG (`egitim-kaynak`) sağlığı:** `kb_server_info` çağır. Yanıt verirse
-   **canlı** — faz (`phase`), getirme yöntemi (`retrieval`), hizalama durumu (`alignment_built`)
-   ve korpus sayımlarını (`stats.chunk_count`) raporla. Yoksa **bağlı değil** → modül üretimi
-   yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır (asla uydurma kaynak). Faz 0'da
-   `kb_for_outcome`'ın dürüstçe `alignment_not_built` döndüğünü hatırlat (kazanım hizalaması Faz 2).
+   **canlı** — faz (`phase`), getirme yöntemi (`retrieval`: `hybrid` = BM25+vektör RRF,
+   `fts5-bm25` = embedding kapalı/yok), `embedding_model`, hizalama durumu (`alignment_built`)
+   ve korpus sayımlarını (`stats`: `chunk_count`, `vector_count`, `source_count`) raporla.
+   Yoksa **bağlı değil** → modül üretimi yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır
+   (asla uydurma kaynak). **`alignment_built: false` iken `kb_for_outcome` dürüstçe
+   `alignment_not_built` döner** — kazanım hizalaması korpus derinleşene + insan denetimi geçene
+   kadar bilinçli kapalıdır; bu bir arıza DEĞİL, no-fabrication gereğidir. O halde kazanım
+   konusunu `kb_search`'e sorgu olarak verin.
 
 5. **Modül Yayın (`modul-yayin`) sağlığı:** `edupedia_server_info` araç listesinde varsa çağır
    (`gate_count`, `max_upload_bytes`, `base_url`); yayın MCP yolu **canlı**. Yoksa `/edupedia:yayinla`

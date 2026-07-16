@@ -54,9 +54,17 @@ mevcuttur; yoksa yalnız Tier-1 (yazar-üretimli SVG) — her iki durumda da ür
 6 salt-okunur araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`, `kb_sources`,
 `kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu connector kaynaklandırılmış lisans-etiketli
 pasajlarla zenginleştirir (MEB programının KENDİSİ değil — onu tamamlar). Bağlıysa modül üretiminde
-kazanım→`kb_for_outcome(kod)` (Faz 0'da `kb_search(konu)`) ile açıklayıcı materyal çekin; bağlı
-değilse yerleşik bilgiyle devam, kaynak zenginleştirme atlanır (asla uydurma kaynak). `kb_server_info`
-ile faz/korpus durumunu raporlayın. **Faz 0:** BM25/FTS5 + Vikipedi-TR; kazanım hizalaması Faz 2.
+**`kb_search(konu)`** ile açıklayıcı materyal çekin; bağlı değilse yerleşik bilgiyle devam, kaynak
+zenginleştirme atlanır (asla uydurma kaynak). `kb_server_info` ile faz/korpus durumunu raporlayın.
+
+**Faz 1 (canlı):** **hibrit getirme** — BM25 ⊕ vektör (RRF füzyonu), `nomic-embed-text`; kaynaklar
+**Vikipedi-TR + Vikikitap** (ikisi de CC BY-SA). Sonuçlar `retrieval` (`hybrid`/`fts5-bm25`) ve
+`score_kind` (`rrf`/`bm25`) taşır; sıralamada metin/anlam kanıtı olanlar yalnız-başlık
+eşleşmelerinin üstündedir — **`score`'a göre yeniden sıralamayın**.
+
+**`kb_for_outcome` HENÜZ KURULMADI** (dürüstçe `alignment_not_built` döner, asla uydurma hizalama):
+kazanım-hizalaması korpus yeterince derinleşene ve insan denetimi geçene kadar bilinçli olarak
+kapalıdır. Kazanımdan modül üretirken kazanım metnindeki konuyu `kb_search`'e sorgu olarak verin.
 
 **Modül Yayın MCP (`modul-yayin` · `https://edupedia.cureonics.com/mcp`) — yayın:**
 4 araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`);

@@ -237,11 +237,19 @@ HTR/Kraken yardımcı).
 
 ### 7.2 Transkribus model seçim tablosu (K3)
 
-| Belge türü | Model | CER | Not |
-| --- | --- | --- | --- |
-| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
-| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | %5.94 | Fetva/kadı-sicili tipi eller için alternatif |
-| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | %7.2 | Matbu Osmanlıca; eScriptorium OpenITI print ile çapraz-kontrol |
+| Belge türü | Model | Alfabe | CER | Not |
+| --- | --- | --- | --- | --- |
+| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | **Latin çeviriyazı** | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
+| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | **Latin çeviriyazı** | %5.94 | Fetva/kadı-sicili tipi eller |
+| El yazması — Arap-harfli çıktı | **429513** | **Arap harfli** | %9.36 | Katalogdaki TEK Arap-harfli Osmanlıca model; yalnız 1.054 satır eğitim |
+| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | **Latin çeviriyazı** | %7.2 | TTK "yarım-transkripsiyon" latinizasyon şeması |
+| Matbu — daha geniş veri | **57485** OttomanTurkish_Print_v2 | Latin (ölçülmedi; 52502 soylu) | %7.6 | 52502 verisi + ek veri, 37.866 satır |
+
+**⚠ Alfabe (2026-07-16 canlı ölçümü).** TK'nin Osmanlıca modelleri Arap-harfli görüntüyü okur ama
+**Latin çeviriyazı yazar** (52502 kendi belgesinde TTK latinizasyon şemasını beyan eder; 56496 onu
+baz model alıp karakter setini miras alır). eScriptorium **Arap harfli** yazar → iki çıktı
+karşılaştırılamaz; `arbitrate=true` hakemliğinde `agreement_rate` tanım gereği 0 çıkar (bug değil).
+Aynı alfabe tek seçenekle mümkün: **429513**. Detay: htr-workflow.md "Alfabe uyarısı".
 
 Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` →
 `DEVARSIV_TRANSKRIBUS_HTR_ID=<id>` + `systemctl restart devarsiv-mcp`.

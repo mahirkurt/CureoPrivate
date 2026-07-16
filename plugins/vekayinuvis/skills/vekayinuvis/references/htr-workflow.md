@@ -122,11 +122,34 @@ değil doğrudan `devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr
 `engine=` parametresiyle gidilir), model seçimi eScriptorium'un kendi Kraken
 modelleri yerine **Transkribus** tarafında yapılır:
 
-| Belge türü | Model | CER | Not |
-| --- | --- | --- | --- |
-| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
-| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | %5.94 | Fetva/kadı-sicili tipi eller için alternatif |
-| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | %7.2 | Matbu Osmanlıca; eScriptorium OpenITI print ile çapraz-kontrol |
+| Belge türü | Model | Alfabe | CER | Not |
+| --- | --- | --- | --- | --- |
+| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | **Latin çeviriyazı** | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
+| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | **Latin çeviriyazı** | %5.94 | Fetva/kadı-sicili tipi eller |
+| El yazması — Arap-harfli çıktı | **429513** | **Arap harfli** | %9.36 | Katalogdaki TEK Arap-harfli Osmanlıca model; yalnız 1.054 satır eğitim |
+| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | **Latin çeviriyazı** | %7.2 | TTK "yarım-transkripsiyon" latinizasyon şeması |
+| Matbu — daha geniş veri | **57485** OttomanTurkish_Print_v2 | Latin (ölçülmedi; 52502 soylu) | %7.6 | 52502 verisi + ek veri, 37.866 satır |
+
+### Alfabe uyarısı — TK ve ES aynı dilde konuşmaz (2026-07-16 ölçümü)
+
+Transkribus'un Osmanlıca modelleri **Arap-harfli görüntüyü okur ama Latin çeviriyazı yazar.**
+Kanıt zinciri: 52502 kendi belgesinde *"'half-transcription' latinization scheme recommended by
+the Turkish Historical Association"* der; 56496 onu **baz model** alır ve karakter setini miras
+alır; canlı ölçüm bunu doğrular (56496 arap=0/latin=78, 169801 arap=0/latin=92). eScriptorium
+/OpenITI ise **Arap harfli** yazar. Sonuçlar bu yüzden **doğrudan karşılaştırılamaz** — Katman 3
+hakemliğinde iki motor ayrı alfabelerde aday üretir ve `agreement_rate` **tanım gereği** 0 çıkar.
+Bu bir hata değil, dürüst sinyaldir.
+
+Katalogdaki 413 modelin tamamında Arap-harfli çıktı veren **tek** Osmanlıca model **429513**'tür
+(ölçüm: arap=69/latin=0) — iki motoru aynı alfabede toplamak isteyen oraya geçmelidir; bedeli
+küçük eğitim seti (1.054 satır) ve %9.36 CER'dir. Skill'in eski tablosunun önerdiği 169801 fetva
+modeli **alfabe sorununu çözmez** (o da Latin). 461445 "Manuscrita cursiva XVIII" düşük CER'ine
+(%2.59) rağmen 18. yy Türkçe-İspanyolca **sözlük** modelidir — genel Osmanlıca belgeye uygun değil.
+
+Ölçüm ayrıca iki bağımsız kısıt daha buldu (yalnız model değiştirmek yetmez): BOA divanî/rika
+elleri **diyagonal** yazar (~10° eğim) — eksen-hizalı bbox'ın dikey örtüşmesi bu satırlarda
+geçersiz primitiftir (TK'nin *kendi* komşu satırları birbiriyle ~%45 örtüşür); ve eScriptorium'un
+OpenITI modelleri **matbu** içindir — el yazması sayfada tam satır değil parça bulur.
 
 `engine="both"` seçildiğinde Transkribus (bu tablo) + eScriptorium (yukarıdaki
 Kraken tablosu) **paralel** koşar ve iki çıktı `transcriptions` altında yan

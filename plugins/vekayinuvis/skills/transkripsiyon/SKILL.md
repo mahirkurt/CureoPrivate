@@ -51,11 +51,22 @@ insan doğrulamasına tabidir; taşra-kâtibi/gürültülü ellerde Transkribus 
 
 ## K3 — Transkribus model seçim tablosu
 
-| Belge türü | Model | CER | Not |
-| --- | --- | --- | --- |
-| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
-| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | %5.94 | Fetva/kadı-sicili tipi eller için alternatif |
-| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | %7.2 | Matbu Osmanlıca; eScriptorium OpenITI print ile çapraz-kontrol |
+| Belge türü | Model | Alfabe | CER | Not |
+| --- | --- | --- | --- | --- |
+| El yazması genel (divani/rika) | **56496** OttomanTurkish_generic | **Latin çeviriyazı** | ~%12 | Üretimdeki varsayılan (`DEVARSIV_TRANSKRIBUS_HTR_ID`) |
+| Fetva / ilmiye el yazması | **169801** Ottoman Fatwa Manuscript | **Latin çeviriyazı** | %5.94 | Fetva/kadı-sicili tipi eller |
+| El yazması — Arap-harfli çıktı | **429513** | **Arap harfli** | %9.36 | Katalogdaki TEK Arap-harfli Osmanlıca model; yalnız 1.054 satır eğitim |
+| Matbu (salname/gazete/nizamname) | **52502** OttomanTurkish_Print_1 | **Latin çeviriyazı** | %7.2 | TTK "yarım-transkripsiyon" latinizasyon şeması |
+| Matbu — daha geniş veri | **57485** OttomanTurkish_Print_v2 | Latin (ölçülmedi; 52502 soylu) | %7.6 | 52502 verisi + ek veri, 37.866 satır |
+
+Alfabe sütunu 2026-07-16'da canlı ölçüldü (429513 arap=69/latin=0; 56496 ve 169801 arap=0);
+52502 kendi belgesinde latinizasyon şemasını beyan eder. 57485 ölçülmedi — dürüstçe işaretli.
+
+**⚠ Alfabe uyarısı.** TK'nin Osmanlıca modelleri Arap-harfli görüntüyü okur ama **Latin
+çeviriyazı yazar**; eScriptorium/OpenITI **Arap harfli** yazar. İki çıktı bu yüzden
+**karşılaştırılamaz**: `arbitrate=true` hakemliğinde ayrı alfabelerde aday üretirler →
+`agreement_rate` tanım gereği 0 çıkar (bug değil, dürüst sinyal). İki motoru aynı alfabede
+toplamak tek seçenekle mümkün: **429513**. Detay: references/htr-workflow.md.
 
 Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` → `DEVARSIV_TRANSKRIBUS_HTR_ID=<id>` +
 `systemctl restart devarsiv-mcp`.

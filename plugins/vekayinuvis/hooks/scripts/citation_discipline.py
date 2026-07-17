@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """vekayinuvis Stop hook — arşiv atıf-disiplini + no-fabrication bütünlük kapısı.
 
-Bir çıktı arşiv belgesine atıfta bulunuyorsa (BOA/BCA/fon kodu/gömlek/devarsiv/katalog),
+Bir çıktı somut bir arşiv KAYDINA atıfta bulunuyorsa (fon + kutu/gömlek künyesi, çözülmüş
+BelgeGoster derin-bağlantısı veya arşiv referans kodu — bkz. `_signals.has_record_locator`;
+çıplak isim geçişi atıf SAYILMAZ),
 SKILL §6 gereği (a) fon/kutu/gömlek kayıt yapısı ve (b) orijinal takvim + Miladî **çift-tarih**
 taşımalıdır; devlet-arsivleri-doğrulanmış kayıtlarda katalog URL'i dipnota eklenmelidir. Bu hook
 son asistan mesajını inceler: arşiv-atıf imzası varsa AMA çift-tarih disiplini görünmüyorsa, turu
@@ -16,15 +18,7 @@ import os
 import re
 import sys
 
-# Arşiv-belge atıf imzası (en az bir güçlü sinyal → arşiv-atıf bağlamı say).
-ARCHIVE_SIGNALS = [
-    re.compile(r"\b(BOA|BCA)\b"),
-    re.compile(r"\bgömlek\b", re.IGNORECASE),
-    re.compile(r"devarsiv|katalog\.devletarsivleri|BelgeGoster", re.IGNORECASE),
-    re.compile(r"\b(HAT|BEO|MV|ŞD|DH\.[A-ZÇĞİÖŞÜ]{1,4}|A\.MKT|İ\.[A-ZÇĞİÖŞÜ]{2,4}|Y\.[A-ZÇĞİÖŞÜ]{1,4})\b"),
-    re.compile(r"\b030\.\d{2}\b"),  # BCA fon (ör. 030.10)
-    re.compile(r"Sicill-i\s+Ahval|DH\.SAİD", re.IGNORECASE),
-]
+from _signals import has_record_locator
 # Çift-tarih disiplini (orijinal takvim + Miladî). Parantez içi 4-haneli yıl / "Miladî" / "M. YYYY".
 HAS_DOUBLE_DATE = re.compile(r"\(\s*(M\.\s*)?\d{3,4}\s*\)|\bMil[aâ]dî?\b|\bM\.\s*\d{3,4}\b", re.IGNORECASE)
 # devlet-arsivleri kaydı imzası → katalog URL'i beklenir.
@@ -87,8 +81,9 @@ def main():
     if not text:
         sys.exit(0)
 
-    # Arşiv-atıf bağlamı yoksa sessiz.
-    if not any(sig.search(text) for sig in ARCHIVE_SIGNALS):
+    # Somut bir arşiv KAYDINA atıf yoksa sessiz. İsim geçişi (araç adı, env değişkeni,
+    # test fixture'ı, dosya yolu) atıf değildir — bkz. _signals.py tasarım kuralı.
+    if not has_record_locator(text):
         sys.exit(0)
 
     issues = []

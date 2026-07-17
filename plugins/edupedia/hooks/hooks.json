@@ -1,4 +1,31 @@
 {
-  "SessionStart": [{ "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/preflight.sh\"", "timeout": 10 }] }],
-  "PostToolUse": [{ "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/validate-module.sh\"", "timeout": 30 }] }]
+  "description": "edupedia runtime desteği — iki fail-open hook: (1) SessionStart preflight, üç connector'ın kadrosunu bildirir (maarif-mufredat authless · egitim-kaynak ANAHTARSIZ · modul-yayin token'lı) ve `modul-yayin`'ın `${EDUPEDIA_PUBLISH_TOKEN}`'ı çözülmüyorsa UYARIR — çözülmeyen bir ${VAR} connector'ı sessizce 401'e düşürür (bu tam olarak `egitim-kaynak`'ın başına gelen hataydı); (2) PostToolUse validate-module, MODULE_DATA taşıyan bir .html yazıldığında 14 kalite kapısını çalıştırır. Hiçbiri bloklamaz: kapı ihlali uyarı olarak raporlanır, yayında SUNUCU yeniden ölçer (tek otorite odur).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/preflight.sh\"",
+            "timeout": 10,
+            "statusMessage": "edupedia: connector kadrosu + yayın token'ı preflight"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/validate-module.sh\"",
+            "timeout": 30,
+            "statusMessage": "edupedia: modül kalite kapıları (advisory)"
+          }
+        ]
+      }
+    ]
+  }
 }

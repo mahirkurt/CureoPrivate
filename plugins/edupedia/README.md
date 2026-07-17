@@ -51,10 +51,11 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
   > **tam metin**. `egitim-kaynak` onun yerine geçmez, üstüne ekler. Çelişkide **ders kitabı
   > kazanır**.
 
-  **Kaynaklar:** **PhET** (CC BY-NC 4.0, **atıf zorunlu**; 237 sim, tamamı Türkçe — etkileşimli
-  modülde en değerlisi; fizik/kimya/matematik güçlü, biyoloji ince) · **Vikipedi-TR**
-  (CC BY-SA 4.0 — **arka plan/örnek, otorite değil**). *Vikikitap düşürüldü: 9 aktif editör.*
-  Hibrit getirme: BM25 ⊕ vektör RRF (`bge-m3`).
+  **Kaynaklar:** **PhET** (CC BY-NC 4.0, **atıf zorunlu**; korpusta **175 sim**, tamamı Türkçe
+  — etkileşimli modülde en değerlisi; fizik/kimya/matematik güçlü, biyoloji ince) ·
+  **Vikipedi-TR** (CC BY-SA 4.0 — **arka plan/örnek, otorite değil**). *Vikikitap düşürüldü:
+  9 aktif editör.* Getirme: **BM25 önce, vektör YEDEK** (`bge-m3`/Workers AI) — RRF füzyonu
+  2026-07-17'de kaldırıldı: ölçüm hibridi 3/8, saf BM25'i 6/8 verdi.
 - **modul-yayin** — `modul-yayin` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
   araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`).
   Tek-kiracılı OAuth 2.1; Claude Code'da `.mcp.json` üzerinden `EDUPEDIA_PUBLISH_TOKEN`

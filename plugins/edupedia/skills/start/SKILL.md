@@ -65,8 +65,11 @@ Bağlıysa modül üretiminde **`kb_search(konu)`** ile tamamlayıcı materyal �
 
 **Kaynaklar (2026-07-17 itibarıyla):**
 - **PhET** (Colorado Üniversitesi etkileşimli simülasyonları) — **CC BY-NC 4.0, atıf ZORUNLU.**
-  237 simülasyon; **tamamı Türkçe**, 229'unda Türkçe öğrenme hedefi. Etkileşimli modül üretirken
-  **en değerli kaynak budur**: konuya uygun simülasyonu `kb_search` ile bulup modülde
+  Korpusta **175 simülasyon** (canlı `kb_sources` ölçümü); tamamı Türkçe. *(Upstream 241 sim
+  yayınlar; 237'si CC BY-NC — gerisi elenir — ve bu 237 kayıt yalnız **175 farklı** simülasyona
+  aittir: PhET aynı simi birden çok kayıtla listeler, `name` üzerinden en güncel olan tutulur.
+  Yani **237 kayıt sayısıdır, korpus içeriği değildir**.)* Etkileşimli modül üretirken **en
+  değerli kaynak budur**: konuya uygun simülasyonu `kb_search` ile bulup modülde
   bağlantılayın/gömün. Fizik/kimya/matematik güçlü; **biyoloji ince** (fotosentez/mitoz YOK).
 - **Vikipedi-TR** — CC BY-SA 4.0. **Arka plan ve örnek malzemedir, OTORİTE DEĞİLDİR.** Üçüncül
   kaynaktır ve Türkçe sürümü incedir (ölçüm: İngilizce'nin %9,6'sı kadar madde, ama yalnız

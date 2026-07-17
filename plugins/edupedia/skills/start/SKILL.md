@@ -50,17 +50,42 @@ Canlılık için `server_info` çağırıp korpus sürümünü (bilinen: corpus 
 raporlayın. **`get_figure` mevcut mu** doğrulayın: varsa Tier-2 (resmî ders-kitabı görseli gömme)
 mevcuttur; yoksa yalnız Tier-1 (yazar-üretimli SVG) — her iki durumda da üretim çalışır.
 
-**Eğitim Kaynak RAG MCP (`egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp`) — içerik zenginleştirme:**
+**Eğitim Kaynak RAG MCP (`egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp`) — TAMAMLAYICI:**
 6 salt-okunur araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`, `kb_sources`,
-`kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu connector kaynaklandırılmış lisans-etiketli
-pasajlarla zenginleştirir (MEB programının KENDİSİ değil — onu tamamlar). Bağlıysa modül üretiminde
-**`kb_search(konu)`** ile açıklayıcı materyal çekin; bağlı değilse yerleşik bilgiyle devam, kaynak
-zenginleştirme atlanır (asla uydurma kaynak). `kb_server_info` ile faz/korpus durumunu raporlayın.
+`kb_server_info`). **Anahtarsız — secret gerekmez.**
 
-**Faz 1 (canlı):** **hibrit getirme** — BM25 ⊕ vektör (RRF füzyonu), `nomic-embed-text`; kaynaklar
-**Vikipedi-TR + Vikikitap** (ikisi de CC BY-SA). Sonuçlar `retrieval` (`hybrid`/`fts5-bm25`) ve
-`score_kind` (`rrf`/`bm25`) taşır; sıralamada metin/anlam kanıtı olanlar yalnız-başlık
-eşleşmelerinin üstündedir — **`score`'a göre yeniden sıralamayın**.
+> **OTORİTE SIRALAMASI (kritik):** Modülün olgusal otoritesi **`maarif-mufredat`'tadır** — orada
+> **105 MEB ders kitabı TAM METİN** (`list_textbooks` → `get_document_text`), 10.855 kazanım ve
+> 22.414 figür var; resmî, müfredat-hizalı, pedagojik olarak kurgulanmış. `egitim-kaynak` bunun
+> yerine geçmez, **üstüne ekler**: ek örnek, farklı anlatım, etkileşim malzemesi, meraklı öğrenci
+> için derinlik. Bir olgu ders kitabıyla çelişiyorsa **ders kitabı kazanır**.
+
+Bağlıysa modül üretiminde **`kb_search(konu)`** ile tamamlayıcı materyal çekin; bağlı değilse
+üretim bloke olmaz, zenginleştirme atlanır (asla uydurma kaynak).
+
+**Kaynaklar (2026-07-17 itibarıyla):**
+- **PhET** (Colorado Üniversitesi etkileşimli simülasyonları) — **CC BY-NC 4.0, atıf ZORUNLU.**
+  Korpusta **175 simülasyon** (canlı `kb_sources` ölçümü); tamamı Türkçe. *(Upstream 241 sim
+  yayınlar; 237'si CC BY-NC — gerisi elenir — ve bu 237 kayıt yalnız **175 farklı** simülasyona
+  aittir: PhET aynı simi birden çok kayıtla listeler, `name` üzerinden en güncel olan tutulur.
+  Yani **237 kayıt sayısıdır, korpus içeriği değildir**.)* Etkileşimli modül üretirken **en
+  değerli kaynak budur**: konuya uygun simülasyonu `kb_search` ile bulup modülde
+  bağlantılayın/gömün. Fizik/kimya/matematik güçlü; **biyoloji ince** (fotosentez/mitoz YOK).
+- **Vikipedi-TR** — CC BY-SA 4.0. **Arka plan ve örnek malzemedir, OTORİTE DEĞİLDİR.** Üçüncül
+  kaynaktır ve Türkçe sürümü incedir (ölçüm: İngilizce'nin %9,6'sı kadar madde, ama yalnız
+  **%1,8'i kadar aktif editör** → madde başına denetim ~5 kat az). Bir kazanımı Vikipedi'ye
+  dayandırmayın; ders kitabına dayandırın.
+- *Vikikitap 2026-07-17'de DÜŞÜRÜLDÜ* — 1.099 madde / **9 aktif editör**; bir wiki'nin
+  güvenilirliği editör sayısından gelir.
+
+**Getirme: BM25 önce, vektör YEDEK** (RRF füzyonu 2026-07-17'de kaldırıldı — ölçüm hibridi
+3/8, saf BM25'i 6/8 verdi; RRF *uzlaşmayı* ödüllendirdiği için gürültülü vektör tarafı doğru
+cevabı boğuyordu). Vektör yalnız BM25 metin kanıtı bulamayınca konuşur (`bge-m3`, Cloudflare
+Workers AI). Sonuçlar `retrieval` (**gerçekte izlenen yol**: `fts5-bm25` / `vector-fallback`),
+`score_kind` (`bm25`/`cosine`) ve her pasajda `license`/`quote_allowed` taşır; `match_kind`
+üç değerli: `text` (sözlüksel kanıt) > `title_only` > `semantic` (**vektör tahmini** — gövde
+sorguyu anmayabilir). Sıralama kademe-birincildir → **`score`'a göre yeniden sıralamayın**.
+Sorgu 512 karakterde kesilir (`query_truncated`).
 
 **`kb_for_outcome` HENÜZ KURULMADI** (dürüstçe `alignment_not_built` döner, asla uydurma hizalama):
 kazanım-hizalaması, korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar
@@ -82,7 +107,7 @@ bloke olmadığını söyleyin.
 
 | Bileşen | Ne Yapar |
 |---|---|
-| **carbon-edupedia** (flagship skill) | 8 mod, 13 kalite kapısı (yayında SUNUCU ölçer) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
+| **carbon-edupedia** (flagship skill) | 8 mod, 14 kalite kapısı (yayında SUNUCU ölçer) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
 | **start** (bu skill) | Oryantasyon + connector kontrolü + niyet→komut yönlendirme |
 
 ## Adım 4 — Komutları Tanıt

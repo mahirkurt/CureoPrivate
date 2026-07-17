@@ -10,8 +10,11 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
 
 ## Yürütme protokolü
 
-1. **Niyeti çöz:** $ARGUMENTS'tan ders, sınıf ve konuyu ayır (örn. "Fen 5 hücre" → ders=Fen,
-   sınıf=5, konu=hücre).
+1. **Niyeti çöz — ders ve sınıf EKSİKSE SOR, varsayma.** $ARGUMENTS'tan ders, sınıf ve konuyu
+   ayır (örn. "Fen 5 hücre" → ders=Fen, sınıf=5, konu=hücre). **Üçünden biri eksik veya
+   belirsizse `AskUserQuestion` ile sor** — sınıf ve ders modülün derinliğini ve kapsamını
+   belirler; tahminle üretilen modül yanlış sınıfa hitap eder ve bu sessiz bir hatadır
+   (kullanıcı sözleşmesi, 2026-07-17).
 
 2. **Ders slug'ını çöz** (`maarif-mufredat`; `../CONNECTORS.md §1-A` + §2 kimlik uyarıları):
    `list_subjects(q=<ders>)` → doğru `slug` (asla isimden uydurma; örn. "Fen" → `fen-bilimleri-dersi`).
@@ -23,9 +26,11 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
    artefaktı (tek-sefer). Boş dönerse sorguyu genişlet (eş anlamlı/kısa terim) veya
    `list_learning_outcomes(distinct_codes=true)` ile üniteyi tara; hâlâ yoksa doğru ders/sınıf/konu sor.
 
-4. **`/edupedia:modul` akışının 2–5. adımlarını uygula:** beceri → etkileşim haritalama
-   (`framework_map`, skill §4) · **§3 görüntü-dayanak politikası** (Tier-1 varsayılan, Tier-2
-   yetenek-probuyla) · modülü üret + `scripts/validate_module.py` 13 kapı (G-CURRICULUM + G-SVG dahil) +
+4. **`/edupedia:modul` akışının 2–5. adımlarını uygula** — **Adım 2.5 (ders kitabını aç:
+   çerçeveyi o çizer), Adım 3 (kitabın KENDİ figürleri öncelikli) ve Adım 3.5 (kapsam +
+   doğruluk denetimi) DAHİL, hepsi zorunlu**: beceri → etkileşim haritalama
+   (`framework_map`, skill §4) · modülü üret + `scripts/validate_module.py` kapıları
+   (G-CURRICULUM + G-VERIFY + G-SVG dahil) +
    `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
    `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
    sözleşmesi `../shared/canonical-cache-contract.md §1`). **`python scripts/validate_module.py

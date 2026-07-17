@@ -279,16 +279,17 @@ lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİ
 | **Connector adı** | `egitim-kaynak` (`.mcp.json`'da bildirilir) |
 | **Endpoint** | `https://egitim-kaynak.cureonics.com/mcp` |
 | **Transport** | `http` (streamable-HTTP MCP, stateless) |
-| **Auth** | **YOK — kasıtlı olarak anahtarsız** (2026-07-17). Ne `.mcp.json` başlığı, ne OAuth, ne kullanıcı secret'ı: connector kutudan çıkar çıkmaz çalışır. Gerekçesi `titck-cache-mcp` emsaliyle aynı: altı aracın tamamı salt-okunur ve korpusun tamamı zaten kamuya açık CC BY-SA içeriği (Vikipedi-TR + Vikikitap) — yetkilendirilecek bir şey yok. Sunucu tarafında `MCP_API_KEY` yok + `MCP_ALLOW_NO_AUTH=1`; **ikisi birden** şart, çünkü anahtarın yalnızca eksik olması yanlış yapılandırmadır (500) — anahtarı unutmak sunucuyu kazara açmaz. Bu modda server-card dürüstçe `authentication.required=false` der ve OAuth uçları 404 döner (aksi hâlde istemci, imzası tanımsız bir OAuth dansına girerdi). Kıyas: yazma yapan `modul-yayin` anahtarlı KALIR. |
+| **Auth** | **YOK — kasıtlı olarak anahtarsız** (2026-07-17). Ne `.mcp.json` başlığı, ne OAuth, ne kullanıcı secret'ı: connector kutudan çıkar çıkmaz çalışır. Gerekçesi `titck-cache-mcp` emsaliyle aynı: altı aracın tamamı salt-okunur ve korpusun tamamı zaten kamuya açık, açık lisanslı içerik (PhET CC BY-NC 4.0 + Vikipedi-TR CC BY-SA 4.0) — yetkilendirilecek bir şey yok. Sunucu tarafında `MCP_API_KEY` yok + `MCP_ALLOW_NO_AUTH=1`; **ikisi birden** şart, çünkü anahtarın yalnızca eksik olması yanlış yapılandırmadır (500) — anahtarı unutmak sunucuyu kazara açmaz. Bu modda server-card dürüstçe `authentication.required=false` der ve OAuth uçları 404 döner (aksi hâlde istemci, imzası tanımsız bir OAuth dansına girerdi). Kıyas: yazma yapan `modul-yayin` anahtarlı KALIR. |
 | **Node** | Pi :8312 (systemd `egitim-kaynak-mcp`); CureoHub `mcp-servers/egitim-kaynak-mcp/`. |
-| **Faz** | **Faz 0 (canlı 2026-07-16):** yalnız BM25/FTS5 + Vikipedi-TR. Embedding/vektör (Faz 1) ve kazanım hizalaması (Faz 2) YOK. |
+| **Faz** | **Faz 1 (canlı 2026-07-17):** BM25/FTS5 **+ vektör yedeği** (`@cf/baai/bge-m3`, Cloudflare Workers AI; korpus kapsaması 1.0). Kaynaklar: Vikipedi-TR + **PhET**. **Faz 2 (kazanım hizalaması) bilinçli olarak KAPALI** → `kb_for_outcome` dürüstçe `alignment_not_built` döner. Canlı sayımlar: 6.352 belge / 32.924 chunk / 2 kaynak (`kb_server_info` ile doğrula — bu tablo değil, sunucu otoritedir). |
+| **Getirme** | **BM25 önce, vektör YEDEK — RRF füzyonu YOK** (2026-07-17'de kaldırıldı: ölçüm hibridi 3/8, saf BM25'i 6/8 verdi; RRF *uzlaşmayı* ödüllendirdiği için gürültülü vektör tarafı doğru cevabı boğuyordu). Vektör yalnız BM25 metin kanıtı bulamayınca konuşur. **`retrieval` adını iki AYRI alan taşır:** `kb_server_info`'daki *sunucu modudur* (`bm25+vector-fallback` / `fts5-bm25`); `kb_search` sonucundaki *o sorguda izlenen yoldur* (`fts5-bm25` / `vector-fallback`). Karıştırmayın. |
 
 ### 9.1 Araç Envanteri (6 salt-okunur araç)
 
 | Araç | Rol |
 |---|---|
-| `kb_search` | Eğitsel korpusta arama → **belge başına EN İYİ pasaj** (`top_k` BELGE sayar). Her sonuç `license` + `quote_allowed` + `match_kind` (`text`/`title_only`) taşır. Sıralama metin-kanıtı önce; `score` ham BM25, listede monoton azalmaz → **yeniden sıralanmaz**. |
-| `kb_for_outcome` | Bir MEB kazanım koduna hizalanmış pasajlar. Faz 0'da dürüstçe `degraded/alignment_not_built` (Faz 2'de gerçek pasaj) — asla sahte hizalama. |
+| `kb_search` | Eğitsel korpusta arama → **belge başına EN İYİ pasaj** (`top_k` BELGE sayar). Her sonuç `license` + `quote_allowed` + `match_kind` taşır; `match_kind` **üç değerli**: `text` (sözlüksel kanıt) > `title_only` > `semantic` (**vektör tahmini** — gövde sorguyu hiç anmayabilir). Sıralama kademe-birincildir; `score` ikincil anahtar ve listede monoton azalmaz → **`score`'a göre yeniden sıralamayın**. `score_kind` (`bm25`/`cosine`) ile hangi ölçek olduğu bildirilir. |
+| `kb_for_outcome` | Bir MEB kazanım koduna hizalanmış pasajlar. **Faz 2 kapalı olduğu için şu an dürüstçe `degraded/alignment_not_built` döner** — asla sahte hizalama. Kazanımdan modül üretirken kazanım metnindeki konuyu `kb_search`'e sorgu verin. |
 | `kb_get` | Bir belgenin tam/kısmi metni (bağlam genişletme; `kb_search` bir pasaj döner, gerisini bununla aç). Bilinmeyen `doc_id` → `not_found`. |
 | `kb_patterns` | Etkileşim/oyunlaştırma desen kartları (Faz 4; şimdilik boş + caveat). |
 | `kb_sources` | Kaynak envanteri: lisans, `quote_allowed`, belge/chunk sayısı. |
@@ -305,5 +306,6 @@ bir kaynaktan birebir uzun alıntı yapılmaz (yalnız öğrenilir); yayın kap�
 
 - **Connector kopuk / anahtar yok:** kb_* araçları görünmez → skill yerleşik bilgiyle devam eder,
   kaynak zenginleştirme atlanır (hard-fail yok, asla uydurma kaynak).
-- **`kb_for_outcome` degraded (Faz 0/1):** `kb_search` ile serbest arama yapılır; hizalama iddia edilmez.
+- **`kb_for_outcome` degraded (Faz 2 kapalı):** `kb_search` ile serbest arama yapılır; hizalama iddia edilmez. Bu bir arıza DEĞİL — hizalama, korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar bilinçli kapalıdır (ölçüm: kazanım↔pasaj kosinüsleri konuyu değil "ikisi de uzun resmî Türkçe"yi ölçüyor → eşik ayarıyla açılamaz).
+- **Embedding ucu düşük / vektörsüz korpus:** her şey saf FTS5-BM25'e (Faz 0 davranışı) düşer; **arama asla embedding yüzünden başarısız olmaz**.
 - **Boş sonuç:** dürüst boş — konunun korpusta yokluğu, konunun yokluğunun kanıtı değildir.

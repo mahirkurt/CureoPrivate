@@ -478,6 +478,22 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
   öğede `code`+`text` var; her `outcomes[].mappedTo` segment id'si `segments[]`'te
   mevcut (kazanım→segment izlenebilirliği); `meta.sourceCitation` kazanım/korpus
   referansı içerir (eksikse uyarı). Tam kural: `references/curriculum-integration.md` §6.
+- **G-VERIFY (koşullu, v3.5.0):** CURRICULUM modunda `verification` bloğu **zorunlu**.
+  Kullanıcı sözleşmesi (2026-07-17): içerik **kapsam** ve **doğruluk/tutarlılık** denetiminden
+  geçmeden canlıya alınmaz. **Yargıyı MODEL yapar, bu kapı YAPIYI denetler** — Python
+  "bilimsel olarak doğru mu" diye karar veremez, ama "her iddianın dayanağı gösterilmiş mi"
+  diye ölçebilir. **Denetler (çevrimdışı, regex — validator'ın MCP erişimi YOKTUR):**
+  `verification` bloğu var; `frame_source` bir `document_id` + `kind` taşıyor;
+  `scope.in_frame` **true** (false → FAIL, yayınlanmaz); `claims[]` boş değil ve **her** öğede
+  `claim`+`grounding`+`verdict` var; dayanaksız (`verdict:"general_knowledge"`) iddia → WARN,
+  çoğunluk öyleyse → FAIL.
+  **DENETLEYEMEDİKLERİ (dürüst sınır, fazla güvenmeyin):** `document_id`'nin gerçekten var
+  olduğunu, `kind:"textbook"` yazan belgenin `page_count>0` olduğunu, iddianın o sayfada
+  geçtiğini ve iddianın DOĞRU olduğunu **bu kapı doğrulayamaz** — hiçbiri çevrimdışı
+  ölçülemez. Kapı yalnız *dayanağın gösterildiğini* kanıtlar; **doğruluk yargısı modelindir
+  ve insan denetimine tabidir.** Kapının değeri şudur: iddiayı yazmak, dayanağını yazmayı
+  zorunlu kılar — "kontrol ettim" tiyatrosu yapısal olarak imkânsızlaşır.
+  Tam kural: `references/curriculum-integration.md` §6.1.
 - **G-TOKEN (v2.0.0):** Tema bloklarındaki `--cds-*` değerleri gömülü
   `@carbon/themes@11.75.0` otorite haritasına (≈19 token × White/G100) karşı
   denetlenir. Sapma = **WARN**; White temada `--cds-support-info:#4589ff` =

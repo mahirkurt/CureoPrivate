@@ -24,9 +24,13 @@ komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
    Yoksa `tier2_status: unavailable` (yalnız Tier-1).
 
 4. **Eğitim Kaynak RAG (`egitim-kaynak`) sağlığı:** `kb_server_info` çağır. Yanıt verirse
-   **canlı** — faz (`phase`), getirme yöntemi (`retrieval`: `hybrid` = BM25+vektör RRF,
-   `fts5-bm25` = embedding kapalı/yok), `embedding_model`, hizalama durumu (`alignment_built`)
-   ve korpus sayımlarını (`stats`: `chunk_count`, `vector_count`, `source_count`) raporla.
+   **canlı** — faz (`phase`), getirme **modu** (`retrieval`: `bm25+vector-fallback` = vektör
+   yedeği devrede, `fts5-bm25` = embedding kapalı/yok), `embedding_model`, hizalama durumu
+   (`alignment_built`) ve korpus sayımlarını (`stats`: `chunk_count`, `vector_count`,
+   `source_count`, `vector_coverage`) raporla. **Dikkat — `retrieval` adını iki farklı alan
+   taşır ve değer kümeleri AYRIDIR:** burada `kb_server_info`'nunki *sunucunun modudur*
+   (`bm25+vector-fallback` / `fts5-bm25`); `kb_search` sonucundaki ise *o sorguda gerçekten
+   izlenen yoldur* (`fts5-bm25` / `vector-fallback`). Birini diğerinin değeriyle raporlamayın.
    Yoksa **bağlı değil** → modül üretimi yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır
    (asla uydurma kaynak). **`alignment_built: false` iken `kb_for_outcome` dürüstçe
    `alignment_not_built` döner** — kazanım hizalaması, korpus müfredat konularını kapsayana +

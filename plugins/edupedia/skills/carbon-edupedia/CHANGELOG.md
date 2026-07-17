@@ -2,6 +2,35 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.4.0] — 2026-07-17
+
+### Eklendi — G-VERIFY: kapsam + doğruluk denetimi yayın koşulu oldu (14. kapı)
+
+Kullanıcı sözleşmesi: içerik, (a) müfredat/ders kitabı çerçevesinin **içinde** olduğu ve
+(b) bilimsel/eğitsel olarak **doğru-tutarlı** olduğu denetlenmeden canlıya alınmaz. Denetim
+**otomatiktir** ve plugin'i kullanan model yapar.
+
+**Tasarım gerilimi ve çözümü:** Python "bilimsel olarak doğru mu" diye karar veremez; modelin
+"denetledim" beyanına da güvenilemez — biçim kapılarında sunucunun istemci beyanını yok
+saymasının sebebi tam olarak budur (3.3.0). Çözüm: **yargıyı MODEL yapar, yapıyı KAPI
+denetler.** Modül, her olgusal iddianın hangi ders kitabı sayfasına dayandığını gösteren bir
+`verification` bloğu taşır; kapı her iddianın dayanağının GÖSTERİLDİĞİNİ ölçer. Dayanaksız
+iddia, `scope.in_frame:false`, veya blok yokluğu → FAIL.
+
+**Kapının denetleyemedikleri (fazla güvenmeyin):** validator çevrimdışıdır, MCP erişimi
+yoktur → `document_id`'nin gerçek olduğunu, iddianın o sayfada geçtiğini ve iddianın DOĞRU
+olduğunu doğrulayamaz. Yalnız dayanağın gösterildiğini kanıtlar. **Tiyatroyu imkânsız kılar,
+doğruluğu garanti etmez**; doğruluk yargısı modelin ve insan denetimine tabidir.
+
+Ayrıca: **ders kitabı artık BİRİNCİL içerik.** "Ders kitapları metin döndürmez" yanlış bir
+inançtı — ölçüldü: 105 kitabın 103'ü tam metin indeksli. Adım 0 sınıf+dersi MCP'den doğrular
+(kod string'inden ÇIKARMAZ), Adım 2.5 kitabı açar ve çerçeveyi o metin çizer, Adım 3'te
+kitabın kendi figürleri öncelikli (yazar-SVG yedeğe indi).
+
+Kapı sayısı 13 → **14**. `services/edupedia_site` vendor kopyası + `_GATE_FUNCS` demeti
+senkronlandı (kapı yalnız kaynağa eklenip sunucuya bağlanmazsa SESSİZCE koşmaz — ölçüldü ve
+`check_gates_drift.py` artık bunu yakalıyor).
+
 ## [3.3.0] — 2026-07-14
 
 ### Değiştirildi — Kapı otoritesi yayın sunucusuna taşındı; `--json` artık isteğe bağlı ön-kontrol

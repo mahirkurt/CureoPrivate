@@ -30,6 +30,9 @@ Kapılar:
     G-AUDIO         (FAIL) — ses varsa: susturulabilir + reduced-motion + otomatik-oynatma/döngü yok
     G-TOKEN         (WARN) — çekirdek --cds-* değerleri @carbon/themes otoritesiyle birebir; white support-info regresyonu FAIL
     G-CURRICULUM    (FAIL) — koşullu: CURRICULUM modu/curriculum bloğu varsa kazanım→segment izlenebilirliği
+    G-VERIFY        (FAIL) — koşullu: müfredat-temelli modülde kapsam+doğruluk denetiminin KAYDI
+                    (her iddia dayanağıyla). Yargı modelin; kapı yalnız dayanağın GÖSTERİLDİĞİNİ
+                    ölçer — doğruluğu, belgenin varlığını, sayfayı DOĞRULAYAMAZ (MCP erişimi yok)
     G-FLOW          (FAIL) — koşullu: gamification imzası varsa merak-boşluğu kapanışı, gain-only streak,
                     kaygısız pacingDisk, etiketlemeyen uyarlanır zorluk
     G-CARBON-GRID   (FAIL) — statik kartta (gerçek/non-inset) drop-shadow (layer-elevation ihlali);
@@ -503,6 +506,88 @@ def gate_curriculum(html, R):
         R.add("G-CURRICULUM","PASS",
               f"{len(codes)} kazanım segmente izlenebilir; kaynak damgalı.")
 
+def _verify_collect(block):
+    """`verification` bloğundan sinyalleri toplar. (gate_verify'ı sade tutmak için ayrıldı.)
+
+    Döndürür: (has_doc, in_frame, n_claims, n_grounded, n_general)
+    """
+    has_doc = bool(re.search(r'frame_source\s*:\s*\{[^}]*\bdocument_id\s*:\s*\d+', block, re.S))
+    in_frame_m = re.search(r'\bin_frame\s*:\s*(true|false)', block)
+    in_frame = (in_frame_m.group(1) == "true") if in_frame_m else None
+    # Her claim öğesi kendi `claim:` anahtarıyla başlar; dayanağı aynı öğe içinde aranır.
+    claims = re.findall(r'\bclaim\s*:\s*["\'](.*?)["\']\s*,(.*?)(?=\bclaim\s*:|\]\s*\n|\Z)',
+                        block, re.S)
+    n_claims = len(claims)
+    n_grounded = sum(1 for _, tail in claims if re.search(r'\bgrounding\s*:\s*\{', tail))
+    n_general = sum(1 for _, tail in claims
+                    if re.search(r'verdict\s*:\s*["\']general_knowledge["\']', tail))
+    return has_doc, in_frame, n_claims, n_grounded, n_general
+
+
+def _verify_eval(has_doc, in_frame, n_claims, n_grounded, n_general):
+    """Saf karar mantığı → (issues, warns)."""
+    issues = []; warns = []
+    if not has_doc:
+        issues.append("verification.frame_source bir document_id taşımıyor "
+                      "(çerçeveyi hangi belge çizdi?)")
+    if in_frame is None:
+        issues.append("verification.scope.in_frame yok")
+    elif not in_frame:
+        issues.append("scope.in_frame:false — içerik müfredat/ders kitabı çerçevesinin "
+                      "DIŞINDA; yayınlanamaz")
+    if n_claims == 0:
+        issues.append("verification.claims[] boş — her olgusal iddia dayanağıyla listelenmeli")
+    elif n_grounded < n_claims:
+        issues.append(f"{n_claims} iddiadan {n_claims - n_grounded} tanesinde `grounding` yok "
+                      "(dayanaksız iddia geçemez)")
+    if n_claims and n_general:
+        ratio = n_general / n_claims
+        msg = (f"{n_general}/{n_claims} iddia `general_knowledge` — ders kitabına dayanmıyor")
+        if ratio > 0.5:
+            issues.append(msg + "; çoğunluk dayanaksız")
+        else:
+            warns.append(msg + "; kaynağını bul ya da çıkar")
+    return issues, warns
+
+
+def gate_verify(html, R):
+    """G-VERIFY (koşullu): kapsam + doğruluk denetiminin KAYDI var mı.
+
+    Kullanıcı sözleşmesi (2026-07-17): içerik, (a) müfredat/ders kitabı çerçevesinin içinde
+    olduğu ve (b) bilimsel/eğitsel olarak doğru-tutarlı olduğu denetlenmeden canlıya alınmaz.
+
+    YARGIYI MODEL YAPAR — Python "bilimsel olarak doğru mu" diye karar veremez. Bu kapı YAPIYI
+    denetler: her iddianın dayanağı GÖSTERİLMİŞ mi. Değeri şudur: iddiayı yazmak dayanağını
+    yazmayı zorunlu kılar, yani "denetledim" demek ucuzken "şu sayfada geçiyor" demek
+    kontrol edilebilir hâle gelir.
+
+    DENETLEYEMEZ (fazla güvenmeyin): document_id'nin gerçek olduğunu, kind:"textbook" yazan
+    belgenin page_count>0 olduğunu, iddianın o sayfada geçtiğini, iddianın DOĞRU olduğunu —
+    hiçbiri çevrimdışı ölçülemez (validator'ın MCP erişimi yok, G-CURRICULUM gibi salt-metin).
+    Doğruluk yargısı modelin ve insan denetimine tabidir.
+    """
+    is_curr_mode = bool(re.search(r'\bmode\s*:\s*["\']CURRICULUM["\']', html))
+    has_curr_block = bool(re.search(r'\bcurriculum\s*:\s*\{', html))
+    if not is_curr_mode and not has_curr_block:
+        R.add("G-VERIFY", "PASS", "Müfredat-temelli modül değil (uygulanmaz).", applicable=False)
+        return
+    block_m = re.search(r'verification\s*:\s*\{(.*?)\n\s*\}\s*,?\s*\n', html, re.S)
+    if not block_m:
+        R.add("G-VERIFY", "FAIL",
+              "Müfredat-temelli modül ama `verification` bloğu yok; kapsam + doğruluk "
+              "denetiminin kaydı zorunlu (references/curriculum-integration.md §6.1).")
+        return
+    issues, warns = _verify_eval(*_verify_collect(block_m.group(1)))
+    if issues:
+        R.add("G-VERIFY", "FAIL", "; ".join(issues))
+    elif warns:
+        R.add("G-VERIFY", "WARN", "; ".join(warns))
+    else:
+        R.add("G-VERIFY", "PASS",
+              "Kapsam içi; her olgusal iddia dayanağıyla kayıtlı. "
+              "(Kapı dayanağın GÖSTERİLDİĞİNİ kanıtlar, doğruluğunu değil.)")
+
+
 FLOW_LOSS_RE = re.compile(r"(seri(n|ni)?\s*(kaybett|sıfırla|bozdu)|kaybettin|streak\s*lost|başarısız oldun)", re.I)
 FLOW_LABEL_RE = re.compile(r"(zorlan[ıi]yorsun|çok kolay geliyor|seviyen düştü)", re.I)
 def gate_flow(html, R):
@@ -590,6 +675,7 @@ def main():
     gate_audio(html,R)
     gate_token_authority(html,R)
     gate_curriculum(html,R)
+    gate_verify(html,R)
     gate_flow(html,R)
     gate_carbon_grid(html,R)
 

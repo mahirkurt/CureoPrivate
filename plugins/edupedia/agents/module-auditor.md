@@ -50,7 +50,7 @@ hedefli parçalar çek (tüm dosyayı context'e almak zorunda değilsin — bkz.
 
 ## Yürütme sözleşmesi — dört denetim ekseni
 
-### 1. Validator (13 kapı, deterministik)
+### 1. Validator (14 kapı, deterministik)
 
 Deterministik script her zaman **önce** çalışır; onun bulguları senin yargından önce
 gelir ve senin katmanın yalnız **ekler**, geçersiz kılmaz.
@@ -59,7 +59,7 @@ gelir ve senin katmanın yalnız **ekler**, geçersiz kılmaz.
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/carbon-edupedia/scripts/validate_module.py" <module.html>
 ```
 
-13 kapının tamamını (G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
+14 kapının tamamını (G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
 G-WELLBEING, G-SVG, G-AUDIO, G-TOKEN, G-CURRICULUM — koşullu, G-FLOW — koşullu,
 G-CARBON-GRID) satır satır raporla: her FAIL **Kritik**, her WARN en az **Önemli**
 (bağlama göre Küçük'e indirilebilir, ama gerekçelendir). Script'in `PASS` dediği bir

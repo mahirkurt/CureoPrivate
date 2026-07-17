@@ -16,12 +16,17 @@ import os
 import re
 import sys
 
+from _signals import has_record_locator
+
 # Substantif araştırma-modu çıktısının imzası (en az bir güçlü sinyal).
+# NOT: eskiden burada üçüncü bir "zayıf" sinyal vardı (`\bfon[/\s]|gömlek|BOA\b|BCA\b|devarsiv`)
+# ve çıplak isim geçişine ateşliyordu — devlet-arsivleri MCP'sinin KENDİ KODU üzerinde çalışmak
+# (araç adları, env değişkenleri, fixture'lar) her turda "manifesto eksik" hatası veriyordu.
+# Kaldırıldı; yerine aşağıdaki fallback gerçek bir KAYIT YERİ arar (bkz. _signals.py).
 MODE_SIGNALS = [
     re.compile(r"\b(SOURCE_HUNT|ARCHIVE_DEEP_DIVE|PROSOPOGRAPHY|EVENT_RECONSTRUCTION|"
                r"HISTORIOGRAPHY|ACADEMIC_REPORT|KANUN_GEREKÇES[İI])\b"),
     re.compile(r"kaynak matris", re.IGNORECASE),
-    re.compile(r"\bfon[/\s]|gömlek|BOA\b|BCA\b|devarsiv", re.IGNORECASE),
 ]
 # Birden fazla connector adının geçmesi de substantif-çıktı sinyalidir (tekil connector sohbeti değil).
 CONNECTOR_MENTIONS = re.compile(
@@ -100,11 +105,18 @@ def main():
     if not text:
         sys.exit(0)
 
-    # Substantif araştırma-çıktısı mı? (mod sinyali VEYA ≥2 farklı connector anması)
+    # Substantif araştırma-çıktısı mı?
+    #   (a) açık mod bildirimi / kaynak matrisi → kesin sinyal (bulgusuz taramayı da yakalar), VEYA
+    #   (b) ≥2 farklı connector anması VE somut bir arşiv KAYIT YERİ → bulgu sunan tarama.
+    # (b)'deki kayıt-yeri şartı olmadan iki connector ADININ yan yana geçmesi yetiyordu; bu,
+    # filo hakkında KOD/PLAN konuşmasını (mevzuat+tbmm+devarsiv anmak) araştırma sanıyordu.
+    # Bilinçli takas: mod bildirmeyen VE hiç künye içermeyen bir tarama artık kaçar. Bu dar
+    # boşluk kabul edilebilir — SKILL zaten mod bildirimini zorunlu kılıyor, ve her turda
+    # ateşleyen bir kapı yok sayılmayı öğretir ki bu invaryantın TAMAMEN kaybıdır.
     mode_hit = any(sig.search(text) for sig in MODE_SIGNALS)
     connector_hits = len(set(m.lower() for m in CONNECTOR_MENTIONS.findall(text)))
-    if not (mode_hit or connector_hits >= 2):
-        sys.exit(0)  # hafif/sohbet turu → sessiz
+    if not (mode_hit or (connector_hits >= 2 and has_record_locator(text))):
+        sys.exit(0)  # hafif/sohbet/mühendislik turu → sessiz
 
     missing = []
     if not (HAS_MANIFEST.search(text) and HAS_STATUS_ROWS.search(text)):

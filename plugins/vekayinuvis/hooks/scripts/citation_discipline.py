@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """vekayinuvis Stop hook — arşiv atıf-disiplini + no-fabrication bütünlük kapısı.
 
-Bir çıktı arşiv belgesine atıfta bulunuyorsa (BOA/BCA/fon kodu/gömlek/devarsiv/katalog),
+Bir çıktı somut bir arşiv KAYDINA atıfta bulunuyorsa (fon + kutu/gömlek künyesi, çözülmüş
+BelgeGoster derin-bağlantısı veya arşiv referans kodu — bkz. `_signals.has_record_locator`;
+çıplak isim geçişi atıf SAYILMAZ),
 SKILL §6 gereği (a) fon/kutu/gömlek kayıt yapısı ve (b) orijinal takvim + Miladî **çift-tarih**
 taşımalıdır; devlet-arsivleri-doğrulanmış kayıtlarda katalog URL'i dipnota eklenmelidir. Bu hook
 son asistan mesajını inceler: arşiv-atıf imzası varsa AMA çift-tarih disiplini görünmüyorsa, turu
@@ -16,15 +18,7 @@ import os
 import re
 import sys
 
-# Arşiv-belge atıf imzası (en az bir güçlü sinyal → arşiv-atıf bağlamı say).
-ARCHIVE_SIGNALS = [
-    re.compile(r"\b(BOA|BCA)\b"),
-    re.compile(r"\bgömlek\b", re.IGNORECASE),
-    re.compile(r"devarsiv|katalog\.devletarsivleri|BelgeGoster", re.IGNORECASE),
-    re.compile(r"\b(HAT|BEO|MV|ŞD|DH\.[A-ZÇĞİÖŞÜ]{1,4}|A\.MKT|İ\.[A-ZÇĞİÖŞÜ]{2,4}|Y\.[A-ZÇĞİÖŞÜ]{1,4})\b"),
-    re.compile(r"\b030\.\d{2}\b"),  # BCA fon (ör. 030.10)
-    re.compile(r"Sicill-i\s+Ahval|DH\.SAİD", re.IGNORECASE),
-]
+from _signals import has_record_locator
 # Çift-tarih disiplini (orijinal takvim + Miladî). Parantez içi 4-haneli yıl / "Miladî" / "M. YYYY".
 HAS_DOUBLE_DATE = re.compile(r"\(\s*(M\.\s*)?\d{3,4}\s*\)|\bMil[aâ]dî?\b|\bM\.\s*\d{3,4}\b", re.IGNORECASE)
 # devlet-arsivleri kaydı imzası → katalog URL'i beklenir.
@@ -35,10 +29,15 @@ IMAGE_OR_OCR_CLAIM = re.compile(
     r"belge\s+(görüntüsü|goruntusu|taraması|taramasi)|\bOCR\b|\bHTR\b|transkripsiyon",
     re.IGNORECASE,
 )
+# Provenance = GERÇEK araç izi ya da adı geçen bir motor. Jenerik kelimeler (page/engine/
+# canvas) tek başına provenance DEĞİLDİR: 'page 3 diyor' bir kanıt değil, uydurma bir
+# okumanın kılığıdır. Motor adları ocr.ENGINES ile hizalıdır; 'model 56496' geriye dönük
+# korunur (eski raporlar o provenance'ı taşıyor) ama tek başına yeterli değildir.
 HAS_IMAGE_OR_OCR_PROVENANCE = re.compile(
-    r"devarsiv_get_belge_image|devarsiv_ocr_belge|devarsiv_ocr_belge_pages|"
+    r"devarsiv_get_belge_image|devarsiv_ocr_image|devarsiv_ocr_belge(?:_pages)?|"
     r"ocr_archive_pages|ocr_submit|ocr_result|job_id|get_archive_page|get_archive_pdf|"
-    r"mean_confidence|engine|Transkribus|model\s*56496|image[_-]?url|canvas|page",
+    r"mean_confidence\s*[=:]|engine\s*[=:]|engine_chain|model\s*56496|"
+    r"\b(?:transleyt|transkribus|escriptorium|tesseract)\b",
     re.IGNORECASE,
 )
 
@@ -87,8 +86,9 @@ def main():
     if not text:
         sys.exit(0)
 
-    # Arşiv-atıf bağlamı yoksa sessiz.
-    if not any(sig.search(text) for sig in ARCHIVE_SIGNALS):
+    # Somut bir arşiv KAYDINA atıf yoksa sessiz. İsim geçişi (araç adı, env değişkeni,
+    # test fixture'ı, dosya yolu) atıf değildir — bkz. _signals.py tasarım kuralı.
+    if not has_record_locator(text):
         sys.exit(0)
 
     issues = []

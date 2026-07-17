@@ -42,7 +42,7 @@ Büyük bir belgeyi **asla** kör (`max_chars` limitsiz / tam PDF) getirme. Prot
 1. **Önce yapısal navigasyon** (hafif): katalog araması (`devarsiv_search` → künye), IIIF manifest metadata (`ottoman_fetch_iiif_manifest` → canvas listesi), tez sayfa dizini (`get_yok_tez_thesis_details`) ile hedefi LOKALİZE et.
 2. **Yalnız hedef parçayı çek:** `ottoman_search_within_manifest` (belge içi arama) · `get_yok_tez_document_markdown(page)` (sayfa-bazlı) · DergiPark makalesinin ilgili bölümü. Belge_url yalnız referans olarak taşınır — tam görüntü/PDF ana pencereye çekilmez.
 3. **Tam-metin gerekiyorsa** (transkripsiyon analizi, tarihyazımı sentezi, tam rapor): Tier 2 `anamnesis`'e ingest → bounded query. Kanonik doc_id ile bölüm-düzeyi getirim; tam konsolide metni ana pencereye çekme.
-4. **Taranmış/OCR gerektiren nüsha:** IIIF görüntü → (opt-in) eScriptorium HTR → çıktı > eşik ise anamnesis'e ingest.
+4. **Taranmış/OCR gerektiren nüsha:** IIIF görüntü → `devarsiv_ocr_image` (Transleyt varsayılan, ölçülen en iyi okuyucu) → çıktı > eşik ise anamnesis'e ingest. eScriptorium yalnız matbu korpus taraması içindir.
 
 ## 5. Bağlam bütçesi + devre-kesici
 

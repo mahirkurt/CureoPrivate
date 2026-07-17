@@ -168,7 +168,7 @@ Uzman ALTO transkripsiyonu taşıyan 6 Osmanlıca rik'a/divanî yazma sayfası; 
 | Motor | CER (ort.) | rik'a | Rol |
 | --- | ---: | ---: | --- |
 | **Transleyt** | **0.230** | **0.130** | **Osmanlı varsayılanı** (`DEVARSIV_OTTOMAN_ENGINE=transleyt`) |
-| **Asistan görüsü** | — | **0.154** | Transleyt'e denk, **bağımsız** → uzlaştırma ortağı |
+| **Asistan görüsü** | 0.229 | **0.154** | Transleyt'e denk, **bağımsız** → uzlaştırma ortağı |
 | eScriptorium | 0.479 | 0.255 | bedava → keşif taraması |
 | Transkribus 429513 | 0.782 | 0.663 | kullanılamaz |
 | tesseract | — | — | Osmanlıca gövdede **sıfır** (yalnız damga/referans kodu) |

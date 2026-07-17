@@ -219,7 +219,7 @@ yerel arşiv akışından yapılır (300 DPI, temsilî önizlemeden daha yüksek
 `devarsiv_ocr_belge` / `devarsiv_ocr_archive_pages` / `devarsiv_ocr_submit` aynı
 `engine` parametresini paylaşır:
 
-`engine`: `auto` (Osmanlı→`both`, diğerleri→`tesseract`) | `both` | `transkribus` |
+`engine`: `auto` (Osmanlı→`transleyt`, diğerleri→`tesseract`) | `both` | `transkribus` |
 `escriptorium` | `tesseract`.
 
 **Osmanlı varsayılanı `transleyt`** (ölçülen en iyi okuyucu; en doğru okuma Transleyt +
@@ -266,7 +266,7 @@ Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` →
 **Kanonik okuma akışı:**
 ```
 devarsiv_search / semantic_search → item_id + hash
-  ├─ devarsiv_ocr_belge(item_id, hash, arsiv, engine=…)   → deterministik metin (Latin tam; Osmanlı damga+kod; el yazması → both)
+  ├─ devarsiv_ocr_belge(item_id, hash, arsiv, engine=…)   → deterministik metin (Latin tam; Osmanlı damga+kod; el yazması → transleyt)
   └─ devarsiv_get_belge_image(item_id, hash, arsiv) → tarama görüntüsü:
         · Cumhuriyet/Latin: OCR metnini görsel doğrula
         · Osmanlı EL YAZMASI: **Transleyt (varsayılan) + asistan görüsü uzlaştırması** (ikisi denk ve bağımsız)

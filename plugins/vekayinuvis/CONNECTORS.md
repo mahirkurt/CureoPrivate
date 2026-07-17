@@ -49,13 +49,13 @@ varsayılanın kendisidir (tam roster bundled).
 
 | Sunucu adı | Transport | URL | Rol | Kimlik doğrulama |
 |---|---|---|---|---|
-| `ottoman-archives` | http | `https://ottoman.cureonics.com/mcp` | 33-kaynaklı Osmanlı arşiv keşfi + IIIF tam-metin + Hicri/Rumî/Miladi çevirici + ebced + eScriptorium HTR + TDV İslâm Ansiklopedisi | HP self-host — `/mcp` Bearer (`${OTTOMAN_ARCHIVES_MCP_API_KEY}`) |
+| `ottoman-archives` | http | `https://ottoman.cureonics.com/mcp` | 33-kaynaklı Osmanlı arşiv keşfi + IIIF tam-metin + Hicri/Rumî/Miladi çevirici + ebced + eScriptorium matbu-korpus HTR + TDV İslâm Ansiklopedisi | HP self-host — `/mcp` Bearer (`${OTTOMAN_ARCHIVES_MCP_API_KEY}`) |
 | `devlet-arsivleri` | http | `https://devarsiv.cureonics.com/mcp` | **Resmî Devlet Arşivleri kataloğu** (Osmanlı/BOA · Cumhuriyet/BCA · Dışişleri Diplomatik · Askeri Tarih) — doğrudan **fon/kutu/gömlek katalog araması** + belge künyesi; `katalog.devletarsivleri.gov.tr`'yi sarar | HP self-host, `/mcp` Bearer (`${DEVARSIV_MCP_API_KEY}`) — **tek-cihaz oturum kilitli** (HP'de kalıcı authenticated tarayıcı) |
 | `yoktez` | http | `https://yoktezmcp.fastmcp.app/mcp` | YÖK Ulusal Tez Merkezi — tahrir/mühimme/şer'iye sicili transkripsiyon tezleri, anabilim dalı bazlı arama | FastMCP host — gerekirse `/mcp` OAuth akışı |
 
 **Ottoman Archives yetenek katmanları** (skill § 3.1): A. Kaynak Keşfi ·
 B. Tam-Metin Arama · C. Belge/Metin Çekme · D. Hesaplama/Yardımcı (tarih, ebced,
-defter şeması) · E. HTR Pipeline (opt-in eScriptorium).
+defter şeması) · E. Matbu-korpus boru hattı (opt-in eScriptorium; el yazması motoru değil).
 
 **Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog — 22 araç, 6 grup**):
 

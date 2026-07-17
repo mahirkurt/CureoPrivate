@@ -49,7 +49,7 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
 
 **Çekirdek katman (süitin omurgası — `.mcp.json`'da bundled):**
 - `ottoman-archives` — 33-kaynaklı arşiv keşfi + IIIF tam-metin + Hicri/Rumî/
-  Miladi çevirici + ebced + eScriptorium HTR + TDV İslâm Ansiklopedisi ·
+  Miladi çevirici + ebced + eScriptorium matbu-korpus HTR + TDV İslâm Ansiklopedisi ·
   *pre-flight zorunlu* (yoksa çekirdek işlev devre dışı)
 - `devlet-arsivleri` — **resmî Devlet Arşivleri kataloğu** (Osmanlı/BOA · Cumhuriyet/
   BCA · Diplomatik · Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi +

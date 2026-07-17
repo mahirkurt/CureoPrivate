@@ -75,10 +75,14 @@ Bağlıysa modül üretiminde **`kb_search(konu)`** ile tamamlayıcı materyal �
 - *Vikikitap 2026-07-17'de DÜŞÜRÜLDÜ* — 1.099 madde / **9 aktif editör**; bir wiki'nin
   güvenilirliği editör sayısından gelir.
 
-**Getirme:** hibrit — BM25 ⊕ vektör (RRF füzyonu), `nomic-embed-text`. Sonuçlar `retrieval`
-(`hybrid`/`fts5-bm25`), `score_kind` (`rrf`/`bm25`) ve her pasajda `license`/`quote_allowed`
-taşır; sıralamada metin/anlam kanıtı olanlar yalnız-başlık eşleşmelerinin üstündedir —
-**`score`'a göre yeniden sıralamayın**. Sorgu 512 karakterde kesilir (`query_truncated`).
+**Getirme: BM25 önce, vektör YEDEK** (RRF füzyonu 2026-07-17'de kaldırıldı — ölçüm hibridi
+3/8, saf BM25'i 6/8 verdi; RRF *uzlaşmayı* ödüllendirdiği için gürültülü vektör tarafı doğru
+cevabı boğuyordu). Vektör yalnız BM25 metin kanıtı bulamayınca konuşur (`bge-m3`, Cloudflare
+Workers AI). Sonuçlar `retrieval` (**gerçekte izlenen yol**: `fts5-bm25` / `vector-fallback`),
+`score_kind` (`bm25`/`cosine`) ve her pasajda `license`/`quote_allowed` taşır; `match_kind`
+üç değerli: `text` (sözlüksel kanıt) > `title_only` > `semantic` (**vektör tahmini** — gövde
+sorguyu anmayabilir). Sıralama kademe-birincildir → **`score`'a göre yeniden sıralamayın**.
+Sorgu 512 karakterde kesilir (`query_truncated`).
 
 **`kb_for_outcome` HENÜZ KURULMADI** (dürüstçe `alignment_not_built` döner, asla uydurma hizalama):
 kazanım-hizalaması, korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar
@@ -100,7 +104,7 @@ bloke olmadığını söyleyin.
 
 | Bileşen | Ne Yapar |
 |---|---|
-| **carbon-edupedia** (flagship skill) | 8 mod, 13 kalite kapısı (yayında SUNUCU ölçer) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
+| **carbon-edupedia** (flagship skill) | 8 mod, 14 kalite kapısı (yayında SUNUCU ölçer) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
 | **start** (bu skill) | Oryantasyon + connector kontrolü + niyet→komut yönlendirme |
 
 ## Adım 4 — Komutları Tanıt

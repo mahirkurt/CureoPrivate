@@ -118,8 +118,8 @@ Araçlar dört işlevsel kümeye ayrılır. **Çoğu modül için 3–6 çağrı
 |---|---|---|
 | `list_document_kinds` | Belge türleri + sayıları | `list_documents` öncesi tür keşfi |
 | `list_documents` | Her tür belge (program/textbook/guide/material/...) | İlgili materyal/farklılaştırma belgesi bulma |
-| `get_document_text` | Belge sayfa metni (`page` / `page_range`, maks 25 sayfa). **Ders kitapları metin döndürmez → `pdf_url`** | Program/kılavuz metnini kaynak olarak çekme |
-| `list_textbooks` | Ders kitabı kataloğu (pdf_url) | Kaynak ders kitabını referanslama |
+| `get_document_text` | Belge sayfa metni (`page` / `page_range`, maks 25 sayfa). **DERS KİTAPLARI DA TAM METİN DÖNER** — aşağıdaki düzeltmeye bakın | **Ders kitabı gövdesini BİRİNCİL içerik olarak okuma**; program/kılavuz metni |
+| `list_textbooks` | Ders kitabı kataloğu — `subject`+`grade` filtreli; her satırda **`page_count`** | Hedef ders+sınıfın kitabını bulma (kitabın KENDİSİ içeriktir, yalnız atıf değil) |
 | `list_guides` / `list_reports` | Kılavuz / TYMM rapor belgeleri | Pedagojik kılavuz desteği |
 | `list_videos` / `get_video` | Eğitim/tanıtım videoları | Opsiyonel görsel kaynak referansı (modüle gömülmez; atıf) |
 
@@ -166,9 +166,29 @@ ders+sınıf+konu mu ("5. sınıf fen, hücre")? Koddan ders/sınıf/ünite çı
   Kavramlar bloklarını) seç.
 - Kullanıcı kod verdiyse: aynı araçla kodu doğrula + tam metni al.
 
-**Adım 3 — (Opsiyonel) Program/içerik metnini çek.** Anahtar kavramlar veya
-ünite bağlamı gerekiyorsa `get_curriculum_program` veya `get_document_text`
-(program belgesi id'si + sayfa aralığı). Bu, kaynak-sadakatini güçlendirir.
+**Adım 3 — ÇERÇEVEYİ ÇİZ: ders kitabını AÇ (ZORUNLU, opsiyonel değil).**
+
+> ### ⚠️ Eski bu belgede yazan "ders kitapları metin döndürmez" İDDİASI YANLIŞTI
+> Ölçüldü (2026-07-17, canlı korpus): **105 ders kitabının 103'ü tam metin indekslidir.**
+> `list_textbooks` her satırda `page_count` verir; `page_count > 0` olan her kitap için
+> `get_document_text(document_id, page_range=…)` **gerçek sayfa metnini** döndürür — kazanım
+> kodları, kavramsal beceriler, değerler, İÇERİK ÇERÇEVESİ blokları dahil. Yalnız `page_count=0`
+> olan 2 kitap (Multi English 5 (1), Tarih 10) `pdf_url` notuna düşer.
+> O yanlış iddia yüzünden elimizdeki **en otoriter kaynak** hiç açılmıyordu.
+
+1. `list_textbooks(subject=<slug>, grade=<sınıf>)` → hedef ders+sınıfın kitabını bul.
+   Birden çok cilt olabilir ("1.Kitap"/"2.Kitap") — konunun geçtiğini bulana kadar bak.
+2. `search(q=<konu>)` veya `search_figures(query=<konu>, subject=…)` ile konunun **hangi
+   sayfada** olduğunu tespit et (figür sonuçları `page_no` verir — en ucuz sayfa bulucu).
+3. `get_document_text(document_id, page_range="112-120")` → **çerçeveyi bu metin çizer**:
+   hangi kavramlar var, hangi derinlikte, hangi sırayla, hangi örneklerle.
+4. `page_count = 0` ise (yalnız 2 kitap) veya ders+sınıf için kitap yoksa: **öğretim
+   programına düş** (`get_curriculum_program` / `get_document_text`) ve bunu modülün
+   `verification.frame_source` alanında **dürüstçe** belirt — asla "ders kitabına dayandı" deme.
+
+**Çerçeve, üretimin sınırıdır (§6.1 Kapsam kapısı):** bu metinde/programda yer almayan bir
+konuyu modüle KOYMA. Kitap "hücre zarı, sitoplazma, çekirdek" diyorsa mitokondri iç zar
+kıvrımlarını anlatma — doğru olsa bile **o sınıfın çerçevesi dışındadır**.
 
 **Adım 4 — Beceri çerçevesini haritala.** Her hedef kazanımın **üst-fiilini**
 çıkar (örn. "karşılaştırabilme"). `get_framework("beceriler/kavramsal-beceriler")`
@@ -305,6 +325,75 @@ const MODULE_DATA = {
   işaret eder; bu id'ler `segments[]`'te bulunmalı (G-CURRICULUM bunu denetler).
 - `skill` alanı §4 haritalamasını belgeler (insan-okunur; zorunlu değil ama önerilir).
 - Blok yoksa modül normal çalışır; CURRICULUM modunda blok **zorunludur**.
+
+## 6.1 KAPSAM + DOĞRULAMA kapısı — `verification` bloğu (v3.5.0)
+
+Kullanıcı sözleşmesi (2026-07-17): *"üretilen içeriklerin doğruluk ve tutarlılık denetimi
+yapılmadan canlıya alınmamalı"*, iki eksende: **(a) kapsam** — içerik müfredat/ders kitabının
+çizdiği çerçevenin içinde mi; **(b) doğruluk** — bilimsel/eğitsel olarak doğru-geçerli ve
+tutarlı mı.
+
+### Yargıyı MODEL yapar, yapıyı KAPI denetler
+
+Bu ayrım pazarlık konusu değil. Python "bilimsel olarak doğru mu" diye karar veremez; bir kapı
+ancak **kaydın var ve eksiksiz olduğunu** ölçebilir. Tersine, modelin "denetledim" beyanına da
+güvenilemez — bu kod tabanının biçim kapılarında sunucunun istemci beyanını yok saymasının
+sebebi tam olarak budur.
+
+Çözüm: modül, her olgusal iddianın **hangi ders kitabı sayfasına dayandığını** gösteren bir
+`verification` bloğu taşır. Model yargılar; kapı, her iddianın bir dayanağı olduğunu ve
+dayanakların gerçek belge/sayfaya çözüldüğünü denetler. **Dayanaksız iddia = FAIL.** Böylece
+"kontrol ettim" tiyatrosu yapısal olarak imkânsızlaşır: iddiayı yazmak, dayanağını yazmayı
+zorunlu kılar.
+
+### Blok şeması
+
+```jsonc
+"verification": {
+  "frame_source": {                 // çerçeveyi ÇİZEN kaynak — Adım 3'te açtığın metin
+    "kind": "textbook",             // "textbook" | "program"  ("program" = kitap yok/page_count 0
+    "document_id": 197,             //                          → dürüstçe belirt, kitap deme)
+    "pages": "112-120",
+    "title": "Fen Bilimleri 5.Sınıf Ders Kitabı (1.Kitap)"
+  },
+  "scope": {
+    "in_frame": true,               // false ise ÜRETME — modül yayınlanmaz
+    "excluded": [                   // çerçeve dışı kaldığı için BİLEREK atılanlar
+      "mitokondri iç zar kıvrımları — 5. sınıf çerçevesinde yok"
+    ]
+  },
+  "claims": [                       // modüldeki her OLGUSAL iddia (pedagojik yönerge değil)
+    { "claim": "Hücre zarı seçici geçirgendir",
+      "grounding": { "document_id": 197, "page": 115 },
+      "verdict": "supported" }      // "supported" | "supported_by_program" | "general_knowledge"
+  ]
+}
+```
+
+### Kapı: **G-VERIFY** — ne denetler, ne DENETLEYEMEZ
+
+`validate_module.py` **çevrimdışı** çalışır ve **MCP erişimi yoktur**; denetimi salt-metin
+(regex) yapar — tıpkı G-CURRICULUM gibi. Bu sınırı bilerek okuyun:
+
+**Denetler (FAIL/WARN üretir):**
+- `verification` bloğu **zorunlu** (CURRICULUM modunda / ders+sınıf verilmiş üretimde).
+- `frame_source` bir `document_id` + `kind` taşımalı.
+- `scope.in_frame` **true** olmalı; `false` → **FAIL**, yayınlanmaz.
+- `claims[]` boş olmamalı; **her** öğede `claim` + `grounding` + `verdict` olmalı.
+- `verdict:"general_knowledge"` → **WARN** (dayanaksız; ya kaynağını bul ya çıkar).
+  Olgusal iddiaların çoğunluğu `general_knowledge` ise → **FAIL**.
+
+**DENETLEYEMEZ — bunlara güvenmeyin:**
+- `document_id`'nin gerçekten var olduğunu (validator katalogu göremez),
+- `kind:"textbook"` yazan belgenin `page_count > 0` olduğunu (2 kitapta 0'dır → orada
+  `kind:"program"` yazmak MODELİN sorumluluğudur; kapı bu yalanı yakalayamaz),
+- iddianın gösterilen sayfada gerçekten geçtiğini,
+- iddianın **doğru** olduğunu.
+
+**Dürüst sınır:** kapı, iddianın DOĞRU olduğunu değil, **dayanağının GÖSTERİLDİĞİNİ** kanıtlar.
+Doğruluk yargısı modelindir ve **insan denetimine tabidir**. Kapının değeri şudur: iddiayı
+yazmak, dayanağını yazmayı zorunlu kılar — "denetledim" demek ucuzken, "şu sayfada geçiyor"
+demek kontrol edilebilirdir. Tiyatroyu imkânsız kılar, doğruluğu garanti etmez.
 
 ## 6. Provenans ve G-CURRICULUM kapısı
 

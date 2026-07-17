@@ -18,7 +18,7 @@ skill:
     beceriyi (Kavramsal Beceriler KB2.x) etkileşim desenine haritalar, kazanım-izlenebilir
     provenans damgalar (G-CURRICULUM). Ders-bağımsız (fen, matematik, sosyal
     bilgiler, Türkçe, tarih, fizik, kimya, biyoloji); ortaokul/ilkokul/lise.
-    8 mod, 13 kalite kapısı (v3.0.0 — G-FLOW + G-CARBON-GRID eklendi), 5 ek
+    8 mod, 14 kalite kapısı (v3.0.0 — G-FLOW + G-CARBON-GRID eklendi), 5 ek
     segment tipi (hook, worked, selfExplain, sim, conceptMap); token katmanı
     @carbon/* npm otoritesiyle doğrulanır (G-TOKEN + sync aracı), Figma Carbon
     v11 kütüphaneleri opsiyonel görsel QA. Disambiguation: francais-coach → Fransızca React;
@@ -149,7 +149,7 @@ outputs:
   - id: validation_report
     description: >-
       Opsiyonel makine/insan okunur kalite kapısı raporu (scripts/validate_module.py).
-      13 kapı: G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
+      14 kapı: G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
       G-SVG, G-WELLBEING, G-AUDIO (earcon + TTS iki katman), G-CURRICULUM (koşullu —
       Müfredat-temelli modüllerde kazanım→segment izlenebilirliği), G-TOKEN
       (@carbon/themes otoritesine karşı tema bloğu denetimi), G-FLOW (koşullu —

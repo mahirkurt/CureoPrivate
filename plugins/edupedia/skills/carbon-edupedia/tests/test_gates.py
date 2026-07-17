@@ -728,3 +728,82 @@ def test_numberline_w_padx_share_one_constant_source():
     wire_body = src[k:next_fn].replace(" ", "")
     assert "W=NL_W" in wire_body and "PADX=NL_PADX" in wire_body
     assert "W=480" not in wire_body and "PADX=28" not in wire_body
+
+
+# ── G-VERIFY (v3.5.0) ────────────────────────────────────────────────────────
+# Kullanıcı sözleşmesi (2026-07-17): içerik KAPSAM + DOĞRULUK denetiminden geçmeden
+# canlıya alınmaz. Yargıyı MODEL yapar (Python "bilimsel olarak doğru mu" diyemez);
+# bu kapı YAPIYI denetler — her iddianın dayanağı GÖSTERİLMİŞ mi. Kapının değeri:
+# iddiayı yazmak dayanağını yazmayı zorunlu kılar → "denetledim" tiyatrosu imkânsızlaşır.
+#
+# Kapı DOĞRULUĞU kanıtlamaz; bunu iddia eden bir test yazmak kapıya fazla güven yükler.
+
+_VERIF_OK = '''
+  mode: "CURRICULUM",
+  curriculum: { outcomes: [{ code: "FB.5.3.1.1", text: "...", mappedTo: ["s1"] }] },
+  verification: {
+    frame_source: { kind: "textbook", document_id: 197, pages: "112-120" },
+    scope: { in_frame: true, excluded: [] },
+    claims: [
+      { claim: "Hucre zari secici gecirgendir",
+        grounding: { document_id: 197, page: 115 }, verdict: "supported" }
+    ]
+  },
+'''
+
+def _mod(body):
+    return '<html><body><script>const MODULE_DATA = {' + body + '};</script></body></html>'
+
+
+def test_gverify_skips_for_non_curriculum_module():
+    rows = run_gate(vm.gate_verify, _mod('mode: "FREEFORM", segments: [{id:"s1"}]'))
+    assert status_of(rows, "G-VERIFY") in (None, "PASS")
+
+
+def test_gverify_fails_when_verification_block_missing():
+    """CURRICULUM modunda denetim kaydı yoksa yayınlanamaz."""
+    rows = run_gate(vm.gate_verify, _mod('mode: "CURRICULUM", curriculum: { outcomes: [] },'))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_passes_on_wellformed_block():
+    rows = run_gate(vm.gate_verify, _mod(_VERIF_OK))
+    assert status_of(rows, "G-VERIFY") == "PASS"
+
+
+def test_gverify_fails_when_out_of_frame():
+    """scope.in_frame:false = 'cerceve disinda' → uretilmemeli, yayinlanmamali."""
+    rows = run_gate(vm.gate_verify, _mod(_VERIF_OK.replace("in_frame: true", "in_frame: false")))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_on_claim_without_grounding():
+    """Asil koruma: dayanaksiz iddia gecemez."""
+    body = _VERIF_OK.replace(
+        'grounding: { document_id: 197, page: 115 }, verdict: "supported"',
+        'verdict: "supported"')
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_on_empty_claims():
+    body = _VERIF_OK.replace(
+        '''claims: [
+      { claim: "Hucre zari secici gecirgendir",
+        grounding: { document_id: 197, page: 115 }, verdict: "supported" }
+    ]''', 'claims: []')
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_warns_on_ungrounded_general_knowledge():
+    body = _VERIF_OK.replace('verdict: "supported"', 'verdict: "general_knowledge"')
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"   # tek iddia → %100 çoğunluk
+
+
+def test_gverify_fails_when_frame_source_has_no_document():
+    body = _VERIF_OK.replace('frame_source: { kind: "textbook", document_id: 197, pages: "112-120" }',
+                             'frame_source: { kind: "textbook" }')
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"

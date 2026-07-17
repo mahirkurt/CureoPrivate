@@ -28,7 +28,7 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 
 ## Skill'ler
 
-- **carbon-edupedia** (flagship, v3.3.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
+- **carbon-edupedia** (flagship, v3.5.1) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
   modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 13 kalite
   kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-AUDIO/
   G-CURRICULUM/G-TOKEN/G-FLOW/G-CARBON-GRID). Token otoritesi `@carbon/*` npm.

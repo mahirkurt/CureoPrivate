@@ -1,8 +1,8 @@
 ---
 name: start
-description: edupedia süitine giriş ve yönlendirme. Bağlı ÜÇ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme, modul-yayin yayın) kontrol eder, flagship carbon-edupedia skill'ini ve dört komutu tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
-version: 1.0.0
-last_updated: 2026-07-06
+description: edupedia süitine giriş ve yönlendirme. Bağlı ÜÇ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme, modul-yayin yayın) kontrol eder, flagship carbon-edupedia skill'ini ve beş komutu tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
+version: 1.1.0
+last_updated: 2026-07-17
 ---
 
 # edupedia — Başlangıç ve Yönlendirme
@@ -118,6 +118,7 @@ bloke olmadığını söyleyin.
 | `/edupedia:mufredat` | Ders+sınıf+konudan modül üretir | `<ders> <sınıf> <konu>` (örn. Fen 5 hücre) |
 | `/edupedia:kazanim-bul` | Konu→kazanım keşfi + KB/etkileşim haritası (**üretim yok**) | `<konu> [sınıf] [ders]` |
 | `/edupedia:durum` | Connector sağlık + Tier-2 (get_figure) kontrolü | — |
+| `/edupedia:yayinla` | Modülü edupedia.cureonics.com'da yayınlar (MCP tercihli, REST yedekli) | `<modul.html yolu>` |
 
 ## Adım 5 — Niyete Göre Yönlendir
 
@@ -127,7 +128,8 @@ Kullanıcının ne üzerinde çalıştığını sorun ve yönlendirin:
 2. **Ders + sınıf + konu** ("5. sınıf fen hücre") → `/edupedia:mufredat`.
 3. **"Bu konuya hangi kazanımlar denk geliyor?"** (yalnız keşif) → `/edupedia:kazanim-bul`.
 4. **Connector çalışıyor mu / Tier-2 var mı?** → `/edupedia:durum`.
-5. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
+5. **Modül üretildi, paylaşılacak** → `/edupedia:yayinla`.
+6. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
    çağır; opsiyonel olarak ilgili kazanımla hizalama öner.
 
 **Ayrım rehberi (disambiguation):**

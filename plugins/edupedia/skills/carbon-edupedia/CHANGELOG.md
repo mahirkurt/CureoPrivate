@@ -2,6 +2,51 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.5.1] — 2026-07-17
+
+### Düzeltildi — claude.ai paketinde KIRIK BAĞLANTILAR: sözleşmenin kaynağı pakete girmiyordu
+
+3.5.0 sözleşmeyi referansa taşıdı (claude.ai'ın gördüğü tek yer orası). Ölçüldü: referansın
+**işaret ettiği belgeler pakete hiç girmiyordu.** Skill plugin düzeninde `../../../CONNECTORS.md`
+der — bu Claude Code'da DOĞRUdur (plugin ağacı oradadır), ama zip'in kökü `carbon-edupedia/`
+olduğu için claude.ai'da dört bağlantının dördü de kırıktı:
+
+| Kırık bağlantı | Nerede |
+|---|---|
+| `../../../CONNECTORS.md` ×3 | `references/curriculum-integration.md` |
+| `../../../shared/canonical-cache-contract.md` | `references/curriculum-integration.md` |
+| `../../shared/run-manifest-schema.json` ×2 | `SKILL.md` |
+| `../../commands/yayinla.md` ×3 | `SKILL.md` |
+| `../../CONNECTORS.md` | `skill-manifest.yaml` |
+
+Bu, 3.5.0'ın düzelttiği hatanın **aynı sınıfıydı**: iddia vardı, dayanak yoktu. Üstelik
+kırılanlardan biri connector envanterinin *"tek doğruluk kaynağı"* ilan edilen CONNECTORS.md'ydi
+— yani claude.ai'daki skill, normatif envanterine hiçbir zaman ulaşamıyordu.
+
+**Kök neden kaynakta değil, paketleyicideydi.** Bağlantılar plugin düzeninde doğru; eksik olan,
+paket kökü değişince onları taşıyacak mekanizmaydı.
+
+- `scripts/build_claude_ai_skill.py` artık dört normatif belgeyi `plugin-context/`e **vendor'lar**
+  (CONNECTORS.md · canonical-cache-contract.md · run-manifest-schema.json · MCP introspeksiyon
+  çıktısı) ve bağlantıları **derinlik-duyarlı** yeniden yazar (`SKILL.md` → `plugin-context/…`,
+  `references/*` → `../plugin-context/…`). Vendor'lanan belgelerin **kendi** bağlantıları da
+  yeniden yazılır (`./shared/x` → `x`).
+- `commands/*.md` vendor'lanmaz — claude.ai'da komut yoktur. O bağlantılar taşıdıkları tek anlam
+  olan komut **adına** indirgenir (`../commands/yayinla.md` → `/edupedia:yayinla`).
+- **Yeni kapı:** build, paketi kurduktan sonra **zip'in içinden** ölçer — kaçan her bağlantı zip
+  üyesi olmak zorunda, değilse build DURUR. Niyeti değil artefaktı ölçtüğü için yeni bir
+  paket-dışı referans sessizce sızamaz. Kapı `.md` **ve** `.yaml`'a uygulanır (`skill-manifest.yaml`
+  da `read_when` metinlerinde navigasyon taşır).
+- `SKILL.md`: `commands/yayinla.md` referansları **yüzey-duyarlı** hale getirildi — dosya bağlantısı
+  yerine yayın yolunun kendisi yazılıyor (Claude Code `/edupedia:yayinla` · claude.ai
+  `edupedia_publish`). Bu, bağlantıyı her iki yüzeyde de dürüst kılar.
+
+### Düzeltildi — sürüm sapması
+
+`SKILL.md` frontmatter **3.3.0 / 2026-07-14**'te donmuştu; `skill-manifest.yaml` ve CHANGELOG
+3.5.0 diyordu. 3.5.0 sürümü frontmatter'ı güncellemeyi atlamış. Hizalandı; `skill-manifest.yaml`
+`build.version` de 3.3.0'da kalmıştı (ikinci, ayrı sapma).
+
 ## [3.5.0] — 2026-07-17
 
 ### Düzeltildi — Sözleşme claude.ai'a GEÇMİYORDU: referans kendi içinde çelişiyordu

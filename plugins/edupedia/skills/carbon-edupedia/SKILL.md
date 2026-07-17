@@ -16,8 +16,8 @@ description: >-
   etkileşimli öğrenimde USE.
 license: MIT
 metadata:
-  version: 3.3.0
-  last_updated: 2026-07-14
+  version: 3.5.1
+  last_updated: 2026-07-17
   manifest: ./skill-manifest.yaml
 ---
 
@@ -95,7 +95,8 @@ Yetkinlik **her zaman** şunu üretir:
    scripts/validate_module.py --json <html>` çıktısını manifest'e yazmak İSTEĞE BAĞLI bir
    yerel ön-kontroldür.** Kalite kapılarının OTORİTESİ yayın sunucusudur: yayın sırasında
    sunucu HTML'i kendisi ölçer ve istemcinin `quality_gates` beyanını yok sayar. Kapı
-   düşerse yayın 422 ile reddedilir (bkz. `../../commands/yayinla.md`). Manifeste yine de
+   düşerse yayın 422 ile reddedilir (yayın yolu yüzeye göre: Claude Code
+   `/edupedia:yayinla`, claude.ai doğrudan `edupedia_publish`). Manifeste yine de
    `quality_gates` yazılıyorsa kapı sonuçlarını elle yazmayın, konsol raporundan
    (renkli/insan-okur mod) transkribe etmeyin, hiçbir kapıyı PASS'a yükseltmeyin — `--json`
    çıktısı yalnız `PASS`/`FAIL`/`WARN`/`SKIPPED` durumlarını içerir; koşturulmayan/uygulanamayan
@@ -106,7 +107,7 @@ Yetkinlik **her zaman** şunu üretir:
    `../../shared/run-manifest-schema.json` `properties.run_id.pattern`). Bu kalıba uymayan bir
    run_id, `/edupedia:yayinla` açık bir `slug` göndermezse sunucu tarafında 400 ile reddedilir.
    Bu manifest, `/edupedia:yayinla`'nın okuduğu tek girdidir (bkz.
-   `../../shared/canonical-cache-contract.md §1`, `../../commands/yayinla.md`).
+   `../../shared/canonical-cache-contract.md §1`).
 
 > **Neden tek-dosya etkileşimli HTML, React değil?** Claude.ai artifact ortamı
 > React'te yalnız Tailwind çekirdek sınıflarına izin verir; Carbon token sistemi
@@ -487,7 +488,8 @@ asla jenerik veya tek-tip değil:
 **OTORİTE yayın sunucusudur.** Bu bölümdeki `scripts/validate_module.py` koşumu yalnız
 İSTEĞE BAĞLI bir yerel ön-kontroldür — yayın sırasında sunucu HTML'i kendisi ölçer ve
 manifestteki `quality_gates` beyanını (varsa) tamamen yok sayar; kapı düşerse yayın 422
-ile reddedilir (bkz. `../../commands/yayinla.md`).
+ile reddedilir (yayın yolu yüzeye göre: Claude Code `/edupedia:yayinla`, claude.ai
+doğrudan `edupedia_publish`).
 
 `scripts/validate_module.py` aşağıdakileri denetler (ihlal = düzelt). İnsan-okur konsol
 raporu varsayılan moddur; **`--json` bayrağı** (v3.2.0) stdout'a yalnız geçerli JSON basar —

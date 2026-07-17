@@ -2,6 +2,46 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.5.0] — 2026-07-17
+
+### Düzeltildi — Sözleşme claude.ai'a GEÇMİYORDU: referans kendi içinde çelişiyordu
+
+claude.ai'da **tek uzantı noktası Skill**'dir — hook, alt-ajan ve slash-komut yoktur. Yani
+orada `commands/modul.md` GÖRÜNMEZ ve sözleşmenin claude.ai'a ulaşan tek yolu
+`references/curriculum-integration.md`'dir. Ölçüldü: o referans sözleşmenin **tersini**
+söylüyordu ve 3.4.0 düzeltmelerini yalnız komut almıştı.
+
+Üç çelişki (hepsi claude.ai'da YANLIŞ kuralı yürürlükte tutuyordu):
+1. **§3 Adım 0** — *"Koddan ders/sınıf/ünite çıkarılabilir"*. Sözleşme bunu açıkça
+   yasaklıyor: `FB.5.3.1.1` → "Fen·5" bir **string tahminidir**, otorite MCP'nin döndürdüğü
+   `subject`+`grade`'tir. → Adım 0 artık bir KAPI: çıkarma-doğrula, yoksa SOR.
+2. **§2.1** — Tier-1 (yazar-SVG) *"garanti, varsayılan ve zorunlu"*, Tier-2 (ders kitabının
+   kendi figürü) *"best-effort, opsiyonel… hiçbir zaman kritik yol değildir"*. Bu, öncelik
+   sırasının **tam tersiydi** ve "ders kitapları okunamaz" yanlış inancının kalıntısıydı.
+   → Öncelik tersine çevrildi: kitabın figürü BİRİNCİL, yazar-SVG yedek. Ayrıca *"ders
+   kitapları yine `pdf_url` ile referanslanır"* cümlesi silindi — kitap gövdesi artık
+   `get_document_text` ile modüle TAŞINIYOR.
+3. **§3 Adım 6** — §6.1'in `verification` şeması tanımlıydı ama **akış onu hiç üretmiyordu**.
+   → Yeni Adım 5.5: kapsam + doğruluk denetimi, `verification` bloğunu ÜRET.
+
+**Kök neden — tekrar:** aynı kural iki yerde yazılıydı (referans + komut) ve saptılar.
+Komutlar artık kuralı **tekrarlamıyor**, referansa işaret ediyor (tek kaynak).
+
+### Değiştirildi — Yüzey-duyarlı teslim (§3 madde 2/7, §8 Adım 5/6)
+
+Skill `/mnt/user-data/outputs/` ve `present_files` varsayıyordu; claude.ai'da **dosya
+sistemi yoktur**. Adım 6 artık iki yüzeyi ayırıyor: claude.ai'de HTML doğrudan
+`edupedia_publish`'in `html` argümanına üretilir (tek emisyon; `slug` açıkça gönderilir —
+yoksa 400), Claude Code'da mevcut dosya+manifest akışı korunur. Manifest yalnız Claude
+Code'da anlamlıdır (tek okuyucusu `/edupedia:yayinla` orada). Adım 5 (yerel doğrulayıcı)
+claude.ai'da atlanabilir — **ama kapılar o zaman "PASS" diye beyan edilemez**.
+
+### Eklendi — `newgen-question-design.md` bağlandı (yetimdi)
+
+3.4.0'da eklenen 215 satırlık referans **hiçbir yerden çağrılmıyordu** — ne SKILL.md §5
+tablosunda ne `skill-manifest.yaml`'da. Yani hiç okunmuyordu. Bağlandı.
+Ayrıca §5 tablosundaki bayat "19 araç" → **21**.
+
 ## [3.4.0] — 2026-07-17
 
 ### Eklendi — G-VERIFY: kapsam + doğruluk denetimi yayın koşulu oldu (14. kapı)

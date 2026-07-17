@@ -73,14 +73,20 @@ yapılandırılabilir** (varsayılan: 12 yaş, ortaokul, DEHB tanılı).
 Yetkinlik **her zaman** şunu üretir:
 1. **Tek** bir `.html` dosyası — tüm CSS/JS satır içi veya CDN import (`<head>`).
    Harici dosya bağımlılığı yok; çevrimdışı açılabilir olmalı.
-2. `/mnt/user-data/outputs/` altına açıklayıcı kebab-case adla kaydedilir
-   (örn. `hucre-ve-organeller-fen-7-modul.html`).
+2. **Teslim yüzeye göre** (§8 Adım 6): **Claude Code'da** `/mnt/user-data/outputs/` altına
+   açıklayıcı kebab-case adla kaydedilir (örn. `hucre-ve-organeller-fen-7-modul.html`);
+   **claude.ai'de** dosya sistemi yoktur → HTML doğrudan `edupedia_publish`'in `html`
+   argümanına üretilir (tek emisyon).
 3. Modern tarayıcıda açılır, etkileşimler (quiz/oyun/flashcard) **JavaScript ile
    gerçekten çalışır**; durum bellekte tutulur.
 4. **Emoji içermez.** Tüm görsel anlam ikon, piktogram ve SVG çizimle taşınır.
 5. **IBM Carbon v11** token sistemine ve IBM Plex tipografisine uyar.
 6. WCAG 2.1 AA: klavye erişimi, ARIA, `prefers-reduced-motion`, ≥44px hedef.
-7. **Run-manifest'i DİSKE yazar.** HTML'in yanına, **aynı ad + `.manifest.json`** ile (aynı
+7. **Run-manifest'i DİSKE yazar — yalnız Claude Code'da.** (claude.ai'de dosya sistemi
+   yoktur ve manifest'in tek okuyucusu `/edupedia:yayinla` orada mevcut değildir; yayın
+   argümanları — `run_id`, `slug`, `subject_slug`, `grade`, `topic`, `mode`,
+   `outcome_codes` — doğrudan `edupedia_publish` çağrısında verilir. Aşağıdaki `run_id`
+   kalıbı **her iki yüzeyde de** geçerlidir.) HTML'in yanına, **aynı ad + `.manifest.json`** ile (aynı
    dizin; örn. `hucre-ve-organeller-fen-7-modul.html` →
    `hucre-ve-organeller-fen-7-modul.manifest.json`; sabit `run_manifest.json` adı KULLANILMAZ).
    İçerik `../../shared/run-manifest-schema.json`'a uyar: `run_id`, `ts`, `plugin_version`,
@@ -142,7 +148,8 @@ hatalardır. İlgili referansı **emisyondan önce** okuyun.
 | `references/color-system.md` | İşlevsel renk rolleri, wayfinding aksanı, kontrast/CVD kuralları. |
 | `references/subject-packs.md` | Derse-özel güçler: kimlik aksanı + Matematik / Fen / Sosyal / Dil paketleri (etiketli diyagram, ilişki akışı, kavram kartları, satır-arası çözümleme, çekim tablosu). |
 | `references/audio-system.md` | İşitsel geri bildirim (earcon) tasarımı, kanıt ve sorumlu kullanım; ses + görsel oyunlaştırma. |
-| `references/curriculum-integration.md` | **Müfredat MCP entegrasyonu** (CURRICULUM modu veya herhangi bir modda Müfredat-duyarlılık): 19 aracın orkestrasyonu, kazanım çekme, **beceri (KB2.x) → etkileşim deseni haritalama tablosu**, `curriculum` veri bloğu şeması, provenans + G-CURRICULUM, hata/geri-dönüş. |
+| `references/curriculum-integration.md` | **Müfredat MCP entegrasyonu — CURRICULUM modunda ZORUNLU, §3 akışının TAMAMI** (kullanıcı sözleşmesi, 2026-07-17): 21 aracın orkestrasyonu; **Adım 0 sınıf+ders KAPISI** (koddan çıkarma — doğrula), kazanım çekme, **Adım 3 ÇERÇEVE: ders kitabını AÇ** (105'in 103'ü tam metin — çerçeve üretimin sınırıdır), **beceri (KB2.x) → etkileşim deseni haritalama tablosu**, `curriculum` şeması, **§2.1 görsel önceliği: kitabın figürü birincil / yazar-SVG yedek**, **Adım 5.5 + §6.1 `verification` bloğu** (kapsam + doğruluk dayanağı → G-VERIFY), provenans + G-CURRICULUM, hata/geri-dönüş. |
+| `references/newgen-question-design.md` | Modüle **"yeni nesil" / LGS tarzı** soru bloğu eklerken — uyaran-temelli muhakeme taksonomisi, bilişsel eşleme, yazım reçetesi. Ön koşul: `adhd-pedagogy.md` + `interaction-patterns.md`. **Kapsam notu:** bu blok tema kazanımının **ötesinde** ileri bir katmandır, yerine geçmez — CURRICULUM modunda çerçeve kapısına (§6.1 `scope`) yine tabidir. |
 | `references/content-enrichment.md` | İçerik zenginleştirme kaynağı/tekniği seçerken (Wikidata olgu-çipi, Wikimedia PD/CC-BY görsel, native MathML, çapraz-oturum aralıklı-tekrar veri modeli) veya PhET/GeoGebra/Desmos/Khan/EBA/Açık Ders gibi bir kaynağı gömme isteği geldiğinde — lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi + dyslexia-font miti. |
 | `references/carbon-excellence.md` | Görsel-yoğun bir modül (hero, `sim`, `conceptMap`, `vizChart`, çok kartlı düzen) üretirken veya gözden geçirirken — Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive tip-seti, veri-viz palet, ikon/piktogram disiplini); **G-CARBON-GRID** doğrulayıcı kapısının normatif kaynağı. |
 | `references/gamified-flows.md` | Oyunlaştırma/motivasyon akışı planlarken — 4 akış şablonu (Keşif Döngüsü, Sefer, Antrenman, Birlikte Odak), her biri segment-dizisi eşlemesiyle; merak-boşluğu/hedef-gradyanı/uyarlanır-zorluk/tempo-diski mekanikleri + ADHD gerekçesi; atıflı YAPMA listesi. **G-FLOW** doğrulayıcı kapısının normatif kaynağı. |
@@ -218,14 +225,26 @@ yüklenen dosya, ya da belirtilen konu+müfredat). Yoksa isteyin. Modu, dersi,
 sınıf düzeyini, öğrenci profilini (varsayılan: 12 yaş ortaokul DEHB) ve hedef
 süreyi netleştirin.
 
-**Adım 0.5 — Müfredat MCP keşfi (koşullu).** Kullanıcı sinyali Müfredat-temelli
-ise (kazanım kodu, "MEB kazanımına göre", ders+sınıf+konu, "Maarif Modeli" — bkz.
-§2) **önce `references/curriculum-integration.md` okuyun**, sonra orada tanımlı
-keşif→çekme→haritalama akışını uygulayın: ders slug'ını bulun (`list_subjects`),
-kazanımları çekin (`search_learning_outcomes` / `list_learning_outcomes`), beceri
-çerçevesini haritalayın (`get_framework`). Çekilen kazanım metni bu modülün primer
-kaynağı olur (§7). MCP erişilemezse offline yola dönün ve kullanıcıya bildirin.
-Müfredat sinyali yoksa bu adım atlanır.
+**Adım 0.5 — Müfredat MCP akışı (Müfredat sinyali varsa ZORUNLU).** Kullanıcı sinyali
+Müfredat-temelli ise (kazanım kodu, "MEB kazanımına göre", ders+sınıf+konu, "Maarif
+Modeli" — bkz. §2) **önce `references/curriculum-integration.md` okuyun ve §3'teki
+akışın TAMAMINI uygulayın** — bu akış kullanıcı sözleşmesidir (2026-07-17), seçmeli
+bir zenginleştirme değil:
+
+- **Adım 0 (KAPI):** sınıf+ders kesinleşmeden üretim başlamaz. Kod verildiyse koddan
+  **çıkarma — MCP'den DOĞRULA**; yoksa/belirsizse **SOR**.
+- **Adım 3 (ÇERÇEVE):** ders kitabını **AÇ** (`list_textbooks` → sayfayı bul →
+  `get_document_text`). **Çerçeveyi o metin çizer** ve üretimin sınırıdır. Kitap
+  yoksa/`page_count=0` → programa düş ve `frame_source.kind:"program"` yaz.
+- **Adım 5.5 (DENETİM):** kapsam + doğruluk denetimini yap, `verification` bloğunu üret
+  (§6.1). Dayanaksız iddia modülde kalmaz.
+
+Görselde **kitabın kendi figürleri önceliklidir** (Tier-2; `search_figures` →
+`get_figure`) — yazar-üretimli SVG **yedektir** (bkz. o belgede §2.1; öncelik 2026-07-17'de
+tersine çevrildi).
+
+MCP erişilemezse offline yola dönün ve **kullanıcıya bildirin** — üretim bloke olmaz ama
+"kitaba dayandım" **denemez**. Müfredat sinyali yoksa bu adım atlanır (serbest kaynak modu).
 
 **Adım 1 — Referansları oku.** En az `adhd-pedagogy.md` +
 `module-architecture.md`. Etkileşim seçimi için `interaction-patterns.md`.
@@ -250,18 +269,35 @@ gömün. Motoru yeniden yazmayın; veriyi doldurun.
 **Adım 5 — Doğrula (isteğe bağlı yerel ön-kontrol).** `python scripts/validate_module.py
 <çıktı.html>` çalıştırın. Kapılar: emoji-yok, Carbon token kullanımı, IBM Plex yüklemesi,
 ARIA/erişilebilirlik asgarileri, etkileşim bütünlüğü (her quiz sorusunda doğru cevap +
-açıklama), satır-içi varlık (harici bağımlılık yok). İhlalleri giderin. Bu adım kalite
-kapılarının OTORİTESİ DEĞİLDİR — yayın sunucusu HTML'i kendisi ölçer (bkz. §3 madde 7);
-burası yalnız erken geri bildirim için. İhlalsiz koşumdan sonra dilerseniz aynı komutu
-`--json` bayrağıyla tekrar çalıştırıp manifeste gömebilirsiniz.
+açıklama), satır-içi varlık (harici bağımlılık yok), müfredat provenansı + kapsam/doğruluk
+dayanağı (G-CURRICULUM + G-VERIFY). İhlalleri giderin. Bu adım kalite kapılarının
+OTORİTESİ DEĞİLDİR — yayın sunucusu HTML'i kendisi ölçer (bkz. §3 madde 7); burası yalnız
+erken geri bildirim için. İhlalsiz koşumdan sonra dilerseniz `--json` bayrağıyla tekrar
+çalıştırıp manifeste gömebilirsiniz.
 
-**Adım 6 — Kaydet, manifest yaz, sun.** `/mnt/user-data/outputs/` altına kaydedin; **aynı ad +
-`.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7 — `quality_gates` opsiyonel;
-yazılırsa Adım 5'te üretilen `validate_module.py --json` çıktısının BİREBİR kendisi olmalı,
-elle yazma/transkribe/PASS'a yükseltme yok). Kapı otoritesi yayın sunucusundadır: yayın
-sırasında sunucu kapıları kendisi ölçer, manifestteki beyanı yok sayar; kapı düşerse yayın
-422 ile reddedilir (bkz. `../../commands/yayinla.md`). `present_files` ile sunun. Kısa bir
-özet ve "nasıl kullanılır" notu ekleyin.
+> **claude.ai'de bu adım atlanabilir.** Script yalnız kod-çalıştırma açıkken koşar ve
+> zaten otorite değildir; oradaki gerçek kapı `edupedia_publish`'in 422'sidir. Script
+> koşmuyorsa **kapıları "PASS" diye beyan etmeyin** — ölçülmemiş kapı ölçülmemiştir.
+
+**Adım 6 — Teslim (YÜZEYE GÖRE değişir — hangi yüzeydesiniz, ona bakın).**
+
+Kapı otoritesi her iki yüzeyde de **yayın sunucusudur**: sunucu HTML'i kendisi ölçer (14
+kapı) ve istemcinin `quality_gates` beyanını **yok sayar**; kapı düşerse yayın 422 ile
+reddedilir ve hangi kapıların düştüğü döner.
+
+- **claude.ai'de (dosya sistemi YOK):** modülü dosyaya yazmayın. HTML'i **doğrudan
+  `edupedia_publish` aracının `html` argümanına** üretin — tek emisyon, tek adımda yayın.
+  `slug`'ı **açıkça gönderin** (yoksa 400: "run_id'den slug türetilemedi"). `force=true`
+  **kullanmayın**: kapı düştüyse bilgi odur; düzeltip tekrar yayınlayın. Yayın sonrası
+  kullanıcıya kalıcı bağlantıyı verin (`/m/<slug>`). Kullanıcı yayın istemiyorsa modülü
+  sohbette artefakt olarak sunun — ısrar etmeyin.
+- **Claude Code'da:** `/mnt/user-data/outputs/` altına kebab-case adla kaydedin; **aynı ad +
+  `.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7 — `quality_gates`
+  opsiyonel; yazılırsa Adım 5'te üretilen `validate_module.py --json` çıktısının BİREBİR
+  kendisi olmalı: elle yazma/transkribe/PASS'a yükseltme yok). `present_files` ile sunun.
+  Yayın için `/edupedia:yayinla`.
+
+Her iki yüzeyde de kısa bir özet + "nasıl kullanılır" notu ekleyin.
 
 ## 9. Etkileşim deseni kataloğu (özet)
 

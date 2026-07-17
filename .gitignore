@@ -21,3 +21,6 @@ __pycache__/
 EVIDENTIA-KURULUM-VE-KEYLER.md
 *-KEYLER.md
 plugins/evidentia/docs/EVIDENTIA-KURULUM-VE-KEYLER.md
+
+# Üretilen claude.ai skill paketleri (build script ile yeniden üretilir)
+plugins/*/dist/

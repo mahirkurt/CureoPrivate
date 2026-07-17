@@ -7,7 +7,7 @@ protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/
 
 skill:
   name: carbon-edupedia
-  version: 3.4.0
+  version: 3.5.0
   title: Carbon Edupedia — DEHB-Odaklı Etkileşimli Öğrenim Modülü Üreticisi (IBM Carbon v11, WCAG 2.1 AA, Müfredat MCP)
   description: >-
     Kaynak metinden VEYA MEB Müfredat MCP'sinden (Türkiye Yüzyılı Maarif Modeli
@@ -105,13 +105,15 @@ references:
   - path: references/audio-system.md
     read_when: 'İşitsel earcon tasarımı, kanıt ve sorumlu kullanım; ses + görsel oyunlaştırma.'
   - path: references/curriculum-integration.md
-    read_when: 'Müfredat MCP entegrasyonu (CURRICULUM modu veya herhangi bir modda Müfredat-duyarlılık): araç orkestrasyonu, kazanım çekme, beceri (KB2.x) → etkileşim deseni haritalama, curriculum veri bloğu, provenans + G-CURRICULUM, hata/geri-dönüş. edupedia plugin altında: connector envanteri + kimlik/PDF uyarıları + provenans normatif kaynağı ../../CONNECTORS.md; §2.1 Tier-1/Tier-2 görüntü-dayanak politikası + get_figure yetenek-probu.'
+    read_when: 'CURRICULUM modunda ZORUNLU — §3 akışının TAMAMI (kullanıcı sözleşmesi 2026-07-17): Adım 0 sınıf+ders KAPISI (koddan ÇIKARMA, MCP''den DOĞRULA; yoksa SOR), araç orkestrasyonu, kazanım çekme, Adım 3 ÇERÇEVE (ders kitabını AÇ — çerçeve üretimin sınırıdır), beceri (KB2.x) → etkileşim deseni haritalama, curriculum veri bloğu, Adım 5.5 + §6.1 verification bloğu (kapsam + doğruluk dayanağı → G-VERIFY), provenans + G-CURRICULUM, hata/geri-dönüş. §2.1 görüntü-dayanak: ders kitabının KENDİ figürü (Tier-2) BİRİNCİL, yazar-SVG (Tier-1) yedek — öncelik 2026-07-17''de tersine çevrildi. Connector envanteri + provenans normatif kaynağı ../../CONNECTORS.md.'
   - path: references/content-enrichment.md
     read_when: 'İçerik zenginleştirme: build-zamanı entegre edilebilir kaynaklar (Wikidata CC0, Wikimedia PD/CC-BY, MathML, spaced-rep) + lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi.'
   - path: references/carbon-excellence.md
     read_when: 'Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive, veri-viz palet); G-CARBON-GRID normatif kaynağı.'
   - path: references/gamified-flows.md
     read_when: '4 ADHD akış şablonu (Keşif/Sefer/Antrenman/Birlikte-Odak) + oyunlaştırma mekanikleri + atıflı YAPMA listesi; G-FLOW normatif kaynağı.'
+  - path: references/newgen-question-design.md
+    read_when: 'Modüle "yeni nesil" / LGS tarzı soru bloğu eklerken: uyaran-temelli muhakeme taksonomisi, bilişsel eşleme, yazım reçetesi. Tema kazanımının ÖTESİNDE ileri katman — yerine geçmez; CURRICULUM modunda §6.1 kapsam kapısına tabidir.'
 
 # -----------------------------------------------------------------------------
 # Inputs

@@ -125,35 +125,63 @@ Araçlar dört işlevsel kümeye ayrılır. **Çoğu modül için 3–6 çağrı
 
 ## 2.1 Görüntü-dayanak politikası (Tier-1 / Tier-2) — plugin düzeyi, additif
 
-> Bu alt-bölüm, `edupedia` plugin sarmalayıcısının görüntü-dayanak sözleşmesini bu skill'de
-> netleştirir. **Davranışı değiştirmez** — skill'in görsel arketipleri (`svgFigure`,
-> `labeledFigure`, `vizTable`, `numberLine`, `fractionBar`, `relationFlow`; bkz.
-> `svg-authoring.md`) yegâne varsayılan yoldur. Yalnız Müfredat MCP kaynaklı görsel dayanağın iki
-> katmanını ayırır. Tam normatif metin: `../../../CONNECTORS.md §3` + `../../../shared/canonical-cache-contract.md §4`.
+> ⚠️ **ÖNCELİK 2026-07-17'de TERSİNE ÇEVRİLDİ.** Bu tablo eskiden Tier-1'i (yazar-üretimli
+> SVG) "varsayılan ve zorunlu", Tier-2'yi (ders kitabının kendi figürü) "opsiyonel, asla
+> kritik yol değil" diye tanımlıyordu. Bu, **"ders kitapları okunamaz" yanlış inancının**
+> bir sonucuydu (bkz. §3 Adım 3 kutusu). Ölçüldü: **22.414 figür ders+sınıf filtreli
+> aramaya açık** ve her biri caption + `page_no` taşır. Öğrencinin **kendi kitabındaki**
+> görsel, öğrenme transferi için yazar çizimine üstündür. Kullanıcı sözleşmesi (2026-07-17):
+> "ders kitabı içeriğindeki eğitsel görseller hazırlanan içeriğe entegre edilmeli."
+
+> Bu alt-bölüm, `edupedia` plugin sarmalayıcısının görüntü-dayanak sözleşmesini netleştirir.
+> Skill'in görsel arketipleri (`svgFigure`, `labeledFigure`, `vizTable`, `numberLine`,
+> `fractionBar`, `relationFlow`; bkz. `svg-authoring.md`) **MCP'siz akışta** ve resmî figür
+> bulunmayan kavramlarda yegâne yoldur. Tam normatif metin: `../../../CONNECTORS.md §3` +
+> `../../../shared/canonical-cache-contract.md §4`.
 
 | Katman | Tanım | Durum | Davranış |
 |---|---|---|---|
-| **Tier-1** | Kazanım koduna/program metnine izlenebilir olgular + **yazar-üretimli tema-duyarlı SVG** (token-renkli, `role="img"`+başlık, WCAG 2.1 AA) | **Garanti** | Varsayılan ve zorunlu. `validate_module.py` G-SVG + G-CURRICULUM ile denetlenir. MCP'nin görsel çekememesi **başarısızlık değildir** — Tier-1 tek başına tam işlevseldir (bu, `svg-authoring.md`'nin çekirdek doktrinidir). |
-| **Tier-2** | `get_figure(..., include_image=true)` → resmî ders-kitabı görselinin **base64 gömülmesi** | **Best-effort, opsiyonel** | Yalnız yetenek-probu geçerse. **Herhangi bir hata/`413`/timeout/boş dönüşte sessizce Tier-1'e düşülür**; üretim asla bloke olmaz. |
+| **Tier-2** | `get_figure(..., include_image=true)` → resmî **ders-kitabı görselinin** base64 gömülmesi | **ÖNCELİKLİ** (CURRICULUM modunda, MCP bağlıyken) | `search_figures(query, subject, grade)` ile ara → uygun figür varsa **göm**. Öğrenci o görseli kitabında görüyor. `page_no` aynı zamanda **en ucuz sayfa bulucudur** (§3 Adım 3). Hata/`413`/timeout/boş dönüş → Tier-1'e düş ve `tier2_status` **raporla — sessizce atlama**. |
+| **Tier-1** | Kazanım koduna/program metnine izlenebilir olgular + **yazar-üretimli tema-duyarlı SVG** (token-renkli, `role="img"`+başlık, WCAG 2.1 AA) | **Garanti — yedek** | Uygun resmî figür **yoksa**, MCP bağlı değilse, veya Tier-2 düşerse. `validate_module.py` G-SVG + G-CURRICULUM ile denetlenir. MCP'nin görsel çekememesi **başarısızlık değildir**: Tier-1 tek başına tam işlevseldir (`svg-authoring.md` doktrini) — üretim asla bloke olmaz. |
 
 **Yetenek-probu (kanonik akış):**
 1. `get_figure` araç listesinde **yok** → Tier-2 devre dışı (`tier2_status: unavailable`); Tier-1'de kal.
-2. **Metadata-first:** `search_figures(query, subject)` → aday `figure_id` →
-   `get_figure(figure_id, include_image=false)`. Bu **Tier-1 zenginleştirmesidir** (başlık, sayfa,
-   `caption`, `pdf_url`, kazanım-bağı) — görsel gömülmez, atıf/dayanak güçlenir.
-3. **Fırsatçı:** `include_image=true` DENE; başarı → base64 göm (`tier2_status: embedded`, kaynak
-   damgasına `pdf_url`+sayfa ekle); hata → sessizce Tier-1 (`tier2_status: degraded`).
+2. **Ara:** `search_figures(query=<konu>, subject=<slug>, grade=<sınıf>)` → aday `figure_id`'ler.
+   Sonuçları **hedef ders+sınıfın kitabına** göre ele: `document_id` Adım 3'te açtığın kitapsa
+   o figür birinci sınıf dayanaktır. Her sonuç `page_no` taşır → sayfa bulucu olarak da kullan.
+3. **Göm:** uygun figür için `get_figure(figure_id, include_image=true)` → base64 göm
+   (`tier2_status: embedded`; kaynak damgasına `pdf_url` + sayfa ekle). Hata/timeout/boş →
+   Tier-1'e düş (`tier2_status: degraded`) ve **bunu raporla**.
+4. `include_image=false` varyantı **ucuz ön-eleme** içindir (başlık, sayfa, `caption`,
+   kazanım-bağı) — figürün konuya uyup uymadığını gömme maliyetine girmeden ölç.
 
-> Ders kitapları yine `pdf_url` ile **referanslanır** (§2-D); Tier-2 yalnız fırsatçı bir gömme
-> katmanıdır, ders kitabı gövdesini modüle taşımaz. Tier-2 hiçbir zaman kritik yol değildir.
+> **Ders kitabı gövdesi artık modüle TAŞINIR** — `get_document_text` ile (§3 Adım 3): kitap
+> hem çerçeveyi çizer hem birincil içerik kaynağıdır. Eskiden burada "kitaplar yalnız
+> `pdf_url` ile referanslanır" yazıyordu; o cümle, kitap metninin okunamadığı sanılan
+> döneme aitti ve **artık geçersizdir**. `pdf_url` yine atıf/derin-bağlantı için verilir.
 
 ## 3. Keşif → çekme → haritalama → doğrulama iş akışı
 
 CURRICULUM modunda (veya Müfredat-duyarlı herhangi bir modda) bu sırayı izleyin.
 Her adımda **en az çağrı** ilkesi geçerlidir.
 
-**Adım 0 — Niyeti çöz.** Kullanıcı kazanım kodu mu verdi (`FB.5.3.1.1`), yoksa
-ders+sınıf+konu mu ("5. sınıf fen, hücre")? Koddan ders/sınıf/ünite çıkarılabilir.
+**Adım 0 — KAPI: sınıf + ders kesinleşmeden ÜRETİM BAŞLAMAZ.** (Kullanıcı sözleşmesi,
+2026-07-17.) Sınıf ve ders, modülün derinliğini ve kapsamını belirleyen şeydir; tahminle
+üretilen modül yanlış sınıfa hitap eder ve bu **sessiz bir hatadır** — çıktı doğru görünür.
+
+> ⚠️ **Bu belgede eskiden "koddan ders/sınıf/ünite çıkarılabilir" YAZIYORDU. YANLIŞTI.**
+> `FB.5.3.1.1` → "Fen · 5. sınıf" bir **string tahminidir**, veri değil. Kod kalıbı
+> derslere/yıllara göre değişir ve sessizce yanlış çözülür.
+
+- **Kod verildiyse:** koddan **ÇIKARMA — DOĞRULA.** Otorite, `search_learning_outcomes`'un
+  döndürdüğü kaydın `subject` + `grade` alanlarıdır (**`q` parametresi** — `query` değil).
+  Kod çözülmezse **uydurma**: kullanıcıya bildir ve sor.
+- **Kod YOKSA** (örn. "hücre hakkında modül") veya çözülen ders/sınıf belirsizse: **SOR.**
+  Claude Code'da `AskUserQuestion`, claude.ai'da düz soru. "Muhtemelen 5. sınıftır" **deme**.
+- Doğrulanan ders+sınıf `curriculum` ve `verification.frame_source` bloklarına yazılır.
+
+Niyet ayrımı: kazanım kodu mu verildi (`FB.5.3.1.1`), yoksa ders+sınıf+konu mu ("5. sınıf
+fen, hücre")? İkisi de aynı akışa girer; fark yalnız Adım 2'nin sorgusudur.
 
 **Adım 1 — Ders slug'ını bul.** `list_subjects` (gerekiyorsa `q` ile) → doğru
 `slug`'ı al (örn. `fen-bilimleri-dersi`). Slug olmadan kazanım çekilemez.
@@ -199,10 +227,30 @@ pedagojik omurgasını kazanımın gerektirdiği bilişsel sürece hizalar.
 **Adım 5 — `curriculum` bloğunu doldur** (§5 şeması): her kazanım için kod,
 metin, beceri kodu ve hangi segment id'lerine bağlandığı (`mappedTo`).
 
+**Adım 5.5 — KAPSAM + DOĞRULUK DENETİMİ (ZORUNLU; §6.1'in `verification` bloğunu ÜRET).**
+Kullanıcı sözleşmesi: içerik denetlenmeden canlıya alınmaz. **Denetimi sen (model) yaparsın
+— ama dayanakla, sezgiyle değil.** İki eksen:
+- **(a) Kapsam:** ürettiğin her şey Adım 3'te açtığın çerçevenin **İÇİNDE** mi? Dışında
+  kalanı **çıkar** ve `verification.scope.excluded[]`'a yaz. Doğru olması yetmez — o sınıfın
+  çerçevesinde yoksa yeri yok. `scope.in_frame:false` ise **üretme**.
+- **(b) Doğruluk + tutarlılık:** her olgusal iddiayı ders kitabı metnine karşı sına; modül
+  kendi içinde çelişmesin (bir segmentte kurduğunu başka segmentte bozma).
+
+Sonucu **§6.1 şemasındaki `verification` bloğuna** yaz: her iddia için `claim` +
+`grounding` (`document_id` + `page`) + `verdict`. **Dayanağını gösteremediğin iddiayı ya
+kaynağına bağla ya modülden çıkar** — `verdict:"general_knowledge"` bir kaçış deliği değil,
+bir **borçtur** (kapı WARN verir; çoğunluk öyleyse FAIL).
+
 **Adım 6 — Modülü kur, doğrula, sun.** Normal `carbon-edupedia` iş akışına dön
-(SKILL.md §8 Adım 2 ve sonrası): segmentleri kazanımlara göre kurgula, şablona
-yerleştir, `validate_module.py` çalıştır (G-CURRICULUM dâhil), kaydet ve sun.
-`meta.sourceCitation` çekilen kazanım kodlarını + korpus sürümünü içermeli.
+(SKILL.md §8 Adım 2 ve sonrası): segmentleri kazanımlara göre kurgula, şablona yerleştir,
+kaydet/yayınla (yüzeye göre — SKILL.md §8 Adım 6). `meta.sourceCitation` çekilen kazanım
+kodlarını + korpus sürümünü içermeli.
+
+> **Kapıların otoritesi yayın sunucusudur.** `validate_module.py` (G-CURRICULUM + **G-VERIFY**
+> dâhil 14 kapı) yalnız **yerel ön-kontroldür**; yayında sunucu HTML'i kendisi ölçer ve
+> istemcinin beyanını yok sayar — kapı düşerse 422. Yani `verification` bloğunu "kapıyı
+> geçmek için" değil, **denetimi gerçekten yaptığın için** yaz: kapı dayanağın
+> GÖSTERİLDİĞİNİ ölçer, iddianın DOĞRU olduğunu **ölçemez** (çevrimdışı, MCP erişimi yok).
 
 ## 4. Beceri → etkileşim deseni haritalama tablosu  ← ÇEKİRDEK KATMA DEĞER
 

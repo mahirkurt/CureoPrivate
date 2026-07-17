@@ -1,12 +1,12 @@
 ---
 name: toplu-okuma
-description: Çok-sayfalı satın-alınmış belgede async çift-motor OCR + anamnesis ingest.
+description: Çok-sayfalı satın-alınmış belgede async OCR (Transleyt varsayılan) + anamnesis ingest.
 ---
 
 `vekayinuvis` skill'ini **ASYNC OCR** akışında, **`devlet-arsivleri`** + **`anamnesis`**
 connector'ları odağıyla çalıştır. Referans: `references/devlet-arsivleri-katalog.md` §8.4.
 
-Hedef: satın-alınmış, çok-sayfalı bir belgeyi (>5 sayfa VEYA `engine="both"` tam belge)
+Hedef: satın-alınmış, çok-sayfalı bir belgeyi (>5 sayfa VEYA çok-motorlu (`both`) tam belge)
 sync OCR sınırını aşan bir işle işlemek — async kuyruk + tek-seferlik tam-metin okuma +
 `anamnesis` ingest ile bağlam ekonomisini korumak. ≤5 sayfalık tek-motor işler bu
 skill'e gelmeden `/vekayinuvis:arsiv-oku`'nun sync yolunda çözülür; bu skill yalnız
@@ -57,7 +57,8 @@ aşağıdaki eşiği aşan işleri üstlenir.
 mi" sütunu düşük-güven veya çelişkili sayfaları işaretler — bu sayfalar için
 `devarsiv_get_archive_page` ile görüyle doğrulama önerilir.
 
-**No-fabrication:** OCR/HTR çıktısı her hâlde insan doğrulamasına tabidir; görü
-birincil, HTR yardımcıdır (K2 — Transkribus taşra-kâtibi ellerinde gürültülü
+**No-fabrication:** OCR/HTR çıktısı ölçülü %13-23 CER taşır (özel ad/tarih/meblağda hata
+beklenir, çıktıda beyan edilir); Osmanlı el yazmasında varsayılan Transleyt + asistan görüsü
+uzlaştırması (K2 — denk ve bağımsız; Transkribus taşra-kâtibi ellerinde gürültülü
 olabilir). Ham HTR metni rapora doğrudan alıntılanmaz — görüyle doğrulanmış okuma
 alıntılanır, HTR dipnotta kalır (K6 madde 5).

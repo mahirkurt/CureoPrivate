@@ -8,7 +8,7 @@
         "Authorization": "Bearer ${OTTOMAN_ARCHIVES_MCP_API_KEY}"
       },
       "_tier": "core",
-      "_role": "ÇEKİRDEK Osmanlı arşiv keşfi — 33-kaynaklı registry + IIIF tam-metin (Gallica/LoC/IA/Princeton/SALT/Europeana/DPLA) + within-manifest search + DergiPark/DSpace curated + TDV İslâm Ansiklopedisi + Hicri/Rumî/Miladi çevirici + ebced/kronogram + defter şeması + eScriptorium HTR (opt-in). Her sorgunun keşif omurgası; kısıtlı-kaynak için erişim yol haritası."
+      "_role": "ÇEKİRDEK Osmanlı arşiv keşfi — 33-kaynaklı registry + IIIF tam-metin (Gallica/LoC/IA/Princeton/SALT/Europeana/DPLA) + within-manifest search + DergiPark/DSpace curated + TDV İslâm Ansiklopedisi + Hicri/Rumî/Miladi çevirici + ebced/kronogram + defter şeması + eScriptorium matbu-korpus HTR (opt-in; el yazması motoru değil). Her sorgunun keşif omurgası; kısıtlı-kaynak için erişim yol haritası."
     },
     "devlet-arsivleri": {
       "type": "http",
@@ -17,7 +17,7 @@
         "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
       },
       "_tier": "core",
-      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + belge 3'lüsü (engine paramlı çift-motor OCR) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 6'lısı (300 DPI, arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 22 araç; tek-cihaz oturum kilidi (HP)."
+      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + belge 3'lüsü + harici görüntü (engine paramlı OCR; Osmanlı varsayılanı transleyt) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 6'lısı (300 DPI, arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 22 araç; tek-cihaz oturum kilidi (HP)."
     },
     "yoktez": {
       "type": "http",

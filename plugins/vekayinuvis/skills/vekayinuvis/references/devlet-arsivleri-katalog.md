@@ -29,7 +29,7 @@ kapatır: resmî katalog araması artık **doğrudan canlı** yapılır.
 
 Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 (state-changing, **ödemesiz**), satın-alınmış belgelerin **yerel arşivi**
-(300 DPI + çift-motor OCR) ve bir **async OCR kuyruğu** dahil **22 araç,
+(300 DPI + Transleyt OCR) ve bir **async OCR kuyruğu** dahil **22 araç,
 6 grup**tur.
 
 | Grup | Araç | Not |
@@ -41,7 +41,8 @@ Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 | Arama | `devarsiv_detailed_search_fields(arsiv)` | Form-alan introspeksiyonu |
 | Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + **`access`** (`purchased`/`purchasable`) — hangi §8 akışına gidileceğini belirler |
 | Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma**, satın-alma durumundan bağımsız |
-| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="both"` (bkz. §7 K2) |
+| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` (bkz. §7 K2) |
+| Belge | `devarsiv_ocr_image(image_url, engine?, lang?)` | Harici IIIF/görüntü OCR; aynı motor beyni; SSRF allowlist'li (`DEVARSIV_OCR_IMAGE_HOSTS`, boş=kapalı) |
 | Sepet | `devarsiv_add_to_cart(item_id, hash, arsiv, pages?)` `[_RW]` | 1-tabanlı cbk sayfa seçimi ("1,3-5"; boş=tümü); ödeme yapmaz |
 | Sepet | `devarsiv_list_cart()` `[_RO]` | Kalemler + **bağlayıcı Tutar** |
 | Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
@@ -60,7 +61,7 @@ Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 **Kanonik akış (tekil kayıt):** `devarsiv_session_status` → `devarsiv_search` *veya*
 `devarsiv_semantic_search` (dar/diakronik sorgu) → ilgili satırın `item_id`+`hash`'i ile
 `devarsiv_get_belge` → dönen `access` alanına göre **§8'deki dört akıştan biri**
-(satın-alma / arşiv-okuma / üç-sütun transkripsiyon / async).
+(satın-alma / arşiv-okuma / iki-okuyucu transkripsiyon / async).
 
 **Araç seçim rehberi:**
 - Tam-eşleşen bilinen terim/fon → `devarsiv_search`.
@@ -221,21 +222,20 @@ yerel arşiv akışından yapılır (300 DPI, temsilî önizlemeden daha yüksek
 `engine`: `auto` (Osmanlı→`both`, diğerleri→`tesseract`) | `both` | `transkribus` |
 `escriptorium` | `tesseract`.
 
-`both` → **Transkribus** (el yazması, PyLaia) + **eScriptorium** (basılı, Kraken)
-**PARALEL** çalışır; iki transkripsiyon `transcriptions` altında yan yana + tesseract
-damga/referans-kodu katmanıyla birlikte **üç sütun** döner (§8.3). Düşen motor dürüst
-`unavailable` nedeni taşır. Latin arşivler (1/3/4) daima `tesseract`. **Görü birincil,
-HTR yardımcı** — Transkribus taşra-kâtibi ellerinde gürültülü olabilir (2026-07-09 canlı
-gözlem); bu yüzden Osmanlı OCR varsayılanı `engine="both"` (görü birincil çapraz-kontrol,
-HTR/Kraken yardımcı).
+**Osmanlı varsayılanı `transleyt`** (ölçülen en iyi okuyucu; en doğru okuma Transleyt +
+asistan görüsü uzlaştırması — kanonik doktrin: `/vekayinuvis:transkripsiyon` §İki-okuyucu
+uzlaştırma). `both` açıkça istenirse **Transkribus** + **eScriptorium** paralel koşar
+(matbu/çapraz-kontrol); iki transkripsiyon `transcriptions` altında yan yana + tesseract
+damga katmanı döner (§8.3). Düşen motor dürüst `unavailable` taşır. Latin arşivler (1/3/4)
+daima `tesseract`. Zayıf motorları (ES 0.479, TK 0.782) oya katmak doğruluğu düşürür.
 
 | İçerik | En iyi motor | Nasıl |
 |---|---|---|
 | **Latin / Cumhuriyet (BCA) + modern** | `tesseract` (`tur+eng`) | `devarsiv_ocr_belge(…, engine="tesseract")` → tam makine metni + güven |
-| **Osmanlı taramasındaki basılı damga + arşiv referans kodu** | `tesseract` (`tur+eng+ara`) | `devarsiv_ocr_belge(…, engine="both")` içindeki tesseract katmanı → ör. `İ.SH.00001,00001.001` güvenilir okunur (~60 conf) |
-| **El yazması Osmanlıca Arap-harfli gövde** | **Transkribus PyLaia HTR** (deterministik) *+ tamamlayıcı* asistan görüsü / eScriptorium Kraken | `devarsiv_ocr_belge(…, engine="both")` → §7.2 K3 model tablosuyla çeviriyazır + eScriptorium basılı çapraz-kontrol; düşük-kalite/çapraz-doğrulama için `devarsiv_get_belge_image` + asistan görüsü |
+| **Osmanlı taramasındaki basılı damga + arşiv referans kodu** | `tesseract` (`tur+eng+ara`) | Transleyt çıktısıyla birlikte tesseract damga katmanı → ör. `İ.SH.00001,00001.001` güvenilir okunur (~60 conf) |
+| **El yazması Osmanlıca Arap-harfli gövde** | **Transleyt** (0.130) + asistan görüsü (0.154) uzlaştırması | `devarsiv_ocr_belge(…)` varsayılanı Transleyt metnini döndürür; asistan `devarsiv_get_belge_image` taramasını görüsüyle okuyup uzlaştırır (ikisi denk ve bağımsız) |
 
-### 7.2 Transkribus model seçim tablosu (K3)
+### 7.2 Transkribus model tablosu — neden TK bir transkripsiyon rakibi DEĞİL
 
 | Belge türü | Model | Alfabe | CER | Not |
 | --- | --- | --- | --- | --- |
@@ -248,8 +248,8 @@ HTR/Kraken yardımcı).
 **⚠ Alfabe (2026-07-16 canlı ölçümü).** TK'nin Osmanlıca modelleri Arap-harfli görüntüyü okur ama
 **Latin çeviriyazı yazar** (52502 kendi belgesinde TTK latinizasyon şemasını beyan eder; 56496 onu
 baz model alıp karakter setini miras alır). eScriptorium **Arap harfli** yazar → iki çıktı
-karşılaştırılamaz; `arbitrate=true` hakemliğinde `agreement_rate` tanım gereği 0 çıkar (bug değil).
-Aynı alfabe tek seçenekle mümkün: **429513** — ama ölçüm onu da eledi (aşağı bak).
+karşılaştırılamaz — TK ayrı bir çıktıdır (Latin çeviriyazı), iki-okuyucu uzlaştırmasının rakibi
+değildir. Aynı alfabe tek seçenekle mümkündü (**429513**) ama ölçüm onu da eledi (aşağı bak).
 
 **⚠ Osmanlı varsayılanı artık `transleyt` (2026-07-17 ölçümü).** OpenITI MAKHZAN uzman
 ground-truth'una karşı 6 rik'a/divanî yazma sayfasında normalize CER: **Transleyt 0.230 ort. /
@@ -269,22 +269,18 @@ devarsiv_search / semantic_search → item_id + hash
   ├─ devarsiv_ocr_belge(item_id, hash, arsiv, engine=…)   → deterministik metin (Latin tam; Osmanlı damga+kod; el yazması → both)
   └─ devarsiv_get_belge_image(item_id, hash, arsiv) → tarama görüntüsü:
         · Cumhuriyet/Latin: OCR metnini görsel doğrula
-        · Osmanlı EL YAZMASI: **asistan taramayı görüsüyle transkribe eder** (en iyi tam-okuma, HTR ile çapraz-kontrol)
+        · Osmanlı EL YAZMASI: **Transleyt (varsayılan) + asistan görüsü uzlaştırması** (ikisi denk ve bağımsız)
 ```
 
 **Değişmezler (no-fabrication):**
 - Görüntü **gerçek taramadır, uydurulmaz**; OCR düşük-güvende `mean_confidence` + `note` ile
   dürüstçe raporlanır — asla uydurma transkripsiyon.
 - tesseract **basılı/dizgi** metni okur; **el yazması Osmanlıca'yı OKUMAZ** (deterministik OCR sınırı).
-  El yazması için görsel-okuma (asistan) veya Transkribus HTR; çıktı her hâlde **insan
-  doğrulamasına** tabi (çift-tarih + fon/kutu/gömlek atıf disiplini).
-  **Transkribus HTR AKTİF (2026-07-08):** `devarsiv_ocr_belge` arsiv=2'de el yazması Osmanlıca'yı
-  **Transkribus PyLaia + model 56496 (`OttomanTurkish_generic`)** ile deterministik olarak
-  çeviriyazır (legacy TrpServer REST: upload→HTR→export; ~50s, ~1 kredi/sayfa; IJMES-diakritikli
-  transliterasyon). ⇒ **el yazması için birincil deterministik yol `devarsiv_ocr_belge`.**
-  `devarsiv_get_belge_image` + asistan görüsü tamamlayıcı kalır (düşük-kalite/gürültülü tarama,
-  çapraz-doğrulama). HTR çıktısı **insan doğrulamasına tabidir** (model CER ~%12; gürültülü
-  taramada daha düşük). Durum: `devarsiv_server_info` → `ocr.engines` (aktif/degrade).
+  El yazması için varsayılan **Transleyt** (0.130) + asistan görüsü (0.154) uzlaştırması: MCP
+  Transleyt metnini döndürür, asistan aynı sayfayı görüsüyle okuyup uzlaştırır (ikisi denk ve
+  bağımsız — ölçüm 0.231→0.162). Transkribus Latin çeviriyazı yazar (transkripsiyon rakibi değil).
+  Çıktı ölçülü %13-23 CER taşır (özel ad/tarih/yer/meblağda hata beklenir; hata payı çıktıda beyan
+  edilir; birincil-kaynak yorumu araştırmacıya aittir). Durum: `devarsiv_server_info` → `ocr.engines`.
 - Önizleme = **temsilî tek sayfa**; `goruntu_sayisi` gerçek sayfa sayısını verir. Çok-sayfalı
   tam satın-alınmış set artık **yerel arşivden** okunur (§8.2, → `skills/arsiv-oku`).
 - Getirilen tarama/transkripsiyon > eşik → **anamnesis'e ingest** (bağlam ekonomisi §3.5);
@@ -292,7 +288,7 @@ devarsiv_search / semantic_search → item_id + hash
 
 ---
 
-## 8. Dört kanonik akış (satın-alma / arşiv-okuma / üç-sütun transkripsiyon / async)
+## 8. Dört kanonik akış (satın-alma / arşiv-okuma / iki-okuyucu transkripsiyon / async)
 
 BelgeGoster yalnız **1 temsilî önizleme** (sample_picture) verir. Bir belgenin tüm
 sayfalarına ulaşmak ve onu çok-motorlu okumak için aşağıdaki dört akıştan biri devreye
@@ -339,19 +335,19 @@ viewer'ı üzerinden çok-sayfa OCR sağlar ama **temsilî-sayfa sınırlıdır*
 yol yukarıdaki yerel-arşiv akışıdır. Sayfa metnine de ihtiyaç varsa §8.3/§8.4'e geç
 (motor seçimine göre sync/async).
 
-### 8.3 Üç-sütun transkripsiyon akışı (`engine="both"`, → `skills/arsiv-oku`)
+### 8.3 İki-okuyucu transkripsiyon akışı (`engine="transleyt"`, → `skills/arsiv-oku`)
 
-Osmanlı el yazması sayfalarda varsayılan `engine="both"`: **Transkribus** (PyLaia, el
-yazması, §7.2 K3 model tablosu) + **eScriptorium** (Kraken, basılı) **PARALEL** koşar,
-tesseract damga/referans-kodu katmanıyla birlikte `transcriptions` altında **üç sütun
-yan yana** döner (görü birincil çapraz-kontrol, HTR/Kraken yardımcı — bkz. §7.1 K2).
-Düşen motor dürüst `unavailable` nedeni taşır; çıktı her hâlde **insan doğrulamasına**
-tabidir.
+Osmanlı el yazması sayfalarda varsayılan `engine="transleyt"`: MCP Transleyt metnini
+(0.130) döndürür, asistan aynı sayfayı görüsüyle (0.154) okuyup uzlaştırır — ikisi denk ve
+bağımsız (ölçüm 0.231→0.162). Kanonik doktrin: `/vekayinuvis:transkripsiyon` §İki-okuyucu
+uzlaştırma. `both` açıkça istenirse Transkribus + eScriptorium paralel koşar (matbu/çapraz-
+kontrol). Adaylar **ayrı** raporlanır (tek birleşik metin YASAK); çıktı ölçülü %13-23 CER
+taşır (özel ad/tarih/yer/meblağda hata beklenir, çıktıda beyan edilir).
 
 ### 8.4 Async OCR akışı (K4, → `skills/toplu-okuma`)
 
-Sync/async kararı: **≤5 sayfa VE tek motor** → `devarsiv_ocr_archive_pages` (sync,
-MULTIPAGE_MAX_PAGES). **>5 sayfa VEYA `both` tam belge** → async kuyruk:
+Sync/async kararı: **≤5 sayfa** → `devarsiv_ocr_archive_pages` (sync,
+MULTIPAGE_MAX_PAGES). **>5 sayfa VEYA çok-motorlu (`both`) tam belge** → async kuyruk:
 
 ```
 devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)     [_RW, idempotent, job_id döner]

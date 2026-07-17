@@ -67,7 +67,7 @@ defter şeması) · E. HTR Pipeline (opt-in eScriptorium).
 - **Belge 3'lüsü** — `devarsiv_get_belge` (künye + erişim/satın-alma durumu; hash zinciri
   aramadan gelir, uydurulamaz), **`devarsiv_get_belge_image`** (önizleme taraması
   ImageContent — satın-almadan bağımsız, **görüyle okuma**), **`devarsiv_ocr_belge`**
-  (`engine` paramlı çift-motor OCR/HTR — Osmanlı varsayılanı `both`, Latin arşivler daima
+  (`engine` paramlı OCR/HTR — Osmanlı varsayılanı `transleyt`, Latin arşivler daima
   `tesseract`).
 - **eSatış sepeti 4'lüsü** `[_RW/_RO/_DESTRUCTIVE]` — `devarsiv_add_to_cart` (1-tabanlı
   sayfa seçimi, örn. "1,3-5"), `devarsiv_list_cart` (kalemler + **bağlayıcı Tutar**),
@@ -89,7 +89,7 @@ defter şeması) · E. HTR Pipeline (opt-in eScriptorium).
 `detailed_search` üst-fon × tarih-penceresi enumerasyonu + `item_id` union (skill
 `devlet-arsivleri-katalog.md` §2b). **No-fabrication:** geniş sorgu → `refine_required`;
 canlı oturum yoksa → `session_required`; ödeme asla otonom değil (yalnız insan/noVNC);
-görü birincil, HTR yardımcı; yokluk kanıt değildir (asla uydurma). ottoman-archives'ın
+Osmanlı el yazması → Transleyt + asistan görüsü uzlaştırması (denk); yokluk kanıt değildir (asla uydurma). ottoman-archives'ın
 **yapmadığı** resmî BOA/BCA/Diplomatik/Askeri katalog aramasını + eSatış sepeti + satın-
 alınmış/yerel-arşiv okuma + async OCR job akışını doldurur; belge/arşiv sayfa taraması ve
 OCR/HTR yalnız gerçek araç çıktısı ve provenance ile aktarılır (§ 8).
@@ -309,7 +309,7 @@ keychain'ine yazılır (settings.json'a değil).
 |---|---|---|
 | `SOURCE_HUNT` | **devlet-arsivleri** (search / **semantic_search** modern terimde — kanıt-yoğunluğu; `capped` ise **list_fon_categories** kapsam-haritası) + ottoman-archives (list_sources, search_iiif, search_dergipark, search_dspace) + yoktez + literatur + **tbmm** (`tbmm_search_acik_erisim` DSpace — geç-Osmanlı/erken-Cumhuriyet zabıt kanıt-yoğunluğu) | tavily/exa akademik filtre → web_search |
 | `ARCHIVE_DEEP_DIVE` | **devlet-arsivleri** (search/semantic_search + get_belge; konu >1000 → **list_fon_categories + detailed_search** üst-fon×tarih enumerasyonu, item_id union) + ottoman-archives (get_source, search_literature, get_islam_ansiklopedisi) + yoktez | web_fetch (İSAM e-baskı) |
-| `MANUSCRIPT_TRANSCRIBE` | ottoman-archives eScriptorium pipeline (E katmanı) | — (HTR yerel; fallback yok) |
+| `MANUSCRIPT_TRANSCRIBE` | BOA belgesi → `devarsiv_ocr_*` (Transleyt); harici IIIF → `devarsiv_ocr_image` | ottoman-archives eScriptorium = MATBU korpus + segmentasyon (0.479, el yazması motoru değil) |
 | `PROSOPOGRAPHY` | **devlet-arsivleri** (DH.SAİD Sicill-i Ahval katalog kaydı) + ottoman-archives (get_islam_ansiklopedisi) + yoktez + **yok-akademik** (modern akademisyen) + **detsis** (`detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar` — kurumsal/teşkilat prosopografisi; **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez**) + **openathens/annas-reader** (biyografik monograf/Sicill-i Osmânî tam-metin) + web_fetch | consensus/paper-search |
 | `EVENT_RECONSTRUCTION` | ottoman-archives (IIIF gazete) + **devlet-arsivleri** (dönem belge kayıtları) + **resmigazete** (`/eskiler/` dönem yayın kaydı, erken-Cumhuriyet) + literatur + paper-search + tavily | web_search |
 | `HISTORIOGRAPHY` | **literatur** (DergiPark tam-metin) + **openathens** (lisanslı kitap/makale tam-metin) + **annas-reader** (son-çare monograf/makale) + paper-search + consensus + scholar-gateway + ottoman-archives (search_dergipark) + **yok-akademik** (ekol/uzman haritası) — tam-metin şelalesi `openathens→annas-reader`; `marmara` (Turcademy/hukuk Tier-3b, `openathens→marmara→annas-reader`) **wire bekliyor** (§ 1 not, DNS yayınlanmadı) | exa |

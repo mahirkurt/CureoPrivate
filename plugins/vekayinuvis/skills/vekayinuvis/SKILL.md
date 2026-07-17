@@ -177,15 +177,15 @@ aynı turda çağrılır; sonuçlar Faz 2'de triangüle edilir.
 | **B. Tam-Metin Arama** | `ottoman_search_iiif` (Gallica/LoC/IA/Princeton/Europeana/DPLA), `ottoman_search_dergipark`, `ottoman_search_dspace`, `ottoman_search_literature` (federe), `ottoman_search_within_manifest`, `ottoman_get_islam_ansiklopedisi` | Belirli bir kişi, yer, kurum, terim, dönem | Eşleşme listesi, IIIF manifest URL'leri, DergiPark/DSpace makale linkleri |
 | **C. Belge/Metin Çekme** | `ottoman_fetch_iiif_manifest`, `ottoman_browse_iiif_collection`, `ottoman_get_dspace_item`, `ottoman_get_islam_ansiklopedisi` | Belirli manifest/madde/koleksiyon | Sayfa metadata, kanonik IIIF görüntü URL'leri, tam metin |
 | **D. Hesaplama/Yardımcı** | `ottoman_convert_date` (Hicri↔Rumî↔Miladi), `ottoman_parse_ottoman_date`, `ottoman_parse_number`, `ottoman_calc_ebced`, `ottoman_tarih_dusur` (chronogram çözümü), `ottoman_get_defter_schema`, `ottoman_export_html` | Tarih/sayı/ebced/defter şeması ihtiyacı | Tarih dönüşümü, JSON şema, HTML rapor |
-| **E. HTR Pipeline** (opt-in) | `ottoman_escriptorium_list_projects/list_documents/list_models/create_document/import_iiif/segment/transcribe/get_document/get_transcription/list_tasks` | Yazma/baskı Osmanlıca metni dijitalleştirme | Segmentasyon + HTR çıktısı |
+| **E. Matbu korpus boru hattı** (opt-in) | `ottoman_escriptorium_list_projects/list_documents/list_models/create_document/import_iiif/segment/transcribe/get_document/get_transcription/list_tasks` | **Matbu** Osmanlıca korpus (stateful proje/model) + satır segmentasyon kaynağı | Segmentasyon + HTR çıktısı (el yazması TANIMASI zayıf: 0.479 → harici görüntü için `devarsiv_ocr_image`) |
 
 ### 3.1.b Devlet Arşivleri MCP — F. Resmî Katalog + Sepet + Yerel Arşiv Katmanı (`devlet-arsivleri`)
 
 Resmî devlet arşivi kataloğunda (`katalog.devletarsivleri.gov.tr`) **doğrudan**
 fon/kutu/gömlek araması — ottoman-archives'ın **yapmadığı** BOA/BCA/Diplomatik/
 Askeri katalog erişimini doldurur; artık eSatış sepeti (state-changing, ödemesiz)
-ve satın-alınmış belgelerin **yerel arşivini** (300 DPI + çift-motor OCR + async
-job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-katalog.md`**.
+ve satın-alınmış belgelerin **yerel arşivini** (300 DPI + Transleyt OCR + async
+job) de kapsar. Referans: **`references/devlet-arsivleri-katalog.md`**.
 
 | Grup | Araç | Not |
 | --- | --- | --- |
@@ -196,7 +196,8 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 | Arama | `devarsiv_detailed_search_fields(arsiv)` | Form-alan introspeksiyonu |
 | Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + `access` (purchased/purchasable) |
 | Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma** |
-| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | OCR/HTR; Osmanlı varsayılanı `engine="both"` |
+| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` |
+| Belge | `devarsiv_ocr_image(image_url, engine?, lang?)` | Harici IIIF/görüntü OCR (BOA dışı yazma); aynı motor beyni; SSRF allowlist'li (`DEVARSIV_OCR_IMAGE_HOSTS`, boş=kapalı) |
 | Sepet | `devarsiv_add_to_cart(item_id, hash, arsiv, pages?)` `[_RW]` | 1-tabanlı cbk sayfa seçimi ("1,3-5"; boş=tümü) |
 | Sepet | `devarsiv_list_cart()` `[_RO]` | Kalemler + **bağlayıcı Tutar** |
 | Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
@@ -219,14 +220,16 @@ job) de kapsar. **22 araç, 6 grup.** Referans: **`references/devlet-arsivleri-k
 
 > **Okuma önceliği ve motor/async konvansiyonu:** Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_archive → devarsiv_get_archive_page (300 DPI + görü); katalog önizlemesi (sample) yalnız satın-alınmamış belgeler içindir. (→ `skills/arsiv-oku`.)
 >
-> Motor seçimi `engine`: `auto` (Osmanlı→both, diğerleri→tesseract) |
-> `both` | `transkribus` | `escriptorium` | `tesseract`. `both` → Transkribus (el yazması
-> PyLaia) + eScriptorium (basılı Kraken) PARALEL; iki transkripsiyon `transcriptions` altında
-> yan yana + tesseract damga katmanı. Düşen motor dürüst `unavailable` nedeni taşır. Latin
-> arşivler (1/3/4) daima tesseract. **Görü birincil, HTR yardımcı** — Transkribus taşra-kâtibi
-> ellerinde gürültülü olabilir (2026-07-09 canlı gözlem); bu yüzden Osmanlı OCR varsayılanı
-> `engine="both"` (görü birincil çapraz-kontrol, HTR yardımcı). Sync/async kararı: ≤5 sayfa
-> VE tek motor → `devarsiv_ocr_archive_pages` (sync). >5 sayfa VEYA `both` tam belge →
+> Motor seçimi `engine`: `auto` (Osmanlı→`transleyt`, diğerleri→tesseract) |
+> `transleyt` | `both` | `transkribus` | `escriptorium` | `tesseract`. **Osmanlı varsayılanı
+> `transleyt`** — ölçülen en iyi okuyucu; en doğru okuma Transleyt + asistan görüsü
+> uzlaştırmasıdır (ikisi DENK ve bağımsız). Motor doktrini kanonik kaynak:
+> `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma (ölçüm 2026-07-17 MAKHZAN — CER tablosu
+> ve gerekçe orada; burada tekrarlanmaz). `both` açıkça istenirse Transkribus + eScriptorium
+> paralel koşar (matbu/çapraz-kontrol). Latin arşivler (1/3/4) daima tesseract. Zayıf motorları
+> (ES 0.479, TK 0.782) oya katmak doğruluğu düşürür. Düşen motor dürüst `unavailable` taşır.
+> Sync/async kararı: ≤5 sayfa → `devarsiv_ocr_archive_pages` (sync). >5 sayfa VEYA çok-motorlu
+> (`both`) tam belge →
 > `devarsiv_ocr_submit` → `devarsiv_ocr_result(include_text=false)` ile poll → `done`'da
 > **tek sefer** `include_text=true` → anamnesis `ingest_document(doc_id="devarsiv:<code>", …)`
 > → sonraki sorgular `hybrid_query` (§ 3.5 Tam-Filo ve Bağlam Ekonomisi — Tier 0/1 bağlam-
@@ -441,14 +444,14 @@ kodu OCR ile doğrulanır). Tarama gerçek, uydurma yok; düşük-güven dürüs
 
 Üç kaynak: (a) kullanıcının yüklediği görüntü / IIIF manifest URL, (b) **resmî katalog belgesi**
 (`devarsiv_search` → `devarsiv_get_belge_image` ile sayfa taraması), (c) ottoman-archives IIIF nüshası.
-Pipeline: görüntü → `ottoman_escriptorium_list_models` → `ottoman_escriptorium_create_document`
-→ `ottoman_escriptorium_import_iiif` → `ottoman_escriptorium_segment` →
-`ottoman_escriptorium_transcribe` → `ottoman_escriptorium_get_transcription`.
-**Hızlı yol (katalog belgesi):** `devarsiv_get_belge_image` taramasını **asistan doğrudan
-görüsüyle transkribe eder** (el yazması Osmanlıca için pratikteki en iyi yol) veya
-`devarsiv_ocr_belge` (Transkribus HTR creds'liyse deterministik). Çıktı: HTR/transkripsiyon ham
-metni + insan-revizyon önerileri + paleografik notlar; **transkripsiyon insan doğrulamasına tabi**
-(uydurma yok, düşük-güven işaretlenir).
+**Osmanlı el yazması için varsayılan yol = iki-okuyucu uzlaştırması:** `devarsiv_ocr_belge`
+(BOA belgesi) veya `devarsiv_ocr_image(image_url)` (harici IIIF) Transleyt metnini döndürür
+(0.130); asistan aynı sayfayı görüsüyle okur (0.154, denk); ikisi uzlaştırılır (ölçüm:
+0.231→0.162). Motor doktrini: `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma.
+ottoman-archives'in `ottoman_escriptorium_*` pipeline'ı **matbu korpus** içindir (el yazması
+tanıması 0.479 — bu yola gitme). Çıktı: Transleyt + görü **ayrı** raporlanır (tek birleşik
+metin YASAK) + paleografik notlar; transkripsiyon ölçülü %13-23 CER taşır (özel
+ad/tarih/yer/meblağda hata beklenir; uydurma yok, düşük-güven işaretlenir).
 
 ### 5.4 PROSOPOGRAPHY — Prosopografi
 *"Mustafa Behçet Efendi'nin biyografisi ve hizmet kaydı."*

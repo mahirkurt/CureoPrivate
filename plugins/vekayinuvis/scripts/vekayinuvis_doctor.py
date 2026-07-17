@@ -341,16 +341,20 @@ def envanter_line(content: dict[str, Any]) -> str:
 
 
 def engine_lines(content: dict[str, Any]) -> list[str]:
-    """[engines] lines: transkribus/escriptorium status strings from ocr.engines."""
+    """[engines] lines: ocr.engines'teki TUM motorlar (transleyt varsayilani dahil).
+
+    Sabit liste degil, donen sozluk uzerinde don — yeni bir motor eklendiginde sessizce
+    dusmesin (transleyt tam bu yuzden gorunmez olmustu)."""
     ocr = content.get("ocr")
     engines = ocr.get("engines") if isinstance(ocr, dict) else None
     if not isinstance(engines, dict):
         return ["[engines] SORUN: devarsiv_server_info yanitinda ocr.engines alani yok"]
+    default = ocr.get("default_ottoman") if isinstance(ocr, dict) else None
     lines = []
-    for name in ("transkribus", "escriptorium"):
-        status = engines.get(name)
-        lines.append(f"[engines] {name}: {status if status is not None else 'bilinmiyor'}")
-    return lines
+    for name, status in engines.items():
+        mark = " (Osmanli varsayilani)" if name == default else ""
+        lines.append(f"[engines] {name}{mark}: {status if status is not None else 'bilinmiyor'}")
+    return lines or ["[engines] SORUN: ocr.engines bos"]
 
 
 def devarsiv_envanter_engines_lines(config: dict, timeout: int) -> list[str]:
@@ -532,7 +536,7 @@ def rows(topic: str, *, live: bool = False, timeout: int = 20) -> list[str]:
             "H-27-12-1337 (M. 1919); katalog URL ornegi:",
             "https://katalog.devletarsivleri.gov.tr/.../BelgeGoster.aspx?ItemId=...",
             "Belge goruntusu/OCR iddiasinda provenance ornegi:",
-            "devarsiv_ocr_belge page=1 engine=Transkribus model=56496 mean_confidence=<deger>.",
+            "devarsiv_ocr_belge page=1 engine=transleyt engine_chain=['transleyt:hit'] mean_confidence=null.",
         ]
     )
     return out

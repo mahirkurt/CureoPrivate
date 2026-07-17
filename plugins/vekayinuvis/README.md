@@ -7,7 +7,7 @@
 
 Birincil-kaynak-öncelikli **Osmanlı/Türk tarih araştırma orkestrasyon** Claude
 Code plugin'i. Ottoman Archives, resmî Devlet Arşivleri kataloğu (22 araç —
-eSatış sepeti, noVNC satın-alma, yerel BOA-kodlu arşiv, çift-motor OCR/HTR,
+eSatış sepeti, noVNC satın-alma, yerel BOA-kodlu arşiv, OCR/HTR (Transleyt varsayılan),
 async job kuyruğu), YÖK Tez, DergiPark tam-metin, YÖK Akademik, akademik
 triangülasyon katmanı, yasama/mevzuat katmanı (Resmî Gazete, mevzuat.gov.tr,
 TBMM, DETSİS) ve OpenAthens/Anna's Reader tam-metin şelalesini anamnesis
@@ -22,7 +22,7 @@ sepet/arşiv/OCR akış-skill'i** sunar.
 | Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.0.1) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
 | Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 10 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
-| Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async çift-motor OCR zinciri (bkz. **Yeni Akışlar**) |
+| Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async OCR zinciri (bkz. **Yeni Akışlar**) |
 | Doctor script | `scripts/vekayinuvis_doctor.py` | Marketplace-portable tam-filo preflight + G0 kapsam manifestosu; `--live` ile `devlet-arsivleri` oturum + `[envanter]`/`[engines]`/`[vnc]` probeları |
 | Connector envanteri | `CONNECTORS.md` | Tek doğruluk kaynağı — tam-filo, auth modeli, degrade kuralları |
 | Transport | `.mcp.json` | 17 MCP sunucusu: çekirdek, akademik, tam-metin, yasama/mevzuat, destekleyici ve RAG substratı |
@@ -141,18 +141,19 @@ skill'i (mod değil — `skills/vekayinuvis/SKILL.md`'in 9 modundan bağımsız,
    belgede okuma DAİMA yerel arşivden başlar; katalog önizlemesi yalnız
    satın-alınmamış belgeler içindir.
 3. **`/vekayinuvis:toplu-okuma`** — çok-sayfalı satın-alınmış belgede async
-   çift-motor OCR + anamnesis ingest. Sync/async karar kuralı (K4): ≤5
+   OCR + anamnesis ingest. Sync/async karar kuralı (K4): ≤5
    sayfa VE tek motor → sync `devarsiv_ocr_archive_pages`; >5 sayfa VEYA
-   `engine="both"` tam belge → async `devarsiv_ocr_submit` →
+   çok-motorlu (`both`) tam belge → async `devarsiv_ocr_submit` →
    `devarsiv_ocr_result` poll → `done`'da tek-sefer tam metin →
    `anamnesis.ingest_document` → sonraki sorgular `hybrid_query`. `stale`
    durumunda aynı parametrelerle resubmit edilir (yerel PDF; maliyet
    tekrarlanmaz).
 
-Motor konvansiyonu (`engine=auto|both|transkribus|escriptorium|tesseract`,
-Osmanlı varsayılanı `both` — Transkribus PyLaia el yazması + eScriptorium
-Kraken basılı PARALEL, görü birincil/HTR yardımcı) tüm üç akışta ve
-`/vekayinuvis:transkripsiyon` skill'inde ortaktır.
+Motor konvansiyonu (`engine=auto|both|transkribus|escriptorium|transleyt|tesseract`,
+**Osmanlı varsayılanı `transleyt`** — ölçülen en iyi okuyucu, CER 0.130-0.230) üç akışta ve
+`/vekayinuvis:transkripsiyon` skill'inde ortaktır. En doğru okuma Transleyt + asistan görüsü
+(0.154) uzlaştırmasıdır: denk ve bağımsız (ölçüm 0.231→0.162). Harici IIIF görüntüsü →
+`devarsiv_ocr_image`. Kanonik doktrin: `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma.
 
 ## Sürüm 2.x → 3.0 Geçişi (Migration)
 

@@ -33,7 +33,7 @@ Akış:
    taraması (önizleme, satın-almadan bağımsız). **Osmanlı el yazması** için taramayı **doğrudan
    görünle transkribe et**; Latin/Cumhuriyet için `devarsiv_ocr_belge` deterministik metin
    (basılı damga+referans kodu OCR ile doğrulanır). **Çok-sayfa okumada K4 kararı:** ≤5 sayfa
-   VE tek motor → `devarsiv_ocr_archive_pages` (sync); >5 sayfa VEYA `engine="both"` tam belge →
+   VE tek motor → `devarsiv_ocr_archive_pages` (sync); >5 sayfa VEYA çok-motorlu (`both`) tam belge →
    `devarsiv_ocr_submit` → `devarsiv_ocr_result` ile poll → **`/vekayinuvis:toplu-okuma`** akışına
    devret. Tarama gerçek — uydurma yok; düşük-güven dürüstçe belirtilir; transkripsiyon insan
    doğrulamasına tabi (bkz. `devlet-arsivleri-katalog.md` §7).

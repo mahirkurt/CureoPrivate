@@ -37,7 +37,7 @@ taraması/OCR/HTR yalnız gerçek `devarsiv_get_belge_image` / `devarsiv_ocr_bel
 Çok-sayfalı TAM erişim artık eSatış'a çıkmadan araç-içi çözülür: sepet→satın-alma
 (`/vekayinuvis:satinalma` — karar matrisi, metin-onay kapısı, ödeme DAİMA insan/
 noVNC) → yerel BOA-kodlu arşivden 300 DPI görüyle okuma (`/vekayinuvis:arsiv-oku`)
-→ gerekirse çok-sayfalı belgede async çift-motor OCR + anamnesis ingest
+→ gerekirse çok-sayfalı belgede async OCR + anamnesis ingest
 (`/vekayinuvis:toplu-okuma`) zinciriyle. Diğer kısıtlı kaynaklar (TKGM, ATASE,
 İSAM, Süleymaniye…) için içerik uydurulmaz; yalnız erişim yol haritası sağlanır.
 ```
@@ -53,7 +53,7 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
   *pre-flight zorunlu* (yoksa çekirdek işlev devre dışı)
 - `devlet-arsivleri` — **resmî Devlet Arşivleri kataloğu** (Osmanlı/BOA · Cumhuriyet/
   BCA · Diplomatik · Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi +
-  eSatış sepet/satın-alma + yerel BOA-kodlu arşiv/async çift-motor OCR (22 araç,
+  eSatış sepet/satın-alma + yerel BOA-kodlu arşiv/async OCR (22 araç,
   6 grup — `/vekayinuvis:satinalma` · `/vekayinuvis:arsiv-oku` ·
   `/vekayinuvis:toplu-okuma`) · *tek-cihaz oturum kilitli* → `devarsiv_session_status`
   ile canlılığı kontrol edin; **preflight'ta** `devarsiv_server_info` çağrısının
@@ -113,7 +113,7 @@ seçilir; belirsizlikte kullanıcıya tek soru sorulur.
 |-----|----------|-----------|
 | **SOURCE_HUNT** | Kaynak avı — hangi arşivler/kaynaklar var | "X hakkında hangi arşivler var?" |
 | **ARCHIVE_DEEP_DIVE** | Arşiv derin dalış + fond yol haritası | "BOA'da II. Mahmud dönemi tıbbiye HAT kayıtları?" |
-| **MANUSCRIPT_TRANSCRIBE** | Yazma HTR (eScriptorium pipeline) | "Bu yazma sayfanın transkripsiyonu mümkün mü?" |
+| **MANUSCRIPT_TRANSCRIBE** | Yazma transkripsiyon (Transleyt + asistan görüsü uzlaştırması) | "Bu yazma sayfanın transkripsiyonu mümkün mü?" |
 | **PROSOPOGRAPHY** | Biyografi + hizmet kaydı | "Mustafa Behçet Efendi'nin biyografisi" |
 | **EVENT_RECONSTRUCTION** | Olay kurgulaması (gün-gün) | "31 Mart Vakası'nın kronolojisi" |
 | **HISTORIOGRAPHY** | Tarih yazımı / literatür eleştirisi | "Tanzimat iktisadı üzerine literatürün durumu" |
@@ -134,7 +134,7 @@ seçilir; belirsizlikte kullanıcıya tek soru sorulur.
 | `/vekayinuvis:kaynak-avi` | SOURCE_HUNT | Kaynak matrisi (tür × erişim × dil × kanıt-yoğunluğu) |
 | `/vekayinuvis:arsiv-dalis` | ARCHIVE_DEEP_DIVE | Fond/tasnif yol haritası + erişim talimatı |
 | `/vekayinuvis:boa-katalog` | ARCHIVE_DEEP_DIVE | Resmî katalogda (BOA/BCA/Diplomatik/Askeri) doğrudan fon/kutu/gömlek araması + künye (`devlet-arsivleri` odaklı) |
-| `/vekayinuvis:transkripsiyon` | MANUSCRIPT_TRANSCRIBE | Görü + Transkribus + eScriptorium üç-sütun HTR pipeline |
+| `/vekayinuvis:transkripsiyon` | MANUSCRIPT_TRANSCRIBE | Transleyt + asistan görüsü iki-okuyucu uzlaştırması (harici IIIF → devarsiv_ocr_image) |
 | `/vekayinuvis:prosopografi` | PROSOPOGRAPHY | Yaşam çizelgesi + atama-azil zinciri + eser listesi |
 | `/vekayinuvis:kronoloji` | CHRONOLOGY_CONVERSION | Üç-takvim tablosu + ebced/kronogram |
 | `/vekayinuvis:literatur` | HISTORIOGRAPHY | DergiPark tam-metin literatür taraması + tarihyazımı sentezi |
@@ -142,7 +142,7 @@ seçilir; belirsizlikte kullanıcıya tek soru sorulur.
 | `/vekayinuvis:kanun-gerekce` | KANUN_GEREKÇESİ | TBMM-uyumlu 5-katmanlı tarihî gerekçe |
 | `/vekayinuvis:satinalma` | SEPET/SATIN-ALMA | eSatış sepet + noVNC satın-alma — karar matrisi, metin-onay kapısı, ödeme daima insan |
 | `/vekayinuvis:arsiv-oku` | ARŞİV OKUMA | Satın-alınmış belgeyi yerel BOA-kodlu arşivden 300 DPI görüyle okuma |
-| `/vekayinuvis:toplu-okuma` | ASYNC OCR | Çok-sayfalı satın-alınmış belgede async çift-motor OCR + anamnesis ingest |
+| `/vekayinuvis:toplu-okuma` | ASYNC OCR | Çok-sayfalı satın-alınmış belgede async OCR + anamnesis ingest |
 
 ## Adım 5 — Niyete Göre Yönlendir
 
@@ -162,8 +162,8 @@ Kullanıcının ne üzerinde çalıştığını sorun. Yaygın iş akışları:
 8. **"Satın aldığım belgeyi okumak istiyorum."** → `/vekayinuvis:arsiv-oku`
    (yerel BOA-kodlu arşivden 300 DPI görüyle, sayfa-sayfa).
 9. **"Çok-sayfalı satın-alınmış belgenin tam metnini/OCR'ını istiyorum."** →
-   `/vekayinuvis:toplu-okuma` (async çift-motor OCR + anamnesis ingest, K4 kararı
-   >5 sayfa veya `engine="both"` tam belgede devreye girer).
+   `/vekayinuvis:toplu-okuma` (async OCR + anamnesis ingest, K4 kararı
+   >5 sayfa veya çok-motorlu (`both`) tam belgede devreye girer).
 
 **Ayrım rehberi (scope guard):**
 - Mevzuat reformu/taslak yazımı → `lex-sanitas` (vekayinuvis yalnız tarihî

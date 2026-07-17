@@ -1,10 +1,14 @@
-# HTR İş Akışı — eScriptorium Üzerinden Yazma Transkripsiyonu
+# Osmanlıca Transkripsiyon İş Akışı — Matbu (eScriptorium) + El Yazması (Transleyt+görü)
 
-> `vekayinuvis` skill'inin **MANUSCRIPT_TRANSCRIBE** modunda etkinleşen ek
-> referans. Ottoman Archives MCP'nin eScriptorium tool ailesi üzerinden bir
-> Osmanlıca/Arapça yazmanın IIIF manifest'inden alınarak segmentlenmesi,
-> Handwritten Text Recognition (HTR) ile transkribe edilmesi ve insan
-> revizyonu için ihraç edilmesinin tam protokolünü sunar.
+> `vekayinuvis` skill'inin **MANUSCRIPT_TRANSCRIBE** modunda etkinleşen ek referans.
+>
+> **⚠ GÜNCEL DOKTRİN (2026-07-17 ölçümü).** Osmanlı **el yazması** için en doğru yol
+> **iki-okuyucu uzlaştırmasıdır**: Transleyt (0.130) + asistan görüsü (0.154), denk ve
+> bağımsız → uzlaştırma 0.162 (%30 iyileşme). Kanonik doktrin:
+> `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma. **eScriptorium yazma motoru DEĞİLDİR**
+> (el yazması tanıması 0.479) — aşağıdaki eScriptorium pipeline'ı **matbu korpus**
+> (salname/gazete/nizamname) + satır segmentasyon kaynağı içindir. Harici IIIF görüntüsü için
+> `devarsiv_ocr_image(image_url)` (aynı motor beyni, Transleyt varsayılan) tercih edilir.
 
 ---
 
@@ -70,10 +74,10 @@ ottoman_fetch_iiif_manifest(manifest_url="<adayın manifest URL'i>")
 devarsiv_search("<konu/terim>", arsiv=2)  → resmî katalog kayıtları (item_id/hash)
 ↓
 devarsiv_get_belge_image(item_id, hash, arsiv=2) → sayfa taraması ImageContent
-   (satın-alma durumundan bağımsız önizleme; satın-alınmışsa bkz. §7 devarsiv çift-motor)
+   (satın-alma durumundan bağımsız önizleme; satın-alınmışsa bkz. §7 devarsiv OCR — Transleyt varsayılan)
 ↓
 [Görüntü, IIIF manifest sayfası yerine doğrudan eScriptorium'a import edilebilir
- veya §7'deki devarsiv çift-motor OCR/HTR yoluna (Transkribus+eScriptorium) yönlendirilir]
+ veya §7'deki devarsiv OCR/HTR yoluna (Transleyt varsayılan) yönlendirilir]
 ```
 
 > **Manifest seçim kriterleri (IIIF yolu)**: (i) tek yazma olmalı (compilation
@@ -115,7 +119,7 @@ ara:
 > bile zaman alarak okuduğu özel kalem yazılarıdır. Bu hatlarda HTR çıktısı
 > yaklaşık bir okuma olarak değerlendirilmeli, asla doğrudan yayınlanmamalı.
 
-#### 2.1 devarsiv çift-motor için Transkribus model seçim tablosu (K3)
+#### 2.1 Transkribus model tablosu — neden TK bir transkripsiyon rakibi DEĞİL
 
 Adım 0'da **(b) devarsiv yolu** izlendiyse (BOA/BCA belgesi, eScriptorium'a
 değil doğrudan `devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr_submit`'e
@@ -136,9 +140,9 @@ Transkribus'un Osmanlıca modelleri **Arap-harfli görüntüyü okur ama Latin �
 Kanıt zinciri: 52502 kendi belgesinde *"'half-transcription' latinization scheme recommended by
 the Turkish Historical Association"* der; 56496 onu **baz model** alır ve karakter setini miras
 alır; canlı ölçüm bunu doğrular (56496 arap=0/latin=78, 169801 arap=0/latin=92). eScriptorium
-/OpenITI ise **Arap harfli** yazar. Sonuçlar bu yüzden **doğrudan karşılaştırılamaz** — Katman 3
-hakemliğinde iki motor ayrı alfabelerde aday üretir ve `agreement_rate` **tanım gereği** 0 çıkar.
-Bu bir hata değil, dürüst sinyaldir.
+/OpenITI ise **Arap harfli** yazar. Sonuçlar bu yüzden **doğrudan karşılaştırılamaz**: TK ayrı
+bir çıktıdır (Latin çeviriyazı), iki-okuyucu uzlaştırmasının rakibi değildir. (Bu, emekliye
+ayrılan Katman 3 hakemliğinin öncülünü çürüten iki ölçümden biriydi — bkz. §Katman 3 notu.)
 
 Katalogdaki 413 modelin tamamında Arap-harfli çıktı veren **tek** Osmanlıca model **429513**'tür
 (ölçüm: arap=69/latin=0) — iki motoru aynı alfabede toplamak isteyen oraya geçmelidir; bedeli
@@ -177,58 +181,23 @@ skoru vermediği için (`mean_confidence: null`) ağırlıklı birleştirme de k
 
 `engine="both"` seçildiğinde Transkribus (bu tablo) + eScriptorium (yukarıdaki
 Kraken tablosu) **paralel** koşar ve iki çıktı `transcriptions` altında yan
-yana döner — bkz. `devlet-arsivleri-katalog.md` §7.1/§7.2 (K2/K3) ve §8.3
-(üç-sütun transkripsiyon).
+yana döner — bkz. `devlet-arsivleri-katalog.md` §7.1/§7.2 (K2). Bu **matbu/çapraz-kontrol**
+içindir; el yazmasında varsayılan `transleyt` (iki-okuyucu uzlaştırması).
 
-**4. motor — Transleyt (`engine="transleyt"`, 2026-07-14 eklendi).** transleyt.com AI/LLM
-tabanlı Osmanlıca+Arapça OCR SaaS'ı; Transkribus'a bir **alternatif/çapraz-kontrol** motoru
-(model seçimi yok — motorun kendi AI'ı otomatik çalışır). `both` semantiği **değişmez**
-(Transkribus+eScriptorium); Transleyt yalnız açık `engine="transleyt"` ile devreye girer.
-**Kredi ölçümlü** (~1 kredi/sayfa; kurumsal kota ayrı) → keşif taramasında değil, yalnız
-görünün değerli bulduğu sayfada. Kimlik/kredi yoksa dürüst `unavailable` (uydurma yok).
-Ampirik: login + uçtan uca OCR canlı doğrulandı (endpoint: `POST /api/ocr/to-text/` →
-`task_id` → `GET /api/ocr/result/{id}/`).
+**Osmanlı VARSAYILAN motoru — Transleyt (`engine="transleyt"`).** transleyt.com AI/LLM tabanlı
+Osmanlıca+Arapça OCR SaaS'ı; ölçülen en iyi okuyucu (CER 0.130-0.230; model seçimi yok, kendi
+AI'ı otomatik çalışır). `auto` → Osmanlı için `transleyt`. **Kredi ölçümlü** (~1 kredi/sayfa) →
+keşif taramasında `escriptorium` (bedava), değerli sayfada `transleyt`. Kimlik/kredi yoksa dürüst
+`unavailable` (uydurma yok). Endpoint: `POST /api/ocr/to-text/` → `task_id` →
+`GET /api/ocr/result/{id}/`. En doğru okuma Transleyt + asistan görüsü uzlaştırmasıdır — kanonik
+doktrin: `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma.
 
-## Katman 3 — kanıt-temelli satır hakemliği (`arbitrate=true`, 2026-07-16 eklendi)
-
-OCR araçlarındaki (`devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr_submit`)
-opsiyonel `arbitrate=true` bayrağı — yalnız `engine="both"` (Osmanlı arsiv=2) ile etkin —
-çift-motor çıktısını asistanın (VLM) **kanıt-temelli hakemliğine** hazır bir zarfa dönüştürür.
-MCP hakemlik YAPMAZ; asistanı besler. Canlı doğrulandı (2026-07-16, HP).
-
-> **⚠ Kapsam: yalnız MATBU sayfa (2026-07-16 ölçümüyle daraltıldı).** El yazması BOA belgesinde
-> `arbitrate=true` **kullanma** — orada `agreement_rate` *düşük* değil, **daima 0.0**'dır ve
-> hakemlik hiçbir şey katmaz. İki bağımsız ölçülmüş neden: (1) **alfabe** — TK Latin çeviriyazı,
-> ES Arap harfli yazar (bkz. "Alfabe uyarısı") → metin uzlaşması tanım gereği imkânsız;
-> (2) **segmentasyon** — ES'in OpenITI modelleri matbu içindir, BOA divanî/rika diyagonal
-> ellerinde tam satır bulamaz. 2×2 ölçüm ({ham, Katman-0} × {print-seg, Kraken blla varsayılanı}):
-> dört koşulun **hiçbirinde** tam-genişlik satır yok; TK aynı sayfada 4 tam satır buluyor.
-> Konfigürasyonla düzelmez — Kraken'i bu ellere uydurmak özel model eğitimi (Katman 5) ister.
-> El yazmasında geçerli yol değişmedi ve zaten doğrudur: **üç-sütun protokolü, görü birincil**.
-> Katman 3 kodu zararsızdır (opt-in; `arbitrate=false` varsayılan; kırpmalar koordinat-doğru;
-> dürüst `insufficient_engines`/`not_applicable` degrade) ve matbuda değerli kalır.
-
-**İş akışı.** (1) Her motorun satırları koordinatla çıkarılır (Transkribus PAGE-XML `<Coords>`;
-eScriptorium `/parts/{pk}/` `mask` poligonu → bbox; tesseract TSV; Transleyt satır vermez →
-`block_reference`). (2) Satırlar dikey bbox örtüşmesiyle (eşik 0.5) fiziksel satıra hizalanır —
-en çok satırlı motor çapa; eşleşmeyen satır kaybolmaz (kendi satırını doğurur). (3) Her satır
-`normalize_arabic` (hemze/te-merbuta/kef/ye fold — yalnız karşılaştırma; ham metin korunur) ile
-`IDENTICAL`/`MINOR`/`CONFLICT`/`SINGLE` sınıflanır. (4) Yalnız `CONFLICT`/`SINGLE` satırlar
-Katman-0 (300 DPI) görüntüsünden kırpılır (`crop_image`, gerçek PNG; opencv yoksa metin-only).
-
-**Zarf** (`arbitration`): `{status, engines_aligned, block_reference, line_count, agreement_rate,
-conflicts:[line_id], lines:[{line_id, bbox, status, candidates:{motor:metin}, crop_image?}],
-degrade[], guidance}`. Mevcut `transcriptions` bloğuna **additive** (arbitrate=false → hiç üretilmez,
-sıfır davranış değişikliği, ek maliyet yok — `capture_lines`/`return_tsv` gate'li).
-
-**Asistan hakemlik protokolü.** Yalnız `CONFLICT`/`SINGLE` satırların `crop_image`'ını görüyle
-oku → adaylarla karşılaştır → **en olası okumayı seç** (hiçbiri doğru değilse görüden oku).
-**Tek-birleşik-metin ÜRETME** — adayları ayrı raporla, seçim insan doğrulamasına tabidir.
-Matbu sayfada `agreement_rate` düşükse (zor baskı / soluk mürekkep) normaldir — çelişkileri
-hakemle. **0.0 görüyorsan belge muhtemelen el yazmasıdır** → yukarıdaki kapsam uyarısı: hakemliği
-bırak, üç-sütun protokolüyle görüden oku. Degrade: `<2` koordinatlı motor → `insufficient_engines`;
-koordinatsız motor `degrade[]`'e düşer + `block_reference`. `devarsiv_server_info.ocr.arbitration`
-durum verir.
+> **Katman 3 (satır hakemliği, `arbitrate`) EMEKLİYE AYRILDI (2026-07-17).** Öncülü iki kez
+> ölçümle çürütüldü: (1) hizaladığı iki motor farklı alfabede yazıyordu (TK Latin çeviriyazı,
+> ES Arap harfli) → `agreement_rate` daima 0; (2) yeniden amaçlanan satır-kırpımı yolu tam-sayfa
+> okumadan **+0.038 CER kötü** çıktı (6 MAKHZAN sayfası; kırpım 0.200 vs tam-sayfa 0.162).
+> `arbitrate` parametresi MCP'de artık yok. El yazmasında geçerli tek yol iki-okuyucu
+> uzlaştırmasıdır ve yeni makine istemez. Bkz. `2026-07-17-faz1-olcum-bulgulari.md`.
 
 ### Adım 3 — Belge oluştur ve IIIF'ten import et
 
@@ -377,7 +346,7 @@ task/polling mantığı yerine devarsiv'in **kendi sync/async kuralı** uygulan�
 
 ```text
 ≤5 sayfa VE tek motor  → devarsiv_ocr_archive_pages (sync, MULTIPAGE_MAX_PAGES)
->5 sayfa VEYA engine="both" tam belge → async kuyruk:
+>5 sayfa VEYA çok-motorlu (`both`) tam belge → async kuyruk:
     devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)         → job_id
     ↓ poll
     devarsiv_ocr_result(job_id, include_text=false)                   → queued/running/done/error/stale
@@ -401,14 +370,15 @@ Eğer `ottoman_escriptorium_*` tool'ları konfigüre edilmemişse veya
 `ESCRIPTORIUM_NOT_CONFIGURED` hatası dönüyorsa, MANUSCRIPT_TRANSCRIBE modu
 düşük-erişim moduna geçer:
 
-0. **BOA/BCA belgesi → devarsiv çift-motor (K2), önce bunu dene.** Kaynak
+0. **BOA/BCA belgesi → devarsiv Transleyt (varsayılan), önce bunu dene.** Kaynak
    Adım 0'daki (b) devarsiv yolundan geliyorsa (resmî katalogtan bir BOA/BCA
    kaydı), eScriptorium konfigüre olmasa bile **bağımsız bir yol** vardır:
    `devarsiv_ocr_belge`/`devarsiv_ocr_archive_pages`/`devarsiv_ocr_submit`'i
-   `engine="both"` ile çağır — Transkribus (el yazması, K3 model tablosu) +
-   eScriptorium (basılı, Kraken) **paralel** koşar (bkz. § 2.1, § 6.1 K4,
-   `devlet-arsivleri-katalog.md` §7.1/§8.3). Bu yol başarısız/kullanılamaz
-   dönerse aşağıdaki 1-5 adımlarına düş.
+   varsayılan `engine="transleyt"` ile çağır (ölçülen en iyi okuyucu, 0.130-0.230);
+   asistan aynı sayfayı görüsüyle okuyup uzlaştırır (kanonik doktrin:
+   `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma). Matbu/çapraz-kontrol için
+   `engine="both"` açıkça istenebilir. Bu yol başarısız/kullanılamaz dönerse aşağıdaki
+   1-5 adımlarına düş.
 1. IIIF manifest'i `ottoman_fetch_iiif_manifest` ile getir.
 2. İlgili sayfaların yüksek-çözünürlüklü görsel URL'lerini topla.
 3. **Vision-tabanlı satır okuma** ile sınırlı transkripsiyon yap
@@ -479,7 +449,7 @@ Aşağıda Gallica'da bulunan bir XVIII. yy. matbu Osmanlıca risâlenin
 ```mermaid
 flowchart TD
     A[Kullanıcı yazmadan transkripsiyon istedi] --> A1{Kaynak BOA/BCA resmî devarsiv kataloğu mu?}
-    A1 -- Evet --> K[devarsiv çift-motor engine="both" dene — K2/K3; Transkribus+eScriptorium paralel]
+    A1 -- Evet --> K[devarsiv engine="transleyt" varsayılan — Transleyt + asistan görüsü uzlaştırması K2]
     K -- Başarılı --> H
     K -- Kullanılamaz/degrade --> B
     A1 -- Hayır/Bilinmiyor --> B{IIIF manifest var mı?}

@@ -45,8 +45,16 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
   eğitsel kaynak (OER) RAG · 6 araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`,
   `kb_sources`, `kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu zenginleştirir
   (kaynaklandırılmış, lisans-etiketli pasaj). **Anahtarsız — secret gerekmez** (salt-okunur,
-  korpus tamamen kamuya açık CC BY-SA; `titck-cache-mcp` emsali). **Faz 1:** hibrit getirme
-  (BM25 ⊕ vektör RRF) + Vikipedi-TR ve Vikikitap.
+  korpus tamamen açık lisanslı; `titck-cache-mcp` emsali).
+
+  > **OTORİTE:** modülün olgusal dayanağı **`maarif-mufredat`**'tır — 105 MEB ders kitabı
+  > **tam metin**. `egitim-kaynak` onun yerine geçmez, üstüne ekler. Çelişkide **ders kitabı
+  > kazanır**.
+
+  **Kaynaklar:** **PhET** (CC BY-NC 4.0, **atıf zorunlu**; 237 sim, tamamı Türkçe — etkileşimli
+  modülde en değerlisi; fizik/kimya/matematik güçlü, biyoloji ince) · **Vikipedi-TR**
+  (CC BY-SA 4.0 — **arka plan/örnek, otorite değil**). *Vikikitap düşürüldü: 9 aktif editör.*
+  Hibrit getirme: BM25 ⊕ vektör RRF (`bge-m3`).
 - **modul-yayin** — `modul-yayin` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
   araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`).
   Tek-kiracılı OAuth 2.1; Claude Code'da `.mcp.json` üzerinden `EDUPEDIA_PUBLISH_TOKEN`

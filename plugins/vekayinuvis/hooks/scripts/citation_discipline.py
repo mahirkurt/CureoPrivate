@@ -29,10 +29,15 @@ IMAGE_OR_OCR_CLAIM = re.compile(
     r"belge\s+(görüntüsü|goruntusu|taraması|taramasi)|\bOCR\b|\bHTR\b|transkripsiyon",
     re.IGNORECASE,
 )
+# Provenance = GERÇEK araç izi ya da adı geçen bir motor. Jenerik kelimeler (page/engine/
+# canvas) tek başına provenance DEĞİLDİR: 'page 3 diyor' bir kanıt değil, uydurma bir
+# okumanın kılığıdır. Motor adları ocr.ENGINES ile hizalıdır; 'model 56496' geriye dönük
+# korunur (eski raporlar o provenance'ı taşıyor) ama tek başına yeterli değildir.
 HAS_IMAGE_OR_OCR_PROVENANCE = re.compile(
-    r"devarsiv_get_belge_image|devarsiv_ocr_belge|devarsiv_ocr_belge_pages|"
+    r"devarsiv_get_belge_image|devarsiv_ocr_image|devarsiv_ocr_belge(?:_pages)?|"
     r"ocr_archive_pages|ocr_submit|ocr_result|job_id|get_archive_page|get_archive_pdf|"
-    r"mean_confidence|engine|Transkribus|model\s*56496|image[_-]?url|canvas|page",
+    r"mean_confidence\s*[=:]|engine\s*[=:]|engine_chain|model\s*56496|"
+    r"\b(?:transleyt|transkribus|escriptorium|tesseract)\b",
     re.IGNORECASE,
 )
 

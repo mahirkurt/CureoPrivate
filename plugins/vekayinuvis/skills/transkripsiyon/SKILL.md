@@ -42,12 +42,39 @@ Düşen motor dürüst `unavailable` nedeni taşır; çıktı her hâlde **insan
 `engine=tesseract` veya `escriptorium` kullanılır (Transkribus kredi tüketimini gereksiz
 sayfalarda harcamamak için).
 
-**4. motor — Transleyt (`engine="transleyt"`):** transleyt.com AI/LLM tabanlı Osmanlıca+Arapça
-OCR; Transkribus'a bir alternatif/çapraz-kontrol katmanı. **Kredi ölçümlü** (~1 kredi/sayfa) →
-aynı kredi disiplini: yalnız görünün değerli bulduğu sayfada, keşif taramasında değil. Osmanlı
-varsayılanı `both` (Transkribus+eScriptorium) **değişmez** — Transleyt opt-in'dir. Çıktısı da
-insan doğrulamasına tabidir; taşra-kâtibi/gürültülü ellerde Transkribus veya görü ile
-çapraz-kontrol önerilir. Kimlik/kredi yoksa dürüstçe `unavailable` döner (uydurma yok).
+## Motor seçimi — ÖLÇÜLDÜ (2026-07-17)
+
+Uzman ground-truth'a karşı kıyaslandı: **OpenITI MAKHZAN** (Zenodo `10.5281/zenodo.19861912`),
+elle ALTO satır transkripsiyonu taşıyan **6 Osmanlıca rik'a/divanî yazma sayfası**. Normalize CER,
+aynı Katman-0 girdisi:
+
+| Motor | CER (ort.) | rik'a sayfası | Not |
+| --- | ---: | ---: | --- |
+| **Transleyt** | **0.230** | **0.130** | **Osmanlı VARSAYILANI** — en iyi otomatik okuyucu |
+| **Asistan görüsü** | — | **0.154** | Transleyt'e **denk** (satır 4–18); bağımsız ikinci okuyucu |
+| eScriptorium | 0.479 | 0.255 | bedava/self-host → **keşif taraması** için |
+| Transkribus 429513 | 0.782 | 0.663 | katalogdaki tek Arap-harfli TK modeli — **kullanılamaz** |
+| tesseract | — | — | Osmanlıca gövdeye katkısı **sıfır**; yalnız basılı damga + referans kodu |
+
+**Osmanlı varsayılanı artık `transleyt`** (eski varsayılan `both` ölçümden önceki bir tahmindi;
+gerekçesi de tutmuyordu — `both` zaten Transkribus'u çağırıyor, o da kredi ölçümlü, yani sayfa
+başına ~1 kredi harcanıyordu. Takas maliyeti değiştirmiyor, doğruluğu ~2 katına çıkarıyor).
+`engine=` parametresi her zaman geçersiz kılar; `DEVARSIV_OTTOMAN_ENGINE` ile pinlenebilir.
+
+**Kredi kuralı (değişmedi, sadece motoru değişti):** keşif/tarama taramasında
+`engine="escriptorium"` (bedava, self-host) veya `engine="tesseract"`; **değerli sayfada**
+varsayılan `transleyt`.
+
+**En doğru okuma = Transleyt + asistan görüsü.** İkisi **karşılaştırılabilir** (%13 vs %15) ve
+**bağımsız** — iki çıktıyı uzlaştırmak her ikisinden de iyidir. Zayıf motorları (ES %48,
+TK-429513 %78) oya katmak doğruluğu **düşürür**; tesseract Osmanlıca gövdede oy veremez.
+Transleyt güven skoru döndürmez (`mean_confidence: null`) → ağırlıklı birleştirme mümkün değil;
+uzlaştırma asistanın görüyle yaptığı iştir. **MCP tek-birleşik-metin ÜRETMEZ.**
+
+Transleyt kimlik/kredi yoksa dürüstçe `unavailable` döner (uydurma yok). Boş kâğıt testinde
+metin üretmediği (dürüst degrade) ve iki koşumda **birebir aynı** çıktı verdiği (deterministik,
+konfabüle etmiyor) ölçüldü — ama **%13–23 hata payı**, isim/tarih/yer/meblağ hatası demektir;
+transkripsiyon insan doğrulamasına tabidir.
 
 ## K3 — Transkribus model seçim tablosu
 
@@ -77,11 +104,12 @@ Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` → `DEVARSIV_TRAN
 (salname/gazete/nizamname) anlam taşır. **El yazması BOA belgesinde `arbitrate=true` KULLANMA** —
 orada `agreement_rate` düşük değil, **daima 0.0**'dır ve hakemlik hiçbir şey katmaz. İki bağımsız
 ölçülmüş neden: (1) iki motor **ayrı alfabelerde** yazar (TK → Latin çeviriyazı, ES → Arap harfli;
-yukarıdaki alfabe uyarısı) → metin uzlaşması tanım gereği imkânsız; (2) eScriptorium'un OpenITI
-modelleri **matbu** içindir → BOA divanî/rika diyagonal ellerinde tam satır bulamaz, parça bulur
-(ölçüm: 4 koşulun hiçbirinde tam-genişlik satır yok; TK 4 tam satır buluyor). El yazmasında geçerli
-yol değişmedi ve zaten doğrudur: **üç-sütun protokolü — görü birincil, çelişkide kazanır**; gürültülü
-HTR sütunu "kullanılmadı (gürültülü)" işaretlenir.
+yukarıdaki alfabe uyarısı) → metin uzlaşması tanım gereği imkânsız; (2) eScriptorium **diyagonal
+kançılarya düzeninde** tam satır bulamaz, parça bulur (ölçüm: 4 koşulun hiçbirinde tam-genişlik
+satır yok; TK 4 tam satır buluyor). *Düzeltme (2026-07-17): bu, "ES el yazmasında satır bulamaz"
+demek DEĞİL — MAKHZAN ölçümü ES'in **kitap yazmalarını** 6'da 4 isabetle segmentlediğini gösterdi
+(17/18, 17/17, 17/17, 17/16). Sorun el yazısı değil, **diyagonal layout**.* El yazmasında geçerli
+yol: **Transleyt (%13–23) + asistan görüsü (%15) uzlaştırması** — ikisi denk ve bağımsız.
 
 `engine="both"` + `arbitrate=true` (OCR araçlarında opsiyonel bayrak) çıktıya bir `arbitration`
 zarfı ekler: motor satırları koordinatla (dikey bbox örtüşmesi) hizalanır, her satır uzlaşma

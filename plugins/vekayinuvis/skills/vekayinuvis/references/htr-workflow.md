@@ -148,8 +148,32 @@ modeli **alfabe sorununu çözmez** (o da Latin). 461445 "Manuscrita cursiva XVI
 
 Ölçüm ayrıca iki bağımsız kısıt daha buldu (yalnız model değiştirmek yetmez): BOA divanî/rika
 elleri **diyagonal** yazar (~10° eğim) — eksen-hizalı bbox'ın dikey örtüşmesi bu satırlarda
-geçersiz primitiftir (TK'nin *kendi* komşu satırları birbiriyle ~%45 örtüşür); ve eScriptorium'un
-OpenITI modelleri **matbu** içindir — el yazması sayfada tam satır değil parça bulur.
+geçersiz primitiftir (TK'nin *kendi* komşu satırları birbiriyle ~%45 örtüşür); ve eScriptorium
+**diyagonal kançılarya düzeninde** tam satır değil parça bulur.
+
+> **Düzeltme (2026-07-17).** Bu belge daha önce "ES'in OpenITI modelleri matbu içindir → el
+> yazmasında tam satır bulamaz" diyordu. **Fazla genişti.** MAKHZAN uzman ground-truth'una karşı
+> ölçüm, ES'in **el yazması kitap sayfalarını** 6'da 4 isabetle segmentlediğini gösterdi (satır
+> sayısı 17/18, 17/17, 17/17, 17/16; over-segment yalnız 2 sayfada). ES'in segmentasyon sorunu
+> **el yazısı değil, diyagonal kançılarya layout'u**. Tanıma tarafı ise gerçekten zayıf: CER 0.479.
+
+### Motor doğrulukları — ölçüldü (OpenITI MAKHZAN, 2026-07-17)
+
+Uzman ALTO transkripsiyonu taşıyan 6 Osmanlıca rik'a/divanî yazma sayfası; normalize CER:
+
+| Motor | CER (ort.) | rik'a | Rol |
+| --- | ---: | ---: | --- |
+| **Transleyt** | **0.230** | **0.130** | **Osmanlı varsayılanı** (`DEVARSIV_OTTOMAN_ENGINE=transleyt`) |
+| **Asistan görüsü** | — | **0.154** | Transleyt'e denk, **bağımsız** → uzlaştırma ortağı |
+| eScriptorium | 0.479 | 0.255 | bedava → keşif taraması |
+| Transkribus 429513 | 0.782 | 0.663 | kullanılamaz |
+| tesseract | — | — | Osmanlıca gövdede **sıfır** (yalnız damga/referans kodu) |
+
+**Ensemble notu.** Transleyt'i iyileştirebilecek tek sistem **asistan görüsüdür** — çünkü oylama
+yalnız sistemler kabaca **eşit güçte** ve hataları **bağımsız** olduğunda kazandırır. ES (%48) ve
+TK-429513 (%78) oya katılırsa doğruluğu **düşürür**; tesseract'ın Osmanlıca gövdede modeli yok;
+TK-56496 farklı alfabede (Latin çeviriyazı) → Arap harfli çıktılarla oylanamaz. Transleyt güven
+skoru vermediği için (`mean_confidence: null`) ağırlıklı birleştirme de kapalıdır.
 
 `engine="both"` seçildiğinde Transkribus (bu tablo) + eScriptorium (yukarıdaki
 Kraken tablosu) **paralel** koşar ve iki çıktı `transcriptions` altında yan

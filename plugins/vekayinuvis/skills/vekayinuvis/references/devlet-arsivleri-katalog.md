@@ -249,7 +249,16 @@ HTR/Kraken yardımcı).
 **Latin çeviriyazı yazar** (52502 kendi belgesinde TTK latinizasyon şemasını beyan eder; 56496 onu
 baz model alıp karakter setini miras alır). eScriptorium **Arap harfli** yazar → iki çıktı
 karşılaştırılamaz; `arbitrate=true` hakemliğinde `agreement_rate` tanım gereği 0 çıkar (bug değil).
-Aynı alfabe tek seçenekle mümkün: **429513**. Detay: htr-workflow.md "Alfabe uyarısı".
+Aynı alfabe tek seçenekle mümkün: **429513** — ama ölçüm onu da eledi (aşağı bak).
+
+**⚠ Osmanlı varsayılanı artık `transleyt` (2026-07-17 ölçümü).** OpenITI MAKHZAN uzman
+ground-truth'una karşı 6 rik'a/divanî yazma sayfasında normalize CER: **Transleyt 0.230 ort. /
+0.130 rik'a** · asistan görüsü 0.154 · eScriptorium 0.479 · **TK-429513 0.782 (kullanılamaz)** ·
+tesseract Osmanlıca gövdede sıfır. Eski varsayılan `both` ölçümden önceki tahmindi ve gerekçesi
+tutmuyordu (`both` zaten kredi ölçümlü Transkribus'u çağırıyordu). Keşif taramasında hâlâ
+`engine="escriptorium"` (bedava). En doğru okuma = **Transleyt + asistan görüsü uzlaştırması**
+(denk ve bağımsız); zayıf motorları oya katmak doğruluğu düşürür. Detay: htr-workflow.md
+"Motor doğrulukları".
 
 Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` →
 `DEVARSIV_TRANSKRIBUS_HTR_ID=<id>` + `systemctl restart devarsiv-mcp`.

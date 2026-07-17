@@ -279,7 +279,7 @@ lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİ
 | **Connector adı** | `egitim-kaynak` (`.mcp.json`'da bildirilir) |
 | **Endpoint** | `https://egitim-kaynak.cureonics.com/mcp` |
 | **Transport** | `http` (streamable-HTTP MCP, stateless) |
-| **Auth** | Tek-kiracılı OAuth 2.1 (RFC 8414/7591/9728); access_token = `EGITIM_KAYNAK_MCP_API_KEY` (ayrı `AUTH_HMAC_SECRET` yok). `.mcp.json` `Authorization: Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` başlığını ortamdan okur; claude.ai'de kullanıcı connector ayarlarında OAuth ile bağlar. |
+| **Auth** | **YOK — kasıtlı olarak anahtarsız** (2026-07-17). Ne `.mcp.json` başlığı, ne OAuth, ne kullanıcı secret'ı: connector kutudan çıkar çıkmaz çalışır. Gerekçesi `titck-cache-mcp` emsaliyle aynı: altı aracın tamamı salt-okunur ve korpusun tamamı zaten kamuya açık CC BY-SA içeriği (Vikipedi-TR + Vikikitap) — yetkilendirilecek bir şey yok. Sunucu tarafında `MCP_API_KEY` yok + `MCP_ALLOW_NO_AUTH=1`; **ikisi birden** şart, çünkü anahtarın yalnızca eksik olması yanlış yapılandırmadır (500) — anahtarı unutmak sunucuyu kazara açmaz. Bu modda server-card dürüstçe `authentication.required=false` der ve OAuth uçları 404 döner (aksi hâlde istemci, imzası tanımsız bir OAuth dansına girerdi). Kıyas: yazma yapan `modul-yayin` anahtarlı KALIR. |
 | **Node** | Pi :8312 (systemd `egitim-kaynak-mcp`); CureoHub `mcp-servers/egitim-kaynak-mcp/`. |
 | **Faz** | **Faz 0 (canlı 2026-07-16):** yalnız BM25/FTS5 + Vikipedi-TR. Embedding/vektör (Faz 1) ve kazanım hizalaması (Faz 2) YOK. |
 

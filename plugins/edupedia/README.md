@@ -44,8 +44,9 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 - **egitim-kaynak** — `egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp` · açık
   eğitsel kaynak (OER) RAG · 6 araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`,
   `kb_sources`, `kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu zenginleştirir
-  (kaynaklandırılmış, lisans-etiketli pasaj). Tek-kiracılı OAuth 2.1; `EGITIM_KAYNAK_MCP_API_KEY`
-  bearer'ı. **Faz 0:** yalnız BM25/FTS5 + Vikipedi-TR.
+  (kaynaklandırılmış, lisans-etiketli pasaj). **Anahtarsız — secret gerekmez** (salt-okunur,
+  korpus tamamen kamuya açık CC BY-SA; `titck-cache-mcp` emsali). **Faz 1:** hibrit getirme
+  (BM25 ⊕ vektör RRF) + Vikipedi-TR ve Vikikitap.
 - **modul-yayin** — `modul-yayin` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
   araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`).
   Tek-kiracılı OAuth 2.1; Claude Code'da `.mcp.json` üzerinden `EDUPEDIA_PUBLISH_TOKEN`

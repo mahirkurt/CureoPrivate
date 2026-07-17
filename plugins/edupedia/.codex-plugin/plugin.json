@@ -50,10 +50,7 @@
     },
     "egitim-kaynak": {
       "type": "http",
-      "url": "https://egitim-kaynak.cureonics.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${EGITIM_KAYNAK_MCP_API_KEY}"
-      }
+      "url": "https://egitim-kaynak.cureonics.com/mcp"
     },
     "modul-yayin": {
       "type": "http",

@@ -29,9 +29,9 @@ komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
    ve korpus sayımlarını (`stats`: `chunk_count`, `vector_count`, `source_count`) raporla.
    Yoksa **bağlı değil** → modül üretimi yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır
    (asla uydurma kaynak). **`alignment_built: false` iken `kb_for_outcome` dürüstçe
-   `alignment_not_built` döner** — kazanım hizalaması korpus derinleşene + insan denetimi geçene
-   kadar bilinçli kapalıdır; bu bir arıza DEĞİL, no-fabrication gereğidir. O halde kazanım
-   konusunu `kb_search`'e sorgu olarak verin.
+   `alignment_not_built` döner** — kazanım hizalaması, korpus müfredat konularını kapsayana +
+   insan denetimi geçene kadar bilinçli kapalıdır; bu bir arıza DEĞİL, no-fabrication gereğidir.
+   O halde kazanım konusunu `kb_search`'e sorgu olarak verin.
 
 5. **Modül Yayın (`modul-yayin`) sağlığı:** `edupedia_server_info` araç listesinde varsa çağır
    (`gate_count`, `max_upload_bytes`, `base_url`); yayın MCP yolu **canlı**. Yoksa `/edupedia:yayinla`

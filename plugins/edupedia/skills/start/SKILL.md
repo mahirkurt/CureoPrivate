@@ -63,8 +63,11 @@ zenginleştirme atlanır (asla uydurma kaynak). `kb_server_info` ile faz/korpus 
 eşleşmelerinin üstündedir — **`score`'a göre yeniden sıralamayın**.
 
 **`kb_for_outcome` HENÜZ KURULMADI** (dürüstçe `alignment_not_built` döner, asla uydurma hizalama):
-kazanım-hizalaması korpus yeterince derinleşene ve insan denetimi geçene kadar bilinçli olarak
-kapalıdır. Kazanımdan modül üretirken kazanım metnindeki konuyu `kb_search`'e sorgu olarak verin.
+kazanım-hizalaması, korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar
+bilinçli olarak kapalıdır. Kazanımdan modül üretirken kazanım metnindeki konuyu `kb_search`'e
+sorgu olarak verin. *(Ölçüm 2026-07-17: korpusu büyütmek tek başına yetmedi — 1758 vektörde bile
+kazanım↔pasaj kosinüsleri konuyu değil "ikisi de uzun resmî Türkçe"yi ölçüyor; bu yüzden
+hizalama bir eşik ayarıyla açılamaz.)*
 
 **Modül Yayın MCP (`modul-yayin` · `https://edupedia.cureonics.com/mcp`) — yayın:**
 4 araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`);

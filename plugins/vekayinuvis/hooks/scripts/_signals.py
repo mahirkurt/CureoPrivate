@@ -45,6 +45,10 @@ RECORD_LOCATORS = [
     re.compile(r"BelgeGoster\.aspx\?[^\s\"'<>]*ItemId=\d+", re.IGNORECASE),
     # 4) Arşiv referans kodu — ör. "İ.SH.00001,00001.001".
     re.compile(r"[A-ZÇĞİÖŞÜ]{1,3}\.[A-ZÇĞİÖŞÜ]{1,4}\.\d{4,}\s*,\s*\d+\.\d+"),
+    # 4b) Nokta-ayraçlı çok-parçalı BOA künyesi — ör. "HR.UHM.00048.00035", "A.MKT.MHM.0012.034".
+    #     Fon(.tasnif)+ ardından ≥4-haneli kutu + gömlek. Şema konuşması ("fon.kutu.gömlek")
+    #     \d{4,} şartıyla dışarıda kalır (harf-üçlüsü sayı içermez).
+    re.compile(r"[A-ZÇĞİÖŞÜ]{1,4}(?:\.[A-ZÇĞİÖŞÜ]{1,4}){1,3}\.\d{4,}\.\d+"),
     # 5) Açık künye düzyazısı — "gömlek 5" / "gömlek: 5" / "gömlek no. 5". Sayı şartı,
     #    "fon/kutu/gömlek üçlüsü" gibi ŞEMA konuşmasını dışarıda bırakır.
     re.compile(r"\bgömlek\s*:?\s*(?:n[oO]\.?\s*)?\d+", re.IGNORECASE),

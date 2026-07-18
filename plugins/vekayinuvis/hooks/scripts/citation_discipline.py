@@ -19,6 +19,7 @@ import re
 import sys
 
 from _signals import has_record_locator
+from _turn_tools import archive_data_tool_invoked, transcript_available
 # Çift-tarih disiplini (orijinal takvim + Miladî). Parantez içi 4-haneli yıl / "Miladî" / "M. YYYY".
 HAS_DOUBLE_DATE = re.compile(r"\(\s*(M\.\s*)?\d{3,4}\s*\)|\bMil[aâ]dî?\b|\bM\.\s*\d{3,4}\b", re.IGNORECASE)
 # devlet-arsivleri kaydı imzası → katalog URL'i beklenir.
@@ -86,9 +87,17 @@ def main():
     if not text:
         sys.exit(0)
 
-    # Somut bir arşiv KAYDINA atıf yoksa sessiz. İsim geçişi (araç adı, env değişkeni,
-    # test fixture'ı, dosya yolu) atıf değildir — bkz. _signals.py tasarım kuralı.
-    if not has_record_locator(text):
+    # DAVRANIŞ KAPISI (birincil, transkript varsa) — kullanıcı sertleştirmesi 2026-07-17.
+    # Yer gerçeği: bu turda gerçek bir arşiv-veri aracı ÇAĞRILDI mı? Ops/altyapı turlarında
+    # (devarsiv/mevzuat adları port tablosu / .mcp.json / şema sohbetinde geçer ama araç
+    # çağrılmaz) kapı kapalı → sessiz. Araç çağrıldıysa disiplin uygulanır ve has_record_locator
+    # metin-şartı ATLANIR (künyesiz-tarama açığı böyle kapanır: araç çağrıldı = gerçek arşiv işi).
+    # Transkript YOKSA davranış kapısına güvenmeyiz → metin-sezgisi yedeğine düşeriz (invaryant
+    # sessizce kaybolmasın); somut kayıt-yeri yoksa sessiz (isim geçişi atıf değildir).
+    if transcript_available(event):
+        if not archive_data_tool_invoked(event):
+            sys.exit(0)
+    elif not has_record_locator(text):
         sys.exit(0)
 
     issues = []

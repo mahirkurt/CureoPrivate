@@ -17,6 +17,7 @@ import re
 import sys
 
 from _signals import has_record_locator
+from _turn_tools import fleet_data_tool_invoked, transcript_available
 
 # Substantif araştırma-modu çıktısının imzası (en az bir güçlü sinyal).
 # NOT: eskiden burada üçüncü bir "zayıf" sinyal vardı (`\bfon[/\s]|gömlek|BOA\b|BCA\b|devarsiv`)
@@ -113,10 +114,22 @@ def main():
     # Bilinçli takas: mod bildirmeyen VE hiç künye içermeyen bir tarama artık kaçar. Bu dar
     # boşluk kabul edilebilir — SKILL zaten mod bildirimini zorunlu kılıyor, ve her turda
     # ateşleyen bir kapı yok sayılmayı öğretir ki bu invaryantın TAMAMEN kaybıdır.
-    mode_hit = any(sig.search(text) for sig in MODE_SIGNALS)
-    connector_hits = len(set(m.lower() for m in CONNECTOR_MENTIONS.findall(text)))
-    if not (mode_hit or (connector_hits >= 2 and has_record_locator(text))):
-        sys.exit(0)  # hafif/sohbet/mühendislik turu → sessiz
+    # DAVRANIŞ KAPISI (birincil, transkript varsa) — kullanıcı sertleştirmesi 2026-07-17.
+    # Yer gerçeği: bu turda gerçek bir tam-filo veri-aracı ÇAĞRILDI mı? Filo hakkında KOD/PLAN
+    # konuşması (mevzuat+tbmm+devarsiv adlarını port tablosu/.mcp.json'da anmak) araç çağırmaz
+    # → kapı kapalı → sessiz (kör yanlış-pozitif ölür). Filo aracı çağrıldıysa manifesto beklenir
+    # ve metin-sezgisi (mode/connector) ATLANIR — böylece "mod bildirmeyen VE künyesiz tarama"
+    # açığı kapanır (araç çağrısı = substantif araştırma yer gerçeği).
+    # Transkript YOKSA davranış kapısına güvenmeyiz → eski metin-sezgisi yedeğine düşeriz
+    # (invaryant sessizce kaybolmasın): (a) mod bildirimi VEYA (b) ≥2 connector VE somut kayıt yeri.
+    if transcript_available(event):
+        if not fleet_data_tool_invoked(event):
+            sys.exit(0)
+    else:
+        mode_hit = any(sig.search(text) for sig in MODE_SIGNALS)
+        connector_hits = len(set(m.lower() for m in CONNECTOR_MENTIONS.findall(text)))
+        if not (mode_hit or (connector_hits >= 2 and has_record_locator(text))):
+            sys.exit(0)  # transkript yok + hafif/sohbet/mühendislik turu → sessiz
 
     missing = []
     if not (HAS_MANIFEST.search(text) and HAS_STATUS_ROWS.search(text)):

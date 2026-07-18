@@ -1,7 +1,7 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 3.0.0
+version: 3.0.1
 last_updated: 2026-07-11
 changelog:
   - "3.0.0 (2026-07-11): DEVARSIV 22-ARAÇ TAM ENTEGRASYON (SEPET→NOVNC→ARŞİV→ÇİFT-MOTOR OCR→ASYNC). §3.1.b devarsiv araç tablosu 10→22 araca genişledi (Arama/Belge/Sepet/Arşiv/Async/Durum, 6 grup) — eSatış sepeti (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart`, state-changing ama ödemesiz; ödeme DAİMA insan/noVNC), satın-alınmış belgenin yerel arşivi (`list_archive`/`get_archive_page` 300 DPI/`ocr_archive_pages`/`get_archive_pdf`) ve async OCR kuyruğu (`ocr_submit`/`ocr_result`) wire edildi. Yeni okuma-önceliği kuralı: satın alınmış belgede okuma DAİMA yerel arşivden başlar (katalog önizlemesi yalnız satın-alınmamıştır). Motor konvansiyonu netleşti: Osmanlı varsayılanı `engine=\"both\"` (görü birincil, Transkribus HTR yardımcı — taşra-kâtibi ellerinde gürültülü olabilir); sync/async kararı ≤5 sayfa/tek motor→sync, >5 sayfa veya `both` tam belge→async+anamnesis ingest. EVENT_RECONSTRUCTION modu devarsiv (`semantic_search`+`detailed_search` tarih-aralığı) ile birincil katman olarak güçlendirildi. §6.5 'Kanıt Disiplini (Murzi Kalıpları)' altı-maddelik prosopografik/toponimik disiplin eklendi. Üç yeni akış-skill'ine (`skills/satinalma`, `skills/arsiv-oku`, `skills/toplu-okuma`) işaret edildi. Mod sayısı (9) korundu."
@@ -23,7 +23,7 @@ changelog:
 > connector tabloları pedagojik referans olarak korunmuştur; skill standalone
 > (plugin dışı) ortamda da çalışır.
 
-> **Sürüm**: v3.0.0 (devarsiv 22-araç tam entegrasyon — sepet→noVNC→arşiv→
+> **Sürüm**: v3.0.1 (devarsiv 22-araç tam entegrasyon — sepet→noVNC→arşiv→
 > çift-motor OCR→async job; v2.x tam-filo, bağlam ekonomisi ve marketplace
 > doctor/G0 enforcement davranışı korunur)
 >
@@ -169,7 +169,7 @@ Birliği (6023 sayılı Kanun, 23 Ocak 1953), İstanbul Eczacı Cemiyeti.
 Üç katmanlı paralel-çağrı modeli. Sorgu sınıflandırmasına göre 3–8 connector
 aynı turda çağrılır; sonuçlar Faz 2'de triangüle edilir.
 
-### 3.1 Ottoman Archives MCP — 4 Yetenek Katmanı (33 tool)
+### 3.1 Ottoman Archives MCP — 4 Yetenek Katmanı (33 kaynak)
 
 | Katman | Tool grupları | Ne zaman | Çıktı |
 |---|---|---|---|

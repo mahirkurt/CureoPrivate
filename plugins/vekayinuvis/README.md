@@ -19,7 +19,7 @@ sepet/arşiv/OCR akış-skill'i** sunar.
 
 | Bileşen | Yol | Açıklama |
 |---------|-----|----------|
-| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.0.0) + 9 referans dosyası |
+| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.0.1) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
 | Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 10 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
 | Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async çift-motor OCR zinciri (bkz. **Yeni Akışlar**) |
@@ -212,5 +212,5 @@ python3 ./plugins/vekayinuvis/scripts/vekayinuvis_doctor.py --topic preflight --
 
 ## Sürüm
 
-- Plugin paketi: `v3.0.0`
-- Flagship skill: `v3.0.0` (bkz. `CHANGELOG.md`)
+- Plugin paketi: `v3.0.1`
+- Flagship skill: `v3.0.1` (bkz. `CHANGELOG.md`)

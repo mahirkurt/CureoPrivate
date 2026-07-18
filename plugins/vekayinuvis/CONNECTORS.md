@@ -297,7 +297,7 @@ keychain'ine yazılır (settings.json'a değil).
 
 > **Güvenlik notu.** Bu plugin **private GitHub deposunda** (`mahirkurt/CureoPrivate`;
 > fonksiyonel katalog kimliği `cureonics-marketplace`) barındırılır; `.mcp.json` içindeki URL'ler yalnız repo
-> erişimi olanlara görünür. `ottoman-archives` Cloud Run endpoint'i ayrıca OAuth ile
+> erişimi olanlara görünür. `ottoman-archives` HP self-host endpoint'i ayrıca OAuth ile
 > korunur — URL'in görünmesi tek başına erişim vermez. Statik token'lar yine de asla
 > repo'ya commit edilmez (`userConfig` ile keychain'de tutulur).
 

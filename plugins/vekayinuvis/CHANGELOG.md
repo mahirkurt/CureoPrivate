@@ -4,6 +4,19 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [3.0.1] — 2026-07-14
+
+### Düzeltildi
+
+- **Stop hook kapısı isim-geçişinden kayıt-yerine daraltıldı.** `citation_discipline` +
+  `stop_coverage` artık yalnız somut bir kayıt yeri (fon/kutu/gömlek örüntüsü, katalog URL'i,
+  gerçek `devarsiv_*` araç izi) varsa ateşlenir — MCP'nin kendi kodu üzerinde çalışmak (araç
+  adları, şema tartışması) artık yanlış-pozitif üretmez. Bkz. `hooks/scripts/_signals.py`
+  `has_record_locator`.
+- **Bu sürüm bump'ı daha önce yalnız `.claude-plugin/plugin.json`'a işlenmişti**; codex
+  manifesti, flagship skill frontmatter'ı ve README ile bu changelog girdisine geriye dönük
+  yayıldı (sürüm ıraksaması onarımı).
+
 ## [3.0.0] — 2026-07-12
 
 ### BREAKING — commands→skills göçü

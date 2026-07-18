@@ -1,6 +1,63 @@
 {
   "name": "vekayinuvis",
-  "version": "3.0.0",
+  "version": "3.0.1",
+  "userConfig": {
+    "smithery_api_key": {
+      "type": "string",
+      "title": "Smithery API key",
+      "description": "Paper Search (Smithery host) için API anahtarı — girilmezse paper-search graceful degrade eder (diğer akademik katman devrede).",
+      "sensitive": true,
+      "required": false
+    },
+    "smithery_profile": {
+      "type": "string",
+      "title": "Smithery profile",
+      "description": "Smithery profil tanımlayıcısı (opsiyonel).",
+      "required": false
+    },
+    "devarsiv_api_key": {
+      "type": "string",
+      "title": "Devlet Arşivleri API key",
+      "description": "devlet-arsivleri MCP anahtarı — NOT: .mcp.json header'ı ${DEVARSIV_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${DEVARSIV_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "ottoman_api_key": {
+      "type": "string",
+      "title": "Ottoman Archives API key",
+      "description": "ottoman-archives MCP anahtarı — NOT: .mcp.json header'ı ${OTTOMAN_ARCHIVES_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${OTTOMAN_ARCHIVES_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "yok_akademik_api_key": {
+      "type": "string",
+      "title": "YÖK Akademik API key",
+      "description": "yok-akademik MCP anahtarı — NOT: .mcp.json header'ı ${YOK_AKADEMIK_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${YOK_AKADEMIK_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "openathens_api_key": {
+      "type": "string",
+      "title": "OpenAthens API key",
+      "description": "openathens MCP anahtarı — NOT: .mcp.json header'ı ${OPENATHENS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${OPENATHENS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "annas_api_key": {
+      "type": "string",
+      "title": "Anna's Reader API key",
+      "description": "annas-reader MCP anahtarı — NOT: .mcp.json header'ı ${ANNAS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANNAS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "anamnesis_api_key": {
+      "type": "string",
+      "title": "Anamnesis API key",
+      "description": "anamnesis MCP anahtarı — NOT: .mcp.json header'ı ${ANAMNESIS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANAMNESIS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    }
+  },
   "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO (17 server): Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek, artık 22 araç: arama 5'lisi + belge 3'lüsü + eSatış sepeti 4'lüsü + satın-alınmış/yerel-arşiv 6'lısı + async OCR 2'lisi + durum 2'lisi) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily), kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ve yasama/mevzuat katmanı (Resmî Gazete erken-Cumhuriyet arşivi, mevzuat.gov.tr mülga/gerekçe, TBMM yasama soyağacı, DETSİS kurumsal prosopografi) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. v3.0: devlet-arsivleri 10→22 araca genişledi — eSatış sepet→noVNC satın-alma (ödeme DAİMA insan, asla otonom) → satın-alınmış belgenin yerel BOA-kodlu arşivinden 300 DPI arşiv-öncelikli okuma → Transkribus+eScriptorium çift-motor OCR/HTR (`engine=auto|both|transkribus|escriptorium|tesseract`, Osmanlı varsayılanı `both`) → async OCR job kuyruğu zinciri; üç yeni akış-skill'i (`satinalma`, `arsiv-oku`, `toplu-okuma`); filo 13→17 server'a genişledi (yasama/mevzuat katmanı + DETSİS); komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>` — eski `/vekayinuvis:vekayinuvis-<ad>` biçimi BREAKING kaldırıldı). IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu sunar.",
   "author": {
     "name": "Cureonics",

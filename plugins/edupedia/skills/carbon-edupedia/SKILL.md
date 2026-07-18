@@ -16,7 +16,7 @@ description: >-
   etkileşimli öğrenimde USE.
 license: MIT
 metadata:
-  version: 3.5.1
+  version: 3.5.2
   last_updated: 2026-07-17
   manifest: ./skill-manifest.yaml
 ---

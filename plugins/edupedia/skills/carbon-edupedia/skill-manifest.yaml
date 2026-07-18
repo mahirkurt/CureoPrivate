@@ -7,7 +7,7 @@ protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/
 
 skill:
   name: carbon-edupedia
-  version: 3.5.1
+  version: 3.5.2
   title: Carbon Edupedia — DEHB-Odaklı Etkileşimli Öğrenim Modülü Üreticisi (IBM Carbon v11, WCAG 2.1 AA, Müfredat MCP)
   description: >-
     Kaynak metinden VEYA MEB Müfredat MCP'sinden (Türkiye Yüzyılı Maarif Modeli
@@ -310,7 +310,7 @@ verification:
 # Build
 # -----------------------------------------------------------------------------
 build:
-  version: 3.5.1
+  version: 3.5.2
   release_date: '2026-07-17'
   smp_compliance: '1.0'
   canonical_authorities:

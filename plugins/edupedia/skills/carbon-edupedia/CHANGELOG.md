@@ -2,6 +2,21 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.5.2] — 2026-07-17
+
+### Düzeltildi — konsol raporu SKIPPED kapıyı GEÇTİ gösteriyordu (denetim bulgusu #5)
+
+`--json` kapı otoritesidir ve `not_applicable` kapıları doğru şekilde **SKIPPED** yazıyordu;
+ama `report()` (renkli konsol) `self.not_applicable`'ı **tamamen yok sayıyordu** ve aynı kapıyı
+yeşil **GEÇTİ** basıyordu. Yani müfredat-dışı bir modülde G-CURRICULUM/G-VERIFY/G-FLOW ve
+imza-yok dalındaki G-SVG/G-AUDIO/G-INTERACT konsolda "geçmiş" gibi görünürken JSON'da "atlanmış"
+diyordu — **rapor kendi içinde çelişiyordu.** Ölçüldü: altı kapı `status="PASS"` + biri
+`status="WARN"` ile `applicable=False` ekleniyor; ikisini de konsol yanlış etiketliyordu.
+
+- `report()` artık `not_applicable` kapıyı iç durumu ne olursa olsun **ATLANDI** (dim) gösterir
+  ve uyarı sayısına DA katmaz; özet satırına `N atlandı` eklendi. `--json`'a paralel — tek otorite.
+- Doğrulandı: 4 fixture'da konsol tag ↔ `--json` status **her kapıda tutarlı**; 78 test yeşil.
+
 ## [3.5.1] — 2026-07-17
 
 ### Düzeltildi — claude.ai paketinde KIRIK BAĞLANTILAR: sözleşmenin kaynağı pakete girmiyordu

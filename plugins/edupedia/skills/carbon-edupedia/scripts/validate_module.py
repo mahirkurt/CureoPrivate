@@ -110,18 +110,27 @@ class Result:
             gates[gate] = gate_obj
         return gates
     def report(self):
-        """Renkli, hizalı denetim raporunu stdouta basar."""
+        """Renkli, hizalı denetim raporunu stdouta basar.
+
+        KAPI OTORİTESİ --json'dur; konsol onunla TUTARLI olmak ZORUNDA. Bir kapı
+        `not_applicable` işaretliyse iç durumu PASS/WARN bile olsa konsolda ATLANDI
+        (SKIPPED) gösterilir — yoksa konsol "GEÇTİ/UYARI" derken --json "SKIPPED"
+        der ve rapor kendi içinde yalan söyler. Aynı gerekçeyle atlanan kapı uyarı
+        sayısına DA girmez.
+        """
         print(f"\n{BOLD}carbon-edupedia · Modül Doğrulama Raporu{RESET}")
         print("="*64)
         for gate,status,msg in self.rows:
-            c={"PASS":GRN,"FAIL":RED,"WARN":YEL}[status]
-            tag={"PASS":"GEÇTİ","FAIL":"İHLAL","WARN":"UYARI"}[status]
-            print(f"  {c}{tag:5}{RESET}  {BOLD}{gate:16}{RESET} {msg}")
+            eff = "SKIPPED" if gate in self.not_applicable else status
+            c={"PASS":GRN,"FAIL":RED,"WARN":YEL,"SKIPPED":DIM}[eff]
+            tag={"PASS":"GEÇTİ","FAIL":"İHLAL","WARN":"UYARI","SKIPPED":"ATLANDI"}[eff]
+            print(f"  {c}{tag:7}{RESET}  {BOLD}{gate:16}{RESET} {msg}")
         print("="*64)
-        n_fail=sum(1 for _,s,_ in self.rows if s=="FAIL")
-        n_warn=sum(1 for _,s,_ in self.rows if s=="WARN")
+        n_fail=sum(1 for g,s,_ in self.rows if s=="FAIL" and g not in self.not_applicable)
+        n_warn=sum(1 for g,s,_ in self.rows if s=="WARN" and g not in self.not_applicable)
+        n_skip=len(self.not_applicable)
         verdict = f"{RED}{n_fail} İHLAL{RESET}" if n_fail else f"{GRN}TÜM FAIL KAPILARI GEÇTİ{RESET}"
-        print(f"  Sonuç: {verdict}  ·  {YEL}{n_warn} uyarı{RESET}\n")
+        print(f"  Sonuç: {verdict}  ·  {YEL}{n_warn} uyarı{RESET}  ·  {DIM}{n_skip} atlandı{RESET}\n")
 
 def gate_emoji(html, R):
     """G-EMOJI: çıktıda emoji bulunmadığını doğrular (FAIL kapısı)."""

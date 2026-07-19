@@ -16,6 +16,8 @@
 
 **Akış:** MCP ham çıktı → Tier 1 (distiller) VEYA Tier 2 (anamnesis) → ana pencereye yalnız damıtılmış sonuç. Ham veri hiçbir zaman Tier 0'ı geçmez. Böylece **tüm araçlar her koşumda çalışır** (detay atlanmaz) ama pencere taşmaz.
 
+> **Host degrade (claude.ai — Tier-1 yok):** claude.ai custom connector plugin alt-ajanını delegasyon hedefi sunmaz → `arsiv-tarama-distilleri` (Tier 1) **çağrılamaz**. O durumda: (a) büyük tam-metni doğrudan **Tier-2 `anamnesis`**'e ingest→bounded query ile işle (anamnesis MCP server olduğundan claude.ai'de çalışır); (b) anamnesis de yoksa bounded-chunk (§4) + sert devre-kesici (§5) ile **inline daralt** (her araç çıktısını çekince hemen evidence_ledger kaydına çök, ham izi düşür), asla ham dökme. Pencere ekonomisi Tier-1'siz de Tier-2/inline ile korunur. (Claude Code'da her iki tier de mevcuttur.)
+
 ## 2. Tam-filo'yu sharding ile taşımadan çalıştırma
 
 Tek bir distiller'a tüm fleet'i vermek onun KENDİ penceresini de taşırabilir. Geniş süpürme **≤4 paralel shard**'a bölünür; her shard bağımsız `arsiv-tarama-distilleri` çağrısıdır, her biri kompakt zarf + kısmi `coverage` döner; ana pencere bunları tek G0 manifestosunda birleştirir:

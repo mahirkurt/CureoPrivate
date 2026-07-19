@@ -7,6 +7,13 @@ disable-model-invocation: true
 `vekayinuvis` plugin durumunu denetle. Kullanıcı isteğe bağlı bir konu etiketi
 belirtebilir; belirtmezse `preflight` varsayılır.
 
+> **Host ön-koşulu:** Bu skill `python3` + `curl` ile yerel bir doktor script'i çalıştırır
+> ve **yalnızca Claude Code / yerel kabukta** (Bash aracı mevcutken) işler. **claude.ai'de
+> Bash yoktur → bu script çalışmaz.** claude.ai'de connector durumunu görmek için
+> `/vekayinuvis:start` akışını kullan (bağlı araçları listeler + `devarsiv_server_info` ile
+> araç envanter-drift ve `devarsiv_session_status` ile HP oturum canlılığını MCP üzerinden
+> probe eder — Bash gerektirmez).
+
 1. Paket kökünü `${CLAUDE_PLUGIN_ROOT}` üzerinden bul.
 2. Aşağıdaki komutu çalıştır (`$ARGUMENTS` kullanıcının belirttiği konu
    etiketine karşılık gelir; boşsa `preflight`):

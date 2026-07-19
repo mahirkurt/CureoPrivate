@@ -1,6 +1,6 @@
 # Kapsam Manifestosu (G0) — biçim ve örnek
 
-**Amaç:** "wire edilmiş tüm araçlar bağlama uygun her sorguda çalıştı" iddiasının doğrulanabilir kanıtı. Her substantif vekayinüvis çıktısı (SOURCE_HUNT, ARCHIVE_DEEP_DIVE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, ACADEMIC_REPORT, KANUN_GEREKÇESİ) bu bloğu taşır (başta veya sonda). Eksik satır = **G0 FAIL** (Stop hook tamamlatır). Tek-tool/hızlı sorgu (ör. yalnız CHRONOLOGY_CONVERSION) manifesto gerektirmez.
+**Amaç:** "wire edilmiş tüm araçlar bağlama uygun her sorguda çalıştı" iddiasının doğrulanabilir kanıtı. Her substantif vekayinüvis çıktısı (SOURCE_HUNT, ARCHIVE_DEEP_DIVE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, ACADEMIC_REPORT, KANUN_GEREKÇESİ) bu bloğu taşır (başta veya sonda). Eksik satır = **G0 FAIL** (**Claude Code'da** Stop hook tamamlatır; **claude.ai'de plugin hook'ları çalışmaz → bu kapıyı çıktıdan önce kendi-disiplininle doğrula, manifestoyu sen ekle**). Tek-tool/hızlı sorgu (ör. yalnız CHRONOLOGY_CONVERSION) manifesto gerektirmez.
 
 ## Kurallar
 

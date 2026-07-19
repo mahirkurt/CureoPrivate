@@ -317,7 +317,9 @@ TUR 1 (paralel):
 vekayinüvis **tam-filo** çalışır: `.mcp.json`'da bundled 17 server'ın bağlama
 uygun olanı **her substantif sorguda çalıştırılır** — hiçbiri sessizce atlanmaz.
 Bu kapsam, her çıktıya eklenen **G0 kapsam manifestosu** ile kanıtlanır
-(`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md`; eksik satır = Stop hook tamamlatır).
+(`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md`; eksik satır: **Claude Code'da**
+Stop `stop_coverage` hook'u otomatik tamamlatır, **claude.ai'de plugin hook'ları
+çalışmaz → bu kapıyı çıktıdan önce kendi-disiplininle doğrula, manifestoyu sen ekle**).
 
 Ancak tam-filo, ham hâliyle pencereyi taşırır. İki mekanizma **detayların
 atlanmadan, pencere taşmadan** kapsanmasını sağlar (`${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md`):
@@ -326,6 +328,12 @@ atlanmadan, pencere taşmadan** kapsanmasını sağlar (`${CLAUDE_PLUGIN_ROOT}/s
   (SOURCE_HUNT / ARCHIVE_DEEP_DIVE / ACADEMIC_REPORT) bu ajana delege edilir
   (gerekirse ≤4 paralel shard); ham çıktı ajanın kendi penceresinde tüketilir,
   ana pencereye yalnız kompakt `arsiv_distillate` + `coverage` döner.
+  **Host notu:** plugin alt-ajanı yalnız **Claude Code**'da delege edilebilir;
+  **claude.ai custom connector Tier-1 sunmaz** → o durumda doğrudan **Tier-2
+  `anamnesis`**'e ingest→bounded query ile işle (anamnesis bir MCP server olduğundan
+  claude.ai'de çalışır); anamnesis de yoksa aşağıdaki bounded-chunk + devre-kesici
+  ile **inline daralt** (her araç çıktısını çekince hemen provenance kaydına çök,
+  ham izi düşür) — asla ham dökme. Pencere ekonomisi Tier-1'siz de korunur.
 - **Tier 2 — `anamnesis` RAG/GraphRAG substratı:** büyük tam-metin (belge
   transkripsiyonu, tez PDF, DergiPark tam-metin makale, İА maddesi, within-manifest
   bloğu) `ingest_document(doc_id=<kanonik id>)` ile bir kez indekslenir →
@@ -727,7 +735,8 @@ Her ACADEMIC_REPORT çıktısı şu kapılardan geçer:
   dönem sınırı) raporda en az bir bölümde ele alındı mı? **VE** bağlama uygun
   tüm server'ların çalıştığını kanıtlayan **kapsam manifestosu** çıktıya eklendi
   mi (`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md` biçimi; her server için hit/empty/degraded/
-  skipped-with-reason)? Sessiz atlama = G0 FAIL (Stop hook tamamlatır).
+  skipped-with-reason)? Sessiz atlama = G0 FAIL (Claude Code'da Stop hook tamamlatır;
+  **claude.ai'de plugin hook'ları çalışmaz → bu kapıyı kendi-disiplininle doğrula, manifestoyu sen ekle**).
   devlet-arsivleri oturumu düşükse `degraded: session_required` yazılır (skip değil).
 - **G1 — Kaynak çeşitliliği**: En az **iki** birincil + **üç** ikincil
   kaynak sınıfı kullanıldı mı?

@@ -518,9 +518,13 @@ def gate_curriculum(html, R):
 def _verify_collect(block):
     """`verification` bloğundan sinyalleri toplar. (gate_verify'ı sade tutmak için ayrıldı.)
 
-    Döndürür: (has_doc, in_frame, n_claims, n_grounded, n_general)
+    Döndürür: (has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
+               n_source, n_source_no_cite)
     """
     has_doc = bool(re.search(r'frame_source\s*:\s*\{[^}]*\bdocument_id\s*:\s*\d+', block, re.S))
+    # frame_source.kind — supported_by_source meşruiyeti buna bağlı ("program" → kitapsız sınıf)
+    fk_m = re.search(r'frame_source\s*:\s*\{[^}]*\bkind\s*:\s*["\'](\w+)["\']', block, re.S)
+    frame_kind = fk_m.group(1) if fk_m else None
     in_frame_m = re.search(r'\bin_frame\s*:\s*(true|false)', block)
     in_frame = (in_frame_m.group(1) == "true") if in_frame_m else None
     # Her claim öğesi kendi `claim:` anahtarıyla başlar; dayanağı aynı öğe içinde aranır.
@@ -530,10 +534,19 @@ def _verify_collect(block):
     n_grounded = sum(1 for _, tail in claims if re.search(r'\bgrounding\s*:\s*\{', tail))
     n_general = sum(1 for _, tail in claims
                     if re.search(r'verdict\s*:\s*["\']general_knowledge["\']', tail))
-    return has_doc, in_frame, n_claims, n_grounded, n_general
+    # supported_by_source: alternatif kaynak (egitim-kaynak: PhET/Vikipedi) dayanağı —
+    # ders kitabı OLMAYAN (program-çerçeveli) sınıflar için dördüncü verdict.
+    src = [tail for _, tail in claims
+           if re.search(r'verdict\s*:\s*["\']supported_by_source["\']', tail)]
+    n_source = len(src)
+    # Kanıtlı olmalı: grounding'i kaynak künyesi + `license` taşımalı (izlenebilirlik).
+    n_source_no_cite = sum(1 for tail in src if not re.search(r'\blicense\s*:\s*["\']', tail))
+    return (has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
+            n_source, n_source_no_cite)
 
 
-def _verify_eval(has_doc, in_frame, n_claims, n_grounded, n_general):
+def _verify_eval(has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
+                 n_source, n_source_no_cite):
     """Saf karar mantığı → (issues, warns)."""
     issues = []; warns = []
     if not has_doc:
@@ -551,11 +564,27 @@ def _verify_eval(has_doc, in_frame, n_claims, n_grounded, n_general):
                       "(dayanaksız iddia geçemez)")
     if n_claims and n_general:
         ratio = n_general / n_claims
-        msg = (f"{n_general}/{n_claims} iddia `general_knowledge` — ders kitabına dayanmıyor")
+        msg = (f"{n_general}/{n_claims} iddia `general_knowledge` — "
+               "ders kitabına/programa/kaynağa dayanmıyor")
         if ratio > 0.5:
             issues.append(msg + "; çoğunluk dayanaksız")
         else:
             warns.append(msg + "; kaynağını bul ya da çıkar")
+    # supported_by_source (v3.6.0): (Q1) kaynak künyesi + lisans zorunlu; görünür atıf
+    # kapıyla dayatılmaz (yazar sorumlu). (Q2) yalnız program-çerçeveli modülde meşru.
+    if n_source_no_cite:
+        issues.append(f"{n_source_no_cite} `supported_by_source` iddiası grounding'inde "
+                      "`license` taşımıyor — alternatif kaynak izlenebilir değil "
+                      "(kaynak künyesi + lisans zorunlu)")
+    if n_source and frame_kind != "program":
+        ratio = n_source / n_claims
+        msg = (f"{n_source}/{n_claims} iddia `supported_by_source` ama çerçeve `program` değil "
+               f"(kind:{frame_kind or '—'}) — alternatif-kaynak omurga yalnız ders kitabı "
+               "OLMAYAN (program-çerçeveli) sınıflarda meşru")
+        if ratio > 0.5:
+            issues.append(msg + "; çoğunluk → ders kitabına dayan ya da çerçeveyi düzelt")
+        else:
+            warns.append(msg + "; ders kitabına dayan ya da çerçeveyi `program` yap")
     return issues, warns
 
 

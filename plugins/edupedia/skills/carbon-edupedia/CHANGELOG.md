@@ -2,6 +2,29 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.6.0] — 2026-07-19
+
+### Eklendi — G-VERIFY dördüncü verdict: `supported_by_source` (ders kitabı OLMAYAN sınıflar)
+
+TYMM kademeli yürürlüğünde 3, 4, 7, 8, 11 ve 12. sınıfların ders kitapları henüz
+yayınlanmadı; ama kazanım çerçevesi (öğretim programı) 12 sınıfın tamamında mevcut. Bu
+sınıflarda çerçeve zorunlu **programdır** (`frame_source.kind:"program"`) ve programın
+kapsamadığı olgusal içerik alternatif kaynaktan (egitim-kaynak: PhET/Vikipedi) dayanaklanır.
+Önceki üç-verdict şeması (`supported`/`supported_by_program`/`general_knowledge`) bu iddiaya
+dürüst bir verdict tanımıyordu → `general_knowledge`'a düşüyor ve çoğunluksa G-VERIFY'ı
+FAIL veriyordu (yayın 422). Dördüncü verdict bunu çözer:
+
+- **Kanıtlı sayılır** — `general_knowledge` cezası yok; ama grounding'i `document_id`
+  yerine **kaynak künyesi + `license`** taşımalı (izlenebilirlik). `license` yoksa → FAIL.
+- **Yalnız program-çerçeveli modülde meşru** — ders-kitabı çerçevesinde azınlık WARN /
+  çoğunluk FAIL (kitap varken olgusal omurga `supported` olmalı). Çelişkide öncelik:
+  **ders kitabı > program > kaynak**.
+- Görünür atıf (PhET CC BY-NC 4.0) yazarın sorumluluğu — kapı içeriği izler, görünür
+  atfı dayatmaz.
+
+Sunucu-tarafı vendored kopya (`edupedia_site/app/gates/`) lockstep senkronlandı; 5 yeni
+regresyon testi (83 toplam, tümü yeşil).
+
 ## [3.5.2] — 2026-07-17
 
 ### Düzeltildi — konsol raporu SKIPPED kapıyı GEÇTİ gösteriyordu (denetim bulgusu #5)

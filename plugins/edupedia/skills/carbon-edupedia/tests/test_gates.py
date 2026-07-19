@@ -807,3 +807,73 @@ def test_gverify_fails_when_frame_source_has_no_document():
                              'frame_source: { kind: "textbook" }')
     rows = run_gate(vm.gate_verify, _mod(body))
     assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+# ── G-VERIFY · supported_by_source (v3.6.0) — ders kitabı OLMAYAN sınıflar ──────
+# TYMM kademeli yürürlük: 3,4,7,8,11,12'de ders kitabı henüz yayınlanmadı; çerçeve
+# zorunlu PROGRAM'dır (kazanım çerçevesi 12 sınıfın tamamında var). Bu sınıflarda
+# programın kapsamadığı olgu, alternatif kaynaktan (egitim-kaynak: PhET/Vikipedi)
+# dayanaklanır → dördüncü verdict `supported_by_source`.
+# Kararlar: (Q1) kanıtlı sayılır (general_knowledge cezası YOK) ama grounding'i kaynak
+# künyesi + `license` taşımalı (izlenebilirlik); görünür atıf kapıyla dayatılmaz.
+# (Q2) meşruiyet YALNIZ program-çerçeveli modülde; ders-kitabı çerçevesinde
+# supported_by_source → azınlık WARN / çoğunluk FAIL (omurga `supported` olmalı).
+
+_VERIF_PROGRAM = '''
+  mode: "CURRICULUM",
+  curriculum: { outcomes: [{ code: "BIY.11.1.3", text: "...", mappedTo: ["s1"] }] },
+  verification: {
+    frame_source: { kind: "program", document_id: 47, pages: "228-232" },
+    scope: { in_frame: true, excluded: [] },
+    claims: [
+      { claim: "Fotosentez isik enerjisini kimyasal baga cevirir",
+        grounding: { source: "PhET Fotosentez", url: "https://phet.colorado.edu/x", license: "CC BY-NC 4.0", quote_allowed: true },
+        verdict: "supported_by_source" }
+    ]
+  },
+'''
+
+
+def test_gverify_passes_supported_by_source_under_program_frame():
+    """Kitapsiz sinif: program cercevesi + kunye/lisansli supported_by_source → PASS."""
+    rows = run_gate(vm.gate_verify, _mod(_VERIF_PROGRAM))
+    assert status_of(rows, "G-VERIFY") == "PASS"
+
+
+def test_gverify_source_not_penalized_as_general_knowledge():
+    """supported_by_source general_knowledge sayilmaz — tek-kaynak program modulu FAIL degil."""
+    rows = run_gate(vm.gate_verify, _mod(_VERIF_PROGRAM))
+    assert status_of(rows, "G-VERIFY") != "FAIL"
+
+
+def test_gverify_fails_supported_by_source_without_license():
+    """Kanitli olmali: grounding `license` tasimayan supported_by_source izlenebilir degil → FAIL."""
+    body = _VERIF_PROGRAM.replace(', license: "CC BY-NC 4.0"', '')
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_supported_by_source_majority_under_textbook_frame():
+    """Ders kitabi olan sinifta olgusal omurga cogunlukla supported_by_source olamaz → FAIL."""
+    body = _VERIF_PROGRAM.replace('kind: "program"', 'kind: "textbook"')
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_warns_supported_by_source_minority_under_textbook_frame():
+    """Ders kitabi cercevesinde azinlik supported_by_source → WARN (bloklamaz, isaretler)."""
+    body = '''
+  mode: "CURRICULUM",
+  curriculum: { outcomes: [{ code: "FB.5.3.1.1", text: "...", mappedTo: ["s1"] }] },
+  verification: {
+    frame_source: { kind: "textbook", document_id: 197, pages: "112-120" },
+    scope: { in_frame: true, excluded: [] },
+    claims: [
+      { claim: "iddia bir", grounding: { document_id: 197, page: 115 }, verdict: "supported" },
+      { claim: "iddia iki", grounding: { document_id: 197, page: 116 }, verdict: "supported" },
+      { claim: "ek ornek", grounding: { source: "PhET", url: "https://phet.colorado.edu/y", license: "CC BY-NC 4.0" }, verdict: "supported_by_source" }
+    ]
+  },
+'''
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "WARN"

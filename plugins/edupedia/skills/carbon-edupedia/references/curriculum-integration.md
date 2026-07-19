@@ -374,7 +374,7 @@ const MODULE_DATA = {
 - `skill` alanı §4 haritalamasını belgeler (insan-okunur; zorunlu değil ama önerilir).
 - Blok yoksa modül normal çalışır; CURRICULUM modunda blok **zorunludur**.
 
-## 6.1 KAPSAM + DOĞRULAMA kapısı — `verification` bloğu (v3.5.0)
+## 6.1 KAPSAM + DOĞRULAMA kapısı — `verification` bloğu (v3.6.0)
 
 Kullanıcı sözleşmesi (2026-07-17): *"üretilen içeriklerin doğruluk ve tutarlılık denetimi
 yapılmadan canlıya alınmamalı"*, iki eksende: **(a) kapsam** — içerik müfredat/ders kitabının
@@ -413,7 +413,12 @@ zorunlu kılar.
   "claims": [                       // modüldeki her OLGUSAL iddia (pedagojik yönerge değil)
     { "claim": "Hücre zarı seçici geçirgendir",
       "grounding": { "document_id": 197, "page": 115 },
-      "verdict": "supported" }      // "supported" | "supported_by_program" | "general_knowledge"
+      "verdict": "supported" },     // "supported" | "supported_by_program" | "supported_by_source" | "general_knowledge"
+    // ders kitabı OLMAYAN sınıf (frame_source.kind:"program") — alternatif kaynak dayanağı;
+    // grounding `document_id` DEĞİL, kaynak künyesi + `license` taşır (izlenebilirlik):
+    { "claim": "Fotosentez ışık enerjisini kimyasal bağ enerjisine çevirir",
+      "grounding": { "source": "PhET: Fotosentez", "url": "https://phet.colorado.edu/...", "license": "CC BY-NC 4.0", "quote_allowed": true },
+      "verdict": "supported_by_source" }
   ]
 }
 ```
@@ -430,6 +435,15 @@ zorunlu kılar.
 - `claims[]` boş olmamalı; **her** öğede `claim` + `grounding` + `verdict` olmalı.
 - `verdict:"general_knowledge"` → **WARN** (dayanaksız; ya kaynağını bul ya çıkar).
   Olgusal iddiaların çoğunluğu `general_knowledge` ise → **FAIL**.
+- `verdict:"supported_by_source"` (v3.6.0) — **ders kitabı OLMAYAN sınıflar için** (3,4,7,8,11,12;
+  TYMM kademeli yürürlüğü henüz kitap yayınlamadı, ama kazanım çerçevesi 12 sınıfın tamamında
+  var). Programın kapsamadığı olgu, alternatif kaynaktan (egitim-kaynak: PhET/Vikipedi) dayanaklanır.
+  **Kanıtlı sayılır** (`general_knowledge` cezası YOK) — ama grounding'i `document_id` yerine
+  **kaynak künyesi + `license`** taşımalı; `license` yoksa → **FAIL** (izlenebilir değil).
+  **Yalnız `frame_source.kind:"program"` çerçevesinde meşru**: ders-kitabı çerçevesinde
+  kullanılırsa azınlık → **WARN**, çoğunluk → **FAIL** (kitap varken omurga `supported` olmalı).
+  Çelişkide öncelik: **ders kitabı > program > kaynak**. Görünür atıf (PhET CC BY-NC 4.0 zorunlu
+  kılar) **yazarın sorumluluğudur** — kapı içeriği izler ama görünür atfı dayatmaz.
 
 **DENETLEYEMEZ — bunlara güvenmeyin:**
 - `document_id`'nin gerçekten var olduğunu (validator katalogu göremez),

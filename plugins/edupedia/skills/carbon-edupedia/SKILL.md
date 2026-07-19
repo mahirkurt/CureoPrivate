@@ -516,7 +516,7 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
   öğede `code`+`text` var; her `outcomes[].mappedTo` segment id'si `segments[]`'te
   mevcut (kazanım→segment izlenebilirliği); `meta.sourceCitation` kazanım/korpus
   referansı içerir (eksikse uyarı). Tam kural: `references/curriculum-integration.md` §6.
-- **G-VERIFY (koşullu, v3.5.0):** CURRICULUM modunda `verification` bloğu **zorunlu**.
+- **G-VERIFY (koşullu, v3.6.0):** CURRICULUM modunda `verification` bloğu **zorunlu**.
   Kullanıcı sözleşmesi (2026-07-17): içerik **kapsam** ve **doğruluk/tutarlılık** denetiminden
   geçmeden canlıya alınmaz. **Yargıyı MODEL yapar, bu kapı YAPIYI denetler** — Python
   "bilimsel olarak doğru mu" diye karar veremez, ama "her iddianın dayanağı gösterilmiş mi"
@@ -524,7 +524,15 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
   `verification` bloğu var; `frame_source` bir `document_id` + `kind` taşıyor;
   `scope.in_frame` **true** (false → FAIL, yayınlanmaz); `claims[]` boş değil ve **her** öğede
   `claim`+`grounding`+`verdict` var; dayanaksız (`verdict:"general_knowledge"`) iddia → WARN,
-  çoğunluk öyleyse → FAIL.
+  çoğunluk öyleyse → FAIL. **Dört verdict (v3.6.0):** `supported` (ders kitabı) ·
+  `supported_by_program` (öğretim programı) · `supported_by_source` (alternatif kaynak —
+  ders kitabı OLMAYAN 3,4,7,8,11,12. sınıflar için, TYMM kademeli yürürlüğü) ·
+  `general_knowledge` (dayanaksız). **`supported_by_source` kuralı:** kanıtlı sayılır
+  (general_knowledge cezası YOK) ama grounding'i kaynak künyesi + `license` **taşımalı**
+  (izlenebilirlik — eksikse FAIL); yalnız `frame_source.kind:"program"` (kitapsız/program-çerçeveli)
+  modülde **meşru** — ders-kitabı çerçevesinde kullanılırsa azınlık WARN / çoğunluk FAIL
+  (omurga `supported` olmalı). Görünür atıf (PhET CC BY-NC) yazarın sorumluluğudur, kapı
+  dayatmaz. Çelişkide **ders kitabı > program > kaynak**.
   **DENETLEYEMEDİKLERİ (dürüst sınır, fazla güvenmeyin):** `document_id`'nin gerçekten var
   olduğunu, `kind:"textbook"` yazan belgenin `page_count>0` olduğunu, iddianın o sayfada
   geçtiğini ve iddianın DOĞRU olduğunu **bu kapı doğrulayamaz** — hiçbiri çevrimdışı

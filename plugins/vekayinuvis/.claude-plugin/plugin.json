@@ -105,6 +105,34 @@
       "description": "anamnesis MCP anahtarı — NOT: .mcp.json header'ı ${ANAMNESIS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANAMNESIS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
       "sensitive": true,
       "required": false
+    },
+    "resmigazete_api_key": {
+      "type": "string",
+      "title": "Resmî Gazete API key",
+      "description": "resmigazete MCP anahtarı — NOT: .mcp.json header'ı ${RESMI_GAZETE_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${RESMI_GAZETE_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "mevzuat_api_key": {
+      "type": "string",
+      "title": "Mevzuat API key",
+      "description": "mevzuat MCP anahtarı — NOT: .mcp.json header'ı ${MEVZUAT_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${MEVZUAT_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "tbmm_api_key": {
+      "type": "string",
+      "title": "TBMM API key",
+      "description": "tbmm MCP anahtarı — NOT: .mcp.json header'ı ${TBMM_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${TBMM_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "detsis_api_key": {
+      "type": "string",
+      "title": "DETSİS API key",
+      "description": "detsis MCP anahtarı — NOT: .mcp.json header'ı ${DETSIS_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${DETSIS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
     }
   },
   "mcpServers": "./.mcp.json",

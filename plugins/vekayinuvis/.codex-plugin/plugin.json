@@ -56,6 +56,34 @@
       "description": "anamnesis MCP anahtarı — NOT: .mcp.json header'ı ${ANAMNESIS_MCP_API_KEY} ortam değişkenini okur (userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANAMNESIS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir; yalnız bu alanı doldurmak header'ı beslemez.",
       "sensitive": true,
       "required": false
+    },
+    "resmigazete_api_key": {
+      "type": "string",
+      "title": "Resmî Gazete API key",
+      "description": "resmigazete MCP anahtarı — NOT: .mcp.json header'ı ${RESMI_GAZETE_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${RESMI_GAZETE_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "mevzuat_api_key": {
+      "type": "string",
+      "title": "Mevzuat API key",
+      "description": "mevzuat MCP anahtarı — NOT: .mcp.json header'ı ${MEVZUAT_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${MEVZUAT_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "tbmm_api_key": {
+      "type": "string",
+      "title": "TBMM API key",
+      "description": "tbmm MCP anahtarı — NOT: .mcp.json header'ı ${TBMM_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${TBMM_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
+    },
+    "detsis_api_key": {
+      "type": "string",
+      "title": "DETSİS API key",
+      "description": "detsis MCP anahtarı — NOT: .mcp.json header'ı ${DETSIS_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu ${DETSIS_MCP_API_KEY} ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env); yalnız bu alanı doldurmak header'ı beslemez.",
+      "sensitive": true,
+      "required": false
     }
   },
   "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO (17 server): Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek, artık 22 araç: arama 5'lisi + belge 3'lüsü + eSatış sepeti 4'lüsü + satın-alınmış/yerel-arşiv 6'lısı + async OCR 2'lisi + durum 2'lisi) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily), kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ve yasama/mevzuat katmanı (Resmî Gazete erken-Cumhuriyet arşivi, mevzuat.gov.tr mülga/gerekçe, TBMM yasama soyağacı, DETSİS kurumsal prosopografi) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. v3.0: devlet-arsivleri 10→22 araca genişledi — eSatış sepet→noVNC satın-alma (ödeme DAİMA insan, asla otonom) → satın-alınmış belgenin yerel BOA-kodlu arşivinden 300 DPI arşiv-öncelikli okuma → OCR/HTR (`engine=auto|both|transkribus|escriptorium|transleyt|tesseract`, Osmanlı varsayılanı `transleyt` — ölçülen en iyi okuyucu; en doğru okuma Transleyt+görü uzlaştırması) → async OCR job kuyruğu zinciri; üç yeni akış-skill'i (`satinalma`, `arsiv-oku`, `toplu-okuma`); filo 13→17 server'a genişledi (yasama/mevzuat katmanı + DETSİS); komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>` — eski `/vekayinuvis:vekayinuvis-<ad>` biçimi BREAKING kaldırıldı). IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu sunar.",

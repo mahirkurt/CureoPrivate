@@ -40,8 +40,8 @@
       "name": "brand-ecosystem-core",
       "displayName": "Brand Ecosystem",
       "source": "./plugins/brand-ecosystem-core",
-      "version": "1.0.0",
-      "description": "Brand Ecosystem v1.0'ın stratejik, sözel ve görsel katmanları tek modül olarak: brand-audit, brand-platform, brand-story, brand-touchpoint, brand-launch + brand-maker/brand-visual ekosistem yoldaşları + brand-maker (isimlendirme), brand-visual (görsel kimlik) ve figma-forge (tasarım sistemi → Figma). On skill + /pipeline komutu kanonik kurulum sırasını uçtan uca işletir. brand-voice plugin'i ile ses katmanı için kompoze olur. Her skill Claude.ai-native (mcp_servers_required: []); Figma/GoDaddy/Exa opsiyonel zenginleştiricidir.",
+      "version": "1.1.0",
+      "description": "Brand Ecosystem'in stratejik, sözel ve görsel katmanları tek modül olarak: brand-audit, brand-platform, brand-story, brand-touchpoint, brand-launch + brand-maker/brand-visual ekosistem yoldaşları + brand-maker (isimlendirme, v2.1 doğrulama-sertleştirilmiş), brand-verify (canlı doğrulama disiplini), brand-market-signal (mevcut socius-vigil connector'ı üzerinden ses-payı/sentiment/beyaz-alan), brand-visual (görsel kimlik) ve figma-forge. v2.1 sertleştirme: no-fabrication garantili hook katmanı (SessionStart doktrin · UserPromptSubmit yönlendirme · Stop provenance öz-denetimi) + izole-eleştiri subagent'ları (diversity-auditor · naive-reader · brand-skeptic · trademark-examiner · etymology-verifier) + kullanıcı-bağlı Cloudflare MCP filosu (brand-verify · color-a11y · type-foundry · brand-asset-registry · culture-linguistics · regulated-claims — mcp.optional.json). /pipeline komutu kanonik kurulum sırasını işletir; brand-voice ile ses katmanı için kompoze olur. Her skill Claude.ai-native (mcp_servers_required: []); MCP'ler + Figma/GoDaddy/Exa opsiyonel canlı-veri zenginleştiricilerdir.",
       "author": {
         "name": "Cureonics",
         "url": "https://cureonics.com"

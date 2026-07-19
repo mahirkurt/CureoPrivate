@@ -7,6 +7,12 @@
       "_status": "BUILT (CureoHub/mcp-servers/brand-verify-mcp — 56 tests green, typecheck clean); deploy-pending (wrangler kv + secrets + deploy). See ARCHITECTURE.md §3.",
       "_use": "brand-maker + brand-verify — canonical live verification: domain_multi (RDAP + WHOIS:43 two-source), trademark_multi (EUIPO TMview live + WIPO/USPTO/TÜRKPATENT manual deep-links), inn_usan_check (baked WHO INN/USAN + drug-brand collision), social_handles (per-platform), llm_namespace (Wikipedia/Wikidata). Every value carries source + status (confirmed|provisional|best_effort|manual_required|unverified) + timestamp. Closes the auronza/Claranta data-accuracy defects."
     },
+    "color-a11y-mcp": {
+      "type": "http",
+      "url": "https://color-a11y-mcp.cureonics.workers.dev/mcp",
+      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/color-a11y-mcp — 39 tests green, algorithms spec-verified). P1.",
+      "_use": "brand-visual + figma-forge — deterministic color accessibility: contrast_check (WCAG 2.x + APCA), cvd_simulate (color-blindness), generate_scale (Radix-style 12-step, WCAG-enforced), convert_color (OKLCH/CMYK/nearest-Pantone), palette_audit, color_info. Every result computed from authoritative constants — no fabrication."
+    },
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp",

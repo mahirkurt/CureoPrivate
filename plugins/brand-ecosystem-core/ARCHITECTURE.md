@@ -99,8 +99,12 @@ deploy` → `brand-verify-mcp.cureonics.workers.dev`). Registered in
 
 ### P1
 
-- **color-a11y-mcp** — WCAG 2.2 + APCA contrast, CVD simulation, Radix 12-step
-  scales, Pantone/CMYK conversion (deterministic accessibility for brand-visual).
+- **color-a11y-mcp** — **BUILT + DEPLOYED** (`CureoHub/mcp-servers/color-a11y-mcp`,
+  `color-a11y-mcp.cureonics.workers.dev`). WCAG 2.x + APCA contrast, CVD
+  simulation (Machado 2009), Radix-style 12-step accessible scale generation
+  (WCAG-enforced), OKLCH/CMYK/nearest-Pantone conversion, palette audit —
+  **deterministic** for brand-visual, every algorithm pinned to an authoritative
+  spec + test vectors (39 tests green). Registered in `mcp.optional.json`.
 - **type-foundry-mcp** — font licensing/embedding rights, variable-font
   axes/metadata, Google Fonts + foundry verification.
 - **brand-asset-registry-mcp** — the plugin's memory: Cloudflare Workers + D1/R2

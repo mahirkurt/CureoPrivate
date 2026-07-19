@@ -35,6 +35,36 @@ CONNECTOR_MENTIONS = re.compile(
     r"resmigazete|rg_get_item|\bmevzuat\b|mulga_mevzuat|\btbmm\b|\bdetsis\b",
     re.IGNORECASE,
 )
+# F9 (metin-yedeği META-TUR baskılayıcı) — kullanıcı 2026-07-19.
+# Transkript-YOK yolunda mode_hit, filo/mod adlarını ANAN ama araç ÇAĞIRMAYAN turlarda
+# (mimari inceleme, dokümantasyon, bu hook'un kendi kodu) yanlış-pozitif üretiyordu.
+# Gerçek çıktı TEK mod bildirir + genelde arşiv künyesi taşır; meta-tur BİRÇOK modu anar
+# ve/veya plugin-iç dosya/hook adları taşır ve künyesizdir. Yalnız transkript-YOK yolunu
+# etkiler (transkript varken fleet_data_tool_invoked zaten kesin — orada bu baskılayıcı yok).
+MODE_NAME = re.compile(
+    r"\b(SOURCE_HUNT|ARCHIVE_DEEP_DIVE|MANUSCRIPT_TRANSCRIBE|PROSOPOGRAPHY|EVENT_RECONSTRUCTION|"
+    r"HISTORIOGRAPHY|CHRONOLOGY_CONVERSION|ACADEMIC_REPORT|KANUN_GEREKÇES[İI])\b"
+)
+# Plugin-iç öz-referans imzaları (araştırma çıktısında görünmez; inceleme/mühendislik turunda görünür).
+META_MARKERS = re.compile(
+    r"plugins/vekayinuvis|hooks/scripts|_turn_tools|stop_coverage|citation_discipline|_signals|"
+    r"SKILL\.md|coverage-manifest\.md|context-economy-contract|\.mcp\.json|plugin\.json|frontmatter",
+    re.IGNORECASE,
+)
+
+
+def is_meta_turn(text):
+    """Filo/mod ADINI anan ama üretmeyen tur mu? (inceleme/dokümantasyon/mühendislik)
+
+    (a) plugin-iç öz-referans (dosya/hook adı) → kesin meta; VEYA
+    (b) ≥3 farklı mod adı VE hiç arşiv KAYIT YERİ yok → mod-kataloğunu tartışan meta.
+    Arşiv künyesi taşıyan çok-fazlı gerçek rapor (b)'den muaftır → susturulmaz."""
+    if META_MARKERS.search(text):
+        return True
+    distinct_modes = len({m.upper() for m in MODE_NAME.findall(text)})
+    return distinct_modes >= 3 and not has_record_locator(text)
+
+
 # Manifesto imzası.
 HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b)", re.IGNORECASE)
 # Manifesto içinde durum satırı imzası.
@@ -126,6 +156,8 @@ def main():
         if not fleet_data_tool_invoked(event):
             sys.exit(0)
     else:
+        if is_meta_turn(text):
+            sys.exit(0)  # F9: filo/mod adını anan ama üretmeyen inceleme/dokümantasyon turu → sessiz
         mode_hit = any(sig.search(text) for sig in MODE_SIGNALS)
         connector_hits = len(set(m.lower() for m in CONNECTOR_MENTIONS.findall(text)))
         if not (mode_hit or (connector_hits >= 2 and has_record_locator(text))):

@@ -24,7 +24,18 @@ PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 MCP_PATH = PLUGIN_ROOT / ".mcp.json"
 MCP_PROTOCOL_VERSION = "2024-11-05"
 DOCTOR_CLIENT_VERSION = "3.0.0"
-DEVARSIV_EXPECTED_TOOLS = 22
+# devlet-arsivleri 6 araç grubu — envanter kontrolü magic-number DEĞİL grup-kapsamı ölçer.
+# Kesin araç sayısı deploy'a göre değişir (OCR sistemi `devarsiv_ocr_image` ekledi; deep_search
+# grubu ileride ekler) → sabit sayı beklemek yanlış-DRIFT üretir. Bir grubun TÜMÜYLE yokluğu
+# (ör. hiç `*_ocr_*` yok) gerçek drift/cache sinyalidir. Her grup ad-parçası imzalarıyla aranır.
+DEVARSIV_TOOL_GROUPS = {
+    "arama": ("search",),                    # search / detailed_search / semantic_search
+    "belge": ("get_belge",),                 # get_belge / get_belge_image
+    "sepet": ("cart",),                      # add_to_cart / remove_from_cart / list_cart / checkout_cart
+    "arşiv": ("archive",),                   # list_archive / get_archive_page / get_archive_pdf
+    "OCR": ("ocr_",),                        # ocr_belge / ocr_image / ocr_archive_pages / ocr_submit / ocr_result
+    "durum": ("session_status", "server_info"),
+}
 DEVARSIV_VNC_URL = "https://devarsiv-vnc.cureonics.com/vnc.html"
 
 ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
@@ -324,20 +335,32 @@ def devarsiv_live_status(config: dict, timeout: int) -> tuple[str, str]:
 
 
 def envanter_line(content: dict[str, Any]) -> str:
-    """[envanter] line: devarsiv_server_info tool-count drift check (K1: 22 tools)."""
+    """[envanter] line: devarsiv_server_info araç-GRUBU kapsam kontrolü (magic-number değil).
+
+    6 araç grubunun (arama/belge/sepet/arşiv/OCR/durum) her birinden en az bir araç bekler.
+    Kesin sayı deploy'a göre değişir (ocr_image eklendi, deep_search ileride) → yalnız bir
+    grubun TÜMÜYLE yokluğu drift/cache sinyalidir. `tools` yalnız sayı olarak geldiyse
+    grup ölçülemez → varlık teyidiyle yetinir (yanlış-DRIFT üretmez)."""
     tools = content.get("tools")
-    if isinstance(tools, list):
-        count = len(tools)
-    elif isinstance(tools, int):
-        count = tools
-    else:
+    if isinstance(tools, int):
+        return f"[envanter] OK ({tools} araç; grup-kapsamı ölçülemedi — yanıt yalnız sayı döndü)"
+    if not isinstance(tools, list):
         return "[envanter] SORUN: devarsiv_server_info yanitinda tools alani yok"
-    if count != DEVARSIV_EXPECTED_TOOLS:
+    names = [
+        str(t.get("name", "") if isinstance(t, dict) else t).lower()
+        for t in tools
+    ]
+    blob = " ".join(names)
+    missing = [
+        grup for grup, markers in DEVARSIV_TOOL_GROUPS.items()
+        if not any(m in blob for m in markers)
+    ]
+    if missing:
         return (
-            f"[envanter] DRIFT: {count}/{DEVARSIV_EXPECTED_TOOLS} — "
-            "claude.ai connector'ını yeniden bağlayın"
+            f"[envanter] DRIFT: {', '.join(missing)} grubu yok ({len(names)} araç) — "
+            "claude.ai connector'ını yeniden bağlayın (araç listesi cache'lenmiş olabilir)"
         )
-    return f"[envanter] OK ({count}/{DEVARSIV_EXPECTED_TOOLS})"
+    return f"[envanter] OK — 6/6 grup mevcut ({len(names)} araç)"
 
 
 def engine_lines(content: dict[str, Any]) -> list[str]:

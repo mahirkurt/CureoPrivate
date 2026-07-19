@@ -92,3 +92,46 @@ def test_no_transcript_silent_without_record_locator():
     """Transkript yok + salt isim geçişi (künye yok) → sessiz (isim geçişi atıf değil)."""
     ev = {"last_assistant_message": _OPS}
     assert _run("citation_discipline", ev) is False
+
+
+# --- F9: metin-yedeği META-TUR baskılayıcı (transkript YOK) -----------------------
+# Filo/mod adlarını ANAN ama araç ÇAĞIRMAYAN turlar (mimari inceleme, dokümantasyon,
+# hook'un kendi kodu) metin-yedeğinde mode_hit üzerinden yanlış-pozitif üretiyordu.
+
+_META_REVIEW = (
+    "Vekayinüvis mimari incelemesi: SOURCE_HUNT, ARCHIVE_DEEP_DIVE ve HISTORIOGRAPHY "
+    "modlarını inceledim. plugins/vekayinuvis/skills/start/SKILL.md ve "
+    "hooks/scripts/stop_coverage.py bulguları: kapsam manifestosu doğru yazılmış."
+)
+_META_MODES_ONLY = (
+    "Üç mod — SOURCE_HUNT, HISTORIOGRAPHY ve ACADEMIC_REPORT — nasıl ayrışıyor diye "
+    "düşündüm; herhangi bir arşiv taraması veya connector çağrısı yapmadım."
+)
+_REAL_SINGLE_MODE = (
+    "PROSOPOGRAPHY modunda Mustafa Behçet Efendi'nin biyografisini derledim. Yaşam "
+    "çizelgesi ve atama-azil zinciri hazır ama G0 kapsam manifestosu eklemedim."
+)
+_REAL_MULTIPHASE_WITH_LOCATOR = (
+    "ACADEMIC_REPORT: SOURCE_HUNT + ARCHIVE_DEEP_DIVE + HISTORIOGRAPHY birleşimi. "
+    "Kaynak: BOA, HAT 1234/56; II. Mahmud dönemi tıbbiye. Manifesto eklenmedi."
+)
+
+
+def test_no_transcript_meta_review_turn_silent():
+    """Plugin-iç dosya/hook adları taşıyan inceleme turu → meta → sessiz (F9)."""
+    assert _run("stop_coverage", {"last_assistant_message": _META_REVIEW}) is False
+
+
+def test_no_transcript_many_modes_no_locator_silent():
+    """≥3 mod anan ama künyesiz düşünme turu → meta → sessiz (F9)."""
+    assert _run("stop_coverage", {"last_assistant_message": _META_MODES_ONLY}) is False
+
+
+def test_no_transcript_single_mode_output_still_fires():
+    """Tek gerçek mod çıktısı + manifesto yok → invaryant korunur, yanar."""
+    assert _run("stop_coverage", {"last_assistant_message": _REAL_SINGLE_MODE}) is True
+
+
+def test_no_transcript_multiphase_with_locator_still_fires():
+    """Çok-fazlı gerçek rapor + arşiv künyesi (meta değil) + manifesto yok → yanar."""
+    assert _run("stop_coverage", {"last_assistant_message": _REAL_MULTIPHASE_WITH_LOCATOR}) is True

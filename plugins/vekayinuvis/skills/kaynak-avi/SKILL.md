@@ -1,7 +1,6 @@
 ---
 name: kaynak-avi
 description: Bir konu hakkında mevcut Osmanlı/Türk arşiv ve akademik kaynakları tarar (SOURCE_HUNT modu) — kaynak matrisi üretir.
-context: fork
 ---
 
 `vekayinuvis` skill'ini **SOURCE_HUNT** modunda çalıştır.
@@ -17,7 +16,8 @@ search_dspace) + yoktez + literatur (DergiPark tam-metin) + tavily_search (akade
 `capped` durumu dahil). Erişim-kısıtlı kaynaklar için belge içeriği üretme; yalnız katalog-bilgisi
 ve erişim yol haritası ver. Restricted-kaynak disiplinini (CONNECTORS.md § 8) uygula.
 
-**Geniş tarama, `arsiv-tarama-distilleri` alt-ajanına devredilir.** Bu skill `context: fork`
-ile çalışır: çok-connector taraması yoğunlaştıkça (7+ paralel çağrı) ham çıktı bu ajanın kendi
-penceresinde tüketilir; ana pencereye yalnız kompakt `arsiv_distillate` + `coverage` döner
-(bkz. ${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md).
+**Geniş tarama `arsiv-tarama-distilleri` alt-ajanına DELEGE EDİLİR.** Çok-connector taraması
+yoğunlaştıkça (7+ paralel çağrı) taramayı Task/Agent aracıyla bu ajana devret: ham çıktı ajanın
+kendi penceresinde tüketilir, ana pencereye yalnız kompakt `arsiv_distillate` + `coverage` döner.
+Bu delegasyon **Claude Code'da** mevcuttur; **claude.ai'de plugin alt-ajanı yoksa** doğrudan
+Tier-2 anamnesis'e ingest→bounded query ile daralt (bkz. ${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md).

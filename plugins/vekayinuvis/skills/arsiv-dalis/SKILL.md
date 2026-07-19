@@ -1,7 +1,6 @@
 ---
 name: arsiv-dalis
 description: Belirli bir arşiv/fond/tasnif içinde derin dalış yapar (ARCHIVE_DEEP_DIVE modu) — fond yol haritası + erişim talimatı.
-context: fork
 ---
 
 `vekayinuvis` skill'ini **ARCHIVE_DEEP_DIVE** modunda çalıştır.
@@ -26,9 +25,11 @@ akışı için `boa-katalog/SKILL.md` (adım 3–4). **Çok-sayfa okumada K4 kar
 → `devarsiv_ocr_result` ile poll → **`/vekayinuvis:toplu-okuma`** akışına devret.
 
 **TAM-FİLO + bağlam ekonomisi:** bağlama uygun tüm server'ları çalıştır ve çıktıya **G0 kapsam
-manifestosu** ekle (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md). Geniş tarama `arsiv-tarama-distilleri`
-alt-ajanına devredilir (ağır fan-out — bu skill `context: fork` ile çalışır); büyük tam-metni
-anamnesis'e ingest et.
+manifestosu** ekle (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md). Ağır çok-connector fan-out'unda
+(7+ paralel çağrı) taramayı `arsiv-tarama-distilleri` alt-ajanına **DELEGE ET** (Task/Agent aracıyla):
+ham çıktı ajanın kendi penceresinde tüketilir, ana pencereye yalnız kompakt `arsiv_distillate` +
+`coverage` döner — Claude Code'da bu delegasyon mevcuttur, claude.ai'de yoksa doğrudan Tier-2
+anamnesis'e ingest→bounded query ile işle. Büyük tam-metni anamnesis'e ingest et.
 
 Belge görüntüsü/OCR/HTR yalnız gerçek `devarsiv_get_belge_image`, `devarsiv_ocr_belge`
 veya satın alınmış çok-sayfada `devarsiv_get_archive_page`/`devarsiv_ocr_belge_pages` çıktısı varsa

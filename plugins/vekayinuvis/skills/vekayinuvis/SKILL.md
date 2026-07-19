@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 3.0.1
-last_updated: 2026-07-11
+version: 3.1.0
+last_updated: 2026-07-19
 changelog:
+  - "3.1.0 (2026-07-19): DEVARSIV/OCR-DIŞI İŞLEV DENETİMİ + MİMARİ-UYUM DÜZELTMELERİ (F1-F9). (F4) `/vekayinuvis:olay` komutu eklendi — EVENT_RECONSTRUCTION artık kendi komut girişine sahip (önceden yalnız flagship auto-mode). (F8) devlet-arsivleri envanter kontrolü magic-number'dan (`22`) GRUP-KAPSAMINA geçti: `start` preflight + `vekayinuvis_doctor.py` 6 araç grubunun (arama/belge/sepet/arşiv/OCR/durum) her birinden ≥1 araç arar — OCR sisteminin `devarsiv_ocr_image`'ı gibi eklemeler yanlış-DRIFT üretmez, yalnız bir grubun tümüyle yokluğu cache/drift sinyali. (F9) `stop_coverage` metin-yedeğine META-TUR baskılayıcı: transkript-yok yolunda filo/mod adlarını ANAN ama araç ÇAĞIRMAYAN turlar (mimari inceleme/dokümantasyon/hook öz-kodu) plugin-iç öz-referans veya ≥3-mod-künyesiz imzasıyla susturulur (transkript-var yolu değişmedi; TDD 4 test). (F5) `citation_discipline` kasıtlı arşiv-kapsamı belgelendi (`_turn_tools.py`) — yasama/akademik atıflar bilerek dışarıda, Cumhuriyet mevzuatına Hicrî çift-tarih dayatılmaz; yasama-atıf disiplini KANUN_GEREKÇESİ prose sorumluluğu. (F1) `start` karşılaması v3.0 filoya tazelendi (yasama/tam-metin şelalesi/anamnesis/Transleyt iki-okuyucu). (F2) var olmayan `carbon-pptx` → `carbon-html-report`/`carbon-quarto-scientific` (4 dosya). (F3) no-op `context: fork` 3 skill'den kaldırıldı, açık `arsiv-tarama-distilleri` delegasyonu + claude.ai degrade belgelendi. (F6) web katmanı host-bağımlı çerçevelendi, `exa`/`tavily` birincil. Mod sayısı (9) korundu."
   - "3.0.0 (2026-07-11): DEVARSIV 22-ARAÇ TAM ENTEGRASYON (SEPET→NOVNC→ARŞİV→ÇİFT-MOTOR OCR→ASYNC). §3.1.b devarsiv araç tablosu 10→22 araca genişledi (Arama/Belge/Sepet/Arşiv/Async/Durum, 6 grup) — eSatış sepeti (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart`, state-changing ama ödemesiz; ödeme DAİMA insan/noVNC), satın-alınmış belgenin yerel arşivi (`list_archive`/`get_archive_page` 300 DPI/`ocr_archive_pages`/`get_archive_pdf`) ve async OCR kuyruğu (`ocr_submit`/`ocr_result`) wire edildi. Yeni okuma-önceliği kuralı: satın alınmış belgede okuma DAİMA yerel arşivden başlar (katalog önizlemesi yalnız satın-alınmamıştır). Motor konvansiyonu netleşti: Osmanlı varsayılanı `engine=\"both\"` (görü birincil, Transkribus HTR yardımcı — taşra-kâtibi ellerinde gürültülü olabilir); sync/async kararı ≤5 sayfa/tek motor→sync, >5 sayfa veya `both` tam belge→async+anamnesis ingest. EVENT_RECONSTRUCTION modu devarsiv (`semantic_search`+`detailed_search` tarih-aralığı) ile birincil katman olarak güçlendirildi. §6.5 'Kanıt Disiplini (Murzi Kalıpları)' altı-maddelik prosopografik/toponimik disiplin eklendi. Üç yeni akış-skill'ine (`skills/satinalma`, `skills/arsiv-oku`, `skills/toplu-okuma`) işaret edildi. Mod sayısı (9) korundu."
   - "2.5.0 (2026-07-09): MARKETPLACE DOCTOR + G0/ATIF ENFORCEMENT. Claude marketplace ve Codex yerel kurulumları için `/vekayinuvis-durum` komutu + portable `scripts/vekayinuvis_doctor.py` eklendi; script `.mcp.json` tam-filo wiring'ini, env/userConfig/OAuth preflight durumunu ve 13 server satırlı G0 kapsam manifestosunu üretir; `--live` modunda `devlet-arsivleri` için streamable HTTP MCP initialize → initialized → `devarsiv_session_status` zinciriyle HP oturum canlılığını doğrular. Stop coverage hook'u artık yalnız çekirdek 4 satırı değil tüm 13 server'ı `hit/empty/degraded/skipped` durumuyla zorunlu arar. Atıf-disiplini hook'u görüntü/OCR/HTR iddialarında gerçek araç + sayfa/model/engine/confidence provenance'ı ister. Eski 'görüntü üretilemez' cümleleri 'yalnız gerçek araçla çekildiyse aktar; çekilmediyse katalog düzeyiyle kal' no-fabrication disiplinine hizalandı."
   - "2.2.0 (2026-07-08): BELGE OKUMA — OCR/HTR + GÖRSEL. devlet-arsivleri MCP artık BelgeGoster sayfa taramasını (full-res, satın-alma durumundan BAĞIMSIZ → satın alınmamış önizlemeler de okunur) sunuyor; 2 yeni araç wire edildi: (a) `devarsiv_get_belge_image` → tarama ImageContent olarak, asistan EL YAZMASI Osmanlıca'yı doğrudan görüsüyle okur (BOA el yazması için en iyi tam-okuma); (b) `devarsiv_ocr_belge` → deterministik OCR/HTR (Latin/Cumhuriyet tam · Osmanlı basılı damga+arşiv referans kodu tesseract · el yazması → Transkribus HTR creds-gated veya görü). §3.1.b tablosu (8→10 araç) + no-fabrication güncellendi (belge görüntüsü artık ÇEKİLİR/uydurulmaz, OCR düşük-güven dürüstçe raporlanır, çok-sayfalı tam set eSatış'ta); ARCHIVE_DEEP_DIVE/MANUSCRIPT_TRANSCRIBE/PROSOPOGRAPHY belge-okuma adımıyla güçlendirildi; ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md §7 (belge okuma motor tablosu + kanonik akış + no-fabrication). Osmanlıca en iyi okuma: asistan görüsü (self-contained) + Transkribus HTR (creds ile SOTA). Davranış/mod sayısı (9) korundu."
@@ -292,8 +293,13 @@ tamamlar. Detaylı rol için CONNECTORS.md § 2.5.
 
 ### 3.3 Genel Web ve Drive Katmanı
 
-- `web_search` (Anthropic): Tavily/Exa'da bulunamayan güncel referanslar.
-- `web_fetch`: Kullanıcının ilettiği URL'lerin tam içeriği.
+> **Host-bağımlı:** bu katman host-sağlamalıdır — Claude Code'da genelde mevcut,
+> claude.ai custom connector oturumunda bulunmayabilir. Bundled `exa`/`tavily`
+> (§3.2) her iki host'ta çalışır ve birincil web yüzeyidir; aşağıdakilere güvenme,
+> yoksa `exa`/`tavily`'ye degrade et.
+
+- `web_search` (host): Tavily/Exa'da bulunamayan güncel referanslar (varsa).
+- `web_fetch` (host): Kullanıcının ilettiği URL'lerin tam içeriği (yoksa `exa`/`tavily`).
 - `google_drive_search` / `google_drive_fetch`: Mahir Bey'in önceki
   araştırma dosyaları, transkripsiyon notları, kaynak fişleri.
 
@@ -523,7 +529,8 @@ olayları, ilgili belgeler).
 
 Tüm önceki modların birleşimi. Çıktı: § 7'deki **resmî akademik tarih
 raporu şablonu**na uygun, atıflı tam-uzunlukta belge. `carbon-html-report`
-veya `carbon-pptx` ile basılı/sunum çıktısına dönüştürülebilir.
+(A4 baskı/sunum-hazır) veya `carbon-quarto-scientific` (Quarto/R bilimsel format)
+ile basılı çıktıya dönüştürülebilir.
 
 ### 5.9 KANUN_GEREKÇESİ — Kanun Gerekçesinin Tarihî Bölümü (v1.1)
 
@@ -768,8 +775,9 @@ açıkça bildirilir.
 ### 9.2 Downstream (çıktı tüketiciler)
 
 - **carbon-html-report** → A4 print-ready akademik rapor (IBM Carbon DS,
-  Paged.js; WCAG 2.1 AA).
-- **carbon-pptx** → akademik konferans/komite sunumu.
+  Paged.js; WCAG 2.1 AA) — baskı ve sunum-hazır çıktı.
+- **carbon-quarto-scientific** → Quarto/R tabanlı bilimsel rapor (gt/gtsummary
+  tabloları, APA 7; tez bölümü / dergi formatı).
 - **md-converter** → DOCX/EPUB/PDF dönüştürme.
 - **lex-sanitas** (geri besleme) → kanun gerekçesi tarihsel bölümü.
 - **brand-platform** → kurum tarihi destekli rebrand altlığı (örn. bir
@@ -786,9 +794,7 @@ Kullanıcı sorusu (örn. "Mekteb-i Tıbbiye'nin kurumsal tarihi")
    ↓
 [Markdown rapor + tam bibliyografya]
    ↓
-[carbon-html-report] → A4 print-ready PDF
-   ↓ (paralel)
-[carbon-pptx] → akademik konferans/komite sunumu
+[carbon-html-report] → A4 print-ready PDF (konferans/komite sunum altlığı olarak da kullanılır)
    ↓
 [lex-sanitas] → Kanun gerekçesi "Tarihsel Çerçeve" bölümüne enjekte
 ```
@@ -811,9 +817,7 @@ Kullanıcı sorusu (örn. "1219 sayılı Kanun reform teklifinin
    ↓
 [lex-sanitas] → Madde madde kanun teklifi taslağı
    ↓
-[carbon-html-report] → TBMM iç tüzüğü m. 73-74 uyumlu PDF
-   ↓
-[carbon-pptx] → Komisyon sunumu
+[carbon-html-report] → TBMM iç tüzüğü m. 73-74 uyumlu PDF (Komisyon sunum altlığı)
 ```
 
 ## 10. Referans Dosyaları

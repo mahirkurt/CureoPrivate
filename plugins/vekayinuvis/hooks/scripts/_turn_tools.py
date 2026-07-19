@@ -18,6 +18,14 @@ import re
 
 # Gerçek RETRIEVAL yapan devlet-arsivleri + Osmanlı/tez arşiv veri-araçları.
 # (session_status / server_info / list_fon_categories retrieval değildir → atıf disiplini gerektirmez.)
+#
+# KAPSAM KASITLIDIR — yasama/mevzuat (mevzuat/tbmm/resmigazete) ve saf-akademik (paper-search/
+# consensus) BİLEREK DIŞARIDA: citation_discipline'ın uyguladığı disiplin ARŞİV-özeldir (orijinal
+# takvim + Miladî çift-tarih, BOA fon/kutu/gömlek künyesi, katalog URL'i). Bir Cumhuriyet kanununa
+# veya bir DOI'li makaleye Hicrî çift-tarih dayatmak YANLIŞ olur. Bu tool'ları buraya eklemeyin;
+# yasama-atıf disiplini (kanun no + madde + Resmî Gazete tarih/sayı) KANUN_GEREKÇESİ modunun prose
+# sorumluluğudur (kanun-gerekcesi-workflow.md), hook'la değil. G0 KAPSAM tarafı ise FLEET_DATA_TOOL
+# ile tüm filoyu (mevzuat/tbmm/resmigazete/paper-search dahil) zaten yakalar — orada boşluk yok.
 ARCHIVE_DATA_TOOL = re.compile(
     r"mcp__.*(?:"
     r"devarsiv_(?:search|detailed_search|semantic_search|get_belge|get_belge_image|"

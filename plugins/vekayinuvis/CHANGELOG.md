@@ -4,6 +4,44 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [3.1.0] — 2026-07-19
+
+### Eklendi
+
+- **`/vekayinuvis:olay` komutu (EVENT_RECONSTRUCTION).** 9 moddan biri olan olay-kurgulaması
+  artık kendi komut girişine sahip (önceden yalnız flagship auto-mode ile erişilebiliyordu):
+  gün-gün birincil-kaynak kronolojisi + olay örgüsü, çift-tarih + fon/kutu/gömlek künyeli.
+
+### Değiştirildi
+
+- **`devlet-arsivleri` envanter kontrolü magic-number'dan grup-kapsamına geçti.** `start`
+  preflight'ı ve `vekayinuvis_doctor.py` artık sabit "22 araç" beklemiyor — 6 araç grubunun
+  (arama/belge/sepet/arşiv/OCR/durum) her birinden en az bir araç arar. OCR sisteminin
+  `devarsiv_ocr_image`'ı gibi eklemeler artık yanlış-DRIFT üretmez; yalnız bir grubun tümüyle
+  yokluğu cache/drift sinyalidir.
+- **`start` karşılaması v3.0 filoyu yansıtacak biçimde tazelendi** (v1.2.0→v3.1.0): yasama/
+  mevzuat katmanı (Resmî Gazete/mevzuat/TBMM/DETSİS), tam-metin şelalesi (OpenAthens/Anna's),
+  anamnesis substratı ve Transleyt iki-okuyucu OCR doktrini karşılama metnine eklendi.
+- **Web katmanı host-bağımlı olarak yeniden çerçevelendi.** `web_search`/`web_fetch` artık
+  "her zaman mevcut" değil; bundled `exa`/`tavily` birincil web yüzeyi olarak öne çıkarıldı
+  (claude.ai custom connector'da host web araçları bulunmayabilir).
+
+### Düzeltildi
+
+- **Var olmayan `carbon-pptx` skill atıfları temizlendi** (4 dosya) → gerçek `carbon-html-report`
+  (A4 baskı/sunum-hazır) + `carbon-quarto-scientific` (bilimsel format).
+- **No-op `context: fork` frontmatter alanı 3 skill'den kaldırıldı** (kaynak-avi/arsiv-dalis/
+  rapor); bağlam ekonomisi artık açık `arsiv-tarama-distilleri` delegasyonuyla (Claude Code) veya
+  claude.ai'de doğrudan Tier-2 anamnesis degrade'iyle belgelendi.
+- **`stop_coverage` metin-yedeği meta-tur baskılayıcısı (F9).** Transkript-yok yolunda filo/mod
+  adlarını ANAN ama araç ÇAĞIRMAYAN turlar (mimari inceleme, dokümantasyon, hook'un kendi kodu)
+  yanlış G0-manifesto uyarısı üretiyordu; artık plugin-iç öz-referans veya ≥3-mod-künyesiz
+  imzası susturuluyor (transkript-var yolu değişmedi — orada araç-çağrısı kesinliği geçerli).
+- **`citation_discipline` kasıtlı arşiv-kapsamı belgelendi.** Yasama (mevzuat/tbmm/resmigazete)
+  ve saf-akademik atıflar bilerek dışarıda — arşiv çift-tarih/BOA-künye disiplini Cumhuriyet
+  mevzuatına dayatılmaz; yasama-atıf disiplini (kanun no + madde + RG) KANUN_GEREKÇESİ modunun
+  prose sorumluluğu. G0 kapsam tarafı `FLEET_DATA_TOOL` ile tüm filoyu zaten kapsıyor.
+
 ## [3.0.1] — 2026-07-14
 
 ### Düzeltildi

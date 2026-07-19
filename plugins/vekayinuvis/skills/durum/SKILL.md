@@ -46,12 +46,14 @@ metin modunda "Canlı ek kontroller" başlığı altında) `devlet-arsivleri` ü
 tek bir `devarsiv_server_info` çağrısı + bir noVNC HEAD isteğiyle üretilen üç
 etiketli bölüm eklenir. Yalnız `--live` bayrağıyla görünür; offline modda yoktur.
 
-- **`[envanter]`** — `devarsiv_server_info` yanıtındaki `tools` dizisinin
-  uzunluğunu **22** beklenen araç sayısıyla (K1 tablosu) karşılaştırır:
-  - `[envanter] OK (22/22)` — sürüklenme yok.
-  - `[envanter] DRIFT: N/22 — claude.ai connector'ını yeniden bağlayın` — N≠22;
-    araç listesi client tarafında cache'lenmiş olabilir, kullanıcıya connector'ı
-    claude.ai'da kopar/yeniden bağla uyarısı ver.
+- **`[envanter]`** — `devarsiv_server_info` yanıtındaki `tools` dizisinin **6 araç
+  grubunu** (arama · belge · sepet · arşiv · OCR · durum) kapsayıp kapsamadığını
+  ölçer. **Magic-number YOK** — kesin araç sayısı deploy'a göre değişir (`devarsiv_ocr_image`
+  gibi eklemeler büyütür, deep_search grubu ileride ekler); ölçülen şey grup-kapsamıdır:
+  - `[envanter] OK — 6/6 grup mevcut` — kapsam tam.
+  - `[envanter] DRIFT: <grup> grubu yok — claude.ai connector'ını yeniden bağlayın` —
+    bir grup TÜMÜYLE yoksa (ör. hiç `*_ocr_*` aracı yok); araç listesi client tarafında
+    cache'lenmiş olabilir, kullanıcıya connector'ı claude.ai'da kopar/yeniden bağla uyarısı ver.
   - `[envanter] SORUN: <gerekçe>` — handshake/call başarısız (curl hatası, http
     kodu, parse hatası, yanıtta `tools` alanı yok); bu bir drift kanıtı değil,
     probe'un kendisinin çalışmadığının kanıtıdır — `devlet-arsivleri` satırının

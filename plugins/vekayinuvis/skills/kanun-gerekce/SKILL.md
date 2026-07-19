@@ -16,7 +16,7 @@ kayıtları doğrudan çekilir — **`devarsiv_search("<kanun konusu>", arsiv="2
 fon/kutu/gömlek + item_id/hash) ve **`devarsiv_search("<kanun konusu>", arsiv="1")`** ile BCA
 030.10 lâyiha/muamelat ve 030.18 Bakanlar Kurulu kararnameleri (erken Cumhuriyet). Bu ikisi,
 diğer connector'larla (ottoman_search_iiif, ottoman_search_dergipark, search_yok_tez_detailed,
-ottoman_get_islam_ansiklopedisi, web_search, search_semantic, ottoman_search_dspace,
+ottoman_get_islam_ansiklopedisi, exa, search_semantic, ottoman_search_dspace,
 tavily_search) aynı turda **paralel** koşar (tam set için
 `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/kanun-gerekcesi-workflow.md` §3.1).
 
@@ -42,3 +42,10 @@ alanındaysa (1219, 6023, Hıfzıssıhha…) ${CLAUDE_PLUGIN_ROOT}/skills/vekayi
 Bir katmanda kanıt boşluğu varsa şeffaf belirt; varsayım üretme. Çıktı,
 TBMM İçtüzüğü m. 73-74 "Genel Gerekçe – Tarihî Çerçeve" formatına yerleşir ve
 lex-sanitas ile composable'dır.
+
+**Yasama-atıf disiplini (bu modun sorumluluğu):** yasama/mevzuat iddiaları arşiv
+künyesiyle değil, **kanun/kararname no + madde + Resmî Gazete tarih/sayı** ile
+atıflanır (ör. "1219 s. K., m. 3, RG 14.4.1928/863"). Bu disiplin `citation_discipline`
+hook'uyla değil (o kasıtlı olarak arşiv-künye/Hicrî-çift-tarih özelidir — Cumhuriyet
+mevzuatına Hicrî tarih dayatmaz) burada **prose ile** zorlanır. Arşiv katmanı (L1–L4
+BOA/BCA) kayıtları ise her zamanki fon/kutu/gömlek + çift-tarih disiplinine tabidir.

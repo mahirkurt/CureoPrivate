@@ -297,10 +297,8 @@ fondlarına yönlendirme. Hangi belgelerin fiilî tetkiki gereklidir.
    - IBM Plex Serif typeface
    - Resmî Gazete tarzı dipnot
    - Otomatik bibliyografya
-   ↓ (paralel)
-[carbon-pptx] Sağlık Komisyonu sunumu
-   - Beş katman üzerine dayalı slayt yapısı
-   - Reform argümanını destekleyen kronoloji görselleri
+   - A4 çıktısı Sağlık Komisyonu sunum altlığı olarak da kullanılır
+     (beş-katman slayt yapısı + reform argümanı kronoloji görselleri)
    ↓
 [ms-converter] DOCX export (TBMM Kanunlar ve Kararlar Müdürlüğü için)
 ```

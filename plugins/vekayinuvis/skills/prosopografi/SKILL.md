@@ -7,7 +7,7 @@ description: Bir Osmanlı şahsiyetinin biyografisini ve hizmet kaydını derler
 
 Hedef: kullanıcının belirttiği şahıs adı (örn. "Mustafa Behçet Efendi") için yaşam çizelgesi
 (Hicrî + Miladî), atama-azil zinciri, eser listesi ve ikincil literatür. ottoman-archives
-(get_islam_ansiklopedisi) + yoktez + web_fetch (Sicill-i Osmânî / İSAM e-baskı) kullan;
+(get_islam_ansiklopedisi) + yoktez + `exa`/`tavily` (Sicill-i Osmânî / İSAM e-baskı web erişimi) kullan;
 Sicill-i Ahval defterleri (BOA DH.SAİD) için yol haritası ekle.
 
 **Kurumsal/teşkilat prosopografisi (`detsis`, v3.0 — modern/Cumhuriyet dönemi kurum sorgusunda):**

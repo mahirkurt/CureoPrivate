@@ -23,11 +23,16 @@ connector'ları kurum genelinde açmalıdır.
 | Sıra | Ad | URL | Kimlik doğrulama |
 |---|---|---|---|
 | 1 | `maarif-mufredat` | `https://mufredat.cureonics.com/mcp` | **Yok** (public read-only) |
-| 2 | `egitim-kaynak` | `https://egitim-kaynak.cureonics.com/mcp` | **Yok — anahtarsız** (salt-okunur, korpus açık lisanslı) |
+| 2 | `egitim-kaynak` | `https://egitim-kaynak.cureonics.com/mcp` | **OAuth** (bağlan → izin ver; 2026-07-19 keyless→keyed) |
 | 3 | `modul-yayin` | `https://edupedia.cureonics.com/mcp` | **OAuth** (bağlan → izin ver) |
 
-**Sıra 3 tek kimlik-gerektiren connector'dır.** Yayın token'ı OAuth akışında verilir;
-**sohbete asla yapıştırmayın** — connector ayarlarında kalır.
+**Sıra 2 ve 3 kimlik gerektirir** (OAuth) — Sıra 1 `maarif-mufredat` public'tir. Anahtarlar
+OAuth akışında verilir; **sohbete asla yapıştırmayın** — connector ayarlarında kalır.
+(`egitim-kaynak` 2026-07-19'da keyless→keyed geçti; plugin-dışı Gemini/ChatGPT standalone için.)
+
+> **Connector listesinde görünen adlar:** `egitim-kaynak` → **"Eğitim Kaynakları"**,
+> `modul-yayin` → **"Modül Yayını"** (sunucunun `serverInfo.name`'i). `.mcp.json`'daki iç
+> anahtarlar (`egitim-kaynak`/`modul-yayin`) değişmedi — komut/skill referansları aynı.
 
 > Adlar `CONNECTORS.md` (normatif envanter) ile aynıdır. Sıra 3'ün **eski adı `edupedia`
 > idi**; plugin adıyla çakışmasın diye `modul-yayin`'e alındı — endpoint ve token aynı.

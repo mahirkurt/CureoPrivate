@@ -44,8 +44,10 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 - **egitim-kaynak** — `egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp` · açık
   eğitsel kaynak (OER) RAG · 6 araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`,
   `kb_sources`, `kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu zenginleştirir
-  (kaynaklandırılmış, lisans-etiketli pasaj). **Anahtarsız — secret gerekmez** (salt-okunur,
-  korpus tamamen açık lisanslı; `titck-cache-mcp` emsali).
+  (kaynaklandırılmış, lisans-etiketli pasaj). **OAuth/Bearer — keyed** (2026-07-19 keyless→keyed;
+  plugin-dışı Gemini/ChatGPT standalone için anahtarlandı). Claude Code'da `.mcp.json`
+  `Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` (Doppler `cureohub/dev_personal`); claude.ai'da OAuth.
+  Connector display adı **"Eğitim Kaynakları"**.
 
   > **OTORİTE:** modülün olgusal dayanağı **`maarif-mufredat`**'tır — 105 MEB ders kitabı
   > **tam metin**. `egitim-kaynak` onun yerine geçmez, üstüne ekler. Çelişkide **ders kitabı

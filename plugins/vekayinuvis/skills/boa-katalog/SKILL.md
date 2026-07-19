@@ -20,9 +20,13 @@ Akış:
      (Osmanlıca eşdeğer genişletme + bge-m3 rerank; `matched_variants` hangi karşılık eşleşti gösterir).
    - Sonuç: fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash + fon facet'leri + `capped`.
    - **Geniş sorgu `refine_required` → daralt** (fon/tarih). **Tam 1000 (`capped:true`) → kapsamlı
-     erişim:** `devarsiv_list_fon_categories(arsiv)` → her üst-fon için `devarsiv_detailed_search(arsiv,
-     ust_fon=fon, ozet=<konu>[, tarih_turu/yil_bas/yil_bit])` → `item_id` union (§2b). Bu ağır fan-out
-     `arsiv-tarama-distilleri` ajanına delege edilir.
+     erişim:** birincil yol **`devarsiv_deep_search(query, arsiv?, ust_fon?)`** (otomatik
+     arşiv×üst-fon×tarih süpürme, store'a yazar, `job_id`) → **`devarsiv_deep_result(job_id)`** ile
+     poll (kapsam manifestosu; `complete=false`→boş ≠ "yok"). Store kapalıysa (`store_required`)
+     manuel enumerasyona degrade: `devarsiv_list_fon_categories(arsiv)` → her üst-fon için
+     `devarsiv_detailed_search(arsiv, ust_fon=fon, ozet=<konu>[, tarih_turu/yil_bas/yil_bit])` →
+     `item_id` union (§2b). Bu ağır fan-out `arsiv-tarama-distilleri` ajanına delege edilir.
+     **Boş sonuçtan "arşivde yok" demeden önce `devarsiv_coverage` ile hasat defterine bak.**
 3. **`devarsiv_get_belge(item_id, hash, arsiv)`** — en ilgili 1–3 kayıt için künye + erişim/satın-alma
    durumu (`access`). **`access=="purchasable"`** dönerse ve kullanıcı belgenin tüm sayfalarına
    ihtiyaç duyuyorsa → **`/vekayinuvis:satinalma`** akışına yönlendir (yalnız önizleme yeterliyse

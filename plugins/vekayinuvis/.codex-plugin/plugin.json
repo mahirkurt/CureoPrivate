@@ -1,6 +1,6 @@
 {
   "name": "vekayinuvis",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "userConfig": {
     "smithery_api_key": {
       "type": "string",
@@ -86,7 +86,7 @@
       "required": false
     }
   },
-  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO (17 server): Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek, artık 22 araç: arama 5'lisi + belge 3'lüsü + eSatış sepeti 4'lüsü + satın-alınmış/yerel-arşiv 6'lısı + async OCR 2'lisi + durum 2'lisi) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily), kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ve yasama/mevzuat katmanı (Resmî Gazete erken-Cumhuriyet arşivi, mevzuat.gov.tr mülga/gerekçe, TBMM yasama soyağacı, DETSİS kurumsal prosopografi) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. v3.0: devlet-arsivleri 10→22 araca genişledi — eSatış sepet→noVNC satın-alma (ödeme DAİMA insan, asla otonom) → satın-alınmış belgenin yerel BOA-kodlu arşivinden 300 DPI arşiv-öncelikli okuma → OCR/HTR (`engine=auto|both|transkribus|escriptorium|transleyt|tesseract`, Osmanlı varsayılanı `transleyt` — ölçülen en iyi okuyucu; en doğru okuma Transleyt+görü uzlaştırması) → async OCR job kuyruğu zinciri; üç yeni akış-skill'i (`satinalma`, `arsiv-oku`, `toplu-okuma`); filo 13→17 server'a genişledi (yasama/mevzuat katmanı + DETSİS); komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>` — eski `/vekayinuvis:vekayinuvis-<ad>` biçimi BREAKING kaldırıldı). IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu sunar.",
+  "description": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. TAM-FİLO (17 server): Ottoman Archives + resmî Devlet Arşivleri kataloğu (BOA/BCA/Diplomatik/Askeri — fon/kutu/gömlek, artık 27 araç: arama 5'lisi + süpürme/store 3'lüsü + belge 4'lüsü + eSatış sepeti 4'lüsü + satın-alınmış/yerel-arşiv 7'lisi + async OCR 2'lisi + durum 2'lisi) + YÖK Tez çekirdek katmanını DergiPark tam-metin (Literatür MCP), YÖK Akademik, akademik triangülasyon (Paper Search, Consensus, Scholar Gateway, Exa, Tavily), kitap/makale tam-metin şelalesi (OpenAthens lisanslı Millet Kütüphanesi + Anna's Reader son-çare) ve yasama/mevzuat katmanı (Resmî Gazete erken-Cumhuriyet arşivi, mevzuat.gov.tr mülga/gerekçe, TBMM yasama soyağacı, DETSİS kurumsal prosopografi) ile birleştirir; anamnesis RAG/GraphRAG substratı + arsiv-tarama-distilleri alt-ajanı ile bağlam ekonomisi (detaylar atlanmadan pencere taşmadan), G0 kapsam manifestosu ile tam-filo garantisi. v3.0: devlet-arsivleri 10→22 araca genişledi — eSatış sepet→noVNC satın-alma (ödeme DAİMA insan, asla otonom) → satın-alınmış belgenin yerel BOA-kodlu arşivinden 300 DPI arşiv-öncelikli okuma → OCR/HTR (`engine=auto|both|transkribus|escriptorium|transleyt|tesseract`, Osmanlı varsayılanı `transleyt` — ölçülen en iyi okuyucu; en doğru okuma Transleyt+görü uzlaştırması) → async OCR job kuyruğu zinciri; üç yeni akış-skill'i (`satinalma`, `arsiv-oku`, `toplu-okuma`); filo 13→17 server'a genişledi (yasama/mevzuat katmanı + DETSİS); komutlar önek-siz skill mimarisine göçtü (`/vekayinuvis:<ad>` — eski `/vekayinuvis:vekayinuvis-<ad>` biçimi BREAKING kaldırıldı). IJMES/TDV İA çeviriyazı ve fon/kutu/gömlek atıf disipliniyle 9 çalışma modu sunar.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"
@@ -136,7 +136,7 @@
   "interface": {
     "displayName": "Vekayinüvis",
     "shortDescription": "Osmanlı ve Türk tarihi için birincil kaynak öncelikli araştırma orkestratörü.",
-    "longDescription": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives, resmî Devlet Arşivleri kataloğu (22 araç — sepet→noVNC→arşiv→OCR→async), YÖK Tez, DergiPark tam-metin, YÖK Akademik, Paper Search, Consensus, Scholar Gateway, Exa, Tavily, OpenAthens, Anna's Reader, Resmî Gazete, mevzuat.gov.tr, TBMM, DETSİS ve anamnesis RAG/GraphRAG katmanlarını tam-filo G0 manifestosu ile birleştirir. v3.0, devlet-arsivleri eSatış sepeti + noVNC satın-alma (ödeme daima insan) + yerel BOA-kodlu arşiv 300 DPI okuma + OCR/HTR (Transleyt varsayılan) + async job kuyruğu zincirini wire eder; komutlar önek-siz skill mimarisine göçtü; filo 13→17 server'a genişledi (17-server G0 hook). IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu: kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi.",
+    "longDescription": "Birincil-kaynak-öncelikli Osmanlı/Türk tarih araştırma orkestratörü. Ottoman Archives, resmî Devlet Arşivleri kataloğu (27 araç — kapsamlı süpürme/store + sepet→noVNC→arşiv→OCR→async), YÖK Tez, DergiPark tam-metin, YÖK Akademik, Paper Search, Consensus, Scholar Gateway, Exa, Tavily, OpenAthens, Anna's Reader, Resmî Gazete, mevzuat.gov.tr, TBMM, DETSİS ve anamnesis RAG/GraphRAG katmanlarını tam-filo G0 manifestosu ile birleştirir. v3.0, devlet-arsivleri eSatış sepeti + noVNC satın-alma (ödeme daima insan) + yerel BOA-kodlu arşiv 300 DPI okuma + OCR/HTR (Transleyt varsayılan) + async job kuyruğu zincirini wire eder; komutlar önek-siz skill mimarisine göçtü; filo 13→17 server'a genişledi (17-server G0 hook). IJMES/TDV İA çeviriyazı ve Chicago atıf disipliniyle 9 çalışma modu: kaynak avı, arşiv derin dalış, yazma HTR, prosopografi, olay kurgulaması, tarih yazımı, kronoloji dönüşümü, akademik rapor, kanun gerekçesi.",
     "developerName": "Cureonics",
     "category": "Research",
     "capabilities": [
@@ -171,7 +171,7 @@
         "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
       },
       "_tier": "core",
-      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + belge 3'lüsü + harici görüntü (engine paramlı OCR; Osmanlı varsayılanı transleyt) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 6'lısı (300 DPI, arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 22 araç; tek-cihaz oturum kilidi (HP)."
+      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + süpürme/store 3'lüsü (deep_search→deep_result + coverage) + belge 3'lüsü + harici görüntü (engine paramlı OCR; Osmanlı varsayılanı transleyt) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 7'lisi (rebuild_archive + 300 DPI arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 27 araç; tek-cihaz oturum kilidi (HP)."
     },
     "yoktez": {
       "type": "http",

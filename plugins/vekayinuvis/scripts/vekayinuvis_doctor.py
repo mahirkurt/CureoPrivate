@@ -29,10 +29,11 @@ DOCTOR_CLIENT_VERSION = "3.0.0"
 # grubu ileride ekler) → sabit sayı beklemek yanlış-DRIFT üretir. Bir grubun TÜMÜYLE yokluğu
 # (ör. hiç `*_ocr_*` yok) gerçek drift/cache sinyalidir. Her grup ad-parçası imzalarıyla aranır.
 DEVARSIV_TOOL_GROUPS = {
-    "arama": ("search",),                    # search / detailed_search / semantic_search
+    "arama": ("search",),                    # search / detailed_search / semantic_search / deep_search
+    "süpürme": ("deep_search", "deep_result", "coverage"),  # kapsamlı async süpürme + store hasat defteri
     "belge": ("get_belge",),                 # get_belge / get_belge_image
     "sepet": ("cart",),                      # add_to_cart / remove_from_cart / list_cart / checkout_cart
-    "arşiv": ("archive",),                   # list_archive / get_archive_page / get_archive_pdf
+    "arşiv": ("archive",),                   # list_archive / get_archive_page / get_archive_pdf / rebuild_archive
     "OCR": ("ocr_",),                        # ocr_belge / ocr_image / ocr_archive_pages / ocr_submit / ocr_result
     "durum": ("session_status", "server_info"),
 }
@@ -337,7 +338,7 @@ def devarsiv_live_status(config: dict, timeout: int) -> tuple[str, str]:
 def envanter_line(content: dict[str, Any]) -> str:
     """[envanter] line: devarsiv_server_info araç-GRUBU kapsam kontrolü (magic-number değil).
 
-    6 araç grubunun (arama/belge/sepet/arşiv/OCR/durum) her birinden en az bir araç bekler.
+    7 araç grubunun (arama/süpürme/belge/sepet/arşiv/OCR/durum) her birinden en az bir araç bekler.
     Kesin sayı deploy'a göre değişir (ocr_image eklendi, deep_search ileride) → yalnız bir
     grubun TÜMÜYLE yokluğu drift/cache sinyalidir. `tools` yalnız sayı olarak geldiyse
     grup ölçülemez → varlık teyidiyle yetinir (yanlış-DRIFT üretmez)."""
@@ -355,12 +356,13 @@ def envanter_line(content: dict[str, Any]) -> str:
         grup for grup, markers in DEVARSIV_TOOL_GROUPS.items()
         if not any(m in blob for m in markers)
     ]
+    ngroups = len(DEVARSIV_TOOL_GROUPS)
     if missing:
         return (
             f"[envanter] DRIFT: {', '.join(missing)} grubu yok ({len(names)} araç) — "
             "claude.ai connector'ını yeniden bağlayın (araç listesi cache'lenmiş olabilir)"
         )
-    return f"[envanter] OK — 6/6 grup mevcut ({len(names)} araç)"
+    return f"[envanter] OK — {ngroups}/{ngroups} grup mevcut ({len(names)} araç)"
 
 
 def engine_lines(content: dict[str, Any]) -> list[str]:

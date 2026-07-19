@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 3.1.0
+version: 3.2.0
 last_updated: 2026-07-19
 changelog:
+  - "3.2.0 (2026-07-19): DEVLET ARŞİVLERİ KAPSAMLI SÜPÜRME + STORE ENTEGRASYONU (22→27 araç, 7. grup 'süpürme'). Canlı MCP'nin dört yeni aracı doktrine wire edildi: (a) `devarsiv_deep_search` [_RW] — kapsamlı erişimin BİRİNCİL yolu artık otomatik (arşiv×üst-fon×tarih kova süpürme → store'a yaz, job_id; arsiv boş→dört arşiv; ust_fon arsiv gerektirir; store yoksa store_required); manuel list_fon_categories+detailed_search enumerasyonu yalnız store kapalıyken yedek. (b) `devarsiv_deep_result` [_RO] — kapsam manifestosu (coverage.archives[] arşiv-başına); complete=true yalnız 6 koşul+tüm arşiv completed; complete=false→boş ≠ 'yok'; tamlık yalnız year_bounds/fon_bounds içinde; async sözleşme OCR K4 ile aynı. (c) `devarsiv_coverage` [_RO] — STORE-FIRST no-fabrication: boş sonuçtan 'arşivde yok' demeden önce hasat defterine bak (kova defterde yoksa 'bilmiyoruz', 'yok' değil). (d) `devarsiv_rebuild_archive` [_RW] — satın-alınanları yerel 300 DPI PDF arşivine kurar (viewer temsilî-sayfa sınırını aşan tek tam-belge yolu; session_required korumalı; arsiv-oku/toplu-okuma önkoşulu). Ayrıca `devarsiv_ocr_image` CONNECTORS'a eklendi (OCR turunda atlanmıştı). §3.1.b tablosu +4 satır (Süpürme grubu) + araç-seçim rehberi + STORE-FIRST bloğu; katalog §2/§2b (§2b.1 async birincil/§2b.2 manuel yedek)/§3; kaynak-avi/arsiv-dalis/olay/boa-katalog/arsiv-oku/toplu-okuma skill'leri; arsiv-tarama-distilleri ajanı; session_start (1a); context-economy S1; CONNECTORS (yetenek katmanı 27 araç/7 grup + mod setleri); envanter 6→7 grup (doctor + start/durum, magic-number yok). HP-tarafı altyapı (rename/systemd/store yedek) plugin değişikliği gerektirmez. Mod sayısı (9) korundu."
   - "3.1.0 (2026-07-19): DEVARSIV/OCR-DIŞI İŞLEV DENETİMİ + MİMARİ-UYUM DÜZELTMELERİ (F1-F9). (F4) `/vekayinuvis:olay` komutu eklendi — EVENT_RECONSTRUCTION artık kendi komut girişine sahip (önceden yalnız flagship auto-mode). (F8) devlet-arsivleri envanter kontrolü magic-number'dan (`22`) GRUP-KAPSAMINA geçti: `start` preflight + `vekayinuvis_doctor.py` 6 araç grubunun (arama/belge/sepet/arşiv/OCR/durum) her birinden ≥1 araç arar — OCR sisteminin `devarsiv_ocr_image`'ı gibi eklemeler yanlış-DRIFT üretmez, yalnız bir grubun tümüyle yokluğu cache/drift sinyali. (F9) `stop_coverage` metin-yedeğine META-TUR baskılayıcı: transkript-yok yolunda filo/mod adlarını ANAN ama araç ÇAĞIRMAYAN turlar (mimari inceleme/dokümantasyon/hook öz-kodu) plugin-iç öz-referans veya ≥3-mod-künyesiz imzasıyla susturulur (transkript-var yolu değişmedi; TDD 4 test). (F5) `citation_discipline` kasıtlı arşiv-kapsamı belgelendi (`_turn_tools.py`) — yasama/akademik atıflar bilerek dışarıda, Cumhuriyet mevzuatına Hicrî çift-tarih dayatılmaz; yasama-atıf disiplini KANUN_GEREKÇESİ prose sorumluluğu. (F1) `start` karşılaması v3.0 filoya tazelendi (yasama/tam-metin şelalesi/anamnesis/Transleyt iki-okuyucu). (F2) var olmayan `carbon-pptx` → `carbon-html-report`/`carbon-quarto-scientific` (4 dosya). (F3) no-op `context: fork` 3 skill'den kaldırıldı, açık `arsiv-tarama-distilleri` delegasyonu + claude.ai degrade belgelendi. (F6) web katmanı host-bağımlı çerçevelendi, `exa`/`tavily` birincil. Mod sayısı (9) korundu."
   - "3.0.0 (2026-07-11): DEVARSIV 22-ARAÇ TAM ENTEGRASYON (SEPET→NOVNC→ARŞİV→ÇİFT-MOTOR OCR→ASYNC). §3.1.b devarsiv araç tablosu 10→22 araca genişledi (Arama/Belge/Sepet/Arşiv/Async/Durum, 6 grup) — eSatış sepeti (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart`, state-changing ama ödemesiz; ödeme DAİMA insan/noVNC), satın-alınmış belgenin yerel arşivi (`list_archive`/`get_archive_page` 300 DPI/`ocr_archive_pages`/`get_archive_pdf`) ve async OCR kuyruğu (`ocr_submit`/`ocr_result`) wire edildi. Yeni okuma-önceliği kuralı: satın alınmış belgede okuma DAİMA yerel arşivden başlar (katalog önizlemesi yalnız satın-alınmamıştır). Motor konvansiyonu netleşti: Osmanlı varsayılanı `engine=\"both\"` (görü birincil, Transkribus HTR yardımcı — taşra-kâtibi ellerinde gürültülü olabilir); sync/async kararı ≤5 sayfa/tek motor→sync, >5 sayfa veya `both` tam belge→async+anamnesis ingest. EVENT_RECONSTRUCTION modu devarsiv (`semantic_search`+`detailed_search` tarih-aralığı) ile birincil katman olarak güçlendirildi. §6.5 'Kanıt Disiplini (Murzi Kalıpları)' altı-maddelik prosopografik/toponimik disiplin eklendi. Üç yeni akış-skill'ine (`skills/satinalma`, `skills/arsiv-oku`, `skills/toplu-okuma`) işaret edildi. Mod sayısı (9) korundu."
   - "2.5.0 (2026-07-09): MARKETPLACE DOCTOR + G0/ATIF ENFORCEMENT. Claude marketplace ve Codex yerel kurulumları için `/vekayinuvis-durum` komutu + portable `scripts/vekayinuvis_doctor.py` eklendi; script `.mcp.json` tam-filo wiring'ini, env/userConfig/OAuth preflight durumunu ve 13 server satırlı G0 kapsam manifestosunu üretir; `--live` modunda `devlet-arsivleri` için streamable HTTP MCP initialize → initialized → `devarsiv_session_status` zinciriyle HP oturum canlılığını doğrular. Stop coverage hook'u artık yalnız çekirdek 4 satırı değil tüm 13 server'ı `hit/empty/degraded/skipped` durumuyla zorunlu arar. Atıf-disiplini hook'u görüntü/OCR/HTR iddialarında gerçek araç + sayfa/model/engine/confidence provenance'ı ister. Eski 'görüntü üretilemez' cümleleri 'yalnız gerçek araçla çekildiyse aktar; çekilmediyse katalog düzeyiyle kal' no-fabrication disiplinine hizalandı."
@@ -24,7 +25,7 @@ changelog:
 > connector tabloları pedagojik referans olarak korunmuştur; skill standalone
 > (plugin dışı) ortamda da çalışır.
 
-> **Sürüm**: v3.0.1 (devarsiv 22-araç tam entegrasyon — sepet→noVNC→arşiv→
+> **Sürüm**: v3.2.0 (devarsiv 27-araç: kapsamlı süpürme + store + OCR — sepet→noVNC→arşiv→
 > çift-motor OCR→async job; v2.x tam-filo, bağlam ekonomisi ve marketplace
 > doctor/G0 enforcement davranışı korunur)
 >
@@ -195,6 +196,9 @@ job) de kapsar. Referans: **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references
 | Arama | `devarsiv_detailed_search(arsiv, ozet?, ust_fon?, kutu?, gomlek?, sira?, tarih_turu?, yil_bas?, yil_bit?, limit?)` | OzelArama — 1000-cap altına daraltma/enumerasyon |
 | Arama | `devarsiv_list_fon_categories(arsiv)` | Üst-fon listesi (enumerasyon ekseni) |
 | Arama | `devarsiv_detailed_search_fields(arsiv)` | Form-alan introspeksiyonu |
+| Süpürme | `devarsiv_deep_search(query, arsiv?, ust_fon?)` `[_RW]` | **Kapsamlı async süpürme** (konu >1000/tam tarama); arşiv×üst-fon×tarih kovalarına böler, store'a yazar; `job_id` döner (idempotent); `arsiv` boşsa DÖRT arşiv birden; `ust_fon` `arsiv` gerektirir; store yoksa `store_required` → **`deep_result` ile poll ZORUNLU** |
+| Süpürme | `devarsiv_deep_result(job_id)` `[_RO]` | Süpürme durumu + **kapsam manifestosu** (`coverage.archives[]` arşiv-başına); `complete=true` yalnız 6 koşul + tüm arşiv `completed`; **`complete=false`→boş sonuç ≠ "yok"**; tamlık yalnız `year_bounds`/`fon_bounds` içinde okunur |
+| Süpürme | `devarsiv_coverage(arsiv?, ust_fon?)` `[_RO]` | **Store hasat defteri** — boş sonuç "arşivde yok" mu "hasat edilmedi" mi ayrımı (no-fabrication); **yokluk sonucundan ÖNCE bak**; `capped:true` kova 1000 tavanına vurmuş (tam değil); store kapalıysa `store_enabled:false` |
 | Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + `access` (purchased/purchasable) |
 | Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma** |
 | Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` |
@@ -204,6 +208,7 @@ job) de kapsar. Referans: **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references
 | Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
 | Sepet | `devarsiv_checkout_cart()` `[_RO]` | Ödeme YAPMAZ; yalnız noVNC URL + sepet döner |
 | Arşiv | `devarsiv_list_purchased()` | SatinAldiklarim t/hash listesi |
+| Arşiv | `devarsiv_rebuild_archive(incremental?, limit?)` `[_RW]` | Satın-alınanları yerel 300 DPI PDF arşivine kurar/günceller (eSatış ZIP→kayıpsız çok-sayfa PDF); **TAM-belge tek yolu** (viewer temsilî-tek-sayfa sınırını aşar); `session_required` korumalı, ödeme YAPMAZ; `incremental=True` mevcutu korur |
 | Arşiv | `devarsiv_ocr_belge_pages(t, hash, arsiv?, pages?, lang?, engine?)` | Viewer temsilî-sayfa sınırlı; TAM yol = yerel arşiv |
 | Arşiv | `devarsiv_list_archive(query?)` | BOA-kodlu yerel PDF arşivi (code/yer/tarih/özet/sayfa) |
 | Arşiv | `devarsiv_get_archive_page(code, page)` | **300 DPI ImageContent — satın-alınmış belgede birincil okuma** |
@@ -216,8 +221,20 @@ job) de kapsar. Referans: **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references
 
 > **Araç seçimi:** tam-eşleşen bilinen terim → `devarsiv_search`; modern/dönem-değişken
 > sözcük → `devarsiv_semantic_search`; belirli fon+tarih+özet daraltma → `devarsiv_detailed_search`;
-> konu >1000 (kapsamlı tarama) → `devarsiv_list_fon_categories` + `devarsiv_detailed_search`
-> (üst-fon × tarih-penceresi enumerasyonu, `item_id` ile union — bkz. `devlet-arsivleri-katalog.md` §2b).
+> konu >1000 (kapsamlı/tam tarama) → **`devarsiv_deep_search`** (otomatik arşiv×üst-fon×tarih
+> süpürme, async → `devarsiv_deep_result` ile poll; store gerektirir) — manuel
+> `devarsiv_list_fon_categories` + `devarsiv_detailed_search` enumerasyonu (üst-fon×tarih union,
+> bkz. `devlet-arsivleri-katalog.md` §2b) yalnız store KAPALIYKEN veya çok-dar hedefli koşumda.
+
+> **STORE-FIRST EPİSTEMOLOJİSİ (no-fabrication):** bir konuda **boş sonuç** aldığınızda "arşivde
+> yok" SONUCUNA VARMADAN ÖNCE `devarsiv_coverage(arsiv?, ust_fon?)` ile hasat defterine bakın:
+> ilgili kova defterde yoksa doğru cevap **"bilmiyoruz / bu kova henüz süpürülmedi"**dir, "yok"
+> DEĞİL → `devarsiv_deep_search` ile süpürün. `deep_result.coverage.complete=false` iken de boş
+> sonuç yokluk kanıtı değildir; tamlık iddiası yalnız süpürülen `year_bounds`/`fon_bounds` içinde
+> geçerlidir (bu açıklığın dışı + tarihsiz kayıtlar taranmamıştır). Async süpürme sözleşmesi
+> OCR K4 ile aynı: `deep_search`→`deep_result(job_id)` ile poll (idempotent — `created:false`
+> canlı işi döner, tekrar süpürmez); `store_required` dönerse süpürme yapılamaz, coverage/manuel
+> enumerasyonla degrade + G0 manifestosunda beyan.
 
 > **Okuma önceliği ve motor/async konvansiyonu:** Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_archive → devarsiv_get_archive_page (300 DPI + görü); katalog önizlemesi (sample) yalnız satın-alınmamış belgeler içindir. (→ `skills/arsiv-oku`.)
 >

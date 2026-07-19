@@ -25,12 +25,13 @@ kapatır: resmî katalog araması artık **doğrudan canlı** yapılır.
 
 ---
 
-## 2. Araçlar ve akış (22 araç, 6 grup — K1)
+## 2. Araçlar ve akış (27 araç, 7 grup — K1)
 
-Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
-(state-changing, **ödemesiz**), satın-alınmış belgelerin **yerel arşivi**
-(300 DPI + Transleyt OCR) ve bir **async OCR kuyruğu** dahil **22 araç,
-6 grup**tur.
+Devarsiv artık yalnız katalog aramasıyla sınırlı değil: **kapsamlı async süpürme +
+yerel store** (deep_search→deep_result + coverage), eSatış sepeti (state-changing,
+**ödemesiz**), satın-alınmış belgelerin **yerel arşivi** (300 DPI + Transleyt OCR) ve bir
+**async OCR kuyruğu** dahil **27 araç, 7 grup**tur. (Kesin sayı deploy'a göre değişir —
+grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
 
 | Grup | Araç | Not |
 | --- | --- | --- |
@@ -39,6 +40,9 @@ Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 | Arama | `devarsiv_detailed_search(arsiv, ozet?, ust_fon?, kutu?, gomlek?, sira?, tarih_turu?, yil_bas?, yil_bit?, limit?)` | OzelArama — 1000-cap altına daraltma/enumerasyon (§2b) |
 | Arama | `devarsiv_list_fon_categories(arsiv)` | Üst-fon listesi (enumerasyon ekseni, §2b) |
 | Arama | `devarsiv_detailed_search_fields(arsiv)` | Form-alan introspeksiyonu |
+| Süpürme | `devarsiv_deep_search(query, arsiv?, ust_fon?)` `[_RW]` | **Kapsamlı async süpürme** (§2b) — arşiv×üst-fon×tarih kovaları, store'a yazar, `job_id`; `arsiv` boş→dört arşiv; `ust_fon` `arsiv` gerektirir; store yoksa `store_required` |
+| Süpürme | `devarsiv_deep_result(job_id)` `[_RO]` | Süpürme durumu + **kapsam manifestosu** (`coverage.archives[]`); `complete=true` yalnız 6 koşul+tüm arşiv `completed`; `complete=false`→boş ≠ "yok" (§2b/§3) |
+| Süpürme | `devarsiv_coverage(arsiv?, ust_fon?)` `[_RO]` | **Store hasat defteri** — "yok" mu "hasat edilmedi" mi ayrımı (§3 no-fabrication); yokluk sonucundan ÖNCE bak; `capped:true` kova tam değil |
 | Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + **`access`** (`purchased`/`purchasable`) — hangi §8 akışına gidileceğini belirler |
 | Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma**, satın-alma durumundan bağımsız |
 | Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` (bkz. §7 K2) |
@@ -48,6 +52,7 @@ Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 | Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
 | Sepet | `devarsiv_checkout_cart()` `[_RO]` | Ödeme YAPMAZ; yalnız noVNC URL + güncel sepet döner |
 | Arşiv | `devarsiv_list_purchased()` | SatinAldiklarim t/hash listesi |
+| Arşiv | `devarsiv_rebuild_archive(incremental?, limit?)` `[_RW]` | Satın-alınanları yerel 300 DPI PDF arşivine kurar/günceller (eSatış ZIP→kayıpsız PDF); **TAM-belge tek yolu**; `session_required` korumalı, ödeme YAPMAZ (§8.2) |
 | Arşiv | `devarsiv_ocr_belge_pages(t, hash, arsiv?, pages?, lang?, engine?)` | Viewer üzerinden çok-sayfa OCR — **temsilî-sayfa sınırlı**; TAM/güvenilir yol yerel arşivdir (§8.2) |
 | Arşiv | `devarsiv_list_archive(query?)` | BOA-kodlu yerel PDF arşivi (code/yer/tarih/özet/sayfa) |
 | Arşiv | `devarsiv_get_archive_page(code, page)` | **300 DPI ImageContent — satın-alınmış belgede BİRİNCİL okuma** |
@@ -67,7 +72,10 @@ Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 - Tam-eşleşen bilinen terim/fon → `devarsiv_search`.
 - Modern terim / dönem-değişken sözcük / "hangi karşılıklar var" → `devarsiv_semantic_search`.
 - Belirli fon+tarih+özet ile hassas daraltma → `devarsiv_detailed_search`.
-- Konu >1000 kayıt (kapsamlı/tam tarama) → `devarsiv_list_fon_categories` + `devarsiv_detailed_search` (§2b).
+- Konu >1000 kayıt (kapsamlı/tam tarama) → **`devarsiv_deep_search`** (otomatik async süpürme →
+  `devarsiv_deep_result` poll; store gerektirir) — manuel `list_fon_categories`+`detailed_search`
+  enumerasyonu yalnız store kapalıyken/dar hedefte (§2b).
+- Boş sonuçtan "arşivde yok" sonucuna varmadan ÖNCE → **`devarsiv_coverage`** (hasat defteri; §3).
 - **Belgeyi OKUMAK** (metin/içerik): `access=purchased` → doğrudan **§8.2 arşiv-okuma akışı**
   (`devarsiv_list_archive`→`devarsiv_get_archive_page`, → `skills/arsiv-oku`); `access=purchasable`
   ve önizleme yeterliyse `devarsiv_get_belge_image`+`devarsiv_ocr_belge`; tüm sayfalar
@@ -75,12 +83,40 @@ Devarsiv artık yalnız katalog aramasıyla sınırlı değil: eSatış sepeti
 
 ---
 
-## 2b. Kapsamlı erişim (1000-tavan aşımı — enumerasyon)
+## 2b. Kapsamlı erişim (1000-tavan aşımı — süpürme + store)
 
 Katalog **en çok 1000 satır sayfalama olmadan** render eder; çok büyük sorgu
 `refine_required` ile reddedilir. Bu yüzden **tam 1000** (`capped:true`) = *daha fazlası
-var* demektir. Bir konunun **her** eşleşen belgesine ulaşmak için **üst-fon × tarih-aralığı**
-ekseninde daralt ve `item_id` ile birleştir:
+var* demektir.
+
+### 2b.1 Birincil yol — `devarsiv_deep_search` (otomatik async süpürme)
+
+Kapsamlı erişimin **birincil** yolu artık otomatiktir: `devarsiv_deep_search(query, arsiv?,
+ust_fon?)` konuyu **arşiv × üst-fon × tarih** kovalarına böler, `capped` her kovayı tarih
+ekseninde ikiye bölerek tavanın altına indirir, sonuçları **yerel store'a** yazar ve bir
+**kapsam defterine** işler. `arsiv` verilmezse **dört arşiv birden** (her biri kendi üst-fon
+listesi ve tarih açıklığıyla, biri diğerine sızmadan). `ust_fon` `arsiv` gerektirir (fon kodları
+arşive özeldir). Store KAPALIYSA süpürme başlatılmaz → `store_required`.
+
+**Async sözleşmesi (OCR K4 ile aynı):**
+```
+job = deep_search(query="tahaffuzhane")           # arsiv boş → dört arşiv; job_id + created
+# poll (idempotent — created:false canlı işi döner, tekrar süpürmez):
+res = deep_result(job.job_id)                      # coverage manifestosu
+#   res.coverage.complete == true  → YALNIZCA 6 koşul + tüm archives[] "completed"
+#   res.coverage.complete == false → KISMİ; boş sonuç 'yok' değildir
+#   res.coverage.archives[] → arşiv-başına status: completed/partial/aborted/not_started
+```
+`complete=true` bile **iki eksende koşulludur**: yalnız süpürülen `year_bounds` (bu açıklığın
+DIŞI + tarihsiz kayıtlar taranmadı) ve `fon_bounds` (yalnız listelenen üst-fonlar; `ust_fon`
+verildiyse kapsam O TEK FON) içinde okunur. Tamlık iddiası asla "bu arşivin tamamı tarandı"
+demek değildir. Hiç başlanmamış arşiv manifestoda `not_started` olarak **görünür** (tahmine
+bırakılmaz). Süpürme tarayıcı kilidini paylaşır → uzun sürer, diğer devarsiv araçlarını yavaşlatır.
+
+### 2b.2 Yedek yol — manuel enumerasyon (store kapalıyken / dar hedefte)
+
+Store kapalıysa veya çok-dar hedefli bir koşumda **üst-fon × tarih-aralığı** ekseninde elle
+daralt ve `item_id` ile birleştir:
 
 ```
 list_fon_categories(arsiv=2)                     → 49 üst-fon grubu
@@ -93,7 +129,7 @@ for fon in gruplar:
     union_by(item_id)                             # mükerrerleri item_id ile at
 ```
 
-Bu fan-out **ağır** olduğundan ana pencerede değil, **`arsiv-tarama-distilleri`
+Her iki yol da **ağır** olduğundan ana pencerede değil, **`arsiv-tarama-distilleri`
 alt-ajanında** koştur (retrieve-don't-dump); ajan yalnız birleştirilmiş, atıf-hazır
 `arsiv_distillate` döndürür. `detailed_search` bir tarih aralığı verildiğinde Osmanlı
 formunda `tarih_turu` gerektirir (verilmezse Miladî varsayılır).
@@ -123,6 +159,12 @@ en umut vericisi için yine `get_belge` ile künye çekilir (hash zinciri korunu
 - **Dar sorgu şart.** Basit arama geniş sorguyu ("İstanbul") reddeder →
   `status: refine_required`. Sorguyu daralt (spesifik terim + arşiv/fon filtresi +
   tarih); asla "sonuç yok" diye yorumlama — bu bir *daraltma* sinyalidir.
+- **STORE-FIRST: boş sonuç yokluk kanıtı DEĞİLDİR.** Bir konuda boş sonuç aldığında "arşivde
+  yok" SONUCUNA VARMADAN ÖNCE `devarsiv_coverage(arsiv?, ust_fon?)` ile hasat defterine bak:
+  ilgili kova defterde yoksa doğru cevap **"bilmiyoruz / bu kova henüz hasat edilmedi"**dir,
+  "yok" değil → `devarsiv_deep_search` ile süpür. `deep_result.coverage.complete=false` iken de
+  boş sonuç yokluk kanıtı değildir; tamlık iddiası yalnız süpürülen `year_bounds`/`fon_bounds`
+  içinde geçerlidir. `capped:true` kova 1000 tavanına vurmuş → o kova TAM DEĞİLDİR.
 - **`hash` uydurulamaz.** `get_belge` çağrısı için `item_id` **ve** `hash`
   daima bir `devarsiv_search` sonucundan gelmelidir; hash bir per-belge sunucu
   token'ıdır, kurgulanmaz.

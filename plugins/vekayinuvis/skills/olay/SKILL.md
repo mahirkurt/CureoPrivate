@@ -14,7 +14,10 @@ Akış (bağlama uygun tümü **paralel** ilk turda):
 1. **Resmî katalog kanıtı (`devlet-arsivleri`):** önce `devarsiv_session_status`;
    sonra `devarsiv_search`/`devarsiv_semantic_search(arsiv=1/2)` ile olaya dair
    BOA/BCA kayıtları (İrade/HAT/DH.* — telgraf, mazbata, tahkikat evrakı;
-   fon/kutu/gömlek + item_id/hash). Geniş olayda `capped:true` → kapsam-haritası.
+   fon/kutu/gömlek + item_id/hash). **Geniş/çok-belgeli olay** (`capped:true` veya tam
+   kronoloji) → **`devarsiv_deep_search`** otomatik süpürme + **`devarsiv_deep_result`**
+   poll (kapsam manifestosu; `complete=false`→boş ≠ "yok"). Boş sonuçtan "kayıt yok"
+   demeden önce `devarsiv_coverage` ile hasat defterine bak (no-fabrication).
 2. **Anlatı/literatür (`ottoman-archives` + `yoktez` + `literatur`):** vakanüvis
    kayıtları, hatırat, çağdaş matbuat (IIIF); transkripsiyon tezleri; DergiPark
    tam-metin monografi/makale. Uluslararası için `paper-search`/`consensus`/`exa`.

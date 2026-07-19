@@ -10,10 +10,15 @@ tıbbiye") için fond/tasnif yol haritası + **canlı resmî katalog kayıtları
 Önce `devarsiv_session_status`; sonra **`devarsiv_search(arsiv=1/2)`** (modern/dönem-değişken
 terimde **`devarsiv_semantic_search`**) → resmî katalog kayıtları (fon/kutu/gömlek + özet +
 item_id/hash + `capped`) ve ilgili kayıtta `devarsiv_get_belge`. **Kapsamlı erişim** (konu >1000,
-`capped:true`): `devarsiv_list_fon_categories(arsiv)` → her üst-fon için `devarsiv_detailed_search
-(arsiv, ust_fon=fon, ozet=<konu>[, tarih_turu/yil_bas/yil_bit])` → `item_id` union ile 1000-tavanı
-aş (`devlet-arsivleri-katalog.md` §2b). Buna ottoman-archives (get_source, search_literature,
-get_islam_ansiklopedisi) + yoktez (transkripsiyon tezi) + literatur ekle.
+`capped:true`): birincil yol **`devarsiv_deep_search(query, arsiv?, ust_fon?)`** — otomatik
+arşiv×üst-fon×tarih süpürme (arsiv boş→dört arşiv birden), store'a yazar, `job_id` döner →
+**`devarsiv_deep_result(job_id)` ile poll** (kapsam manifestosu; `complete=false`→boş ≠ "yok";
+tamlık yalnız `year_bounds`/`fon_bounds` içinde). Store kapalıysa (`store_required`) manuel
+enumerasyona (`list_fon_categories`+`detailed_search`+`item_id` union) degrade et
+(`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md` §2b). **Boş sonuçtan "arşivde yok"
+SONUCUNA VARMADAN ÖNCE** `devarsiv_coverage(arsiv?, ust_fon?)` ile hasat defterine bak (§3
+no-fabrication). Buna ottoman-archives (get_source, search_literature, get_islam_ansiklopedisi) +
+yoktez (transkripsiyon tezi) + literatur ekle.
 
 **Erişim dalı (`devarsiv_get_belge.access`):** `access=="purchasable"` dönerse (belge henüz
 satın alınmamış) ve kullanıcı belgenin **tüm** sayfalarına ihtiyaç duyuyorsa → **`/vekayinuvis:satinalma`**

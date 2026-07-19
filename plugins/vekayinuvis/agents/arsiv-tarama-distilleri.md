@@ -39,10 +39,15 @@ ACADEMIC_REPORT kaynak-temeli).
        `devarsiv_semantic_search(query, arsiv=?)` → sorguyu Osmanlıca eşdeğerlerine genişletir +
        bge-m3 rerank; `matched_variants` hangi karşılığın eşleştiğini gösterir (recall'ı artırır).
      · Sonuç `refine_required` dönerse **daralt ve yeniden dene** (fon/tarih ekle).
-     · **Kapsamlı erişim (konu >1000 → `capped:true`):** `devarsiv_list_fon_categories(arsiv)` ile
-       üst-fon eksenini al → her fon için `devarsiv_detailed_search(arsiv, ust_fon=fon, ozet=<konu>)`;
-       hâlâ `capped` ise `tarih_turu`/`yil_bas`/`yil_bit` ile on-yıllık pencerelere böl → **`item_id`
-       ile union** (mükerrer at). Bu, 1000-tavanı aşıp *her* eşleşen belgeye ulaşmanın tek yoludur.
+     · **Kapsamlı erişim (konu >1000 → `capped:true`):** birincil yol **`devarsiv_deep_search(query,
+       arsiv?, ust_fon?)`** — otomatik arşiv×üst-fon×tarih süpürme (arsiv boş→dört arşiv), store'a yazar,
+       `job_id` → **`devarsiv_deep_result(job_id)` ile poll** → kapsam manifestosu (`coverage.archives[]`
+       arşiv-başına status; `complete=false`→boş ≠ "yok"; tamlık yalnız `year_bounds`/`fon_bounds` içinde).
+       Store kapalıysa (`store_required`) manuel enumerasyona degrade: `devarsiv_list_fon_categories(arsiv)`
+       → her fon için `devarsiv_detailed_search(arsiv, ust_fon=fon, ozet=<konu>)`; hâlâ `capped` ise
+       `tarih_turu`/`yil_bas`/`yil_bit` ile on-yıllık pencerelere böl → **`item_id` ile union** (mükerrer at).
+     · **Store-first:** boş sonuçtan "arşivde yok" DEMEDEN önce `devarsiv_coverage(arsiv?, ust_fon?)` ile
+       hasat defterine bak — kova defterde yoksa "bilmiyoruz/hasat edilmedi", "yok" değil (no-fabrication).
      · En umut verici 1–3 kayıt için `devarsiv_get_belge(item_id, hash, arsiv)` ile künye
        (`hash` daima arama sonucundan gelir).
    - `ottoman_list_sources` / `ottoman_search_iiif` / `ottoman_search_dergipark` /

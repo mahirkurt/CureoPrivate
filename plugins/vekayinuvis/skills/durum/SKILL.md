@@ -47,10 +47,10 @@ tek bir `devarsiv_server_info` çağrısı + bir noVNC HEAD isteğiyle üretilen
 etiketli bölüm eklenir. Yalnız `--live` bayrağıyla görünür; offline modda yoktur.
 
 - **`[envanter]`** — `devarsiv_server_info` yanıtındaki `tools` dizisinin **6 araç
-  grubunu** (arama · belge · sepet · arşiv · OCR · durum) kapsayıp kapsamadığını
+  grubunu** (arama · süpürme · belge · sepet · arşiv · OCR · durum) kapsayıp kapsamadığını
   ölçer. **Magic-number YOK** — kesin araç sayısı deploy'a göre değişir (`devarsiv_ocr_image`
   gibi eklemeler büyütür, deep_search grubu ileride ekler); ölçülen şey grup-kapsamıdır:
-  - `[envanter] OK — 6/6 grup mevcut` — kapsam tam.
+  - `[envanter] OK — 7/7 grup mevcut` — kapsam tam.
   - `[envanter] DRIFT: <grup> grubu yok — claude.ai connector'ını yeniden bağlayın` —
     bir grup TÜMÜYLE yoksa (ör. hiç `*_ocr_*` aracı yok); araç listesi client tarafında
     cache'lenmiş olabilir, kullanıcıya connector'ı claude.ai'da kopar/yeniden bağla uyarısı ver.

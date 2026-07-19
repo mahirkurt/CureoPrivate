@@ -28,13 +28,17 @@ import re
 # ile tüm filoyu (mevzuat/tbmm/resmigazete/paper-search dahil) zaten yakalar — orada boşluk yok.
 ARCHIVE_DATA_TOOL = re.compile(
     r"mcp__.*(?:"
-    r"devarsiv_(?:search|detailed_search|semantic_search|get_belge|get_belge_image|"
-    r"ocr_belge|ocr_belge_pages|get_archive_page|get_archive_pdf|ocr_archive_pages|"
-    r"ocr_submit|ocr_result|list_archive|list_purchased)"
+    r"devarsiv_(?:search|detailed_search|semantic_search|deep_search|deep_result|get_belge|"
+    r"get_belge_image|ocr_belge|ocr_belge_pages|get_archive_page|get_archive_pdf|"
+    r"ocr_archive_pages|ocr_submit|ocr_result|list_archive|list_purchased)"
     r"|ottoman[-_]archives|__ottoman|yoktez|yok_tez|__literatur"
     r")",
     re.IGNORECASE,
 )
+# NOT: deep_search/deep_result RETRIEVAL'dir (deep_result kayıt yüzeyler) → citation kapsamı.
+# `coverage` (store hasat defteri) ve `rebuild_archive` (yerel arşiv bakımı) BİLEREK DIŞARIDA —
+# ledger/bakım, belge KAYIT iddiası değil (session_status/server_info/list_fon_categories gibi).
+# G0 KAPSAM tarafı ise FLEET_DATA_TOOL'daki bare `devarsiv_` ile hepsini zaten yakalar.
 
 # Tüm tam-filo veri-araçları (substantif araştırma başladı sinyali → G0 manifesto beklenir).
 FLEET_DATA_TOOL = re.compile(

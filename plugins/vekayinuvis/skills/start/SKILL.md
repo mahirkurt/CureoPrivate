@@ -1,7 +1,7 @@
 ---
 name: start
 description: Vekayinüvis süitine giriş ve yönlendirme. Bağlı MCP connector'larını (Ottoman Archives, Devlet Arşivleri, YÖK Tez + tamamlayıcı akademik katman) kontrol eder, flagship vekayinuvis skill'ini, dokuz çalışma modunu ve sepet→satın-alma→arşiv-okuma→async-OCR akış üçlüsünü tanıtır, kullanıcının niyetine göre doğru moda/akışa veya slash komutuna yönlendirir. İlk kez süitle çalışırken, hangi connector'ların bağlı olduğunu görmek için, ya da "vekayinuvis nedir / nereden başlamalıyım / hangi modu kullanmalıyım" türü oryantasyon sorularında kullanın. Tetikleyiciler — vekayinuvis başlat, süit oryantasyonu, connector kontrolü, Osmanlı arşivi bağlı mı, "ne yapabilirsin", "nereden başlayayım", "hangi mod".
-version: 3.1.0
+version: 3.2.0
 last_updated: 2026-07-19
 ---
 
@@ -61,11 +61,12 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
   *pre-flight zorunlu* (yoksa çekirdek işlev devre dışı)
 - `devlet-arsivleri` — **resmî Devlet Arşivleri kataloğu** (Osmanlı/BOA · Cumhuriyet/
   BCA · Diplomatik · Askeri) doğrudan fon/kutu/gömlek araması + belge künyesi +
-  eSatış sepet/satın-alma + yerel BOA-kodlu arşiv/async OCR (**6 araç grubu** —
-  arama · belge · sepet · arşiv · OCR · durum; `/vekayinuvis:satinalma` ·
+  eSatış sepet/satın-alma + yerel BOA-kodlu arşiv/async OCR + kapsamlı süpürme/store
+  (**7 araç grubu** — arama · süpürme · belge · sepet · arşiv · OCR · durum;
+  `/vekayinuvis:satinalma` ·
   `/vekayinuvis:arsiv-oku` · `/vekayinuvis:toplu-okuma`) · *tek-cihaz oturum kilitli* →
   `devarsiv_session_status` ile canlılığı kontrol edin; **preflight'ta**
-  `devarsiv_server_info` çağrısının `tools` dizisinde **6 grubun her birinden en az bir
+  `devarsiv_server_info` çağrısının `tools` dizisinde **7 grubun her birinden en az bir
   araç** bulunduğunu doğrulayın (kesin sayı deploy'a göre değişir — `devarsiv_ocr_image`
   gibi eklemeler büyütür; magic-number beklemeyin). Bir grup **tümüyle yoksa** (ör. hiç
   `*_ocr_*` yok) connector'ı claude.ai'da yeniden bağlama uyarısı verin — araç listesi

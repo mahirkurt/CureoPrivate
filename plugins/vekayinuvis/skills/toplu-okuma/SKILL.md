@@ -18,6 +18,10 @@ aşağıdaki eşiği aşan işleri üstlenir.
 
 ## Akış
 
+0. **Arşiv önkoşulu.** `code` yerel arşivde yoksa (yeni satın alım) — `devarsiv_ocr_submit`
+   yerel PDF arşivini okur — önce `devarsiv_rebuild_archive(incremental=True[, limit])` ile
+   satın-alınanı 300 DPI kayıpsız PDF olarak indir. Oturum düşükse `session_required` (noVNC
+   re-login; mevcut arşiv korunur). `devarsiv_list_archive` ile `code`'un geldiğini doğrula.
 1. **Submit.** `devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)` — `[_RW]`,
    idempotent; `job_id` döner. Aynı `code`+`pages`+`engine` ile tekrar çağrı yeni iş
    kuyruklamaz.

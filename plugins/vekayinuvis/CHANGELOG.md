@@ -4,6 +4,47 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [3.2.0] — 2026-07-19
+
+### Eklendi
+
+- **Devlet Arşivleri kapsamlı süpürme + yerel store entegrasyonu (22→27 araç, 7. grup "süpürme").**
+  Canlı MCP'nin dört yeni aracı plugin doktrinine wire edildi:
+  - **`devarsiv_deep_search`** (`[_RW]`) — kapsamlı erişimin **birincil** yolu artık otomatik:
+    konuyu arşiv×üst-fon×tarih kovalarına böler, `capped` her kovayı böler, yerel store'a yazar,
+    `job_id` döner (idempotent; `arsiv` boş→dört arşiv birden; `ust_fon` `arsiv` gerektirir; store
+    yoksa `store_required`). Manuel `list_fon_categories`+`detailed_search` enumerasyonu artık
+    yalnız store kapalıyken/dar hedefte yedek yol.
+  - **`devarsiv_deep_result`** (`[_RO]`) — süpürmenin **kapsam manifestosu** (`coverage.archives[]`
+    arşiv-başına status); `complete=true` yalnız 6 koşul + tüm arşiv `completed`; **`complete=false`
+    → boş sonuç "yok" DEĞİL**; tamlık yalnız süpürülen `year_bounds`/`fon_bounds` içinde. Async
+    sözleşme OCR K4 ile aynı (deep_search→deep_result poll).
+  - **`devarsiv_coverage`** (`[_RO]`) — **STORE-FIRST epistemolojisi**: boş sonuçtan "arşivde yok"
+    sonucuna varmadan önce hasat defterine bak — kova defterde yoksa cevap "bilmiyoruz/hasat
+    edilmedi", "yok" değil (no-fabrication invaryantı). `capped:true` kova 1000 tavanına vurmuş.
+  - **`devarsiv_rebuild_archive`** (`[_RW]`) — satın-alınanları yerel 300 DPI PDF arşivine
+    kurar/günceller (eSatış ZIP→kayıpsız PDF); viewer temsilî-tek-sayfa sınırını aşan **tek**
+    tam-belge yolu; `session_required` korumalı, ödeme YAPMAZ. arsiv-oku/toplu-okuma önkoşulu.
+- **`devarsiv_ocr_image`** CONNECTORS.md'ye eklendi (OCR entegrasyonunda atlanmıştı) — Belge grubu 3→4.
+
+### Değiştirildi
+
+- **Kapsamlı-erişim doktrini deep_search-birincil'e yükseltildi** — flagship §3.1.b tool tablosu
+  (+4 satır, Süpürme grubu), araç-seçim rehberi, katalog referansı §2/§2b (§2b.1 async + §2b.2
+  manuel yedek), §3 no-fabrication (store-first), kaynak-avi/arsiv-dalis/olay/boa-katalog skill'leri,
+  arsiv-tarama-distilleri ajanı, session_start CONVENTIONS (1a), context-economy S1 shard,
+  CONNECTORS.md (yetenek katmanı + SOURCE_HUNT/ARCHIVE_DEEP_DIVE/EVENT_RECONSTRUCTION mod setleri).
+- **Envanter kontrolü 6→7 araç grubu** (süpürme grubu eklendi) — `vekayinuvis_doctor.py` + start/durum.
+  Grup-kapsamı yaklaşımı korundu (magic-number yok); deep_search grubunun tümüyle yokluğu drift sinyali.
+- **Araç sayısı sabitleri 22→27** güncellendi (plugin.json ×2 description/longDescription/_role,
+  flagship + katalog + CONNECTORS başlıkları) — "kesin sayı deploy'a göre değişir" notuyla.
+
+### Not
+
+- HP-tarafı altyapı (serverInfo rename "Devlet Arşivleri", systemd sertleştirme, oturum alarmı,
+  store yedekliliği) plugin değişikliği gerektirmez — server ID `devlet-arsivleri` + tool namespace
+  değişmedi. Store dayanıklılığı (mcp-backup + off-site + wal_checkpoint) store-first doktrinini doğrular.
+
 ## [3.1.0] — 2026-07-19
 
 ### Eklendi

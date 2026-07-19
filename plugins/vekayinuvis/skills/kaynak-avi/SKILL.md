@@ -8,9 +8,13 @@ description: Bir konu hakkında mevcut Osmanlı/Türk arşiv ve akademik kaynakl
 Hedef: kullanıcının belirttiği konu / kişi / kurum / dönem hakkında hangi arşivlerin ve
 kaynakların mevcut olduğunu sistematik tara. CONNECTORS.md § 7'deki SOURCE_HUNT connector
 setini kullan: **devlet-arsivleri** (`devarsiv_search` — veya modern/dönem-değişken terimde
-`devarsiv_semantic_search` — kanıt-yoğunluğu; `capped:true` ise `devarsiv_list_fon_categories`
-ile kapsam-haritası) + ottoman-archives (list_sources, search_iiif, search_dergipark,
-search_dspace) + yoktez + literatur (DergiPark tam-metin) + tavily_search (akademik filtre).
+`devarsiv_semantic_search` — kanıt-yoğunluğu; kapsamlı/tam tarama veya `capped:true` →
+**`devarsiv_deep_search`** otomatik süpürme + **`devarsiv_deep_result`** ile poll → kapsam
+manifestosu; store kapalıysa `list_fon_categories` kapsam-haritasına degrade) + ottoman-archives
+(list_sources, search_iiif, search_dergipark, search_dspace) + yoktez + literatur (DergiPark
+tam-metin) + tavily_search (akademik filtre). **Boş sonuçtan "yok" SONUCUNA VARMADAN ÖNCE**
+`devarsiv_coverage` ile hasat defterine bak — kova defterde yoksa cevap "bilmiyoruz", "yok"
+değil (no-fabrication; `devlet-arsivleri-katalog.md` §3).
 
 Çıktı: **kaynak matrisi** (tür × erişim × dil × kanıt-yoğunluğu; resmî katalogda kayıt sayısı +
 `capped` durumu dahil). Erişim-kısıtlı kaynaklar için belge içeriği üretme; yalnız katalog-bilgisi

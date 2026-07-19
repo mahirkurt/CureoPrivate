@@ -18,6 +18,11 @@ Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_ar
    sorgula; sonuç satırları `code`/`yer`/`tarih`/`özet`/`sayfa` taşır. Kullanıcının
    belirttiği belgeyle eşleşen `code`'u seç; birden fazla aday varsa özet/tarih ile
    daralt, gerekirse kullanıcıya sor.
+   **Belge satın alınmış ama yerel arşivde YOKSA** (yeni satın alım): önce
+   `devarsiv_rebuild_archive(incremental=True)` ile satın-alınanları yerel 300 DPI PDF
+   arşivine indir (eSatış ZIP→kayıpsız PDF; viewer temsilî-tek-sayfa sınırını aşan **tek**
+   tam-belge yolu). Oturum düşükse `session_required` döner → HP noVNC re-login; mevcut
+   arşiv asla sıfırlanmaz. Uzun kuyruğu `limit` ile parçala.
 2. **Sayfa-sayfa görüyle okuma (birincil).** Seçilen `code` için
    `devarsiv_get_archive_page(code, page)` ile her sayfayı sırayla çek — 300 DPI
    ImageContent, **birincil okuma kalitesi**. Görüntü ana pencerede sayfa-sayfa

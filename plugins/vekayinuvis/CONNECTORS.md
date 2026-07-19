@@ -57,37 +57,50 @@ varsayılanın kendisidir (tam roster bundled).
 B. Tam-Metin Arama · C. Belge/Metin Çekme · D. Hesaplama/Yardımcı (tarih, ebced,
 defter şeması) · E. Matbu-korpus boru hattı (opt-in eScriptorium; el yazması motoru değil).
 
-**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog — 22 araç, 6 grup**):
+**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog — 27 araç, 7 grup**;
+kesin sayı deploy'a göre değişir, grup-kapsamı ölçülür → `/vekayinuvis:durum`):
 
 - **Arama 5'lisi** — `devarsiv_search` (fon/kutu/gömlek + özet + tarih + item_id/hash +
   `capped`), **`devarsiv_semantic_search`** (diakronik/semantik — Osmanlıca eşdeğer
   genişletme + bge-m3 rerank), **`devarsiv_detailed_search`** (hassas/enumerasyon —
   arşiv × üst-fon × tarih × özet), **`devarsiv_list_fon_categories`** (üst-fon ekseni —
   1000-tavan aşımı), `devarsiv_detailed_search_fields` (form-alan introspeksiyonu).
-- **Belge 3'lüsü** — `devarsiv_get_belge` (künye + erişim/satın-alma durumu; hash zinciri
+- **Süpürme/store 3'lüsü** — **`devarsiv_deep_search`** `[_RW]` (kapsamlı async süpürme —
+  arşiv×üst-fon×tarih kovaları, store'a yazar, `job_id`; `arsiv` boş→dört arşiv; `ust_fon`
+  `arsiv` gerektirir; store yoksa `store_required`), **`devarsiv_deep_result`** (süpürme
+  durumu + **kapsam manifestosu** `coverage.archives[]`; `complete=false`→boş ≠ "yok";
+  tamlık yalnız `year_bounds`/`fon_bounds` içinde), **`devarsiv_coverage`** (store hasat
+  defteri — "yok" mu "hasat edilmedi" mi ayrımı; yokluk sonucundan ÖNCE bak).
+- **Belge 4'lüsü** — `devarsiv_get_belge` (künye + erişim/satın-alma durumu; hash zinciri
   aramadan gelir, uydurulamaz), **`devarsiv_get_belge_image`** (önizleme taraması
   ImageContent — satın-almadan bağımsız, **görüyle okuma**), **`devarsiv_ocr_belge`**
   (`engine` paramlı OCR/HTR — Osmanlı varsayılanı `transleyt`, Latin arşivler daima
-  `tesseract`).
+  `tesseract`), **`devarsiv_ocr_image`** (harici IIIF/görüntü OCR — BOA-dışı yazma; aynı
+  motor beyni; SSRF allowlist'li `DEVARSIV_OCR_IMAGE_HOSTS`, boş=kapalı).
 - **eSatış sepeti 4'lüsü** `[_RW/_RO/_DESTRUCTIVE]` — `devarsiv_add_to_cart` (1-tabanlı
   sayfa seçimi, örn. "1,3-5"), `devarsiv_list_cart` (kalemler + **bağlayıcı Tutar**),
   `devarsiv_remove_from_cart` (satır sil/boşalt), `devarsiv_checkout_cart` (ödeme
   **YAPMAZ** — yalnız noVNC URL + sepet döner; ödeme **YALNIZ insan/noVNC**, asla
   otonom).
-- **Satın-alınmış/yerel-arşiv 6'lısı** — `devarsiv_list_purchased` (SatinAldiklarim t/hash
-  listesi), `devarsiv_ocr_belge_pages` (viewer temsilî-sayfa sınırlı), `devarsiv_list_archive`
-  (BOA-kodlu yerel PDF arşivi — code/yer/tarih/özet/sayfa), **`devarsiv_get_archive_page`**
-  (**300 DPI ImageContent — arşiv-öncelikli okuma**), `devarsiv_ocr_archive_pages` (sync
-  OCR, ≤5 sayfa/MULTIPAGE_MAX_PAGES), `devarsiv_get_archive_pdf` (künye + sınırlı base64 PDF).
+- **Satın-alınmış/yerel-arşiv 7'lisi** — `devarsiv_list_purchased` (SatinAldiklarim t/hash
+  listesi), **`devarsiv_rebuild_archive`** `[_RW]` (satın-alınanları yerel 300 DPI PDF
+  arşivine kurar/günceller — eSatış ZIP→kayıpsız PDF; **TAM-belge tek yolu**; `session_required`
+  korumalı, ödeme YAPMAZ), `devarsiv_ocr_belge_pages` (viewer temsilî-sayfa sınırlı),
+  `devarsiv_list_archive` (BOA-kodlu yerel PDF arşivi — code/yer/tarih/özet/sayfa),
+  **`devarsiv_get_archive_page`** (**300 DPI ImageContent — arşiv-öncelikli okuma**),
+  `devarsiv_ocr_archive_pages` (sync OCR, ≤5 sayfa/MULTIPAGE_MAX_PAGES), `devarsiv_get_archive_pdf`
+  (künye + sınırlı base64 PDF).
 - **Async OCR 2'lisi** `[_RW/_RO]` — `devarsiv_ocr_submit` (idempotent, job_id döner) +
   `devarsiv_ocr_result` (queued/running/done/error/**stale**).
 - **Durum 2'lisi** — `devarsiv_session_status` (HP oturumu canlı mı) + `devarsiv_server_info`
   (araç envanteri + `ocr.engines` + `purchase_cart.manual_checkout_url`).
 
 **Kapsamlı erişim:** katalog en çok 1000 satır render eder (sayfalama yok) → tam 1000
-(`capped:true`) = *daha fazlası var*; her belgeye ulaşmak için `list_fon_categories` +
-`detailed_search` üst-fon × tarih-penceresi enumerasyonu + `item_id` union (skill
-`devlet-arsivleri-katalog.md` §2b). **No-fabrication:** geniş sorgu → `refine_required`;
+(`capped:true`) = *daha fazlası var*; birincil yol **`devarsiv_deep_search`** (otomatik
+arşiv×üst-fon×tarih süpürme → `devarsiv_deep_result` poll, store gerektirir), store kapalıysa
+manuel `list_fon_categories` + `detailed_search` enumerasyonu + `item_id` union (skill
+`devlet-arsivleri-katalog.md` §2b). **Store-first:** boş sonuçtan "yok" demeden önce
+`devarsiv_coverage` (hasat defteri). **No-fabrication:** geniş sorgu → `refine_required`;
 canlı oturum yoksa → `session_required`; ödeme asla otonom değil (yalnız insan/noVNC);
 Osmanlı el yazması → Transleyt + asistan görüsü uzlaştırması (denk); yokluk kanıt değildir (asla uydurma). ottoman-archives'ın
 **yapmadığı** resmî BOA/BCA/Diplomatik/Askeri katalog aramasını + eSatış sepeti + satın-
@@ -307,11 +320,11 @@ keychain'ine yazılır (settings.json'a değil).
 
 | Mod | Birincil connector seti | Fallback |
 |---|---|---|
-| `SOURCE_HUNT` | **devlet-arsivleri** (search / **semantic_search** modern terimde — kanıt-yoğunluğu; `capped` ise **list_fon_categories** kapsam-haritası) + ottoman-archives (list_sources, search_iiif, search_dergipark, search_dspace) + yoktez + literatur + **tbmm** (`tbmm_search_acik_erisim` DSpace — geç-Osmanlı/erken-Cumhuriyet zabıt kanıt-yoğunluğu) | tavily/exa akademik filtre → web_search |
-| `ARCHIVE_DEEP_DIVE` | **devlet-arsivleri** (search/semantic_search + get_belge; konu >1000 → **list_fon_categories + detailed_search** üst-fon×tarih enumerasyonu, item_id union) + ottoman-archives (get_source, search_literature, get_islam_ansiklopedisi) + yoktez | web_fetch (İSAM e-baskı) |
+| `SOURCE_HUNT` | **devlet-arsivleri** (search / **semantic_search** modern terimde — kanıt-yoğunluğu; kapsamlı → **deep_search→deep_result**, store kapalıysa **list_fon_categories** kapsam-haritası; boş sonuçtan önce **coverage**) + ottoman-archives (list_sources, search_iiif, search_dergipark, search_dspace) + yoktez + literatur + **tbmm** (`tbmm_search_acik_erisim` DSpace — geç-Osmanlı/erken-Cumhuriyet zabıt kanıt-yoğunluğu) | tavily/exa akademik filtre |
+| `ARCHIVE_DEEP_DIVE` | **devlet-arsivleri** (search/semantic_search + get_belge; konu >1000 → **deep_search→deep_result** otomatik süpürme + kapsam manifestosu, store kapalıysa manuel **list_fon_categories + detailed_search** üst-fon×tarih enumerasyonu/item_id union; boş sonuçtan önce **coverage**) + ottoman-archives (get_source, search_literature, get_islam_ansiklopedisi) + yoktez | exa/tavily (İSAM e-baskı) |
 | `MANUSCRIPT_TRANSCRIBE` | BOA belgesi → `devarsiv_ocr_*` (Transleyt); harici IIIF → `devarsiv_ocr_image` | ottoman-archives eScriptorium = MATBU korpus + segmentasyon (0.479, el yazması motoru değil) |
 | `PROSOPOGRAPHY` | **devlet-arsivleri** (DH.SAİD Sicill-i Ahval katalog kaydı) + ottoman-archives (get_islam_ansiklopedisi) + yoktez + **yok-akademik** (modern akademisyen) + **detsis** (`detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar` — kurumsal/teşkilat prosopografisi; **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez**) + **openathens/annas-reader** (biyografik monograf/Sicill-i Osmânî tam-metin) + web_fetch | consensus/paper-search |
-| `EVENT_RECONSTRUCTION` | ottoman-archives (IIIF gazete) + **devlet-arsivleri** (dönem belge kayıtları) + **resmigazete** (`/eskiler/` dönem yayın kaydı, erken-Cumhuriyet) + literatur + paper-search + tavily | web_search |
+| `EVENT_RECONSTRUCTION` | ottoman-archives (IIIF gazete) + **devlet-arsivleri** (dönem belge kayıtları; geniş/çok-belgeli olay → **deep_search→deep_result**; boş sonuçtan önce **coverage**) + **resmigazete** (`/eskiler/` dönem yayın kaydı, erken-Cumhuriyet) + literatur + paper-search + tavily | exa/tavily |
 | `HISTORIOGRAPHY` | **literatur** (DergiPark tam-metin) + **openathens** (lisanslı kitap/makale tam-metin) + **annas-reader** (son-çare monograf/makale) + paper-search + consensus + scholar-gateway + ottoman-archives (search_dergipark) + **yok-akademik** (ekol/uzman haritası) — tam-metin şelalesi `openathens→annas-reader`; `marmara` (Turcademy/hukuk Tier-3b, `openathens→marmara→annas-reader`) **wire bekliyor** (§ 1 not, DNS yayınlanmadı) | exa |
 | `CHRONOLOGY_CONVERSION` | ottoman-archives (convert_date, parse_ottoman_date, calc_ebced, tarih_dusur) | — |
 | `ACADEMIC_REPORT` | tüm katmanların birleşimi (devlet-arsivleri + ottoman-archives + yoktez + literatur + akademik companion + yasama/mevzuat katmanı) | katman degrade |

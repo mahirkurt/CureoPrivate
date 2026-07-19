@@ -107,10 +107,15 @@ deploy` → `brand-verify-mcp.cureonics.workers.dev`). Registered in
   spec + test vectors (39 tests green). Registered in `mcp.optional.json`.
 - **type-foundry-mcp** — font licensing/embedding rights, variable-font
   axes/metadata, Google Fonts + foundry verification.
-- **brand-asset-registry-mcp** — the plugin's memory: Cloudflare Workers + D1/R2
-  persistent store of name-decision provenance, W3C DTCG design tokens, logo
-  lockups, C2PA content credentials, version history. Gives the pipeline
-  cross-session continuity (figma-forge + brand-touchpoint read/write here).
+- **brand-asset-registry-mcp** — **BUILT + DEPLOYED** (`CureoHub/mcp-servers/
+  brand-asset-registry-mcp`, `brand-asset-registry-mcp.cureonics.workers.dev`).
+  The plugin's memory: Cloudflare Workers + **D1** append-only versioned store of
+  name-decision provenance, W3C DTCG design tokens, logo-lockup refs, and notes.
+  6 tools (registry_put/get/list/history/delete/info); gives the pipeline
+  cross-session continuity — it durably holds brand-verify-mcp's verification
+  snapshots, and figma-forge + brand-touchpoint read tokens back next session.
+  23 tests green; live put→get→history→delete verified. (C2PA/R2 binary blobs
+  are a future extension.)
 
 ### P2
 

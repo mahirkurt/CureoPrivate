@@ -29,6 +29,12 @@
       "url": "https://api.godaddy.com/v1/domains/mcp",
       "_use": "brand-maker — live domain availability checks during naming validation (primary domain source; RDAP+WHOIS scripts are the fallback)."
     },
+    "brand-asset-registry-mcp": {
+      "type": "http",
+      "url": "https://brand-asset-registry-mcp.cureonics.workers.dev/mcp",
+      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/brand-asset-registry-mcp — D1-backed, 23 tests green). P1 — the pipeline's memory.",
+      "_use": "Whole pipeline — persistent cross-session memory: registry_put/get/list/history/delete for name-decision provenance, W3C DTCG design tokens, logo-lockup refs, and notes. Append-only versioned (D1). Stores brand-verify-mcp verification snapshots; figma-forge/brand-touchpoint read tokens back next session."
+    },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",

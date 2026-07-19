@@ -13,6 +13,12 @@
       "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/color-a11y-mcp — 39 tests green, algorithms spec-verified). P1.",
       "_use": "brand-visual + figma-forge — deterministic color accessibility: contrast_check (WCAG 2.x + APCA), cvd_simulate (color-blindness), generate_scale (Radix-style 12-step, WCAG-enforced), convert_color (OKLCH/CMYK/nearest-Pantone), palette_audit, color_info. Every result computed from authoritative constants — no fabrication."
     },
+    "type-foundry-mcp": {
+      "type": "http",
+      "url": "https://type-foundry-mcp.cureonics.workers.dev/mcp",
+      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/type-foundry-mcp — 35 tests green, sources empirically verified). P1.",
+      "_use": "brand-visual + figma-forge — font licensing/embedding rights + variable-font metadata: font_search, font_lookup (license + designers, Fontsource + Google Fonts metadata), font_license (OFL/Apache/UFL rights; unknown→manual EULA), font_variable_axes (ranges + registry), fstype_decode, type_info. Open corpus only; proprietary fonts honestly out-of-scope. No fabrication."
+    },
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp",

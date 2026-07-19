@@ -1,6 +1,11 @@
-# Output Template — Global Sözel Kimlik Raporu (v2.0)
+# Output Template — Global Sözel Kimlik Raporu (v2.1)
 
 > **Mandatory load.** Bu dosya, her `brand-maker` çağrısının üreteceği **kanonik çıktı formatını** içerir. Format bağlayıcıdır. v2.0 itibariyle 7-bölümlü yapı (v1.2'de 6 idi — Section 5 Post-Digital Readiness Scorecard eklendi).
+
+> **v2.1 — Çıktı Sözleşmesi Dürüstlüğü (uzman-denetim düzeltmesi F).** Denetim, raporun bir alan adını **tek sinyalle "müsait"** ilan ettiğini (auronza.com/nortanza.com aslında DOLU) ve pharma marka çakışmasını **tek yüzeysel aramayla "temiz"** dediğini bulguladı. v2.1 ile rapor **doğrulama-durumu, kaynak ve zaman damgası** taşımak zorundadır; **hiçbir alan adı iki uyuşan canlı kaynak olmadan "müsait" YAZILMAZ**; **naif-algı (Layer 6)** ve **çeşitlilik-kapısı** sonuçları rapora **ZORUNLU** girer. Aşağıdaki üç ayrım her raporda korunur:
+> - **doğrulama-durumu**: `confirmed` (2 kaynak) · `provisional` (tek kaynak) · `unverified` (kaynak erişilemedi) — asla varsayımsal "müsait".
+> - **ön-eleme (YAPILDI)** ≠ **resmî araştırma (YAPILMADI)**: skill yalnız ön-tarama yapar; "temiz/müsait" kesin hüküm değildir.
+> - **niyet ≠ algı**: her finalist için naif ilk-okuma raporlanır (Ortanza→"orta").
 
 ---
 
@@ -69,6 +74,19 @@ Aşağıdaki 10–15 aday, beş stratejik kategoriden üretilmiştir. Her katego
 1. **[Aday 9]** — [konvansiyon + anti-thesis mantığı]
 2. **[Aday 10]** — [konvansiyon + anti-thesis mantığı]
 
+### 2.1 [v2.1] Çeşitlilik Kapısı (Shortlist Diversity Gate) — ZORUNLU
+
+> **Bağlayıcı kural (v2.1):** Aday/finalist KÜMESİ, finalist analizinden ÖNCE `scripts/shortlist_diversity_check.py` ile taranır. Kapı, kümenin **tek bir morfem/kafiye ailesinin varyasyonları** (denetimde 14 adayın tümü `-onta/-anta/-anza/-venta/-vanza`) olup olmadığını ölçer. Kapı **FAIL** verirse, kısa liste **BLOKLANIR** ve **ikinci üretim turu** farklı fonetik/morfolojik ailelerden (Adım 3.2/3.3) TETİKLENİR.
+
+| Metrik | Değer | Eşik | Durum |
+|---|---|---|---|
+| En büyük terminal-kafiye kümesi payı | [%xx] | ≤ %40 | PASS/FAIL |
+| Tek-morfem-ailesi payı (-anza vb.) | [%xx] | ≤ %40 | PASS/FAIL |
+| Küme-içi karışabilirlik (pair payı) | [%xx] | ≤ %20 | PASS/FAIL |
+| Farklı sonlanış-sınıfı sayısı | [n] | ≥ 3 | PASS/FAIL |
+
+**Kapı sonucu:** `PASS` (finalist analizine geç) / **`FAIL` → ikinci tur tetiklendi** (eksik territory'ler: [liste]).
+
 ---
 
 ## 3. Dilbilimsel Laboratuvar — Finalist Analizi
@@ -81,9 +99,11 @@ Aşağıdaki **3–5 finalist**, yukarıdaki havuzdan SMILE+M / SCRATCH filtresi
 |---|---|
 | **Hece yapısı** | [örn: "Nai-ke", 2 hece, trochaic] |
 | **Fonetik profil** | [örn: açık vokal sonu / Bouba-Kiki: spiky] |
+| **[v2.1] İki-eksen skor** | Telaffuz-kolaylığı [xx/100] · Marka-gücü [yy/100] · Kompozit [zz/100] — *(eksenler AYRI; kolay-telaffuz ≠ güçlü-marka)* |
 | **SMILE+M skoru** | S [✓] M [✓] I [✓] L [✓] E [✓] +M [✓] = 6/6 |
 | **SCRATCH bayrakları** | [hiçbiri / X kategorisinde uyarı + gerekçe] |
 | **3-katmanlı dilution** | L-A Levenshtein [temiz] / L-B Phonetic [temiz] / L-C Aura [temiz] |
+| **[v2.1] Naif ilk-okuma (algı)** | Niyet-kök: [örn. ortus] → Algı-kök: [örn. **"orta" = vasat, OLUMSUZ**] — *sapma/olumsuz algı FIRST-CLASS* |
 | **Telaffuz testi (6 dil)** | EN [✓] ES [✓] DE [✓] FR [✓] TR [✓] JP [✓] |
 | **Disaster check (9 dil)** | EN/ES/AR/RU/ZH/TR/FR/DE/PT — temiz |
 | **EN rationale** | *"[tek cümle uluslararası investor pitch tonu]"* |
@@ -102,18 +122,25 @@ Aşağıdaki **3–5 finalist**, yukarıdaki havuzdan SMILE+M / SCRATCH filtresi
 
 ## 4. Domain ve Trademark Stratejisi
 
-### 4.1 Domain Önerileri (öncelik sırası)
+### 4.1 Domain Önerileri (öncelik sırası) — [v2.1] doğrulama-durumu ZORUNLU
 
-| Finalist | .com | .io | .ai | .co | Coğrafi TLD | Müsaitlik |
-|---|---|---|---|---|---|---|
-| [İsim 1] | [GoDaddy MCP live result veya heuristic] | | | | [isim].com.tr | [yüksek/orta/düşük] |
-| [İsim 2] | ... | ... | ... | ... | ... | ... |
+**Bağlayıcı kural (v2.1):** Her `.com` hücresi **doğrulama-durumu + kaynak + zaman damgası** taşır. **Hiçbir alan adı iki uyuşan canlı kaynak (GoDaddy MCP, ya da RDAP + WHOIS) olmadan "müsait" YAZILMAZ.** Tek kaynak = `provisional`; kaynak yok = `unverified` (asla "müsait").
 
-> **GoDaddy MCP etkin ise**: Yukarıdaki tablo **canlı müsaitlik** sonuçları döner.
-> **Aksi halde**: Manuel doğrulama URL'leri:
-> - [Namecheap WHOIS](https://www.namecheap.com/domains/whois/)
-> - [Domainr](https://domainr.com)
-> - [Instant Domain Search](https://instantdomainsearch.com)
+| Finalist | .com | Doğrulama-durumu | Kaynak(lar) | Kontrol zamanı (UTC) | Alt. TLD |
+|---|---|---|---|---|---|
+| [İsim 1] | ✓ MÜSAİT / ✗ DOLU / BELİRSİZ | confirmed \| provisional \| unverified | GoDaddy MCP · RDAP · WHOIS | [ISO-8601] | .ai/.io durumu |
+| [İsim 2] | ... | ... | ... | ... | ... |
+
+> **Durum etiketleri (asla varsayımsal değil):**
+> - **confirmed_available** → yalnızca **≥2 canlı kaynak** boş teyit ettiyse "MÜSAİT" yaz.
+> - **confirmed_taken** → herhangi bir canlı kaynak kayıt döndürdüyse "DOLU".
+> - **provisional** → tek kaynak boş gösterdi → *"tek kaynak; ikinci doğrulama gerekli"* — **"müsait" DEME**.
+> - **unverified** → canlı kaynak erişilemedi (offline) → *"doğrulanamadı"* — **asla "müsait" varsayma**.
+>
+> **GoDaddy MCP etkinse** birincil canlı kaynaktır; değilse `scripts/domain_recon.py` **RDAP (birincil) + WHOIS (ikincil)** ile iki-kaynak doğrulaması yapar. İkisi de yoksa manuel URL'ler:
+> - [Namecheap WHOIS](https://www.namecheap.com/domains/whois/) · [Domainr](https://domainr.com) · [Instant Domain Search](https://instantdomainsearch.com) · [RDAP](https://rdap.org/)
+>
+> ⚠️ **Denetim dersi:** `auronza.com` ve `nortanza.com` DOLU'dur; tek-sinyal heuristic "müsait" der — **bu yasak**. Heuristic yalnız "rekabet seviyesi" tahminidir, müsaitlik hükmü değildir.
 
 ### 4.2 Trademark Pre-Screening
 
@@ -128,10 +155,14 @@ Aşağıdaki **3–5 finalist**, yukarıdaki havuzdan SMILE+M / SCRATCH filtresi
 
 **Yalnızca pharma/biotech/medtech brief'lerinde yazılır.**
 
-| Finalist | USAN Stem Çakışması | LASA Riski (Top 3 Benzer Onaylı İlaç) | Promosyonel Yüklü Kelime | TİTCK TR Riski |
-|---|---|---|---|---|
-| [İsim] | ✗ / ✓ (stem adı) | [ilaç1 (Levenshtein), ilaç2, ilaç3] | ✗ / ✓ | ✗ / ✓ |
+| Finalist | USAN Stem Çakışması | **[v2.1] Marka Çakışması (INN ötesi)** | LASA Riski (Top 3 Benzer Onaylı İlaç) | Promosyonel Yüklü Kelime | TİTCK TR Riski |
+|---|---|---|---|---|---|
+| [İsim] | ✗ / ✓ (stem adı) | ✗ / ✓ (marka + INN + yargı bölgesi) | [ilaç1 (Levenshtein), ilaç2, ilaç3] | ✗ / ✓ | ✗ / ✓ |
 
+> **[v2.1] Marka çakışma taraması (uzman-denetim düzeltmesi E):** INN stem taraması (`inn_stem_collision.py`) **yeterli değildir** — denetimde `Claranta` stem taramasını geçti ama **klaritromisin/Claritin marka ailesiyle** çakışır ve Hindistan'da **tescilli Sınıf 5** markadır. Bu yüzden `scripts/pharma_brand_collision.py` mevcut **ilaç MARKA adlarına** karşı ayrı bir tarama yapar. Her satır **provenance** (taranan kaynaklar + `live_tm_checked:false`) taşır.
+>
+> **"Çakışma yok" ASLA tek yüzeysel aramadan verilmez.** Skorun 2/2 olması bile *"resmî çok-yargı-bölgeli TM araştırması gerekli — ön-tarama yeterli değil"* notuyla yazılır; **"temiz" kesin hükmü YASAK**.
+>
 > **Pharma yasal uyarı**: Pharma brand name **FDA Brand Name Review** / **EMA Invented Name Group** / **TİTCK** onayından geçmeden kullanılamaz. Bu skill ön-tarama yapar; formal regulatory submission zorunludur.
 
 ---
@@ -223,9 +254,10 @@ Skill versiyonu: brand-maker v2.0
 |---|---|
 | 1. Stratejik Deşifre | **Bağlayıcı** — atlanamaz |
 | 2. Beş-Kategori Bazlı Aday Havuzu | **Bağlayıcı** — minimum 2 kategoride aday |
-| 3. Dilbilimsel Laboratuvar | **Bağlayıcı** — her finalist için tablo zorunlu |
-| 4. Domain ve Trademark Stratejisi | **Bağlayıcı** — manual URL'ler şart |
-| 4A. Pharma-Specific | **Bağlayıcı pharma-only** — atlanamaz |
+| 2.1 Çeşitlilik Kapısı (v2.1) | **Bağlayıcı v2.1** — finalist analizinden önce; FAIL → ikinci tur |
+| 3. Dilbilimsel Laboratuvar | **Bağlayıcı** — her finalist için tablo zorunlu (naif ilk-okuma satırı dahil) |
+| 4. Domain ve Trademark Stratejisi | **Bağlayıcı** — doğrulama-durumu + kaynak + zaman damgası (v2.1); manual URL'ler şart |
+| 4A. Pharma-Specific | **Bağlayıcı pharma-only** — INN stem + marka çakışması (v2.1) + provenance |
 | 5. Post-Digital Readiness Scorecard | **Bağlayıcı v2.0** — her finalist için 6-eksen |
 | 6. Stratejik Tavsiye Matrisi | **Bağlayıcı** — özet tablo |
 | 7. Sonraki Adımlar | **Önerilir** |

@@ -1,6 +1,12 @@
 {
-  "_comment": "OPTIONAL connectors that enhance brand-ecosystem-core skills. None are required: every bundled skill declares mcp_servers_required: [] and runs Claude.ai-native on the free tier. Enable only the ones you use. To activate, merge the desired entries into the plugin's .mcp.json (create it) or connect them in Claude.ai.",
+  "_comment": "OPTIONAL connectors that enhance brand-ecosystem-core skills. None are required: every bundled skill declares mcp_servers_required: [] and runs Claude.ai-native on the free tier (with offline script fallbacks). Enable only the ones you use. To activate, merge the desired entries into the plugin's .mcp.json (create it) or connect them in Claude.ai. The brand-verify-mcp / color-a11y-mcp / type-foundry-mcp / brand-asset-registry-mcp entries are user-bound Cloudflare fleet connectors — see ARCHITECTURE.md for their build-specs and P0/P1 roadmap. URLs are placeholders until deployed.",
   "mcpServers": {
+    "brand-verify-mcp": {
+      "type": "http",
+      "url": "https://brand-verify-mcp.cureonics.workers.dev/mcp",
+      "_status": "BUILT (CureoHub/mcp-servers/brand-verify-mcp — 56 tests green, typecheck clean); deploy-pending (wrangler kv + secrets + deploy). See ARCHITECTURE.md §3.",
+      "_use": "brand-maker + brand-verify — canonical live verification: domain_multi (RDAP + WHOIS:43 two-source), trademark_multi (EUIPO TMview live + WIPO/USPTO/TÜRKPATENT manual deep-links), inn_usan_check (baked WHO INN/USAN + drug-brand collision), social_handles (per-platform), llm_namespace (Wikipedia/Wikidata). Every value carries source + status (confirmed|provisional|best_effort|manual_required|unverified) + timestamp. Closes the auronza/Claranta data-accuracy defects."
+    },
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp",
@@ -9,7 +15,7 @@
     "godaddy": {
       "type": "http",
       "url": "https://api.godaddy.com/v1/domains/mcp",
-      "_use": "brand-maker — live domain availability checks during naming validation."
+      "_use": "brand-maker — live domain availability checks during naming validation (primary domain source; RDAP+WHOIS scripts are the fallback)."
     },
     "exa": {
       "type": "http",

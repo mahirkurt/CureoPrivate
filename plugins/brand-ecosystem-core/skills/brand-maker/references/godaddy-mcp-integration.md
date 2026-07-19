@@ -152,13 +152,29 @@ for name in finalists:
 
 ---
 
+## [v2.1] İki-Kaynak Doğrulama Zorunluluğu (uzman-denetim düzeltmesi A)
+
+Denetim, skill'in `auronza.com` ve `nortanza.com`'u **"müsait (standart)"** raporladığını buldu; ikisi de **DOLU**. Kök neden: heuristic bir **tahmin**di ama **hüküm** gibi kullanıldı. v2.1 kuralı:
+
+> **Hiçbir alan adı TEK sinyalle "müsait" raporlanmaz.** Müsaitlik hükmü **canlı ikinci kaynak** gerektirir. `domain_recon.py` artık gerçek bir canlı doğrulayıcıdır: **RDAP (birincil, HTTPS)** → **WHOIS (port 43, ikincil)**. Karar mantığı:
+> - herhangi bir canlı kaynak **kayıt** döndürürse → `confirmed_taken` (DOLU)
+> - **iki** bağımsız kaynak boş derse → `confirmed_available` (yalnız o zaman "MÜSAİT")
+> - **tek** kaynak boş derse → `provisional_available` ("müsait" YAZMA — ikinci kaynak gerekli)
+> - hiç kaynak erişilemezse (offline) → `unverified` ("doğrulanamadı" — asla "müsait")
+
+GoDaddy MCP **birincil canlı kaynak** olmaya devam eder; `domain_recon.py` RDAP+WHOIS ise **fallback ikinci-kaynak katmanı**dır ve artık heuristic değil canlıdır. GoDaddy MCP + RDAP birlikte iki-kaynak `confirmed` üretir.
+
+Her domain sonucu **doğrulama-durumu + kaynak(lar) + UTC zaman damgası** taşır (bkz. `output-template.md` §4.1).
+
+---
+
 ## Hata İşleme ve Fallback
 
 GoDaddy MCP bağlı değil veya etkinleştirilmemişse:
 
-1. **Fallback 1**: `domain_recon.py` heuristic skorlarına düş + manuel doğrulama URL'leri rapora yaz
-2. **Fallback 2**: Web search ile WHOIS ön-kontrolü (`whois <domain>` query üzerinden)
-3. **Raporda explicit şeffaflık**: "GoDaddy MCP bu oturumda etkin olmadığından canlı doğrulama yapılamadı; aşağıdaki URL'lerle manuel kontrol önerilir."
+1. **Fallback 1 (v2.1 — canlı):** `domain_recon.py` **RDAP + WHOIS iki-kaynak** doğrulaması yapar; heuristic yalnız "rekabet seviyesi" bağlamı için gösterilir, **müsaitlik hükmü değildir**.
+2. **Fallback 2**: Manuel doğrulama URL'leri (Namecheap/Domainr/Instant/RDAP) rapora yazılır.
+3. **Raporda explicit şeffaflık**: canlı kaynak erişilemediyse durum `unverified` olarak damgalanır — **asla iyimser "müsait" varsayımı yok**.
 
 Brief'te kullanıcı GoDaddy MCP'yi etkinleştirmek isterse:
 > *"GoDaddy MCP'nin canlı domain doğrulaması yapabilmesi için Settings → Connectors → GoDaddy 'Enable in chat' onayı verin. Sonraki marka isimlendirme görevlerinde otomatik olarak kullanılacaktır."*

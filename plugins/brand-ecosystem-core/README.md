@@ -12,8 +12,9 @@ tone layer.
 | `brand-audit` | Diagnostic audit (rebrand / refresh / M&A / post-launch) |
 | `brand-platform` | Strategic bedrock: vision, mission, values, personality, persona, positioning, promise |
 | `brand-story` | SB7 BrandScript + three-layer problem analysis |
-| `brand-maker` | Verbal identity / naming (SMILE+M, domain + trademark validation) |
+| `brand-maker` | Verbal identity / naming (SMILE+M, v2.1 two-source domain + diversity gate + naive-perception + pharma brand collision) |
 | `brand-maker-ecosystem` | Naming companion: platform/story-aware bias, sector + luxury constraints |
+| `brand-verify` | Live-verification discipline: multi-source domain/TM/INN/handle via brand-verify-mcp, provenance-stamped, with offline script fallback |
 | `brand-visual` | 2026 visual identity system (routes, color, type, tokens) |
 | `brand-visual-ecosystem` | Visual companion: touchpoint atmosphere, corporate signature, sensory layer |
 | `figma-forge` | Design-system → Figma library (variables, styles, components, Code Connect) |
@@ -30,6 +31,25 @@ invocable on its own (e.g. `brand-ecosystem-core:brand-platform`).
 > disable the standalone copies under your skills directory. The cross-skill
 > handoff references (`../brand-audit/references/…`) resolve inside the plugin
 > because the skills remain siblings under `skills/`.
+
+## Verification layer (v2.1)
+
+Following an independent brand-expert audit, the naming pipeline is hardened by a
+three-primitive verification layer (see `ARCHITECTURE.md`):
+
+- **Hooks (`hooks/`) — guarantees.** `SessionStart` injects the no-fabrication
+  verification doctrine; `UserPromptSubmit` routes regulated-sector and
+  "final/lock" intent; `Stop` runs a provenance self-check that blocks a finish
+  presenting a domain/mark as *available/clean* without a status label.
+- **Subagents (`agents/`) — isolated critique.** `diversity-auditor` (blocks
+  single-morpheme-family shortlists), `naive-reader` (perceived vs intended
+  meaning), `brand-skeptic` (red-team the shortlist), `trademark-examiner`
+  (opposition + brand collision), `etymology-verifier` (are claimed roots real
+  *and* perceived).
+- **MCP fleet — live data.** `brand-verify-mcp` (multi-source domain + TM + INN +
+  handle, provenance-stamped) and the P1/P2 connectors are user-bound Cloudflare
+  connectors registered in `mcp.optional.json`; the `brand-verify` skill teaches
+  their use, and `brand-maker`'s scripts are the offline fallback.
 
 ## Composition with brand-voice
 

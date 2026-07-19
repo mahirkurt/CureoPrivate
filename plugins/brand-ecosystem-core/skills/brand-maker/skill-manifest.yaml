@@ -16,7 +16,7 @@ protocol_reference: "./SMP-v1.0"
 # --- Skill Identity ----------------------------------------------------------
 skill:
   name: brand-maker
-  version: "2.0.1"
+  version: "2.1.0"
   title: "Global Verbal Identity Protocol — AI-Era Brand Naming & Validation"
   description: >
     Agency-grade verbal identity protocol producing 3–5 globally pronounceable,
@@ -26,12 +26,18 @@ skill:
     Five-step agency methodology: Strategic Decoding → Five-Category
     Brainstorming → Linguistic Lab & SCRATCH Filter → Live Domain Verification
     (GoDaddy MCP) → Post-Digital Validation (6-axis LLM/voice/entity/INN/
-    dilution/morpheme screen) → Agency Presentation. Each finalist ships with
-    EN+TR rationale, .com/.ai/.io domain status, WIPO/Madrid trademark strategy,
-    FDA/EMA/TİTCK brand-name review pre-screen (pharma only), and a Post-
-    Digital Readiness score (0–12). Eighteen reference files and ten Python
-    scripts anchor every decision to canonical naming literature spanning
-    1981–2026. Free-tier, claude.ai-native, MCP-first where applicable.
+    dilution/morpheme screen) → Agency Presentation. v2.1 adds expert-audit
+    hardening: two-source live domain verification (RDAP+WHOIS, no single-signal
+    "available"), a portfolio diversity gate with a second-round trigger,
+    two-axis score discrimination (pronunciation ease vs corporate brand
+    strength), a naive first-reading perception layer (intended vs perceived
+    root), and a pharma brand-name collision scan beyond INN stems. Each
+    finalist ships with EN+TR rationale, verification-status-stamped .com/.ai/.io
+    domain status, WIPO/Madrid trademark strategy, FDA/EMA/TİTCK brand-name
+    review pre-screen (pharma only), and a Post-Digital Readiness score (0–12).
+    Eighteen reference files and twelve Python scripts anchor every decision to
+    canonical naming literature spanning 1981–2026. Free-tier, claude.ai-native,
+    MCP-first where applicable.
   author: "Mahir (internal skill)"
   license: "Internal skill asset. Verbal identity methodology knowledge base."
   entry_point: "./SKILL.md"
@@ -275,6 +281,15 @@ runtime:
   mcp_connectors:
     required: []
     optional:
+      - name: "brand-verify-mcp"
+        purpose: >
+          [v2.1 roadmap] Canonical live-verification connector (user-bound
+          Cloudflare Worker fleet): multi-source domain (RDAP+WHOIS+registrar),
+          multi-jurisdiction trademark (TÜRKPATENT+EUIPO+WIPO+USPTO), live
+          INN/USAN, social-handle availability, LLM-namespace probe. Every tool
+          returns provenance (source + timestamp + confirmed|provisional). When
+          present, Steps 3.4/3.5 delegate verification to it; scripts remain the
+          offline fallback. See plugin-root ARCHITECTURE.md.
       - name: "GoDaddy"
         purpose: >
           Live domain availability verification (primary path for Step 3.4).
@@ -385,6 +400,50 @@ verification:
       conditional: "Only when brief signals purpose/sustainability/ESG/impact."
       rationale: "Purpose-native brands require meaning-axis coordinate."
 
+    - id: G18
+      name: "No domain reported 'available' without two agreeing live sources"
+      mandatory: true
+      rationale: >
+        v2.1 expert-audit remediation A. Single-signal availability (heuristic
+        or one source) produced auronza/nortanza false-positives. Availability
+        requires GoDaddy MCP or RDAP+WHOIS two-source confirmation; every domain
+        result carries verification_status + source + timestamp.
+
+    - id: G19
+      name: "Shortlist diversity gate run; a failing shortlist triggers a second round"
+      mandatory: true
+      rationale: >
+        v2.1 remediation B+G. A shortlist that is one morpheme family's
+        variations (e.g. all -anza/-anta/-onta) is blocked; the skill generates
+        a complementary round from different phonetic/morphological families
+        instead of reshuffling the same family.
+
+    - id: G20
+      name: "Two-axis score discrimination (pronunciation ease vs brand strength)"
+      mandatory: true
+      rationale: >
+        v2.1 remediation C. Phonetic/Turkish scores must not pile at 95-100;
+        pronunciation ease and corporate brand strength are separate axes and a
+        meaningful distribution is required.
+
+    - id: G21
+      name: "Naive first-reading perception surfaced first-class per finalist"
+      mandatory: true
+      rationale: >
+        v2.1 remediation D. The dominant PERCEIVED root (independent of intended
+        etymology) and any value-lowering perception (Ortanza→'orta'=mediocre)
+        are surfaced as first-class warnings, never buried.
+
+    - id: G22
+      name: "Pharma brand-name collision scanned beyond INN stems; no single-source 'clean'"
+      mandatory: true
+      conditional: "Only when brief signals pharma/biotech/medtech sector."
+      rationale: >
+        v2.1 remediation E. INN stem checks miss brand-level collisions
+        (Claranta→clarithromycin/Claritin). pharma_brand_collision.py scans real
+        drug brand names; a 'no collision' claim always carries provenance and a
+        'formal TM research required' caveat — never asserted from one search.
+
 # --- References --------------------------------------------------------------
 references:
   primary: "./SKILL.md"
@@ -409,19 +468,28 @@ references:
 
 # --- Build Metadata ----------------------------------------------------------
 build:
-  version: "2.0.1"
-  release_date: "2026-04-24"
-  release_name: "Post-Digital Era upgrade + Sector-Agnostic Positioning Correction —
-                 5-category brainstorm, SMILE+M, 6-axis Post-Digital Validation,
-                 opt-in regulated-sector modules (pharma pilot), SMP v1.0 manifest,
-                 2022–2026 canon integration"
+  version: "2.1.0"
+  release_date: "2026-07-19"
+  release_name: "Expert-Audit Remediation — two-source domain verification,
+                 portfolio diversity gate + second-round trigger, two-axis score
+                 discrimination, naive first-reading perception layer, pharma
+                 brand-name collision scan beyond INN stems, output-contract
+                 honesty (provisional/confirmed)"
   compatibility:
     backward_compatible_with:
       - "1.2.x"
+      - "2.0.x"
     breaking_changes:
       - "Adım 3 now 5-step (was 4-step); Step 3.5 Post-Digital Validation inserted"
       - "Naming category count 5 (was 4); E. Contrarian/Sezgisel added"
       - "SMILE is now SMILE+M (6 criteria); legacy 5/5 preserved, +M optional stack"
+      - "[v2.1] domain_recon.py is now a live two-source verifier; heuristic no
+         longer emits an 'available' verdict (output shape changed: results carry
+         verification_status/sources/timestamp)"
+      - "[v2.1] phonetic_analyzer.py analysis now includes pronunciation_ease +
+         brand_strength; readiness_score is a discriminating composite"
+      - "[v2.1] turkish_semantic_check.py adds layer6_naive_perception; verdict
+         recalibrated (baseline 80, perception-weighted)"
   semantic_versioning_commitment: >
     brand-maker adheres to semantic versioning 2.0.0. Major bumps indicate
     architectural changes. Minor bumps extend coverage. Patch bumps correct

@@ -6,22 +6,24 @@
 > kaynak hiyerarşisine sadakat, akademik yayın disiplini.
 
 Birincil-kaynak-öncelikli **Osmanlı/Türk tarih araştırma orkestrasyon** Claude
-Code plugin'i. Ottoman Archives, resmî Devlet Arşivleri kataloğu (22 araç —
+Code plugin'i. Ottoman Archives, resmî Devlet Arşivleri kataloğu (27 araç, 7 grup —
+kapsamlı async süpürme + yerel store (`deep_search`→`deep_result` + `coverage`),
 eSatış sepeti, noVNC satın-alma, yerel BOA-kodlu arşiv, OCR/HTR (Transleyt varsayılan),
 async job kuyruğu), YÖK Tez, DergiPark tam-metin, YÖK Akademik, akademik
 triangülasyon katmanı, yasama/mevzuat katmanı (Resmî Gazete, mevzuat.gov.tr,
 TBMM, DETSİS) ve OpenAthens/Anna's Reader tam-metin şelalesini anamnesis
 RAG/GraphRAG substratıyla birleştirir; IJMES/TDV İslâm Ansiklopedisi
 çeviriyazı standardı ve Chicago atıf disipliniyle **9 çalışma modu** + **3
-sepet/arşiv/OCR akış-skill'i** sunar.
+sepet/arşiv/OCR akış-skill'i** sunar. Her mod bir slash-komut girişine sahiptir
+(EVENT_RECONSTRUCTION dahil: `/vekayinuvis:olay`).
 
 ## İçindekiler
 
 | Bileşen | Yol | Açıklama |
 |---------|-----|----------|
-| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.0.1) + 9 referans dosyası |
+| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.2.0) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
-| Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 10 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
+| Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,olay,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 11 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü; `olay`=EVENT_RECONSTRUCTION v3.1'de eklendi, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
 | Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async OCR zinciri (bkz. **Yeni Akışlar**) |
 | Doctor script | `scripts/vekayinuvis_doctor.py` | Marketplace-portable tam-filo preflight + G0 kapsam manifestosu; `--live` ile `devlet-arsivleri` oturum + `[envanter]`/`[engines]`/`[vnc]` probeları |
 | Connector envanteri | `CONNECTORS.md` | Tek doğruluk kaynağı — tam-filo, auth modeli, degrade kuralları |
@@ -62,8 +64,9 @@ opt-in). Etkinleştirme:
 `.mcp.json` **17 sunucuyu** bundle eder (kategoriler `CONNECTORS.md § 1`'deki
 katman tanımlarıyla birebir):
 
-- **Çekirdek arşiv** (3): `ottoman-archives`, `devlet-arsivleri` (22 araç —
-  arama/belge/eSatış sepeti/satın-alınmış-arşiv/async-OCR/durum), `yoktez`.
+- **Çekirdek arşiv** (3): `ottoman-archives`, `devlet-arsivleri` (27 araç, 7 grup —
+  arama/**süpürme**/belge/eSatış sepeti/satın-alınmış-arşiv/async-OCR/durum;
+  kesin sayı deploy'a göre değişir), `yoktez`.
 - **Akademik triangülasyon** (6): `literatur`, `consensus`, `scholar-gateway`,
   `exa`, `tavily`, `paper-search`.
 - **Tam-metin şelalesi** (2): `openathens`, `annas-reader`.
@@ -94,19 +97,21 @@ Kurulum sonrası hızlı sağlık kontrolü:
 Komut, `scripts/vekayinuvis_doctor.py --live --write-manifest` ile 17 server
 satırlı G0 preflight manifestosu üretir; `devlet-arsivleri` için
 `devarsiv_session_status` canlılığını ve (v3.0 doctor) `[envanter]`
-(`devarsiv_server_info` araç sayısının 22'ye göre drift'i), `[engines]`
+(`devarsiv_server_info` **7 araç grubu** kapsam kontrolü — magic-number değil;
+bir grubun tümüyle yokluğu drift sinyali), `[engines]`
 (Transkribus/eScriptorium motor durumu) ve `[vnc]` (noVNC Access-gate probu)
 bölümlerini kontrol eder. Bu bir araştırma koşusu değildir; belge görüntüsü,
 OCR/HTR veya tam metin çekmez.
 
 ## userConfig Kurulumu
 
-`plugin.json` `userConfig` bloğunda **6 hassas API-key alanı** tanımlıdır:
+`plugin.json` `userConfig` bloğunda **10 hassas API-key alanı** tanımlıdır:
 `devarsiv_api_key`, `ottoman_api_key`, `yok_akademik_api_key`,
-`openathens_api_key`, `annas_api_key`, `anamnesis_api_key` (+ önceden var
-olan `smithery_api_key`/`smithery_profile`). Tümü `sensitive: true`,
-`required: false`; girilen değerler host'un sistem keychain'ine yazılır
-(`settings.json`'a değil; toplam 6 anahtar ölçülen boyutu ~374 bayt).
+`openathens_api_key`, `annas_api_key`, `anamnesis_api_key` ve yasama katmanı
+(v3.1) `resmigazete_api_key`, `mevzuat_api_key`, `tbmm_api_key`,
+`detsis_api_key` (+ önceden var olan `smithery_api_key`/`smithery_profile` =
+12 alan). Tümü `sensitive: true`, `required: false`; girilen değerler host'un
+sistem keychain'ine yazılır (`settings.json`'a değil).
 
 **Önemli sınır — tek-mekanizma değil, çift-adım:** host'ta `userConfig`
 alanından `.mcp.json` `Authorization` header'ına otomatik enjeksiyon
@@ -155,6 +160,30 @@ Motor konvansiyonu (`engine=auto|both|transkribus|escriptorium|transleyt|tessera
 (0.154) uzlaştırmasıdır: denk ve bağımsız (ölçüm 0.231→0.162). Harici IIIF görüntüsü →
 `devarsiv_ocr_image`. Kanonik doktrin: `/vekayinuvis:transkripsiyon` §İki-okuyucu uzlaştırma.
 
+## Kapsamlı Erişim ve Yerel Store (v3.2)
+
+Resmî katalog 1000 satır tavanlıdır ve sayfalama yoktur → geniş bir konu tek
+aramayla tüketilemez. v3.2'de kapsamlı erişimin **birincil yolu otomatik**:
+
+1. **`devarsiv_deep_search(query, arsiv?, ust_fon?)`** — konuyu arşiv×üst-fon×tarih
+   kovalarına böler, `capped` her kovayı tarih ekseninde böler, sonuçları **yerel
+   store'a** yazar ve kapsam defterine işler. `arsiv` boş→**dört arşiv birden**;
+   store kapalıysa `store_required` (manuel `list_fon_categories`+`detailed_search`
+   enumerasyonuna degrade).
+2. **`devarsiv_deep_result(job_id)`** — **kapsam manifestosu** (`coverage.archives[]`
+   arşiv-başına status). `complete=true` yalnız altı koşul + tüm arşiv `completed`
+   iken; **`complete=false` → boş sonuç "yok" DEĞİL**; tamlık yalnız süpürülen
+   `year_bounds`/`fon_bounds` içinde okunur. Async sözleşme OCR K4 ile aynı.
+3. **`devarsiv_coverage(arsiv?, ust_fon?)`** — **STORE-FIRST no-fabrication**: bir
+   konuda boş sonuç aldığınızda "arşivde yok" sonucuna varmadan **önce** hasat
+   defterine bakın; kova defterde yoksa cevap "bilmiyoruz / henüz hasat edilmedi",
+   "yok" değildir.
+
+Store `~/mcp-data/devarsiv/` altında kalıcıdır (mcp-backup + off-site yedek +
+yedek-öncesi `wal_checkpoint`). `devarsiv_rebuild_archive` satın-alınanları yerel
+300 DPI PDF arşivine kurar (arsiv-oku/toplu-okuma önkoşulu). Ayrıntı:
+`skills/vekayinuvis/references/devlet-arsivleri-katalog.md` §2b.
+
 ## Sürüm 2.x → 3.0 Geçişi (Migration)
 
 **BREAKING:** `commands/` dizini kaldırıldı; 10 slash komutu önek almadan
@@ -201,8 +230,9 @@ güncellenmelidir.
 
 - **Upstream**: `medical-research` (tıp tarihi modern literatür), `lex-sanitas`
   (mevzuat tarih bölümü kapsamı), `lex-mercator`, `psychdev`.
-- **Downstream**: `carbon-html-report` (A4 print PDF), `carbon-pptx` (komite
-  sunumu), `lex-sanitas` (kanun gerekçesi tarihî bölümü geri beslemesi).
+- **Downstream**: `carbon-html-report` (A4 print/sunum-hazır PDF),
+  `carbon-quarto-scientific` (Quarto/R bilimsel format), `lex-sanitas` (kanun
+  gerekçesi tarihî bölümü geri beslemesi).
 
 ## Doğrulama
 
@@ -213,5 +243,5 @@ python3 ./plugins/vekayinuvis/scripts/vekayinuvis_doctor.py --topic preflight --
 
 ## Sürüm
 
-- Plugin paketi: `v3.0.1`
-- Flagship skill: `v3.0.1` (bkz. `CHANGELOG.md`)
+- Plugin paketi: `v3.2.0`
+- Flagship skill: `v3.2.0` (bkz. `CHANGELOG.md`)

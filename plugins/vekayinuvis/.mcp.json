@@ -17,7 +17,7 @@
         "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
       },
       "_tier": "core",
-      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + belge 3'lüsü + harici görüntü (engine paramlı OCR; Osmanlı varsayılanı transleyt) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 6'lısı (300 DPI, arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 22 araç; tek-cihaz oturum kilidi (HP)."
+      "_role": "ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + süpürme/store 3'lüsü (deep_search→deep_result + coverage) + belge 3'lüsü + harici görüntü (engine paramlı OCR; Osmanlı varsayılanı transleyt) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC) + satın-alınmış/yerel-arşiv 7'lisi (rebuild_archive + 300 DPI arşiv-öncelikli okuma) + async OCR 2'lisi + durum 2'lisi = 27 araç; tek-cihaz oturum kilidi (HP)."
     },
     "yoktez": {
       "type": "http",

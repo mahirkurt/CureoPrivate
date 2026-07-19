@@ -4,9 +4,24 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.2
+
+### Düzeltildi — render regresyonu KÖK-NEDEN düzeltmesi (boyut), v3.4.1 PNG teşhisini süpersede eder
+- v3.4.1'in "istemci JPEG render edemiyor → PNG'ye çevir" teşhisi YANLIŞTI ve regresyonu
+  kötüleştirdi: küçük tarayıcı-önizlemesini de kayıpsız PNG'ye şişirip `get_belge_image`'i de bozdu.
+  Sistematik yeniden-teşhis (git-bisect + bayt ölçümü + FastMCP serileştirme testi) gösterdi ki
+  sunucu emit'i spec-DOĞRU (magic↔mime, temiz base64, tek `[ImageContent]` bloğu) — sorun FORMAT
+  değil **BOYUT**: eski KÜÇÜK tarayıcı-JPEG render oluyordu, 300 DPI arşiv render'ı ve PNG re-encode
+  BÜYÜK olduğu için (1.6–4.0 MB / 3000–4000 px) connector istemcisi boş `[image]` gösteriyordu.
+- Sunucu-tarafı düzeltme (CureoHub 3c4f43bf): tüm görüntü çıktısı TEK ortak `encode_for_client`'tan
+  istemci-render-güvenli envelope'a bağlandı — uzun kenar ≤ 1568 px (Anthropic görü zaten bu boyuta
+  indiriyor) + baseline JPEG (kanıtlanmış-render formatı) + ham bayt ≤ 4.5 MB. Marjinal detay korunur:
+  KÜÇÜK region crop tavanın altında kalır → gerçek yüksek-res.
+- **Plugin arayüzü DEĞİŞMEDİ** — region/zoom/contrast parametreleri ve `arsiv-oku` iş akışı aynı.
+
 ## 3.4.1
 
-### Düzeltildi — v3.4 bölge-kırpma görüntüsü artık Claude'da RENDER oluyor (sunucu render regresyonu)
+### Düzeltildi — v3.4 bölge-kırpma görüntüsü artık Claude'da RENDER oluyor (sunucu render regresyonu) [SÜPERSEDE: bkz. 3.4.2]
 - v3.4.0'da eklenen `devarsiv_get_archive_page`/`devarsiv_get_belge_image` region/zoom/contrast
   görüntüleri Claude'da boş `[image]` placeholder olarak geliyordu (sunucu geçerli baseline JPEG
   üretiyordu ama istemci render etmiyordu). Sunucu-tarafı düzeltme (CureoHub 9dac2340): tüm görüntü

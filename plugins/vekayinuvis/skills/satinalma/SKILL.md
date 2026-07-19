@@ -39,8 +39,11 @@ sunulur; hangi adayların sepete ekleneceğine kullanıcı karar verir.
 
 ## Faz 2 — SEPET (yumuşak kapı)
 
-5. Onaylanan adaylar: `devarsiv_add_to_cart(item_id, hash, arsiv, pages)` — sayfa
-   alt-kümesi destekli ("1,3-5")
+5. Onaylanan adaylar: `devarsiv_add_to_cart(item_id, hash?, arsiv, pages)` — sayfa
+   alt-kümesi destekli ("1,3-5"). **`hash` opsiyonel** — verilmezse sunucu çözer
+   (yerel store → canlı hedefli arama; asla uydurulmaz). Belge zaten satın-alınmışsa
+   `already_purchased`+`next_steps` döner (Faz 1 adım 1 bunu zaten yakalar; bu ikinci
+   güvenlik ağı) → `/vekayinuvis:arsiv-oku`. Yanıt slim (ASPX artığı yok, <20 KB)
 6. `devarsiv_list_cart` → kalemleri + BAĞLAYICI toplamı doğrula
 7. METİN-ONAY KAPISI: "Sepette N kalem, toplam X TL. Ödemeye geçilsin mi?" — açık
    onay olmadan `checkout_cart` ÇAĞRILMAZ; `remove_from_cart(clear=true)` da açık
@@ -61,22 +64,23 @@ Tek-cihaz uyarısı adım 8'de
 **daima verbatim** aktarılır — kullanıcının kendi cihazından kataloğa paralel giriş
 yapması HP'deki kalıcı oturumu düşürür ve tüm filoyu `session_required`'a sokar.
 
-## Faz 3 — ÖDEME SONRASI (operatör adımı)
+## Faz 3 — ÖDEME SONRASI (arşive kurma)
 
-9. Kullanıcı ödemeyi bitirdiğinde: HP'de `scripts/build_archive.py` koşulmalı —
-   Claude Code host: `ssh hp-ai-node '~/devarsiv/.venv-arc/bin/python ~/devarsiv/build-archive.py'`
-   (yol yoksa: CureoHub `mcp-servers/devlet-arsivleri-mcp/scripts/build_archive.py`
-   kopyası)
-   claude.ai host: komutu kullanıcıya kutu içinde ver (operatör adımı)
-10. `devarsiv_list_archive` ile yeni code'u doğrula → `/vekayinuvis:arsiv-oku`
+9. Kullanıcı ödemeyi bitirdiğinde: `devarsiv_rebuild_archive(incremental=true)` çağır —
+   satın-alınanları yerel BOA-kodlu 300 DPI PDF arşivine kurar/günceller (eSatış viewer
+   'Tümünü İndir' ZIP → kayıpsız çok-sayfa PDF; viewer temsilî-sayfa sınırını aşan **tek
+   tam-belge yolu**). `[_RW]` ama **ödeme YAPMAZ**; oturum düşükse hiçbir şeye dokunmadan
+   `session_required` döner (manifest korunur, noVNC re-login gerekir).
+10. Sonuç `{added, kept, failed, count}` — yeni `code`'lar `added`'da; `devarsiv_list_archive`
+    ile doğrula → `/vekayinuvis:arsiv-oku`
 
-Faz 3 asistanın kendi başına tamamlayamadığı bir **operatör adımıdır**: satın
-alınan sayfaların yerel BOA-kodlu PDF arşivine düşmesi için HP'de arşiv-derleme
-script'inin çalıştırılması gerekir. Çalışma ortamı Claude Code ise (SSH erişimi
-var) komut doğrudan koşulur; claude.ai bağlamında (SSH yok) komut kod-bloğu
-içinde kullanıcıya verilir ve kullanıcı kendi tamamlar. Script tamamlandıktan
-sonra `devarsiv_list_archive` ile yeni `code`'un göründüğü doğrulanır — bu
-doğrulama `/vekayinuvis:arsiv-oku` akışına geçişin ön koşuludur.
+Faz 3 artık bir **MCP aracıyla** tamamlanır (SSH gerekmez): `devarsiv_rebuild_archive`
+satın alınan sayfaları yerel BOA-kodlu PDF arşivine kurar — `session_required` korumalı,
+para harcamaz. Satır-bazlı indirme hatası mevcut arşiv kopyasını korur; erişilemeyen öğe
+`failed[]`'te dürüstçe raporlanır (asla uydurma). ZIP görüntüleri jpg/jpeg/png/tif
+biçimlerinden toplanır (eski `*.jpg`-only sınırı kalktı). Araç tamamlandıktan sonra
+`devarsiv_list_archive` ile yeni `code`'un göründüğü doğrulanır — bu doğrulama
+`/vekayinuvis:arsiv-oku` akışına geçişin ön koşuludur.
 
 **No-fabrication:** ödeme hiçbir koşulda otonom yapılmaz; sepet mutasyonu
 yalnızca ana orkestratör turunda, kullanıcı onayıyla gerçekleşir;

@@ -4,6 +4,34 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## [3.3.0] — 2026-07-19
+
+### Değişti
+
+- **Devlet Arşivleri sepet/satın-alma katmanı + filigran bastırma (canlı MCP `main`'e deploy edildi).**
+  Beş MCP düzeltmesi plugin doktrinine wire edildi:
+  - **`devarsiv_add_to_cart` — `hash` artık opsiyonel.** Verilmezse sunucu çözer (yerel store →
+    canlı hedefli arama); **asla uydurulmaz** (no-fabrication korunur). `get_belge`/`ocr_belge`
+    hâlâ `hash` ister (değişmedi — bu invaryant yalnız `add_to_cart` için gevşetildi).
+  - **`already_purchased` durumu.** Zaten satın-alınmış belgede `add_to_cart` artık
+    `no_selectable_pages` yerine `already_purchased`+`next_steps` (list_purchased→t/hash ·
+    ocr_belge_pages · rebuild_archive) döner.
+  - **Sepet yanıtı sanitize.** `cart.controls`/`__VIEWSTATE`/ASPX artıkları atılır; şema
+    `{status, item_id, requested_pages, available_pages, cart:{count, items[{item_id,sayfa,tutar}],
+    toplam_tutar}}`; **<20 KB** (eski 1.54 MB tek-yanıta karşı).
+  - **`rebuild_archive` sağlamlaştırıldı.** ZIP görüntüleri jpg/jpeg/png/tif'ten toplanır
+    (recursive, case-insensitive; eski `*.jpg`-only glob multi-uzantılı ZIP'leri kaçırıyordu);
+    'Tümünü İndir' tıklaması id→metin fallback ile dayanıklı. `satinalma` Faz 3, SSH build-archive
+    script'inden **`devarsiv_rebuild_archive` aracına** geçirildi (SSH gerekmez).
+  - **`devarsiv_ocr_belge` filigran bastırma.** Önizleme/viewer taramasındaki '…görüntülenmiştir'
+    filigranı Katman-0'da luminance-band ile bastırılır (global varsayılan kapalı, preview
+    yolunda per-call açık — temiz arşiv OCR'ı etkilenmez); satın-alınmışsa `purchased_hint` temiz
+    sayfalara yönlendirir.
+
+  Dosyalar: flagship `SKILL.md` (§3.1.b tablo), katalog referansı (§1 tablo + §8.1 akış),
+  `satinalma` (Faz 2/3), `session_start.py` (2a + önizleme-OCR). Regresyon: NFS.d. arşiv akışı
+  canlı doğrulandı (rebuild 0 hata, 25-sayfa PDF'ler korundu). Mod (9) + araç grubu (7) korundu.
+
 ## [3.2.0] — 2026-07-19
 
 ### Eklendi

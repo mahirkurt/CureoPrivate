@@ -45,9 +45,9 @@ grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
 | Süpürme | `devarsiv_coverage(arsiv?, ust_fon?)` `[_RO]` | **Store hasat defteri** — "yok" mu "hasat edilmedi" mi ayrımı (§3 no-fabrication); yokluk sonucundan ÖNCE bak; `capped:true` kova tam değil |
 | Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + **`access`** (`purchased`/`purchasable`) — hangi §8 akışına gidileceğini belirler |
 | Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma**, satın-alma durumundan bağımsız |
-| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` (bkz. §7 K2) |
+| Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` (bkz. §7 K2). Önizleme taramasındaki "…görüntülenmiştir" filigranı **Katman-0'da bastırılır** (`watermark_suppressed`); belge satın-alınmışsa `purchased_hint` temiz arşiv sayfalarına yönlendirir |
 | Belge | `devarsiv_ocr_image(image_url, engine?, lang?)` | Harici IIIF/görüntü OCR; aynı motor beyni; SSRF allowlist'li (`DEVARSIV_OCR_IMAGE_HOSTS`, boş=kapalı) |
-| Sepet | `devarsiv_add_to_cart(item_id, hash, arsiv, pages?)` `[_RW]` | 1-tabanlı cbk sayfa seçimi ("1,3-5"; boş=tümü); ödeme yapmaz |
+| Sepet | `devarsiv_add_to_cart(item_id, hash?, arsiv, pages?)` `[_RW]` | 1-tabanlı cbk sayfa seçimi ("1,3-5"; boş=tümü); ödeme yapmaz. **`hash` opsiyonel** — verilmezse sunucu çözer (yerel store → canlı hedefli arama; **asla uydurulmaz**). Belge zaten satın-alınmışsa `already_purchased`+`next_steps` döner. Yanıt slim (<20 KB, ASPX artığı yok) |
 | Sepet | `devarsiv_list_cart()` `[_RO]` | Kalemler + **bağlayıcı Tutar** |
 | Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
 | Sepet | `devarsiv_checkout_cart()` `[_RO]` | Ödeme YAPMAZ; yalnız noVNC URL + güncel sepet döner |
@@ -341,7 +341,8 @@ girer; hangisinin seçileceği `devarsiv_get_belge`'nin döndürdüğü `access`
 
 ```
 devarsiv_get_belge(item_id, hash, arsiv) → access=purchasable
-  → devarsiv_add_to_cart(item_id, hash, arsiv, pages?)      [_RW, ödemesiz]
+  → devarsiv_add_to_cart(item_id, hash?, arsiv, pages?)     [_RW, ödemesiz; hash ops.—store/canlı çözer]
+       (access=purchased ise already_purchased+next_steps döner → §8.2)
   → devarsiv_list_cart()                                     [_RO, bağlayıcı Tutar]
   → KULLANICI METİN-ONAYI (sepet özeti + Tutar gösterilip açık onay alınmadan devam edilmez)
   → devarsiv_checkout_cart()                                 [_RO, ödeme YAPMAZ — yalnız noVNC URL + sepet döner]

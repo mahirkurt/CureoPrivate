@@ -128,8 +128,13 @@ deploy` → `brand-verify-mcp.cureonics.workers.dev`). Registered in
   `mcp.optional.json`.
 - **market-signal-mcp** — binds socius-vigil into brand-audit for real
   share-of-voice / sentiment / white-space.
-- **regulated-claims-mcp** — cosmetic / medical-device advertising-claim rules +
-  INN, composed with the lex-sanitas / promo-censor skills.
+- **regulated-claims-mcp** — **BUILT + DEPLOYED** (`CureoHub/mcp-servers/
+  regulated-claims-mcp`, `regulated-claims-mcp.cureonics.workers.dev`). EU
+  advertising-claim screening (cosmetic Reg 1223/2009+655/2013, medical-device
+  MDR Art 7, supplement Reg 1924/2006, pharma Dir 2001/83/EC Art 87–90) — a
+  deterministic guidance screen (`mcp_verified:false`, no-match ≠ clearance),
+  rules pinned to the primary EU instruments. 4 tools, 32 tests green. INN stem
+  check delegated to brand-verify-mcp. Registered in `mcp.optional.json`.
 
 ## 4. Subagent & hook roadmap (beyond P0)
 

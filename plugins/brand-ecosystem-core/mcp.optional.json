@@ -13,6 +13,12 @@
       "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/color-a11y-mcp — 39 tests green, algorithms spec-verified). P1.",
       "_use": "brand-visual + figma-forge — deterministic color accessibility: contrast_check (WCAG 2.x + APCA), cvd_simulate (color-blindness), generate_scale (Radix-style 12-step, WCAG-enforced), convert_color (OKLCH/CMYK/nearest-Pantone), palette_audit, color_info. Every result computed from authoritative constants — no fabrication."
     },
+    "regulated-claims-mcp": {
+      "type": "http",
+      "url": "https://regulated-claims-mcp.cureonics.workers.dev/mcp",
+      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/regulated-claims-mcp — 32 tests green, rules pinned to primary EU instruments). P2.",
+      "_use": "brand-maker/brand-story — EU regulated-sector advertising-claim screening for taglines/claims: screen_claim (cosmetic Reg 1223/2009+655/2013, medical-device MDR Art 7, supplement Reg 1924/2006, pharma Dir 2001/83/EC Art 87-90) → forbidden + restricted hits with citations. mcp_verified:false — guidance screen, not a legal determination; regulatory-affairs review required. Pharma name stem → delegate to brand-verify inn_usan_check."
+    },
     "culture-linguistics-mcp": {
       "type": "http",
       "url": "https://culture-linguistics-mcp.cureonics.workers.dev/mcp",

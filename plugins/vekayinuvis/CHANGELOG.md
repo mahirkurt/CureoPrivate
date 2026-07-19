@@ -4,6 +4,16 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.1
+
+### Düzeltildi — v3.4 bölge-kırpma görüntüsü artık Claude'da RENDER oluyor (sunucu render regresyonu)
+- v3.4.0'da eklenen `devarsiv_get_archive_page`/`devarsiv_get_belge_image` region/zoom/contrast
+  görüntüleri Claude'da boş `[image]` placeholder olarak geliyordu (sunucu geçerli baseline JPEG
+  üretiyordu ama istemci render etmiyordu). Sunucu-tarafı düzeltme (CureoHub 9dac2340): tüm görüntü
+  çıktısı TEK ortak helper'dan istemci-render-güvenli 8-bit PNG'ye normalize ediliyor.
+- **Plugin arayüzü DEĞİŞMEDİ** — region/zoom/contrast parametreleri ve arsiv-oku iş akışı aynı;
+  yalnız görüntüler artık gerçekten görünüyor. Marjinal detay (folio kenarı yıl/derkenar) okuma canlı.
+
 ## 3.4.0
 
 ### Eklendi — devarsiv görüntü araçlarına bölge-kırpma + zoom + kontrast (marjinal detay okuma)

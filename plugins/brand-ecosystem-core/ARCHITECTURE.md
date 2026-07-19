@@ -126,8 +126,11 @@ deploy` → `brand-verify-mcp.cureonics.workers.dev`). Registered in
   brand-maker Turkish naive-parse + 9-language disaster-check to multi-market
   (e.g. Veridya→"ver" in pt/es/tr). 6 tools, 28 tests green. Registered in
   `mcp.optional.json`.
-- **market-signal-mcp** — binds socius-vigil into brand-audit for real
-  share-of-voice / sentiment / white-space.
+- **market-signal** — **BUILT as a SKILL, not an MCP** (`skills/brand-market-signal/`).
+  socius-vigil already provides the data, so a separate Worker would be redundant;
+  the value is the *methodology* for share-of-voice / sentiment / white-space over
+  the existing `socius-vigil` connector (registered in `mcp.optional.json`). Feeds
+  white-space to brand-maker Step 3.1 / brand-platform; SOV/sentiment to brand-launch KPIs.
 - **regulated-claims-mcp** — **BUILT + DEPLOYED** (`CureoHub/mcp-servers/
   regulated-claims-mcp`, `regulated-claims-mcp.cureonics.workers.dev`). EU
   advertising-claim screening (cosmetic Reg 1223/2009+655/2013, medical-device

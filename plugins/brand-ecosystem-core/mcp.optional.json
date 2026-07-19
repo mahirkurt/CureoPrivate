@@ -47,6 +47,11 @@
       "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/brand-asset-registry-mcp — D1-backed, 23 tests green). P1 — the pipeline's memory.",
       "_use": "Whole pipeline — persistent cross-session memory: registry_put/get/list/history/delete for name-decision provenance, W3C DTCG design tokens, logo-lockup refs, and notes. Append-only versioned (D1). Stores brand-verify-mcp verification snapshots; figma-forge/brand-touchpoint read tokens back next session."
     },
+    "socius-vigil": {
+      "type": "http",
+      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
+      "_use": "brand-audit + brand-market-signal skill — real social-listening/OSINT for share-of-voice, sentiment, and positioning white-space (SearXNG→Brave→DDG + Perplexity/Exa enrich + sentiment). The market-signal layer is a SKILL over this existing connector, not a separate MCP."
+    },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",

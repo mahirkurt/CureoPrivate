@@ -15,6 +15,7 @@ tone layer.
 | `brand-maker` | Verbal identity / naming (SMILE+M, v2.1 two-source domain + diversity gate + naive-perception + pharma brand collision) |
 | `brand-maker-ecosystem` | Naming companion: platform/story-aware bias, sector + luxury constraints |
 | `brand-verify` | Live-verification discipline: multi-source domain/TM/INN/handle via brand-verify-mcp, provenance-stamped, with offline script fallback |
+| `brand-market-signal` | Real share-of-voice / sentiment / positioning white-space via the existing socius-vigil connector (methodology skill, not a new MCP) |
 | `brand-visual` | 2026 visual identity system (routes, color, type, tokens) |
 | `brand-visual-ecosystem` | Visual companion: touchpoint atmosphere, corporate signature, sensory layer |
 | `figma-forge` | Design-system → Figma library (variables, styles, components, Code Connect) |

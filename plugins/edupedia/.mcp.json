@@ -6,7 +6,8 @@
     },
     "egitim-kaynak": {
       "type": "http",
-      "url": "https://egitim-kaynak.cureonics.com/mcp"
+      "url": "https://egitim-kaynak.cureonics.com/mcp",
+      "headers": { "Authorization": "Bearer ${EGITIM_KAYNAK_MCP_API_KEY}" }
     },
     "modul-yayin": {
       "type": "http",

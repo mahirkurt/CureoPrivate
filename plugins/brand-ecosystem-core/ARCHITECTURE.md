@@ -119,8 +119,13 @@ deploy` → `brand-verify-mcp.cureonics.workers.dev`). Registered in
 
 ### P2
 
-- **culture-linguistics-mcp** — real multi-market false-friend / pronunciation /
-  taboo + naive-reading support beyond the offline 9-language list.
+- **culture-linguistics-mcp** — **BUILT + DEPLOYED** (`CureoHub/mcp-servers/
+  culture-linguistics-mcp`, `culture-linguistics-mcp.cureonics.workers.dev`).
+  Real multi-market meaning (Wiktionary + Wikidata live) / IPA / taboo (LDNOOBW,
+  11 langs baked) / naive-reading (FrequencyWords, 8 langs baked) — extends the
+  brand-maker Turkish naive-parse + 9-language disaster-check to multi-market
+  (e.g. Veridya→"ver" in pt/es/tr). 6 tools, 28 tests green. Registered in
+  `mcp.optional.json`.
 - **market-signal-mcp** — binds socius-vigil into brand-audit for real
   share-of-voice / sentiment / white-space.
 - **regulated-claims-mcp** — cosmetic / medical-device advertising-claim rules +

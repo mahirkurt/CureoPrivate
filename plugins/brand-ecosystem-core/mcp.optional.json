@@ -13,6 +13,12 @@
       "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/color-a11y-mcp — 39 tests green, algorithms spec-verified). P1.",
       "_use": "brand-visual + figma-forge — deterministic color accessibility: contrast_check (WCAG 2.x + APCA), cvd_simulate (color-blindness), generate_scale (Radix-style 12-step, WCAG-enforced), convert_color (OKLCH/CMYK/nearest-Pantone), palette_audit, color_info. Every result computed from authoritative constants — no fabrication."
     },
+    "culture-linguistics-mcp": {
+      "type": "http",
+      "url": "https://culture-linguistics-mcp.cureonics.workers.dev/mcp",
+      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/culture-linguistics-mcp — 28 tests green, sources empirically verified). P2.",
+      "_use": "brand-maker — multilingual cultural/linguistic screening (extends the Turkish naive-parse + 9-lang disaster-check to multi-market): meaning_check (Wiktionary + Wikidata live), taboo_check (LDNOOBW 11 langs baked), naive_read_multi (FrequencyWords 8 langs baked — e.g. Veridya→'ver' in pt/es/tr), pronunciation_hint (IPA), culture_screen (one-shot), culture_info. No fabrication; native-speaker verification still required."
+    },
     "type-foundry-mcp": {
       "type": "http",
       "url": "https://type-foundry-mcp.cureonics.workers.dev/mcp",

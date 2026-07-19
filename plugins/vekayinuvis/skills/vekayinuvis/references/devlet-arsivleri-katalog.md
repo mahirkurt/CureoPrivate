@@ -44,7 +44,7 @@ grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
 | Süpürme | `devarsiv_deep_result(job_id)` `[_RO]` | Süpürme durumu + **kapsam manifestosu** (`coverage.archives[]`); `complete=true` yalnız 6 koşul+tüm arşiv `completed`; `complete=false`→boş ≠ "yok" (§2b/§3) |
 | Süpürme | `devarsiv_coverage(arsiv?, ust_fon?)` `[_RO]` | **Store hasat defteri** — "yok" mu "hasat edilmedi" mi ayrımı (§3 no-fabrication); yokluk sonucundan ÖNCE bak; `capped:true` kova tam değil |
 | Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + **`access`** (`purchased`/`purchasable`) — hangi §8 akışına gidileceğini belirler |
-| Belge | `devarsiv_get_belge_image(item_id, hash, arsiv)` | Önizleme taraması ImageContent — **görüyle okuma**, satın-alma durumundan bağımsız |
+| Belge | `devarsiv_get_belge_image(item_id, hash, arsiv, region?, zoom?, contrast?)` | Önizleme taraması ImageContent — **görüyle okuma**, satın-alma durumundan bağımsız. **v3.4:** `region`/`zoom`/`contrast` ile bölge-kırpma+büyütme (önizleme = interpolasyon) |
 | Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` (bkz. §7 K2). Önizleme taramasındaki "…görüntülenmiştir" filigranı **Katman-0'da bastırılır** (`watermark_suppressed`); belge satın-alınmışsa `purchased_hint` temiz arşiv sayfalarına yönlendirir |
 | Belge | `devarsiv_ocr_image(image_url, engine?, lang?)` | Harici IIIF/görüntü OCR; aynı motor beyni; SSRF allowlist'li (`DEVARSIV_OCR_IMAGE_HOSTS`, boş=kapalı) |
 | Sepet | `devarsiv_add_to_cart(item_id, hash?, arsiv, pages?)` `[_RW]` | 1-tabanlı cbk sayfa seçimi ("1,3-5"; boş=tümü); ödeme yapmaz. **`hash` opsiyonel** — verilmezse sunucu çözer (yerel store → canlı hedefli arama; **asla uydurulmaz**). Belge zaten satın-alınmışsa `already_purchased`+`next_steps` döner. Yanıt slim (<20 KB, ASPX artığı yok) |
@@ -55,7 +55,7 @@ grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
 | Arşiv | `devarsiv_rebuild_archive(incremental?, limit?)` `[_RW]` | Satın-alınanları yerel 300 DPI PDF arşivine kurar/günceller (eSatış ZIP→kayıpsız PDF); **TAM-belge tek yolu**; `session_required` korumalı, ödeme YAPMAZ (§8.2) |
 | Arşiv | `devarsiv_ocr_belge_pages(t, hash, arsiv?, pages?, lang?, engine?)` | Viewer üzerinden çok-sayfa OCR — **temsilî-sayfa sınırlı**; TAM/güvenilir yol yerel arşivdir (§8.2) |
 | Arşiv | `devarsiv_list_archive(query?)` | BOA-kodlu yerel PDF arşivi (code/yer/tarih/özet/sayfa) |
-| Arşiv | `devarsiv_get_archive_page(code, page)` | **300 DPI ImageContent — satın-alınmış belgede BİRİNCİL okuma** |
+| Arşiv | `devarsiv_get_archive_page(code, page, region?, zoom?, contrast?)` | **300 DPI ImageContent — satın-alınmış belgede BİRİNCİL okuma.** **v3.4:** `region=[x0,y0,x1,y1]` (0..1) + `zoom` (6–10×) + `contrast` → marjinal detayı (kenar yılı/derkenar/mühür) GERÇEK yüksek-res render (pdftoppm crop, upscale değil) |
 | Arşiv | `devarsiv_ocr_archive_pages(code, pages?, arsiv?, lang?, engine?)` | Sync OCR, ≤5 sayfa (MULTIPAGE_MAX_PAGES) |
 | Arşiv | `devarsiv_get_archive_pdf(code, include_base64?, max_bytes?)` | Künye + sınırlı base64 PDF |
 | Async | `devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)` `[_RW]` | İdempotent; `job_id` döner |

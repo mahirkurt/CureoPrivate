@@ -4,6 +4,17 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.0
+
+### Eklendi — devarsiv görüntü araçlarına bölge-kırpma + zoom + kontrast (marjinal detay okuma)
+- `devarsiv_get_archive_page` ve `devarsiv_get_belge_image` artık `region=[x0,y0,x1,y1]` (kesirli 0..1),
+  `zoom` (büyütme) ve `contrast` (gri-ton autocontrast) parametreleri alıyor. Folio kenarındaki
+  tevellüd/şerh yılı, derkenar, mühür gibi marjinal detay tam-sayfa render'da sınırda kalıyordu.
+- **Arşiv yolu GERÇEK yüksek-res:** bölge, base 300 DPI × zoom'da pdftoppm CROP ile render edilir
+  (piksel upscale DEĞİL) — marjinal yılı çözmenin doğru yolu. Önizleme yolu (belge_image) interpolasyon.
+- `arsiv-oku` skill'ine marjinal-detay adımı + katalog referansına parametre notları işlendi.
+- MCP tarafı: yeni `imaging.py` (saf PIL) + `ocr.pdf_region_image`; HP'de canlı, 315 test yeşil.
+
 ## [3.3.0] — 2026-07-19
 
 ### Değişti

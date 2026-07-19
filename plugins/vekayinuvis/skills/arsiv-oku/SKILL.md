@@ -30,6 +30,13 @@ Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_ar
    `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` §6). Osmanlı el yazması sayfada taramayı
    Transleyt (varsayılan) + asistan görüsü uzlaştırmasıyla oku; Latin/basılı sayfada görsel doğrulama olarak
    kullan.
+   **Marjinal detay okunmuyorsa (folio kenarındaki tevellüd/şerh yılı, derkenar, mühür, ince not):**
+   `devarsiv_get_archive_page(code, page, region=[x0,y0,x1,y1], zoom, contrast=True)` ile o dikdörtgeni
+   BÜYÜTEREK çek. `region` kesirli 0..1 (ör. üst marj `[0.0,0.0,1.0,0.15]`, sağ-üst köşe
+   `[0.65,0.0,1.0,0.12]`); `zoom` 6–10 arası büyütme — bölge o yüksek DPI'da **gerçekten** render edilir
+   (pdftoppm crop, piksel upscale değil), `contrast=True` soluk mürekkebi belirginleştirir. Bu, tam-sayfa
+   render'da sınırda kalan yılı çözmenin doğru yoludur (fleet-QA, v3.4). Satın-alınmamış belgede aynı
+   parametreler `devarsiv_get_belge_image`'de de var ama önizleme İNTERPOLASYON'dur (yerel arşiv gerçek-res).
 3. **Deterministik katman gerekiyorsa (≤5 sayfa).** `devarsiv_ocr_archive_pages(code,
    pages?, arsiv?, lang?, engine?)` — sync OCR, MULTIPAGE_MAX_PAGES (5) sınırına
    kadar. Motor seçimi K2 rehberine tabidir: `engine="auto"` Osmanlı için

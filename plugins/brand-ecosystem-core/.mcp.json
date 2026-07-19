@@ -1,0 +1,68 @@
+{
+  "_comment": "brand-ecosystem-core MCP wiring — kullanıcı-bağlı Cloudflare fleet connector'ları. Bu plugin'in TÜM skill'leri Claude.ai-native'dir (mcp_servers_required: []; brand-maker scriptleri offline fallback) → MCP'ler ZORUNLU DEĞİL, canlı-veri ZENGİNLEŞTİRİCİLERİDİR. Auth'lu server'lar Doppler-injected Bearer bekler (oturumu `doppler run -p cureohub -c dev_personal -- claude` ile başlat; anahtar yoksa connector 401 döner ve o katman graceful degrade eder — brand-maker offline scriptlerine düşer, asla uydurma). Salt-okunur olmayan tek server brand-asset-registry (D1 hafıza: registry_put/delete yazar). Üçüncü-parti opsiyoneller (Figma/GoDaddy/Exa) mcp.optional.json'da kalır — kullanıcının kendi hesabını ister.",
+  "mcpServers": {
+    "brand-verify": {
+      "type": "http",
+      "url": "https://brand-verify-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${BRAND_VERIFY_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "Canlı marka doğrulama: domain_multi (RDAP+WHOIS iki-kaynak; tek sinyalle 'müsait' yok), trademark_multi (EUIPO TMview canlı + WIPO/USPTO/TÜRKPATENT manual deep-link), inn_usan_check (INN stem + ilaç-marka çakışması — Claranta yakalar), social_handles, llm_namespace, brand_verify_info. brand-maker Adım 3.4/3.5 doğrulamayı buna devreder; provenance damgalı, no-fabrication."
+    },
+    "color-a11y": {
+      "type": "http",
+      "url": "https://color-a11y-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${COLOR_A11Y_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "Deterministik renk erişilebilirliği (brand-visual/figma-forge): contrast_check (WCAG 2.x + APCA), cvd_simulate (renk körlüğü), generate_scale (Radix 12-adım WCAG-zorlamalı), convert_color (OKLCH/CMYK/nearest-Pantone), palette_audit, color_info. Her algoritma otoriter spesifikasyona + test vektörüne sabitli; canlı-veri değil saf hesap."
+    },
+    "type-foundry": {
+      "type": "http",
+      "url": "https://type-foundry-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TYPE_FOUNDRY_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "Font lisans + variable-font metadata (brand-visual/figma-forge): font_search, font_lookup (Fontsource + Google Fonts metadata — lisans + tasarımcılar), font_license (OFL/Apache/UFL hakları; bilinmeyen→manual EULA), font_variable_axes, fstype_decode, type_info. Açık korpus dışı fontlar dürüstçe not-found."
+    },
+    "brand-asset-registry": {
+      "type": "http",
+      "url": "https://brand-asset-registry-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${BRAND_ASSET_REGISTRY_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "Kalıcı marka-varlık hafızası (D1, append-only versiyonlu): registry_put/get/list/history/delete/info. YAZMA yapan tek server. İsim-kararı provenance'ı + W3C DTCG design token'ları + logo-lockup ref'leri + notları oturumlar-arası saklar → figma-forge/brand-touchpoint sonraki oturumda okur. brand-verify doğrulama snapshot'larını kalıcılaştırır."
+    },
+    "culture-linguistics": {
+      "type": "http",
+      "url": "https://culture-linguistics-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CULTURE_LINGUISTICS_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "Çok-dilli kültürel/dilbilimsel marka taraması (brand-maker naive-parse + disaster-check'in çok-pazar genişlemesi): meaning_check (Wiktionary + Wikidata canlı), taboo_check (LDNOOBW 11 dil baked), naive_read_multi (FrequencyWords 8 dil baked — Veridya→'ver' pt/es/tr), pronunciation_hint (IPA), culture_screen (tek-atış), culture_info. Ana-dil doğrulaması yine şart."
+    },
+    "regulated-claims": {
+      "type": "http",
+      "url": "https://regulated-claims-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${REGULATED_CLAIMS_MCP_API_KEY}"
+      },
+      "_tier": "core",
+      "_role": "EU düzenlenen-sektör reklam-iddia taraması (brand-maker/brand-story tagline/iddia): screen_claim (cosmetic Reg 1223/2009+655/2013 · medical-device MDR Art 7 · supplement Reg 1924/2006 · pharma Dir 2001/83/EC Art 87-90) → forbidden + restricted bulgular + atıf. mcp_verified:false — rehber taraması, hukuki belirlenim değil; regulatory-affairs incelemesi şart. İlaç isim stem'i → brand-verify inn_usan_check."
+    },
+    "socius-vigil": {
+      "type": "http",
+      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SOCIUS_VIGIL_MCP_API_KEY}"
+      },
+      "_tier": "support",
+      "_role": "Sosyal dinleme / OSINT — brand-market-signal skill'inin veri katmanı: gerçek ses-payı / sentiment / positioning beyaz-alan (SearXNG→Brave→DDG + Perplexity/Exa enrich + sv_sentiment). market-signal ayrı MCP DEĞİL; bu mevcut connector üzerinden bir metodoloji skill'i."
+    }
+  }
+}

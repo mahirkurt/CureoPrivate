@@ -1,61 +1,20 @@
 {
-  "_comment": "OPTIONAL connectors that enhance brand-ecosystem-core skills. None are required: every bundled skill declares mcp_servers_required: [] and runs Claude.ai-native on the free tier (with offline script fallbacks). Enable only the ones you use. To activate, merge the desired entries into the plugin's .mcp.json (create it) or connect them in Claude.ai. The brand-verify-mcp / color-a11y-mcp / type-foundry-mcp / brand-asset-registry-mcp entries are user-bound Cloudflare fleet connectors — see ARCHITECTURE.md for their build-specs and P0/P1 roadmap. URLs are placeholders until deployed.",
+  "_comment": "OPTIONAL third-party connectors (user's own account required). The Cureonics-fleet MCPs (brand-verify · color-a11y · type-foundry · brand-asset-registry · culture-linguistics · regulated-claims · socius-vigil) are already WIRED in `.mcp.json` with Doppler-injected Bearer keys — they load automatically in a `doppler run -p cureohub -c dev_personal -- claude` session and degrade gracefully (to brand-maker offline scripts) when a key is absent. The entries below are NOT wired by default: they need YOUR own Figma/GoDaddy/Exa credentials. To activate one, merge it into `.mcp.json` (or connect it in Claude.ai) and supply the auth.",
   "mcpServers": {
-    "brand-verify-mcp": {
-      "type": "http",
-      "url": "https://brand-verify-mcp.cureonics.workers.dev/mcp",
-      "_status": "BUILT (CureoHub/mcp-servers/brand-verify-mcp — 56 tests green, typecheck clean); deploy-pending (wrangler kv + secrets + deploy). See ARCHITECTURE.md §3.",
-      "_use": "brand-maker + brand-verify — canonical live verification: domain_multi (RDAP + WHOIS:43 two-source), trademark_multi (EUIPO TMview live + WIPO/USPTO/TÜRKPATENT manual deep-links), inn_usan_check (baked WHO INN/USAN + drug-brand collision), social_handles (per-platform), llm_namespace (Wikipedia/Wikidata). Every value carries source + status (confirmed|provisional|best_effort|manual_required|unverified) + timestamp. Closes the auronza/Claranta data-accuracy defects."
-    },
-    "color-a11y-mcp": {
-      "type": "http",
-      "url": "https://color-a11y-mcp.cureonics.workers.dev/mcp",
-      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/color-a11y-mcp — 39 tests green, algorithms spec-verified). P1.",
-      "_use": "brand-visual + figma-forge — deterministic color accessibility: contrast_check (WCAG 2.x + APCA), cvd_simulate (color-blindness), generate_scale (Radix-style 12-step, WCAG-enforced), convert_color (OKLCH/CMYK/nearest-Pantone), palette_audit, color_info. Every result computed from authoritative constants — no fabrication."
-    },
-    "regulated-claims-mcp": {
-      "type": "http",
-      "url": "https://regulated-claims-mcp.cureonics.workers.dev/mcp",
-      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/regulated-claims-mcp — 32 tests green, rules pinned to primary EU instruments). P2.",
-      "_use": "brand-maker/brand-story — EU regulated-sector advertising-claim screening for taglines/claims: screen_claim (cosmetic Reg 1223/2009+655/2013, medical-device MDR Art 7, supplement Reg 1924/2006, pharma Dir 2001/83/EC Art 87-90) → forbidden + restricted hits with citations. mcp_verified:false — guidance screen, not a legal determination; regulatory-affairs review required. Pharma name stem → delegate to brand-verify inn_usan_check."
-    },
-    "culture-linguistics-mcp": {
-      "type": "http",
-      "url": "https://culture-linguistics-mcp.cureonics.workers.dev/mcp",
-      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/culture-linguistics-mcp — 28 tests green, sources empirically verified). P2.",
-      "_use": "brand-maker — multilingual cultural/linguistic screening (extends the Turkish naive-parse + 9-lang disaster-check to multi-market): meaning_check (Wiktionary + Wikidata live), taboo_check (LDNOOBW 11 langs baked), naive_read_multi (FrequencyWords 8 langs baked — e.g. Veridya→'ver' in pt/es/tr), pronunciation_hint (IPA), culture_screen (one-shot), culture_info. No fabrication; native-speaker verification still required."
-    },
-    "type-foundry-mcp": {
-      "type": "http",
-      "url": "https://type-foundry-mcp.cureonics.workers.dev/mcp",
-      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/type-foundry-mcp — 35 tests green, sources empirically verified). P1.",
-      "_use": "brand-visual + figma-forge — font licensing/embedding rights + variable-font metadata: font_search, font_lookup (license + designers, Fontsource + Google Fonts metadata), font_license (OFL/Apache/UFL rights; unknown→manual EULA), font_variable_axes (ranges + registry), fstype_decode, type_info. Open corpus only; proprietary fonts honestly out-of-scope. No fabrication."
-    },
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp",
-      "_use": "figma-forge (DS-to-Figma libraries, variables, Code Connect) and brand-visual (visual identity handoff to Figma)."
+      "_use": "figma-forge (DS-to-Figma libraries, variables, Code Connect) and brand-visual (visual identity handoff to Figma). Needs your Figma auth."
     },
     "godaddy": {
       "type": "http",
       "url": "https://api.godaddy.com/v1/domains/mcp",
-      "_use": "brand-maker — live domain availability checks during naming validation (primary domain source; RDAP+WHOIS scripts are the fallback)."
-    },
-    "brand-asset-registry-mcp": {
-      "type": "http",
-      "url": "https://brand-asset-registry-mcp.cureonics.workers.dev/mcp",
-      "_status": "BUILT + DEPLOYED LIVE (CureoHub/mcp-servers/brand-asset-registry-mcp — D1-backed, 23 tests green). P1 — the pipeline's memory.",
-      "_use": "Whole pipeline — persistent cross-session memory: registry_put/get/list/history/delete for name-decision provenance, W3C DTCG design tokens, logo-lockup refs, and notes. Append-only versioned (D1). Stores brand-verify-mcp verification snapshots; figma-forge/brand-touchpoint read tokens back next session."
-    },
-    "socius-vigil": {
-      "type": "http",
-      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
-      "_use": "brand-audit + brand-market-signal skill — real social-listening/OSINT for share-of-voice, sentiment, and positioning white-space (SearXNG→Brave→DDG + Perplexity/Exa enrich + sentiment). The market-signal layer is a SKILL over this existing connector, not a separate MCP."
+      "_use": "brand-maker — an alternative live domain-availability source during naming validation (brand-verify-mcp's RDAP+WHOIS is the wired default; GoDaddy is an optional extra needing your GoDaddy API key)."
     },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
-      "_use": "brand-audit — competitive landscape and IP/web research."
+      "_use": "brand-audit / brand-market-signal — optional semantic-web enrichment (needs your Exa key). socius-vigil already enriches via Exa server-side."
     }
   }
 }

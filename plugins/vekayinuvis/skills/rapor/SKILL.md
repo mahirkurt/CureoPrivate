@@ -13,7 +13,7 @@ katmanlarını birleştir; G0–G6 kalite kapılarından geçir (kapsam, kaynak 
 triangülasyon, tarih disiplini, çeviriyazı tutarlılığı, atıf bütünlüğü, dürüst
 belirsizlik).
 
-references/citation-and-transliteration.md ve references/report-template.md
+${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/citation-and-transliteration.md ve ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/report-template.md
 yükle. Çıktı carbon-html-report (A4 print) veya carbon-pptx ile downstream
 işlenebilir.
 
@@ -21,4 +21,4 @@ işlenebilir.
 (devlet-arsivleri + ottoman-archives + yoktez + literatur + akademik companion + tam-metin
 şelalesi) birleşimini gerektirdiğinden `context: fork` ile çalışır: ham çok-connector çıktısı
 ajanın kendi penceresinde tüketilir; ana pencereye yalnız kompakt `arsiv_distillate` + `coverage`
-döner (bkz. shared/context-economy-contract.md).
+döner (bkz. ${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md).

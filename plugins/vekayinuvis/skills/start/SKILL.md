@@ -76,11 +76,11 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
 **Substrat (bağlam ekonomisi altyapısı):**
 - `anamnesis` — büyük-veri RAG/GraphRAG; büyük tam-metin (belge transkripsiyonu,
   tez PDF, DergiPark tam-metin) ingest→bounded query. Detayların atlanmadan,
-  pencere taşmadan kapsanması için (bkz. `shared/context-economy-contract.md`).
+  pencere taşmadan kapsanması için (bkz. `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md`).
 
 > **TAM-FİLO.** Bu 17 server `.mcp.json`'da bundled'dır ve bağlama uygun olanı
 > **her substantif sorguda çalışır**; her çıktı **G0 kapsam manifestosu** taşır
-> (`shared/coverage-manifest.md`) — sessiz atlama yok. Ağır getirim
+> (`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md`) — sessiz atlama yok. Ağır getirim
 > `arsiv-tarama-distilleri` alt-ajanına delege edilir (retrieve-don't-dump).
 
 **Anthropic yerleşik (her zaman mevcut):**

@@ -4,7 +4,7 @@ description: Çok-sayfalı satın-alınmış belgede async OCR (Transleyt varsay
 ---
 
 `vekayinuvis` skill'ini **ASYNC OCR** akışında, **`devlet-arsivleri`** + **`anamnesis`**
-connector'ları odağıyla çalıştır. Referans: `references/devlet-arsivleri-katalog.md` §8.4.
+connector'ları odağıyla çalıştır. Referans: `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md` §8.4.
 
 Hedef: satın-alınmış, çok-sayfalı bir belgeyi (>5 sayfa VEYA çok-motorlu (`both`) tam belge)
 sync OCR sınırını aşan bir işle işlemek — async kuyruk + tek-seferlik tam-metin okuma +
@@ -32,7 +32,7 @@ aşağıdaki eşiği aşan işleri üstlenir.
 4. **Ham metni pencereden düşür.** Ingest tamamlandıktan sonra ham OCR metni ana
    pencerede tutulmaz; izleyen erişim `anamnesis.hybrid_query(doc_scope=
    "devarsiv:<code>", queries=[...])` ile sınırlı, provenance-damgalı dilim çeker
-   (bkz. `shared/context-economy-contract.md` §6).
+   (bkz. `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` §6).
 5. **`stale` davranışı.** Durum `stale` dönerse iş süresi dolmuş veya sonuç
    temizlenmiştir; **aynı parametrelerle resubmit** edilir (adım 1'e dön) — arşiv
    PDF'i yerelde durduğu için bu tekrar maliyet doğurmaz, yalnız OCR işi yeniden

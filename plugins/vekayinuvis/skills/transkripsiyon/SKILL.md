@@ -14,7 +14,7 @@ belgesi (`devarsiv_search` → `item_id`/`hash`). **Üç girdi tipi** ve her bir
    lang?, engine?)`: **Latin/Cumhuriyet belgeler (arsiv 1/3/4)** → tam-metin OCR (varsayılan
    `engine="tesseract"`; `mean_confidence` raporlanır; basılı damga + arşiv referans kodu da bu
    katmanla doğrulanır); **Osmanlı** → aşağıdaki iki-okuyucu uzlaştırma (varsayılan
-   `engine="transleyt"`). Bkz. references/devlet-arsivleri-katalog.md §7 (motor tablosu ve engine
+   `engine="transleyt"`). Bkz. ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md §7 (motor tablosu ve engine
    parametresi). Çok-sayfa gerekiyorsa önce `/vekayinuvis:satinalma` akışı başlatılır.
 2. **Satın-alınmış belge (yerel arşiv):** `devarsiv_get_archive_page(code, page)` — 300 DPI
    ImageContent. Osmanlı el yazmasında bu sayfa görüntüsü **asistan görüsünün** okuduğu şeydir
@@ -115,4 +115,4 @@ Model değişimi deploy-notu: HP `~/devarsiv-mcp/runtime.env` → `DEVARSIV_TRAN
 
 HTR/transkripsiyon ham metni (Transleyt + asistan görüsü, **ayrı** raporlanır — tek birleşik
 metin YASAK) + paleografik notlar. **Tarama gerçektir, transkripsiyon uydurulmaz**; hata payını
-(%13–23) ve düşük-güveni açıkça belirt. Detaylı prosedür için references/htr-workflow.md yükle.
+(%13–23) ve düşük-güveni açıkça belirt. Detaylı prosedür için ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/htr-workflow.md yükle.

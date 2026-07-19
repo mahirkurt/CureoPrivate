@@ -378,7 +378,7 @@ Mekteb-i Tıbbiye'nin tarih yazımı **üç büyük damar** üzerinde gelişmiş
 
 > Rumî–Miladî gün/ay denkliği için 1840 öncesi mart-başlı yıl, 1840–1916
 > arası Jülyen takvim (13 günlük gecikme), 1917 sonrası Gregoryen takvime
-> hizalama kuralları uygulanmıştır. Bk. `references/chronology.md` § 4.
+> hizalama kuralları uygulanmıştır. Bk. `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/chronology.md` § 4.
 
 ### Ek B — Anahtar Kurumların Kurumsal Süreklilik Şeması
 

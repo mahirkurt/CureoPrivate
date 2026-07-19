@@ -4,7 +4,7 @@ description: Resmî Devlet Arşivleri kataloğunda (BOA/BCA/Diplomatik/Askeri) d
 ---
 
 `vekayinuvis` skill'ini **ARCHIVE_DEEP_DIVE** modunda, **`devlet-arsivleri`** connector'ı
-odağıyla çalıştır. Referans: `references/devlet-arsivleri-katalog.md`.
+odağıyla çalıştır. Referans: `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md`.
 
 Hedef: kullanıcının belirttiği konu/terim (+ opsiyonel arşiv: Osmanlı|Cumhuriyet|Diplomatik|Askeri,
 örn. "veba tahaffuzhane 1890 Osmanlı") için resmî katalog kaydı bul ve künyele.
@@ -43,5 +43,5 @@ Akış:
 Çıktı: **atıf-hazır** katalog kayıtları (fon/kutu/gömlek + Hicrî(+Miladî) + katalog URL), erişim
 durumu ve varsa transkripsiyon-tezi köprüsü. **No-fabrication:** belge görüntüsü/OCR/HTR yalnız
 gerçek araç çıktısı ve provenance ile aktarılır; çekilmediyse katalog düzeyinde kal. `hash` daima
-arama sonucundan gelir. Çıktıya **G0 kapsam manifestosu** ekle (shared/coverage-manifest.md);
+arama sonucundan gelir. Çıktıya **G0 kapsam manifestosu** ekle (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md);
 ağır getirimde `arsiv-tarama-distilleri` ajanına delege et.

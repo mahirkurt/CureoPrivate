@@ -370,7 +370,7 @@ Bu komutta skill paralel olarak şu çağrıları yapar:
    → 1219 sayılı Kanun konsolide metni (Madde 78 ilga zinciri verifikasyonu)
 7. `search_yok_tez_detailed("1219 sayılı Kanun tıp hukuku tarihçe")`
    → Türk doktora tezleri
-8. `references/medical-history.md` paralel olarak yüklenir
+8. `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md` paralel olarak yüklenir
    → [D] doğrulanmış zincir: 1861 → 1871 → 1888 → 1894 → 1928
    → [T] tartışmalı dönem: 1908–1922 (II. Meşrutiyet sonrası tababet
      yasaması)

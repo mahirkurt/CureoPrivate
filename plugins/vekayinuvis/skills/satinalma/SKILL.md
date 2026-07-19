@@ -5,7 +5,7 @@ disable-model-invocation: true
 ---
 
 `vekayinuvis` skill'ini **SEPET/SATIN-ALMA** akışında, **`devlet-arsivleri`** connector'ı
-odağıyla çalıştır. Referans: `references/devlet-arsivleri-katalog.md` §8.1.
+odağıyla çalıştır. Referans: `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md` §8.1.
 
 Hedef: `devarsiv_get_belge` çağrısının `access=="purchasable"` döndürdüğü ve kullanıcının
 belgenin **tüm** sayfalarına ihtiyaç duyduğu bir belgeyi, resmî eSatış sepeti üzerinden

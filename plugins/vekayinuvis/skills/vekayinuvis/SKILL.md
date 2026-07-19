@@ -6,9 +6,9 @@ last_updated: 2026-07-11
 changelog:
   - "3.0.0 (2026-07-11): DEVARSIV 22-ARAÇ TAM ENTEGRASYON (SEPET→NOVNC→ARŞİV→ÇİFT-MOTOR OCR→ASYNC). §3.1.b devarsiv araç tablosu 10→22 araca genişledi (Arama/Belge/Sepet/Arşiv/Async/Durum, 6 grup) — eSatış sepeti (`add_to_cart`/`list_cart`/`remove_from_cart`/`checkout_cart`, state-changing ama ödemesiz; ödeme DAİMA insan/noVNC), satın-alınmış belgenin yerel arşivi (`list_archive`/`get_archive_page` 300 DPI/`ocr_archive_pages`/`get_archive_pdf`) ve async OCR kuyruğu (`ocr_submit`/`ocr_result`) wire edildi. Yeni okuma-önceliği kuralı: satın alınmış belgede okuma DAİMA yerel arşivden başlar (katalog önizlemesi yalnız satın-alınmamıştır). Motor konvansiyonu netleşti: Osmanlı varsayılanı `engine=\"both\"` (görü birincil, Transkribus HTR yardımcı — taşra-kâtibi ellerinde gürültülü olabilir); sync/async kararı ≤5 sayfa/tek motor→sync, >5 sayfa veya `both` tam belge→async+anamnesis ingest. EVENT_RECONSTRUCTION modu devarsiv (`semantic_search`+`detailed_search` tarih-aralığı) ile birincil katman olarak güçlendirildi. §6.5 'Kanıt Disiplini (Murzi Kalıpları)' altı-maddelik prosopografik/toponimik disiplin eklendi. Üç yeni akış-skill'ine (`skills/satinalma`, `skills/arsiv-oku`, `skills/toplu-okuma`) işaret edildi. Mod sayısı (9) korundu."
   - "2.5.0 (2026-07-09): MARKETPLACE DOCTOR + G0/ATIF ENFORCEMENT. Claude marketplace ve Codex yerel kurulumları için `/vekayinuvis-durum` komutu + portable `scripts/vekayinuvis_doctor.py` eklendi; script `.mcp.json` tam-filo wiring'ini, env/userConfig/OAuth preflight durumunu ve 13 server satırlı G0 kapsam manifestosunu üretir; `--live` modunda `devlet-arsivleri` için streamable HTTP MCP initialize → initialized → `devarsiv_session_status` zinciriyle HP oturum canlılığını doğrular. Stop coverage hook'u artık yalnız çekirdek 4 satırı değil tüm 13 server'ı `hit/empty/degraded/skipped` durumuyla zorunlu arar. Atıf-disiplini hook'u görüntü/OCR/HTR iddialarında gerçek araç + sayfa/model/engine/confidence provenance'ı ister. Eski 'görüntü üretilemez' cümleleri 'yalnız gerçek araçla çekildiyse aktar; çekilmediyse katalog düzeyiyle kal' no-fabrication disiplinine hizalandı."
-  - "2.2.0 (2026-07-08): BELGE OKUMA — OCR/HTR + GÖRSEL. devlet-arsivleri MCP artık BelgeGoster sayfa taramasını (full-res, satın-alma durumundan BAĞIMSIZ → satın alınmamış önizlemeler de okunur) sunuyor; 2 yeni araç wire edildi: (a) `devarsiv_get_belge_image` → tarama ImageContent olarak, asistan EL YAZMASI Osmanlıca'yı doğrudan görüsüyle okur (BOA el yazması için en iyi tam-okuma); (b) `devarsiv_ocr_belge` → deterministik OCR/HTR (Latin/Cumhuriyet tam · Osmanlı basılı damga+arşiv referans kodu tesseract · el yazması → Transkribus HTR creds-gated veya görü). §3.1.b tablosu (8→10 araç) + no-fabrication güncellendi (belge görüntüsü artık ÇEKİLİR/uydurulmaz, OCR düşük-güven dürüstçe raporlanır, çok-sayfalı tam set eSatış'ta); ARCHIVE_DEEP_DIVE/MANUSCRIPT_TRANSCRIBE/PROSOPOGRAPHY belge-okuma adımıyla güçlendirildi; references/devlet-arsivleri-katalog.md §7 (belge okuma motor tablosu + kanonik akış + no-fabrication). Osmanlıca en iyi okuma: asistan görüsü (self-contained) + Transkribus HTR (creds ile SOTA). Davranış/mod sayısı (9) korundu."
-  - "2.1.0 (2026-07-08): DEVLET-ARSIVLERI DERİN ARAÇ WIRE + TAM-FİLO SAYIM DÜZELTMESİ. devlet-arsivleri MCP Faz-C'de 5→8 araca genişledi ama plugin yalnız 5'ini biliyordu; eksik 3 derin araç wire edildi: (a) `devarsiv_semantic_search` (diakronik/semantik — Osmanlıca eşdeğer genişletme + bge-m3 rerank) SOURCE_HUNT/ARCHIVE_DEEP_DIVE'a modern-terim birincil aracı olarak; (b) `devarsiv_detailed_search` + (c) `devarsiv_list_fon_categories` ile **1000-tavan aşan kapsamlı erişim** (üst-fon × tarih-penceresi enumerasyonu + item_id union) — §3.1.b tablosu, §5.1/§5.2 akışları, references/devlet-arsivleri-katalog.md §2/§2b/§2c, distiller ajanı, CONNECTORS §2/§7, boa-katalog/arsiv-dalis komutları, retrieve_dont_dump hook güncellendi. Ayrıca **11→13 server** sayım kayması giderildi (openathens+annas-reader sonradan eklendiği için stale kalmıştı: SKILL §3.5/§10, start, session_start.py, stop_coverage.py, hooks.json, CONNECTORS; sharding tablosuna fulltext katmanı eklendi). Davranış/mod sayısı (9) korundu."
-  - "2.0.0 (2026-07-07): TAM-FİLO + RESMÎ KATALOG + BAĞLAM EKONOMİSİ. (a) devlet-arsivleri çekirdek connector eklendi (resmî BOA/BCA/Diplomatik/Askeri katalog — fon/kutu/gömlek + künye; §3.1.b F. Resmî Katalog + references/devlet-arsivleri-katalog.md); archive-landscape §1.1/§8.1/§8.4 boşluğu kapatıldı; §1.2/§6.3 no-fabrication güncellendi. (b) literatur (DergiPark tam-metin) + yok-akademik (destekleyici) companion + anamnesis substrat eklendi. (c) TAM-FİLO: .mcp.json 11 server bundle; §3.5 Tam-Filo ve Bağlam Ekonomisi (Tier-1 arsiv-tarama-distilleri ajanı + Tier-2 anamnesis ingest→bounded query); §8 G0 kapsam manifestosu (shared/coverage-manifest.md); shared/context-economy-contract.md. (d) 4 hook (SessionStart preflight, PostToolUse retrieve-don't-dump, Stop coverage + citation-discipline). (e) 2 yeni komut (boa-katalog, literatur). Mod sayısı (9) korundu; her mod devlet-arsivleri/literatur/anamnesis ile güçlendirildi."
+  - "2.2.0 (2026-07-08): BELGE OKUMA — OCR/HTR + GÖRSEL. devlet-arsivleri MCP artık BelgeGoster sayfa taramasını (full-res, satın-alma durumundan BAĞIMSIZ → satın alınmamış önizlemeler de okunur) sunuyor; 2 yeni araç wire edildi: (a) `devarsiv_get_belge_image` → tarama ImageContent olarak, asistan EL YAZMASI Osmanlıca'yı doğrudan görüsüyle okur (BOA el yazması için en iyi tam-okuma); (b) `devarsiv_ocr_belge` → deterministik OCR/HTR (Latin/Cumhuriyet tam · Osmanlı basılı damga+arşiv referans kodu tesseract · el yazması → Transkribus HTR creds-gated veya görü). §3.1.b tablosu (8→10 araç) + no-fabrication güncellendi (belge görüntüsü artık ÇEKİLİR/uydurulmaz, OCR düşük-güven dürüstçe raporlanır, çok-sayfalı tam set eSatış'ta); ARCHIVE_DEEP_DIVE/MANUSCRIPT_TRANSCRIBE/PROSOPOGRAPHY belge-okuma adımıyla güçlendirildi; ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md §7 (belge okuma motor tablosu + kanonik akış + no-fabrication). Osmanlıca en iyi okuma: asistan görüsü (self-contained) + Transkribus HTR (creds ile SOTA). Davranış/mod sayısı (9) korundu."
+  - "2.1.0 (2026-07-08): DEVLET-ARSIVLERI DERİN ARAÇ WIRE + TAM-FİLO SAYIM DÜZELTMESİ. devlet-arsivleri MCP Faz-C'de 5→8 araca genişledi ama plugin yalnız 5'ini biliyordu; eksik 3 derin araç wire edildi: (a) `devarsiv_semantic_search` (diakronik/semantik — Osmanlıca eşdeğer genişletme + bge-m3 rerank) SOURCE_HUNT/ARCHIVE_DEEP_DIVE'a modern-terim birincil aracı olarak; (b) `devarsiv_detailed_search` + (c) `devarsiv_list_fon_categories` ile **1000-tavan aşan kapsamlı erişim** (üst-fon × tarih-penceresi enumerasyonu + item_id union) — §3.1.b tablosu, §5.1/§5.2 akışları, ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md §2/§2b/§2c, distiller ajanı, CONNECTORS §2/§7, boa-katalog/arsiv-dalis komutları, retrieve_dont_dump hook güncellendi. Ayrıca **11→13 server** sayım kayması giderildi (openathens+annas-reader sonradan eklendiği için stale kalmıştı: SKILL §3.5/§10, start, session_start.py, stop_coverage.py, hooks.json, CONNECTORS; sharding tablosuna fulltext katmanı eklendi). Davranış/mod sayısı (9) korundu."
+  - "2.0.0 (2026-07-07): TAM-FİLO + RESMÎ KATALOG + BAĞLAM EKONOMİSİ. (a) devlet-arsivleri çekirdek connector eklendi (resmî BOA/BCA/Diplomatik/Askeri katalog — fon/kutu/gömlek + künye; §3.1.b F. Resmî Katalog + ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md); archive-landscape §1.1/§8.1/§8.4 boşluğu kapatıldı; §1.2/§6.3 no-fabrication güncellendi. (b) literatur (DergiPark tam-metin) + yok-akademik (destekleyici) companion + anamnesis substrat eklendi. (c) TAM-FİLO: .mcp.json 11 server bundle; §3.5 Tam-Filo ve Bağlam Ekonomisi (Tier-1 arsiv-tarama-distilleri ajanı + Tier-2 anamnesis ingest→bounded query); §8 G0 kapsam manifestosu (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md); ${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md. (d) 4 hook (SessionStart preflight, PostToolUse retrieve-don't-dump, Stop coverage + citation-discipline). (e) 2 yeni komut (boa-katalog, literatur). Mod sayısı (9) korundu; her mod devlet-arsivleri/literatur/anamnesis ile güçlendirildi."
   - "1.3.0 (2026-06-17): vekayinuvis PLUGIN ENTEGRASYONU. Standalone user-skill'den plugin flagship skill'ine dönüştürüldü. (a) Connector envanteri ve transport için plugin-düzeyi ../../CONNECTORS.md + ../../.mcp.json normatif kaynak olarak işaretlendi (§3 tabloları pedagojik referans olarak korundu — skill standalone da çalışır). (b) Süit oryantasyonu vekayinuvis:start skill'ine taşındı (connector preflight + mod yönlendirme). (c) /vekayinuvis-* slash komutları eklendi. Davranış/mod sayıları/kalite kapıları DEĞİŞMEDİ."
   - "1.2 (önceki): KANUN_GEREKÇESİ modu + Osmanlı tıp tarihi alt-modülü + Doğrulama Disiplini güçlendirildi; medical-history.md mevzuat korpusu birincil-kaynak doğrulamasından geçirildi."
 ---
@@ -160,7 +160,7 @@ Birliği (6023 sayılı Kanun, 23 Ocak 1953), İstanbul Eczacı Cemiyeti.
 > Reformu** ve **1219 sayılı Kanun TBMM teklifi** projeleri için kanun
 > gerekçesi/tarihsel arka plan bölümlerinin akademik altlığını üretmek
 > üzere `lex-sanitas` ile **composable**'dır. Bu eksen tetiklendiğinde
-> **`references/medical-history.md`** zorunlu olarak yüklenir; mod seçimi
+> **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md`** zorunlu olarak yüklenir; mod seçimi
 > tipik olarak **`KANUN_GEREKÇESİ`** (§ 5.9) veya **`ACADEMIC_REPORT`**
 > (§ 5.8) olur.
 
@@ -185,7 +185,7 @@ Resmî devlet arşivi kataloğunda (`katalog.devletarsivleri.gov.tr`) **doğruda
 fon/kutu/gömlek araması — ottoman-archives'ın **yapmadığı** BOA/BCA/Diplomatik/
 Askeri katalog erişimini doldurur; artık eSatış sepeti (state-changing, ödemesiz)
 ve satın-alınmış belgelerin **yerel arşivini** (300 DPI + Transleyt OCR + async
-job) de kapsar. Referans: **`references/devlet-arsivleri-katalog.md`**.
+job) de kapsar. Referans: **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md`**.
 
 | Grup | Araç | Not |
 | --- | --- | --- |
@@ -317,10 +317,10 @@ TUR 1 (paralel):
 vekayinüvis **tam-filo** çalışır: `.mcp.json`'da bundled 17 server'ın bağlama
 uygun olanı **her substantif sorguda çalıştırılır** — hiçbiri sessizce atlanmaz.
 Bu kapsam, her çıktıya eklenen **G0 kapsam manifestosu** ile kanıtlanır
-(`shared/coverage-manifest.md`; eksik satır = Stop hook tamamlatır).
+(`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md`; eksik satır = Stop hook tamamlatır).
 
 Ancak tam-filo, ham hâliyle pencereyi taşırır. İki mekanizma **detayların
-atlanmadan, pencere taşmadan** kapsanmasını sağlar (`shared/context-economy-contract.md`):
+atlanmadan, pencere taşmadan** kapsanmasını sağlar (`${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md`):
 
 - **Tier 1 — `arsiv-tarama-distilleri` alt-ajanı:** ağır çok-connector süpürme
   (SOURCE_HUNT / ARCHIVE_DEEP_DIVE / ACADEMIC_REPORT) bu ajana delege edilir
@@ -564,9 +564,9 @@ Bir katmanda kanıt boşluğu varsa **şeffaf olarak** belirtilir; varsayım
 
 **Tam paralel-çağrı seti, çıktı şablonu, kalite kapıları (G7-G8) ve
 composable akış için bu mod tetiklendiğinde mutlaka
-`references/kanun-gerekcesi-workflow.md` yüklenir.** Sağlık mevzuatı
+`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/kanun-gerekcesi-workflow.md` yüklenir.** Sağlık mevzuatı
 alanındaki bir KANUN_GEREKÇESİ sorgusu için aynı zamanda
-`references/medical-history.md` de yüklenir (örn. 1219, 6023 sayılı
+`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md` de yüklenir (örn. 1219, 6023 sayılı
 kanunlar için).
 
 ## 6. Kronoloji ve Atıf Disiplini
@@ -726,7 +726,7 @@ Her ACADEMIC_REPORT çıktısı şu kapılardan geçer:
 - **G0 — Kapsam (tam-filo)**: Sorgunun her bileşeni (dönem, kurum, kişi, kavram,
   dönem sınırı) raporda en az bir bölümde ele alındı mı? **VE** bağlama uygun
   tüm server'ların çalıştığını kanıtlayan **kapsam manifestosu** çıktıya eklendi
-  mi (`shared/coverage-manifest.md` biçimi; her server için hit/empty/degraded/
+  mi (`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md` biçimi; her server için hit/empty/degraded/
   skipped-with-reason)? Sessiz atlama = G0 FAIL (Stop hook tamamlatır).
   devlet-arsivleri oturumu düşükse `degraded: session_required` yazılır (skip değil).
 - **G1 — Kaynak çeşitliliği**: En az **iki** birincil + **üç** ikincil
@@ -792,7 +792,7 @@ Kullanıcı sorusu (örn. "1219 sayılı Kanun reform teklifinin
    ↓
 [vekayinuvis] KANUN_GEREKÇESİ modu (§ 5.9)
    ↓                                              ↑
-   ├─ references/medical-history.md (tetiklendi)  │
+   ├─ ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md (tetiklendi)  │
    ├─ Düstûr I/II/III. Tertib taraması            │
    ├─ TBMM Zabıt Ceridesi 1928 müzakeresi         │
    ├─ DergiPark/YÖKtez/TDV İA triangülasyonu      │
@@ -814,17 +814,17 @@ yüklenmez. SKILL.md'nin kompaktlığını korumak için ayrılmıştır.
 
 | Dosya | Ne zaman yükle |
 |---|---|
-| `references/archive-landscape.md` | Her arşiv-merkezli sorgu (BOA, VGM, TKGM, BCA, Süleymaniye, vd. tetiklendiğinde) |
-| `references/devlet-arsivleri-katalog.md` | `devlet-arsivleri` connector ile resmî BOA/BCA/Diplomatik/Askeri katalog araması gerektiğinde (ARCHIVE_DEEP_DIVE, SOURCE_HUNT, PROSOPOGRAPHY, KANUN_GEREKÇESİ): sorgu stratejisi, item_id/hash zinciri, no-fabrication, session_required degrade, fon/kutu/gömlek atıf |
-| `references/source-typology.md` | Belge türü sorularında (defter, sicil, salname, vakfiye, vd.) |
-| `references/citation-and-transliteration.md` | ACADEMIC_REPORT veya raporlama hazırlığı |
-| `references/chronology.md` | Tarih dönüşümü, ebced, takvim sorgularında |
-| `references/htr-workflow.md` | MANUSCRIPT_TRANSCRIBE modunda |
-| `references/report-template.md` | ACADEMIC_REPORT modunda (örnek tam metin) |
-| `references/kanun-gerekcesi-workflow.md` (v1.1) | KANUN_GEREKÇESİ modunda (§ 5.9) **zorunlu**: tam paralel-çağrı seti, beş-katmanlı zincir prosedürü, TBMM-uyumlu çıktı şablonu, G7-G8 kalite kapıları |
-| `references/medical-history.md` (v1.1) | § 2.6 tıp/bilim tarihi ekseni tetiklendiğinde **zorunlu**; KANUN_GEREKÇESİ modu sağlık alanında çalışıyorsa zorunlu; 1219, 6023, Hıfzıssıhha, Mekteb-i Tıbbiye, hekimbaşılık, Düstûr tıp tüzükleri sorgularında |
-| `shared/context-economy-contract.md` (v2.0) | **Her substantif çok-connector sorguda** (§ 3.5): Tier 0/1/2 bağlam ekonomisi, `arsiv-tarama-distilleri` delegasyonu, `anamnesis` ingest→bounded-query, kanonik cache, kör-getirme-yok chunking, devre-kesici |
-| `shared/coverage-manifest.md` (v2.0) | **Her substantif çıktı** (G0): tam-filo kapsam manifestosu biçimi + örnek; 17 server için hit/empty/degraded/skipped-with-reason satırları |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/archive-landscape.md` | Her arşiv-merkezli sorgu (BOA, VGM, TKGM, BCA, Süleymaniye, vd. tetiklendiğinde) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md` | `devlet-arsivleri` connector ile resmî BOA/BCA/Diplomatik/Askeri katalog araması gerektiğinde (ARCHIVE_DEEP_DIVE, SOURCE_HUNT, PROSOPOGRAPHY, KANUN_GEREKÇESİ): sorgu stratejisi, item_id/hash zinciri, no-fabrication, session_required degrade, fon/kutu/gömlek atıf |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/source-typology.md` | Belge türü sorularında (defter, sicil, salname, vakfiye, vd.) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/citation-and-transliteration.md` | ACADEMIC_REPORT veya raporlama hazırlığı |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/chronology.md` | Tarih dönüşümü, ebced, takvim sorgularında |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/htr-workflow.md` | MANUSCRIPT_TRANSCRIBE modunda |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/report-template.md` | ACADEMIC_REPORT modunda (örnek tam metin) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/kanun-gerekcesi-workflow.md` (v1.1) | KANUN_GEREKÇESİ modunda (§ 5.9) **zorunlu**: tam paralel-çağrı seti, beş-katmanlı zincir prosedürü, TBMM-uyumlu çıktı şablonu, G7-G8 kalite kapıları |
+| `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md` (v1.1) | § 2.6 tıp/bilim tarihi ekseni tetiklendiğinde **zorunlu**; KANUN_GEREKÇESİ modu sağlık alanında çalışıyorsa zorunlu; 1219, 6023, Hıfzıssıhha, Mekteb-i Tıbbiye, hekimbaşılık, Düstûr tıp tüzükleri sorgularında |
+| `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` (v2.0) | **Her substantif çok-connector sorguda** (§ 3.5): Tier 0/1/2 bağlam ekonomisi, `arsiv-tarama-distilleri` delegasyonu, `anamnesis` ingest→bounded-query, kanonik cache, kör-getirme-yok chunking, devre-kesici |
+| `${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md` (v2.0) | **Her substantif çıktı** (G0): tam-filo kapsam manifestosu biçimi + örnek; 17 server için hit/empty/degraded/skipped-with-reason satırları |
 | `agents/arsiv-tarama-distilleri.md` (alt-ajan, v2.0) | Ağır çok-connector arşiv taraması (SOURCE_HUNT/ARCHIVE_DEEP_DIVE/ACADEMIC_REPORT) → tek `arsiv_distillate` zarfı; ana pencere ekonomisi gerektiğinde delege et |
 
 Her referans dosyası kendi tablo-içeriği ile başlar; gerektiğinde yalnızca

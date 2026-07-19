@@ -27,7 +27,7 @@ Katman etiketleri artık aktivasyon kapısı değil, sentezde **rol/otorite** ay
 - **Destekleyici (support)** — `yok-akademik` (modern akademisyen/ekol
   haritası) · `detsis` (kurumsal prosopografi — Cumhuriyet-sınırlı).
 - **Substrat** — `anamnesis`: büyük-veri RAG/GraphRAG bağlam-ekonomisi altyapısı
-  (bir kaynak değil; `shared/context-economy-contract.md` Tier 2).
+  (bir kaynak değil; `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` Tier 2).
 
 > **v3.0 filo genişlemesi notu.** `marmara-mcp` (Turcademy/hukuk tam-metin
 > Tier-3b, spec §4.4) canlı-probe'da `marmara.cureonics.com` **NXDOMAIN**
@@ -136,8 +136,8 @@ zenginleşir.
 | `annas-reader` *(tam-metin)* | http | `https://annas.cureonics.com/mcp` | **Son-çare kitap+makale tam-metin** (Anna's Archive efemer-RAG) — lisanslı band getiremeyince. Out-of-print Osmanlı çalışmaları, nadir monograf, paywall-dışı makale. `book_search`/`article_search`/`read_document`/`search_in_document` (BM25). Telif: yalnız analiz | HP self-host (Docker), `/mcp` Bearer (`${ANNAS_MCP_API_KEY}`) |
 | `anamnesis` *(substrat)* | http | `https://anamnesis-mcp.cureonics.workers.dev/mcp` | **Büyük-veri RAG/GraphRAG substratı** (bir kaynak DEĞİL, bağlam-ekonomisi altyapısı) — büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin, İА maddesi) ingest → bounded query; kişi↔görev↔belge / olay↔tarih↔kaynak grafiği. Detayların atlanmadan, pencere taşmadan kapsanmasını sağlar | CF Worker, `/mcp` Bearer (`${ANAMNESIS_MCP_API_KEY}`) |
 
-> **TAM-FİLO + bağlam ekonomisi (bkz. `shared/context-economy-contract.md`).** Bağlama uygun
-> tüm server'lar **her sorguda** çalışır ve **G0 kapsam manifestosu**yla (`shared/coverage-manifest.md`)
+> **TAM-FİLO + bağlam ekonomisi (bkz. `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md`).** Bağlama uygun
+> tüm server'lar **her sorguda** çalışır ve **G0 kapsam manifestosu**yla (`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md`)
 > kanıtlanır — sessiz atlama yasak. Ağır çok-connector getirim `arsiv-tarama-distilleri` alt-ajanında
 > toplanır (retrieve-don't-dump); büyük tam-metin `anamnesis`'e ingest edilir → bounded query. Ana
 > pencereye yalnız damıtılmış `arsiv_distillate` + coverage döner. Böylece **hiçbir araç atlanmaz,

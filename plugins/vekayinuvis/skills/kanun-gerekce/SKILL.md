@@ -18,7 +18,7 @@ fon/kutu/gömlek + item_id/hash) ve **`devarsiv_search("<kanun konusu>", arsiv="
 diğer connector'larla (ottoman_search_iiif, ottoman_search_dergipark, search_yok_tez_detailed,
 ottoman_get_islam_ansiklopedisi, web_search, search_semantic, ottoman_search_dspace,
 tavily_search) aynı turda **paralel** koşar (tam set için
-`references/kanun-gerekcesi-workflow.md` §3.1).
+`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/kanun-gerekcesi-workflow.md` §3.1).
 
 **Yasama/mevzuat kanıtı (`resmigazete`/`mevzuat`/`tbmm`, v3.0 — TUR-1 tool seti, aynı ilk
 paralel tur):**
@@ -37,8 +37,8 @@ Anahtar yoksa veya sonuç boşsa katman şeffaf `degraded`/`skipped` olarak beya
 önceden yalnız `web_search`/`web_fetch` fallback'i olan bu üç kaynak artık **canlı birincil
 connector**'dır.
 
-references/kanun-gerekcesi-workflow.md **zorunlu** yükle. Sağlık mevzuatı
-alanındaysa (1219, 6023, Hıfzıssıhha…) references/medical-history.md de yükle.
+${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/kanun-gerekcesi-workflow.md **zorunlu** yükle. Sağlık mevzuatı
+alanındaysa (1219, 6023, Hıfzıssıhha…) ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md de yükle.
 Bir katmanda kanıt boşluğu varsa şeffaf belirt; varsayım üretme. Çıktı,
 TBMM İçtüzüğü m. 73-74 "Genel Gerekçe – Tarihî Çerçeve" formatına yerleşir ve
 lex-sanitas ile composable'dır.

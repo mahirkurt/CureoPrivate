@@ -4,7 +4,7 @@ description: Satın-alınmış belgeleri yerel BOA-kodlu arşivden okuma — 300
 ---
 
 `vekayinuvis` skill'ini **ARŞİV OKUMA** akışında, **`devlet-arsivleri`** connector'ı
-odağıyla çalıştır. Referans: `references/devlet-arsivleri-katalog.md` §8.2.
+odağıyla çalıştır. Referans: `${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/devlet-arsivleri-katalog.md` §8.2.
 
 Hedef: `devarsiv_get_belge` çağrısının `access=="purchased"` döndürdüğü bir belgenin
 tüm sayfalarını, katalog önizlemesinden değil **yerel arşivden**, 300 DPI görüyle
@@ -22,7 +22,7 @@ Belge satın alınmışsa okuma DAİMA yerel arşivden başlar: devarsiv_list_ar
    `devarsiv_get_archive_page(code, page)` ile her sayfayı sırayla çek — 300 DPI
    ImageContent, **birincil okuma kalitesi**. Görüntü ana pencerede sayfa-sayfa
    tüketilir (distiller'a gönderilmez — görü ana asistanda; bkz.
-   `shared/context-economy-contract.md` §6). Osmanlı el yazması sayfada taramayı
+   `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` §6). Osmanlı el yazması sayfada taramayı
    Transleyt (varsayılan) + asistan görüsü uzlaştırmasıyla oku; Latin/basılı sayfada görsel doğrulama olarak
    kullan.
 3. **Deterministik katman gerekiyorsa (≤5 sayfa).** `devarsiv_ocr_archive_pages(code,

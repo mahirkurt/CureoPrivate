@@ -18,8 +18,8 @@ Akış:
    `consensus` + `scholar-gateway` + `exa`; modern uzman/ekol için **`yok-akademik`**.
 3. **Bağlam ekonomisi:** büyük tam-metin makaleyi ham işleme — `anamnesis.ingest_document(doc_id=doi:…)`
    → `hybrid_query(queries=[…])` ile bounded dilim çek; ağır süpürmeyi `arsiv-tarama-distilleri`
-   ajanına delege et (shared/context-economy-contract.md).
+   ajanına delege et (${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md).
 
 Çıktı: ekol haritası + ana tartışma eksenleri + dönüm-noktası eserler + son 10 yılın eğilimi;
 her iddia hakemli/tam-metin kaynağa bağlı, atıflar DOI/kalıcı URL'li. **TAM-FİLO:** bağlama uygun
-tüm akademik server'ları çalıştır ve çıktıya **G0 kapsam manifestosu** ekle (shared/coverage-manifest.md).
+tüm akademik server'ları çalıştır ve çıktıya **G0 kapsam manifestosu** ekle (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md).

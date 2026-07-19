@@ -26,7 +26,7 @@ akışı için `boa-katalog/SKILL.md` (adım 3–4). **Çok-sayfa okumada K4 kar
 → `devarsiv_ocr_result` ile poll → **`/vekayinuvis:toplu-okuma`** akışına devret.
 
 **TAM-FİLO + bağlam ekonomisi:** bağlama uygun tüm server'ları çalıştır ve çıktıya **G0 kapsam
-manifestosu** ekle (shared/coverage-manifest.md). Geniş tarama `arsiv-tarama-distilleri`
+manifestosu** ekle (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md). Geniş tarama `arsiv-tarama-distilleri`
 alt-ajanına devredilir (ağır fan-out — bu skill `context: fork` ile çalışır); büyük tam-metni
 anamnesis'e ingest et.
 

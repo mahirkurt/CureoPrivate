@@ -153,17 +153,25 @@ Marka isminin **24 saat içinde** ana TLD'leri rezervasyonu kritiktir:
 - Tipo varyantları (`brnadname.com` vs `brandname.com` — yaygın hatalar)
 - Akıllı blocker domain'ler (rakipler için)
 
-### 4.4 Domain Müsaitlik Heuristic Tahmini
+### 4.4 Domain Müsaitlik — [v2.1] İki-Kaynak Canlı Doğrulama (heuristic ARTIK hüküm değil)
 
-Skill, domain müsaitliğini **canlı sorgulamaz** (sandbox kısıtı), ama heuristic tahmin yapar:
+> **v2.1 düzeltmesi (uzman-denetim A):** Aşağıdaki tablo yalnızca **rekabet-seviyesi tahminidir** — bir **müsaitlik hükmü DEĞİLDİR**. Denetim, 7-harfli coined `auronza`/`nortanza`'nın bu tabloya göre "%30+ müsait" tahminiyle **"müsait" raporlandığını** ama ikisinin de DOLU olduğunu gösterdi. Artık müsaitlik **yalnızca canlı iki kaynakla** (GoDaddy MCP, ya da `domain_recon.py`'nin RDAP+WHOIS'i) belirlenir; tek kaynak = `provisional`, kaynak yok = `unverified` — **asla "müsait" varsayımı**.
 
-| Karakter Sayısı | .com Müsaitlik Olasılığı | Alternatif Tavsiye |
+| Karakter Sayısı | .com REKABET seviyesi (tahmin — hüküm değil) | Alternatif Tavsiye |
 |---|---|---|
-| 3-4 harf | <%1 | Yalnızca premium domain market satın alma |
-| 5 harf | <%5 | "get[isim].com" varyantı dene |
-| 6 harf | %10 | Şanslıysan müsait |
-| 7 harf | %30 | Coined isimler için iyi şans |
-| 8+ harf | %50+ | Çoğu zaman müsait |
+| 3-4 harf | çok yüksek rekabet | Yalnızca premium domain market |
+| 5 harf | yüksek rekabet | "get[isim].com" varyantı dene |
+| 6 harf | orta rekabet | Canlı doğrula |
+| 7 harf | orta-düşük rekabet | **Canlı doğrula — "müsait" varsayma** |
+| 8+ harf | düşük rekabet | **Canlı doğrula — "müsait" varsayma** |
+
+**Not:** "düşük rekabet" ≠ "müsait". Kısa/coined bir string düşük rekabetli görünse de premium piyasada veya doğrudan kayıtlı olabilir (auronza örneği).
+
+### 4.6 [v2.1] Marka (Trademark) Ön-Taraması — "temiz" tek aramadan verilmez
+
+Domain müsaitliği ≠ marka müsaitliği. Denetim, pharma finalisti `Claranta`'nın web ön-taramasını "temiz" geçtiğini ama **klaritromisin/Claritin marka ailesi + Hindistan tescilli Sınıf 5 markayla** çakıştığını buldu. Kural:
+
+> **"Çakışma yok" ASLA tek yüzeysel aramadan verilmez.** Her finalist için **çok-yargı-bölgeli** ön-tarama (WIPO Global Brand DB + USPTO + EUIPO/TMview + TÜRKPATENT + ilgili ulusal sicil) **ve** — pharma ise — `scripts/pharma_brand_collision.py` marka+LASA taraması koşulur. Sonuç her zaman **provenance** (taranan kaynaklar) taşır ve **canlı TM sicili sorgulanmadıysa** *"resmî TM araştırması gerekli — ön-tarama yeterli değil"* notu eklenir.
 
 ### 4.5 Manuel Doğrulama URL'leri
 

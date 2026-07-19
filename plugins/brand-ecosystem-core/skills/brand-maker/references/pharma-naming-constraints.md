@@ -301,9 +301,30 @@ Aşağıdaki sinyallerin herhangi biri pharma-naming-constraints.md'yi tetikler:
 # INN/USAN stem collision check (Eksen 5)
 python /mnt/skills/user/brand-maker/scripts/inn_stem_collision.py "Finalist1"
 
+# [v2.1] BRAND-name collision (Eksen 5b) — INN stem'in ötesinde MARKA taraması
+python /mnt/skills/user/brand-maker/scripts/pharma_brand_collision.py "Finalist1"
+
 # Entity disambiguation — high-precision pharma mode
 python /mnt/skills/user/brand-maker/scripts/entity_disambiguation.py --high-precision "Finalist1"
 ```
+
+### 8.2b [v2.1] Marka-Çakışma Katmanı — INN Stem TARAMASININ ÖTESİ (uzman-denetim düzeltmesi E)
+
+**Kök sorun:** `inn_stem_collision.py` yalnız **INN/USAN STEM sonekleriyle** (`-mab`, `-tinib`…) çakışmayı görür. Bir marka, hiçbir stem'le çakışmadan **mevcut bir ilaç MARKASIYLA** çakışabilir. Denetim bunu somut yakaladı:
+
+> **Vaka — `Claranta`:** INN stem taramasını **geçti** (hiçbir stem soneki yok), ama:
+> - **klaritromisin** (clarithromycin) makrolid antibiyotiğinin marka ailesiyle (`Klacid`, `Klaricid`, `Biaxin`, `Claritek`) `clar-` distinctive prefix üzerinden çakışır,
+> - **Claritin** (loratadine) ile LASA benzerliği taşır,
+> - ve **Hindistan'da tescilli Sınıf 5 farmasötik marka**dır (`Claranta`, klaritromisin).
+>
+> Yani `Claranta` bir **marka-düzeyi çakışması**dır ki bir INN-stem taraması **yapısal olarak göremez**.
+
+**Çözüm:** `scripts/pharma_brand_collision.py` (Eksen 5b) mevcut **ilaç MARKA adları + yüksek-çakışma INN jenerikleri** kürasyonlu tohumuna (`data/pharma_brand_names.json`) karşı üç katman tarar: (1) substring/containment, (2) distinctive shared-prefix (≥4 harf), (3) LASA (Levenshtein ≤2 / normalize benzerlik ≥0.60). Skor 0–2.
+
+**No-fabrication disiplini (zorunlu):**
+- **"Çakışma yok" ASLA tek yüzeysel aramadan verilmez.** Skor 2/2 bile *"NO HIT against seed — BUT resmî çok-yargı-bölgeli TM araştırması gerekli"* notuyla yazılır.
+- Her sonuç **provenance** (taranan kaynaklar) ve `live_tm_checked:false` taşır — tohum listesi bir **temizlik belgesi değildir**.
+- Canlı TM sicili (WIPO/USPTO/EUIPO/TÜRKPATENT + ilgili ulusal sicil) zorunludur.
 
 ### 8.3 Raporda Yazılan Bölüm
 

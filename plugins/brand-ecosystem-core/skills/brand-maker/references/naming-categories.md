@@ -20,6 +20,8 @@
 4. **D. Çağrışımsal & Mitolojik** (Mythological / heritage / archetypal reference)
 5. **E. Sezgisel / Kontraryen** (YENİ — v2.0: Anti-algorithmic / gut-feeling)
 
+> **⚠ [v2.1] Çeşitlilik Kapısı (uzman-denetim düzeltmesi B+G).** Kategori-çeşitliliği **kâğıt üzerinde** yeterli değildir. Denetim, 14 finalistin tümünün `-onta/-anta/-anza/-venta/-vanza` ile bittiği bir kısa liste buldu — sözde beş kategoriden geldikleri iddia edilse de bu **tek bir algoritmanın varyasyonlarıydı** (portföy-içi işitsel karışma: Faronta/Fidonta/Nortanza/Ortanza/Ortanta). Bu yüzden aday KÜMESİ `scripts/shortlist_diversity_check.py` ile taranır: terminal-kafiye satürasyonu + tek-morfem-ailesi payı + küme-içi Levenshtein karışabilirliği + fonetik-aile dağılımı (sonlanış sınıfı, hece sayısı, baş-ünsüz sınıfı). **Kapı FAIL verirse aynı aile yeniden karıştırılmaz** — Adım 3.2/3.3 farklı fonetik/morfolojik ailelerden ve **`-anza` dışı territory'lerden** ikinci bir üretim turu başlatır.
+
 ---
 
 ## A. Tanımlayıcı & Metaforik

@@ -4,6 +4,50 @@ Tüm önemli değişiklikler bu dosyaya eklenir. Semantic Versioning 2.0.0 uygul
 
 ---
 
+## [2.1.0] — 2026-07-19 — "Expert-Audit Remediation"
+
+### Bağlam
+
+Gerçek bir kurumsal-marka kısa listesi (14 aday) bağımsız bir marka uzmanı tarafından denetlendi ve hem **veri-doğruluğu** hem **metodoloji** düzeyinde altı kusur SINIFI bulundu. v2.1, bu kusur sınıflarının tekrarlamamasını **yapısal olarak** sağlar. Denetimdeki beş somut başarısız vaka `tests/` altında regresyon fixture'ı yapıldı.
+
+### Added
+
+#### Yeni Python Scriptleri (2)
+- `shortlist_diversity_check.py` — **küme düzeyinde** çeşitlilik kapısı (Modül B). Terminal-kafiye satürasyonu + tek-morfem-ailesi payı + küme-içi Levenshtein karışabilirliği + fonetik-aile dağılımı. FAIL → ikinci-tur tetikleyicisi (`missing_territories`). `morpheme_saturation_check.py`'nin tek-isim bakışının göremediği homojenliği yakalar. `--json`, CI-uyumlu exit kodu.
+- `pharma_brand_collision.py` — INN stem **ötesi** marka çakışması taraması (Modül E, Eksen 5b). Mevcut ilaç MARKA adları + yüksek-çakışma INN jeneriklerine karşı substring + distinctive-prefix + LASA. Zorunlu provenance + `live_tm_checked:false` caveat'ı — "temiz" tek aramadan asla verilmez.
+
+#### Yeni Data Asset (1)
+- `pharma_brand_names.json` — kürasyonlu ilaç marka tohumu (klaritromisin ailesi: Klacid/Biaxin/Klaricid/Claritek/Claranta-IN + Claritin dahil).
+
+#### Yeni Naif-Algı Katmanı (Layer 6)
+- `turkish_semantic_check.py` içinde `naive_parse()` — dil-bağımsız naif ilk-okuma ayrıştırıcısı + Türkçe PERCEPTION_LEXICON. Niyet-kök ≠ algı-kök sapması ve olumsuz/değer-düşürücü algı (orta=vasat, selva=orman) FIRST-CLASS uyarı olarak yüzeyde. `--intent` ve `--json` bayrakları.
+
+#### Yeni Process Gate'ler (G18–G22)
+- G18 iki-kaynak domain, G19 çeşitlilik kapısı+ikinci tur, G20 iki-eksen skor ayrımı, G21 naif algı first-class, G22 pharma marka çakışması.
+
+#### Tests
+- `tests/test_brand_maker_v2_1.py` — beş başarısız vaka fixture'ı (auronza/nortanza domain false-positive, Claranta pharma marka, 14-isim homojen küme, Ortanza/Ortanta "orta", Selvanza "selva", skor tavanı).
+
+### Changed
+
+- **`domain_recon.py`** (Modül A) — heuristic-yalnız araç, gerçek **iki-kaynak canlı doğrulayıcı**ya dönüştürüldü: RDAP (birincil, HTTPS) + WHOIS (port 43, ikincil). **Hiçbir alan adı tek sinyalle "müsait" DÖNMEZ**; `confirmed_available` (2 kaynak) / `confirmed_taken` / `provisional_available` (tek kaynak) / `unverified` (offline). Her sonuç doğrulama-durumu + kaynak + UTC zaman damgası taşır. Ağ yoksa `unverified`'e nazik degrade. `--offline`, `--json`, `--tlds` bayrakları. **Kanıt:** `auronza.com`/`nortanza.com` artık asla "müsait" dönmez (offline→unverified; online→confirmed_taken).
+- **`phonetic_analyzer.py`** (Modül C) — tek-skor tavan (95–100 yığını) kırıldı: **iki ayrı eksen** — `pronunciation_ease` (kolay-telaffuz) + `brand_strength` (kurumsal marka gücü/ayırt edicilik, template/me-too `-anza` register cezası). `readiness_score` artık ayrıştırıcı bir kompozit (0.45·ease + 0.55·strength). `--json`.
+- **`turkish_semantic_check.py`** (Modül C+D) — verdict baseline 100→80 (eski baseline her adayı 85–100'e yığıyordu); naif algı ana faktör; `analyze(name, intended_root)`.
+- **Referanslar (Modül F):** `output-template.md` (doğrulama-durumu/kaynak/zaman damgası sütunları + çeşitlilik-kapısı bölümü 2.1 + naif-algı finalist satırı + pharma marka satırı + provisional/confirmed ayrımı), `godaddy-mcp-integration.md` (iki-kaynak zorunluluğu), `domain-trademark-strategy.md` (heuristic artık hüküm değil + §4.6 marka ön-tarama), `pharma-naming-constraints.md` (§8.2b marka-çakışma katmanı + Claranta vakası), `naming-categories.md` (çeşitlilik kapısı notu).
+- **`SKILL.md`** — v2.1 description/başlık, iki-kaynak domain kuralı (Adım 3.4), çeşitlilik kapısı + ikinci-tur tetikleyicisi (Adım 3.2), naif ilk-okuma + skor ayrımı (Adım 3.3), Eksen 5b (Adım 3.5), routing kuralları 16–18, 5 yeni yasak, versiyon logu.
+- **`skill-manifest.yaml`** — 2.0.1 → 2.1.0, G18–G22, `brand-verify-mcp` opsiyonel connector, build metadata.
+
+### No-Fabrication Disiplini (korundu + güçlendirildi)
+- Domain: ağ yoksa "unverified" (asla iyimser "müsait").
+- Pharma marka: provenance + "resmî TM araştırması gerekli" — "temiz" tek aramadan yok.
+- Naif algı: olumsuz algı gömülmez, first-class.
+
+### Backward Compatibility
+- v1.2/v2.0 çağrı API'si korundu; yeni davranışlar opt-in değil **zorunlu kalite kapıları** (mevcut brief'ler aynı çalışır, çıktı daha dürüst).
+- Script çıktı şekilleri genişletildi (domain/phonetic/turkish) — downstream JSON tüketicileri yeni alanları görebilir; eski alan adları korundu (`readiness_score`).
+
+---
+
 ## [2.0.1] — 2026-04-24 — "Sector-Agnostic Positioning Correction"
 
 ### Felsefi Düzeltme

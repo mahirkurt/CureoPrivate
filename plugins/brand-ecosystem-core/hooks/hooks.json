@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
+            "timeout": 20,
+            "statusMessage": "Injecting brand v2.1 verification doctrine"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/user_prompt_submit.py\"",
+            "timeout": 15,
+            "statusMessage": "Routing regulated-sector / final-lock intent"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/stop_provenance_check.py\"",
+            "timeout": 30,
+            "statusMessage": "Provenance self-check (no unverified 'available/clean')"
+          }
+        ]
+      }
+    ]
+  }
+}

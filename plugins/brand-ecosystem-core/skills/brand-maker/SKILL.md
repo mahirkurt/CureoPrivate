@@ -7,8 +7,16 @@ description: >
   pharma. Five-step methodology: Strategic Decoding → Five-Category Brainstorm
   (A/B/C/D/E) → SMILE+M Lab → Live Domain → Post-Digital Validation (6-axis
   LLM/voice/entity/dilution/morpheme + opt-in regulated-sector checks) →
-  Report. Each candidate ships with EN+TR rationale, domain + WIPO trademark
-  guidance. Opt-in pharma INN check when pharma signals detected. USE for:
+  Report. v2.1 hardening: TWO-SOURCE live domain verification (RDAP+WHOIS — no
+  single-signal "available"; auronza/nortanza-class false-positives blocked),
+  a portfolio DIVERSITY GATE that blocks single-morpheme-family shortlists and
+  triggers a complementary round, two-axis SCORE discrimination (pronunciation
+  ease vs corporate brand strength — breaks the 95-100 ceiling), a NAIVE
+  first-reading perception layer (intended-etymology vs perceived-root, e.g.
+  Ortanza→"orta"=mediocre), and a pharma BRAND-name collision scan beyond INN
+  stems (e.g. Claranta→clarithromycin/Claritin). Each candidate ships with
+  EN+TR rationale, verification-status-stamped domain + WIPO trademark guidance.
+  Opt-in pharma INN check when pharma signals detected. USE for:
   brand naming, marka ismi, isim önerisi, isim öner, naming brief, startup/
   company/product name, sub-brand, rebrand, "yeni ürün için isim", "şirket
   ismi öner", "marka ismi bul", verbal identity, sözel kimlik, portmanteau,
@@ -17,11 +25,13 @@ description: >
   without asking for a name.
 ---
 
-# brand-maker v2.0 — Global Verbal Identity Protocol (Post-Digital Era)
+# brand-maker v2.1 — Global Verbal Identity Protocol (Post-Digital Era)
 
 ## Raison d'être
 
-Marka ismi, küresel pazarda zihinde işgal edilen tek ve evrensel bir kelimenin çivisidir. Bu skill, **dünya standartlarında bir isimlendirme ajansı** zekâsını, bilişsel dilbilim disiplini, objektif filtrasyon teknikleri ve **2026 post-dijital gerçekliğine** adapte olmuş doğrulama katmanı ile birleştirir. Yapay zekâ "isim jeneratörlerinin" rastgele ürettiği önerilerden köklü farkı şudur: her isim, **stratejik konumlandırma → fonetik analiz → SCRATCH filtresi → küresel disaster check → Türkçe semantic katman → GoDaddy MCP canlı .com doğrulaması → 6-eksen post-dijital doğrulama → sunum** zincirinden geçirilir.
+Marka ismi, küresel pazarda zihinde işgal edilen tek ve evrensel bir kelimenin çivisidir. Bu skill, **dünya standartlarında bir isimlendirme ajansı** zekâsını, bilişsel dilbilim disiplini, objektif filtrasyon teknikleri ve **2026 post-dijital gerçekliğine** adapte olmuş doğrulama katmanı ile birleştirir. Yapay zekâ "isim jeneratörlerinin" rastgele ürettiği önerilerden köklü farkı şudur: her isim, **stratejik konumlandırma → fonetik analiz (iki-eksen: telaffuz-kolaylığı + marka-gücü) → SCRATCH filtresi → naif ilk-okuma / algı katmanı → küresel disaster check → Türkçe semantic katman → çeşitlilik kapısı (küme düzeyinde) → GoDaddy MCP / RDAP+WHOIS iki-kaynak canlı domain doğrulaması → 6-eksen post-dijital doğrulama (pharma'da marka-çakışması dahil) → sunum** zincirinden geçirilir.
+
+> **v2.1 — Uzman-denetim düzeltmeleri (veri-doğruluğu + metodoloji).** Gerçek bir kurumsal kısa listenin bağımsız marka-uzmanı denetimi altı kusur SINIFI buldu; v2.1 bu sınıfların tekrarlamamasını **yapısal olarak** garantiler: (A) domain **iki-kaynak** doğrulaması — tek sinyalle "müsait" YASAK (auronza/nortanza aslında DOLU); (B) **çeşitlilik kapısı** — tek-morfem-ailesi kısa listesini (14 aday hep `-anza/-anta/-onta`) bloklar ve tamamlayıcı tur tetikler; (C) **skor ayrımı** — "telaffuz kolaylığı" ile "marka gücü" ayrı eksenler (95–100 tavanı kırıldı); (D) **naif ilk-okuma** — niyet-kök ≠ algı-kök (Ortanza→"orta"=vasat) FIRST-CLASS uyarı; (E) **pharma marka-çakışması** — INN stem ötesi marka+LASA taraması (Claranta→klaritromisin); (F) **çıktı sözleşmesi dürüstlüğü** — provisional/confirmed + "ön-eleme (yapıldı) ≠ resmî araştırma (yapılmadı)".
 
 v2.0 itibariyle skill, markanın **dört ayrı alıcıya** aynı anda hitap ettiğini kabul eder: insan tüketici, Büyük Dil Modeli (LLM), ses asistanı ve bilgi grafiği (knowledge graph). Her alıcı, farklı kriterlerle isim değerlendirir; `brand-maker` bunların tümünü **ölçülebilir** tek bir çıktıda birleştirir.
 
@@ -100,7 +110,10 @@ Kullanıcının brief'ini okuyup aşağıdaki tetikleyiciler üzerinden ek refer
 | **13** | **Purpose/sustainability/ESG/impact/değer-odaklı/manifesto** | **`purpose-axis-matrix.md` + `category-creator-protocol.md`** |
 | **14** | **Rebrand/renaming/refresh/existing brand** | **Tüm 6 eksen + `morpheme_saturation_check.py` (high precision mode)** |
 | **15** | **Contrarian/disruptive/anti-algorithmic/cesur/bold/rebellion** | **`modern-canon-2022-2026.md` (Neumeier Contrarian bölümü)** |
-| **Default** | **Herhangi bir brief** | **Eksen 1 (LLM probe) + Eksen 2 (morpheme) + Eksen 4 (entity) otomatik** |
+| **16 [v2.1]** | **Her kısa liste (finalist kümesi belirlendiğinde) — ZORUNLU** | **`scripts/shortlist_diversity_check.py` (küme çeşitlilik kapısı; FAIL → ikinci tur)** |
+| **17 [v2.1]** | **Her finalist (TR sinyali olmasa da premium/klinik konum) — algı kontrolü** | **`turkish_semantic_check.py` naif ilk-okuma (Layer 6; niyet≠algı, olumsuz algı)** |
+| **18 [v2.1]** | **Pharma brief — INN stem ötesi marka çakışması** | **`scripts/pharma_brand_collision.py` (marka+LASA + provenance)** |
+| **Default** | **Herhangi bir brief** | **Eksen 1 (LLM probe) + Eksen 2 (morpheme) + Eksen 4 (entity) + [v2.1] çeşitlilik kapısı + naif algı otomatik** |
 
 > **Kural**: Şüphe varsa fazla yükle. Regüle sektör tetikleyicileri (Kural 11 pharma, gelecekte fintech/food/tütün vb.) **aktifleştiğinde** karşılık gelen constraint modülü otomatik yüklenir; aksi halde sessiz kalırlar. Pharma kuralı (11) aktifse, brief yüksek regulatory riski gereken bir alan olduğundan ilgili script çağrıları sıkılaştırılır.
 
@@ -147,6 +160,24 @@ Brief'i global pazar dinamiklerine göre analiz et:
 
 > **Watkins kuralı (korundu)**: Her aday için kafanda **görsel** oluşmalı.
 
+##### [v2.1] Çeşitlilik Kapısı ve İkinci-Tur Tetikleyicisi (uzman-denetim düzeltmesi B + G) — ZORUNLU
+
+Aday havuzu (ve daha sonra finalist kümesi) üretildikten sonra, **finalist analizine geçmeden ÖNCE** küme düzeyinde çeşitlilik taranır:
+
+```bash
+python /mnt/skills/user/brand-maker/scripts/shortlist_diversity_check.py \
+  "Aday1" "Aday2" ... "AdayN" --json
+```
+
+Bu kapı, `morpheme_saturation_check.py`'nin **yapısal olarak göremediği** şeyi ölçer: homojenlik **tek bir ismin** değil **KÜMENİN** özelliğidir. Denetim, 14 finalistin tümünün `-onta/-anta/-anza/-venta/-vanza` ile bittiği (tek algoritmanın varyasyonları; portföy-içi işitsel karışma) bir kısa liste buldu.
+
+**Kapı FAIL verirse (ZORUNLU davranış):**
+1. Kısa liste **BLOKLANIR** — bu haliyle asla finalist olarak sunulmaz.
+2. **AYNI aile yeniden karıştırılmaz.** Bunun yerine **İKİNCİ bir isimlendirme turu** başlatılır: kapının `missing_territories` çıktısındaki eksik territory'lerden ve **farklı fonetik/morfolojik ailelerden** (farklı sonlanış sınıfı, hece sayısı, baş-ünsüz sınıfı) ve **`-anza` dışı** kalıplardan yeni adaylar üretilir (bkz. `naming-categories.md` E.1 Konvansiyon Haritası).
+3. Yeni + hayatta kalan eski adaylar birleştirilip kapı **tekrar** koşulur; PASS olana kadar (en fazla 2 tur).
+
+**Eşikler (script'te tanımlı):** en büyük terminal-kafiye kümesi ≤ %40; tek-morfem-ailesi payı ≤ %40; küme-içi karışabilirlik ≤ %20; farklı sonlanış-sınıfı ≥ 3.
+
 #### ADIM 3.3 — Dilbilimsel Laboratuvar ve Küresel SCRATCH Testi (v2.0: SMILE+M)
 
 10–15 adaydan **en güçlü 3–5 finalisti** seç. Her finalist için aşağıdaki tablo:
@@ -156,14 +187,20 @@ Brief'i global pazar dinamiklerine göre analiz et:
 
 **Hece yapısı**: [örn: Nai-ke, 2 hece, trochaic]
 **Fonetik profil**: [açık vokal sonu / sert ünsüz açılış / Bouba-Kiki: round]
+**[v2.1] İki-eksen skor**: Telaffuz-kolaylığı [xx/100] · Marka-gücü [yy/100] · Kompozit [zz/100]  (eksenler AYRI)
 **SMILE+M skoru**: S [✓] M [✓] I [✓] L [✓] E [✓] +M [✓] = 6/6
 **SCRATCH bayrakları**: [hiçbiri / X kategorisinde uyarı]
 **3-katmanlı dilution**: L-A Levenshtein [temiz] / L-B Phonetic [temiz] / L-C Aura [temiz]
+**[v2.1] Naif ilk-okuma (algı)**: Niyet-kök [ortus] → Algı-kök [**"orta"=vasat OLUMSUZ**] / [temiz]
 **Telaffuz test (6 dil)**: EN [✓] ES [✓] DE [✓] FR [✓] TR [✓] JP [✓]
 **Disaster check (9 dil)**: EN/ES/AR/RU/ZH/TR/FR/DE/PT — temiz
 **Stratejik karşılığı (EN)**: [tek cümle]
 **Stratejik karşılığı (TR)**: [tek cümle]
 ```
+
+> **[v2.1] Naif ilk-okuma zorunlu (uzman-denetim düzeltmesi D):** Her finalist için niyetlenen etimolojiden **bağımsız** olarak naif okuyucunun ayrıştırdığı baskın algı-morfemi tespit edilir. Olumsuz/değer-düşürücü algı (Ortanza→"orta"=vasat; premium/klinik iddiayla çelişir) ve niyet≠algı sapması (Selvanza niyet `salv-`, algı "selva") **birinci-sınıf uyarı** olarak yüzeye çıkar — gömülmez.
+
+> **[v2.1] Skor ayrımı zorunlu (düzeltme C):** `phonetic_analyzer.py` artık **telaffuz kolaylığı** ile **kurumsal marka gücü/ayırt edicilik**'i AYRI eksenlerde skorlar. Kolay-telaffuz yüksek olabilir ama marka-gücü düşükse (template/me-too `-anza` register) kompozit düşer — 95–100 yığını kırılır.
 
 **SCRATCH testine takılan hiçbir ismi finalist olarak sunma.** Soft-flag (S-Spelling veya C-Curse-of-knowledge) durumunda bunu **bilinçli stratejik tercih** olarak gerekçelendir.
 
@@ -182,15 +219,27 @@ python /mnt/skills/user/brand-maker/scripts/phonetic_analyzer.py "AdayIsim1" "Ad
 # 9-dilli disaster check
 python /mnt/skills/user/brand-maker/scripts/disaster_checker.py "AdayIsim1" "AdayIsim2" "AdayIsim3"
 
-# Türkçe semantic katman
-python /mnt/skills/user/brand-maker/scripts/turkish_semantic_check.py "AdayIsim1" "AdayIsim2" "AdayIsim3"
+# Türkçe semantic katman + [v2.1] naif ilk-okuma (Layer 6). --intent ile niyet-kök verilebilir.
+python /mnt/skills/user/brand-maker/scripts/turkish_semantic_check.py "AdayIsim1" "AdayIsim2" --intent "ortus"
+
+# [v2.1] Küme çeşitlilik kapısı (finalist analizinden önce)
+python /mnt/skills/user/brand-maker/scripts/shortlist_diversity_check.py "Aday1" "Aday2" "..." --json
 ```
 
-#### ADIM 3.4 — Live Domain Verification (GoDaddy MCP-First)
+#### ADIM 3.4 — Live Domain Verification (GoDaddy MCP-First + [v2.1] iki-kaynak)
 
 > **Bağlayıcı kural**: Domain doğrulaması bu adımda yapılır ve `.com` mutlak önceliklidir.
 
-v1.2'den aynen korundu. Detaylı protokol için → `references/godaddy-mcp-integration.md`
+> **[v2.1] İki-kaynak zorunluluğu (uzman-denetim düzeltmesi A):** **Hiçbir alan adı TEK sinyalle "müsait" raporlanmaz.** GoDaddy MCP birincil canlı kaynaktır; yoksa `scripts/domain_recon.py` **RDAP (birincil) + WHOIS (ikincil)** iki-kaynak doğrulaması yapar. Yalnızca **iki uyuşan canlı kaynak** boş derse "MÜSAİT"; tek kaynak = `provisional`; kaynak yok = `unverified` (asla "müsait"). Her sonuç **doğrulama-durumu + kaynak + zaman damgası** taşır. Heuristic yalnız "rekabet seviyesi" bağlamıdır — müsaitlik hükmü değil.
+
+```bash
+# İki-kaynak canlı domain doğrulaması (GoDaddy MCP yoksa)
+python /mnt/skills/user/brand-maker/scripts/domain_recon.py "Finalist1" "Finalist2" --json
+# Ağ yoksa deterministik "unverified" döner (asla "müsait")
+python /mnt/skills/user/brand-maker/scripts/domain_recon.py "Finalist1" --offline
+```
+
+Detaylı protokol için → `references/godaddy-mcp-integration.md`
 
 #### ADIM 3.5 — Post-Digital Validation (YENİ — v2.0)
 
@@ -215,9 +264,12 @@ v1.2'den aynen korundu. Detaylı protokol için → `references/godaddy-mcp-inte
 | **3. Voice-First ASR** | `asr_simulation.py` | Homofonik rakip, ASR fidelity, voice commerce optimality (trigger: consumer/voice) |
 | **4. Entity Disambiguation** | `entity_disambiguation.py` | Wikipedia/Wikidata namespace uniqueness |
 | **5. INN/USAN Collision** | `inn_stem_collision.py` | WHO INN + USAN stem çakışması (trigger: pharma only) |
+| **5b. [v2.1] Pharma Brand Collision** | `pharma_brand_collision.py` | INN stem ÖTESİ marka+LASA taraması + provenance (trigger: pharma only) |
 | **6. Famous-Mark Dilution** | `famous_mark_dilution.py` | 3-katmanlı: Levenshtein-2 + Phonetic-3 + Conceptual-aura |
 
-Non-pharma brief'lerde Eksen 5 **N/A**; toplam skor 10 üzerinden değerlendirilir.
+Non-pharma brief'lerde Eksen 5/5b **N/A**; toplam skor 10 üzerinden değerlendirilir.
+
+> **[v2.1] Eksen 5b — marka çakışması (uzman-denetim düzeltmesi E):** INN stem taraması **yeterli değildir**; `Claranta` stem taramasını geçti ama klaritromisin/Claritin markasıyla çakışır ve Hindistan'da tescilli Sınıf 5 markadır. Eksen 5b mevcut ilaç MARKA adlarına karşı tarar. **"Çakışma yok" ASLA tek yüzeysel aramadan verilmez** — skor 2/2 bile *"resmî TM araştırması gerekli"* notu + provenance taşır.
 
 Script çağrıları:
 
@@ -226,7 +278,8 @@ python /mnt/skills/user/brand-maker/scripts/llm_namespace_probe.py "Finalist1"
 python /mnt/skills/user/brand-maker/scripts/morpheme_saturation_check.py "Finalist1"
 python /mnt/skills/user/brand-maker/scripts/asr_simulation.py "Finalist1"
 python /mnt/skills/user/brand-maker/scripts/entity_disambiguation.py "Finalist1"
-python /mnt/skills/user/brand-maker/scripts/inn_stem_collision.py "Finalist1"   # pharma only
+python /mnt/skills/user/brand-maker/scripts/inn_stem_collision.py "Finalist1"       # pharma only
+python /mnt/skills/user/brand-maker/scripts/pharma_brand_collision.py "Finalist1"   # [v2.1] pharma only
 python /mnt/skills/user/brand-maker/scripts/famous_mark_dilution.py "Finalist1"
 ```
 
@@ -285,6 +338,11 @@ Tam detay için → `references/smile-scratch-filter.md`
    - **[v2.0] INN/USAN suffix collision** — pharma brief'lerde INN stem ile çakışan isim finalist olamaz
    - **[v2.0] Famous-mark conceptual-aura exploitation** — Layer C'de pozitif dönen finalist elenir
    - **[v2.0] LLM hallucination magnet** — Axis 1'de ≥2 LLM başka entity'ye bağlıyorsa finalist olamaz
+   - **[v2.1] Tek-sinyal "müsait"** — bir alan adı iki uyuşan canlı kaynak (`confirmed_available`) olmadan "müsait" YAZILAMAZ; `provisional`/`unverified` asla "müsait" diye raporlanmaz
+   - **[v2.1] Çeşitlilik kapısını geçmeyen kısa liste** — `shortlist_diversity_check.py` FAIL veren küme finalist olarak sunulamaz; ikinci tur zorunlu
+   - **[v2.1] Olumsuz naif algı gömme** — Ortanza→"orta" gibi değer-düşürücü algı **birinci-sınıf** yüzeye çıkar; rapora gömülü/buried yazılamaz
+   - **[v2.1] Tek-kaynak pharma "temiz"** — pharma finalisti için marka-çakışması "yok/temiz" tek yüzeysel aramadan verilemez; provenance + "resmî TM araştırması gerekli" zorunlu
+   - **[v2.1] Yığılmış skor** — fonetik/Türkçe skorlarının 95–100'e yığılması bir ayrım hatasıdır; iki-eksen ayrımı zorunlu
 
 ---
 
@@ -352,6 +410,7 @@ Aşağıdaki üç örnek, skill'in **sektör-agnostik** karakterini ve **opt-in 
 * **v1.1** — GoDaddy MCP entegrasyonu.
 * **v1.2** — Türkçe semantic katman (5-layer + `--suggest` mode).
 * **v2.0** — Post-Digital Era upgrade. 5. kategori (Contrarian), SMILE+M, 6-axis Post-Digital Validation, pharma-regulatory module, SMP v1.0 manifest, 2022–2026 canon integration.
+* **v2.1** — Uzman-denetim düzeltmeleri (6 kusur sınıfı). (A) domain iki-kaynak canlı doğrulaması (RDAP+WHOIS; tek-sinyal "müsait" yasağı); (B) küme çeşitlilik kapısı + ikinci-tur tetikleyicisi; (C) iki-eksen skor ayrımı (telaffuz-kolaylığı vs marka-gücü); (D) naif ilk-okuma / algı katmanı (Layer 6; niyet≠algı, olumsuz algı first-class); (E) pharma marka-çakışması taraması (INN stem ötesi + LASA + provenance); (F) çıktı sözleşmesi dürüstlüğü (provisional/confirmed, ön-eleme≠resmî araştırma). 2 yeni script (`shortlist_diversity_check.py`, `pharma_brand_collision.py`), 1 yeni data (`pharma_brand_names.json`), `tests/` regresyon fixture'ları.
 
 * **Bilinen limitler**:
   - Trademark "kesin" temizlik garantisi verilmez — manuel USPTO/EUIPO/WIPO doğrulaması zorunlu
@@ -362,4 +421,7 @@ Aşağıdaki üç örnek, skill'in **sektör-agnostik** karakterini ve **opt-in 
   - **[v2.0] Morpheme saturation corpus** sabit snapshot; periyodik güncelleme gerekir
   - **[v2.0] INN/USAN stem listesi**, 2026 Q1 snapshot'ıdır
   - **[v2.0] Famous-mark Layer C (conceptual-aura)** heuristic + LLM-yardımlı
-* **Tasarım kararı**: Bu skill **isim üretir + filtreler + sunar**. Logo tasarımı, vizüel kimlik → `brand-visual` skill'ine yönlendir.
+  - **[v2.1] Domain iki-kaynak** ağ gerektirir; ağ yoksa `unverified` döner (asla "müsait") — canlı doğrulama GoDaddy MCP veya çevrimiçi RDAP/WHOIS ile yapılır. Nihai kesinlik için `brand-verify-mcp` (canlı registrar + çok-yargı-bölgeli TM) hedeflenir
+  - **[v2.1] pharma_brand_collision** tohum listesi kürasyonludur (exhaustive değil); "hit yok" bir temizlik belgesi değildir — canlı çok-yargı-bölgeli TM sicili zorunlu
+  - **[v2.1] Çeşitlilik kapısı eşikleri** (terminal-kafiye %40 vb.) kalibre edilebilir varsayılanlardır; brief'e göre ayarlanabilir
+* **Tasarım kararı**: Bu skill **isim üretir + filtreler + sunar**. Logo tasarımı, vizüel kimlik → `brand-visual` skill'ine yönlendir. Canlı doğrulama (domain çok-kaynak, çok-yargı-bölgeli TM, INN, sosyal handle) → **`brand-verify-mcp`** connector'ı (kullanıcı-bağlı Cloudflare filosu; bkz. plugin kökü `ARCHITECTURE.md`).

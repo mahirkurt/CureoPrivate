@@ -4,6 +4,22 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.4
+
+### Doğruluk — add_to_cart staging düzeltmesi doktrine wire (sunucu 859e566b; arayüz değişmedi)
+- Sunucu: `add_to_cart` büyük Osmanlı defterlerinde (ör. KK.d 6462, 266 sayfa) opak
+  `"Error occurred during tool execution"` veriyordu. Kök-neden **latency** (exception değil):
+  sayfa-seçimi 266 grid satırının hepsini per-satır CDP round-trip'iyle dolaşıp ~64 sn sürüyor,
+  MCP tool timeout'una takılıyordu. FIX: seçim tek toplu `page.evaluate`'e indi → 120s→~28s.
+- **Doktrin (`satinalma` Faz 2) güncellendi (arayüz/şema aynı):** staging'in artık büyük defterlerde
+  çalıştığı, yanıttaki **`staging_verified`** (seçilen==istenen) ve dolu **`cart.toplam_tutar`**
+  alanları, beklenmeyen hatanın artık opak değil teşhis edilebilir `{status:"error",
+  stage:"cart_staging",…}` döndüğü, ve çok-sayfa (~266) staging'in sitenin 25'lik batch sınırından
+  ~100 sn sürebileceği (hata değil, sabır) işlendi.
+- Ek sunucu düzeltmeleri (plugin-transparan, doktrin değişikliği gerektirmez): `toplam_tutar`
+  parse (TL eki olmayan 'Toplam:' satırı), `remove_from_cart(clear)` gerçekten boşaltıyor
+  (row-row postback döngüsü; eski kod 1 satır siliyordu).
+
 ## 3.4.3
 
 ### Doğruluk — satın-alma durumu artık SatinAldiklarim ledger-otoriter (sunucu düzeltmesi doktrine wire)

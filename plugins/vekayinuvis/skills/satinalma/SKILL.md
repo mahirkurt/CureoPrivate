@@ -45,8 +45,15 @@ sunulur; hangi adayların sepete ekleneceğine kullanıcı karar verir.
    alt-kümesi destekli ("1,3-5"). **`hash` opsiyonel** — verilmezse sunucu çözer
    (yerel store → canlı hedefli arama; asla uydurulmaz). Belge zaten satın-alınmışsa
    `already_purchased`+`next_steps` döner (Faz 1 adım 1 bunu zaten yakalar; bu ikinci
-   güvenlik ağı) → `/vekayinuvis:arsiv-oku`. Yanıt slim (ASPX artığı yok, <20 KB)
-6. `devarsiv_list_cart` → kalemleri + BAĞLAYICI toplamı doğrula
+   güvenlik ağı) → `/vekayinuvis:arsiv-oku`. Yanıt slim (ASPX artığı yok, <20 KB).
+   **Büyük Osmanlı defterlerinde staging artık çalışıyor** (2026-07-20: sayfa-seçimi tek
+   toplu JS'e indi — eskiden 266-sayfalık gridde ~64 sn sürüp MCP timeout'una takılıp opak
+   "Error occurred during tool execution" veriyordu). Yanıtta **`staging_verified`** (seçilen==istenen)
+   ve `cart.toplam_tutar` (artık dolu) gelir; beklenmeyen hata artık opak değil, teşhis edilebilir
+   `{status:"error", stage:"cart_staging", detail, hint}` döner. **Latency notu:** çok-sayfa (~266)
+   staging sitenin 25'lik batch sınırından ötürü ~100 sn sürebilir — büyük tam-defter alımında
+   sabırlı ol (hata değil).
+6. `devarsiv_list_cart` → kalemleri + BAĞLAYICI toplamı (`cart.toplam_tutar`) doğrula
 7. METİN-ONAY KAPISI: "Sepette N kalem, toplam X TL. Ödemeye geçilsin mi?" — açık
    onay olmadan `checkout_cart` ÇAĞRILMAZ; `remove_from_cart(clear=true)` da açık
    onay ister

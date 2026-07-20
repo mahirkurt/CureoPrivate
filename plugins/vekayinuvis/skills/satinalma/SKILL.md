@@ -20,7 +20,9 @@ kapısı** zorunludur — kullanıcının açık onayı olmadan ödeme adımına
 ## Faz 1 — KARAR (ücretsiz)
 
 1. `devarsiv_get_belge` → künye + `goruntu_sayisi` + `access` (`"purchased"` ise DUR:
-   `/vekayinuvis:arsiv-oku`)
+   `/vekayinuvis:arsiv-oku`). **`access` artık SatinAldiklarim ledger-otoriter** (künye ibaresi
+   değil): yalnız gerçekten sahip olunan belge `purchased` döner; `preview` (ibare var ama ledger'da
+   yok) = **sahip DEĞİL → satın-almaya devam** (eski sahte-`already_purchased` engeli kalktı).
 2. `devarsiv_get_belge_image` → önizlemeyi GÖRÜyle değerlendir (içerik gerçekten
    hedefle ilgili mi?)
 3. Karar matrisi (4 eksen): ilgi (görü teyidi) × derinlik (`goruntu_sayisi`) ×

@@ -303,7 +303,7 @@
 2. devarsiv_search("<konu/terim>", arsiv=2) → resmî katalog kayıtları
    (fon/kutu/gömlek + özet + Hicrî tarih + item_id/hash);
    geniş sorgu refine_required → daralt (fon/tarih ekle)
-3. devarsiv_get_belge(item_id, hash, arsiv=2) → künye + access (purchased/purchasable)
+3. devarsiv_get_belge(item_id, hash, arsiv=2) → künye + access (purchased=ledger-otoriter / preview=sahip değil / purchasable)
 4. access=purchased ise: OKUMA DAİMA yerel arşivden başlar — devarsiv_list_archive →
    devarsiv_get_archive_page (300 DPI + görü); katalog önizlemesi (sample) yalnız
    satın-alınmamış belgeler içindir (devlet-arsivleri-katalog.md §8.2, → skills/arsiv-oku)
@@ -346,7 +346,7 @@
 1. devarsiv_search("<konu/terim>", arsiv=1) → resmî BCA katalog kayıtları
    (fon 030.10/030.18/490.1/180.9 vd. + kutu/gömlek + özet + tarih + item_id/hash)
    — BCA artık doğrudan aranabilir (ottoman-archives'ta kayıt yoktu, boşluk kapandı)
-2. devarsiv_get_belge(item_id, hash, arsiv=1) → künye + access (purchased/purchasable)
+2. devarsiv_get_belge(item_id, hash, arsiv=1) → künye + access (purchased=ledger-otoriter / preview=sahip değil / purchasable)
 3. access=purchased ise: OKUMA DAİMA yerel arşivden başlar — devarsiv_list_archive →
    devarsiv_get_archive_page (300 DPI + görü); önizleme yalnız satın-alınmamış
    belgeler içindir (devlet-arsivleri-katalog.md §8.2, → skills/arsiv-oku)

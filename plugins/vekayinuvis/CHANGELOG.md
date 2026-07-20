@@ -4,6 +4,21 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.3
+
+### Doğruluk — satın-alma durumu artık SatinAldiklarim ledger-otoriter (sunucu düzeltmesi doktrine wire)
+- Sunucu (CureoHub `452b9a34`): `access="purchased"` kararı BelgeGoster künyesindeki "Daha önce satın
+  aldınız" ibaresinden türüyordu — bu ibare önizleme/araştırma-salonu belgelerde de render olur →
+  **yanlış-pozitif**. Sonuç: KK.d 6462 / ML.CRD.d 1713 gibi belgeler "purchased" görünüp `add_to_cart`
+  ile alınamıyor, alınmadığı için de derin sayfalara erişilemiyordu (kısır döngü). Artık tek otorite
+  **SatinAldiklarim ledger'ı**: belge ancak (fon+defter-no) eşleşen bir talep satırı varsa purchased.
+- **Plugin doktrini güncellendi (arayüz/şema değişmedi, connector'da secret değişmez):** `access` değer
+  listesine **`preview`** eklendi (ibare var ama ledger'da yok = **sahip DEĞİL**); `get_belge`/`ocr_belge`
+  artık `purchased` bool + `purchase_t` taşır; `access==purchased`'ın ledger-otoriter olduğu ve sahte-
+  `already_purchased` engelinin kalktığı §1 tablo / §2 okuma-branşı / `satinalma` Faz 1 / archive-landscape
+  akışlarına işlendi. Mevcut `access==purchased → §8.2 arşiv-okuma` dallanması artık yanlış-pozitif
+  vermediği için **sıfır davranış değişikliğiyle daha güvenilir**.
+
 ## 3.4.2
 
 ### Düzeltildi — render regresyonu KÖK-NEDEN düzeltmesi (boyut), v3.4.1 PNG teşhisini süpersede eder

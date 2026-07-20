@@ -43,7 +43,7 @@ grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
 | Süpürme | `devarsiv_deep_search(query, arsiv?, ust_fon?)` `[_RW]` | **Kapsamlı async süpürme** (§2b) — arşiv×üst-fon×tarih kovaları, store'a yazar, `job_id`; `arsiv` boş→dört arşiv; `ust_fon` `arsiv` gerektirir; store yoksa `store_required` |
 | Süpürme | `devarsiv_deep_result(job_id)` `[_RO]` | Süpürme durumu + **kapsam manifestosu** (`coverage.archives[]`); `complete=true` yalnız 6 koşul+tüm arşiv `completed`; `complete=false`→boş ≠ "yok" (§2b/§3) |
 | Süpürme | `devarsiv_coverage(arsiv?, ust_fon?)` `[_RO]` | **Store hasat defteri** — "yok" mu "hasat edilmedi" mi ayrımı (§3 no-fabrication); yokluk sonucundan ÖNCE bak; `capped:true` kova tam değil |
-| Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + **`access`** (`purchased`/`purchasable`) — hangi §8 akışına gidileceğini belirler |
+| Belge | `devarsiv_get_belge(item_id, hash, arsiv)` | Künye + **`access`** (`purchased`=**SatinAldiklarim ledger-otoriter** · `preview`=önizleme ibaresi var ama ledger'da yok → sahip DEĞİL · `purchasable`) + `purchased` bool — hangi §8 akışına gidileceğini belirler |
 | Belge | `devarsiv_get_belge_image(item_id, hash, arsiv, region?, zoom?, contrast?)` | Önizleme taraması ImageContent — **görüyle okuma**, satın-alma durumundan bağımsız. **v3.4:** `region`/`zoom`/`contrast` ile bölge-kırpma+büyütme (önizleme = interpolasyon) |
 | Belge | `devarsiv_ocr_belge(item_id, hash, arsiv, lang?, engine?)` | Deterministik OCR/HTR; Osmanlı varsayılanı `engine="transleyt"` (bkz. §7 K2). Önizleme taramasındaki "…görüntülenmiştir" filigranı **Katman-0'da bastırılır** (`watermark_suppressed`); belge satın-alınmışsa `purchased_hint` temiz arşiv sayfalarına yönlendirir |
 | Belge | `devarsiv_ocr_image(image_url, engine?, lang?)` | Harici IIIF/görüntü OCR; aynı motor beyni; SSRF allowlist'li (`DEVARSIV_OCR_IMAGE_HOSTS`, boş=kapalı) |
@@ -76,10 +76,13 @@ grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
   `devarsiv_deep_result` poll; store gerektirir) — manuel `list_fon_categories`+`detailed_search`
   enumerasyonu yalnız store kapalıyken/dar hedefte (§2b).
 - Boş sonuçtan "arşivde yok" sonucuna varmadan ÖNCE → **`devarsiv_coverage`** (hasat defteri; §3).
-- **Belgeyi OKUMAK** (metin/içerik): `access=purchased` → doğrudan **§8.2 arşiv-okuma akışı**
-  (`devarsiv_list_archive`→`devarsiv_get_archive_page`, → `skills/arsiv-oku`); `access=purchasable`
-  ve önizleme yeterliyse `devarsiv_get_belge_image`+`devarsiv_ocr_belge`; tüm sayfalar
-  gerekiyorsa önce **§8.1 satın-alma akışı** (→ `skills/satinalma`) başlatılır.
+- **Belgeyi OKUMAK** (metin/içerik): `access=purchased` (**SatinAldiklarim ledger-otoriter** — künye
+  ibaresi değil; "purchased görünen ama alınamayan/okunamayan" sahte-owned tuzağı 2026-07-20'de
+  sunucuda kalktı) → doğrudan **§8.2 arşiv-okuma akışı** (`devarsiv_list_archive`→
+  `devarsiv_get_archive_page`, → `skills/arsiv-oku`); `access=purchasable` **veya `preview`**
+  (ikincisi: künyede "daha önce satın aldınız" ibaresi VAR ama ledger'da YOK → **sahip DEĞİL**) ve
+  önizleme yeterliyse `devarsiv_get_belge_image`+`devarsiv_ocr_belge`; tüm sayfalar gerekiyorsa önce
+  **§8.1 satın-alma akışı** (→ `skills/satinalma`) başlatılır (artık sahte-`already_purchased` engeli yok).
 
 ---
 

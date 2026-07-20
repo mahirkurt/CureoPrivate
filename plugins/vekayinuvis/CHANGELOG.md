@@ -4,6 +4,21 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.5
+
+### Doğruluk — add_to_cart idempotent-partial staging + resmî cart tutarı doktrine wire (sunucu daee0f10)
+- Sunucu (CureoHub daee0f10) `add_to_cart`'ın kalan iki hatasını çözdü: (I) `pages="all"` (266) opak
+  timeout → **idempotent + bölünmüş** staging (zaman bütçesinde durur, `status:"partial"` +
+  `remaining_pages` döner; AYNI çağrı tekrarlanınca `already_in_cart` atlanarak kaldığı yerden devam);
+  (II) sepet-parse tutarsızlığı → null satırlar elendi, kolonlar başlıkla eşlendi, `toplam_tutar`
+  artık sepetin **RESMÎ 'Toplam' hücresinden** (item toplamı değil).
+- **`satinalma` Faz 2 güncellendi (arayüz değişmedi):** 3.4.4'ün "~100s sabırlı ol" latency notu
+  artık geçersiz — yerine `partial`/`remaining_pages`/`already_in_cart`/`failed` + `staging_verified`
+  akışı ve idempotent tekrar-çağrı talimatı; yeni `cart` şeması (`toplam_tutar` resmî, `count`=sayfa,
+  `talep_sayisi`=satır, `items[i]={item_id, sayfa_sayisi, sayfalar, tutar, birim_fiyat}`, null yok).
+- Not: kritik "partial → tekrarla" talimatı sunucunun runtime `note` alanında da geliyor; bu bump
+  yalnız doktrini hizalar (fonksiyonel gereklilik değil).
+
 ## 3.4.4
 
 ### Doğruluk — add_to_cart staging düzeltmesi doktrine wire (sunucu 859e566b; arayüz değişmedi)

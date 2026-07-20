@@ -46,14 +46,20 @@ sunulur; hangi adayların sepete ekleneceğine kullanıcı karar verir.
    (yerel store → canlı hedefli arama; asla uydurulmaz). Belge zaten satın-alınmışsa
    `already_purchased`+`next_steps` döner (Faz 1 adım 1 bunu zaten yakalar; bu ikinci
    güvenlik ağı) → `/vekayinuvis:arsiv-oku`. Yanıt slim (ASPX artığı yok, <20 KB).
-   **Büyük Osmanlı defterlerinde staging artık çalışıyor** (2026-07-20: sayfa-seçimi tek
-   toplu JS'e indi — eskiden 266-sayfalık gridde ~64 sn sürüp MCP timeout'una takılıp opak
-   "Error occurred during tool execution" veriyordu). Yanıtta **`staging_verified`** (seçilen==istenen)
-   ve `cart.toplam_tutar` (artık dolu) gelir; beklenmeyen hata artık opak değil, teşhis edilebilir
-   `{status:"error", stage:"cart_staging", detail, hint}` döner. **Latency notu:** çok-sayfa (~266)
-   staging sitenin 25'lik batch sınırından ötürü ~100 sn sürebilir — büyük tam-defter alımında
-   sabırlı ol (hata değil).
-6. `devarsiv_list_cart` → kalemleri + BAĞLAYICI toplamı (`cart.toplam_tutar`) doğrula
+   **Büyük Osmanlı defterlerinde staging artık çalışıyor** (2026-07-20: sayfa-seçimi tek toplu JS'e
+   indi — eskiden 266-sayfalık gridde MCP timeout'una takılıp opak "Error occurred during tool
+   execution" veriyordu). Staging **IDEMPOTENT + BÖLÜNMÜŞ**: çok-sayfa defter tek çağrıya sığmaz, o
+   yüzden çağrı bir zaman bütçesinde durur ve **`status:"partial"` + `remaining_pages`** döner —
+   **kalanı eklemek için AYNI `add_to_cart` çağrısını TEKRARLA**; zaten sepette olan sayfalar
+   `already_in_cart`'a düşer, çift eklenmez (sunucu `note` alanı bunu söyler). `status:"ok"` = tüm
+   istenen sayfalar sepette; `failed[]` = patlayan partiler (kalanlar yine de eklendi). Yanıt alanları:
+   `staged_pages`/`already_in_cart`/`remaining_pages`/`failed` + **`staging_verified`** (istenen ⊆
+   staged∪already). Beklenmeyen hata opak değil teşhis edilebilir `{status:"error", stage:"cart_staging",
+   detail, hint}` döner.
+6. `devarsiv_list_cart` → kalemleri + BAĞLAYICI toplamı doğrula. **Cart şeması:** `cart.toplam_tutar`
+   sepetin **RESMÎ 'Toplam' hücresi** (checkout'ta ödenecek gerçek tutar — item toplamı değil);
+   `cart.count` = gerçek **sayfa** sayısı, `cart.talep_sayisi` = satır sayısı; her `items[i]` =
+   `{item_id, sayfa_sayisi, sayfalar, tutar, birim_fiyat}` (null satır yok). Bağlayıcı tutar = `toplam_tutar`.
 7. METİN-ONAY KAPISI: "Sepette N kalem, toplam X TL. Ödemeye geçilsin mi?" — açık
    onay olmadan `checkout_cart` ÇAĞRILMAZ; `remove_from_cart(clear=true)` da açık
    onay ister

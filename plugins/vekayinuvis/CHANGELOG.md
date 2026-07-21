@@ -4,6 +4,24 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.7
+
+### Doğruluk — rebuild_archive artık-çakışma: aynı-first_page legacy çok-blok talepleri talep-id ile ayrıştırıldı (sunucu 3a148781)
+- 3.4.6'daki `.p{first:03d}` deterministik kodu her parçanın **farklı ilk sayfada** başladığını
+  varsayıyordu. Legacy çok-blok alımlarda bu çürür: bir belgenin iki talebi (69b754be'nin kendi
+  örneği KK.d `T=2150981 & 2150979`) aynı ilk sayfayı paylaşınca ikisi de aynı `.p{first}` kodunu →
+  aynı PDF dosyasını alıyordu → **sessiz clobber / kuyruk açlığı** (ŞFR.465, MKT.2361 yerel arşive
+  kurulamıyordu; `rebuild(limit=1)` her koşumda aynı `.p001` bloğunu tekrarlıyordu).
+- **Fix (CureoHub `3a148781`):** talep-id (T) parça başına benzersiz → `_assign_codes` grup-içi
+  aynı-`.p{first}` çakışmasını **YALNIZ çakışan parçalara** `.T{T}` ekleyerek kırar; okunur
+  sayfa-etiketi (`.p026` vb.) çakışmayan parçalarda korunur. Deterministik, koşumlar arası kararlı.
+  8 yeni regresyon testi; 345 test yeşil, ruff temiz.
+- **Canlıya alındı:** HP `devarsiv-mcp` restart (chrome/tek-cihaz oturumu korundu),
+  `devarsiv.cureonics.com/health` 200.
+- **Doktrin değişmedi (arayüz aynı):** `rebuild_archive` dönüş şeması ve davranış sözleşmesi 3.4.6
+  ile birebir; blok kodları artık legacy çok-blok durumda da gerçekten benzersiz. Connector
+  güncellenmeden çalışır. `code` DAİMA `devarsiv_list_archive`'dan alınır (uydurulmaz) — kural aynı.
+
 ## 3.4.6
 
 ### Doğruluk — rebuild_archive blok-duplikasyonu + eksik front talepleri düzeltmesi doktrine wire (sunucu 69b754be)

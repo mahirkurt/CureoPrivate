@@ -4,6 +4,22 @@ Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.
 
+## 3.4.6
+
+### Doğruluk — rebuild_archive blok-duplikasyonu + eksik front talepleri düzeltmesi doktrine wire (sunucu 69b754be)
+- Sunucu (CureoHub 69b754be) yerel-arşiv oluşturmanın iki hatasını çözdü: (I) blok kodu koşum-sırası
+  sayacına bağlıydı → iki talep aynı dosyayı paylaşıp biri diğerini eziyordu (sessiz sayfa kaybı;
+  KK.d 6462'de 75 sayfa + kopya blok); (II) rebuild grid'i tek-sayfa okuyordu → t-artan sırada geç
+  görünen **front talepleri** (folio 1-25/kapak) hiç inmiyordu. Fix: sayfalanmış talep listesi +
+  **sayfa-aralığından deterministik blok kodu** (`{fon}.{no}.p{ilk:03d}`) → her talep BENZERSİZ blok,
+  çakışma/kopya/eksik yok; her indirme doğrulanır (page_count==talep); temiz blok yeni koda RENAME
+  edilir (yeniden inmez); **bütünlük gate'i** → kapsam-deliği/kopya varsa `status:integrity_error`.
+- **Doktrin (`SKILL.md` §3.1.b + katalog §1 arşiv satırı) güncellendi (arayüz genişledi, kırılmadı):**
+  yeni dönüş şeması (`status(ok|integrity_error), added, kept, renamed, failed, count, integrity`)
+  ve "her talep benzersiz blok / integrity_error → o belge OCR'ı güvenilmez, yeniden koş" notu.
+- Canlı doğrulandı: KK.d 6462 → 11 benzersiz blok, kapsam 1..266 tam, kopya=0, NFS.d.* korundu
+  (RENAME, yeniden inmedi). Arayüz genişlemesi geriye uyumlu; connector güncellenmeden de çalışır.
+
 ## 3.4.5
 
 ### Doğruluk — add_to_cart idempotent-partial staging + resmî cart tutarı doktrine wire (sunucu daee0f10)

@@ -52,7 +52,7 @@ grup-kapsamı ölçülür, bkz. `/vekayinuvis:durum`.)
 | Sepet | `devarsiv_remove_from_cart(rows?, contains?, clear?)` `[_DESTRUCTIVE]` | Satır sil / boşalt |
 | Sepet | `devarsiv_checkout_cart()` `[_RO]` | Ödeme YAPMAZ; yalnız noVNC URL + güncel sepet döner |
 | Arşiv | `devarsiv_list_purchased()` | SatinAldiklarim t/hash listesi |
-| Arşiv | `devarsiv_rebuild_archive(incremental?, limit?)` `[_RW]` | Satın-alınanları yerel 300 DPI PDF arşivine kurar/günceller (eSatış ZIP→kayıpsız PDF); **TAM-belge tek yolu**; `session_required` korumalı, ödeme YAPMAZ (§8.2) |
+| Arşiv | `devarsiv_rebuild_archive(incremental?, limit?)` `[_RW]` | Satın-alınanları yerel 300 DPI PDF arşivine kurar/günceller (eSatış ZIP→kayıpsız PDF); **TAM-belge tek yolu**; `session_required` korumalı, ödeme YAPMAZ (§8.2). **Her talep BENZERSİZ blok** (sayfa-aralığından deterministik kod → çakışma/kopya/eksik yok; front talepleri sayfalanmış listeden). `status:integrity_error` → kapsam-deliği/kopya (rapor `integrity`'de), o belge OCR'ı güvenilmez |
 | Arşiv | `devarsiv_ocr_belge_pages(t, hash, arsiv?, pages?, lang?, engine?)` | Viewer üzerinden çok-sayfa OCR — **temsilî-sayfa sınırlı**; TAM/güvenilir yol yerel arşivdir (§8.2) |
 | Arşiv | `devarsiv_list_archive(query?)` | BOA-kodlu yerel PDF arşivi (code/yer/tarih/özet/sayfa) |
 | Arşiv | `devarsiv_get_archive_page(code, page, region?, zoom?, contrast?)` | **300 DPI ImageContent — satın-alınmış belgede BİRİNCİL okuma.** **v3.4:** `region=[x0,y0,x1,y1]` (0..1) + `zoom` (6–10×) + `contrast` → marjinal detayı (kenar yılı/derkenar/mühür) GERÇEK yüksek-res render (pdftoppm crop, upscale değil) |

@@ -1,6 +1,6 @@
 {
   "name": "vekayinuvis",
-  "version": "3.4.5",
+  "version": "3.4.6",
   "userConfig": {
     "smithery_api_key": {
       "type": "string",

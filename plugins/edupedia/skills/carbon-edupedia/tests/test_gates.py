@@ -877,3 +877,135 @@ def test_gverify_warns_supported_by_source_minority_under_textbook_frame():
 '''
     rows = run_gate(vm.gate_verify, _mod(body))
     assert status_of(rows, "G-VERIFY") == "WARN"
+
+
+# ---------------------------------------------------------------------------
+# G-EXAM (v3.7.0) — sınav sorusu asistanı (EXAM modu) yapısal denetimi
+# Fixture dosyası YOK: G-EXAM yalnız MODULE_DATA metnini okur, render edilmiş
+# HTML işareti aramaz — satır içi string yeterli (bkz. plan "Dosya Yapısı").
+# ---------------------------------------------------------------------------
+
+EXAM_OK = '''<html lang="tr"><body><script>
+const MODULE_DATA = {
+  meta: { mode: "EXAM", title: "Kesir Problemi", sourceCitation: "MEB Matematik 6" },
+  exam: {
+    stem: "3/4 kg elma 24 TL ise 2/3 kg elma kac TL'dir?",
+    options: ["12 TL", "14 TL", "16 TL", "18 TL"],
+    source: "ogrenci fotografi - okul yazilisi",
+    integrity: "sound",
+    integrityNote: "",
+    transcriptionCheck: "tc1",
+    distractorAnalysis: "d1",
+    chain: [
+      { concept: "birim fiyat", outcomeCode: "MAT.6.1.4.1", mappedTo: ["t1"] },
+      { concept: "kesirle bolme", outcomeCode: "MAT.6.1.4.2", mappedTo: ["w1"] }
+    ]
+  },
+  segments: [
+    { type: "teach", id: "s1", title: "Soruyu okuyalim" },
+    { type: "selfExplain", id: "tc1", prompt: "Bir yeri farkliysa yaz." },
+    { type: "teach", id: "t1", title: "Birim fiyat" },
+    { type: "worked", id: "w1", title: "Cozum",
+      steps: [ { text: "24 : 3/4 = 32" }, { text: "32 x 2/3 = ?", answer: ["21,33"] } ],
+      fadeFrom: 1 },
+    { type: "mcq", id: "d1",
+      questions: [ { stem: "B sikki neden cazip ama yanlis?", correctIndex: 1 } ] }
+  ]
+};
+</script></body></html>'''
+
+
+def test_gexam_skips_when_not_exam_module():
+    rows = run_gate(vm.gate_exam, "<html><body><p>merhaba</p></body></html>")
+    assert status_of(rows, "G-EXAM") == "PASS"
+    msg = next(m for g, s, m in rows if g == "G-EXAM")
+    assert "uygulanmaz" in msg
+
+
+def test_gexam_fail_when_mode_exam_without_block():
+    html = '<html><body><script>const MODULE_DATA = { meta: { mode: "EXAM" } };</script></body></html>'
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+
+
+def test_gexam_pass_on_wellformed():
+    rows = run_gate(vm.gate_exam, EXAM_OK)
+    assert status_of(rows, "G-EXAM") == "PASS"
+
+
+def test_gexam_fail_on_empty_stem():
+    html = EXAM_OK.replace(
+        'stem: "3/4 kg elma 24 TL ise 2/3 kg elma kac TL\'dir?"', 'stem: ""')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    assert "exam.stem" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_gexam_fail_when_worked_reveals_full_answer():
+    # fadeFrom 1 -> 2: iki adimin ikisi de gorunur, ogrenciye bos birakilan adim yok
+    html = EXAM_OK.replace("fadeFrom: 1", "fadeFrom: 2")
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    assert "fadeFrom" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_gexam_fail_on_missing_transcription_check():
+    html = EXAM_OK.replace('transcriptionCheck: "tc1",', "")
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    assert "transcriptionCheck" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_gexam_fail_on_dangling_transcription_check_id():
+    html = EXAM_OK.replace('transcriptionCheck: "tc1"', 'transcriptionCheck: "yok99"')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+
+
+def test_gexam_fail_on_dangling_chain_mapped_id():
+    html = EXAM_OK.replace('mappedTo: ["w1"]', 'mappedTo: ["olmayan-segment"]')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    assert "olmayan-segment" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_gexam_fail_on_empty_chain():
+    html = EXAM_OK.replace('chain: [', 'chain: [] , unusedChain: [')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    assert "chain" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_gexam_fail_on_invalid_integrity_value():
+    html = EXAM_OK.replace('integrity: "sound"', 'integrity: "belki"')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+
+
+def test_gexam_fail_on_flawed_without_note():
+    html = EXAM_OK.replace('integrity: "sound"', 'integrity: "flawed"')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    assert "integrityNote" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_gexam_pass_on_flawed_with_note():
+    html = (EXAM_OK
+            .replace('integrity: "sound"', 'integrity: "flawed"')
+            .replace('integrityNote: ""',
+                     'integrityNote: "B ve C siklarinin ikisi de dogru; tek cevap yok."'))
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "PASS"
+
+
+def test_gexam_warn_on_missing_source():
+    html = EXAM_OK.replace('source: "ogrenci fotografi - okul yazilisi",', "")
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "WARN"
+
+
+def test_gexam_warn_on_options_without_distractor_analysis():
+    html = EXAM_OK.replace('distractorAnalysis: "d1",', "")
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "WARN"
+    assert "distractorAnalysis" in next(m for g, s, m in rows if g == "G-EXAM")

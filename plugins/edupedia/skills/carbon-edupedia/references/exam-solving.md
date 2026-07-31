@@ -66,8 +66,17 @@ Soru bozuksa **D1**, çerçeve üstüyse **D4**.
 
 **Adım 7 — KURGU.** `exam` bloğu (§3) + segment dizisi (§4).
 
-**Adım 8 — TESLİM.** `scripts/validate_module.py` (G-EXAM dahil) → `/mnt/user-data/outputs/`
-+ yan yana `.manifest.json`.
+**Adım 8 — TESLİM.** `scripts/validate_module.py` (G-EXAM dahil) → çıktı dizini + yan yana
+`.manifest.json`.
+
+> **Çıktı dizini yüzeye göre değişir (ölçüldü 2026-07-31).** `/mnt/user-data/outputs/`
+> claude.ai kod-çalıştırma ortamının yoludur ve **Claude Code'da mevcut değildir**. Orada
+> dizin varsa oraya yazın; yoksa kullanıcının erişebileceği kalıcı bir yere (`~/edupedia-moduller/`
+> gibi) yazın ve **yolu kullanıcıya bildirin** — scratchpad'e bırakmayın, oturumla birlikte gider.
+
+> **SVG yazarken tırnak tuzağına dikkat:** G-SVG `role="img"` (çift tırnak) arar; tek tırnaklı
+> öznitelik geçerli SVG üretir ama kapıyı düşürür. Backtick sarmalayıcı kullanın —
+> `svg-authoring.md §5.1`.
 
 > **Yayın TEKLİF EDİLMEZ (K2).** `/edupedia:modul` ve `/edupedia:mufredat`'ın aksine
 > bu modda "yayınlamamı ister misin?" sorusu **sorulmaz**. Kullanıcı açıkça isterse

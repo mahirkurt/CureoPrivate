@@ -118,6 +118,29 @@ otomatik hizalama, otomatik renk. Eksen/sayı-doğrusu okları da aynı marker'�
 
 ---
 
+### 5.1 Tırnak tuzağı — G-SVG çift tırnak arar (ölçüldü 2026-07-31)
+
+SVG'yi `MODULE_DATA` içinde bir JS string'i olarak yazarken **öznitelikleri tek tırnakla
+yazmayın**. Kapı erişilebilirliği düz metin araması ile denetler:
+
+```python
+has_role = 'role="img"' in open_tag        # validate_module.py, _svg_accessible
+```
+
+`role='img'` yazan bir SVG **geçerli, erişilebilir ve doğru render olur** — ama kapı onu
+göremez ve **FAIL** üretir. Sessiz bir tuzak: hata SVG'de değil, tırnak biçimindedir.
+
+**Doğru yol — backtick sarmalayıcı:**
+
+```js
+visual: { kind: "svg", ref: `<svg viewBox="0 0 420 260" role="img"
+          aria-label="..."><title>Güneş'in yolu</title>...</svg>` }
+```
+
+Backtick, hem öznitelik çift tırnaklarını hem içerikteki Türkçe apostrofu (`Güneş'in`)
+kaçışsız taşır. Çift tırnaklı sarmalayıcı (`ref: "<svg …>"`) öznitelikler için kaçış
+zorunlu kılar; tek tırnaklı sarmalayıcı ise apostrofta kırılır.
+
 ## 6. Doğrulama (G-SVG)
 
 `scripts/validate_module.py` → **G-SVG**:

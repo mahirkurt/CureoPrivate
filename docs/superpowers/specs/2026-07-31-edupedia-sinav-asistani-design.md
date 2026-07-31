@@ -29,7 +29,7 @@ Girdi olarak *soru* alan bir yol yok. Ayrıca sınav sorusu üç yeni gerilim ge
 
 | # | Karar | Gerekçe |
 |---|---|---|
-| K1 | Çıktı = **etkileşimli tek-dosya HTML modül** (yeni bir çıktı türü değil) | Motor, 13 kapı, `worked`/`selfExplain` segmentleri ve yayın hattı olduğu gibi yeniden kullanılır |
+| K1 | Çıktı = **etkileşimli tek-dosya HTML modül** (yeni bir çıktı türü değil) | Motor, 14 kapı, `worked`/`selfExplain` segmentleri ve yayın hattı olduğu gibi yeniden kullanılır |
 | K2 | Soru modülde **içerikçe birebir** yer alır (aynı sayılar, aynı ifade, aynı şıklar — piksel değil, K4); modül **varsayılan olarak yayınlanmaz** | Öğrenci kendi sorusunu tanımalı; telif riski yayın teklifini kaldırarak kapatılır |
 | K3 | Anlatım genişliği = **geriye doğru kavram zinciri** (kazanımın tamamı değil) | Soruyu çözmek için gereken halkalar öğretilir → ~10-12 dk, DEHB kısa-oturum ilkesiyle uyumlu; her segment soruya bağlı olduğu için "neden bunu öğreniyorum" hep açık |
 | K4 | Soru **transkribe + yeniden inşa** edilir; fotoğraf gömülmez | Motorda raster taşıyıcı yok (§8); ayrıca yeniden inşa tema-duyarlı, ekran-okuyucu erişilebilir ve Tier-1 yazar-SVG doktriniyle tutarlı |

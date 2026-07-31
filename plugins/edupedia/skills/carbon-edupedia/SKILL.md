@@ -16,8 +16,8 @@ description: >-
   etkileşimli öğrenimde USE.
 license: MIT
 metadata:
-  version: 3.5.2
-  last_updated: 2026-07-17
+  version: 3.7.0
+  last_updated: 2026-07-31
   manifest: ./skill-manifest.yaml
 ---
 
@@ -52,6 +52,13 @@ yapılandırılabilir** (varsayılan: 12 yaş, ortaokul, DEHB tanılı).
 - "konu anlatımı + oyun", "konuyu oyunla öğret", "quiz oyunu", "yarışma hazırla"
 - "flashcard hazırla", "eğitici oyun", "interactive lesson", "learning game"
 - "şu konuyu eğlenceli/etkileşimli hale getir"
+
+**Sınav sorusu tetikleyicileri (EXAM modu):**
+- bir sınav sorusunun **fotoğrafı** yüklendi veya soru metni yapıştırıldı
+- "bu soruyu çöz", "bu soruyu açıkla", "bunu nasıl yaparım"
+- "sınav sorusu", "test sorusu", "deneme sorusu", "yazılı sorusu"
+- "bu soruyu anlamadım", "bu soru neden B değil"
+- Bu sinyallerde **`references/exam-solving.md` okunur ve akışın tamamı uygulanır**.
 
 **Müfredat MCP tetikleyicileri (Türkiye MEB / Maarif Modeli):**
 - "müfredata uygun ders/modül", "MEB kazanımına göre", "kazanımla çalışma"
@@ -150,6 +157,7 @@ hatalardır. İlgili referansı **emisyondan önce** okuyun.
 | `references/subject-packs.md` | Derse-özel güçler: kimlik aksanı + Matematik / Fen / Sosyal / Dil paketleri (etiketli diyagram, ilişki akışı, kavram kartları, satır-arası çözümleme, çekim tablosu). |
 | `references/audio-system.md` | İşitsel geri bildirim (earcon) tasarımı, kanıt ve sorumlu kullanım; ses + görsel oyunlaştırma. |
 | `references/curriculum-integration.md` | **Müfredat MCP entegrasyonu — CURRICULUM modunda ZORUNLU, §3 akışının TAMAMI** (kullanıcı sözleşmesi, 2026-07-17): 21 aracın orkestrasyonu; **Adım 0 sınıf+ders KAPISI** (koddan çıkarma — doğrula), kazanım çekme, **Adım 3 ÇERÇEVE: ders kitabını AÇ** (105'in 103'ü tam metin — çerçeve üretimin sınırıdır), **beceri (KB2.x) → etkileşim deseni haritalama tablosu**, `curriculum` şeması, **§2.1 görsel önceliği: kitabın figürü birincil / yazar-SVG yedek**, **Adım 5.5 + §6.1 `verification` bloğu** (kapsam + doğruluk dayanağı → G-VERIFY), provenans + G-CURRICULUM, hata/geri-dönüş. |
+| `references/exam-solving.md` | **EXAM modunda ZORUNLU — akışın TAMAMI.** Fotoğrafı çekilen/yapıştırılan bir sınav sorusunu çözen modül: dört karar (K1-K4), 8 adımlı akış (transkripsiyon → sınıf/ders kapısı → geriye çözümleme → kazanım → çerçeve → çöz → kurgu → teslim), `exam` blok şeması, 11 segmentlik kurgu, beş degrade protokolü (D1-D5) ve EXAM/CURRICULUM fark tablosu. Yayın bu modda **teklif edilmez** (telif). |
 | `references/newgen-question-design.md` | Modüle **"yeni nesil" / LGS tarzı** soru bloğu eklerken — uyaran-temelli muhakeme taksonomisi, bilişsel eşleme, yazım reçetesi. Ön koşul: `adhd-pedagogy.md` + `interaction-patterns.md`. **Kapsam notu:** bu blok tema kazanımının **ötesinde** ileri bir katmandır, yerine geçmez — CURRICULUM modunda çerçeve kapısına (§6.1 `scope`) yine tabidir. |
 | `references/content-enrichment.md` | İçerik zenginleştirme kaynağı/tekniği seçerken (Wikidata olgu-çipi, Wikimedia PD/CC-BY görsel, native MathML, çapraz-oturum aralıklı-tekrar veri modeli) veya PhET/GeoGebra/Desmos/Khan/EBA/Açık Ders gibi bir kaynağı gömme isteği geldiğinde — lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi + dyslexia-font miti. |
 | `references/carbon-excellence.md` | Görsel-yoğun bir modül (hero, `sim`, `conceptMap`, `vizChart`, çok kartlı düzen) üretirken veya gözden geçirirken — Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive tip-seti, veri-viz palet, ikon/piktogram disiplini); **G-CARBON-GRID** doğrulayıcı kapısının normatif kaynağı. |
@@ -169,6 +177,7 @@ Varsayılan **MODULE**. Kullanıcı talebine göre seçin:
 | **ASSESSMENT** | Tanılayıcı/kontrol noktası; ustalık (mastery) takibi | "ön/son test", "seviye ölç" |
 | **SERIES** | Çok modüllü öğrenme yolu (birden çok HTML veya tek dosyada bölümler) | "bütün üniteyi modüle çevir" |
 | **CURRICULUM** | **Müfredat-temelli tam modül**: MEB kazanım kodundan veya ders+sınıf+konudan üretilir; kazanım çekilir, resmî beceri (KB2.x) etkileşime haritalanır, `curriculum` provenans bloğu doldurulur, G-CURRICULUM ile doğrulanır | "müfredata uygun ders", "FB.5.3.1.1 ile modül", "5. sınıf fen müfredatından hücre" |
+| **EXAM** | **Sınav sorusu çözme modülü**: fotoğrafı çekilen veya yapıştırılan BİR soru transkribe edilip yeniden inşa edilir; geriye çözümlemeyle kavram zinciri öğretilir; çözüm `worked` + `fadeFrom` ile verilir (cevap asla doğrudan değil); `exam` bloğu doldurulur, G-EXAM ile doğrulanır | "bu soruyu çöz", "sınav sorusu", soru fotoğrafı yüklendi |
 
 **Müfredat-duyarlılık tüm modlarda opsiyoneldir.** CURRICULUM ayrı bir mod
 olmasının yanında, yukarıdaki **herhangi bir mod** (MODULE/QUIZ/FLASHCARDS/...)
@@ -555,6 +564,17 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
   `box-shadow` = layer-elevation ihlali (**FAIL**); 2×-grid konteyneri,
   en-boy oranı (`aspect-ratio`) ve >500ms koreografi eksikliği (**WARN**).
   Normatif kaynak: `references/carbon-excellence.md` §3.
+- **G-EXAM (v3.7.0, koşullu):** Yalnız `mode:"EXAM"` ise veya `exam` bloğu varsa
+  tetiklenir (yoksa atlanır — geriye dönük uyum). Denetler: `exam.stem` dolu;
+  `exam.transcriptionCheck` var olan bir segment id'sini gösteriyor (transkripsiyon
+  doğrulaması atlanamaz); **`fadeFrom < adım sayısı` olan bir `worked` segmenti var**
+  (cevap doğrudan verilemez — bu kapının çekirdek değeri); `exam.chain[]` dolu ve her
+  halka `concept` + `segments[]`'te var olan bir `mappedTo` taşıyor;
+  `exam.integrity` ∈ {`sound`, `flawed`, `out_of_frame`} ve `sound` değilse
+  `integrityNote` dolu. WARN: `source` beyanı yok; `options` var ama
+  `distractorAnalysis` yok. **DENETLEYEMEZ:** transkripsiyonun sadakatini, çözümün
+  doğruluğunu, zincirin eksiksizliğini — hiçbiri çevrimdışı ölçülemez. Tam kural:
+  `references/exam-solving.md` §6.
 
 ## 13. Composability (SMP v1.0)
 

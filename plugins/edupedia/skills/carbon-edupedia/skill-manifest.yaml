@@ -7,7 +7,7 @@ protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/
 
 skill:
   name: carbon-edupedia
-  version: 3.6.0
+  version: 3.7.0
   title: Carbon Edupedia — DEHB-Odaklı Etkileşimli Öğrenim Modülü Üreticisi (IBM Carbon v11, WCAG 2.1 AA, Müfredat MCP)
   description: >-
     Kaynak metinden VEYA MEB Müfredat MCP'sinden (Türkiye Yüzyılı Maarif Modeli
@@ -63,6 +63,12 @@ classification:
     - 'şu kazanımla çalışma'
     - 'Maarif Modeli'
     - 'kazanım kodundan modül'
+    - 'bu soruyu çöz'
+    - 'sınav sorusu'
+    - 'test sorusu'
+    - 'yazılı sorusu'
+    - 'bu soruyu anlamadım'
+    - 'soru fotoğrafı'
 
 domains:
   - education
@@ -114,6 +120,8 @@ references:
     read_when: '4 ADHD akış şablonu (Keşif/Sefer/Antrenman/Birlikte-Odak) + oyunlaştırma mekanikleri + atıflı YAPMA listesi; G-FLOW normatif kaynağı.'
   - path: references/newgen-question-design.md
     read_when: 'Modüle "yeni nesil" / LGS tarzı soru bloğu eklerken: uyaran-temelli muhakeme taksonomisi, bilişsel eşleme, yazım reçetesi. Tema kazanımının ÖTESİNDE ileri katman — yerine geçmez; CURRICULUM modunda §6.1 kapsam kapısına tabidir.'
+  - path: references/exam-solving.md
+    read_when: 'EXAM modunda ZORUNLU — akışın TAMAMI. Fotoğrafı çekilen veya yapıştırılan BİR sınav sorusunu çözen + gerektirdiği kavram zincirini öğreten modül: dört karar (K1-K4), 8 adımlı akış (transkripsiyon → sınıf/ders kapısı → geriye çözümleme → kazanım → çerçeve → çöz → kurgu → teslim), exam blok şeması, 11 segmentlik kurgu, beş degrade protokolü (D1 bozuk soru · D2 kazanım yok · D3 kitap yok · D4 çerçeve üstü · D5 okunmayan fotoğraf) ve EXAM/CURRICULUM fark tablosu. Soru transkribe + yeniden inşa edilir, fotoğraf GÖMÜLMEZ; yayın bu modda TEKLİF EDİLMEZ (telif). G-EXAM normatif kaynağı.'
 
 # -----------------------------------------------------------------------------
 # Inputs
@@ -130,7 +138,7 @@ inputs:
     mime_types: [text/plain]
     required: false
   - id: mode
-    description: 'MODULE | QUIZ | FLASHCARDS | GAME | EXPLAINER | ASSESSMENT | SERIES | CURRICULUM (varsayılan MODULE). CURRICULUM: MEB kazanımından üretim; Müfredat-duyarlılık tüm modlarda opsiyonel.'
+    description: 'MODULE | QUIZ | FLASHCARDS | GAME | EXPLAINER | ASSESSMENT | SERIES | CURRICULUM | EXAM (varsayılan MODULE). CURRICULUM: MEB kazanımından üretim. EXAM: fotoğrafı çekilen/yapıştırılan bir sınav sorusundan üretim (references/exam-solving.md). Müfredat-duyarlılık tüm modlarda opsiyonel.'
     mime_types: [text/plain]
     required: false
   - id: curriculum_target
@@ -288,6 +296,9 @@ verification:
     - id: G-CURRICULUM
       severity: FAIL
       description: 'Koşullu (yalnız mode CURRICULUM veya curriculum bloğu varsa; aksi halde atlanır). CURRICULUM modunda curriculum bloğu zorunlu; outcomes[] code+text taşır; her mappedTo segment id''si segments[]''te mevcut (kazanım→segment izlenebilirliği); sourceCitation kazanım/korpus referansı içerir (eksikse WARN).'
+    - id: G-VERIFY
+      severity: FAIL
+      description: 'v3.6.0. Koşullu (müfredat-temelli modülde): kapsam + doğruluk denetiminin KAYDI. verification bloğu zorunlu; frame_source document_id + kind taşır; scope.in_frame true (false ise FAIL, yayınlanmaz); claims[] boş değil ve her öğede claim + grounding + verdict var. verdict general_knowledge = WARN (çoğunluksa FAIL); supported_by_source grounding''i license taşımalı. Yargıyı MODEL yapar, kapı YAPIYI denetler — iddianın doğruluğunu, belgenin varlığını, sayfayı DOĞRULAYAMAZ (MCP erişimi yok). Normatif kaynak: references/curriculum-integration.md §6.1.'
     - id: G-TOKEN
       severity: WARN
       description: 'Tema bloklarındaki --cds-* değerleri gömülü @carbon/themes@11.75.0 otorite haritasına (≈19 token × White/G100) karşı denetlenir. Sapma = WARN; White temada --cds-support-info:#4589ff = FAIL (bilinen AA kontrast regresyonu — doğrusu #0043ce). Otorite: assets/carbon-v11-authority.json + scripts/sync_carbon_tokens.py.'
@@ -297,6 +308,9 @@ verification:
     - id: G-CARBON-GRID
       severity: FAIL
       description: 'v3.0.0. Statik kart/segment/tile''da gerçek (non-inset) box-shadow = layer-elevation ihlali (FAIL). 2x-grid konteyneri, en-boy oranı (aspect-ratio), >500ms koreografi eksikliği = WARN. Normatif kaynak: references/carbon-excellence.md §3.'
+    - id: G-EXAM
+      severity: FAIL
+      description: 'v3.7.0. Koşullu (yalnız mode EXAM veya exam bloğu varsa; aksi halde atlanır). exam.stem dolu; exam.transcriptionCheck var olan bir segment id''sini gösteriyor; fadeFrom < adım sayısı olan bir worked segmenti var (cevap doğrudan verilemez — çekirdek denetim); exam.chain[] dolu ve her halka concept + segments[]''te var olan mappedTo taşıyor; exam.integrity sound|flawed|out_of_frame ve sound değilse integrityNote dolu. WARN: source beyanı yok; options var ama distractorAnalysis yok. Salt-metin denetim — transkripsiyonun sadakatini/çözümün doğruluğunu ÖLÇEMEZ. Normatif kaynak: references/exam-solving.md.'
   runner: 'python scripts/validate_module.py <output.html> [--strict] [--json] · token otorite senkronu: python scripts/sync_carbon_tokens.py [--check|--refresh]'
   json_output: >-
     v3.2.0. `--json` stdout'a yalnız geçerli JSON basar — {"G-EMOJI":{"status":"PASS"},...} —
@@ -310,8 +324,8 @@ verification:
 # Build
 # -----------------------------------------------------------------------------
 build:
-  version: 3.6.0
-  release_date: '2026-07-17'
+  version: 3.7.0
+  release_date: '2026-07-31'
   smp_compliance: '1.0'
   canonical_authorities:
     - '@carbon/themes@11.75.0 (white + g100 token''ları — programatik çıkarım)'

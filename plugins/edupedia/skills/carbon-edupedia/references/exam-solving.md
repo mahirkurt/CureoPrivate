@@ -21,7 +21,7 @@ model neyi üreteceğini seçer; burada **soru verilidir** ve çerçeveye sonrad
 
 | # | Karar | Gerekçe |
 |---|---|---|
-| K1 | Çıktı = etkileşimli tek-dosya HTML modül | Motor, 14 kapı ve `worked`/`selfExplain` yeniden kullanılır; yeni çıktı türü yok |
+| K1 | Çıktı = etkileşimli tek-dosya HTML modül | Motor, mevcut 14 kapı ve `worked`/`selfExplain` yeniden kullanılır (G-EXAM 15.'dir); yeni çıktı türü yok |
 | K2 | Soru **içerikçe birebir** yer alır; modül **varsayılan yayınlanmaz** | Öğrenci kendi sorusunu tanımalı; telif riski yayın teklifi kaldırılarak kapatılır |
 | K3 | Anlatım = **geriye doğru kavram zinciri** (kazanımın tamamı değil) | ~10-12 dk, DEHB kısa-oturum ilkesi; her segment soruya bağlı olduğu için "neden bunu öğreniyorum" hep açık |
 | K4 | Soru **transkribe + yeniden inşa** edilir; **fotoğraf gömülmez** | Motorda raster taşıyıcı yok; yeniden inşa tema-duyarlı, ekran-okuyucu erişilebilir ve Tier-1 yazar-SVG doktriniyle tutarlı |

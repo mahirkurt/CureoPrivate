@@ -182,11 +182,24 @@ def gate_a11y(html, R):
         R.add("G-A11Y","PASS","lang, title, reduced-motion, aria-live, odak ve görsel rolleri tamam.")
 
 def gate_interact(html, R):
-    """G-INTERACT: her quiz sorusunda correctIndex; explanation eksikse WARN (FAIL)."""
+    """G-INTERACT: her quiz sorusunda correctIndex; explanation eksikse WARN (FAIL).
+
+    `exam` bloğu sayımın DIŞINDA tutulur: `exam.stem` bir quiz sorusu değil, sınav
+    sorusunun metnidir ve cevap anahtarı taşımaz — doğru cevap `worked` segmentinin
+    son adımındaki `answer` ile çeldirici `mcq`'sünün `correctIndex`'inde yaşar
+    (references/exam-solving.md §3). Çıkarılmazsa her EXAM modülü sahte bir
+    "cevapsız soru" FAIL'i üretir ve hiç teslim edilemez.
+    """
     # MODULE_DATA içindeki quiz bütünlüğü (heuristik)
-    stems=len(re.findall(r'\bstem\s*:', html))
-    correct=len(re.findall(r'\bcorrectIndex\s*:', html))
-    expl=len(re.findall(r'\bexplanation\s*:', html))
+    scope = html
+    exam_m = re.search(r'\bexam\s*:\s*\{', scope)
+    if exam_m:
+        blk = _slice_bracketed(scope, exam_m.end() - 1, "{", "}")
+        if blk:
+            scope = scope.replace(blk, "", 1)
+    stems=len(re.findall(r'\bstem\s*:', scope))
+    correct=len(re.findall(r'\bcorrectIndex\s*:', scope))
+    expl=len(re.findall(r'\bexplanation\s*:', scope))
     if stems==0:
         R.add("G-INTERACT","WARN","MODULE_DATA'da quiz sorusu (stem) bulunamadı (mod quiz değilse normal).",
               applicable=False)

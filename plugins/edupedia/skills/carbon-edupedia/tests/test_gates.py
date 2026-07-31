@@ -1009,3 +1009,12 @@ def test_gexam_warn_on_options_without_distractor_analysis():
     rows = run_gate(vm.gate_exam, html)
     assert status_of(rows, "G-EXAM") == "WARN"
     assert "distractorAnalysis" in next(m for g, s, m in rows if g == "G-EXAM")
+
+
+def test_ginteract_ignores_exam_stem():
+    # exam.stem bir QUIZ sorusu DEGILDIR - sinav sorusunun metnidir ve cevap
+    # anahtari tasimaz (o worked.answer + celdirici mcq'sunde yasar).
+    # EXAM_OK'da 2 "stem:" var (exam.stem + mcq) ama 1 correctIndex; exam blogu
+    # sayimdan cikarilmazsa G-INTERACT sahte bir "cevapsiz soru" FAIL'i uretir.
+    rows = run_gate(vm.gate_interact, EXAM_OK)
+    assert status_of(rows, "G-INTERACT") == "PASS"

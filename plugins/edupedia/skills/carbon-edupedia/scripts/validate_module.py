@@ -37,6 +37,10 @@ Kapılar:
                     kaygısız pacingDisk, etiketlemeyen uyarlanır zorluk
     G-CARBON-GRID   (FAIL) — statik kartta (gerçek/non-inset) drop-shadow (layer-elevation ihlali);
                     (WARN) 2x-grid konteyneri, en-boy oranı (aspect-ratio), koreografi >500ms
+    G-EXAM          (FAIL) — koşullu: mode EXAM/exam bloğu varsa sınav-sorusu yapısı —
+                    soru transkribe + doğrulama segmentine bağlı, zincir segmentlere
+                    izlenebilir, cevap fadeFrom ile öğrenciye bırakılmış. Yargı modelin;
+                    kapı transkripsiyonun sadakatini/çözümün doğruluğunu ÖLÇEMEZ
 """
 import sys, re, argparse, json
 
@@ -178,11 +182,24 @@ def gate_a11y(html, R):
         R.add("G-A11Y","PASS","lang, title, reduced-motion, aria-live, odak ve görsel rolleri tamam.")
 
 def gate_interact(html, R):
-    """G-INTERACT: her quiz sorusunda correctIndex; explanation eksikse WARN (FAIL)."""
+    """G-INTERACT: her quiz sorusunda correctIndex; explanation eksikse WARN (FAIL).
+
+    `exam` bloğu sayımın DIŞINDA tutulur: `exam.stem` bir quiz sorusu değil, sınav
+    sorusunun metnidir ve cevap anahtarı taşımaz — doğru cevap `worked` segmentinin
+    son adımındaki `answer` ile çeldirici `mcq`'sünün `correctIndex`'inde yaşar
+    (references/exam-solving.md §3). Çıkarılmazsa her EXAM modülü sahte bir
+    "cevapsız soru" FAIL'i üretir ve hiç teslim edilemez.
+    """
     # MODULE_DATA içindeki quiz bütünlüğü (heuristik)
-    stems=len(re.findall(r'\bstem\s*:', html))
-    correct=len(re.findall(r'\bcorrectIndex\s*:', html))
-    expl=len(re.findall(r'\bexplanation\s*:', html))
+    scope = html
+    exam_m = re.search(r'\bexam\s*:\s*\{', scope)
+    if exam_m:
+        blk = _slice_bracketed(scope, exam_m.end() - 1, "{", "}")
+        if blk:
+            scope = scope.replace(blk, "", 1)
+    stems=len(re.findall(r'\bstem\s*:', scope))
+    correct=len(re.findall(r'\bcorrectIndex\s*:', scope))
+    expl=len(re.findall(r'\bexplanation\s*:', scope))
     if stems==0:
         R.add("G-INTERACT","WARN","MODULE_DATA'da quiz sorusu (stem) bulunamadı (mod quiz değilse normal).",
               applicable=False)
@@ -626,6 +643,176 @@ def gate_verify(html, R):
               "(Kapı dayanağın GÖSTERİLDİĞİNİ kanıtlar, doğruluğunu değil.)")
 
 
+def _slice_bracketed(text, start_idx, open_ch="[", close_ch="]"):
+    """text[start_idx] konumundaki açılış karakterinden EŞLEŞEN kapanışa kadar
+    olan iç dilimi döndürür (açılış/kapanış hariç). Eşleşme yoksa "" döner.
+
+    Neden: mevcut kapılar `\\{(.*?)\\n\\s*\\}` gibi girinti-bağımlı desenler kullanır;
+    bunlar iç içe dizi/nesne içeren bloklarda (exam.chain[] içinde mappedTo[]) erken
+    kapanır. Bu yardımcı sayarak eşleştirir.
+
+    SINIR: string literali içindeki parantezleri saymaz (ör. concept: "a[b]" bloğu
+    erken kapatır). Bu, kapının genel salt-metin/heuristik sınırıyla aynı düzeydedir
+    (bkz. gate_curriculum notu) ve bilinçlidir.
+    """
+    depth = 0
+    for i in range(start_idx, len(text)):
+        if text[i] == open_ch:
+            depth += 1
+        elif text[i] == close_ch:
+            depth -= 1
+            if depth == 0:
+                return text[start_idx + 1:i]
+    return ""
+
+
+def _exam_worked_ok(html):
+    """En az bir `worked` segmentinde fadeFrom, adım sayısından KÜÇÜK mü?
+
+    Bu, G-EXAM'ın çekirdek denetimidir: fadeFrom < adım sayısı ise son adım(lar)
+    öğrenciye boş bırakılmış demektir — yani cevap doğrudan verilmemiştir.
+    fadeFrom == adım sayısı ise tüm çözüm görünür (kopya), fadeFrom yoksa motor
+    zaten segmenti kuramaz.
+
+    HEURİSTİK: `type:"worked"` işaretinden geriye en yakın `{` bulunur ve o segment
+    dilimlenir; dilim içindeki `steps` dizisinde `text:` sayılır. İç içe olağandışı
+    biçimlendirme yanıltabilir — kapı beyanın BİÇİMİNİ ölçer, içeriğini değil.
+    """
+    for m in re.finditer(r'\btype\s*:\s*["\']worked["\']', html):
+        brace = html.rfind("{", 0, m.start())
+        if brace < 0:
+            continue
+        seg = _slice_bracketed(html, brace, "{", "}")
+        fade_m = re.search(r'\bfadeFrom\s*:\s*(\d+)', seg)
+        if not fade_m:
+            continue
+        steps_i = seg.find("steps")
+        if steps_i < 0:
+            continue
+        arr_i = seg.find("[", steps_i)
+        if arr_i < 0:
+            continue
+        n_steps = len(re.findall(r'\btext\s*:', _slice_bracketed(seg, arr_i)))
+        if n_steps and int(fade_m.group(1)) < n_steps:
+            return True
+    return False
+
+
+EXAM_INTEGRITY_VALUES = {"sound", "flawed", "out_of_frame"}
+
+
+def _exam_collect(block, html):
+    """exam bloğundan G-EXAM sinyallerini toplar (saf veri çıkarımı)."""
+    stem_m = re.search(r'\bstem\s*:\s*["\'](.*?)["\']\s*,', block, re.S)
+    integ_m = re.search(r'\bintegrity\s*:\s*["\']([^"\']*)["\']', block)
+    note_m = re.search(r'\bintegrityNote\s*:\s*["\'](.*?)["\']', block, re.S)
+    tcheck_m = re.search(r'\btranscriptionCheck\s*:\s*["\']([^"\']*)["\']', block)
+    source_m = re.search(r'\bsource\s*:\s*["\'](.*?)["\']', block, re.S)
+    distr_m = re.search(r'\bdistractorAnalysis\s*:\s*["\']([^"\']*)["\']', block)
+
+    chain_i = block.find("chain")
+    chain_slice = ""
+    if chain_i >= 0:
+        arr_i = block.find("[", chain_i)
+        if arr_i >= 0:
+            chain_slice = _slice_bracketed(block, arr_i)
+
+    mapped_ids = set()
+    for arr in re.findall(r'mappedTo\s*:\s*\[([^\]]*)\]', chain_slice):
+        mapped_ids |= set(re.findall(r'["\']([^"\']+)["\']', arr))
+    all_ids = set(re.findall(r'\bid\s*:\s*["\']([^"\']+)["\']', html))
+
+    return {
+        "stem_ok": bool(stem_m and stem_m.group(1).strip()),
+        "integrity": integ_m.group(1) if integ_m else "",
+        "has_note": bool(note_m and note_m.group(1).strip()),
+        "tcheck": tcheck_m.group(1) if tcheck_m else "",
+        "all_ids": all_ids,
+        "n_chain": len(re.findall(r'\bconcept\s*:', chain_slice)),
+        "n_mapped": len(re.findall(r'\bmappedTo\s*:', chain_slice)),
+        "missing_ids": [i for i in sorted(mapped_ids) if i not in all_ids],
+        "has_source": bool(source_m and source_m.group(1).strip()),
+        "has_options": bool(re.search(r'\boptions\s*:\s*\[', block)),
+        "has_distractor": bool(distr_m and distr_m.group(1).strip()),
+        "worked_ok": _exam_worked_ok(html),
+    }
+
+
+def _exam_eval(sig):
+    """Toplanan sinyallerden (issues, warns) üretir. Saf karar mantığı."""
+    issues = []; warns = []
+    if not sig["stem_ok"]:
+        issues.append("exam.stem boş veya yok; transkribe edilmiş soru metni zorunlu")
+    if sig["integrity"] not in EXAM_INTEGRITY_VALUES:
+        issues.append('exam.integrity "sound" | "flawed" | "out_of_frame" olmalı '
+                      f'(bulunan: "{sig["integrity"]}")')
+    elif sig["integrity"] != "sound" and not sig["has_note"]:
+        issues.append(f'exam.integrity "{sig["integrity"]}" ama integrityNote boş; '
+                      "sorunun nesinin bozuk/çerçeve dışı olduğu yazılmalı")
+    if not sig["tcheck"]:
+        issues.append("exam.transcriptionCheck yok; transkripsiyon doğrulama segmenti "
+                      "atlanamaz (soru yanlış okunmuşsa her şey yanlış)")
+    elif sig["tcheck"] not in sig["all_ids"]:
+        issues.append(f'exam.transcriptionCheck "{sig["tcheck"]}" segments[] içinde yok')
+    if not sig["worked_ok"]:
+        issues.append("fadeFrom < adım sayısı olan bir `worked` segmenti yok; cevap "
+                      "doğrudan verilemez — son adım(lar) öğrenciye bırakılmalı")
+    if not sig["n_chain"]:
+        issues.append("exam.chain[] boş veya `concept` içermiyor; geriye çözümleme "
+                      "zinciri zorunlu")
+    elif sig["n_mapped"] < sig["n_chain"]:
+        issues.append(f'{sig["n_chain"]} zincir halkasından {sig["n_mapped"]} tanesinde '
+                      "mappedTo var; her halka bir segmente bağlanmalı")
+    if sig["missing_ids"]:
+        issues.append("exam.chain mappedTo id'si segments[] içinde yok: "
+                      + ", ".join(sig["missing_ids"][:5]))
+    if not sig["has_source"]:
+        warns.append("exam.source beyanı yok (sorunun kaynağı belirsiz)")
+    if sig["has_options"] and not sig["has_distractor"]:
+        warns.append("exam.options var ama exam.distractorAnalysis yok; çeldirici "
+                     "analizi segmenti önerilir (yeni nesil çeldirici doğru ama ilgisizdir)")
+    return issues, warns
+
+
+def gate_exam(html, R):
+    """G-EXAM (koşullu): sınav-sorusu modülünün yapısal bütünlüğü.
+
+    Yalnız mod EXAM ise veya bir `exam` bloğu varsa tetiklenir; aksi halde atlanır
+    (geriye dönük uyum — mevcut modüller etkilenmez).
+
+    ÇEKİRDEK DEĞER: `worked` segmentinde fadeFrom < adım sayısı ZORUNLUDUR. Böylece
+    cevap hiçbir zaman doğrudan verilmez, öğrenci son adımı kendisi tamamlar —
+    ödev-çözme makinesi olmak iyi niyete değil YAPIYA bağlanır.
+
+    DENETLEYEMEZ (fazla güvenmeyin): transkripsiyonun fotoğrafa sadık olduğunu,
+    çözümün DOĞRU olduğunu, zincirin eksiksiz olduğunu, outcomeCode'un gerçek bir
+    kazanım olduğunu — hiçbiri çevrimdışı ölçülemez (MCP erişimi yok, G-CURRICULUM
+    ve G-VERIFY ile aynı salt-metin sınırı). Kapı beyanın BİÇİMİNİ ölçer.
+    Tam kural: references/exam-solving.md.
+    """
+    is_exam_mode = bool(re.search(r'\bmode\s*:\s*["\']EXAM["\']', html))
+    exam_m = re.search(r'\bexam\s*:\s*\{', html)
+    if not is_exam_mode and not exam_m:
+        R.add("G-EXAM", "PASS", "Sınav-sorusu modülü değil (uygulanmaz).", applicable=False)
+        return
+    if not exam_m:
+        R.add("G-EXAM", "FAIL",
+              "mode EXAM ama `exam` bloğu yok; soru provenansı ve çözüm disiplini zorunlu "
+              "(references/exam-solving.md).")
+        return
+    block = _slice_bracketed(html, exam_m.end() - 1, "{", "}")
+    issues, warns = _exam_eval(_exam_collect(block, html))
+    if issues:
+        R.add("G-EXAM", "FAIL", "; ".join(issues))
+    elif warns:
+        R.add("G-EXAM", "WARN", "; ".join(warns))
+    else:
+        R.add("G-EXAM", "PASS",
+              "Soru transkribe + doğrulama segmentine bağlı; zincir segmentlere "
+              "izlenebilir; cevap fadeFrom ile öğrenciye bırakılmış. "
+              "(Kapı yapıyı ölçer, çözümün doğruluğunu değil.)")
+
+
 FLOW_LOSS_RE = re.compile(r"(seri(n|ni)?\s*(kaybett|sıfırla|bozdu)|kaybettin|streak\s*lost|başarısız oldun)", re.I)
 FLOW_LABEL_RE = re.compile(r"(zorlan[ıi]yorsun|çok kolay geliyor|seviyen düştü)", re.I)
 def gate_flow(html, R):
@@ -716,6 +903,7 @@ def main():
     gate_verify(html,R)
     gate_flow(html,R)
     gate_carbon_grid(html,R)
+    gate_exam(html,R)
 
     if args.json:
         print(json.dumps(R.to_json_gates(), ensure_ascii=False, indent=2))

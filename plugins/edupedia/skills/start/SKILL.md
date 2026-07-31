@@ -116,6 +116,7 @@ bloke olmadığını söyleyin.
 |---|---|---|
 | `/edupedia:modul` | Kazanım kodundan modül üretir | `<kazanım-kodu>` (örn. FB.5.3.1.1) |
 | `/edupedia:mufredat` | Ders+sınıf+konudan modül üretir | `<ders> <sınıf> <konu>` (örn. Fen 5 hücre) |
+| `/edupedia:soru` | Sınav sorusundan modül üretir (fotoğraf veya metin) — çözer + kavram zincirini öğretir | `<soru fotoğrafı veya metni>` |
 | `/edupedia:kazanim-bul` | Konu→kazanım keşfi + KB/etkileşim haritası (**üretim yok**) | `<konu> [sınıf] [ders]` |
 | `/edupedia:durum` | Connector sağlık + Tier-2 (get_figure) kontrolü | — |
 | `/edupedia:yayinla` | Modülü edupedia.cureonics.com'da yayınlar (MCP tercihli, REST yedekli) | `<modul.html yolu>` |
@@ -126,10 +127,12 @@ Kullanıcının ne üzerinde çalıştığını sorun ve yönlendirin:
 
 1. **Kazanım kodu verildi** (`FB.5.3.1.1`) → `/edupedia:modul`.
 2. **Ders + sınıf + konu** ("5. sınıf fen hücre") → `/edupedia:mufredat`.
-3. **"Bu konuya hangi kazanımlar denk geliyor?"** (yalnız keşif) → `/edupedia:kazanim-bul`.
-4. **Connector çalışıyor mu / Tier-2 var mı?** → `/edupedia:durum`.
-5. **Modül üretildi, paylaşılacak** → `/edupedia:yayinla`.
-6. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
+3. **Sınav sorusu fotoğrafı veya metni verildi** ("bu soruyu çöz", "bunu anlamadım") →
+   `/edupedia:soru`. Yayın bu modda teklif edilmez (telif).
+4. **"Bu konuya hangi kazanımlar denk geliyor?"** (yalnız keşif) → `/edupedia:kazanim-bul`.
+5. **Connector çalışıyor mu / Tier-2 var mı?** → `/edupedia:durum`.
+6. **Modül üretildi, paylaşılacak** → `/edupedia:yayinla`.
+7. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
    çağır; opsiyonel olarak ilgili kazanımla hizalama öner.
 
 **Ayrım rehberi (disambiguation):**

@@ -106,6 +106,10 @@ Bu uyarılar `carbon-edupedia/references/curriculum-integration.md §2`'den taş
 - **Sınıf etiketi `5.Sınıf` biçimindedir** (nokta sonrası boşluk yok, büyük S). `5. Sınıf` /
   `5.sinif` boş sonuç döndürebilir. `get_subject.grades` geçerli etiketleri verir.
   *(`search_figures` için sınıf ayrıdır — bkz. §1 notu.)*
+- **`search_figures(grade=...)` de aynı `5.Sınıf` biçimini ister** — ama upstream şema
+  açıklaması *"Sınıf filtresi, ör. '6'"* diyor ve o örnek **YANLIŞ**: `grade="6"` **0 sonuç**,
+  `grade="6.Sınıf"` sonuç döndürür (ölçüldü 2026-07-31). Yanlış biçim hata değil **boş liste**
+  verir — sessiz tuzak.
 - **Çerçeve slug'ı yol-biçimlidir:** `beceriler/kavramsal-beceriler` (eğik çizgili).
 - **`document_id` tamsayıdır**, slug değil (`get_subject`/arama döndürür). *(Canlı doğrulama:
   FB.5.3.1.1 → `document_id: 7`.)*
@@ -128,7 +132,8 @@ katmanını netleştirir (skill `references/svg-authoring.md` ile tutarlı).
 | Katman | Tanım | Durum | Davranış |
 |---|---|---|---|
 | **Tier-1** | Kazanım koduna / program metnine izlenebilir olgular + **yazar-üretimli tema-duyarlı SVG** (token-renkli, WCAG 2.1 AA, `role="img"` + başlık/etiket) | **Garanti** | Varsayılan ve zorunlu yol. `validate_module.py` **G-CURRICULUM** + **G-SVG** kapılarıyla denetlenir. MCP'nin görsel çekememesi skill sözleşmesinde **başarısızlık değildir** — Tier-1 tek başına tam işlevseldir. |
-| **Tier-2** | `get_figure(..., include_image=true)` → resmî ders-kitabı görselinin **base64 gömülmesi** | **Best-effort, opsiyonel** | Yalnız yetenek-probu geçerse denenir; **herhangi bir hata / `413` / timeout / boş dönüşte sessizce Tier-1'e düşülür**; modül üretimi **asla bloke olmaz**. |
+| **Tier-2a** (dayanak) | `get_figure(..., include_image=false)` → **metadata**: `caption`, `page_no`, `bbox`, `pdf_url`, kazanım-bağı | **Her zaman kullanılabilir** | Atıf/dayanak güçlendirmesi. Ayrıca `include_image=true` ile görseli **modelin GÖRMESİ** sağlanır; model o orijinale bakarak Tier-1 yazar-SVG'yi çok daha sadık çizer. |
+| **Tier-2b** (gerçek gömme) | `pdf_url` + `page_no` + `bbox` → **PDF'ten yeniden çıkarma** → base64 JPEG | **Best-effort, YALNIZ Claude Code** | `scripts/fetch_figure.py` yapar (bkz. §3.2). Model `figures` bloğu + `@@FIG:<key>@@` yer tutucusu yazar, script doldurur. Hata/erişilemezlikte yer tutucu **yerinde kalır** ve rapora düşer → Tier-1. claude.ai'de dosya sistemi/bash olmadığı için **kullanılamaz** — orada Tier-2a + Tier-1 geçerlidir. |
 
 ### 3.1 Yetenek-probu (capability probe) — kanonik akış
 
@@ -141,13 +146,58 @@ runtime probu uygulanır (connector kaldırılabilir / kısıtlanabilir):
    `search_figures(query, subject)` → aday `figure_id` → `get_figure(figure_id, include_image=false)`.
    Bu **Tier-1 zenginleştirmesidir**: başlık, sayfa, `caption`, `pdf_url`, kazanım-bağı buradan
    gelir (görsel gömülmez, atıf/dayanak güçlenir).
-3. **Fırsatçı `include_image=true`:** YALNIZ *fırsatçı* olarak base64'ü çekmeyi dene; başarılıysa
-   göm (`tier2_status: embedded`), değilse sessizce Tier-1'de kal ve `tier2_status: degraded`
-   + `tier2_degraded: <hata-sınıfı>` logla. `n_bytes` ≤110KB sınırı tool tarafında zorlanır;
-   büyük figür → degrade.
+3. **`include_image=true` — ne yapar, ne YAPMAZ (2026-07-31 ampirik):** görseli **MCP
+   ImageContent** olarak döndürür. Model onu **GÖRÜR** (bu Tier-2a'nın değeridir: yazar-SVG
+   orijinale bakılarak çizilir), ama **base64'ü metin olarak ALMAZ** — harness onu görüntüye
+   çevirir ve JSON gövdesinde `data`/`base64` alanı **yoktur**. Binary veri token token yeniden
+   üretilemeyeceği için **modelin gömmesi yapısal olarak imkânsızdır**.
+   > Bu belge uzun süre "base64'ü çek ve göm" diyerek modelden imkânsız bir şey istedi. Vaat
+   > 2026-07-31'de ölçülüp düzeltildi; gerçek gömme yolu §3.2'dir.
+4. **Gerçek gömme (Tier-2b, yalnız Claude Code):** metadata'daki `pdf_url` + `page_no` + `bbox`
+   figürü **birebir** yeniden çıkarmaya yeter (doğrulandı: MCP'nin gösterdiği görselin aynısı).
+   `scripts/fetch_figure.py` bunu yapar (§3.2). Başarılıysa `tier2_status: embedded`, aksi
+   halde `tier2_status: degraded` + Tier-1.
 
 `tier2_status ∈ {unavailable, degraded, embedded}` her koşu için `run_manifest`'e yazılır
 (bkz. `shared/run-manifest-schema.json`).
+
+### 3.2 `scripts/fetch_figure.py` — Tier-2b gömme aracı (Claude Code)
+
+Model `MODULE_DATA`'ya motorun **görmezden geldiği** bir `figures` bloğu yazar (`curriculum` /
+`exam` bloklarıyla aynı desen) ve görselin geleceği yere `@@FIG:<key>@@` yer tutucusunu koyar:
+
+```js
+figures:{
+  f1:{ figureId:6448, pdfUrl:"https://tymm.meb.gov.tr/upload/kitap/fen_bilimleri_6_1.pdf",
+       page:80, bbox:[137.1,325.4,253.0,442.4],
+       caption:"Bitki hücresi kesiti (Fen 6, s.80)",
+       alt:"Hücre duvarı, çekirdek ve kloroplastları gösteren kesit çizimi" }
+},
+segments:[
+  { type:"teach", id:"t1", visual:{ kind:"svg", ref:"@@FIG:f1@@" } }
+]
+```
+
+Alanların tamamı `get_figure(figure_id, include_image=false)` çıktısından gelir — **uydurulmaz**.
+Sonra:
+
+```bash
+python3 scripts/fetch_figure.py <modul.html> --in-place
+```
+
+Script PDF'i kitap başına **bir kez** indirir (`/tmp/edupedia-figure-cache`), `bbox`'ı kırpar,
+JPEG q85'e sıkıştırır ve yer tutucuyu `role="img"` + `<title>` taşıyan bir
+`<svg><image href="data:image/jpeg;base64,…"></svg>` ile değiştirir.
+
+**Ölçüm (Fen 6 s.80, bitki hücresi):** PNG 3x = 171 KB base64 · **JPEG 2x q85 = 15 KB** →
+JPEG varsayılan. Gömülü modül tüm kapılardan geçer (`G-SELFCONTAINED` `data:` URI'sine izinli,
+`G-SVG` PASS).
+
+**Motor DEĞİŞMEZ:** `visual.kind:"svg"` zaten keyfi SVG kabul eder (`svgFigure(ref)`).
+
+**Degrade:** PDF inilemez / sayfa-bbox tutmaz / anahtar bilinmez → yer tutucu **yerinde kalır**
+(sessizce silinmez), rapora düşer, çıkış kodu yine 0. Üretim asla bloke olmaz; o figür Tier-1
+yazar-SVG ile doldurulur. PyMuPDF veya Pillow yoksa da aynı degrade.
 
 ---
 

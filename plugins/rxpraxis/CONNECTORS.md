@@ -37,9 +37,8 @@ Hücre: ● birincil/zorunlu · ○ koşullu/opsiyonel · — kullanılmaz.
 
 | Connector | Endpoint / Kaynak | Araç sayısı | MR | PI | PP | TS | RX | Notlar |
 |---|---|---|---|---|---|---|---|---|
-| **TİTCK Cache MCP** *(birincil — kanonik public uç)* | `titck.cureonics.com/mcp` | 56 (proxy) | ● | ● | ● | — | ● | **v1.1 — kod-düzeyi tek-sefer (§3).** Ham TİTCK MCP'yi saran şeffaf önbellek proxy'si; `scope_key` başına upstream çağrısı ≤1 (SingleFlight DO + KV TTL). Araç yüzeyi upstream ile **aynı**. rxpraxis'te **kanonik TİTCK yolu budur.** |
-| **TİTCK MCP** *(upstream / fallback)* | `titck-origin.cureonics.com/mcp` | 56 | ○ | ○ | ○ | — | ○ | Cache Worker'ın upstream'i. Doğrudan yalnız Cache erişilemezse (§6 fallback) veya cache-bypass tazeleme için çağrılır. Master record + holder + ATC/SNOMED + fiyat + eşdeğer/biyobenzer grup + Madde 23 + withdrawal + batch release + off-label. |
-| **Mevzuat MCP** | `mevzuat-mcp-…run.app/mcp` | 19 | ○ | ○ | ● | — | ● | SMK + yönetmelik + tebliğ + genelge + Resmi Gazete tam metin. 5 fonksiyonel kategori. İçtihat (Yargıtay/Danıştay/AYM) **kapsam dışı**. |
+| **TİTCK MCP** *(kanonik — tek uç)* | `titck.cureonics.com/mcp` | 66 | ● | ● | ● | — | ● | **v1.2 — kod-düzeyi tek-sefer (§3), sunucunun İÇİNDE.** 2026-08-02'de önündeki Cloudflare Worker cache'i emekli edildi; önbellek (TTL + LRU + singleflight) Python sunucusuna taşındı, `scope_key` başına upstream çağrısı hâlâ ≤1. Uç artık **kapılıdır** (Bearer + OAuth 2.1). `titck-origin.cureonics.com` aynı servise ikinci addır — ayrı bir connector DEĞİL. Master record + holder + ATC/SNOMED + fiyat + eşdeğer/biyobenzer grup + Madde 23 + withdrawal + batch release + off-label. |
+| **Mevzuat MCP** | `mevzuat.cureonics.com/mcp` | 19 | ○ | ○ | ● | — | ● | SMK + yönetmelik + tebliğ + genelge + Resmi Gazete tam metin. 5 fonksiyonel kategori. İçtihat (Yargıtay/Danıştay/AYM) **kapsam dışı**. |
 | **Türk Patent MCP** | `markapatent-mcp.fastmcp.app/mcp` | 6 | ○ | — | ● | — | ● | Patent + marka (Nice) + endüstriyel tasarım (Locarno). CPC/IPC + applicant + abstract. EP→TR validation. |
 | **YÖK Tez MCP** | `yoktezmcp.fastmcp.app/mcp` | 6 | ● | — | ○ | — | ● | TR + EN tez araması; TR-spesifik epidemiyoloji/prevalans için ikincil kaynak. |
 
@@ -123,15 +122,20 @@ pharmaintel Channel A, pharmapatent Mod 13). rxos orkestrasyonunda bu çağrıla
 
 Bu kural canonical-cache-contract.md §TİTCK ile birlikte normatiftir.
 
-**v1.1 (kod-düzeyi zorlama — dağıtıldı).** Tek-sefer TİTCK kuralı artık `titck-cache-mcp`
-Worker'ı (`titck.cureonics.com`) tarafından **deterministik** uygulanır:
-`scope_key = sha256(tool + canonical(args))` başına upstream çağrısı ≤ 1 — **SingleFlight
-Durable Object** eşzamanlı özdeş çağrıları tek-uçuşa birleştirir (cache stampede önleme), **KV
-TTL** ikinci-kat kenar önbellektir. Üç skill artık ham TİTCK yerine **TİTCK Cache** connector'ını
-çağırır; aynı `(tool, args)` ikinci kez istense de upstream **vurulmaz**. `single_shot_enforced`
-artık model beyanı değil, Worker `/ledger` ucundan **ölçülebilir** bir değişmezdir:
-`upstream_calls ≤ distinct_scopes`. Cache erişilemezse §6 fallback ile ham TİTCK MCP'ye düşülür
-(caveat damgası). İnşa ayrıntısı: `titck-cache-mcp-build-playbook.md`.
+**v1.2 (kod-düzeyi zorlama — sunucunun İÇİNDE, 2026-08-02).** Tek-sefer TİTCK kuralı
+`titck.cureonics.com`'un **kendisi** tarafından deterministik uygulanır:
+`scope_key = sha256(tool + canonical(args))` başına upstream çağrısı ≤ 1. Önbellek
+süreç-içi bir **TTL + LRU + singleflight** katmanıdır; singleflight eşzamanlı özdeş
+çağrıları tek-uçuşa birleştirir (stampede önleme). `single_shot_enforced` model beyanı
+değil, `GET /ledger` ucundan **ölçülebilir** bir değişmezdir:
+`upstream_calls ≤ distinct_scopes`.
+
+> **v1.1'den ne değişti:** önbellek eskiden ayrı bir Cloudflare Worker'dı
+> (`titck-cache-mcp`; SingleFlight Durable Object + KV TTL) ve ayrı bir **TİTCK Cache**
+> connector'ı olarak bağlanırdı. O Worker **emekli edildi**; artık tek connector
+> (**TİTCK**) ve tek uç var, uç **kapılı** (Bearer). Buna bağlı olarak eski
+> "Cache 5xx/approval-gate → ham TİTCK'e failover" zinciri de **kalktı** — düşülecek
+> ikinci bir katman yok (§6, §9).
 
 ---
 
@@ -175,7 +179,7 @@ Her fallback rapora caveat olarak kaydedilir (run_manifest + §Limitations).
 | Connector | Tetikleyici | Fallback zinciri | Caveat etiketi |
 |---|---|---|---|
 | **Türk Patent MCP** | service balance / timeout | Espacenet → Patentscope WIPO → USPTO → Google Patents | `"Türk Patent MCP hata; TR sicil web proxy"` |
-| **TİTCK Cache MCP** | Worker 5xx / timeout | Ham **TİTCK MCP** (doğrudan, önbeleksiz) → cached registry → tekil barcode → manuel web fetch | `"TİTCK Cache hata; ham upstream <ISO>"` |
+| **TİTCK MCP** | 5xx / timeout | cached registry → tekil barcode → manuel web fetch (**ikinci bir TİTCK katmanı YOK** — Worker cache 2026-08-02'de emekli, `titck-origin` aynı servisin ikinci adı) | `"TİTCK MCP hata; <alt> <ISO>"` |
 | **ThoughtSpot** | `$0.00` / boş veri | Attribute swap (Product→International Brand) → country swap → ATC4 proxy → cube swap → 36-ülke dekompozisyon | `"ThoughtSpot empty; attribute swap"` veya `"N/36 data-redacted"` |
 | **PubMed/Consensus** | ratelimit / timeout | Exa academic → Scholar Gateway → bioRxiv → Paper Search | `"PubMed rate-limit; <alt> triangulate"` |
 | **RegulatoryMCP (openFDA)** | latency stall | Tekil çağrı + 1 retry → skippable | `"Regulatory MCP gecikme; tekil+retry"` |
@@ -224,7 +228,7 @@ ve karar kartının **Katman B İç Denetim Kaydı**'na yazılır.
 | **OPEN** | Connector devre dışı; çağrı yapılmaz, fallback (§6) veya degrade. | Sonraki çağrı kümesinde tek HALF_OPEN prob ile sınanabilir |
 
 **Eşik:** **2 ardışık başarısızlık → OPEN** (tek geçici hata devreyi açmaz). **Soğuk-başlangıç
-istisnası:** serverless/Worker tabanlı connector'larda (MIDAS, TİTCK Cache, ThoughtSpot) ilk
+istisnası:** serverless/Worker tabanlı connector'larda (MIDAS, ThoughtSpot) ilk
 çağrıda araç-keşfedilemezlik/`tools-list` boşluğu genelde cold-start'tır → doğrudan OPEN değil,
 **HALF_OPEN + 1 retry** (deploy/soğuk başlangıç toparlanır).
 
@@ -232,20 +236,31 @@ istisnası:** serverless/Worker tabanlı connector'larda (MIDAS, TİTCK Cache, T
 
 | Connector | OPEN tetikleyici | Açıkken davranış | Karar etkisi |
 |---|---|---|---|
-| **TİTCK Cache** | `"No approval received"` (per-call approval-gate) **veya** 5xx | **Anında** ham `TİTCK:*` raw'a failover (veri **bayt-aynı**); devre "approval-gated", bug değil. Worker tamamen erişilemezse §6 zinciri. | Karar **etkilenmez** (failover şeffaf); `single_shot_enforced` raw modda caveat-damgalı. |
+| **TİTCK** | 5xx / timeout, 2 başarısızlık **veya** 401 (bearer eksik/yanlış) | §6 zinciri: cached registry → tekil barcode → manuel web fetch. **Failover yapılacak ikinci TİTCK katmanı YOK** (Worker cache 2026-08-02'de emekli). 401 bir devre arızası değil **yapılandırma** arızasıdır: `${TITCK_MCP_API_KEY}` çözülmemiş → kullanıcıya bildir, degrade et. | TR kanonik katman düşer → `feasibility_matrix` TR alanları **eksik-alanlı**, caveat damgası zorunlu. |
 | **Türk Patent** | service balance / Capsolver / timeout, 2 başarısızlık | Espacenet → Patentscope WIPO → USPTO → Google Patents + (ABD) Orange/Purple Book **dokümante-public-fact**. Patent **yön-yalnız** (sayısal LOE tarihi YOK). | `feasibility_matrix.patent_section = VIABLE_WITH_CAVEAT`; net karar **CONDITIONAL** caveat taşır. **Sessizce "engel yok/var" VARSAYMA.** |
 | **MIDAS / ThoughtSpot** | `midas_health` ≠ `{"ok":true}` / `check_connectivity` Pong yok | Önce **HALF_OPEN + 1 retry** (cold-start). Kalıcıysa OPEN → Aşama 5b degrade; §6 attribute/country/cube swap. | Rapor `"N/36 data-redacted"` caveat'ı; TR-iç katman ile degrade. |
 | **PubMed / akademik** | ratelimit / timeout, 2 başarısızlık | §6: Exa → Scholar Gateway → bioRxiv → Paper Search cascade. | Kanıt sentezi degrade; caveat damgası. |
 | **openFDA / Regulatory** | latency stall | tekil çağrı + 1 retry → skippable (zaten §8). | Atlanabilir; üç-otorite matrisi eksik-alanlı. |
 
-### 9.3 Approval-gate ↔ raw failover (TİTCK'e özgü)
+### 9.3 TİTCK erişilemezliği (tek katman — failover yok)
 
-TİTCK Cache Worker'ı **per-call approval-gate** uygular; `"No approval received"` **beklenen**
-bir durumdur (hata değil). Doğru davranış: ham `TİTCK:search_drugs` / `TİTCK:get_drug` raw'a
-**anında** geç — veri bayt-aynıdır, karar değişmez. Bu, `tool-manifest.json` `collision_resolution`
-ile uyumludur: `search_drugs` kanonik bağlamda TİTCK Cache; approval-gate'te raw TİTCK. Bu
-failover bir caveat olarak (`"TİTCK Cache approval-gate; ham upstream <ISO>"`) raporlanır ama
-**devreyi kalıcı OPEN saymaz**.
+> **2026-08-02 öncesi doktrin KALDIRILDI.** Eskiden iki TİTCK connector'ı vardı
+> (Cache Worker + ham upstream) ve `"No approval received"` alındığında ham katmana
+> **anında failover** öngörülüyordu. Worker emekli edildi; **artık tek connector var**,
+> dolayısıyla düşülecek bayt-aynı ikinci bir kaynak **yok**.
+
+Doğru davranış artık şudur:
+
+- **`"No approval received"`** — kullanıcı çağrıyı onaylamadı. Bu bir connector arızası
+  **değildir** ve sessizce atlatılamaz. Aynı çağrıyı başka bir adla tekrar denemeyin;
+  kullanıcıya onayın gerektiğini bildirin.
+- **401** — `${TITCK_MCP_API_KEY}` çözülmemiş (uç 2026-08-02'den beri kapılı).
+  Yapılandırma arızasıdır; kullanıcıya bildirin (`doppler run …` ile oturum başlatmak
+  veya connector ayarlarına anahtarı girmek gerekir).
+- **5xx / timeout** — §6 zinciri (cached registry → tekil barcode → manuel web fetch).
+
+Her üç hâlde de TR kanonik katman **eksik** sayılır ve çıktı zorunlu caveat taşır;
+TİTCK verisi **asla uydurulmaz**.
 
 ### 9.4 Ledger entegrasyonu (zorunlu)
 

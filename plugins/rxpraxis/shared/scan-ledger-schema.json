@@ -30,7 +30,7 @@
         "properties": {
           "connector": {
             "type": "string",
-            "description": "Display name — ör. 'TİTCK Cache', 'Türk Patent', 'MIDAS', 'ThoughtSpot Spotter', 'PubMed'."
+            "description": "Display name — ör. 'TİTCK', 'Türk Patent', 'MIDAS', 'ThoughtSpot Spotter', 'PubMed'."
           },
           "state": {
             "enum": ["CLOSED", "HALF_OPEN", "OPEN"]

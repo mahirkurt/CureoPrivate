@@ -205,9 +205,9 @@ dependencies:
 mcp_connectors:
   - id: "titck-mcp"
     name: "TİTCK MCP"
-    server_url: "https://titck-origin.cureonics.com/mcp"
+    server_url: "https://titck.cureonics.com/mcp"
     status: "active"
-    tool_count: 56
+    tool_count: 66
     scope: >
       TR human medicinal products master dataset (master::barcode), holders
       canonical store with alias normalization, SNOMED CT substance map,

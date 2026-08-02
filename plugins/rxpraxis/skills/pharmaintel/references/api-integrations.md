@@ -443,8 +443,8 @@ If precondition is not met, pharmaintel falls back to free-tier IQVIA Institute 
 
 ## §16. TİTCK MCP — Türkiye Regulatory Primary (v4.0.0)
 
-**MCP server:** `https://titck-origin.cureonics.com/mcp` (Anthropic-hosted connector; verify availability)
-**Auth:** Per connector configuration (typically no auth required for public TİTCK data)
+**MCP server:** `https://titck.cureonics.com/mcp` (self-host; `titck-origin.cureonics.com` aynı servisin ikinci adı)
+**Auth:** Bearer ZORUNLU — uç 2026-08-02'den beri kapılı (`${TITCK_MCP_API_KEY}`); anahtarsız çağrı 401 döner
 **Tier:** Tier-0 primary (Türkiye regulatuar zemin gerçeği)
 
 > **Architectural note:** TİTCK MCP, Türkiye İlaç ve Tıbbi Cihaz Kurumu'nun açık kayıt verilerini (master drug records, fiyat zinciri, eşdeğer grup, withdrawal, ATC sınıf, holder portföy, KÜB/KT dokümanları) yapısal MCP arayüzü üzerinden açar. `sources-catalog.md §Türkiye sources` web URL'leri yerine MCP tool calls önerilir — daha hızlı, schema-aware, machine-readable.

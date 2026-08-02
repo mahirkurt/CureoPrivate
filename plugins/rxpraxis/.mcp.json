@@ -1,12 +1,8 @@
 {
   "mcpServers": {
-    "titck-cache": {
-      "type": "http",
-      "url": "https://titck.cureonics.com/mcp"
-    },
     "titck": {
       "type": "http",
-      "url": "https://titck-origin.cureonics.com/mcp",
+      "url": "https://titck.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
       }

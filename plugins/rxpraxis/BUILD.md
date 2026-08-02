@@ -154,6 +154,15 @@ Cache"** connector'ı (`titck.cureonics.com`) olarak bağlandı; üç skill art�
 TİTCK yerine bu proxy'yi çağırır. `single_shot_enforced` artık `/ledger` ucundan ölçülebilir bir
 değişmezdir. İnşa talimatı: `titck-cache-mcp-build-playbook.md`; ayrıntı §7.
 
+> **Güncelleme (2026-08-02) — Worker emekli, garanti KORUNDU.** `titck-cache-mcp` Worker'ı
+> ve KV namespace'i silindi; önbellek (TTL + LRU + singleflight) TİTCK MCP sunucusunun
+> **içine** taşındı ve 66 aracın tamamını tek `call_tool` seam'inden sarar. R1'in kod-düzeyi
+> deterministik garantisi aynen geçerlidir — `scope_key` başına upstream ≤1 ve
+> `single_shot_enforced` yine `GET /ledger`'dan ölçülür. Değişen: artık **tek connector**
+> (`TİTCK`, `titck.cureonics.com`, **kapılı**) var; ayrı "TİTCK Cache" connector'ı ve ona
+> bağlı raw-failover doktrini kaldırıldı. Vendored playbook silindi (Worker kaynağı
+> CureoHub git geçmişinde). Ayrıntı: CONNECTORS.md §3.
+
 ---
 
 ## 5. Değerlendirilen Alternatif Mimariler
@@ -245,6 +254,8 @@ ile birlikte kullanın — yalnız SKILL.md'de tek-satırlık not farkı bekleni
   Claude'a bağlandı. Çift sorgu *fiziksel olarak* engelleniyor (SingleFlight DO + KV TTL). R1
   azaltımı "disiplin" → "kod-düzeyi deterministik garanti" olarak yükseltildi (§4). İnşa talimatı:
   `titck-cache-mcp-build-playbook.md`. CONNECTORS.md §1.A/§3/§6 ve run-manifest şeması güncellendi.
+  **2026-08-02: Worker EMEKLİ** — önbellek sunucunun içine taşındı, tek connector kaldı
+  (garanti değişmedi; playbook silindi, kaynak CureoHub git geçmişinde).
 - **v1.2 — carbon-pptx / carbon-html-report otomatik devri:** Aşama 6 raporunun
   `composes_with_external` üzerinden otomatik sunum/HTML rapor üretimine bağlanması.
 - **v1.3 — lex-sanitas regülatuar-reform köprüsü:** TR_REGULATORY_FLOW çıktısının mevzuat-reform

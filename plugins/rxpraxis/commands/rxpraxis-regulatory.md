@@ -11,8 +11,8 @@ argument-hint: "[INN / barkod / ATC kodu / holder]"
 
 0. **Araç yükleme (tool-manifest.json — L1):** `shared/tool-manifest.json`
    `commands.rxpraxis-regulatory` bloğunu pin-yükle. `search_drugs` çakışması →
-   `TİTCK Cache:search_drugs` (raw fallback), ASLA AdisInsight'ınki. Pre-flight: §8 + §9
-   (TİTCK Cache approval-gate → raw failover). Boru hattı ortasında `tool_search` YAPMA.
+   `TİTCK:search_drugs`, ASLA AdisInsight'ınki. Pre-flight: §8 + §9.
+   Boru hattı ortasında `tool_search` YAPMA.
 
    > **AdisInsight-erken / ATC-ÇÖZ kuralı (kritik):** ATC kodunu **TAHMİN ETME**. Molekülün
    > gerçek WHO ATC'sini önce `AdisInsight:get_drug` ile çöz, sonra `get_atc_class_summary`'yi
@@ -32,7 +32,8 @@ argument-hint: "[INN / barkod / ATC kodu / holder]"
 (`[TİTCK MCP / <tool> / <ISO>]` — provenance-standard.md §1).
 
 ## Fallback (CONNECTORS.md §6 + §9 devre-kesici)
-TİTCK Cache "No approval received" / 5xx → ham `TİTCK:*` raw'a **anında failover** (§9; veri
-bayt-aynı). Worker tamamen erişilemezse cached registry → tekil barcode → web fetch. Her ham
+TİTCK 5xx/timeout → cached registry → tekil barcode → web fetch (**ikinci bir TİTCK katmanı
+YOK**; Worker cache 2026-08-02'de emekli). 401 = `${TITCK_MCP_API_KEY}` çözülmemiş → kullanıcıya
+bildir; "No approval received" = onay verilmedi, başka adla yeniden deneme (§9). Her ham
 pull **extract-then-evict** (canonical-cache §9): distille → ham hâli düşür → diske yaz;
 `scan-ledger` checkpoint güncelle. Açık devreler ledger'a + Katman B İç Denetim Kaydı'na damgalanır.

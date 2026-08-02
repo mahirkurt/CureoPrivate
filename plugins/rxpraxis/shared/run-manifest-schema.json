@@ -172,7 +172,7 @@
             },
             "connector": {
               "type": "string",
-              "description": "v1.1: kanonik yol 'TİTCK Cache MCP (primary)'; fallback'te 'TİTCK MCP (direct upstream)'."
+              "description": "v1.2: tek kanonik yol — 'TİTCK MCP'. (v1.1'deki ayrı Cache/upstream ayrımı 2026-08-02'de kalktı.)"
             },
             "verified_by_worker": {
               "type": "boolean",
@@ -180,7 +180,7 @@
             },
             "ledger_endpoint": {
               "type": "string",
-              "description": "v1.1: ör. https://titck.cureonics.com/ledger?session=<Mcp-Session-Id>"
+              "description": "v1.2: ör. https://titck.cureonics.com/ledger — sayaçlar SÜREÇ başınadır, oturum başına değil (session parametresi YOK)."
             },
             "upstream_calls": {
               "type": "integer",

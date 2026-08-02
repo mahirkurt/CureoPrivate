@@ -75,8 +75,9 @@ Bu hızlı yol **tam fizibilite kararı değildir**: epidemiyoloji/funnel boyutl
 çıktıda açıkça belirtilmelidir.
 
 ## Fallback (CONNECTORS.md §6 zincirleri + §9 devre-kesici)
-TİTCK Cache "No approval received" / 5xx → ham `TİTCK:*` raw'a **anında failover** (§9; veri
-bayt-aynı, karar etkilenmez). Türk Patent §9 ile 2-başarısızlıkta OPEN → Espacenet/WIPO
+TİTCK 5xx/timeout → §6 zinciri (cached registry → tekil barcode → web fetch); **failover
+yapılacak ikinci TİTCK katmanı YOK** (§9). 401 = anahtar çözülmemiş, onay reddi = onay reddi —
+ikisi de TR katmanını eksik bırakır, caveat zorunlu. Türk Patent §9 ile 2-başarısızlıkta OPEN → Espacenet/WIPO
 dokümante-public-fact + patent **yön-yalnız** (sayısal LOE tarihi eksik) damgası; net karar
 `CONDITIONAL` caveat taşır. Sessizce "engel yok" **varsayma**. Tüm açık devreler
 `scan-ledger.circuit_breakers`'a ve Katman B İç Denetim Kaydı'na yazılır.

@@ -1,7 +1,7 @@
 {
   "_comment": "plugin.json'dan tasinan ev-konvansiyonu metadata. Claude Code semasinda TANINMAYAN ust-duzey alanlar (claude plugin validate --strict bunlari reddediyordu). Runtime'da hicbir script plugin.json'i okumuyor; tum bilgi burada BIREBIR korunuyor. Geri almak icin bu alanlari plugin.json'a geri tasiyin.",
   "mcp": {
-    "note": "v1.2.1: rxpraxis connector TANIMLARINI ./.mcp.json içinde paketler — yalnız 7 NO-AUTH çekirdek (titck-cache, titck, mevzuat, midas, pubmed, clinical-trials, biorxiv); kurulumda Claude Code bunları auth-sürtünmesiz otomatik kaydeder. Auth gerektiren connector'lar (Türk Patent, YÖK Tez, ThoughtSpot, AdisInsight, Consensus, Exa) BUNDLE EDİLMEZ — kullanıcının Claude.ai/Claude Code bağlantıları üzerinden tüketilir (eksikse tarama-zamanı degrade mod). Tam connector envanteri (13), skill-eşlemesi, fallback zincirleri (§6), devre-kesici (§9) ve provenance için ./CONNECTORS.md tek doğruluk kaynağıdır.",
+    "note": "v1.2.2: rxpraxis connector TANIMLARINI ./.mcp.json içinde paketler — 6 çekirdek (titck, mevzuat, midas, pubmed, clinical-trials, biorxiv); kurulumda Claude Code bunları otomatik kaydeder. titck/mevzuat/midas bearer ister (${TITCK_MCP_API_KEY} / ${MEVZUAT_MCP_API_KEY} / ${MIDAS_MCP_SHARED_SECRET}); pubmed/clinical-trials/biorxiv anahtarsızdır. 2026-08-02: ayrı `titck-cache` connector'ı KALDIRILDI — önündeki Cloudflare Worker emekli edildi, titck.cureonics.com artık doğrudan kapılı sunucudur (tek kayıt, 66 araç). Auth gerektiren connector'lar (Türk Patent, YÖK Tez, ThoughtSpot, AdisInsight, Consensus, Exa) BUNDLE EDİLMEZ — kullanıcının Claude.ai/Claude Code bağlantıları üzerinden tüketilir (eksikse tarama-zamanı degrade mod). Tam connector envanteri (13), skill-eşlemesi, fallback zincirleri (§6), devre-kesici (§9) ve provenance için ./CONNECTORS.md tek doğruluk kaynağıdır.",
     "bundled_servers": "./.mcp.json",
     "connector_contract": "./CONNECTORS.md",
     "tool_manifest": "./shared/tool-manifest.json"
@@ -32,6 +32,11 @@
     ]
   },
   "changelog": [
+    {
+      "version": "1.2.2",
+      "date": "2026-08-02",
+      "summary": "TİTCK tek-connector'a indirildi: `titck-cache` KALDIRILDI. Önündeki `titck-cache-mcp` Cloudflare Worker'ı emekli edildi (KV dâhil silindi) ve önbellek — TTL + LRU + singleflight — TİTCK MCP sunucusunun içine taşındı; 66 aracın tamamı tek `call_tool` seam'inden önbelleklenir. `titck.cureonics.com` artık doğrudan kapılı sunucudur (Bearer + OAuth 2.1) — bu yüzden connector `${TITCK_MCP_API_KEY}` taşır; anahtarsız çağrı 401 döner. R1'in kod-düzeyi tek-sefer garantisi KORUNDU (`GET /ledger` → `upstream_calls ≤ distinct_scopes`). Buna bağlı olarak 'Cache approval-gate/5xx → ham TİTCK'e failover' doktrini kaldırıldı: düşülecek bayt-aynı ikinci katman yok. tool-manifest'teki 32 'TİTCK Cache:' pin'i 'TİTCK:' oldu; CONNECTORS.md §1/§3/§6/§9, BUILD.md, 2 komut ve 2 şema güncellendi; vendored Worker playbook'u silindi."
+    },
     {
       "version": "1.1.0",
       "date": "2026-06-14",

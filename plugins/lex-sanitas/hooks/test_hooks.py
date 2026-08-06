@@ -8,10 +8,17 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.join(HERE, "scripts")
+ROOT = os.path.dirname(HERE)
 PASS, FAIL = 0, 0
+
+sys.path.insert(0, SCRIPTS)
+import fleet_probe  # noqa: E402
+import stop_coverage  # noqa: E402
 
 
 def run(script, payload, env_extra=None):
@@ -40,6 +47,63 @@ def check(name, cond, detail=""):
         FAIL += 1
     print(f"  [{status}] {name}" + (f" — {detail}" if detail and not cond else ""))
 
+
+print("== fleet_probe.py (canlı prob sınıflandırması) ==")
+check("401 → unauthorized (titck sınıfı: YAPILANDIRMA ARIZASI, degrade değil)",
+      fleet_probe.classify(401, "") == "unauthorized")
+check("403 → unauthorized", fleet_probe.classify(403, "") == "unauthorized")
+check("200 + JSON-RPC result → ok",
+      fleet_probe.classify(200, '{"jsonrpc":"2.0","id":1,"result":{"x":1}}') == "ok")
+check("200 + SSE gövdesi → ok",
+      fleet_probe.classify(
+          200, 'event: message\ndata: {"jsonrpc":"2.0","id":1,"result":{"x":1}}\n') == "ok")
+check("200 + JSON-RPC error → error",
+      fleet_probe.classify(200, '{"jsonrpc":"2.0","id":1,"error":{"code":-1}}') == "error")
+check("200 + ayrıştırılamaz gövde → error", fleet_probe.classify(200, "<html>") == "error")
+check("503 → unreachable", fleet_probe.classify(503, "") == "unreachable")
+check("bağlantı yok (http=None) → unreachable", fleet_probe.classify(None, "") == "unreachable")
+
+_r = fleet_probe.probe_server(
+    {"name": "x", "url": "https://ornek.invalid/mcp", "auth_env": "YOK_BOYLE_ANAHTAR"},
+    env={}, timeout=0.1)
+check("anahtar yoksa AĞA ÇIKILMAZ → auth_missing",
+      _r["status"] == "auth_missing" and _r["http"] is None, str(_r))
+
+with tempfile.TemporaryDirectory() as _d:
+    _c = os.path.join(_d, "fleet_probe.json")
+    with open(_c, "w", encoding="utf-8") as fh:
+        json.dump({"ts": time.time(), "results": {"a": {"status": "ok"}}}, fh)
+    check("taze cache okunur", fleet_probe.read_cache(_c, ttl=86400) == {"a": {"status": "ok"}})
+    with open(_c, "w", encoding="utf-8") as fh:
+        json.dump({"ts": time.time() - 90000, "results": {}}, fh)
+    check("bayat cache → None (yeniden prob)", fleet_probe.read_cache(_c, ttl=86400) is None)
+    with open(_c, "w", encoding="utf-8") as fh:
+        fh.write("bu json değil {{{")
+    check("bozuk cache → None (fail-open)", fleet_probe.read_cache(_c, ttl=86400) is None)
+
+check("lock yoksa None (fail-open)", fleet_probe.load_lock("/olmayan/yol") is None)
+_lock = fleet_probe.load_lock(ROOT)
+check("fleet.lock.json okunur ve 19 server taşır",
+      bool(_lock) and _lock["counts"]["servers"] == 19)
+with open(os.path.join(SCRIPTS, "fleet_probe.py"), encoding="utf-8") as fh:
+    _src = fh.read()
+check("hook YALNIZ stdlib (PyYAML/requests yok)",
+      "import yaml" not in _src and "import requests" not in _src)
+
+# ── Sahada yakalanan iki arıza — regresyon koruması ────────────────────────
+# Her ikisi de SAĞLIKLI server'ları sahte arızalı gösteriyordu, yani prob'un
+# teşhis etmek için var olduğu hatanın aynısını üretiyorlardı.
+check("açık User-Agent (urllib varsayılanı Cloudflare 1010 → sahte unauthorized)",
+      "User-Agent" in _src and "Python-urllib" not in fleet_probe.USER_AGENT)
+check("okuma sınırı oecd'nin 32KB initialize gövdesini kesmiyor",
+      fleet_probe.READ_LIMIT > 32716)
+_truncated = '{"jsonrpc":"2.0","id":1,"result":{"capabilities":{"too'
+check("kesik JSON gövdesi → error (sessizce 'ok' sayılmaz)",
+      fleet_probe.classify(200, _truncated) == "error")
+check("eşik anamnesis'in ölçülen ~11sn gecikmesinin üstünde",
+      fleet_probe.PER_ENDPOINT_TIMEOUT > 11.0)
+check("tek dalga — worker sayısı ≥ filo boyutu (duvar-saati = en yavaş server)",
+      fleet_probe.MAX_WORKERS >= (_lock or {}).get("counts", {}).get("servers", 99))
 
 print("== session_start.py ==")
 rc, out = run("session_start.py", {})

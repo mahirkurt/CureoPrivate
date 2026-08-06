@@ -1,4 +1,5 @@
 {
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — fon-uzmani MCP wiring. 2 server (1 Bearer-gated, 1 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "borsa": {
       "type": "http",

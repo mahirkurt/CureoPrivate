@@ -1,0 +1,136 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "evidentia",
+  "plugin_version": "2.3.2",
+  "counts": {
+    "servers": 20,
+    "gated": 7,
+    "public": 13,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "med-terminologies",
+      "url": "https://medical.sidneybissoli.com/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "nih-clinicaltables",
+      "url": "https://gateway.pipeworx.io/clinicaltables/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "nlm-rxnorm",
+      "url": "https://gateway.pipeworx.io/rxnorm/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "iuphar-gtopdb",
+      "url": "https://gateway.pipeworx.io/guidetopharmacology/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "openalex",
+      "url": "https://openalex.caseyjhand.com/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "pubmed-epmc",
+      "url": "https://pubmed.caseyjhand.com/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "semantic-scholar",
+      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
+      "tier": "K",
+      "auth_env": null
+    },
+    {
+      "name": "pophive",
+      "url": "https://mcp.pophive.org/mcp",
+      "tier": "K-epi",
+      "auth_env": null
+    },
+    {
+      "name": "who-gho",
+      "url": "https://who-gho-mcp.cureonics.workers.dev/mcp",
+      "tier": "K-epi",
+      "auth_env": null
+    },
+    {
+      "name": "globocan",
+      "url": "https://globocan-mcp.cureonics.workers.dev/mcp",
+      "tier": "K-epi",
+      "auth_env": null
+    },
+    {
+      "name": "ema",
+      "url": "https://ema-mcp.cureonics.workers.dev/mcp",
+      "tier": "O",
+      "auth_env": null
+    },
+    {
+      "name": "mevzuat-bilgisi",
+      "url": "https://mevzuat.surucu.dev/mcp",
+      "tier": "secondary",
+      "auth_env": null
+    },
+    {
+      "name": "titck-cache",
+      "url": "https://titck.cureonics.com/mcp",
+      "tier": "O",
+      "auth_env": "TITCK_MCP_API_KEY"
+    },
+    {
+      "name": "yok-akademik",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "tier": "O",
+      "auth_env": "YOK_AKADEMIK_MCP_API_KEY"
+    },
+    {
+      "name": "openathens",
+      "url": "https://openathens.cureonics.com/mcp",
+      "tier": "O",
+      "auth_env": "OPENATHENS_MCP_API_KEY"
+    },
+    {
+      "name": "annas-reader",
+      "url": "https://annas.cureonics.com/mcp",
+      "tier": "O",
+      "auth_env": "ANNAS_MCP_API_KEY"
+    },
+    {
+      "name": "anamnesis",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "tier": "O",
+      "auth_env": "ANAMNESIS_MCP_API_KEY"
+    },
+    {
+      "name": "drugddx",
+      "url": "https://drugddx-mcp.cureonics.workers.dev/mcp",
+      "tier": "O",
+      "auth_env": null
+    },
+    {
+      "name": "openfda",
+      "url": "https://openfda-mcp.cureonics.workers.dev/mcp",
+      "tier": "O",
+      "auth_env": "OPENFDA_MCP_API_KEY"
+    },
+    {
+      "name": "evidentia-kb",
+      "url": "https://evidentia-kb-mcp.cureonics.workers.dev/mcp",
+      "tier": "O",
+      "auth_env": "EVIDENTIA_KB_MCP_API_KEY"
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

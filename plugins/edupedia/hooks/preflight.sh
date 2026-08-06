@@ -10,7 +10,7 @@
 # ESKİ başına gelen hataydı; keyed'e geçince aynı arıza sınıfı GERİ DÖNDÜ, o yüzden onu
 # da burada kontrol ediyoruz. Anahtar DEĞERİ asla basılmaz — yalnız varlığı.
 
-MSG="[edupedia] Üç connector: maarif-mufredat (OTORİTE — 105 MEB ders kitabı tam metin, authless) · egitim-kaynak (tamamlayıcı OER RAG, OAuth/Bearer — 2026-07-19 keyless→keyed; display adı 'Eğitim Kaynakları') · modul-yayin (yayın, token'lı; display adı 'Modül Yayını')."
+MSG="[edupedia] Üç connector: maarif-mufredat (OTORİTE — 105 MEB ders kitabı tam metin; Bearer — 2026-08-06'da 'authless' sanıldığı ortaya çıktı, uç 401 veriyordu) · egitim-kaynak (tamamlayıcı OER RAG, OAuth/Bearer — 2026-07-19 keyless→keyed; display adı 'Eğitim Kaynakları') · modul-yayin (yayın, token'lı; display adı 'Modül Yayını')."
 
 MISSING=""
 [ -z "${EGITIM_KAYNAK_MCP_API_KEY}" ] && MISSING="${MISSING} EGITIM_KAYNAK_MCP_API_KEY→egitim-kaynak"

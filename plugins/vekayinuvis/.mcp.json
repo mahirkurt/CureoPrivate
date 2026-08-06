@@ -1,5 +1,5 @@
 {
-  "_comment": "vekayinuvis MCP wiring — Osmanlı/Türk tarih birincil-kaynak araştırma filosu. TAM-FİLO İLKESİ: bağlama uygun server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı; sessiz atlama yasak). Ağır çok-connector getirim `arsiv-tarama-distilleri` alt-ajanında toplanır (retrieve-don't-dump) ve büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin) `anamnesis` RAG substratına ingest edilir → bounded query; ana bağlama yalnız damıtılmış `arsiv_distillate` + coverage döner (shared/context-economy-contract.md). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa SessionStart preflight uyarır ve o katman graceful degrade eder (manifestoda 'skipped: anahtar yok'; asla uydurma). devlet-arsivleri ayrıca tek-cihaz oturum kilitlidir (upstream katalog oturumu HP'de kalıcı authenticated tarayıcıda yaşar; devarsiv_session_status ile pre-flight). paper-search Smithery key'i userConfig ile enable-time'da sorulur.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — vekayinuvis MCP wiring. 17 server (11 Bearer-gated, 6 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "ottoman-archives": {
       "type": "http",
@@ -61,8 +61,12 @@
     "tavily": {
       "type": "http",
       "url": "https://mcp.tavily.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TAVILY_API_KEY}"
+      },
       "_tier": "academic",
-      "_role": "Geniş web tarama + çok-sayfa araştırma + crawl (tavily_search/research/extract/crawl/map). Anlatı doğrulama, modern haber/blog. OAuth/Tavily key."
+      "_role": "Geniş web tarama + çok-sayfa araştırma + crawl (tavily_search/research/extract/crawl/map). Anlatı doğrulama, modern haber/blog. OAuth/Tavily key.",
+      "_fix": "2026-08-06 denetimi: anahtarsız 401, TAVILY_API_KEY ile 200. Bearer kabul ediyor, interaktif OAuth gerekmiyor."
     },
     "paper-search": {
       "type": "http",

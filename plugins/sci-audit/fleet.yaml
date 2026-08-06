@@ -1,0 +1,29 @@
+# sci-audit MCP filosunun TEK GERÇEK KAYNAĞI.
+#
+# Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
+#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
+#
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
+# Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
+# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
+
+version: 2
+plugin: sci-audit
+plugin_version: "0.2.1"
+
+servers:
+  - name: pubmed
+    url: https://pubmed.mcp.claude.com/mcp
+    auth_env: null
+
+  - name: pubmed-epmc
+    url: https://pubmed.caseyjhand.com/mcp
+    auth_env: null
+
+  - name: openalex
+    url: https://openalex.caseyjhand.com/mcp
+    auth_env: null
+
+  - name: semantic-scholar
+    url: https://gateway.pipeworx.io/semanticscholar/mcp
+    auth_env: null

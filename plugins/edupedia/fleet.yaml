@@ -1,0 +1,30 @@
+# edupedia MCP filosunun TEK GERÇEK KAYNAĞI.
+#
+# Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
+#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
+#
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
+# Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
+# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
+
+version: 2
+plugin: edupedia
+plugin_version: "0.7.0"
+
+servers:
+  - name: maarif-mufredat
+    url: https://mufredat.cureonics.com/mcp
+    auth_env: MUFREDAT_MCP_API_KEY
+    extra:
+      _fix: >-
+        2026-08-06 denetimi: anahtarsız 401, MUFREDAT_MCP_API_KEY ile 200. Bu plugin'in
+        OTORİTE kaynağıdır (105 MEB ders kitabı tam metni) ve 'authless' sanıldığı için arıza
+        preflight'ta görünmüyordu — titck sınıfı sessiz yapılandırma hatası.
+
+  - name: egitim-kaynak
+    url: https://egitim-kaynak.cureonics.com/mcp
+    auth_env: EGITIM_KAYNAK_MCP_API_KEY
+
+  - name: modul-yayin
+    url: https://edupedia.cureonics.com/mcp
+    auth_env: EDUPEDIA_PUBLISH_TOKEN

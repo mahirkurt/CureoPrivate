@@ -1,0 +1,58 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "brand-ecosystem-core",
+  "plugin_version": "1.1.0",
+  "counts": {
+    "servers": 7,
+    "gated": 7,
+    "public": 0,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "brand-verify",
+      "url": "https://brand-verify-mcp.cureonics.workers.dev/mcp",
+      "tier": "core",
+      "auth_env": "BRAND_VERIFY_MCP_API_KEY"
+    },
+    {
+      "name": "color-a11y",
+      "url": "https://color-a11y-mcp.cureonics.workers.dev/mcp",
+      "tier": "core",
+      "auth_env": "COLOR_A11Y_MCP_API_KEY"
+    },
+    {
+      "name": "type-foundry",
+      "url": "https://type-foundry-mcp.cureonics.workers.dev/mcp",
+      "tier": "core",
+      "auth_env": "TYPE_FOUNDRY_MCP_API_KEY"
+    },
+    {
+      "name": "brand-asset-registry",
+      "url": "https://brand-asset-registry-mcp.cureonics.workers.dev/mcp",
+      "tier": "core",
+      "auth_env": "BRAND_ASSET_REGISTRY_MCP_API_KEY"
+    },
+    {
+      "name": "culture-linguistics",
+      "url": "https://culture-linguistics-mcp.cureonics.workers.dev/mcp",
+      "tier": "core",
+      "auth_env": "CULTURE_LINGUISTICS_MCP_API_KEY"
+    },
+    {
+      "name": "regulated-claims",
+      "url": "https://regulated-claims-mcp.cureonics.workers.dev/mcp",
+      "tier": "core",
+      "auth_env": "REGULATED_CLAIMS_MCP_API_KEY"
+    },
+    {
+      "name": "socius-vigil",
+      "url": "https://socius-vigil-mcp.cureonics.workers.dev/mcp",
+      "tier": "support",
+      "auth_env": "SOCIUS_VIGIL_MCP_API_KEY"
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

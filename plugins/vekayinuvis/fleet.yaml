@@ -1,0 +1,200 @@
+# vekayinuvis MCP filosunun TEK GERÇEK KAYNAĞI.
+#
+# Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
+#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
+#
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
+# Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
+# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
+
+version: 2
+plugin: vekayinuvis
+plugin_version: "3.4.7"
+
+servers:
+  - name: ottoman-archives
+    url: https://ottoman.cureonics.com/mcp
+    tier: core
+    auth_env: OTTOMAN_ARCHIVES_MCP_API_KEY
+    role: >-
+      ÇEKİRDEK Osmanlı arşiv keşfi — 33-kaynaklı registry + IIIF tam-metin
+      (Gallica/LoC/IA/Princeton/SALT/Europeana/DPLA) + within-manifest search +
+      DergiPark/DSpace curated + TDV İslâm Ansiklopedisi + Hicri/Rumî/Miladi çevirici +
+      ebced/kronogram + defter şeması + eScriptorium matbu-korpus HTR (opt-in; el yazması
+      motoru değil). Her sorgunun keşif omurgası; kısıtlı-kaynak için erişim yol haritası.
+
+  - name: devlet-arsivleri
+    url: https://devarsiv.cureonics.com/mcp
+    tier: core
+    auth_env: DEVARSIV_MCP_API_KEY
+    role: >-
+      ÇEKİRDEK Resmî Devlet Arşivleri kataloğu — arama 5'lisi + süpürme/store 3'lüsü
+      (deep_search→deep_result + coverage) + belge 3'lüsü + harici görüntü (engine paramlı
+      OCR; Osmanlı varsayılanı transleyt) + eSatış sepeti 4'lüsü (ödeme YALNIZ insan/noVNC)
+      + satın-alınmış/yerel-arşiv 7'lisi (rebuild_archive + 300 DPI arşiv-öncelikli okuma) +
+      async OCR 2'lisi + durum 2'lisi = 27 araç; tek-cihaz oturum kilidi (HP).
+
+  - name: yoktez
+    url: https://yoktezmcp.fastmcp.app/mcp
+    tier: core
+    auth_env: null
+    role: >-
+      ÇEKİRDEK YÖK Ulusal Tez Merkezi — tahrir/mühimme/şer'iye sicili transkripsiyon tezleri
+      (search_yok_tez_detailed/get_yok_tez_thesis_details/get_yok_tez_document_markdown/search_yok_tez_by_anabilim_dali).
+      Bir BOA/BCA belgesinin tam-metnine erişimin birincil dolaylı yolu (tezler 50–200 belge
+      transkripsiyonu içerir). Authless (FastMCP host).
+
+  - name: literatur
+    url: https://literatur-mcp.surucu.dev/mcp
+    tier: academic
+    auth_env: null
+    role: >-
+      DergiPark Türk akademik dergi makaleleri — makale arama (yıl/tür/dizin/sıralama) +
+      PDF→HTML TAM METİN + referans çekme. ottoman-archives search_dergipark'ı (curated
+      OAI-PMH metadata) tam-metin ve tüm-dergi kapsamıyla tamamlar; HISTORIOGRAPHY birincil,
+      KANUN_GEREKÇESİ L5. Authless hazır remote (surucu.dev); büyük tam-metin → anamnesis'e
+      ingest.
+
+  - name: yok-akademik
+    url: https://yok-akademik.cureonics.com/mcp
+    tier: support
+    auth_env: YOK_AKADEMIK_MCP_API_KEY
+    role: >-
+      DESTEKLEYİCİ YÖK Akademik profilleri (15 salt-okunur araç) — akademisyen arama,
+      yayın/proje/tez danışmanlığı, eş-yazar ego-ağı. Modern prosopografi + ekol/uzman
+      haritası (HISTORIOGRAPHY/PROSOPOGRAPHY). Birincil arşiv işlevine gerekli değil;
+      bağlamı zenginleştirir.
+
+  - name: consensus
+    url: https://mcp.consensus.app/mcp
+    tier: academic
+    auth_env: null
+    role: >-
+      Hakemli makale sentezi (search). Tartışmalı tarihyazımı konularında kanıt sentezi.
+      OAuth 2.0 → /mcp tarayıcı akışı.
+
+  - name: scholar-gateway
+    url: https://connector.scholargateway.ai/mcp
+    tier: academic
+    auth_env: null
+    role: >-
+      Tam-metin akademik korpus + pasaj-düzeyi atıf (semanticSearch). Belirli bir tezin
+      desteklenmesi/çürütülmesi. OAuth/sağlayıcı key.
+
+  - name: exa
+    url: https://mcp.exa.ai/mcp
+    tier: academic
+    auth_env: null
+    role: >-
+      Akademik blog, kurum sayfası, ansiklopedi entries (web_search_exa/web_fetch_exa).
+      İkincil web kaynaklarına derinlemesine erişim. OAuth/Exa key.
+
+  - name: tavily
+    url: https://mcp.tavily.com/mcp
+    tier: academic
+    auth_env: TAVILY_API_KEY
+    role: >-
+      Geniş web tarama + çok-sayfa araştırma + crawl
+      (tavily_search/research/extract/crawl/map). Anlatı doğrulama, modern haber/blog.
+      OAuth/Tavily key.
+    extra:
+      _fix: >-
+        2026-08-06 denetimi: anahtarsız 401, TAVILY_API_KEY ile 200. Bearer kabul ediyor,
+        interaktif OAuth gerekmiyor.
+
+  - name: paper-search
+    url: https://server.smithery.ai/@adamamer20/paper-search-mcp-openai/mcp?api_key=${user_config.smithery_api_key}&profile=${user_config.smithery_profile}
+    tier: academic
+    auth_env: null
+    role: >-
+      Google Scholar tam aralığı + Semantic Scholar + CrossRef + PubMed (tıp tarihi) + arXiv
+      (DH); read_*_paper/download_*. Anglofon scholarship. Smithery-host → api_key
+      userConfig ile (anahtar yoksa graceful degrade → diğer akademik katman).
+
+  - name: openathens
+    url: https://openathens.cureonics.com/mcp
+    tier: fulltext
+    auth_env: OPENATHENS_MCP_API_KEY
+    role: >-
+      LİSANSLI kurumsal tam-metin kapısı (kitap+makale) — Millet Kütüphanesi / OpenAthens
+      SAML üzerinden 309 lisanslı veritabanından tam metin çeker. Tarih araştırmasında
+      paywall'lı monograf/makale/ansiklopedi maddesine yasal erişim (Türk/Osmanlı
+      çalışmaları için Millet Kütüphanesi kritik). 6 araç: oa_server_info ·
+      oa_list_databases · oa_resolve · oa_fetch_fulltext · oa_batch_submit ·
+      oa_batch_result. Tam-metin şelalesinde Tier 3 (literatur/paper-search'ten SONRA,
+      annas'tan ÖNCE). Getirilen tam-metin > eşik → anamnesis'e ingest. Sunucu-taraflı SAML
+      creds (claude.ai/grok'a GİRİLMEZ).
+
+  - name: annas-reader
+    url: https://annas.cureonics.com/mcp
+    tier: fulltext
+    auth_env: ANNAS_MCP_API_KEY
+    role: >-
+      SON-ÇARE kitap+makale tam-metin (Anna's Archive efemer-RAG reader) — lisanslı band
+      (openathens Tier 3) getiremeyince. book_search/article_search → get_document_info →
+      read_document/read_article/search_in_document (BM25). Out-of-print Osmanlı
+      çalışmaları, nadir monograflar, paywall-dışı makaleler. Telif: yalnız ANALİZ, toplu
+      birebir çoğaltma yok; getirilen tam-metin > eşik → anamnesis'e ingest → bounded query.
+      DjVu=djvutxt. İndirmeler kullanıcının makinesine iner.
+
+  - name: anamnesis
+    url: https://anamnesis-mcp.cureonics.workers.dev/mcp
+    tier: substrate
+    auth_env: ANAMNESIS_MCP_API_KEY
+    role: >-
+      BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL,
+      bağlam-ekonomisi altyapısı. Büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark
+      tam-metin makale, İА maddesi, IIIF within-manifest bloğu) ana bağlamda AKIL
+      YÜRÜTÜLMEZ; ingest_document(doc_id=<kanonik id: fon/kutu/gömlek · tez-no · DOI ·
+      İА-madde>) ile BİR KEZ indekslenir → semantic_search/hybrid_query(queries[]) ile
+      sınırlı, provenance-damgalı, graph-temelli dilim çekilir. Aynı doc_id iki kez ingest
+      edilmez (kanonik cache). upsert_triples/graph_neighbors/subgraph = kişi↔görev↔belge /
+      olay↔tarih↔kaynak ilişki grafiği (prosopografi/kronoloji).
+      shared/context-economy-contract.md Tier 2. Anahtar yoksa → bounded-chunk fetch'e
+      degrade (ottoman within-manifest + yoktez sayfa-bazlı), asla ham tam-metin dökümü.
+
+  - name: resmigazete
+    url: https://resmi-gazete-mcp.cureonics.workers.dev/mcp
+    tier: legislative
+    auth_env: RESMI_GAZETE_MCP_API_KEY
+    role: >-
+      T.C. Resmî Gazete erken-Cumhuriyet arşivi (`/eskiler/` 1920+) —
+      `rg_resolve_date`→`rg_get_item` ile tarih-bazlı ilan/kanun yayın kaydı çekimi +
+      `rg_search`/`rg_list_recent`; taranmış sayfalar rg-ocr çift-motor (pdftotext/tesseract
+      tur+eng) ile metne çevrilir (`rg_ocr_submit`→`rg_ocr_result` async kuyruk büyük
+      belgede). KANUN_GEREKÇESİ L4/L5 birincil yayın kaydı + EVENT_RECONSTRUCTION dönem
+      gazetesi doğrulaması. CF Worker, mevzuat HP relay reuse ile canlı; `/mcp` Bearer.
+
+  - name: mevzuat
+    url: https://mevzuat.cureonics.com/mcp
+    tier: legislative
+    auth_env: MEVZUAT_MCP_API_KEY
+    role: >-
+      mevzuat.gov.tr Türkiye Mevzuat Bilgi Sistemi — `search_mulga_mevzuat` (mülga
+      kanun/KHK/CBK arşivi) + `get_mevzuat_gerekce` (madde gerekçesi metni) +
+      `resolve_resmi_gazete` (RG çapraz-referans). KANUN_GEREKÇESİ modunun
+      antecedant-mevzuat zincirinin (L4/L5) birincil kaynağı; resmigazete/tbmm ile aynı
+      turda paralel. HP self-host (systemd), `/mcp` Bearer.
+
+  - name: tbmm
+    url: https://tbmm.cureonics.com/mcp
+    tier: legislative
+    auth_env: TBMM_MCP_API_KEY
+    role: >-
+      TBMM yasama tarihçesi — kanun teklifi→komisyon raporu→kabul edilmiş kanun soyağacı
+      (`tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi`) + Açık Erişim DSpace
+      (`tbmm_search_acik_erisim`/`tbmm_get_acik_erisim_document`)
+      geç-Osmanlı/erken-Cumhuriyet meclis zabıtları. KANUN_GEREKÇESİ L3/L4 birincil kaynağı
+      + SOURCE_HUNT DSpace kanıt-yoğunluğu. Pi self-host (systemd), `/mcp` Bearer.
+
+  - name: detsis
+    url: https://detsis.cureonics.com/mcp
+    tier: support
+    auth_env: DETSIS_MCP_API_KEY
+    role: >-
+      DESTEKLEYİCİ DETSİS (Devlet Teşkilatı Merkezi Kayıt Sistemi) — kurumsal prosopografi
+      zinciri
+      `detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar`
+      (teşkilat tarihçesi + kuruluş mevzuatı). PROSOPOGRAPHY modunda modern kurumsal
+      soyağacı tamamlayıcısı — **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez**. `/mcp`
+      Bearer.

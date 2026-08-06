@@ -167,8 +167,10 @@ with tempfile.TemporaryDirectory() as _cd:
     ctx2 = (out or {}).get("hookSpecificOutput", {}).get("additionalContext", "")
     check("uçtan uca: eksik anahtar → preflight uyarısı + doppler çözümü",
           "MEVZUAT_MCP_API_KEY" in ctx2 and "doppler run" in ctx2, ctx2[-220:])
-    check("uçtan uca: cache izole dizine yazıldı",
-          os.path.exists(os.path.join(_cd, "lex-sanitas", "fleet_probe.json")))
+    # Cache artık plugin adına göre ayrışır (cureonics-fleet/<plugin>.json) —
+    # iki plugin aynı makinede birbirinin prob sonucunu ezmesin diye.
+    check("uçtan uca: cache plugin-ayrışık izole dizine yazıldı",
+          os.path.exists(os.path.join(_cd, "cureonics-fleet", "lex-sanitas.json")))
 
 print("== scope_guard.py (UserPromptSubmit) ==")
 rc, out = run("scope_guard.py", {"prompt": "SGK ödeme reddi davam için itiraz dilekçesi yaz"})

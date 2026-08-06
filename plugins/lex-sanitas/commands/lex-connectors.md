@@ -52,13 +52,13 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
    - `openathens erişilemiyor ⇒ lisanslı band kapalı; annas-reader OTOMATİK AÇILMAZ (şelale sırası korunur)`
    - `evidentia kurulu değil ⇒ klinik iddialar unverified` · `sci-audit kurulu değil ⇒ çıktı-QA manuel`
 
-6. **Sürüklenme kapısını da koştur** (yapılandırma bütünlüğü — ağ gerektirmez):
+6. **Yapılandırma bütünlüğünü de bildir.** Filo `fleet.yaml`'den türetilir; bütünlük kapısı repo-düzeyi bir GELİŞTİRME aracıdır (kurulu plugin'de bulunmaz). Kaynak depoda çalışıyorsan:
 
    ```bash
-   python3 "${CLAUDE_PLUGIN_ROOT}/tools/check_drift.py"
+   python3 tools/fleetkit/check_drift.py --all
    ```
 
-   `exit 0` = türetilmiş dosyalar güncel, düzyazı sayıları gerçekle uyuşuyor, hook'lar lock'u okuyor. `exit 1` çıktısını olduğu gibi aktar — bu, bir sonraki titck-sınıfı arızanın erken uyarısıdır.
+   `exit 0` = türetilmiş dosyalar güncel, sürümler tutarlı, vendor'lı prob kanonikle bayt-özdeş, düzyazı sayıları gerçekle uyuşuyor. Kurulu plugin'den koşuyorsan bu adımı `skipped: repo dışı` olarak bildir — `fleet.lock.json`'daki `counts` yine de manifestoda kullanılabilir.
 
 7. **Özet:** kaç katman `ok`, hangileri kullanıcı aksiyonu bekliyor (Doppler Bearer inject / claude.ai connector ekleme), hangileri **yapılandırma arızası** taşıyor (bunlar kullanıcı aksiyonu değil, kod düzeltmesi ister) ve bu eksikliklerin hangi kapıları CONDITIONAL'a düşürdüğü.
 

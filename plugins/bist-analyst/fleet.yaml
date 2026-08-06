@@ -1,0 +1,17 @@
+# bist-analyst MCP filosunun TEK GERÇEK KAYNAĞI.
+#
+# Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
+#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
+#
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
+# Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
+# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
+
+version: 2
+plugin: bist-analyst
+plugin_version: "1.1.8"
+
+servers:
+  - name: borsa
+    url: https://borsamcp.fastmcp.app/mcp
+    auth_env: null

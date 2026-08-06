@@ -1,6 +1,6 @@
 {
   "name": "vekayinuvis",
-  "version": "3.4.6",
+  "version": "3.4.7",
   "userConfig": {
     "smithery_api_key": {
       "type": "string",
@@ -215,8 +215,12 @@
     "tavily": {
       "type": "http",
       "url": "https://mcp.tavily.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TAVILY_API_KEY}"
+      },
       "_tier": "academic",
-      "_role": "Geniş web tarama + çok-sayfa araştırma + crawl (tavily_search/research/extract/crawl/map). Anlatı doğrulama, modern haber/blog. OAuth/Tavily key."
+      "_role": "Geniş web tarama + çok-sayfa araştırma + crawl (tavily_search/research/extract/crawl/map). Anlatı doğrulama, modern haber/blog. OAuth/Tavily key.",
+      "_fix": "2026-08-06 denetimi: anahtarsız 401, TAVILY_API_KEY ile 200. Bearer kabul ediyor, interaktif OAuth gerekmiyor."
     },
     "paper-search": {
       "type": "http",

@@ -1,0 +1,21 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "bist-analyst",
+  "plugin_version": "1.1.8",
+  "counts": {
+    "servers": 1,
+    "gated": 0,
+    "public": 1,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "borsa",
+      "url": "https://borsamcp.fastmcp.app/mcp",
+      "auth_env": null
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

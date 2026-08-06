@@ -8,8 +8,8 @@
 #   agents/*.md                (⟨GEN⟩ tools: satırı)
 #   skills/lex-sanitas/references/00-mod-pipelines.md (⟨GEN⟩ mod×server matrisi)
 #
-# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/gen_fleet.py`
-# Denetim:          `python3 tools/check_drift.py`  (CI kapısı, ağ gerektirmez)
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
+# Denetim:          `python3 tools/fleetkit/check_drift.py --all`
 # Canlı sağlık:     `python3 hooks/scripts/fleet_probe.py --fresh`
 #
 # NEDEN VAR: 2026-08-02'de TİTCK kapılandı (Worker cache emekli, önbellek sunucuya
@@ -18,9 +18,13 @@
 # "gate yok" + hook GATED sözlüğünde yok + /lex-connectors tablosu "public").
 # Filo tek yerden türetilmedikçe bu sınıf arıza kaçınılmazdır.
 
-version: 1
+version: 2
 plugin: lex-sanitas
 plugin_version: "3.5.0"
+
+# Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
+# lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
+prose_count_check: true
 
 # ─────────────────────────────────────────────────────────────────────────────
 # WIRE EDİLEN SUNUCULAR (.mcp.json'a girer)
@@ -477,3 +481,54 @@ delegations:
     degrade: >-
       Kurulu değilse çıktı-QA manuel; atıf-adli + istatistik tutarlılık + Türkçe
       imla/halüsinasyon taraması yapılmaz, çıktıda beyan edilir.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ⟨GEN⟩ BLOKLARI — hangi dosyanın hangi bloğu hangi üreticiyle dolduğu.
+# v1'de bu eşleme gen_fleet.py'de HARDCODE'du (AGENT_SHARDS); v2'de veridir,
+# böylece üretici plugin-agnostik kalır.
+# ─────────────────────────────────────────────────────────────────────────────
+generated_blocks:
+  - file: commands/lex-connectors.md
+    name: fleet-env-table
+    generator: env_table
+
+  - file: skills/lex-sanitas/references/00-mod-pipelines.md
+    name: mode-server-matrix
+    generator: mode_matrix
+    config:
+      modes: [DRAFT, AMEND, ANALYZE, COMPLY, OPINE, RIA, COMPARATIVE_LAW,
+              TBMM_KANUN_TEKLIFI, EX_POST_EVALUATION]
+      abbr: {DRAFT: DRAFT, AMEND: AMEND, ANALYZE: ANLZ, COMPLY: CMPLY,
+             OPINE: OPINE, RIA: RIA, COMPARATIVE_LAW: COMP,
+             TBMM_KANUN_TEKLIFI: TBMM, EX_POST_EVALUATION: EXPOST}
+
+  - file: agents/legal-distiller.md
+    name: agent-tools
+    generator: agent_tools
+    style: yaml
+    config: {shards: [S1, S3], extra: [Read, Grep, Glob, WebFetch], companions: true}
+
+  - file: agents/comparative-law-researcher.md
+    name: agent-tools
+    generator: agent_tools
+    style: yaml
+    config: {shards: [S2, S4], extra: [Read, Grep, Glob, WebFetch], companions: true}
+
+  - file: agents/compliance-auditor.md
+    name: agent-tools
+    generator: agent_tools
+    style: yaml
+    config: {shards: [S1], extra: [Read, Grep, Glob], companions: true}
+
+  - file: agents/gerekce-drafter.md
+    name: agent-tools
+    generator: agent_tools
+    style: yaml
+    config: {shards: [S1, S3], extra: [Read, Grep, Glob], companions: true}
+
+mcp_comment: >-
+  TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam
+  kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite
+  önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır
+  (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk
+  Patent) claude.ai connector'ıdır — wire edilemez; bkz. commands/lex-connectors.md.

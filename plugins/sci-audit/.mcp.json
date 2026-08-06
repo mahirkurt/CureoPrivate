@@ -1,5 +1,5 @@
 {
-  "$comment": "sci-audit bundled scientific-core connectors. REMOTE (HTTP) ONLY — no stdio/local binaries by design (claude.ai-web compatible). Only servers with an official/community REMOTE endpoint are embedded here; anything without one (e.g. crossref) is connected as a claude.ai connector instead — see README 'MCP & connectors'. All embedded servers below are keyless (public bibliographic data); a keyed server uses ${ENV_VAR} expansion, never plaintext. PLACEHOLDER (future): a self-hosted tr-sciaudit-mcp (FastMCP) would be added here as an env-gated remote entry, e.g. {\"type\":\"http\",\"url\":\"https://tr-sciaudit.<host>/mcp\",\"headers\":{\"Authorization\":\"Bearer ${TR_SCIAUDIT_MCP_API_KEY}\"}} — see README.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — sci-audit MCP wiring. 4 server (0 Bearer-gated, 4 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "pubmed": {
       "type": "http",

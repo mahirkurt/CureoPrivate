@@ -1,0 +1,31 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "edupedia",
+  "plugin_version": "0.7.0",
+  "counts": {
+    "servers": 3,
+    "gated": 3,
+    "public": 0,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "maarif-mufredat",
+      "url": "https://mufredat.cureonics.com/mcp",
+      "auth_env": "MUFREDAT_MCP_API_KEY"
+    },
+    {
+      "name": "egitim-kaynak",
+      "url": "https://egitim-kaynak.cureonics.com/mcp",
+      "auth_env": "EGITIM_KAYNAK_MCP_API_KEY"
+    },
+    {
+      "name": "modul-yayin",
+      "url": "https://edupedia.cureonics.com/mcp",
+      "auth_env": "EDUPEDIA_PUBLISH_TOKEN"
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

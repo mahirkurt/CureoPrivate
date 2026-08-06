@@ -1,0 +1,37 @@
+# rxpraxis MCP filosunun TEK GERÇEK KAYNAĞI.
+#
+# Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
+#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
+#
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
+# Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
+# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
+
+version: 2
+plugin: rxpraxis
+plugin_version: "1.2.2"
+
+servers:
+  - name: titck
+    url: https://titck.cureonics.com/mcp
+    auth_env: TITCK_MCP_API_KEY
+
+  - name: mevzuat
+    url: https://mevzuat.cureonics.com/mcp
+    auth_env: MEVZUAT_MCP_API_KEY
+
+  - name: midas
+    url: https://midas-mcp.cureonics.workers.dev/mcp
+    auth_env: MIDAS_MCP_SHARED_SECRET
+
+  - name: pubmed
+    url: https://pubmed.mcp.claude.com/mcp
+    auth_env: null
+
+  - name: clinical-trials
+    url: https://hcls.mcp.claude.com/clinical_trials/mcp
+    auth_env: null
+
+  - name: biorxiv
+    url: https://hcls.mcp.claude.com/biorxiv/mcp
+    auth_env: null

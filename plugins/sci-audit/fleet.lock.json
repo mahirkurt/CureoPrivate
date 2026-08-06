@@ -1,0 +1,36 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "sci-audit",
+  "plugin_version": "0.2.1",
+  "counts": {
+    "servers": 4,
+    "gated": 0,
+    "public": 4,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "pubmed",
+      "url": "https://pubmed.mcp.claude.com/mcp",
+      "auth_env": null
+    },
+    {
+      "name": "pubmed-epmc",
+      "url": "https://pubmed.caseyjhand.com/mcp",
+      "auth_env": null
+    },
+    {
+      "name": "openalex",
+      "url": "https://openalex.caseyjhand.com/mcp",
+      "auth_env": null
+    },
+    {
+      "name": "semantic-scholar",
+      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
+      "auth_env": null
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

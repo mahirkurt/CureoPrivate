@@ -63,108 +63,112 @@
       "type": "http",
       "url": "https://medical.sidneybissoli.com/mcp",
       "_tier": "K",
+      "_role": "Terminoloji çapraz-yürüyüşü: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10 (37 araç) — medical-research §6 boşluk-kapatıcı",
       "_trust": "community-unverified (io.github.SidneyBissoli) — least-privilege, sandbox-first, klinik çıktıyı bağımsız çapraz-doğrula",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7",
-      "_role": "Terminoloji çapraz-yürüyüşü: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10 (37 araç) — medical-research §6 boşluk-kapatıcı"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7"
     },
     "nih-clinicaltables": {
       "type": "http",
       "url": "https://gateway.pipeworx.io/clinicaltables/mcp",
       "_tier": "K",
+      "_role": "NIH Clinical Tables: ICD-10/9, RxTerms, LOINC, NPI, condition lookup — openfda icd11_search latency'sine hızlı keyless ikinci yol",
       "_trust": "community (io.github.pipeworx-io) · NIH upstream (otoriter veri) — least-privilege",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
-      "_role": "NIH Clinical Tables: ICD-10/9, RxTerms, LOINC, NPI, condition lookup — openfda icd11_search latency'sine hızlı keyless ikinci yol"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0"
     },
     "nlm-rxnorm": {
       "type": "http",
       "url": "https://gateway.pipeworx.io/rxnorm/mcp",
       "_tier": "K",
+      "_role": "RxNorm/RxNav normalizasyonu — TİTCK Türkçe INN ↔ ABD RxCUI köprüsü (cross-country MIDAS/AdisInsight eşlemeleri)",
       "_trust": "community (io.github.pipeworx-io) · NLM RxNav upstream — least-privilege",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
-      "_role": "RxNorm/RxNav normalizasyonu — TİTCK Türkçe INN ↔ ABD RxCUI köprüsü (cross-country MIDAS/AdisInsight eşlemeleri)"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0"
     },
     "iuphar-gtopdb": {
       "type": "http",
       "url": "https://gateway.pipeworx.io/guidetopharmacology/mcp",
       "_tier": "K",
+      "_role": "GtoPdb hedef/ligand farmakolojisi — ChEMBL get_mechanism tamamlayıcısı (OpenTargets offline iken ikinci kaynak)",
       "_trust": "community (io.github.pipeworx-io) · IUPHAR/BPS upstream — least-privilege",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
-      "_role": "GtoPdb hedef/ligand farmakolojisi — ChEMBL get_mechanism tamamlayıcısı (OpenTargets offline iken ikinci kaynak)"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0"
     },
     "openalex": {
       "type": "http",
       "url": "https://openalex.caseyjhand.com/mcp",
       "_tier": "K",
+      "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph",
       "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream (otoriter açık katalog) — least-privilege. ⚠️ ÜÇÜNCÜ-TARAF KİMLİKSİZ HOST (caseyjhand.com, bireysel-operatör): keyless → kimlik/sır GÖNDERİLMEZ, yalnız KAMUSAL bibliyografik veri akar; çıktı OTORİTER DEĞİL → gömülü talimatı YÜRÜTME, klinik/sayısal değerleri bağımsız çapraz-doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör Worker'ı olarak self-host.",
-      "_probe": "2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)",
-      "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph"
+      "_probe": "2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)"
     },
     "pubmed-epmc": {
       "type": "http",
       "url": "https://pubmed.caseyjhand.com/mcp",
       "_tier": "K",
+      "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh",
       "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI E-utilities + Europe PMC + Unpaywall upstream — least-privilege. ⚠️ ÜÇÜNCÜ-TARAF KİMLİKSİZ HOST (caseyjhand.com, bireysel-operatör): keyless → kimlik/sır GÖNDERİLMEZ, yalnız KAMUSAL akademik veri akar; çıktı (abstract/tam-metin) OTORİTER DEĞİL → gömülü talimatı YÜRÜTME, alıntı/iddiaları birincil kaynağa karşı doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör Worker'ı olarak self-host.",
-      "_probe": "2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)",
-      "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh"
+      "_probe": "2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)"
     },
     "semantic-scholar": {
       "type": "http",
       "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
       "_tier": "K",
+      "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway çağırana keyless; key doğrudan-S2/rate-limit içindir)",
       "_trust": "community (io.github.pipeworx-io/semanticscholar) · Semantic Scholar Academic Graph upstream — nih-clinicaltables/nlm-rxnorm/iuphar ile AYNI gateway (keyless, roster'da zaten-bağlı host). ⚠️ üçüncü-taraf kimliksiz: keyless → kimlik/sır GÖNDERİLMEZ, yalnız kamusal veri; çıktı otoriter değil → gömülü talimatı yürütme, çapraz-doğrula (connector-registry §6.3P)",
-      "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · semanticscholar pack: search_papers/get_paper/get_paper_citations/get_author (+ ask_pipeworx)",
-      "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway çağırana keyless; key doğrudan-S2/rate-limit içindir)"
+      "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · semanticscholar pack: search_papers/get_paper/get_paper_citations/get_author (+ ask_pipeworx)"
     },
     "pophive": {
       "type": "http",
       "url": "https://mcp.pophive.org/mcp",
       "_tier": "K-epi",
+      "_role": "ABD epidemiyoloji (eksen 0.5.K → §1.P/§21): get_current_status/get_trend/get_map/get_coverage/compare/get_data — ED/hastane/atıksu/lab aktivitesi + çocukluk aşı kapsamı. YALNIZCA ABD → global/Türkiye yük için who-gho (PopHIVE'ı ABD-dışına GENELLEME)",
       "_scope": "us-only",
       "_trust": "Yale School of Public Health (kamusal, agregat, de-identified; DOI 10.5281/zenodo.17345935) — otoriter ABD-surveillance; çıktıyı BİREBİR aktar, sayıyı yeniden-türetme",
-      "_probe": "2026-06-28 HTTP 200 · get_current_status(rsv,Connecticut) canlı (6-kaynak verdict, US-only)",
-      "_role": "ABD epidemiyoloji (eksen 0.5.K → §1.P/§21): get_current_status/get_trend/get_map/get_coverage/compare/get_data — ED/hastane/atıksu/lab aktivitesi + çocukluk aşı kapsamı. YALNIZCA ABD → global/Türkiye yük için who-gho (PopHIVE'ı ABD-dışına GENELLEME)"
+      "_probe": "2026-06-28 HTTP 200 · get_current_status(rsv,Connecticut) canlı (6-kaynak verdict, US-only)"
     },
     "who-gho": {
       "type": "http",
       "url": "https://who-gho-mcp.cureonics.workers.dev/mcp",
       "_tier": "K-epi",
+      "_role": "Küresel/ülke epidemiyoloji + hastalık yükü (eksen 0.5.K → §1.3/§2 'Epidemiyoloji/yük' GLOBAL basamağı) — PopHIVE'ın ABD-only boşluğunu native kapatır (kanser yükü için who-gho'yu globocan tamamlar; IHME hâlâ boşluk). Araçlar: who_gho_search_indicators (topic→GHO kodu) · who_gho_query (indicator_code + country ISO3/GLOBAL + year + Dim1) · who_gho_dimensions (COUNTRY/SEX/AGEGROUP/REGION çözümü)",
       "_scope": "global",
       "_trust": "operator self-host (Cloudflare Worker) — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1): upstream WHO GHO OData (ghoapi.azureedge.net) authless, server-side sır YOK → confused-deputy yok; salt-okunur. Değer OTORİTER (WHO GHO) ama modellenmiş+raporlanan karışımı → her satır caveat taşır, ülke/yıl yoksa boşluk (uydurma yok)",
-      "_probe": "2026-07-05 CANLI (Version 30df2ff2) — keyless initialize 200 · tools/list 3 araç · who_gho_query(WHOSIS_000001,TUR,2019) E2E → 77.6/75.1/80.1 (BTSX/MLE/FMLE) + caveat; upstream /Indicator, /DIMENSION/COUNTRY/DimensionValues doğrulandı",
-      "_role": "Küresel/ülke epidemiyoloji + hastalık yükü (eksen 0.5.K → §1.3/§2 'Epidemiyoloji/yük' GLOBAL basamağı) — PopHIVE'ın ABD-only boşluğunu native kapatır (kanser yükü için who-gho'yu globocan tamamlar; IHME hâlâ boşluk). Araçlar: who_gho_search_indicators (topic→GHO kodu) · who_gho_query (indicator_code + country ISO3/GLOBAL + year + Dim1) · who_gho_dimensions (COUNTRY/SEX/AGEGROUP/REGION çözümü)"
+      "_probe": "2026-07-05 CANLI (Version 30df2ff2) — keyless initialize 200 · tools/list 3 araç · who_gho_query(WHOSIS_000001,TUR,2019) E2E → 77.6/75.1/80.1 (BTSX/MLE/FMLE) + caveat; upstream /Indicator, /DIMENSION/COUNTRY/DimensionValues doğrulandı"
     },
     "globocan": {
       "type": "http",
       "url": "https://globocan-mcp.cureonics.workers.dev/mcp",
       "_tier": "K-epi",
+      "_role": "Küresel/ülke KANSER yükü (eksen 0.5.K, Onko ekseni § — who-gho'nun genel GHO'sunu kanser-özelinde tamamlar; PopHIVE ABD-only'yi global insidans/mortalite ile aşar; IHME/GBD hâlâ boşluk). Araçlar: gco_list_cancers (36 site + ICD) · gco_resolve_population (ISO3/ad→GLOBOCAN kodu; TUR=792) · gco_query (population + cancer + sex + incidence/mortality → total/ASR/crude/cum_risk/rank/UI)",
       "_scope": "global",
       "_trust": "operator self-host (Cloudflare Worker) — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1): upstream IARC GLOBOCAN 2022 API (gco-api.iarc.fr) authless+headerless, server-side sır YOK → confused-deputy yok; salt-okunur. Değer IARC-otoriter ama MODELLENMİŞ TAHMİN (referans yıl 2022, ülke veri-yoğunluğuna göre metodoloji değişir) → her satır ui belirsizlik aralığı + caveat; kombinasyon yoksa boşluk (uydurma yok)",
-      "_probe": "2026-07-05 CANLI (Version 8825e031) — endpoint Playwright ile Cancer Today XHR'inden yakalandı; path {type}/{sex} (sex/type sırası bilinen-değerle DOĞRULANDI, ilk sürümdeki swap düzeltildi). E2E: Türkiye(792) female breast(20) mortalite 7360/insidans 25249 (yayınlanan değerlerle birebir), male lung(15) insidans 33039/mortalite 32119; all-cancers female 34 satır (Meme rank 1, 25249), sessiz-kesme yok; prevalence prev_time 1/3/5; 41 kanser sitesi ICD'li",
-      "_role": "Küresel/ülke KANSER yükü (eksen 0.5.K, Onko ekseni § — who-gho'nun genel GHO'sunu kanser-özelinde tamamlar; PopHIVE ABD-only'yi global insidans/mortalite ile aşar; IHME/GBD hâlâ boşluk). Araçlar: gco_list_cancers (36 site + ICD) · gco_resolve_population (ISO3/ad→GLOBOCAN kodu; TUR=792) · gco_query (population + cancer + sex + incidence/mortality → total/ASR/crude/cum_risk/rank/UI)"
+      "_probe": "2026-07-05 CANLI (Version 8825e031) — endpoint Playwright ile Cancer Today XHR'inden yakalandı; path {type}/{sex} (sex/type sırası bilinen-değerle DOĞRULANDI, ilk sürümdeki swap düzeltildi). E2E: Türkiye(792) female breast(20) mortalite 7360/insidans 25249 (yayınlanan değerlerle birebir), male lung(15) insidans 33039/mortalite 32119; all-cancers female 34 satır (Meme rank 1, 25249), sessiz-kesme yok; prevalence prev_time 1/3/5; 41 kanser sitesi ICD'li"
     },
     "ema": {
       "type": "http",
       "url": "https://ema-mcp.cureonics.workers.dev/mcp",
       "_tier": "O",
+      "_role": "AB merkezi ruhsat + CHMP/EPAR (Regülatuar 0.5.C — RegulatoryMCP kaldırıldığında kalan EMA boşluğunu kapatır; openFDA'nın AB muadili). Her AB ilacı: ruhsat durumu · CHMP opinion/decision tarihi · orphan/conditional/accelerated/PRIME/advanced-therapy/biosimilar bayrakları · ATC · INN · MAH · endikasyon · EPAR URL. Araçlar: ema_search_medicines · ema_get_medicine · ema_filter (ATC prefix+status+bayraklar) · ema_stats. Tam metin EPAR url'inde (talep üzerine anamnesis'e ingest)",
       "_scope": "eu-regulatory",
       "_trust": "operator self-host (Cloudflare Worker) — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1): BAKED public dataset (EMA Medicines/EPAR XLSX, build_corpus.mjs), runtime upstream çağrısı YOK, server-side sır YOK → confused-deputy yok. Değer EMA-otoriter; nokta-zaman snapshot → generated_at damgası + caveat; snapshot'ta yoksa yokluk-kanıtı değil (uydurma yok)",
-      "_probe": "2026-07-05 CANLI (Version ff226c89) — baked corpus 2712 ilaç (2321 beşeri/391 vet, 1863 authorised), generated_at 05/07/2026; E2E: ema_get_medicine Keytruda→Authorised/L01FF02/opinion 2015-05-20, ema_filter(L01,authorised,orphan)→5 onkoloji, ema_stats total 2712",
-      "_role": "AB merkezi ruhsat + CHMP/EPAR (Regülatuar 0.5.C — RegulatoryMCP kaldırıldığında kalan EMA boşluğunu kapatır; openFDA'nın AB muadili). Her AB ilacı: ruhsat durumu · CHMP opinion/decision tarihi · orphan/conditional/accelerated/PRIME/advanced-therapy/biosimilar bayrakları · ATC · INN · MAH · endikasyon · EPAR URL. Araçlar: ema_search_medicines · ema_get_medicine · ema_filter (ATC prefix+status+bayraklar) · ema_stats. Tam metin EPAR url'inde (talep üzerine anamnesis'e ingest)"
+      "_probe": "2026-07-05 CANLI (Version ff226c89) — baked corpus 2712 ilaç (2321 beşeri/391 vet, 1863 authorised), generated_at 05/07/2026; E2E: ema_get_medicine Keytruda→Authorised/L01FF02/opinion 2015-05-20, ema_filter(L01,authorised,orphan)→5 onkoloji, ema_stats total 2712"
     },
     "mevzuat-bilgisi": {
       "type": "http",
       "url": "https://mevzuat.surucu.dev/mcp",
       "_tier": "secondary",
+      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat",
       "_secondary": true,
       "_trust": "topluluk (surucu.dev) — primer Mevzuat'a ÇAPRAZ-KONTROL aynası; primacy primer Mevzuat'tadır",
-      "_probe": "2026-06-28 HTTP 200 · search_kanun('ilaç')→67 (kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak)",
-      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat"
+      "_probe": "2026-06-28 HTTP 200 · search_kanun('ilaç')→67 (kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak)"
     },
     "titck-cache": {
       "type": "http",
       "url": "https://titck.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
+      },
       "_tier": "O",
-      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal TİTCK şeması"
+      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal TİTCK şeması",
+      "_fix": "2026-08-02 TİTCK kapılanması (Worker cache emekli, önbellek sunucuya taşındı) bu plugin'de kaçırıldı: anahtarsız 401. 2026-08-06'da onarıldı. 'titck-cache' adı tarihseldir — artık ayrı bir cache Worker'ı YOK, uç doğrudan titck.cureonics.com."
     },
     "yok-akademik": {
       "type": "http",
@@ -182,9 +186,9 @@
         "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "O",
+      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE). 7 araç: oa_resolve · oa_fetch_fulltext(ingest) · oa_session_status · oa_list_databases · oa_server_info · oa_batch_submit/oa_batch_result. Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: getirme Xvfb altında headed kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + cf_clearance) → anti-bot'lu yayıncılarda (Wiley/Elsevier/OUP/Sage/T&F) non-interactive Cloudflare challenge kendiliğinden temizlenir ve TAM METİN gelir; yalnız interactive reCAPTCHA/Turnstile çözülemezse `challenge_required` zarfı döner (host + operatör noVNC ipucu; manual_required'dan AYRI, gövdesiz — uydurma yok) → kullanıcıya 'operatör noVNC gerekiyor' bildir + Tier 4/5'e degrade et (sessiz atlama YOK). Oturum sıcaklığı/bekleyen challenge: oa_session_status (validated/session_age_s/pending_challenge). Bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok",
       "_trust": "operator self-host (HP systemd — hardened OAuth 2.1 + Bearer; yok-akademik/annas ile aynı desen)",
-      "_probe": "2026-07-03 HTTP 401 SECURED (Bearer kapısı aktif) · openathens-mcp CANLI (SP-initiated OpenAthens SAML via Millet Kütüphanesi)",
-      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE): oa_resolve/oa_fetch_fulltext(ingest)/oa_list_databases/oa_batch_submit/oa_batch_result. Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane; anti-bot yayıncı → manual_required deep-link; bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok"
+      "_probe": "2026-07-14 CANLI + claude.ai-optimize: OAuth 2.1 tam dans doğrulandı (DCR→authorize→S256 PKCE→token), CORS preflight 204 + WWW-Authenticate expose (browser bootstrap), 401 mutlak resource_metadata (RFC 9728), 7 araç. Anti-bot v2 canlı (Xvfb headed profil; gerçek PDF tam-metin teyitli)."
     },
     "annas-reader": {
       "type": "http",
@@ -193,9 +197,9 @@
         "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
       },
       "_tier": "O",
+      "_role": "Tam-metin geri-çağırma (full-text cascade Tier 5 — SON ÇARE, lisanslı band [OpenAthens Tier 3 + Wiley Tier 4] getiremeyince): article_search/article_download (DOI), book_search/book_download (MD5+format). ⚠️ İndirmeler KULLANICININ makinesine iner (sandbox'a değil) → içerik analizi için anamnesis'e ingest/yapıştır. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1)",
       "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",
-      "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)",
-      "_role": "Tam-metin geri-çağırma (full-text cascade Tier 5 — SON ÇARE, lisanslı band [OpenAthens Tier 3 + Wiley Tier 4] getiremeyince): article_search/article_download (DOI), book_search/book_download (MD5+format). ⚠️ İndirmeler KULLANICININ makinesine iner (sandbox'a değil) → içerik analizi için anamnesis'e ingest/yapıştır. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1)"
+      "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)"
     },
     "anamnesis": {
       "type": "http",
@@ -204,17 +208,17 @@
         "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "O",
+      "_role": "RAG/GraphRAG retrieval substratı (8 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + corpus_stats + forget_document (doc_id ile temiz silme, orphan-node, idempotent). **ÇOK-SORGULU HİBRİT GETİRİM (v1.6.0, tam §4.1.1): semantic_search/hybrid_query = `queries[]` ayrıştırma → her sorgu için vektör (bge-m3) ∥ BM25 (FTS5) → RRF füzyon (tüm sorgu×arm) → cross-encoder rerank (bge-reranker) → top-k; her aşama graceful-degrade.** Karmaşık çok-yönlü soruda recall-maks (detay atlamama): soruyu alt-yönlere/eşanlamlılara böl→`queries[]` ile geç; kavramsal+tam-terminoloji (ilaç/gen/kod). §8 retrieval telemetri CF-log'da. Bağlam-penceresi koruması (evidence_index). Vectorize 1024-d cosine + D1 graph + FTS5; Worker ver 984a9b59",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
-      "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)",
-      "_role": "RAG/GraphRAG retrieval substratı (8 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + corpus_stats + forget_document (doc_id ile temiz silme, orphan-node, idempotent). **ÇOK-SORGULU HİBRİT GETİRİM (v1.6.0, tam §4.1.1): semantic_search/hybrid_query = `queries[]` ayrıştırma → her sorgu için vektör (bge-m3) ∥ BM25 (FTS5) → RRF füzyon (tüm sorgu×arm) → cross-encoder rerank (bge-reranker) → top-k; her aşama graceful-degrade.** Karmaşık çok-yönlü soruda recall-maks (detay atlamama): soruyu alt-yönlere/eşanlamlılara böl→`queries[]` ile geç; kavramsal+tam-terminoloji (ilaç/gen/kod). §8 retrieval telemetri CF-log'da. Bağlam-penceresi koruması (evidence_index). Vectorize 1024-d cosine + D1 graph + FTS5; Worker ver 984a9b59"
+      "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)"
     },
     "drugddx": {
       "type": "http",
       "url": "https://drugddx-mcp.cureonics.workers.dev/mcp",
       "_tier": "O",
+      "_role": "Klinik-DDI fallback — RxNorm normalize + DailyMed label etkileşim bölümü (NOT a pairwise DDI engine; klinik-DDI boşluk-kapatıcı)",
       "_trust": "operator self-host (Cloudflare Worker) — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1): /mcp Bearer-gate'siz; salt-okunur NIH RxNav/DailyMed proxy, server-side upstream cred YOK → confused-deputy/sır sızıntısı yok; maliyet = yalnız Worker invocation",
-      "_probe": "2026-06-28 OPEN/keyless (MCP_ALLOW_NO_AUTH=1; salt-okunur public-API proxy) · no-auth initialize 200 · serverInfo drugddx-mcp v1.0.0",
-      "_role": "Klinik-DDI fallback — RxNorm normalize + DailyMed label etkileşim bölümü (NOT a pairwise DDI engine; klinik-DDI boşluk-kapatıcı)"
+      "_probe": "2026-06-28 OPEN/keyless (MCP_ALLOW_NO_AUTH=1; salt-okunur public-API proxy) · no-auth initialize 200 · serverInfo drugddx-mcp v1.0.0"
     },
     "openfda": {
       "type": "http",
@@ -223,9 +227,9 @@
         "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}"
       },
       "_tier": "O",
+      "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan: `med-terminologies` icd11'i WHO creds yokluğundan ÇALIŞMIYOR. RegulatoryMCP/Lex-Sanitas roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Lex-Sanitas connector'ından).",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
-      "_probe": "2026-06-28 RE-GATED Bearer (icd11_search WHO ICD-11 server-side OAuth cred → confused-deputy önlemi; açık değil) · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)",
-      "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan: `med-terminologies` icd11'i WHO creds yokluğundan ÇALIŞMIYOR. RegulatoryMCP/Lex-Sanitas roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Lex-Sanitas connector'ından)."
+      "_probe": "2026-06-28 RE-GATED Bearer (icd11_search WHO ICD-11 server-side OAuth cred → confused-deputy önlemi; açık değil) · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)"
     },
     "evidentia-kb": {
       "type": "http",
@@ -234,9 +238,9 @@
         "Authorization": "Bearer ${EVIDENTIA_KB_MCP_API_KEY}"
       },
       "_tier": "O",
+      "_role": "OPSİYONEL semantik recall takviyesi (medical-research Adım 0.4 + Completeness Gate): `kb_search(query,k)` KB'yi (SKILL.md + references/*.md, knowledge-map.md HARİÇ) bge-m3 ile arar, ilgili bölümleri {file,section,score} ile döner. Bağlı değilse akış map-only'ye degrade eder — ASLA kapı değil. (`kb_upsert` = setup-only, Bearer-gated, scripts/kb_ingest.py içindir.)",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; origins claude.ai/claude.com/grok.com/chatgpt.com)",
-      "_probe": "2026-06-26 HTTP 401 SECURED · authenticated initialize 200 · kb_search canlı (244 chunk/24 dosya; bge-m3 Vectorize; layer-file recall doğrulandı)",
-      "_role": "OPSİYONEL semantik recall takviyesi (medical-research Adım 0.4 + Completeness Gate): `kb_search(query,k)` KB'yi (SKILL.md + references/*.md, knowledge-map.md HARİÇ) bge-m3 ile arar, ilgili bölümleri {file,section,score} ile döner. Bağlı değilse akış map-only'ye degrade eder — ASLA kapı değil. (`kb_upsert` = setup-only, Bearer-gated, scripts/kb_ingest.py içindir.)"
+      "_probe": "2026-06-26 HTTP 401 SECURED · authenticated initialize 200 · kb_search canlı (244 chunk/24 dosya; bge-m3 Vectorize; layer-file recall doğrulandı)"
     }
   }
 }

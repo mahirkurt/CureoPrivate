@@ -1,0 +1,26 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "fon-uzmani",
+  "plugin_version": "1.3.0",
+  "counts": {
+    "servers": 2,
+    "gated": 1,
+    "public": 1,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "borsa",
+      "url": "https://borsamcp.fastmcp.app/mcp",
+      "auth_env": null
+    },
+    {
+      "name": "fon-mcp",
+      "url": "https://fon-mcp.cureonics.workers.dev/mcp",
+      "auth_env": "FON_MCP_MCP_API_KEY"
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

@@ -1,0 +1,118 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "vekayinuvis",
+  "plugin_version": "3.4.7",
+  "counts": {
+    "servers": 17,
+    "gated": 11,
+    "public": 6,
+    "companions": 0,
+    "delegations": 0
+  },
+  "servers": [
+    {
+      "name": "ottoman-archives",
+      "url": "https://ottoman.cureonics.com/mcp",
+      "tier": "core",
+      "auth_env": "OTTOMAN_ARCHIVES_MCP_API_KEY"
+    },
+    {
+      "name": "devlet-arsivleri",
+      "url": "https://devarsiv.cureonics.com/mcp",
+      "tier": "core",
+      "auth_env": "DEVARSIV_MCP_API_KEY"
+    },
+    {
+      "name": "yoktez",
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "tier": "core",
+      "auth_env": null
+    },
+    {
+      "name": "literatur",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "tier": "academic",
+      "auth_env": null
+    },
+    {
+      "name": "yok-akademik",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "tier": "support",
+      "auth_env": "YOK_AKADEMIK_MCP_API_KEY"
+    },
+    {
+      "name": "consensus",
+      "url": "https://mcp.consensus.app/mcp",
+      "tier": "academic",
+      "auth_env": null
+    },
+    {
+      "name": "scholar-gateway",
+      "url": "https://connector.scholargateway.ai/mcp",
+      "tier": "academic",
+      "auth_env": null
+    },
+    {
+      "name": "exa",
+      "url": "https://mcp.exa.ai/mcp",
+      "tier": "academic",
+      "auth_env": null
+    },
+    {
+      "name": "tavily",
+      "url": "https://mcp.tavily.com/mcp",
+      "tier": "academic",
+      "auth_env": "TAVILY_API_KEY"
+    },
+    {
+      "name": "paper-search",
+      "url": "https://server.smithery.ai/@adamamer20/paper-search-mcp-openai/mcp?api_key=${user_config.smithery_api_key}&profile=${user_config.smithery_profile}",
+      "tier": "academic",
+      "auth_env": null
+    },
+    {
+      "name": "openathens",
+      "url": "https://openathens.cureonics.com/mcp",
+      "tier": "fulltext",
+      "auth_env": "OPENATHENS_MCP_API_KEY"
+    },
+    {
+      "name": "annas-reader",
+      "url": "https://annas.cureonics.com/mcp",
+      "tier": "fulltext",
+      "auth_env": "ANNAS_MCP_API_KEY"
+    },
+    {
+      "name": "anamnesis",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "tier": "substrate",
+      "auth_env": "ANAMNESIS_MCP_API_KEY"
+    },
+    {
+      "name": "resmigazete",
+      "url": "https://resmi-gazete-mcp.cureonics.workers.dev/mcp",
+      "tier": "legislative",
+      "auth_env": "RESMI_GAZETE_MCP_API_KEY"
+    },
+    {
+      "name": "mevzuat",
+      "url": "https://mevzuat.cureonics.com/mcp",
+      "tier": "legislative",
+      "auth_env": "MEVZUAT_MCP_API_KEY"
+    },
+    {
+      "name": "tbmm",
+      "url": "https://tbmm.cureonics.com/mcp",
+      "tier": "legislative",
+      "auth_env": "TBMM_MCP_API_KEY"
+    },
+    {
+      "name": "detsis",
+      "url": "https://detsis.cureonics.com/mcp",
+      "tier": "support",
+      "auth_env": "DETSIS_MCP_API_KEY"
+    }
+  ],
+  "companions": [],
+  "delegations": []
+}

@@ -75,3 +75,18 @@ PY
 ```
 
 > **Not — v2.6.0:** Bu harness, lex-sanitas v2.5.7'ye kadar ertelenen üretim-standardı test/şema altyapısının ilk sürümüdür. Senaryolar kanıt-temelli ve kapsam-bilinçlidir; ileride `pytest`-tabanlı bir koşucu eklenebilir (v2.7+ olası).
+
+## `fleet_registry_tests.yaml` (v3.5.0)
+
+Filo kayıt defterinin **canlı** invaryantları — 11 vaka: titck'in gerçekten
+kapılı olduğu (FR-01), `auth_env: null` işaretli her server'ın gerçekten
+anahtarsız 200 döndüğü (FR-02), her env adının Doppler'da bulunduğu (FR-03),
+server↔companion kesişiminin boş olduğu (FR-04), preflight'ın 401'i **arıza**
+olarak bildirdiği (FR-05), sağlıklı filoda sessiz kaldığı (FR-06), prob
+istemcisinin kendi arızasını üretmediği (FR-07 — UA/okuma-sınırı/zaman-aşımı),
+türetilmiş dosyaların elle düzenlenemediği (FR-08), tam-metin şelalesinin
+otomatik atlanmadığı (FR-09), yoktez wire'ının G7'yi hard PASS yaptığı (FR-10)
+ve doktrin tam-metin katmanının çalıştığı (FR-11).
+
+**Ağ gerektirir.** Ağsız/deterministik CI kapısı `tools/check_drift.py`'dir:
+türetilmiş dosya sürüklenmesi + düzyazı filo sayısı + hook kapsam açığı.

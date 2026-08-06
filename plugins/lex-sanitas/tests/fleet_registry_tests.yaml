@@ -1,0 +1,106 @@
+suite: fleet_registry
+version: "3.5.0"
+description: >-
+  Filo kayıt defterinin (fleet.yaml → türev artefaktlar) davranışsal invaryantları.
+  Bu vakalar AĞ ERİŞİMİ gerektirir (canlı prob + Doppler secret listesi). Ağsız,
+  deterministik CI kapısı için `tools/check_drift.py` kullanın — o yapılandırma
+  bütünlüğünü kanıtlar, bu dosya CANLI gerçekliği kanıtlar.
+
+  Koşum yardımcıları:
+    doppler run -p cureohub -c dev_personal -- python3 hooks/scripts/fleet_probe.py --fresh
+    python3 tools/check_drift.py
+
+cases:
+  - id: FR-01-titck-gated
+    given: >-
+      titck.cureonics.com'a ANAHTARSIZ bir MCP `initialize` isteği atılır, sonra
+      aynı istek TITCK_MCP_API_KEY ile tekrarlanır.
+    expect:
+      - "Anahtarsız istek HTTP 401 dönmeli — TİTCK 2026-08-02'de kapılandı (açık Worker cache emekli, önbellek sunucuya taşındı)."
+      - "Anahtarlı istek HTTP 200 dönmeli."
+      - "fleet.yaml'de titck.auth_env == TITCK_MCP_API_KEY olmalı; .mcp.json'da Authorization header'ı bulunmalı."
+    rationale: >-
+      Bu, v3.5.0'ı tetikleyen asıl arızadır. Plugin titck'i 'public' sayıyordu;
+      ilaç/cihaz regülasyon katmanı her çağrıda 401 alıyor ve bu bir wiring hatası
+      olduğu hiçbir yerden anlaşılmıyordu.
+
+  - id: FR-02-public-server-anahtarsiz-200
+    given: "fleet.yaml'de auth_env: null işaretli her server anahtarsız prob edilir."
+    expect:
+      - "mevzuat-bilgisi, yoktez, literatur anahtarsız HTTP 200 dönmeli."
+      - "Herhangi biri 401/403 dönerse upstream KAPILANMIŞ demektir → fleet.yaml'e auth_env eklenmeli, sonra `python3 tools/gen_fleet.py`."
+      - "Bu, titck dersinin genellemesidir: 'public' bir varsayım değil, ölçülen bir olgudur."
+
+  - id: FR-03-env-adlari-doppler-da-var
+    given: >-
+      fleet.yaml'deki her auth_env adı Doppler cureohub/dev_personal secret
+      listesinde aranır.
+    expect:
+      - "16 gated server'ın env adının TAMAMI Doppler'da bulunmalı."
+      - "Bulunmayan ad = yanlış yazım veya emekli secret → o katman sessizce auth_missing'e düşer."
+      - "health-policy için kanonik ad HEALTH_POLICY_MCP_API_KEY'dir (eski LEX_SANITAS_MCP_API_KEY rename artığıdır; ikisi de canlıda kabul edilse bile kanonik olan yazılır)."
+
+  - id: FR-04-companion-wire-kesisimi-bos
+    given: "fleet.yaml servers[] ve companions[] adları karşılaştırılır."
+    expect:
+      - "Kesişim BOŞ olmalı — bir ad hem wire'lı hem companion olamaz (validate_fleet bunu ValueError ile reddeder)."
+      - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 5 üye taşımalı."
+      - "Stop hook'un zorunlu manifesto satırı sayısı 7 olmalı (5 companion + 2 delegasyon)."
+
+  - id: FR-05-preflight-401-i-ariza-olarak-bildirir
+    given: >-
+      Bir gated server'ın anahtarı bilinçli olarak bozulur (geçersiz değer) ve
+      SessionStart preflight taze cache ile koşulur.
+    expect:
+      - "additionalContext 'YAPILANDIRMA ARIZASI' ifadesi taşımalı."
+      - "'graceful degrade' olarak SUNULMAMALI — bu düzeltilebilir bir wiring hatasıdır."
+      - "Çözüm yolu gösterilmeli: fleet.yaml düzelt → python3 tools/gen_fleet.py."
+      - "Anahtarın tamamen YOK olduğu hâl bundan AYRI raporlanmalı (auth_missing → doppler run önerisi)."
+
+  - id: FR-06-prob-saglikli-filoda-sessiz
+    given: "Tüm filo erişilebilirken SessionStart preflight koşulur."
+    expect:
+      - "additionalContext '[preflight]' bölümü İÇERMEMELİ — gürültü yok."
+      - "Konvansiyonlar (TAM-FİLO, NO-FABRICATION, ŞELALE, SCOPE GUARD) yine enjekte edilmeli."
+      - "Prob 24 saat cache'lenmeli; ikinci oturum ağa çıkmamalı."
+
+  - id: FR-07-prob-kendi-arizasini-uretmemeli
+    given: >-
+      Prob istemcisinin HTTP davranışı denetlenir (User-Agent, gövde okuma sınırı,
+      zaman aşımı eşiği).
+    expect:
+      - "Açık User-Agent gönderilmeli — urllib varsayılanı ('Python-urllib/x.y') Cloudflare bot kuralına takılır ve TÜM cureonics uçları 403/1010 döner, yani filo sahte 'unauthorized' görünür."
+      - "Okuma sınırı en büyük gerçek initialize gövdesinin (oecd ~32 KB) üstünde olmalı; kesik JSON sahte 'error' üretir."
+      - "Zaman aşımı en yavaş server'ın (anamnesis ~11 sn) üstünde olmalı; aksi hâlde sağlıklı server 'unreachable' görünür."
+      - "Üçü de 'teşhis aracının teşhis ettiği hatayı kendisinin üretmesi' sınıfıdır — hepsi hooks/test_hooks.py'de regresyon korumalıdır."
+
+  - id: FR-08-turetilmis-dosya-elle-duzenlenmemeli
+    given: ".mcp.json veya fleet.lock.json elle düzenlenir ve check_drift koşulur."
+    expect:
+      - "check_drift exit 1 dönmeli ve değişen dosyayı '[1/3] TÜRETİLMİŞ DOSYA SÜRÜKLENMESİ' altında listelemeli."
+      - "Çözüm olarak `python3 tools/gen_fleet.py` göstermeli."
+      - "Bu kapı, filonun tekrar sekiz yerde elle tutulmaya kaymasını engeller."
+
+  - id: FR-09-selale-sirasi-otomatik-atlanmaz
+    given: >-
+      Mod 7 karşılaştırmalı analizde yabancı doktrin tam metni gerekiyor ve
+      openathens oturumu düşük/erişilemez.
+    expect:
+      - "annas-reader OTOMATİK açılmamalı — şelale sırası (Tier 3 → Tier 4) korunur."
+      - "openathens satırı 'degraded: lisanslı band kapalı' olarak manifestoda görünmeli."
+      - "annas-reader kullanılacaksa açık gerekçe + 'yalnız analiz' notu taşımalı; getirilen tam metin çıktıya gövde olarak KOPYALANMAMALI."
+
+  - id: FR-10-yoktez-wire-g7-hard-pass
+    given: "Bir DRAFT/ANALYZE çıktısı YÖK-Tez atfı içeriyor."
+    expect:
+      - "Atıf mcp__yoktez__get_yok_tez_thesis_details ile doğrulanmalı (tez no/başlık/yazar)."
+      - "G7 CONDITIONAL'a düşmemeli — yoktez wire'lı ve authless olduğu için doğrulama kullanıcı aksiyonuna bağlı değil (hard PASS)."
+      - "Manifestoda 'yoktez → hit N' satırı bulunmalı; companion satırı olarak YAZILMAMALI."
+      - "Doğrulanamayan tez atfı 'illustrative_placeholder_not_verified' etiketlenmeli ve KULLANILMAMALI."
+
+  - id: FR-11-doktrin-tam-metin-katmani
+    given: "Bir reform gerekçesi Türk doktrinine dayandırılıyor."
+    expect:
+      - "yok-akademik YALNIZ künye/metadata sağlar — gerekçede alıntılanabilir metin ondan gelmez."
+      - "literatur (DergiPark) search_articles → pdf_to_html ile tam metin getirmeli."
+      - "literatur erişilemezse doktrin katmanı metadata-only'ye düşer ve manifestoda 'degraded: tam metin yok' yazılmalı — içerik uydurulmamalı."

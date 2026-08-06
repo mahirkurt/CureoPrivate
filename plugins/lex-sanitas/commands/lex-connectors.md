@@ -27,22 +27,33 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 
 ## Anahtar env-var haritası
 
-| Server | Env-var (Doppler → Bearer) |
-|---|---|
-| mevzuat | `MEVZUAT_MCP_API_KEY` |
-| resmi-gazete | `RESMI_GAZETE_MCP_API_KEY` |
-| tbmm | `TBMM_MCP_API_KEY` |
-| saglikbakanligi | `SAGLIK_BAKANLIGI_MCP_API_KEY` |
-| detsis | `DETSIS_MCP_API_KEY` |
-| health-policy | `LEX_SANITAS_MCP_API_KEY` |
-| german-law | `GERMAN_LAW_MCP_API_KEY` |
-| ich-guidelines | `ICH_MCP_API_KEY` |
-| intl-treaty | `INTL_TREATY_MCP_API_KEY` |
-| eudamed | `EUDAMED_MCP_MCP_API_KEY` |
-| oecd | `OECD_MCP_API_KEY` |
-| yok-akademik | `YOK_AKADEMIK_MCP_API_KEY` |
-| anamnesis (büyük-veri substratı) | `ANAMNESIS_MCP_API_KEY` |
-| titck · mevzuat-bilgisi | (public — anahtar yok) |
-| Yargı · Open Law · Ansvar · Fedlex Swiss · YokTez · Türk Patent | (claude.ai connector — env anahtarı yok; kullanıcı connector ayarlarından bağlar. Önek yüzeye göre `mcp__<Ad>__*` veya `mcp__claude_ai_<Ad>__*` görünebilir) |
+<!-- GEN:fleet-env-table BEGIN -->
+| Server | Tier | Env-var (Doppler → Bearer) |
+|---|---|---|
+| `mevzuat` | primary | `MEVZUAT_MCP_API_KEY` |
+| `mevzuat-bilgisi` | secondary | _(public — anahtar yok)_ |
+| `resmi-gazete` | primary | `RESMI_GAZETE_MCP_API_KEY` |
+| `titck` | primary | `TITCK_MCP_API_KEY` |
+| `tbmm` | primary | `TBMM_MCP_API_KEY` |
+| `saglikbakanligi` | primary | `SAGLIK_BAKANLIGI_MCP_API_KEY` |
+| `detsis` | support | `DETSIS_MCP_API_KEY` |
+| `health-policy` | comparative | `HEALTH_POLICY_MCP_API_KEY` |
+| `german-law` | comparative | `GERMAN_LAW_MCP_API_KEY` |
+| `ich-guidelines` | comparative | `ICH_MCP_API_KEY` |
+| `intl-treaty` | comparative | `INTL_TREATY_MCP_API_KEY` |
+| `eudamed` | comparative | `EUDAMED_MCP_MCP_API_KEY` |
+| `oecd` | support | `OECD_MCP_API_KEY` |
+| `yok-akademik` | doctrine | `YOK_AKADEMIK_MCP_API_KEY` |
+| `yoktez` | doctrine | _(public — anahtar yok)_ |
+| `literatur` | doctrine | _(public — anahtar yok)_ |
+| `openathens` | fulltext | `OPENATHENS_MCP_API_KEY` |
+| `annas-reader` | fulltext | `ANNAS_MCP_API_KEY` |
+| `anamnesis` | substrate | `ANAMNESIS_MCP_API_KEY` |
+| Yargı | companion | _(claude.ai connector — env anahtarı yok)_ |
+| Open Law | companion | _(claude.ai connector — env anahtarı yok)_ |
+| Ansvar | companion | _(claude.ai connector — env anahtarı yok)_ |
+| Fedlex Swiss | companion | _(claude.ai connector — env anahtarı yok)_ |
+| Türk Patent | companion | _(claude.ai connector — env anahtarı yok)_ |
+<!-- GEN:fleet-env-table END -->
 
 > anamnesis bir *kaynak* değil, bağlam-ekonomisi Tier 2 RAG substratıdır (büyük tam-metin ingest→bounded query). Anahtarı yoksa büyük belge işleme bounded-chunk fallback'e degrade eder (`references/16` §C) — plugin yine çalışır.

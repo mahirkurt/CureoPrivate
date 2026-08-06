@@ -1,5 +1,5 @@
 {
-  "_comment": "lex-sanitas MCP wiring — Türkiye sağlık mevzuatı reform filosu. TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi artık aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir — çatışmada primer kazanır ama ikincil/support da çalıştırılır ve sonucu kapsam manifestosuna girer. Ağır getirim legal-distiller alt-ajanında toplanır (retrieve-don't-dump); ana bağlama kompakt retrieval_distillate + coverage bloğu döner. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa SessionStart preflight uyarır ve o katman graceful degrade eder (manifestoda 'skipped: anahtar yok'; asla uydurma). Yargı içtihat / Open Law (UK+EU) / Ansvar (300+ reg korpus) DIŞ connector'lardır — kararlı self-host URL'leri yok; claude.ai connector olarak bağlıysa skill mcp__Yarg__/mcp__Open_Law__/mcp__Ansvar__ araçlarını tam-filoya dahil eder (bkz. commands/lex-connectors.md).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/gen_fleet.py — lex-sanitas MCP wiring. TAM-FİLO İLKESİ: 19 server'ın TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir — çatışmada primer kazanır ama ikincil/support da çalıştırılır ve sonucu kapsam manifestosuna girer. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump); ana bağlama kompakt retrieval_distillate + coverage döner. 16 server Bearer-gated, 3 public. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa SessionStart preflight uyarır ve o katman graceful degrade eder (manifestoda 'skipped: anahtar yok'; asla uydurma). 5 companion (Yargı / Open Law / Ansvar / Fedlex Swiss / Türk Patent) DIŞ connector'dır — kararlı self-host URL'leri yok, wire edilemez; claude.ai connector olarak bağlıysa skill onları tam-filoya dahil eder (bkz. commands/lex-connectors.md).",
   "mcpServers": {
     "mevzuat": {
       "type": "http",
@@ -28,8 +28,11 @@
     "titck": {
       "type": "http",
       "url": "https://titck.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
+      },
       "_tier": "primary",
-      "_role": "TİTCK ilaç/tıbbi cihaz master index (barkod-primer + WHO-ATC + SNOMED). TİTCK yönetmelik/SUT/ruhsat reformlarında mevcut-durum + rehber envanteri (search_titck_guidelines, search_drugs, get_atc_hierarchy). Public read-through cache (gate yok)."
+      "_role": "TİTCK ilaç/tıbbi cihaz master index (barkod-primer + WHO-ATC + SNOMED). TİTCK yönetmelik/SUT/ruhsat reformlarında mevcut-durum + rehber envanteri (search_titck_guidelines, search_drugs, get_atc_hierarchy). 2026-08-02'den beri KAPILI — Bearer zorunlu (eski açık Worker cache emekli edildi, önbellek sunucunun içine taşındı)."
     },
     "tbmm": {
       "type": "http",
@@ -47,7 +50,7 @@
         "Authorization": "Bearer ${SAGLIK_BAKANLIGI_MCP_API_KEY}"
       },
       "_tier": "primary",
-      "_role": "T.C. Sağlık Bakanlığı ikincil mevzuat / soft-law (genelge·yönerge·rehber·kurul kararı·SKS) — Resmî Gazete/mevzuat.gov.tr'de OLMAYAN idari norm katmanı (9 sb_* aracı). Tebliğ/genelge düzeyi reformda mevcut-durum. Taslak/YSŞ → manual_required."
+      "_role": "T.C. Sağlık Bakanlığı ikincil mevzuat / soft-law (genelge·yönerge·rehber· kurul kararı·SKS) — Resmî Gazete/mevzuat.gov.tr'de OLMAYAN idari norm katmanı (9 sb_* aracı). Tebliğ/genelge düzeyi reformda mevcut-durum. Taslak/YSŞ → manual_required."
     },
     "detsis": {
       "type": "http",
@@ -62,10 +65,10 @@
       "type": "http",
       "url": "https://health-policy-mcp.cureonics.workers.dev/mcp",
       "headers": {
-        "Authorization": "Bearer ${LEX_SANITAS_MCP_API_KEY}"
+        "Authorization": "Bearer ${HEALTH_POLICY_MCP_API_KEY}"
       },
       "_tier": "comparative",
-      "_role": "YABANCI ÜLKE sağlık mevzuatı resmî-metin portalları (eski lex-sanitas'ın yabancı-tarama parçasından bağımsızlaşan MCP): US (eCFR T21/FedReg/GovInfo/Congress), CA JusticeLaws, JP e-LAWS, AU FRL, ES BOE, IE eISB, CN NPC, MX DOF. Mod 7 COMPARATIVE_LAW birincil kaynağı. DOĞAL-DİL GİRİŞ KAPISI: semantic_search (çok-dilli Workers AI planner + bge-m3 rerank; aranabilir US/JP/AU/CN fan-out, ID-only ES/MX/CA/IE excluded→fetch; mcp_verified:false keşif katmanı, fetch=doğrulama) + legal_distill_start/result sweep. Sınırlar: DE→german-law; UK+EU→Open Law; TR→mevzuat/titck; CH/FR/IT/NL/SE + 58-yargı→Ansvar."
+      "_role": "YABANCI ÜLKE sağlık mevzuatı resmî-metin portalları: US (eCFR T21/FedReg/ GovInfo/Congress), CA JusticeLaws, JP e-LAWS, AU FRL, ES BOE, IE eISB, CN NPC, MX DOF. Mod 7 COMPARATIVE_LAW birincil kaynağı. DOĞAL-DİL GİRİŞ KAPISI: semantic_search (çok-dilli Workers AI planner + bge-m3 rerank; aranabilir US/JP/AU/CN fan-out, ID-only ES/MX/CA/IE excluded→fetch; mcp_verified:false keşif katmanı, fetch=doğrulama). Sınırlar: DE→german-law; UK+EU→Open Law; TR→mevzuat/titck; CH/FR/IT/NL/SE + 58-yargı→Ansvar."
     },
     "german-law": {
       "type": "http",
@@ -92,7 +95,7 @@
         "Authorization": "Bearer ${INTL_TREATY_MCP_API_KEY}"
       },
       "_tier": "comparative",
-      "_role": "Uluslararası insan-hakları/sağlık antlaşmaları norm-düzeyi — Anayasa Md.90/5 doğrulaması (usulüne uygun andlaşma = kanun hükmü). ICESCR Md.12 + Oviedo CETS 164 + MEDICRIME 211 katılım/çekince (treaty_status/treaty_reservations/coe_treaty_signatories). Her çıktı mcp_verified:false + caveat."
+      "_role": "Uluslararası insan-hakları/sağlık antlaşmaları norm-düzeyi — Anayasa Md.90/5 doğrulaması (usulüne uygun andlaşma = kanun hükmü). ICESCR Md.12 + Oviedo CETS 164 + MEDICRIME 211 katılım/çekince (treaty_status/treaty_reservations/ coe_treaty_signatories). Her çıktı mcp_verified:false + caveat."
     },
     "eudamed": {
       "type": "http",
@@ -101,7 +104,7 @@
         "Authorization": "Bearer ${EUDAMED_MCP_MCP_API_KEY}"
       },
       "_tier": "comparative",
-      "_role": "EUDAMED AB tıbbi cihaz DB (MDR/IVDR). Tıbbi cihaz reformunda AB benchmark + cihaz/aktör kayıt yapısı. Zorunlu olgunluk _caveat (veri tabanı kademeli dolum)."
+      "_role": "EUDAMED AB tıbbi cihaz DB (MDR/IVDR). Tıbbi cihaz reformunda AB benchmark + cihaz/aktör kayıt yapısı. Zorunlu olgunluk _caveat (veri tabanı kademeli dolum — yokluk kanıt değildir)."
     },
     "oecd": {
       "type": "http",
@@ -118,8 +121,38 @@
       "headers": {
         "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
       },
-      "_tier": "support",
-      "_role": "YÖK Akademik — hukuk/tıp DOKTRİN sinyali (Mod ANALYZE/gerekçe akademik dayanak). Reform gerekçesinde uzman görüşü/literatür bağlamı. Salt-okuma scraping."
+      "_tier": "doctrine",
+      "_role": "YÖK Akademik — hukuk/tıp DOKTRİN sinyali (Mod ANALYZE/gerekçe akademik dayanak). Reform gerekçesinde uzman görüşü/literatür bağlamı. Salt-okuma scraping. METADATA katmanıdır — tam metin için literatur (DergiPark) ve yoktez (YÖK Tez)."
+    },
+    "yoktez": {
+      "type": "http",
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "_tier": "doctrine",
+      "_role": "YÖK Ulusal Tez Merkezi tam-metin — tez-düzeyi Türk hukuk/tıp doktrini (gerekçe akademik dayanağı, ANALYZE doktrin taraması) + G7 YÖK-Tez ATIF DOĞRULAMASI (tez no/başlık/yazar teyidi → uydurma tez atfı deterministik yakalanır). yok-akademik profil-metadata'sının tam-metin tamamlayıcısı. Authless (FastMCP remote). v3.5.0'da companion'dan first-class'a terfi etti."
+    },
+    "literatur": {
+      "type": "http",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "_tier": "doctrine",
+      "_role": "DergiPark Türk akademik dergi makaleleri — arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. Doktrin katmanının tek OKUNABİLİR TR kaynağı: yok-akademik yalnız metadata verir, bu tam metin verir. Gerekçe akademik dayanağı + ANALYZE doktrin taraması. Authless (surucu.dev)."
+    },
+    "openathens": {
+      "type": "http",
+      "url": "https://openathens.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens SAML üzerinden 309 lisanslı veritabanı. Yabancı hukuk doktrini (monograf, hakemli makale) için paywall'lı kaynaklara YASAL erişim. Mod 7 karşılaştırmalı analizin ve G6 uluslararası kaynak teyidinin doktrin desteği — birincil norm metni DEĞİL (o health-policy/german-law/Open Law'dadır)."
+    },
+    "annas-reader": {
+      "type": "http",
+      "url": "https://annas.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir."
     },
     "anamnesis": {
       "type": "http",
@@ -128,7 +161,7 @@
         "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "substrate",
-      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük hukuk metni (tam kanun/yönetmelik, madde ağacı, RG OCR, yabancı statute/CELEX konsolide, tam gerekçe) ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(doc_id=<kanonik id: mevzuat_no/CELEX/ECLI>) ile BİR KEZ indekslenir → semantic_search/hybrid_query(queries[]) ile sınırlı, provenance-damgalı, graph-temelli dilim çekilir. Aynı doc_id iki kez ingest edilmez (kanonik cache). upsert_triples/graph_neighbors/subgraph = madde↔dayanak↔ilga ilişki grafiği. shared/context-economy-contract.md Tier 2. Anahtar yoksa → doğrudan bounded-chunk fetch'e degrade (madde_tree navigasyonu + max_chars/chunk_index), asla ham tam-metin dökümü."
+      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük hukuk metni (tam kanun/yönetmelik, madde ağacı, RG OCR, yabancı statute/CELEX konsolide, tam gerekçe) ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(doc_id=<kanonik id: mevzuat_no/CELEX/ECLI>) ile BİR KEZ indekslenir → semantic_search/hybrid_query(queries[]) ile sınırlı, provenance-damgalı, graph-temelli dilim çekilir. Aynı doc_id iki kez ingest edilmez (kanonik cache). upsert_triples/graph_neighbors/subgraph = madde↔dayanak↔ilga ilişki grafiği. shared/context-economy-contract.md Tier 2."
     }
   }
 }

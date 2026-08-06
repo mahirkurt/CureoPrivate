@@ -11,6 +11,9 @@ description: >-
   AKN/eCFR/DPD; ECLI tercih) çeker; hiçbir referansı URL/identifier olmadan aktarmaz (no-fabrication). Tek-ülke
   hızlı sorgular için ÇAĞIRMA — doğrudan /lex-comparative yeterlidir; bu ajan çok-yargı bağlam ekonomisi
   gerektiğinde devreye girer.
+# GEN:agent-tools BEGIN
+tools: Read, Grep, Glob, WebFetch, mcp__health-policy__*, mcp__german-law__*, mcp__ich-guidelines__*, mcp__intl-treaty__*, mcp__eudamed__*, mcp__oecd__*, mcp__openathens__*, mcp__annas-reader__*, mcp__anamnesis__*, mcp__Yarg__*, mcp__claude_ai_Yarg__*, mcp__Open_Law__*, mcp__claude_ai_Open_Law__*, mcp__Ansvar__*, mcp__claude_ai_Ansvar__*, mcp__Fedlex_Swiss__*, mcp__claude_ai_Fedlex_Swiss__*, mcp__T_rk_Patent__*, mcp__claude_ai_T_rk_Patent__*
+# GEN:agent-tools END
 ---
 
 # comparative-law-researcher — İzole Karşılaştırmalı Hukuk Alt-Ajanı

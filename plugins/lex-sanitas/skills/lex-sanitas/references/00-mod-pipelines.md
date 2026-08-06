@@ -51,3 +51,38 @@ Ana pencere 4 zarfı tek G0 manifestosunda birleştirir; ham getirim distiller p
 ## Mod 9 — EX_POST_EVALUATION
 **Load-bearing:** mevzuat (yürürlük tarihçesi) · resmi-gazete · titck · saglikbakanligi · oecd · Yarg · health-policy (programatik zaman-serisi) · evidentia (§ + `ex_post_metrics`). **Çapraz:** tbmm · intl-treaty · eudamed · yok-akademik.
 **Süre:** yürürlükten 12-36 ay sonra geriye dönük. **10 adım:** kapsam+dönem+değerlendirme-tipi, ex-ante varsayımları derle (Mod 6 DEA/BEF), gerçek uygulama verisi (ÜTS/MIDAS/MEDULA/RWE/paydaş + programatik zaman-serisi), **5 OECD kriteri** karşısında ölç (Etkililik/Verimlilik/Tutarlılık/İlgililik/AB-değeri), yargısal-denetim derlemesi, paydaş-geri-bildirim haritası, mukayeseli ex-post, bütüncül hüküm → **karar (K-1 Koru / K-2 Revize→AMEND / K-3 Sunset/İlga)**, düzeltici yol haritası, EDR. **Klinik ◆:** evidentia §5,7,13.c,14.d,19 + `ex_post_metrics` zorunlu. **Kapılar:** tümü + G9.
+
+## Mod × server matrisi (üretilmiş — kaynak: `fleet.yaml`)
+
+Bu matris, bir companion/server satırının hangi modda `skipped: mod için N/A` yazılacağını **düzyazıdan değil veriden** belirler.
+
+<!-- GEN:mode-server-matrix BEGIN -->
+| Server | DRAFT | AMEND | ANLZ | CMPLY | OPINE | RIA | COMP | TBMM | EXPOST |
+|---|---|---|---|---|---|---|---|---|---|
+| `mevzuat` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `mevzuat-bilgisi` (secondary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `resmi-gazete` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `titck` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `tbmm` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `saglikbakanligi` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `detsis` (support) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `health-policy` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `german-law` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `ich-guidelines` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `intl-treaty` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `eudamed` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `oecd` (support) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `yok-akademik` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `yoktez` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `literatur` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `openathens` (fulltext) | · | · | ✓ | · | ✓ | ✓ | ✓ | · | ✓ |
+| `annas-reader` (fulltext) | · | · | ✓ | · | · | · | ✓ | · | · |
+| `anamnesis` (substrate) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Yargı** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Open Law** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Ansvar** (companion) | · | · | ✓ | · | · | ✓ | ✓ | · | · |
+| **Fedlex Swiss** (companion) | · | · | · | · | · | · | ✓ | · | · |
+| **Türk Patent** (companion) | ✓ | · | · | · | · | ✓ | ✓ | · | · |
+
+> `✓` = bu modda taranır · `·` = bu modda **mantıksal olarak N/A** → manifestoda `skipped: mod için N/A` yazılır (satır atlanamaz).
+<!-- GEN:mode-server-matrix END -->

@@ -7,6 +7,9 @@ description: >-
   bağımsız doğrular, PASS/FAIL/CONDITIONAL/N/A skor-kartı + düzeltme reçetesi + verdict döndürür. Varsayılanı
   şüphecidir: belirsizse CONDITIONAL/FAIL yazar, hiçbir kontrolü "atıflı görünüyor" diye geçmez. Tek bir madde
   hızlı kontrolü için ÇAĞIRMA — /lex-comply zaten rubriği koşar; bu ajan bağımsız ikinci-göz gerektiğinde devreye girer.
+# GEN:agent-tools BEGIN
+tools: Read, Grep, Glob, mcp__mevzuat__*, mcp__mevzuat-bilgisi__*, mcp__resmi-gazete__*, mcp__titck__*, mcp__tbmm__*, mcp__saglikbakanligi__*, mcp__detsis__*, mcp__anamnesis__*, mcp__Yarg__*, mcp__claude_ai_Yarg__*, mcp__Open_Law__*, mcp__claude_ai_Open_Law__*, mcp__Ansvar__*, mcp__claude_ai_Ansvar__*, mcp__Fedlex_Swiss__*, mcp__claude_ai_Fedlex_Swiss__*, mcp__T_rk_Patent__*, mcp__claude_ai_T_rk_Patent__*
+# GEN:agent-tools END
 ---
 
 # compliance-auditor — 5210 R6b Düşman-Doğrulama Alt-Ajanı

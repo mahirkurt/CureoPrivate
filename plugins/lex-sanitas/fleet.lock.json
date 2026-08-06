@@ -1,0 +1,314 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/gen_fleet.py",
+  "plugin_version": "3.5.0",
+  "counts": {
+    "servers": 19,
+    "gated": 16,
+    "public": 3,
+    "companions": 5,
+    "delegations": 2
+  },
+  "servers": [
+    {
+      "name": "mevzuat",
+      "url": "https://mevzuat.cureonics.com/mcp",
+      "tier": "primary",
+      "auth_env": "MEVZUAT_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "mevzuat-bilgisi",
+      "url": "https://mevzuat.surucu.dev/mcp",
+      "tier": "secondary",
+      "auth_env": null,
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "resmi-gazete",
+      "url": "https://resmi-gazete-mcp.cureonics.workers.dev/mcp",
+      "tier": "primary",
+      "auth_env": "RESMI_GAZETE_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "titck",
+      "url": "https://titck.cureonics.com/mcp",
+      "tier": "primary",
+      "auth_env": "TITCK_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "tbmm",
+      "url": "https://tbmm.cureonics.com/mcp",
+      "tier": "primary",
+      "auth_env": "TBMM_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "saglikbakanligi",
+      "url": "https://saglik-mcp.cureonics.com/mcp",
+      "tier": "primary",
+      "auth_env": "SAGLIK_BAKANLIGI_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "detsis",
+      "url": "https://detsis.cureonics.com/mcp",
+      "tier": "support",
+      "auth_env": "DETSIS_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "health-policy",
+      "url": "https://health-policy-mcp.cureonics.workers.dev/mcp",
+      "tier": "comparative",
+      "auth_env": "HEALTH_POLICY_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "german-law",
+      "url": "https://german-law.cureonics.com/mcp",
+      "tier": "comparative",
+      "auth_env": "GERMAN_LAW_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G6"
+    },
+    {
+      "name": "ich-guidelines",
+      "url": "https://ich.cureonics.com/mcp",
+      "tier": "comparative",
+      "auth_env": "ICH_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G6"
+    },
+    {
+      "name": "intl-treaty",
+      "url": "https://intl-treaty-mcp.cureonics.workers.dev/mcp",
+      "tier": "comparative",
+      "auth_env": "INTL_TREATY_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G6"
+    },
+    {
+      "name": "eudamed",
+      "url": "https://eudamed-mcp.cureonics.workers.dev/mcp",
+      "tier": "comparative",
+      "auth_env": "EUDAMED_MCP_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "oecd",
+      "url": "https://oecd.cureonics.com/mcp",
+      "tier": "support",
+      "auth_env": "OECD_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    },
+    {
+      "name": "yok-akademik",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "tier": "doctrine",
+      "auth_env": "YOK_AKADEMIK_MCP_API_KEY",
+      "shard": "S3",
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G5"
+    },
+    {
+      "name": "yoktez",
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "tier": "doctrine",
+      "auth_env": null,
+      "shard": "S3",
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G7"
+    },
+    {
+      "name": "literatur",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "tier": "doctrine",
+      "auth_env": null,
+      "shard": "S3",
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G5"
+    },
+    {
+      "name": "openathens",
+      "url": "https://openathens.cureonics.com/mcp",
+      "tier": "fulltext",
+      "auth_env": "OPENATHENS_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "COMPARATIVE_LAW",
+        "ANALYZE",
+        "RIA",
+        "OPINE",
+        "EX_POST_EVALUATION"
+      ],
+      "gate": "G6"
+    },
+    {
+      "name": "annas-reader",
+      "url": "https://annas.cureonics.com/mcp",
+      "tier": "fulltext",
+      "auth_env": "ANNAS_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "COMPARATIVE_LAW",
+        "ANALYZE"
+      ],
+      "gate": "G6"
+    },
+    {
+      "name": "anamnesis",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "tier": "substrate",
+      "auth_env": "ANAMNESIS_MCP_API_KEY",
+      "shard": "ALL",
+      "modes": [
+        "ALL"
+      ],
+      "gate": null
+    }
+  ],
+  "companions": [
+    {
+      "name": "Yargı",
+      "tool_prefixes": [
+        "mcp__Yarg__",
+        "mcp__claude_ai_Yarg__"
+      ],
+      "gate": "G5",
+      "modes": [
+        "ALL"
+      ],
+      "manifest_row": "Yargı (companion — G5 içtihat)",
+      "degrade": "G5 en fazla CONDITIONAL — AYM belirlilik/iptal emsali, Danıştay idari-işlem ve Yargıtay zinciri doğrulanamaz."
+    },
+    {
+      "name": "Open Law",
+      "tool_prefixes": [
+        "mcp__Open_Law__",
+        "mcp__claude_ai_Open_Law__"
+      ],
+      "gate": "G6",
+      "modes": [
+        "ALL"
+      ],
+      "manifest_row": "Open Law (companion — G6 CELEX)",
+      "degrade": "CELEX konsolide doğrulaması german-law get_eu_basis → WebFetch'e degrade eder; G6 CONDITIONAL işaretlenir."
+    },
+    {
+      "name": "Ansvar",
+      "tool_prefixes": [
+        "mcp__Ansvar__",
+        "mcp__claude_ai_Ansvar__"
+      ],
+      "gate": null,
+      "modes": [
+        "ANALYZE",
+        "RIA",
+        "COMPARATIVE_LAW"
+      ],
+      "manifest_row": "Ansvar (companion — Mod7 58-yargı)",
+      "degrade": "CH/FR/IT/NL/SE/DK/FI/AT/PL ve yatay çerçeve (GDPR/NIS2) satırları 'manual_required' + kapsam boşluğu beyanı."
+    },
+    {
+      "name": "Fedlex Swiss",
+      "tool_prefixes": [
+        "mcp__Fedlex_Swiss__",
+        "mcp__claude_ai_Fedlex_Swiss__"
+      ],
+      "gate": null,
+      "modes": [
+        "COMPARATIVE_LAW"
+      ],
+      "manifest_row": "Fedlex Swiss (companion — Mod7 CH birincil metin)",
+      "degrade": "CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + 'manual_required' (Fedlex portal deep-link)."
+    },
+    {
+      "name": "Türk Patent",
+      "tool_prefixes": [
+        "mcp__T_rk_Patent__",
+        "mcp__claude_ai_T_rk_Patent__"
+      ],
+      "gate": null,
+      "modes": [
+        "DRAFT",
+        "RIA",
+        "COMPARATIVE_LAW"
+      ],
+      "manifest_row": "Türk Patent (companion — IP/SPC/veri imtiyazı)",
+      "degrade": "İlaç patenti/SPC/veri imtiyazı/patent linkage/6769 SMK kesişimi satırı 'manual_required' (TÜRKPATENT portal deep-link)."
+    }
+  ],
+  "delegations": [
+    {
+      "name": "evidentia",
+      "plugin_id_prefix": "evidentia@",
+      "trigger": "klinik boyut (ilaç/cihaz/hastalık/tedavi/klinik-çalışma/geri-ödeme)",
+      "manifest_row": "evidentia (klinik delegasyon)",
+      "degrade": "Kurulu değilse klinik iddialar unverified kalır; manifestoda 'skipped: plugin kurulu değil' beyan edilir, klinik kanıt UYDURULMAZ."
+    },
+    {
+      "name": "sci-audit",
+      "plugin_id_prefix": "sci-audit@",
+      "trigger": "her reform-modu çıktısı",
+      "manifest_row": "sci-audit (çıktı-QA delegasyonu)",
+      "degrade": "Kurulu değilse çıktı-QA manuel; atıf-adli + istatistik tutarlılık + Türkçe imla/halüsinasyon taraması yapılmaz, çıktıda beyan edilir."
+    }
+  ]
+}

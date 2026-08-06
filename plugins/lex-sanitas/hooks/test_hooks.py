@@ -200,7 +200,22 @@ rc, out = run("stop_coverage.py", {"last_assistant_message": partial, "stop_hook
 reason = (out or {}).get("reason", "")
 check("manifesto var ama companion/delegasyon satırları eksik → block + isim listesi",
       (out or {}).get("decision") == "block" and all(x in reason for x in (
-          "Yargı", "Open Law", "Ansvar", "Fedlex", "YokTez", "Türk Patent", "evidentia", "sci-audit")))
+          "Yargı", "Open Law", "Ansvar", "Fedlex", "Türk Patent",
+          "evidentia", "sci-audit")))
+
+# ── Zorunlu satırlar lock'tan türer (v3.5.0) ──────────────────────────────
+_rows = stop_coverage.mandatory_rows()
+check("zorunlu satır sayısı = 5 companion + 2 delegasyon", len(_rows) == 7,
+      f"{len(_rows)}: {sorted(_rows)}")
+check("yoktez ARTIK zorunlu companion satırı değil (wire'landı)",
+      not [k for k in _rows if "YokTez" in k or "YÖK-Tez" in k], sorted(_rows))
+check("lock yoksa gömülü listeye düşer (fail-open)",
+      len(stop_coverage.mandatory_rows({})) == 7)
+with open(os.path.join(SCRIPTS, "stop_coverage.py"), encoding="utf-8") as fh:
+    _sc = fh.read()
+check("hardcoded MANDATORY_ROWS sabiti kaldırıldı", "\nMANDATORY_ROWS = {" not in _sc)
+check("kök hooks.json kopyası kaldırıldı (hooks/hooks.json kanonik)",
+      not os.path.exists(os.path.join(ROOT, "hooks.json")))
 full = ("MADDE 1 - ... gerekçe ... Kapsam Manifestosu (G0): mevzuat → hit 3; Yarg → hit 2; "
         "Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL; Ansvar → empty; "
         "Fedlex_Swiss → skipped: companion bağlı değil (CH satırı manual_required); "

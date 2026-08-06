@@ -27,18 +27,67 @@ MODE_SIGNALS = [
 # Zorunlu çıktı bileşenleri.
 HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b|hit \d|skipped:|empty\b)", re.IGNORECASE)
 HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_review_required|güven etiketi)", re.IGNORECASE)
-# Manifesto varsa içinde görünmesi ZORUNLU satırlar: 6 companion + 2 delegasyon plugin'i
-# (durum ne olursa olsun — hit/empty/degraded/skipped-with-reason — satır mevcut olmalı).
-MANDATORY_ROWS = {
-    "Yargı (companion — G5 içtihat)": re.compile(r"\bYarg", re.IGNORECASE),
-    "Open Law (companion — G6 CELEX)": re.compile(r"Open[_ ]?Law", re.IGNORECASE),
-    "Ansvar (companion — Mod7 58-yargı)": re.compile(r"\bAnsvar", re.IGNORECASE),
-    "Fedlex Swiss (companion — Mod7 CH birincil metin)": re.compile(r"Fedlex", re.IGNORECASE),
-    "YokTez (companion — tez doktrini + G7 YÖK-Tez doğrulama)": re.compile(r"Yok[_ ]?Tez|Y[ÖO]K[- ]?Tez", re.IGNORECASE),
-    "Türk Patent (companion — IP/SPC/veri imtiyazı)": re.compile(r"T[üu]rk[_ ]?Patent", re.IGNORECASE),
-    "evidentia (klinik delegasyon)": re.compile(r"\bevidentia", re.IGNORECASE),
-    "sci-audit (çıktı-QA delegasyonu)": re.compile(r"\bsci[- ]?audit", re.IGNORECASE),
+# Manifesto varsa içinde görünmesi ZORUNLU satırlar — companion'lar + delegasyon
+# plugin'leri (durum ne olursa olsun: hit/empty/degraded/skipped-with-reason).
+# v3.5.0'da liste HARDCODE DEĞİL, fleet.lock.json'dan türetilir: yoktez wire'landığı
+# için companion olmaktan çıktı (8 → 7 satır) ve bu değişikliğin burada elle
+# yapılması gerekseydi kaçınılmaz olarak unutulurdu.
+_TOKEN_RX = {
+    "Yargı": r"\bYarg",
+    "Open Law": r"Open[_ ]?Law",
+    "Ansvar": r"\bAnsvar",
+    "Fedlex Swiss": r"Fedlex",
+    "Türk Patent": r"T[üu]rk[_ ]?Patent",
+    "evidentia": r"\bevidentia",
+    "sci-audit": r"\bsci[- ]?audit",
 }
+
+# Lock okunamazsa kullanılacak asgari liste (fail-open) — 5 companion + 2 delegasyon.
+_FALLBACK_ROWS = {
+    "Yargı (companion — G5 içtihat)": re.compile(_TOKEN_RX["Yargı"], re.IGNORECASE),
+    "Open Law (companion — G6 CELEX)": re.compile(_TOKEN_RX["Open Law"], re.IGNORECASE),
+    "Ansvar (companion — Mod7 58-yargı)": re.compile(_TOKEN_RX["Ansvar"], re.IGNORECASE),
+    "Fedlex Swiss (companion — Mod7 CH birincil metin)":
+        re.compile(_TOKEN_RX["Fedlex Swiss"], re.IGNORECASE),
+    "Türk Patent (companion — IP/SPC/veri imtiyazı)":
+        re.compile(_TOKEN_RX["Türk Patent"], re.IGNORECASE),
+    "evidentia (klinik delegasyon)": re.compile(_TOKEN_RX["evidentia"], re.IGNORECASE),
+    "sci-audit (çıktı-QA delegasyonu)": re.compile(_TOKEN_RX["sci-audit"], re.IGNORECASE),
+}
+
+
+def _load_lock():
+    """fleet.lock.json'u stdlib json ile okur; okunamazsa None (fail-open)."""
+    try:
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "..", "..", "fleet.lock.json")
+        with open(os.path.normpath(path), encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return None
+
+
+def mandatory_rows(lock=None):
+    """Manifestoda BULUNMASI ZORUNLU satırları lock'tan türetir.
+
+    Yalnız companion (wire edilemez dış connector) + delegasyon plugin'leri
+    denetlenir. Wire'lı 19 server için satır-satır regex denetimi YAPILMAZ —
+    kırılgan olur ve yanlış-pozitif üretir; onların kanıtı G0 manifestosunun
+    varlığıdır. Bilinmeyen ad için ada dayalı jenerik desen üretilir.
+    """
+    if lock is None:
+        lock = _load_lock()
+    if not lock:
+        return dict(_FALLBACK_ROWS)
+    rows = {}
+    for item in list(lock.get("companions", [])) + list(lock.get("delegations", [])):
+        name = item.get("name", "")
+        row = item.get("manifest_row") or name
+        pattern = _TOKEN_RX.get(name)
+        if pattern is None:  # fleet.yaml'e yeni ad eklenirse sessizce düşmesin
+            pattern = re.escape(name).replace(r"\ ", r"[_ ]?").replace(r"\-", r"[- ]?")
+        rows[row] = re.compile(pattern, re.IGNORECASE)
+    return rows or dict(_FALLBACK_ROWS)
 
 
 def last_assistant_message(event):
@@ -94,7 +143,8 @@ def main():
         missing.append("kapsam manifestosu (G0 — wire'lı tüm MCP'lerin hit/empty/degraded/skipped-with-reason kanıtı)")
     else:
         # Manifesto var → companion + delegasyon satırları da mevcut olmalı (SKILL §7 / coverage-manifest.md).
-        absent_rows = [label for label, rx in MANDATORY_ROWS.items() if not rx.search(text)]
+        absent_rows = [label for label, rx in mandatory_rows().items()
+                       if not rx.search(text)]
         if absent_rows:
             missing.append(
                 "manifestoda zorunlu satır(lar): " + ", ".join(absent_rows)

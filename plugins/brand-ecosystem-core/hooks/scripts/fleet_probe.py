@@ -65,7 +65,7 @@ CACHE_TTL = 86400  # 24 saat — her oturumda ağ trafiği olmasın
 USER_AGENT = "cureonics-preflight/1.0 (+https://cureonics.com)"
 
 SYMBOL = {"ok": "✓", "auth_missing": "○", "unauthorized": "✗",
-          "unreachable": "✗", "error": "!", "unknown": "?"}
+          "unreachable": "✗", "error": "!", "unknown": "?", "user_config": "◇"}
 
 
 class _KeepPost(urllib.request.HTTPRedirectHandler):
@@ -129,6 +129,15 @@ def probe_server(server: dict, env, timeout: float = PER_ENDPOINT_TIMEOUT) -> di
     name = server["name"]
     auth_env = server.get("auth_env")
     key = env.get(auth_env) if auth_env else None
+
+    # `${user_config.*}` ile parametrelenmiş server'ı (Claude Code kurulum sırasında
+    # doldurur) prob EDEMEYİZ — yer tutucu URL'ye gider ve 401 döner. Bunu
+    # 'unauthorized' diye raporlamak sağlıklı bir connector'ı arızalı göstermek
+    # olur; dürüst durum 'user_config'tir.
+    blob = str(server.get("url", "")) + str(server.get("headers", ""))
+    if "${user_config." in blob:
+        return {"name": name, "status": "user_config", "http": None,
+                "detail": "kurulum sırasında doldurulur (/plugin configure)"}
 
     if auth_env and not key:
         return {"name": name, "status": "auth_missing", "http": None,

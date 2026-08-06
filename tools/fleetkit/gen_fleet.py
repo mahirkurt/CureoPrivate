@@ -90,7 +90,7 @@ def validate_fleet(fleet: dict) -> None:
 
 def build_lock(fleet: dict) -> dict:
     """Hook'ların okuduğu stdlib türev — role/tools_used/degrade taşımaz."""
-    keys = ("name", "url", "tier", "auth_env", "shard", "modes", "gate")
+    keys = ("name", "url", "tier", "auth_env", "shard", "modes", "gate", "headers")
     servers = [{k: s.get(k) for k in keys if k in s or k in ("auth_env",)}
                for s in fleet["servers"]]
     gated = sum(1 for s in servers if s.get("auth_env"))

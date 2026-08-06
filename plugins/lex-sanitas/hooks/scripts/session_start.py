@@ -1,76 +1,141 @@
 #!/usr/bin/env python3
-"""lex-sanitas SessionStart preflight — tam-filo credential check + konvansiyon enjeksiyonu.
+"""lex-sanitas SessionStart preflight — canlı filo prob'u + konvansiyon enjeksiyonu.
 
-lex-sanitas'ın 13 gated hukuk/regülasyon connector'ı Bearer anahtarını süreç ortamından çözer
-(Doppler-injected: `doppler run -- claude`). Bir anahtar yoksa o connector çağrı anında 401 döner
-ve tam-filo (G0) kapsamı o katmanda `skipped: anahtar yok` olarak degrade eder — çıktı DURMAZ,
-asla uydurma yapılmaz. Bu hook: (a) eksik anahtarları bir kez yüzeye çıkarır, (b) her oturumda
-lex-sanitas çekirdek konvansiyonlarını (tam-filo · no-fabrication · Scope Guard · insan-denetimi)
-kısa bir additionalContext olarak enjekte eder. Fail-open.
+v3.5.0: anahtar haritası artık hardcoded DEĞİL — `fleet.lock.json`'dan gelir
+(`tools/gen_fleet.py` üretir, kaynak `fleet.yaml`). Preflight gerçek MCP
+`initialize` prob'u yapar (24 saat cache'li) ve iki hâli AYIRIR:
+
+  auth_missing → anahtar süreç ortamında yok  → MEŞRU DEGRADE
+  unauthorized → sunucu 401/403 verdi         → YAPILANDIRMA ARIZASI
+
+Bu ayrım olmasaydı ikisi de "o katman çalışmıyor" diye görünürdü — 2026-08-02
+TİTCK kapılanmasının aylarca sessizce yaşamasının sebebi tam olarak buydu.
+
+Sağlıklı filoda preflight bölümü SESSİZDİR (yalnız konvansiyonlar enjekte edilir).
+Fail-open: prob veya lock çökerse yalnız konvansiyonlar gider, oturum durmaz.
 """
 import json
 import os
 import sys
+from pathlib import Path
 
-# Gated hukuk/regülasyon connector → env var (bkz. commands/lex-connectors.md anahtar haritası).
-GATED = {
-    "mevzuat": "MEVZUAT_MCP_API_KEY",
-    "resmi-gazete": "RESMI_GAZETE_MCP_API_KEY",
-    "tbmm": "TBMM_MCP_API_KEY",
-    "saglikbakanligi": "SAGLIK_BAKANLIGI_MCP_API_KEY",
-    "detsis": "DETSIS_MCP_API_KEY",
-    "health-policy": "LEX_SANITAS_MCP_API_KEY",
-    "german-law": "GERMAN_LAW_MCP_API_KEY",
-    "ich-guidelines": "ICH_MCP_API_KEY",
-    "intl-treaty": "INTL_TREATY_MCP_API_KEY",
-    "eudamed": "EUDAMED_MCP_MCP_API_KEY",
-    "oecd": "OECD_MCP_API_KEY",
-    "yok-akademik": "YOK_AKADEMIK_MCP_API_KEY",
-    "anamnesis": "ANAMNESIS_MCP_API_KEY",
-}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:
+    import fleet_probe
+except Exception:  # prob modülü yoksa/bozuksa preflight yine çalışır
+    fleet_probe = None
 
-CONVENTIONS = (
-    "[lex-sanitas] Türkiye sağlık mevzuatı reform protokolü aktif. Çekirdek invaryantlar: "
-    "(1) TAM-FİLO — wire'lı 14 hukuk MCP + 6 companion (Yargı mcp__Yarg__* / Open Law mcp__Open_Law__* / "
-    "Ansvar mcp__Ansvar__* / Fedlex Swiss mcp__Fedlex_Swiss__* / YokTez mcp__YokTez_MCP__* / "
-    "Türk Patent mcp__T_rk_Patent__*) her sorguda çalışır; companion'lar tam-filonun ZORUNLU üyeleridir "
-    "(Yargı↔G5 içtihat, Open Law↔G6 CELEX doğrulama, Ansvar↔Mod7 58-yargı, Fedlex↔Mod7 CH birincil "
-    "metin [Ansvar CH satırı çerçeve-teyit], YokTez↔tez doktrini + G7 YÖK-Tez atıf doğrulama, "
-    "Türk Patent↔IP-boyutlu reform: ilaç patenti/SPC/veri imtiyazı) — bağlıyken tetiklenmiş bağlamda "
-    "atlanmaları G0 ihlalidir; bağlı değillerse ilgili kapı CONDITIONAL + manifesto beyanı; bağlam-dışı "
-    "companion satırı dürüstçe 'skipped: mod için N/A' yazılır (satır hiç yazılmamazlık edilemez). "
-    "Connector önekleri yüzeye göre mcp__<Ad>__* veya mcp__claude_ai_<Ad>__* görünebilir — ada göre "
-    "eşleştir. Çıktı G0 kapsam manifestosu taşır (server → hit/empty/degraded/skipped-with-reason; "
-    "sessiz atlama = FAIL). "
-    "(2) NO-FABRICATION — kanun/CELEX/AYM/Yargıtay/PMID asla uydurulmaz; her atıf MCP-doğrulanmış "
-    "(evidence_ledger). (3) SCOPE GUARD — yalnız mevzuat reformu; bireysel dava (SGK red/AYM başvuru), "
-    "malpraktis → saglik-sigorta/onko-erisim; promosyon denetimi → promo-censor. (4) ZORUNLU DELEGASYON — "
-    "klinik kanıt → evidentia (her klinik-boyutlu sorguda); atıf-adli + TR dil → sci-audit (her çıktıda). "
-    "Bu plugin'ler KURULUYKEN atlanmaları G0 ihlalidir; degrade yalnız gerçek yoklukta meşrudur. "
-    "(5) İNSAN DENETİMİ her çıktıda zorunlu. (6) BAĞLAM EKONOMİSİ — tam-filo ham veri ana pencereye "
-    "girmez: ≤4 paralel distiller alt-ajanı (Tier 1) + anamnesis RAG substratı (Tier 2, büyük tam-metin "
-    "ingest→bounded query) + kanonik cache (bir-kez-getir) + kör-getirme-yok chunking. "
-    "shared/context-economy-contract.md."
-)
+ROOT = Path(__file__).resolve().parent.parent.parent
 
-# Delegasyon plugin'leri — kurulum algılama (deterministik, fail-open).
-DELEGATION_PLUGINS = {"evidentia": "evidentia@", "sci-audit": "sci-audit@"}
+# Lock okunamazsa kullanılacak asgari delegasyon haritası (fail-open).
+DELEGATION_FALLBACK = {"evidentia": "evidentia@", "sci-audit": "sci-audit@"}
+
+
+def conventions(lock) -> str:
+    """Çekirdek invaryantlar — sayılar lock'tan enterpole edilir, hardcode YOK."""
+    counts = (lock or {}).get("counts", {})
+    n_srv = counts.get("servers", "?")
+    comps = (lock or {}).get("companions", [])
+    comp_desc = " / ".join(
+        "{} {}*".format(c["name"], c["tool_prefixes"][0]) for c in comps
+    ) or "companion listesi okunamadı"
+    return (
+        "[lex-sanitas] Türkiye sağlık mevzuatı reform protokolü aktif. "
+        "Çekirdek invaryantlar: "
+        "(1) TAM-FİLO — wire'lı {n} hukuk MCP + {nc} companion ({cd}) her sorguda "
+        "çalışır; companion'lar tam-filonun ZORUNLU üyeleridir — bağlıyken "
+        "tetiklenmiş bağlamda atlanmaları G0 ihlalidir; bağlı değillerse ilgili kapı "
+        "CONDITIONAL + manifesto beyanı; bağlam-dışı companion satırı dürüstçe "
+        "'skipped: mod için N/A' yazılır (satır hiç yazılmamazlık edilemez). "
+        "Connector önekleri yüzeye göre mcp__<Ad>__* veya mcp__claude_ai_<Ad>__* "
+        "görünebilir — ada göre eşleştir. Çıktı G0 kapsam manifestosu taşır "
+        "(server → hit/empty/degraded/skipped-with-reason; sessiz atlama = FAIL). "
+        "(2) NO-FABRICATION — kanun/CELEX/AYM/Yargıtay/PMID/YÖK-Tez asla uydurulmaz; "
+        "her atıf MCP-doğrulanmış (evidence_ledger). YÖK-Tez atıfları artık wire'lı "
+        "`mcp__yoktez__*` ile doğrulanır (tez no/başlık/yazar) → G7 companion'a bağlı "
+        "değil, hard PASS. "
+        "(3) SCOPE GUARD — yalnız mevzuat reformu; bireysel dava (SGK red/AYM "
+        "başvuru), malpraktis → saglik-sigorta/onko-erisim; promosyon denetimi → "
+        "promo-censor. "
+        "(4) ZORUNLU DELEGASYON — klinik kanıt → evidentia (her klinik-boyutlu "
+        "sorguda); atıf-adli + TR dil → sci-audit (her çıktıda). Bu plugin'ler "
+        "KURULUYKEN atlanmaları G0 ihlalidir; degrade yalnız gerçek yoklukta meşrudur. "
+        "(5) İNSAN DENETİMİ her çıktıda zorunlu. "
+        "(6) BAĞLAM EKONOMİSİ — tam-filo ham verisi ana pencereye girmez: ≤4 paralel "
+        "distiller alt-ajanı (Tier 1, shard-kısıtlı araç kümesiyle) + anamnesis RAG "
+        "substratı (Tier 2, büyük tam-metin ingest→bounded query) + kanonik cache "
+        "(bir-kez-getir) + kör-getirme-yok chunking. "
+        "(7) TAM-METİN ŞELALESİ — doktrin tam metni için önce lisanslı band "
+        "(openathens Tier 3); annas-reader (Tier 4) YALNIZ o denendikten sonra, açık "
+        "gerekçeyle ve YALNIZ ANALİZ için (getirilen metin çıktıya gövde olarak "
+        "kopyalanmaz). shared/context-economy-contract.md."
+    ).format(n=n_srv, nc=len(comps), cd=comp_desc)
+
+
+def build_context(lock, probe: dict, plugins: dict) -> str:
+    """Konvansiyonlar + delegasyon durumu + YALNIZ sağlıksız prob satırları."""
+    ctx = conventions(lock)
+
+    if plugins:
+        installed = [n for n, ok in plugins.items() if ok]
+        absent = [n for n, ok in plugins.items() if not ok]
+        if installed:
+            ctx += ("\n[preflight/delegasyon] KURULU: " + ", ".join(installed)
+                    + " → bağlam tetiklendiğinde çağrılmaları ZORUNLU (evidentia: her "
+                      "klinik-boyutlu sorgu; sci-audit: her reform-modu çıktısı). "
+                      "Atlanmaları G0 ihlalidir; manifesto satırları 'skipped: plugin "
+                      "kurulu değil' YAZILAMAZ.")
+        if absent:
+            ctx += ("\n[preflight/delegasyon] KURULU DEĞİL: " + ", ".join(absent)
+                    + " → graceful degrade meşru; manifestoda 'skipped: plugin kurulu "
+                      "değil' beyan et, eksik katmanı uydurma.")
+
+    broken = [r for r in probe.values() if r.get("status") == "unauthorized"]
+    missing = [r for r in probe.values() if r.get("status") == "auth_missing"]
+    down = [r for r in probe.values() if r.get("status") in ("unreachable", "error")]
+
+    if broken:
+        ctx += ("\n[preflight] ⚠ YAPILANDIRMA ARIZASI — şu server(lar) canlı prob'da "
+                "401/403 verdi: "
+                + ", ".join("{} (HTTP {})".format(r["name"], r.get("http"))
+                            for r in broken)
+                + ". Bu bir degrade DEĞİL, düzeltilebilir bir wiring hatasıdır: ya "
+                  ".mcp.json'daki Authorization header'ı eksik/yanlış, ya anahtar "
+                  "geçersiz/emekli. Çözüm: fleet.yaml'i düzelt → "
+                  "`python3 tools/gen_fleet.py`. Bu tur ilgili katman manifestoda "
+                  "'degraded: 401' olarak beyan edilir; ASLA uydurma.")
+    if missing:
+        ctx += ("\n[preflight] Şu connector anahtar(lar)ı süreç ortamında YOK: "
+                + ", ".join("{} ({})".format(r["name"], r.get("detail", ""))
+                            for r in missing)
+                + ". Manifestoda 'skipped: anahtar yok' beyan edilir (tam-filo degrade "
+                  "— çıktı durmaz). Çözüm: oturumu "
+                  "`doppler run -p cureohub -c dev_personal -- claude` ile başlat.")
+    if down:
+        ctx += ("\n[preflight] Şu server(lar) erişilemedi: "
+                + ", ".join("{} ({})".format(r["name"],
+                                             r.get("detail") or r.get("http"))
+                            for r in down)
+                + ". Manifestoda 'degraded: erişilemedi' beyan et; yokluk kanıt "
+                  "DEĞİLDİR, veri boşluğu doldurulmaz.")
+    return ctx
 
 
 def detect_installed_plugins():
-    """~/.claude/settings.json enabledPlugins içinden evidentia/sci-audit kurulumunu algılar.
+    """~/.claude/settings.json enabledPlugins'ten delegasyon plugin'lerini algılar.
 
-    Amaç: 'kurulu → çağrı ZORUNLU / kurulu değil → graceful degrade' ayrımını oturum başında
-    kanıta bağlamak. Okuma başarısızlığı = bilinmiyor (boş dict) — fail-open.
+    Amaç: 'kurulu → çağrı ZORUNLU / kurulu değil → graceful degrade' ayrımını
+    oturum başında kanıta bağlamak. Okuma başarısızlığı = bilinmiyor — fail-open.
     """
     try:
+        lock = fleet_probe.load_lock(ROOT) if fleet_probe else None
+        prefixes = ({d["name"]: d["plugin_id_prefix"] for d in lock["delegations"]}
+                    if lock and lock.get("delegations") else DELEGATION_FALLBACK)
         path = os.path.expanduser("~/.claude/settings.json")
         with open(path, encoding="utf-8") as fh:
             enabled = json.load(fh).get("enabledPlugins", {})
-        return {
-            name: any(k.startswith(prefix) and v for k, v in enabled.items())
-            for name, prefix in DELEGATION_PLUGINS.items()
-        }
+        return {name: any(k.startswith(p) and v for k, v in enabled.items())
+                for name, p in prefixes.items()}
     except Exception:
         return {}
 
@@ -81,39 +146,18 @@ def main():
     except Exception:
         pass
 
-    missing = [f"{c} (${v})" for c, v in GATED.items() if not os.environ.get(v)]
-    ctx = CONVENTIONS
+    lock, probe = None, {}
+    try:
+        if fleet_probe:
+            lock = fleet_probe.load_lock(ROOT)
+            probe = fleet_probe.cached_probe(ROOT, os.environ)
+    except Exception:
+        pass  # fail-open: prob olmadan da konvansiyonlar gider
 
-    plugins = detect_installed_plugins()
-    if plugins:
-        installed = [n for n, ok in plugins.items() if ok]
-        absent = [n for n, ok in plugins.items() if not ok]
-        if installed:
-            ctx += (
-                "\n[preflight/delegasyon] KURULU: " + ", ".join(installed)
-                + " → bağlam tetiklendiğinde çağrılmaları ZORUNLU (evidentia: her klinik-boyutlu "
-                "sorgu; sci-audit: her reform-modu çıktısı). Atlanmaları G0 ihlalidir; manifesto "
-                "satırları 'skipped: plugin kurulu değil' YAZILAMAZ."
-            )
-        if absent:
-            ctx += (
-                "\n[preflight/delegasyon] KURULU DEĞİL: " + ", ".join(absent)
-                + " → graceful degrade meşru; manifestoda 'skipped: plugin kurulu değil' beyan et, "
-                "eksik katmanı uydurma."
-            )
-
-    if missing:
-        ctx += (
-            "\n[preflight] Şu hukuk connector anahtar(lar)ı süreç ortamında YOK: "
-            + ", ".join(missing)
-            + ". Bunlar çağrı anında 401 döner ve kapsam manifestosunda 'skipped: anahtar yok' "
-            "olarak beyan edilir (tam-filo degrade — çıktı durmaz). Çözüm: oturumu "
-            "`doppler run -p cureohub -c dev_personal -- claude` ile başlat → tüm ${VAR}'lar "
-            "otomatik enjekte olur. (Public server'lar — titck, mevzuat-bilgisi — etkilenmez.)"
-        )
-
+    ctx = build_context(lock, probe, detect_installed_plugins())
     sys.stdout.write(json.dumps({
-        "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": ctx}
+        "hookSpecificOutput": {"hookEventName": "SessionStart",
+                               "additionalContext": ctx}
     }))
     sys.exit(0)
 

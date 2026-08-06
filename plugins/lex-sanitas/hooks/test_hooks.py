@@ -106,15 +106,69 @@ check("tek dalga — worker sayısı ≥ filo boyutu (duvar-saati = en yavaş se
       fleet_probe.MAX_WORKERS >= (_lock or {}).get("counts", {}).get("servers", 99))
 
 print("== session_start.py ==")
+import session_start  # noqa: E402
+
 rc, out = run("session_start.py", {})
 ctx = (out or {}).get("hookSpecificOutput", {}).get("additionalContext", "")
 check("çıkış 0 + geçerli hook JSON", rc == 0 and bool(ctx))
 check("konvansiyon enjeksiyonu (TAM-FİLO + NO-FABRICATION + companion zorunluluğu)",
       all(s in ctx for s in ("TAM-FİLO", "NO-FABRICATION", "ZORUNLU üyeleridir")))
 check("delegasyon kurulum algısı satırı", "[preflight/delegasyon]" in ctx or "KURULU" in ctx)
-rc, out = run("session_start.py", {}, env_extra={"MEVZUAT_MCP_API_KEY": ""})
-ctx2 = (out or {}).get("hookSpecificOutput", {}).get("additionalContext", "")
-check("eksik anahtar preflight uyarısı (mevzuat)", "MEVZUAT_MCP_API_KEY" in ctx2)
+check("tam-metin şelalesi invaryantı enjekte edilir (openathens→annas sırası)",
+      "TAM-METİN ŞELALESİ" in ctx and "YALNIZ ANALİZ" in ctx)
+
+# ── Lock + prob tümleşimi (v3.5.0) ────────────────────────────────────────
+_L = {"counts": {"servers": 19, "gated": 16, "public": 3,
+                 "companions": 5, "delegations": 2},
+      "servers": [{"name": "titck", "auth_env": "TITCK_MCP_API_KEY"}],
+      "companions": [{"name": "Yargı", "tool_prefixes": ["mcp__Yarg__"], "gate": "G5",
+                      "manifest_row": "Yargı (companion — G5 içtihat)",
+                      "degrade": "G5 CONDITIONAL"}],
+      "delegations": [{"name": "evidentia", "plugin_id_prefix": "evidentia@",
+                       "manifest_row": "evidentia (klinik delegasyon)"}]}
+
+check("sağlıklı filoda preflight bölümü SESSİZ",
+      "[preflight]" not in session_start.build_context(
+          _L, {"titck": {"name": "titck", "status": "ok", "http": 200}}, {}))
+
+_ctx_401 = session_start.build_context(
+    _L, {"titck": {"name": "titck", "status": "unauthorized", "http": 401,
+                   "detail": ""}}, {})
+check("401 → 'YAPILANDIRMA ARIZASI' (degrade olarak sunulmaz)",
+      "titck" in _ctx_401 and "YAPILANDIRMA ARIZASI" in _ctx_401
+      and "degrade DEĞİL" in _ctx_401)
+
+_ctx_miss = session_start.build_context(
+    _L, {"titck": {"name": "titck", "status": "auth_missing", "http": None,
+                   "detail": "${TITCK_MCP_API_KEY} süreç ortamında yok"}}, {})
+check("auth_missing → doppler çözüm yolu (meşru degrade)",
+      "doppler run" in _ctx_miss and "skipped: anahtar yok" in _ctx_miss)
+
+_ctx_plain = session_start.build_context(_L, {}, {})
+check("sayılar lock'tan gelir (hardcode 14 yok)",
+      "19 hukuk MCP" in _ctx_plain and "14" not in _ctx_plain)
+check("prob boş dönse bile bağlam üretilir (fail-open)",
+      _ctx_plain.startswith("[lex-sanitas]"))
+check("lock None iken de çökmez (fail-open)",
+      session_start.build_context(None, {}, {}).startswith("[lex-sanitas]"))
+
+with open(os.path.join(SCRIPTS, "session_start.py"), encoding="utf-8") as fh:
+    _ss = fh.read()
+check("hardcoded GATED sözlüğü kaldırıldı", "\nGATED = {" not in _ss)
+check("titck 'public, etkilenmez' yalanı kaldırıldı",
+      "Public server'lar — titck" not in _ss)
+check("preflight fleet.lock.json'a bağlı", "load_lock" in _ss)
+
+# Uçtan uca: anahtarı boşalt + cache'i izole et → prob TAZE koşar ve mevzuat
+# 'auth_missing' düşer. (auth_missing yolu ağa çıkmaz, bu yüzden çevrimdışı da geçer.)
+with tempfile.TemporaryDirectory() as _cd:
+    rc, out = run("session_start.py", {},
+                  env_extra={"MEVZUAT_MCP_API_KEY": "", "XDG_CACHE_HOME": _cd})
+    ctx2 = (out or {}).get("hookSpecificOutput", {}).get("additionalContext", "")
+    check("uçtan uca: eksik anahtar → preflight uyarısı + doppler çözümü",
+          "MEVZUAT_MCP_API_KEY" in ctx2 and "doppler run" in ctx2, ctx2[-220:])
+    check("uçtan uca: cache izole dizine yazıldı",
+          os.path.exists(os.path.join(_cd, "lex-sanitas", "fleet_probe.json")))
 
 print("== scope_guard.py (UserPromptSubmit) ==")
 rc, out = run("scope_guard.py", {"prompt": "SGK ödeme reddi davam için itiraz dilekçesi yaz"})

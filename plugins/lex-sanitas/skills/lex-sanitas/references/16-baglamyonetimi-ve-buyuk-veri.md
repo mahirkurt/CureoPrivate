@@ -1,6 +1,6 @@
 # Referans 16 — Bağlam Yönetimi ve Büyük-Veri Operasyonel Protokolü
 
-Bu dosya, `shared/context-economy-contract.md` sözleşmesinin **operasyonel yürütme kılavuzudur** — hangi durumda hangi katmanı, hangi araç parametreleriyle çağıracağını adım adım tanımlar. Tam-filo (14 kaynak MCP her sorguda) çalışırken bağlamı boğmadan **en doğru ve kapsamlı** getirimi sağlar.
+Bu dosya, `shared/context-economy-contract.md` sözleşmesinin **operasyonel yürütme kılavuzudur** — hangi durumda hangi katmanı, hangi araç parametreleriyle çağıracağını adım adım tanımlar. Tam-filo (19 kaynak MCP her sorguda) çalışırken bağlamı boğmadan **en doğru ve kapsamlı** getirimi sağlar.
 
 ## A. Karar ağacı — bir belge geldiğinde
 
@@ -24,7 +24,7 @@ Her sorguda 4 shard'ı **paralel** dağıt (bağımsız görevler — tek turda)
 > "Konu: <T>. Yabancı katman: health-policy, german-law, ich-guidelines, intl-treaty, eudamed, oecd (+bağlıysa Open_Law, Ansvar, Fedlex_Swiss — CH'de SR-numaralı birincil metin Fedlex'ten, Ansvar CH bulgusu çerçeve-teyit; CH kapsam dışıysa coverage'a 'skipped: mod için N/A' yaz). Programatik kimlik (CELEX/ECLI/ELI/AKN/SR) zorunlu; URL'siz bulgu döndürme. Mukayese matrisi + coverage döndür."
 
 **S3 — Doktrin/içtihat** (`legal-distiller`):
-> "Konu: <T>. Server: yok-akademik, Yargı (bağlıysa), YokTez (bağlıysa — tez doktrini + tez no/başlık/yazar teyidi), Türk Patent (bağlıysa — IP kesişimi; IP-boyut yoksa coverage'a 'skipped: mod için N/A' yaz). Doktrin + içtihat zinciri (AYM/Danıştay/Yargıtay). ≤10 bulgu + coverage. İçtihat reform-GEREKÇE sinyalidir; dava dilekçesi değil."
+> "Konu: <T>. Server: yok-akademik, literatur (DergiPark tam-metin), yoktez (wire'lı — tez doktrini + tez no/başlık/yazar teyidi), Yargı (bağlıysa), Türk Patent (bağlıysa — IP kesişimi; IP-boyut yoksa coverage'a 'skipped: mod için N/A' yaz). Doktrin + içtihat zinciri (AYM/Danıştay/Yargıtay). ≤10 bulgu + coverage. İçtihat reform-GEREKÇE sinyalidir; dava dilekçesi değil."
 
 **S4 — Klinik** (evidentia `evidence-synthesizer` / `/evidentia`): zenginleştirilmiş sorgu (composition-contract §1).
 

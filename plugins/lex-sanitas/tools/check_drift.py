@@ -24,18 +24,20 @@ import gen_fleet  # noqa: E402
 
 # Filo sayısı iddiası kalıpları. YALNIZ 'N MCP/server/sunucu' bağlamında sayı arar.
 # Dışlananlar (hepsi test_check_drift.py'de koruma altında):
-#   · tarih/madde-no/oran      → önceki karakter [\d.,/-] ise eşleşmez (24/2/2022, Md.90/5)
+#   · tarih/madde-no/oran      → önceki karakter \w veya [.,/-] ise eşleşmez
+#                                (24/2/2022, Md.90/5, 'G7 companion', 'R6b')
 #   · bölüm göndermesi         → '§' öneki ('§4 server-side', '§3 companion↔kapı')
 #   · mod göndermesi           → 'Mod N server-listesi'
 #   · bileşik ad               → noun'dan sonra '-' ('server-side', 'server-listesini')
 SERVER_CLAIM = re.compile(
-    r"(?<![\d.,/§-])(?<!Mod )(\d{1,3})\s+"
+    r"(?<![\w.,/§-])(?<!Mod )(\d{1,3})\s+"
     r"(?:hukuk/regülasyon\s+|hukuk\s+|kaynak\s+|wire'?lı\s+)?"
     r"(?:MCP|server|sunucu)\b(?!-)",
     re.IGNORECASE,
 )
 COMPANION_CLAIM = re.compile(
-    r"(?<![\d.,/§-])(?<!Mod )(\d{1,3})\s+companion\b(?!-)", re.IGNORECASE)
+    r"(?<![\w.,/§-])(?<!Mod )(\d{1,3})\s+(?:zorunlu\s+|wire\'?lı\s+|bağlı\s+)?"
+    r"companion\b(?!-)", re.IGNORECASE)
 
 SCAN_SUFFIXES = {".md", ".yaml", ".yml", ".py", ".json"}
 SKIP_DIRS = {"__pycache__", ".git", "node_modules"}

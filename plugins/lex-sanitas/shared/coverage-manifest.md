@@ -4,12 +4,12 @@
 
 ## Kurallar
 
-- Wire edilmiş **14 MCP** + **6 companion** (Yarg/Open_Law/Ansvar/Fedlex_Swiss/YokTez/Turk_Patent — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
+- Wire edilmiş **19 MCP** + **5 companion** (Yarg/Open_Law/Ansvar/Fedlex_Swiss/Turk_Patent — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false`) · `skipped: <gerekçe>` (anahtar yok / mod için N/A).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.
 - **Companion skip'inin kapı etkisi manifesto satırında görünür:** `Yarg → skipped: companion bağlı değil ⇒ G5 CONDITIONAL` · `Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL (CELEX degrade: german-law→WebFetch)` · Ansvar skip'inde etkilenen yargı satırları `manual_required` kalır, tablodan silinmez.
-- **Bağlam-bağımlı companion satırları** (Fedlex_Swiss · YokTez · Turk_Patent) da her manifestoda mevcuttur; ilgili bağlam yoksa durum dürüstçe `skipped: mod için N/A` yazılır (örn. CH karşılaştırması yok / IP-boyut yok). İlgili bağlam varken bağlıyken atlanmaları G0 ihlalidir.
+- **Bağlam-bağımlı companion satırları** (Fedlex_Swiss · Turk_Patent) da her manifestoda mevcuttur; ilgili bağlam yoksa durum dürüstçe `skipped: mod için N/A` yazılır (örn. CH karşılaştırması yok / IP-boyut yok). İlgili bağlam varken bağlıyken atlanmaları G0 ihlalidir.
 - Manifesto, `legal-distiller`'ın döndürdüğü `coverage` bloğundan türetilir; alt-ajan çağrılmadıysa doğrudan araç çağrılarından derlenir.
 
 ## Örnek

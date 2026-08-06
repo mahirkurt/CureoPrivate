@@ -327,7 +327,7 @@ Lex-Sanitas çıktısında içtihat sentezi şu standartta yer alır:
 
 ## 6. YokTez MCP — Akademik Tez Katmanı
 
-**MCP adı:** YokTez (`yoktezmcp.fastmcp.app/mcp`)
+**MCP adı:** yoktez (`yoktezmcp.fastmcp.app/mcp`) — **v3.5.0'da first-class wire'lı** (araç öneki `mcp__yoktez__*`; artık claude.ai companion connector'ı DEĞİL, bağlanması gerekmez)
 
 **Kapsam:** Yükseköğretim Kurulu Ulusal Tez Merkezi (YÖK Tez) veri tabanına programatik erişim. Türk yüksek lisans + doktora tezleri sağlık hukuku konularında zengin kaynak.
 

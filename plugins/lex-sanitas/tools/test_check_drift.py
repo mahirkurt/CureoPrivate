@@ -41,7 +41,9 @@ class TestDriftGate(unittest.TestCase):
         """
         for s in ("`references/00-mod-pipelines.md` Mod 1 server-listesini ver",
                   "Tasarım spec §8a VERIFY policy + §4 server-side quality gate",
-                  "SKILL §3 companion↔kapı bağı; composition-contract §3 tablo."):
+                  "SKILL §3 companion↔kapı bağı; composition-contract §3 tablo.",
+                  "→ G7 companion'a bağlı değil, hard PASS.",
+                  "R6b rubriği 21 server-listesi değildir"):
             self.assertFalse(check_drift.scan_text(s, expected=19, companions=5), s)
 
     def test_test_dosyalari_taranmaz(self):

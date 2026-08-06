@@ -6,7 +6,7 @@ suite:
   target_version: ">= 3.0.0"
   evaluator: [manual, smp-orchestrator, skill-censor]
   description: >
-    v3.0.0 tam-filo invaryantını doğrular: wire edilmiş 14 hukuk/regülasyon MCP
+    v3.0.0 tam-filo invaryantını doğrular: wire edilmiş 19 hukuk/regülasyon MCP
     + bağlı companion (Yargı/Open Law/Ansvar) + evidentia (klinik-boyut) + sci-audit
     HER sorguda devreye alınır ve her çıktı bir G0 kapsam manifestosu taşır
     (server → hit/empty/degraded/skipped-with-reason). Sessiz atlama = G0 FAIL.
@@ -21,7 +21,7 @@ cases:
       full_fleet: true
       gates: { G0: PASS, G1: PASS, G2: PASS, G7: PASS }
     assertions:
-      - "Çıktı bir kapsam manifestosu (G0) içermeli: 14 wire'lı MCP + companion + evidentia + sci-audit için birer satır."
+      - "Çıktı bir kapsam manifestosu (G0) içermeli: 19 wire'lı MCP + companion + evidentia + sci-audit için birer satır."
       - "Her server satırı hit/empty/degraded/skipped-with-reason durumlarından biriyle işaretlenmeli."
       - "Hiçbir server sessizce atlanmamalı — atlandıysa gerekçe ('anahtar yok' / 'mod için N/A') yazılmalı."
       - "Ağır getirim legal-distiller alt-ajanına delege edilmeli (ana bağlamda ham döküm olmamalı)."
@@ -90,7 +90,7 @@ cases:
 
   - id: FLEET-007
     title: "v3.1 — companion satırları manifestoda zorunlu (durum ne olursa olsun)"
-    given: "SUT değişikliği için karşılaştırmalı analiz üretildi; manifesto 14 wire'lı MCP'yi listeliyor ama Yargı/Open_Law/Ansvar/evidentia/sci-audit satırları hiç yok."
+    given: "SUT değişikliği için karşılaştırmalı analiz üretildi; manifesto 19 wire'lı MCP'yi listeliyor ama Yargı/Open_Law/Ansvar/evidentia/sci-audit satırları hiç yok."
     expect:
       stop_hook: block
     assertions:

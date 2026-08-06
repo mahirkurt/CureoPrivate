@@ -1,27 +1,66 @@
 ---
-description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 14 hukuk/regülasyon MCP + 6 zorunlu companion (Yargı/Open Law/Ansvar/Fedlex Swiss/YokTez/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun canlı erişilebilirliğini raporlar. Hangi araçlar hazır, hangileri anahtar/bağlantı bekliyor gösterir. Argüman gerekmez.
-argument-hint: (argüman gerekmez)
+description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 19 hukuk/regülasyon MCP + 5 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash, Task
 ---
 
 # /lex-connectors — Tam-Filo Bağlantı Durumu
 
-Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır) için hangi connector'ların hazır olduğunu raporla.
+Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır) için hangi katmanın gerçekten hazır olduğunu **canlı prob'la** raporla — env-var varlığına bakarak DEĞİL.
+
+> **Neden canlı prob:** anahtarın env'de bulunması o server'ın çalıştığını KANITLAMAZ. 2026-08-02'de TİTCK kapılandı; plugin onu "public" saymaya devam etti ve katman aylarca 401 aldı — env'e bakan bir kontrol bunu yapısal olarak göremezdi. Bu komut gerçek bir MCP `initialize` isteği atar.
 
 ## Yürütme
 
-1. **Wire'lı fleet'i oku.** [`.mcp.json`](../.mcp.json) — 14 server + rol notları.
-2. **SessionStart preflight çıktısını oku** (varsa): `${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py` hangi Bearer anahtarlarının env'de olduğunu işaretler.
-3. **Canlı erişilebilirliği raporla** — üç kategori:
-   - **TR primer/idari:** mevzuat · mevzuat-bilgisi (ikincil) · resmi-gazete · saglikbakanligi · titck · tbmm · detsis
-   - **Karşılaştırmalı/uluslararası:** health-policy (18 araç — **semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · ich-guidelines · intl-treaty · eudamed · oecd · **Fedlex Swiss** (`mcp__Fedlex_Swiss__*`, companion — CH birincil metin: search_by_title/get_law_text/get_article/list_amendments)
-   - **Doktrin + companion:** yok-akademik · **YokTez** (`mcp__YokTez_MCP__*`, companion — tez tam-metin + G7 YÖK-Tez atıf doğrulama) · Yargı (`mcp__Yarg__*`) · Open Law (`mcp__Open_Law__*`) · Ansvar (`mcp__Ansvar__*`)
-   - **Destek (companion):** Türk Patent (`mcp__T_rk_Patent__*`) — IP-boyutlu reform (ilaç patenti/SPC/veri imtiyazı/patent linkage/6769 SMK kesişimi)
-   - **Büyük-veri substratı:** anamnesis (`mcp__anamnesis__*`) — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
+1. **Filoyu oku.** [`fleet.yaml`](../fleet.yaml) tek gerçek kaynaktır; [`fleet.lock.json`](../fleet.lock.json) onun makine-okunur türevidir (`counts` + server/companion/delegasyon listeleri). `.mcp.json` de bunlardan üretilir — **elle düzenlenmez**.
+
+2. **Canlı prob'u koştur.** Kullanıcı "taze"/"fresh"/"güncel" dediyse `--fresh` ekle; aksi hâlde 24 saatlik cache kullanılır (ağ trafiği yok):
+
+   ```bash
+   python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/fleet_probe.py" --json
+   ```
+
+   Taze koşum ~12 sn sürer (en yavaş server `anamnesis` ~11 sn); cache'li koşum anlıktır.
+
+3. **Her satırı durumuyla raporla.** Prob'un beş durumunu **ayırt ederek** yaz — bu ayrım komutun asıl değeridir:
+
+   | Durum | Anlamı | Aksiyon |
+   |---|---|---|
+   | `ok` | hazır, `initialize` 200 döndü | — |
+   | `auth_missing` | anahtar süreç ortamında yok (ağa çıkılmadı) — **meşru degrade** | `doppler run -p cureohub -c dev_personal -- claude` ile başlat |
+   | `unauthorized` | sunucu 401/403 verdi — **YAPILANDIRMA ARIZASI, degrade değil** | `fleet.yaml`'i düzelt → `python3 tools/gen_fleet.py`; anahtar emekli olmuş olabilir |
+   | `unreachable` | timeout / bağlantı hatası / 5xx | upstream sorunu; manifestoda `degraded: erişilemedi` |
+   | `error` | 200 ama geçersiz JSON-RPC | sunucu sürümü uyumsuz olabilir |
+
+4. **Katmanlara göre grupla** (`fleet.lock.json`'daki `tier` alanı):
+   - **TR primer/idari** (`primary`/`secondary`/`support`, shard S1): mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis
+   - **Karşılaştırmalı/uluslararası** (`comparative`, shard S2): health-policy (**semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · ich-guidelines · intl-treaty · eudamed · oecd
+   - **Doktrin** (`doctrine`, shard S3): yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması — v3.5.0'da wire'landı, artık companion DEĞİL) · **literatur** (DergiPark makale tam-metni)
+   - **Tam-metin şelalesi** (`fulltext`, shard S4): **openathens** (Tier 3 lisanslı) → **annas-reader** (Tier 4 son çare, yalnız analiz). Şelale sırasını raporda belirt.
+   - **Büyük-veri substratı** (`substrate`): anamnesis — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
+   - **Companion (wire edilemez — claude.ai connector):** Yargı · Open Law · Ansvar · Fedlex Swiss · Türk Patent
    - **Delegasyon:** evidentia (klinik kanıt) · sci-audit (atıf-adli + dil)
-4. **Her satır için durum:** `hazır (anahtar var)` / `anahtar bekliyor: <ENV_VAR>` / `companion — claude.ai connector olarak ekle` / `plugin kurulu değil (graceful degrade)`.
-5. **Kapı etkisini göster:** companion/delegasyon satırlarında eksikliğin maliyetini açıkça yaz — `Yargı bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat doğrulanamaz)` · `Open Law bağlı değil ⇒ G6 CONDITIONAL (CELEX doğrulama degrade)` · `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL satırları manual_required` · `Fedlex Swiss bağlı değil ⇒ Mod 7 CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + manual_required` · `YokTez bağlı değil ⇒ tez-doktrin + G7 YÖK-Tez doğrulaması yok-akademik metadata'sına degrade` · `Türk Patent bağlı değil ⇒ IP-boyutlu satır manual_required` · `evidentia kurulu değil ⇒ klinik iddialar unverified` · `sci-audit kurulu değil ⇒ çıktı-QA manuel`.
-6. **Özet:** kaç server tam-filoya hazır, hangileri kullanıcı aksiyonu bekliyor (Doppler `cureohub/dev_personal` Bearer inject veya claude.ai connector ekleme) ve bu eksikliklerin hangi kapıları CONDITIONAL'a düşürdüğü.
+
+5. **Kapı etkisini göster.** Eksik katmanın maliyetini açıkça yaz:
+   - `Yargı bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat zinciri doğrulanamaz)`
+   - `Open Law bağlı değil ⇒ G6 CONDITIONAL (CELEX doğrulaması german-law→WebFetch'e degrade)`
+   - `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL satırları manual_required`
+   - `Fedlex Swiss bağlı değil ⇒ Mod 7 CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + manual_required`
+   - `Türk Patent bağlı değil ⇒ IP-boyutlu satır manual_required`
+   - `yoktez erişilemiyor ⇒ G7 YÖK-Tez atıf doğrulaması yapılamaz; tez atıfları illustrative_placeholder_not_verified → KULLANILMAZ`
+   - `literatur erişilemiyor ⇒ doktrin metadata-only'ye düşer (atıf yapılabilir, içerik alıntılanamaz)`
+   - `openathens erişilemiyor ⇒ lisanslı band kapalı; annas-reader OTOMATİK AÇILMAZ (şelale sırası korunur)`
+   - `evidentia kurulu değil ⇒ klinik iddialar unverified` · `sci-audit kurulu değil ⇒ çıktı-QA manuel`
+
+6. **Sürüklenme kapısını da koştur** (yapılandırma bütünlüğü — ağ gerektirmez):
+
+   ```bash
+   python3 "${CLAUDE_PLUGIN_ROOT}/tools/check_drift.py"
+   ```
+
+   `exit 0` = türetilmiş dosyalar güncel, düzyazı sayıları gerçekle uyuşuyor, hook'lar lock'u okuyor. `exit 1` çıktısını olduğu gibi aktar — bu, bir sonraki titck-sınıfı arızanın erken uyarısıdır.
+
+7. **Özet:** kaç katman `ok`, hangileri kullanıcı aksiyonu bekliyor (Doppler Bearer inject / claude.ai connector ekleme), hangileri **yapılandırma arızası** taşıyor (bunlar kullanıcı aksiyonu değil, kod düzeltmesi ister) ve bu eksikliklerin hangi kapıları CONDITIONAL'a düşürdüğü.
 
 > Not: Bir server anahtar/bağlantı beklese bile plugin **graceful degrade** eder — o katman kapsam manifestosunda `skipped: anahtar yok` olarak beyan edilir, çıktı durmaz, asla uydurma yapılmaz. **Ters yüzü:** kurulu/bağlı bir katman (companion dahil) tetiklenmiş bağlamda ATLANAMAZ — bu G0 ihlalidir (`shared/composition-contract.md`).
 

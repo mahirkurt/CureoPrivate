@@ -53,9 +53,9 @@ Lex Sanitas **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 mo
 
 **sci-audit yoksa:** atıf-adli + imla denetimi manuel yapılır (lex-sanitas kendi G3/G7 kapıları zaten çalışır); manifestoda `sci-audit → skipped: plugin kurulu değil`. Çıktı durmaz.
 
-## 3. Companion connector'lar — Yargı · Open Law · Ansvar · Fedlex Swiss · YokTez · Türk Patent (tam-filonun zorunlu üyeleri)
+## 3. Companion connector'lar — Yargı · Open Law · Ansvar · Fedlex Swiss · Türk Patent (tam-filonun zorunlu üyeleri)
 
-Bu altısı claude.ai connector'ı olarak bağlanır (`.mcp.json`'da wire edilmez — çifte kayıt olmasın); **bağlı oldukları her oturumda tam-filonun zorunlu üyeleridir**, manifesto satırları her çıktıda mevcuttur ve kalite kapılarına bağlıdır. `/lex-connectors` durumlarını raporlar. *(Önek notu: connector araç önekleri yüzeye göre `mcp__<Ad>__*` veya `mcp__claude_ai_<Ad>__*` görünebilir — eşleştirmeyi server adına göre yap.)*
+Bu beşi claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da wire EDİLMEZ — kararlı self-host URL'leri yoktur); **bağlı oldukları her oturumda tam-filonun zorunlu üyeleridir**, manifesto satırları her çıktıda mevcuttur ve kalite kapılarına bağlıdır. `/lex-connectors` durumlarını raporlar. *(Önek notu: connector araç önekleri yüzeye göre `mcp__<Ad>__*` veya `mcp__claude_ai_<Ad>__*` görünebilir — eşleştirmeyi server adına göre yap.)*
 
 | Companion | Araç yüzeyi | Zorunlu tetik (bağlam) | Bağlı kapı | Bağlı değilse |
 |---|---|---|---|---|
@@ -64,8 +64,9 @@ Bu altısı claude.ai connector'ı olarak bağlanır (`.mcp.json`'da wire edilme
 | **Ansvar** | `mcp__Ansvar__search(jurisdictions=…)` · `get_provision` · `list_coverage` · `validate_citation` | Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL veya diğer 58-yargı korpusu kapsamındaki ülke satırı · yatay çerçeve/standart (GDPR/NIS2/veri güvenliği) sorguları | Mod 7 kapsam bütünlüğü | O yargı satırı `manual_required` + kapsam-boşluğu beyanı; satır tablodan SİLİNMEZ |
 
 | **Fedlex Swiss** | `mcp__Fedlex_Swiss__search_by_title` · `get_law_text` · `get_article` · `list_amendments` | Mod 7 karşılaştırma kapsamına **CH** girdiğinde İsviçre federal mevzuatının birincil metni (SR-numaralı; HMG/KVG/HFG rejimleri); CH-dışı sorguda satır `skipped: mod için N/A` | CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + `manual_required` (Fedlex portal deep-link) |
-| **YokTez** | `mcp__YokTez_MCP__search_yok_tez_detailed` · `get_yok_tez_thesis_details` · `get_yok_tez_document_markdown` | Tez-düzeyi Türk doktrin (gerekçe akademik dayanağı, ANALYZE doktrin) · **G7 YÖK-Tez atıf doğrulaması** (tez no/başlık/yazar) | Tez-doktrin yok-akademik metadata'sına degrade; doğrulanamayan YÖK-Tez atfı `unverified` etiketli, asla uydurma |
 | **Türk Patent** | `mcp__T_rk_Patent__search_patents` · `get_patent_details` · `search_trademarks` · `search_designs` | Konu sınai-mülkiyet kesişimliyse: ilaç patenti · SPC/veri imtiyazı · patent linkage · biyobenzer lansmanı · 6769 SMK kesişimi (DRAFT/RIA/COMPARATIVE); IP-boyutsuz sorguda satır `skipped: mod için N/A` | IP-boyutlu satır `manual_required` (TÜRKPATENT portal deep-link) |
+
+> **v3.5.0 — companion'dan wire'a terfi:** `yoktez` artık companion DEĞİL, `fleet.yaml`'de first-class wire'lıdır (`mcp__yoktez__*`, authless). Sonuç: **G7 YÖK-Tez atıf doğrulaması kullanıcının connector bağlamasına bağlı değildir** — tez no/başlık/yazar `get_yok_tez_thesis_details` ile teyit edilir, uydurma tez atfı deterministik yakalanır (hard PASS). Aynı sürümde `literatur` (DergiPark makale tam-metni), `openathens` (Tier 3 lisanslı) ve `annas-reader` (Tier 4 son çare, yalnız analiz) de wire edildi. Şelale disiplini: openathens'in erişilemez olması annas-reader'ı OTOMATİK AÇMAZ.
 
 **Sorumluluk sınırı:** Türkiye içtihadında otorite Yargı'dır; UK+EU resmî metinde Open Law; **CH birincil metinde Fedlex Swiss**; Ansvar çok-yargı *tarama* katmanıdır — çatışmada ülkenin resmî portalı (health-policy/german-law/Open Law/Fedlex) kazanır, Ansvar bulgusu ikincil teyit olarak not edilir.
 
@@ -73,12 +74,12 @@ Bu altısı claude.ai connector'ı olarak bağlanır (`.mcp.json`'da wire edilme
 
 | Durum | Davranış | Manifesto satırı |
 |---|---|---|
-| evidentia + sci-audit kurulu, 6 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
+| evidentia + sci-audit kurulu, 5 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
 | evidentia kurulu ama klinik-boyutlu sorguda ÇAĞRILMADI | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
 | sci-audit kurulu ama çıktı denetimsiz teslim edildi | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
 | yalnız evidentia kurulu | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |
 | yalnız sci-audit kurulu | Dil-QA tam, klinik `unverified` uyarısı | `evidentia → skipped: plugin kurulu değil` |
-| companion bağlı değil | İlgili kapı CONDITIONAL / satır `manual_required`-degrade + kullanıcıya bağlama önerisi | `Yarg/Open_Law/Ansvar/Fedlex_Swiss/YokTez/Turk_Patent → skipped: companion bağlı değil ⇒ <kapı/satır etkisi>` |
+| companion bağlı değil | İlgili kapı CONDITIONAL / satır `manual_required`-degrade + kullanıcıya bağlama önerisi | `Yarg/Open_Law/Ansvar/Fedlex_Swiss/Turk_Patent → skipped: companion bağlı değil ⇒ <kapı/satır etkisi>` |
 | ikisi de yok, companion'lar yok | lex-sanitas tek başına (9 mod çalışır; G5/G6 CONDITIONAL) | tümü `skipped` + gerekçe |
 
 **Değişmez:** hiçbir degrade durumu **uydurmaya** yol açmaz. Eksik katman = dürüst `unverified`/`skipped` beyanı, asla fabrikasyon. `skipped` yalnız (a) gerçek yokluk, (b) gerekçeli bağlam-dışılık ile meşrudur — kurulu/bağlı bir katmanın tetiklenmiş bağlamda atlanması her zaman ihlaldir. İnsan denetimi her hâlde zorunludur.

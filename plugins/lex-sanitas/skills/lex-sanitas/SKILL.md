@@ -13,7 +13,7 @@ description: >-
   (yoktez + literatur) ve lisanslı tam-metin şelalesi (openathens→annas-reader) artık wire'lı. Şüphede
   Scope Guard önceliklidir; bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi
   KAPSAM DIŞIDIR.
-version: 3.5.0
+version: 3.5.1
 ---
 
 # Lex-Sanitas — Türkiye Sağlık Mevzuatı Reform Protokolü

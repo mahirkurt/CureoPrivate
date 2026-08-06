@@ -9,7 +9,7 @@
 
 version: 2
 plugin: sci-audit
-plugin_version: "0.2.1"
+plugin_version: "0.2.2"
 
 servers:
   - name: pubmed

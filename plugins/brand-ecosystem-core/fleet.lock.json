@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "brand-ecosystem-core",
-  "plugin_version": "1.1.0",
+  "plugin_version": "1.1.1",
   "counts": {
     "servers": 7,
     "gated": 7,

@@ -9,7 +9,7 @@
 
 version: 2
 plugin: bist-analyst
-plugin_version: "1.1.8"
+plugin_version: "1.1.9"
 
 servers:
   - name: borsa

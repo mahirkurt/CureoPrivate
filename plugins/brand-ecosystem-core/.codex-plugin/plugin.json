@@ -1,6 +1,6 @@
 {
   "name": "brand-ecosystem-core",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The strategic, verbal and visual layers of the Brand Ecosystem v1.0 as one module: brand-audit, brand-platform, brand-story, brand-touchpoint and brand-launch, the brand-maker and brand-visual ecosystem companions, plus brand-maker (naming), brand-visual (visual identity) and figma-forge (design-system to Figma). Composes with the brand-voice plugin for the voice layer.",
   "author": {
     "name": "Cureonics",

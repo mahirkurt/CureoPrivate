@@ -1,6 +1,6 @@
 {
   "name": "fon-uzmani",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Türkiye yatırım (YAT) ve emeklilik (EMK) fonları için fon-analiz-orkestratoru (8-aşamalı deterministik boru hattı, G0-G7 kapıları) ile fon-haritalama, quant-analiz, piyasa-makro, regulasyon-uyum, portfoy-insa ve izleme kaynak-tipi skill'lerini tek paylaşılan connector sözleşmesi, kanonik-artefakt önbelleği ve deterministik saf-Python kuant betik kütüphanesi altında birleştirir. İki MCP omurgası: Borsa MCP (getiri/NAV/AUM/tarama/benchmark/makro) + fon-mcp (yeni resmî TEFAS API; varlık-sınıfı dağılımı + TER azami sınır + yönetim ücreti + fon akışı + EMK evreni — 12 araç). Beş mod: tek-fon analiz · tarama · karşılaştırma · portföy inşası · sürekli izleme. Karar-destek; SPK yatırım danışmanlığı değildir.",
   "author": {
     "name": "Cureonics",

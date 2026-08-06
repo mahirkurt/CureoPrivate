@@ -9,7 +9,7 @@
 
 version: 2
 plugin: brand-ecosystem-core
-plugin_version: "1.1.1"
+plugin_version: "1.1.2"
 
 servers:
   - name: brand-verify

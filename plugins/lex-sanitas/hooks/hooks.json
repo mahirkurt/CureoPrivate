@@ -1,5 +1,5 @@
 {
-  "description": "lex-sanitas runtime enforcement — düz-yazı invaryantlarını uygulanan davranışa çevirir: (1) SessionStart preflight, fleet.lock.json'daki filoya CANLI MCP prob'u atar (24 saat cache'li) ve 'anahtar yok' (meşru degrade) ile 'sunucu 401/403 verdi' (yapılandırma arızası) hâllerini AYIRIR — 2026-08-02 TİTCK kapılanmasının sessizce yaşamasını sağlayan kör nokta buydu; ayrıca tam-filo/no-fabrication/Scope Guard konvansiyonlarını enjekte eder (fail-open). Prob'un taze koşumu ~12 sn sürer (en yavaş server anamnesis ~11 sn) ve günde BİR kez olur; timeout bu yüzden 35 sn. (2) UserPromptSubmit scope-guard, prompt'ta kapsam-dışı sinyali (bireysel dava / promosyon) + sağlık-mevzuat bağlamı birlikte görülürse yönlendirme hatırlatır, aksi halde SESSİZ. (3) PostToolUse retrieve-don't-dump, büyük hukuk-metni dökümünde legal-distiller'a yönlendirir. (4) Stop, bir reform modu koştuysa kapsam manifestosu (G0) + confidence_label + zorunlu companion/delegasyon satırlarını (fleet.lock.json'dan türetilir) hatırlatır. TAM-FİLO gereği hiçbir MCP çağrısı BLOKLANMAZ. Hepsi deterministik ve fail-open.",
+  "description": "lex-sanitas runtime enforcement — düz-yazı invaryantlarını uygulanan davranışa çevirir: (1) SessionStart preflight, fleet.lock.json'daki filoya CANLI MCP prob'u atar (24 saat cache'li) ve 'anahtar yok' (meşru degrade) ile 'sunucu 401/403 verdi' (yapılandırma arızası) hâllerini AYIRIR — 2026-08-02 TİTCK kapılanmasının sessizce yaşamasını sağlayan kör nokta buydu; ayrıca tam-filo/no-fabrication/Scope Guard konvansiyonlarını enjekte eder (fail-open). Prob'un taze koşumu ölçülen en yavaş uca bağlıdır (Cloudflare Worker soğuk başlangıcı 11-12 sn) ve günde BİR kez olur; toplam bütçe 25 sn, hook timeout'u 45 sn. (2) UserPromptSubmit scope-guard, prompt'ta kapsam-dışı sinyali (bireysel dava / promosyon) + sağlık-mevzuat bağlamı birlikte görülürse yönlendirme hatırlatır, aksi halde SESSİZ. (3) PostToolUse retrieve-don't-dump, büyük hukuk-metni dökümünde legal-distiller'a yönlendirir. (4) Stop, bir reform modu koştuysa kapsam manifestosu (G0) + confidence_label + zorunlu companion/delegasyon satırlarını (fleet.lock.json'dan türetilir) hatırlatır. TAM-FİLO gereği hiçbir MCP çağrısı BLOKLANMAZ. Hepsi deterministik ve fail-open.",
   "hooks": {
     "SessionStart": [
       {
@@ -8,7 +8,7 @@
           {
             "type": "command",
             "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
-            "timeout": 35,
+            "timeout": 45,
             "statusMessage": "lex-sanitas: hukuk MCP filosu preflight + reform konvansiyonları"
           }
         ]

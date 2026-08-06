@@ -42,14 +42,16 @@ INIT_PAYLOAD = json.dumps({
                "clientInfo": {"name": "cureonics-preflight", "version": "1.0.0"}},
 }).encode("utf-8")
 
-# anamnesis initialize'ı ölçülen ~11 sn sürer (soğuk başlangıç değil, kalıcı) →
-# eşik onun üstünde olmalı, yoksa sağlıklı bir server her koşumda 'unreachable'
-# görünür. Tüm filo TEK dalgada (max_workers=20) koştuğu için toplam duvar-saati
-# en yavaş server'a eşittir, toplamına değil. Sonuç 24 saat cache'lenir → bu
-# maliyet günde bir kez ödenir; hook fail-open olduğu için oturumu bloklamaz.
-PER_ENDPOINT_TIMEOUT = 12.0
-TOTAL_DEADLINE = 14.0
-MAX_WORKERS = 20
+# ÖLÇÜM (2026-08-06, evidentia 20-server filosu): Cloudflare Worker uçlarının
+# soğuk başlangıcı 11-12 sn sürüyor (globocan 12.0 · ema 11.8 · drugddx 11.7 ·
+# who-gho 11.4 · anamnesis 11.2 · openfda 10.9). Prob 24 saatte bir koştuğu için
+# HER ZAMAN soğuk uca çarpar — eşikler bu gerçekliğin üstünde olmalı, yoksa
+# sağlıklı server'lar 'unreachable'/'unknown' görünür (prob teşhis ettiği arızayı
+# kendisi üretir). Filo TEK dalgada koşar (MAX_WORKERS ≥ en büyük filo) →
+# duvar-saati en yavaş server'a eşittir, toplamına değil. Hook fail-open.
+PER_ENDPOINT_TIMEOUT = 20.0
+TOTAL_DEADLINE = 25.0
+MAX_WORKERS = 32
 # oecd'nin initialize yanıtı 32 KB (uzun capabilities/instructions). Okuma sınırı
 # gövdeyi JSON'un ORTASINDAN keserse ayrıştırma çöker ve sağlıklı server sahte
 # 'error' verir — sınır en büyük gerçek yanıtın üstünde olmalı.

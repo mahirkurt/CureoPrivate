@@ -1,7 +1,7 @@
 ---
 description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 19 hukuk/regülasyon MCP + 5 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
-allowed-tools: Read, Bash, Task
+allowed-tools: Read, Bash
 ---
 
 # /lex-connectors — Tam-Filo Bağlantı Durumu
@@ -28,7 +28,7 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
    |---|---|---|
    | `ok` | hazır, `initialize` 200 döndü | — |
    | `auth_missing` | anahtar süreç ortamında yok (ağa çıkılmadı) — **meşru degrade** | `doppler run -p cureohub -c dev_personal -- claude` ile başlat |
-   | `unauthorized` | sunucu 401/403 verdi — **YAPILANDIRMA ARIZASI, degrade değil** | `fleet.yaml`'i düzelt → `python3 tools/gen_fleet.py`; anahtar emekli olmuş olabilir |
+   | `unauthorized` | sunucu 401/403 verdi — **YAPILANDIRMA ARIZASI, degrade değil** | `fleet.yaml`'i düzelt → `python3 tools/fleetkit/gen_fleet.py`; anahtar emekli olmuş olabilir |
    | `unreachable` | timeout / bağlantı hatası / 5xx | upstream sorunu; manifestoda `degraded: erişilemedi` |
    | `error` | 200 ama geçersiz JSON-RPC | sunucu sürümü uyumsuz olabilir |
 

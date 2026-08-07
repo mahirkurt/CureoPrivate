@@ -1,5 +1,5 @@
 ---
-description: Uçtan uca PRISMA sistematik/kapsam derleme koşumu — medical-research flagship'ini P0→P7 (protokol → arama stratejisi → getirim+dedup → tarama → çıkarım → yanlılık riski → GRADE → PRISMA raporlama) insan-onay kapılarıyla çalıştırır. Argüman = herhangi bir tıbbi araştırma sorusu (her uzmanlık, her soru tipi: tedavi/tanı/prognoz/etiyoloji/önleme).
+description: 'Uçtan uca PRISMA sistematik/kapsam derleme koşumu — medical-research flagship''ini P0→P7 (protokol → arama stratejisi → getirim+dedup → tarama → çıkarım → yanlılık riski → GRADE → PRISMA raporlama) insan-onay kapılarıyla çalıştırır. Argüman = herhangi bir tıbbi araştırma sorusu (her uzmanlık, her soru tipi: tedavi/tanı/prognoz/etiyoloji/önleme).'
 argument-hint: <araştırma sorusu — herhangi bir tıbbi konu>
 ---
 

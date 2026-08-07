@@ -7,7 +7,7 @@ argument-hint: <teklif konusu — örn. "1219 SK tabiplik reformu kanun teklifi"
 
 Talep: **$ARGUMENTS**
 
-`lex-sanitas` flagship skill'ini **Mod 8 TBMM_KANUN_TEKLIFI** olarak çalıştır. Template: [`templates/tbmm-kanun-teklifi.md`](../skills/lex-sanitas/templates/tbmm-kanun-teklifi.md).
+`lex-sanitas` flagship skill'ini **Mod 8 TBMM_KANUN_TEKLIFI** olarak çalıştır. Template: [[`templates/tbmm-kanun-teklifi.md`](../skills/lex-sanitas/templates/tbmm-kanun-teklifi.md)](../skills/lex-sanitas/templates/tbmm-kanun-teklifi.md).
 
 ## Yürütme
 

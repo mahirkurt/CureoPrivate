@@ -2,7 +2,7 @@
 
 En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağlık-farmasötik regülasyonunun her düzleminde — **kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge** — yeni mevzuat üretir, mevcut mevzuatı değiştirir, gerektiğinde çerçeveyi yeniden yazar. **5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12** çerçevesinde, **G0-G9 kalite kapıları** ve **no-fabrication** disipliniyle.
 
-> Eski `lex-sanitas` skill'inin (v2.9.0) mirasçısı. Yabancı-ülke mevzuat tarama işlevi ayrı bir MCP'ye (**health-policy**) taşındı; bu plugin onu *bir kaynak katmanı* olarak wire eder. Sürüm 3.0.0 = plugin mimarisi + tam-filo aktivasyonu. Sürüm 3.1.0 = bağlam-tetiklemeli ZORUNLU entegrasyon: evidentia/sci-audit kuruluysa atlanamaz; companion'lar (Yargı↔G5, Open Law↔G6, Ansvar↔Mod7) tam-filonun zorunlu üyeleri. Sürüm 3.2.0 = health-policy **semantic_search** doğal-dil giriş kapısı (çok-dilli keşif US/JP/AU/CN → fetch ile doğrulama), in-plugin **legal-distiller** ajanı, `start`→`lex-sanitas-start` skill yeniden adlandırması, hook test harness'ı + PostToolUse devre-kesicinin `additionalContext` kanalına taşınması. Sürüm 3.3.0 = **koşullu companion katmanı**: Fedlex Swiss (Mod7 CH birincil metin — Ansvar CH satırı çerçeve-teyide düşer) + YokTez (tez doktrini + G7 YÖK-Tez atıf doğrulama) + Türk Patent (ilaç IP/SPC/veri imtiyazı) — bağlıyken ilgili bağlam tetiklenince zorunlu; connector önek-eşleştirme notu (`mcp__<Ad>__*` / `mcp__claude_ai_<Ad>__*`). Sürüm 3.5.0 = **türetilmiş filo**: `fleet.yaml` tek kaynak → `.mcp.json`/codex/lock/komut/ajan türetilir + `tools/check_drift.py` sürüklenme kapısı; **canlı MCP prob'lu preflight** (`auth_missing` ≠ `unauthorized`); **titck Bearer gate onarımı** (2026-08-02 kapılanması kaçırılmıştı → katman 401 alıyordu); filo **15→19** (yoktez + literatur + openathens + annas-reader wire), companion **6→5** (yoktez first-class'a terfi → **G7 hard PASS**); distiller ajanlarına shard-tabanlı araç kısıtı; kök `hooks.json` kopyası kaldırıldı. Sürüm 3.4.0 = Fedlex Swiss/YokTez/Türk Patent **zorunlu companion kategorisine terfi**: manifesto satırları her çıktıda zorunlu (bağlam yoksa `skipped: mod için N/A`), Stop-hook `MANDATORY_ROWS` 5→8 satır.
+> Eski `lex-sanitas` skill'inin (v2.9.0) mirasçısı. Yabancı-ülke mevzuat tarama işlevi ayrı bir MCP'ye (**health-policy**) taşındı; bu plugin onu *bir kaynak katmanı* olarak wire eder. Sürüm 3.0.0 = plugin mimarisi + tam-filo aktivasyonu. Sürüm 3.1.0 = bağlam-tetiklemeli ZORUNLU entegrasyon: evidentia/sci-audit kuruluysa atlanamaz; companion'lar (Yargı↔G5, Open Law↔G6, Ansvar↔Mod7) tam-filonun zorunlu üyeleri. Sürüm 3.2.0 = health-policy **semantic_search** doğal-dil giriş kapısı (çok-dilli keşif US/JP/AU/CN → fetch ile doğrulama), in-plugin **legal-distiller** ajanı, `start`→`lex-sanitas-start` skill yeniden adlandırması, hook test harness'ı + PostToolUse devre-kesicinin `additionalContext` kanalına taşınması. Sürüm 3.3.0 = **koşullu companion katmanı**: Fedlex Swiss (Mod7 CH birincil metin — Ansvar CH satırı çerçeve-teyide düşer) + YokTez (tez doktrini + G7 YÖK-Tez atıf doğrulama) + Türk Patent (ilaç IP/SPC/veri imtiyazı) — bağlıyken ilgili bağlam tetiklenince zorunlu; connector önek-eşleştirme notu (`mcp__<Ad>__*` / `mcp__claude_ai_<Ad>__*`). Sürüm 3.5.0 = **türetilmiş filo**: `fleet.yaml` tek kaynak → `.mcp.json`/codex/lock/komut/ajan türetilir + `tools/fleetkit/check_drift.py` sürüklenme kapısı; **canlı MCP prob'lu preflight** (`auth_missing` ≠ `unauthorized`); **titck Bearer gate onarımı** (2026-08-02 kapılanması kaçırılmıştı → katman 401 alıyordu); filo **15→19** (yoktez + literatur + openathens + annas-reader wire), companion **6→5** (yoktez first-class'a terfi → **G7 hard PASS**); distiller ajanlarına shard-tabanlı araç kısıtı; kök `hooks.json` kopyası kaldırıldı. Sürüm 3.4.0 = Fedlex Swiss/YokTez/Türk Patent **zorunlu companion kategorisine terfi**: manifesto satırları her çıktıda zorunlu (bağlam yoksa `skipped: mod için N/A`); Stop-hook zorunlu satır sayısı **sabit olmaktan çıkıp `fleet.lock.json`'dan türer** (companions + delegations = **7**; eski düzyazıdaki “5→8” yanlıştı). Sürüm 3.5.4 = 2026-08-06 denetimi: ölü `lex-sanitas-mcp` adı registry/healthcheck/testlerden ayrıldı (uç 404), `mevzuat-bilgisi` devralma kuralı yazıldı, `check_drift` [6] sunucu-kimliği kapısı eklendi. Sürüm 3.5.5 = `shared/` skill'in içine alındı (claude.ai düzleştirilmiş paketinde `../../shared/` çözülmüyordu). Sürüm 3.5.6 = 2026-08-07 denetimi: **connector ad-eşleme katmanı** (`tool_prefixes` — aynı sunucu Claude Code'da `mcp__<ad>__`, claude.ai'de `mcp__claude_ai_<Görünen_Ad>__` yüklenir; ajan `tools:` allowlist'i sert olduğu için eşleşmezse sunucu ajan için YOKTUR), 2 komutun geçersiz YAML frontmatter'ı, `tests/run_suites.py` (70 vaka), shard/kapsam/companion sözleşme tablolarının fleet'e bağlanması.
 
 ## Öne çıkanlar
 
@@ -32,7 +32,7 @@ Serbest metinle de tetiklenir (skill `lex-sanitas` + `lex-sanitas-start` router)
 
 ## Wire edilmiş MCP filosu (19 server + 5 companion)
 
-Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`, `fleet.lock.json`, `/lex-connectors` anahtar tablosu, distiller ajanlarının `tools:` kısıtı ve mod×server matrisi **ondan üretilir** (`python3 tools/gen_fleet.py`); [`tools/check_drift.py`](tools/check_drift.py) türetilmiş≠commit'li hâlini ve düzyazıdaki yanlış filo sayılarını CI'da yakalar.
+Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`, `fleet.lock.json`, `/lex-connectors` anahtar tablosu, distiller ajanlarının `tools:` kısıtı ve mod×server matrisi **ondan üretilir** (`python3 tools/fleetkit/gen_fleet.py`); `tools/fleetkit/check_drift.py` türetilmiş≠commit'li hâlini ve düzyazıdaki yanlış filo sayılarını CI'da yakalar. **`tools/fleetkit/` KURULU PLUGIN'DE BULUNMAZ** — kaynak depoya (`CureoPrivate`) ait bir GELİŞTİRME aracıdır; kurulu pakette türetme/kapı komutları çalıştırılamaz, `fleet.yaml` ve türevleri salt-okunur kanıttır.
 
 | Katman | Shard | Server'lar |
 |---|---|---|
@@ -59,20 +59,23 @@ Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `ski
 
 ```
 lex-sanitas/
-├── .claude-plugin/plugin.json      # manifest (v3.5.0)
+├── .claude-plugin/plugin.json      # manifest (v3.5.6)
 ├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (19 server + 5 companion)
 ├── fleet.lock.json                 # üretilir — hook'ların okuduğu stdlib türev
 ├── .mcp.json                       # üretilir — 19 MCP + tam-filo rol notları
-├── tools/                          # gen_fleet.py (üretici) · check_drift.py (CI kapısı)
 ├── skills/
 │   ├── lex-sanitas/                # flagship (9 mod, G0-G9) + 19 referans + 12 template + 4 şema
+│   │   └── shared/                 # composition · coverage-manifest · context-economy (v3.5.5'te skill içine alındı)
 │   └── lex-sanitas-start/          # router / oryantasyon
 ├── commands/                       # 10 komut (9 mod + connectors)
 ├── agents/                         # comparative-law-researcher · compliance-auditor · gerekce-drafter · legal-distiller
 ├── hooks/                          # SessionStart canlı-prob preflight · fleet_probe.py · UserPromptSubmit scope-guard · PostToolUse retrieve-don't-dump · Stop G0-kapsam kapısı
-├── shared/                         # composition-contract · coverage-manifest · context-economy-contract
-└── tests/                          # routing · scope-boundary · citation-hallucination · mod9
+└── tests/                          # 7 süit / 70 vaka — routing · scope-boundary · citation-hallucination
+                                    #   · context-economy · fleet-registry · full-fleet-coverage · mod9
+                                    #   + run_suites.py (koşucu; şema/referans/fixture denetimi)
 ```
+
+> `tools/fleetkit/` (üretici + kapılar) **kaynak depoda kalır, kurulu pakette bulunmaz.**
 
 ## Çekirdek doktrin
 

@@ -34,6 +34,8 @@ import re
 import sys
 from pathlib import Path
 
+import yaml
+
 REPO = Path(__file__).resolve().parent.parent.parent
 CATALOG = REPO / ".claude-plugin" / "marketplace.json"
 
@@ -53,23 +55,37 @@ CATALOG_FIELDS_NONEMPTY = ("name", "displayName", "source", "version",
 CATALOG_FIELDS_PRESENT = ("strict",)
 
 
+class BadFrontmatter(Exception):
+    """Frontmatter GERÇEK bir YAML parser'ından geçmedi."""
+
+
 def frontmatter(path: Path):
-    """SKILL.md/agent/komut YAML frontmatter'ını sözlüğe indir (katlanmış satırlar dâhil)."""
+    """Frontmatter'ı GERÇEK YAML parser'ıyla ayrıştır.
+
+    Önceki uygulama satır-bazlı bir regex kullanıyordu ve bu yüzden 2026-08-07
+    denetiminin K-4 bulgusunu KAÇIRDI: `description:` değeri tırnaksız düz
+    skalar içinde `": "` taşıyorsa (`… Yabancı ülke mevzuatı: health-policy …`)
+    YAML bunu iç içe mapping sanar ve **tüm frontmatter düşer** — komut
+    keşfedilemez hâle gelir. Regex böyle bir satırı sorunsuz okuyup "geçerli"
+    raporluyordu. Artık gerçek parser koşuyor; PyYAML neyi reddediyorsa Claude
+    Code da onu reddedecektir.
+    """
     text = path.read_text(encoding="utf-8")
     if not text.startswith("---"):
         return None
     end = text.find("\n---", 3)
     if end < 0:
         return None
-    out, key = {}, None
-    for line in text[3:end].splitlines():
-        m = re.match(r"^([A-Za-z_-]+):\s*(.*)$", line)
-        if m:
-            key = m.group(1)
-            out[key] = m.group(2).strip()
-        elif key and line.strip():
-            out[key] += " " + line.strip()
-    return out
+    try:
+        data = yaml.safe_load(text[3:end])
+    except yaml.YAMLError as e:
+        raise BadFrontmatter(str(e).splitlines()[0]) from None
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise BadFrontmatter(f"frontmatter mapping değil ({type(data).__name__})")
+    return {k: (" ".join(str(v).split()) if isinstance(v, str) else v)
+            for k, v in data.items()}
 
 
 def iter_command_hooks(node):
@@ -111,7 +127,11 @@ def check_plugin(root: Path):
     issues = []
 
     for sk in sorted(root.glob("skills/*/SKILL.md")):
-        rel, d = sk.relative_to(REPO), frontmatter(sk)
+        rel = sk.relative_to(REPO)
+        try:
+            d = frontmatter(sk)
+        except BadFrontmatter as e:
+            issues.append(f"{rel}: GEÇERSİZ YAML frontmatter — {e}"); continue
         if d is None:
             issues.append(f"{rel}: frontmatter YOK — skill keşfedilemez")
             continue
@@ -122,7 +142,11 @@ def check_plugin(root: Path):
             issues.append(f"{rel}: name='{d['name']}' ≠ dizin '{sk.parent.name}'")
 
     for ag in sorted(root.glob("agents/*.md")):
-        rel, d = ag.relative_to(REPO), frontmatter(ag)
+        rel = ag.relative_to(REPO)
+        try:
+            d = frontmatter(ag)
+        except BadFrontmatter as e:
+            issues.append(f"{rel}: GEÇERSİZ YAML frontmatter — {e}"); continue
         if d is None:
             issues.append(f"{rel}: frontmatter YOK — agent kaydedilmez")
             continue
@@ -133,7 +157,12 @@ def check_plugin(root: Path):
             issues.append(f"{rel}: name='{d['name']}' ≠ dosya '{ag.stem}'")
 
     for cm in sorted(root.glob("commands/*.md")):
-        rel, d = cm.relative_to(REPO), frontmatter(cm)
+        rel = cm.relative_to(REPO)
+        try:
+            d = frontmatter(cm)
+        except BadFrontmatter as e:
+            issues.append(f"{rel}: GEÇERSİZ YAML frontmatter — {e} "
+                          f"(komut keşfedilemez hâle gelir)"); continue
         if d is None or not d.get("description"):
             issues.append(f"{rel}: 'description' eksik — /komut menüsünde boş görünür")
 

@@ -93,7 +93,7 @@
             "mcp_verified": { "type": "boolean" },
             "verifier": {
               "type": "string",
-              "enum": ["mevzuat_mcp", "yargi_mcp", "yoktez_mcp", "titck_mcp", "open_primary_source", "medical_research_connector", "none"]
+              "enum": ["mevzuat_mcp", "mevzuat_bilgisi_mcp", "yargi_mcp", "yoktez_mcp", "titck_mcp", "health_policy_mcp", "german_law_mcp", "fedlex_swiss_companion", "open_primary_source", "medical_research_connector", "none"]
             },
             "status": {
               "type": "string",

@@ -46,6 +46,23 @@ jobs:
       - name: marketplace sözleşme kapısı (check_marketplace)
         run: python3 tools/fleetkit/check_marketplace.py
 
+      # [3] Davranış süiti şartnameleri (plugin-yerel koşucular). Model
+      #     davranışını ÇALIŞTIRMAZ — şartnamenin kendisini denetler: şema,
+      #     id benzersizliği, var olmayan sunucu/mod/kapı/dosyaya atıf,
+      #     fixture'ların şemadan geçmesi (negatif vakalarda GEÇMEMESİ).
+      - name: davranış şartnamesi kapısı (plugin test koşucuları)
+        run: |
+          set -e
+          python -m pip install --quiet jsonschema
+          found=0
+          for r in plugins/*/tests/run_suites.py; do
+            [ -e "$r" ] || continue
+            found=1
+            echo "── $r"
+            ( cd "$(dirname "$(dirname "$r")")" && python3 tests/run_suites.py )
+          done
+          [ "$found" = 1 ] || echo "koşucu bulunamadı — atlandı"
+
       # Kapıların kendileri de regresyona uğrayabilir. Bu adım kasıtlı bir
       # kusur enjekte edip kapının onu YAKALADIĞINI doğrular, sonra geri alır —
       # yani "yeşil CI" ile "gerçekten denetleyen CI"yı ayırır.
@@ -63,6 +80,12 @@ jobs:
              lambda s: s.replace('name: start', 'name: bozuk', 1), 'skill adı ≠ dizin'),
             ('check_drift.py', 'plugins/lex-sanitas/skills/lex-sanitas/source_registry.yaml',
              lambda s: s + '\n_mut:\n  - access: { mcp_server: olmayan_sunucu }\n', 'ölü sunucu kimliği'),
+            # 2026-08-07 K-4 sınıfı: tırnaksız düz skalar içinde ": " → YAML
+            # frontmatter'ın TAMAMI düşer, komut keşfedilemez hâle gelir.
+            # Regex tabanlı eski ayrıştırıcı bunu kaçırıyordu.
+            ('check_marketplace.py', 'plugins/lex-sanitas/commands/lex-draft.md',
+             lambda s: s.replace('description: ', 'description: Mod X: bozuk ', 1),
+             'geçersiz YAML frontmatter'),
           ]
           fail = False
           for script, path, mutate, label in checks:

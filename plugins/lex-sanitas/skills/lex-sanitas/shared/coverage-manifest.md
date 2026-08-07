@@ -31,9 +31,13 @@ Karşılaştırmalı katman
   intl-treaty          → hit 1   (Oviedo CETS 164 — Md.90/5)
   eudamed              → empty   (ATMP ilaç sınıfı — cihaz DB N/A, yine de tarandı)
   oecd                 → hit 1   (sağlık Ar-Ge harcama göstergesi — RIA girdisi)
-Doktrin + companion
-  yok-akademik         → hit 4   (ATMP regülasyon doktrin makaleleri)
-  YokTez               → hit 1   (ATMP hukuku doktora tezi, tez-no teyitli)
+Doktrin + tam-metin şelalesi
+  yok-akademik         → hit 4   (ATMP regülasyon doktrin makaleleri — künye/metadata)
+  yoktez               → hit 1   (ATMP hukuku doktora tezi, tez-no teyitli)
+  literatur            → hit 2   (DergiPark tam metin: 2 makale pdf_to_html)
+  openathens           → skipped: oturum doğrulanmamış (Tier 3 lisanslı band kapalı)
+  annas-reader         → skipped: şelale sırası korundu (Tier 4 yalnız Tier 3 denendikten sonra)
+Companion
   Yarg                 → hit 2   (Danıştay 10.D ruhsat iptali emsali)
   Open_Law             → skipped: companion bağlı değil ⇒ G6 CONDITIONAL (CELEX degrade: german-law get_eu_basis)
   Ansvar               → skipped: companion bağlı değil (Mod 7'de CH/FR/… yargısı yoktu — kapsam etkisi yok)

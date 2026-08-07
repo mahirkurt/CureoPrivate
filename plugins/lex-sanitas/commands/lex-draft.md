@@ -15,7 +15,7 @@ Talep: **$ARGUMENTS**
 2. **Tam-filo (G0, zorunlu).** `references/00-mod-pipelines.md` Mod 1 server-listesini `legal-distiller` alt-ajanına tek görevde ver; wire'lı 19 MCP + bağlı companion **tamamı** süpürülsün, kompakt `retrieval_distillate` + `coverage` dönsün.
 3. **Klinik boyut varsa → evidentia'ya delege et** (§5; zenginleştirilmiş sorgu, `epistemic_dual_label:true`).
 4. **DRAFT 11-adım pipeline'ı** uygula (`references/00-mod-pipelines.md` → Mod 1): üst-norm zinciri → yatay semantik tarama → mülga taraması → AB/uluslararası benchmark → içtihat+doktrin → Md.15 iskelet → Md.4+10-22+25 yazım → yan belgeler → kaynakça → R9 15-nokta dil QC.
-5. **Template:** `templates/yonetmelik-taslagi.md` veya `templates/teblig-taslagi.md`. Gerekçe: `templates/genel-gerekce.md` + `templates/madde-gerekce.md`.
+5. **Template:** [`templates/yonetmelik-taslagi.md`](../skills/lex-sanitas/templates/yonetmelik-taslagi.md) veya [`templates/teblig-taslagi.md`](../skills/lex-sanitas/templates/teblig-taslagi.md). Gerekçe: [`templates/genel-gerekce.md`](../skills/lex-sanitas/templates/genel-gerekce.md) + [`templates/madde-gerekce.md`](../skills/lex-sanitas/templates/madde-gerekce.md).
 6. **Kapılar G0-G7.** `evidence_ledger` tut; her atıf MCP-doğrulanmış (no-fabrication).
 7. **sci-audit'e delege et** (§5 — `/verify-citations` + `/check-turkish`).
 8. **Kapsam manifestosu (G0) + confidence_label** ile bitir. İnsan denetimi zorunlu.

@@ -9,7 +9,7 @@
 
 version: 2
 plugin: evidentia
-plugin_version: "2.3.5"
+plugin_version: "2.3.6"
 
 servers:
   - name: med-terminologies

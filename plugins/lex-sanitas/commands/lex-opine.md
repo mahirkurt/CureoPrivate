@@ -14,7 +14,7 @@ Talep: **$ARGUMENTS**
 1. **Scope Guard (§6).** Bireysel dava savunması → `saglik-sigorta`/`onko-erisim`. (Bu mod politika-düzeyi kurumsal görüştür.)
 2. **Tam-filo (G0).** `legal-distiller` ile Mod 5 server-listesi (mevzuat + Yarg + yok-akademik + görüş-veren kurum: titck/saglikbakanligi/detsis; karşılaştırmalı + oecd + evidentia çapraz).
 3. **OPINE 7-adım:** taslağı+ekleri oku → arka planda COMPLY → içtihat+doktrin filtresi → görüş-veren kurum perspektifinden değerlendir → EK-1 yapılı görüş → karşılaştırma tablosu → Md.7 15-günlük zımni-onay hatırlatması.
-4. **Template:** `templates/gorus-bildirimi.md`.
+4. **Template:** [`templates/gorus-bildirimi.md`](../skills/lex-sanitas/templates/gorus-bildirimi.md).
 5. **Kapılar G0-G7**, `evidence_ledger`, no-fabrication.
 6. **sci-audit'e delege et.**
 7. **Kapsam manifestosu + confidence_label** ile bitir.

@@ -20,12 +20,25 @@
 
 Tek bir `legal-distiller`'a 14+ server vermek onun KENDİ penceresini de taşırabilir. Bu yüzden tam-filo süpürme **≤4 paralel shard**'a bölünür; her shard bağımsız distiller çağrısıdır, her biri kompakt zarf + kısmi `coverage` döner; ana pencere bunları tek G0 manifestosunda birleştirir:
 
-| Shard | Server kümesi | Distiller |
+Shard kümeleri **`fleet.yaml`'ın `shard:` alanından türer** — bu tablo onun
+düzyazı yansımasıdır, bağımsız bir liste DEĞİLDİR. Sapma olursa doğruluk
+kaynağı `fleet.yaml`'dır (`tests/run_suites.py` ve `check_drift` sapmayı yakalar).
+
+| Shard | Server kümesi (fleet.yaml `shard:`) | Distiller |
 |---|---|---|
-| **S1 — TR çekirdek** | mevzuat · mevzuat-bilgisi · resmi-gazete · saglikbakanligi · titck · tbmm · detsis | `legal-distiller` |
-| **S2 — Karşılaştırmalı** | health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law · Ansvar · Fedlex Swiss) | `comparative-law-researcher` |
-| **S3 — Doktrin/içtihat** | yok-akademik · Yargı · YokTez · Türk Patent (bağlıysa) | `legal-distiller` |
-| **S4 — Klinik** | evidentia | `evidence-synthesizer` (evidentia) |
+| **S1 — TR çekirdek** | mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
+| **S2 — Karşılaştırmalı** | health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law · Ansvar · Fedlex Swiss companion) | `comparative-law-researcher` |
+| **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı · Türk Patent companion) | `legal-distiller` · `gerekce-drafter` |
+| **S4 — Tam-metin şelalesi** | **openathens** (Tier 3 lisanslı) → **annas-reader** (Tier 4 son çare) | `comparative-law-researcher` |
+| **ALL** | anamnesis (Tier 2 substrat — her shard'da erişilebilir) | tümü |
+
+> **S4 bir KLİNİK shard'ı DEĞİLDİR.** Klinik kanıt bir shard değil bir
+> **delegasyondur**: `evidentia` plugin'ine (`evidence-synthesizer`) gider ve
+> kendi bağlam penceresinde koşar; `fleet.lock.json`'da `delegations` altında
+> durur, `servers` altında değil. v3.5.5'e kadar bu tablo S4'ü "Klinik →
+> evidentia" diye etiketliyordu; sonuç olarak `openathens`, `annas-reader` ve
+> `literatur` **hiçbir distiller'a atanmamış** görünüyordu (2026-08-07 denetimi,
+> Ö-3). Etiket düzeltildi — üçü de artık sahipli.
 
 Shard'lar **paralel** dağıtılır (bağımsız görevler). Böylece tüm server'lar ateşlenir (tam-filo korunur) AMA hiçbir distiller penceresi taşmaz ve ana pencere yalnız 4 kompakt zarf görür.
 

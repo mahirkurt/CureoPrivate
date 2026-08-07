@@ -1,13 +1,13 @@
 ---
-description: Mod 7 COMPARATIVE_LAW — reform için uluslararası emsal analizi (benchmark/gap/policy/case-law). Yargı bölgesi seçimi + mukayese matrisi + gap analizi + politika önerisi (4-boyut uyum + geçiş). Yabancı ülke mevzuatı: health-policy (US/CA/JP/AU/ES/IE/CN/MX) + german-law (DE/AB) + Open Law (UK+EU) + Ansvar (58-yargı) + Fedlex Swiss (CH, bağlıysa). Argüman = karşılaştırma sorusu.
-argument-hint: <karşılaştırma sorusu — örn. "ATMP ruhsatlandırma: AB vs US vs Japonya">
+description: "Mod 7 COMPARATIVE_LAW — reform için uluslararası emsal analizi (benchmark/gap/policy/case-law). Yargı bölgesi seçimi + mukayese matrisi + gap analizi + politika önerisi (4-boyut uyum + geçiş). Yabancı ülke mevzuatı: health-policy (US/CA/JP/AU/ES/IE/CN/MX) + german-law (DE/AB) + Open Law (UK+EU) + Ansvar (58-yargı) + Fedlex Swiss (CH, bağlıysa). Argüman = karşılaştırma sorusu."
+argument-hint: '<karşılaştırma sorusu — örn. "ATMP ruhsatlandırma: AB vs US vs Japonya">'
 ---
 
 # /lex-comparative — Mod 7 COMPARATIVE_LAW (karşılaştırmalı hukuk)
 
 Talep: **$ARGUMENTS**
 
-`lex-sanitas` flagship skill'ini **Mod 7 COMPARATIVE_LAW** olarak çalıştır. Template: [`templates/comparative-law-analysis.md`](../skills/lex-sanitas/templates/comparative-law-analysis.md).
+`lex-sanitas` flagship skill'ini **Mod 7 COMPARATIVE_LAW** olarak çalıştır. Template: [[`templates/comparative-law-analysis.md`](../skills/lex-sanitas/templates/comparative-law-analysis.md)](../skills/lex-sanitas/templates/comparative-law-analysis.md).
 
 ## Yürütme
 

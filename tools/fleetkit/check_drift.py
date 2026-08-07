@@ -118,12 +118,21 @@ def _name_variants(name: str) -> set:
 
 
 def scan_server_ids(root: Path, fleet: dict):
-    """Filoda bulunmayan sunucu kimliğine yapılan atıfları döndür."""
+    """Filoda bulunmayan sunucu kimliğine yapılan atıfları döndür.
+
+    Meşru kimlik kümesi, ajan `tools:` bloklarını üreten AYNI kaynaktan
+    (`gen_fleet.server_prefixes`) beslenir — böylece fleet.yaml'a bir
+    `tool_prefixes` girdisi eklendiğinde kapı onu kendiliğinden tanır.
+    İki liste ayrı tutulsaydı, ad-eşleme katmanının kendisi sürüklenme
+    olarak raporlanırdı (ilk uygulamada tam bu oldu).
+    """
     known = set(REF_ALLOW)
     for s in fleet["servers"]:
         known |= _name_variants(s["name"])
+        known |= {_squash_ref(p) for p in gen_fleet.server_prefixes(s)}
     for c in fleet.get("companions", []):
         known |= _name_variants(c["name"])
+        known |= {_squash_ref(p) for p in c.get("tool_prefixes", [])}
     out = []
     for path in sorted(root.rglob("*")):
         if (not path.is_file() or path.suffix not in SCAN_SUFFIXES

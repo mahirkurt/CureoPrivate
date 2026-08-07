@@ -171,11 +171,40 @@ def gen_env_table(fleet, _cfg):
     return "\n".join(rows)
 
 
+def server_prefixes(s):
+    """Bir sunucunun araç önekleri — AYNI sunucu yüzeye göre farklı adla yüklenir.
+
+    Claude Code `.mcp.json`'ı okur → önek `mcp__<fleet adı>__`.
+    claude.ai/Cowork ise connector'ı KULLANICININ verdiği görünen adla yükler →
+    `mcp__claude_ai_<Görünen_Ad>__`; boşluk `_` olur, ASCII-dışı harf düşer ya da
+    `_` olur (ölçülen: "TİTCK Data"→T_TCK_Data, "Yargı"→Yarg, "Türk Patent"→
+    T_rk_Patent). Görünen ad bir İNSAN TERCİHİ olduğu için mekanik olarak
+    türetilemez → ampirik olarak gözlenmiş adlar fleet.yaml'da `tool_prefixes`
+    ile AÇIKÇA yazılır.
+
+    Bu ayrım kritik: ajanların `tools:` frontmatter'ı SERT bir allowlist'tir —
+    model öneki yorumla kapatamaz. Önek eşleşmezse sunucu ajan için YOKTUR.
+
+    Açık liste yoksa iki güvenli varsayılan üretilir (Claude Code + aynı adla
+    kurulmuş claude.ai connector'ı) ve ad çok-parçalıysa Title_Case varyantı
+    eklenir — hangisi tutarsa o çalışır, tutmayan zararsızca boşta kalır.
+    """
+    if s.get("tool_prefixes"):
+        return list(s["tool_prefixes"])
+    n = s["name"]
+    out = [f"mcp__{n}__", f"mcp__claude_ai_{n}__"]
+    title = "_".join(w.capitalize() for w in re.split(r"[-_ ]+", n) if w)
+    if title != n:
+        out.append(f"mcp__claude_ai_{title}__")
+    return out
+
+
 def gen_agent_tools(fleet, cfg):
     shards = cfg.get("shards", [])
-    names = [s["name"] for s in fleet["servers"]
-             if s.get("shard") in shards or s.get("shard") == "ALL" or not shards]
-    tools = list(cfg.get("extra", [])) + [f"mcp__{n}__*" for n in names]
+    picked = [s for s in fleet["servers"]
+              if s.get("shard") in shards or s.get("shard") == "ALL" or not shards]
+    tools = list(cfg.get("extra", []))
+    tools += [f"{p}*" for s in picked for p in server_prefixes(s)]
     if cfg.get("companions"):
         tools += [f"{p}*" for c in fleet.get("companions", [])
                   for p in c.get("tool_prefixes", [])]

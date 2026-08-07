@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.5.5"
+plugin_version: "3.5.6"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -84,6 +84,10 @@ servers:
 
   - name: resmi-gazete
     url: https://resmi-gazete-mcp.cureonics.workers.dev/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__resmi-gazete__
+      - mcp__claude_ai_Resmi_Gazete__
     tier: primary
     auth_env: RESMI_GAZETE_MCP_API_KEY
     shard: S1
@@ -103,6 +107,10 @@ servers:
 
   - name: titck
     url: https://titck.cureonics.com/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__titck__
+      - mcp__claude_ai_T_TCK_Data__
     tier: primary
     auth_env: TITCK_MCP_API_KEY
     shard: S1
@@ -123,6 +131,10 @@ servers:
 
   - name: tbmm
     url: https://tbmm.cureonics.com/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__tbmm__
+      - mcp__claude_ai_tbmm__
     tier: primary
     auth_env: TBMM_MCP_API_KEY
     shard: S1
@@ -181,6 +193,10 @@ servers:
   # ── S2 · Karşılaştırmalı / uluslararası ────────────────────────────────────
   - name: health-policy
     url: https://health-policy-mcp.cureonics.workers.dev/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__health-policy__
+      - mcp__claude_ai_Health_Policy__
     tier: comparative
     auth_env: HEALTH_POLICY_MCP_API_KEY
     shard: S2
@@ -224,6 +240,10 @@ servers:
 
   - name: ich-guidelines
     url: https://ich.cureonics.com/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__ich-guidelines__
+      - mcp__claude_ai_ich-guidelines__
     tier: comparative
     auth_env: ICH_MCP_API_KEY
     shard: S2
@@ -242,6 +262,10 @@ servers:
 
   - name: intl-treaty
     url: https://intl-treaty-mcp.cureonics.workers.dev/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__intl-treaty__
+      - mcp__claude_ai_International_Treaty__
     tier: comparative
     auth_env: INTL_TREATY_MCP_API_KEY
     shard: S2
@@ -260,6 +284,10 @@ servers:
 
   - name: eudamed
     url: https://eudamed-mcp.cureonics.workers.dev/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__eudamed__
+      - mcp__claude_ai_eudamed__
     tier: comparative
     auth_env: EUDAMED_MCP_MCP_API_KEY
     shard: S2
@@ -277,6 +305,10 @@ servers:
 
   - name: oecd
     url: https://oecd.cureonics.com/mcp
+    # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
+    tool_prefixes:
+      - mcp__oecd__
+      - mcp__claude_ai_oecd__
     tier: support
     auth_env: OECD_MCP_API_KEY
     shard: S2

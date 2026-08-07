@@ -3,12 +3,12 @@ version: "3.5.0"
 description: >-
   Filo kayıt defterinin (fleet.yaml → türev artefaktlar) davranışsal invaryantları.
   Bu vakalar AĞ ERİŞİMİ gerektirir (canlı prob + Doppler secret listesi). Ağsız,
-  deterministik CI kapısı için `tools/check_drift.py` kullanın — o yapılandırma
+  deterministik CI kapısı için `tools/fleetkit/check_drift.py` kullanın — o yapılandırma
   bütünlüğünü kanıtlar, bu dosya CANLI gerçekliği kanıtlar.
 
   Koşum yardımcıları:
     doppler run -p cureohub -c dev_personal -- python3 hooks/scripts/fleet_probe.py --fresh
-    python3 tools/check_drift.py
+    python3 tools/fleetkit/check_drift.py
 
 cases:
   - id: FR-01-titck-gated
@@ -28,7 +28,7 @@ cases:
     given: "fleet.yaml'de auth_env: null işaretli her server anahtarsız prob edilir."
     expect:
       - "mevzuat-bilgisi, yoktez, literatur anahtarsız HTTP 200 dönmeli."
-      - "Herhangi biri 401/403 dönerse upstream KAPILANMIŞ demektir → fleet.yaml'e auth_env eklenmeli, sonra `python3 tools/gen_fleet.py`."
+      - "Herhangi biri 401/403 dönerse upstream KAPILANMIŞ demektir → fleet.yaml'e auth_env eklenmeli, sonra `python3 tools/fleetkit/gen_fleet.py`."
       - "Bu, titck dersinin genellemesidir: 'public' bir varsayım değil, ölçülen bir olgudur."
 
   - id: FR-03-env-adlari-doppler-da-var
@@ -54,7 +54,7 @@ cases:
     expect:
       - "additionalContext 'YAPILANDIRMA ARIZASI' ifadesi taşımalı."
       - "'graceful degrade' olarak SUNULMAMALI — bu düzeltilebilir bir wiring hatasıdır."
-      - "Çözüm yolu gösterilmeli: fleet.yaml düzelt → python3 tools/gen_fleet.py."
+      - "Çözüm yolu gösterilmeli: fleet.yaml düzelt → python3 tools/fleetkit/gen_fleet.py."
       - "Anahtarın tamamen YOK olduğu hâl bundan AYRI raporlanmalı (auth_missing → doppler run önerisi)."
 
   - id: FR-06-prob-saglikli-filoda-sessiz
@@ -78,7 +78,7 @@ cases:
     given: ".mcp.json veya fleet.lock.json elle düzenlenir ve check_drift koşulur."
     expect:
       - "check_drift exit 1 dönmeli ve değişen dosyayı '[1/3] TÜRETİLMİŞ DOSYA SÜRÜKLENMESİ' altında listelemeli."
-      - "Çözüm olarak `python3 tools/gen_fleet.py` göstermeli."
+      - "Çözüm olarak `python3 tools/fleetkit/gen_fleet.py` göstermeli."
       - "Bu kapı, filonun tekrar sekiz yerde elle tutulmaya kaymasını engeller."
 
   - id: FR-09-selale-sirasi-otomatik-atlanmaz

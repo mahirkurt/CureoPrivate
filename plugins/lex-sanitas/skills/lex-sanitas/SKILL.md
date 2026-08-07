@@ -3,17 +3,15 @@ name: lex-sanitas
 description: >-
   Türkiye sağlık mevzuatı reform protokolü — kanun · CBK · yönetmelik · tebliğ · genelge düzeyinde yeni mevzuat
   üretmek, değiştirmek, yeniden yazmak için 9 mod (DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA ·
-  COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST). 5210 Yönetmelik + AYM belirlilik içtihadı + OECD Better
-  Regulation + Anayasa Md.17/56/90/5 çerçevesi; G0-G9 kapı + no-fabrication (evidence_ledger). Kullan —
+  COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION). 5210 Yönetmelik + AYM belirlilik içtihadı +
+  OECD Better Regulation + Anayasa Md.17/56/90/5; G0-G9 kapı + no-fabrication (evidence_ledger). Kullan —
   "yönetmelik/tebliğ taslağı hazırla", "şu maddeyi değiştir", "TBMM kanun teklifi", "1219 SK reform", "TİTCK
   yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki analizi/DEA",
-  "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme". Klinik kanıt → evidentia, atıf-adli + Türkçe
-  hukuk dili → sci-audit (kuruluysa ZORUNLU); Yargı/Open Law/Ansvar/Fedlex Swiss (İsviçre-CH mevzuatı)/Türk
-  Patent (ilaç IP/SPC/veri imtiyazı) companion'ları tam-filonun zorunlu üyeleri; doktrin tam-metni
-  (yoktez + literatur) ve lisanslı tam-metin şelalesi (openathens→annas-reader) artık wire'lı. Şüphede
-  Scope Guard önceliklidir; bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi
-  KAPSAM DIŞIDIR.
-version: 3.5.5
+  "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme". 19 wire'lı MCP + 5 companion (Yargı ·
+  Open Law · Ansvar · Fedlex Swiss · Türk Patent) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia,
+  atıf-adli + Türkçe hukuk dili → sci-audit (kuruluysa ZORUNLU). Şüphede Scope Guard önceliklidir;
+  bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi KAPSAM DIŞIDIR.
+version: 3.5.6
 ---
 
 # Lex-Sanitas — Türkiye Sağlık Mevzuatı Reform Protokolü
@@ -56,7 +54,7 @@ Bu yetkinlik, **Türkiye'de sağlık mevzuatının her düzlemde reform, değiş
 
 ## 3. MCP filosu — tam-filo aktivasyonu (her sorguda)
 
-Wire edilmiş 19 server **`fleet.yaml`'de tanımlıdır ve `.mcp.json` ondan üretilir** (16'sı Bearer-anahtar-gated; `mevzuat-bilgisi`, `yoktez`, `literatur` public). Filo tanımının tek kaynağı budur — hook anahtar haritası, `/lex-connectors` tablosu, distiller araç kısıtları ve mod×server matrisi hep ondan türer; `tools/fleetkit/check_drift.py` (repo kökü) türetilmiş≠commit'li hâlini yakalar. **Temel kural: hepsi her sorguda devreye alınır.** Primer/ikincil ayrımı artık *aktivasyon kapısı* değil, **sentezde otorite önceliğidir** — çatışmada primer kazanır, ama ikincil/support da **çalıştırılır** ve sonucu kapsam manifestosuna girer. Bir server'ın atlanması yalnız iki halde meşrudur: (a) o server için anahtar yok (SessionStart preflight işaretledi), (b) mod için mantıksal olarak N/A — **her iki hal de manifestoda gerekçesiyle beyan edilir** (sessiz atlama = G0 FAIL).
+Wire edilmiş 19 server **`fleet.yaml`'de tanımlıdır ve `.mcp.json` ondan üretilir** (16'sı Bearer-anahtar-gated; `mevzuat-bilgisi`, `yoktez`, `literatur` public). Filo tanımının tek kaynağı budur — hook anahtar haritası, `/lex-connectors` tablosu, distiller araç kısıtları ve mod×server matrisi hep ondan türer; `tools/fleetkit/check_drift.py` (repo kökü) türetilmiş≠commit'li hâlini yakalar — bu araç **yalnız kaynak depoda vardır, kurulu plugin'de yoktur**; kurulu pakette `fleet.yaml` ve türevleri salt-okunur kanıttır. **Temel kural: hepsi her sorguda devreye alınır.** Primer/ikincil ayrımı artık *aktivasyon kapısı* değil, **sentezde otorite önceliğidir** — çatışmada primer kazanır, ama ikincil/support da **çalıştırılır** ve sonucu kapsam manifestosuna girer. Bir server'ın atlanması yalnız iki halde meşrudur: (a) o server için anahtar yok (SessionStart preflight işaretledi), (b) mod için mantıksal olarak N/A — **her iki hal de manifestoda gerekçesiyle beyan edilir** (sessiz atlama = G0 FAIL).
 
 - **TR primer mevzuat:** `mcp__mevzuat__*` — yapısal yasama-grafı (madde_tree, madde_diff as_of, timeline, ilga_zinciri, relations, gerekçe locator). **İkincil (her sorguda çapraz-kontrol):** `mcp__mevzuat-bilgisi__*` — kanun-NUMARASI lookup + bedesten ikinci korpus.
   - **DEVRALMA KURALI (v3.5.4 — zorunlu).** `mcp__mevzuat__*` **düşükse** (upstream TLS/erişim arızası, origin timeout, boş `items` + dolu `diagnostics`), Türk mevzuatı yükünü `mcp__mevzuat-bilgisi__*` **devralır** — çıktı durmaz. Üç koşul birlikte zorunludur: (a) manifestoda `mevzuat → degraded: <teşhis>` **ve** `mevzuat-bilgisi → hit N (fallback devraldı)`; (b) yedekten gelen her atıf `source: mevzuat_bilgisi_mcp (fallback)` etiketi + birincil-doğrulama açığı notu taşır; (c) birincil ayağa kalkınca **çapraz-doğrulanır**. **Yedek EŞDEĞER DEĞİLDİR:** bedesten kanun-NUMARASIYLA arar (mevzuat.gov.tr araçları kelime-tabanlıdır), AND/OR/NOT desteklemez (`+terim1 +terim2`), ve **`resolve_resmi_gazete` karşılığı YOKTUR** — RG çapa çözümlemesi yalnız birincildedir, bu boşluk yedekle KAPANMAZ (kapatılamıyorsa `manual_required`). **İkisi de düşükse Türk mevzuatı iddiası ÜRETME.** Kayıt: `source_registry.yaml → mcp.mevzuat_bilgisi`.
@@ -94,7 +92,7 @@ Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır. Kriterler `references/06b-
 | **G1** | 5210 şekli uyum (Md.10-22) | Madde başlık formatı, fıkra-bent hiyerarşisi, Md.21 atıf (ses uyumu, sıfırsız tarih), ek/geçici madde kuralları |
 | **G2** | 5210 maddi-anayasal uyum (Md.4-9) | Üst-norm uygunluğu, AYM belirlilik, AB müktesebatı, kazanılmış hak, geriye yürümezlik |
 | **G3** | Türk hukuk dili (R9, 15-nokta) | Tabaka seçimi, Md.25 kuralları, yabancı sözcük yok, kısa cümle, ses-uyumu ekleri, anti-pattern temiz |
-| **G4** | Anti-pattern denetimi (27 kalem) | SKILL §7 yasak kalıpların hiçbiri yok |
+| **G4** | Anti-pattern denetimi | §7 yasak kalıpların hiçbiri yok + `references/09-turk-hukuk-dili-ve-uslubu.md` anti-pattern bölümü (çok-anlamlı terim · anti-pattern toplaması · Md.11 kontrol listesi md.11) temiz. **Sayı iddiası yok:** kapı, kanonik listenin O ANKİ uzunluğuna göre ölçülür — v3.5.5'e kadar "27 kalem" deniyordu ama 27 maddelik numaralı liste hiçbir dosyada yoktu (2026-08-07 denetimi, Ö-7); sayıyı tutturmak için liste uydurmak yerine iddia kaldırıldı. |
 | **G5** | İçtihat + doktrin (R13) | AYM/Danıştay/Yargıtay/AİHM/ABAD zinciri (**Yargı companion `mcp__Yarg__*` ile taranmış**) + Türk doktrin **üç wire'lı katmandan** atıflı: yok-akademik (künye) + yoktez (tez tam-metni) + literatur (DergiPark makale tam-metni). Yargı bağlı değil → en fazla CONDITIONAL |
 | **G6** | Uluslararası kaynak teyidi (R8/10/11/12) | CELEX konsolide doğrulanmış (**birincil araç: Open Law `fetch_eurlex`**; degrade: german-law `get_eu_basis`→WebFetch + CONDITIONAL); WHO/ICH/PIC/S/IMDRF güncel; ICESCR 12+AAAQ kontrol |
 | **G7** | Epistemik dürüstlük | Uydurma kanun/CELEX/AYM/Yargıtay/YÖK-Tez yok; her atıf MCP- veya primer-kaynak-doğrulanmış. **YÖK-Tez atıfları wire'lı `mcp__yoktez__get_yok_tez_thesis_details` ile doğrulanır** (tez no/başlık/yazar) — companion'a bağlı değil, **hard PASS** (v3.5.0). Doğrulanamayan tez atfı `illustrative_placeholder_not_verified` → KULLANILMAZ |

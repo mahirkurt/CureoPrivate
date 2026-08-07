@@ -10,7 +10,7 @@ description: >-
   içtihat kanıtı gerektiğinde çağrılır. Klinik shard → evidence-synthesizer (evidentia); çok-yargı
   derin mukayese → comparative-law-researcher.
 # GEN:agent-tools BEGIN
-tools: Read, Grep, Glob, WebFetch, mcp__mevzuat__*, mcp__mevzuat-bilgisi__*, mcp__resmi-gazete__*, mcp__titck__*, mcp__tbmm__*, mcp__saglikbakanligi__*, mcp__detsis__*, mcp__yok-akademik__*, mcp__yoktez__*, mcp__literatur__*, mcp__anamnesis__*, mcp__Yarg__*, mcp__claude_ai_Yarg__*, mcp__Open_Law__*, mcp__claude_ai_Open_Law__*, mcp__Ansvar__*, mcp__claude_ai_Ansvar__*, mcp__Fedlex_Swiss__*, mcp__claude_ai_Fedlex_Swiss__*, mcp__T_rk_Patent__*, mcp__claude_ai_T_rk_Patent__*
+tools: Read, Grep, Glob, WebFetch, mcp__mevzuat__*, mcp__claude_ai_mevzuat__*, mcp__claude_ai_Mevzuat__*, mcp__mevzuat-bilgisi__*, mcp__claude_ai_mevzuat-bilgisi__*, mcp__claude_ai_Mevzuat_Bilgisi__*, mcp__resmi-gazete__*, mcp__claude_ai_Resmi_Gazete__*, mcp__titck__*, mcp__claude_ai_T_TCK_Data__*, mcp__tbmm__*, mcp__claude_ai_tbmm__*, mcp__saglikbakanligi__*, mcp__claude_ai_saglikbakanligi__*, mcp__claude_ai_Saglikbakanligi__*, mcp__detsis__*, mcp__claude_ai_detsis__*, mcp__claude_ai_Detsis__*, mcp__yok-akademik__*, mcp__claude_ai_yok-akademik__*, mcp__claude_ai_Yok_Akademik__*, mcp__yoktez__*, mcp__claude_ai_yoktez__*, mcp__claude_ai_Yoktez__*, mcp__literatur__*, mcp__claude_ai_literatur__*, mcp__claude_ai_Literatur__*, mcp__anamnesis__*, mcp__claude_ai_anamnesis__*, mcp__claude_ai_Anamnesis__*, mcp__Yarg__*, mcp__claude_ai_Yarg__*, mcp__Open_Law__*, mcp__claude_ai_Open_Law__*, mcp__Ansvar__*, mcp__claude_ai_Ansvar__*, mcp__Fedlex_Swiss__*, mcp__claude_ai_Fedlex_Swiss__*, mcp__T_rk_Patent__*, mcp__claude_ai_T_rk_Patent__*
 # GEN:agent-tools END
 ---
 

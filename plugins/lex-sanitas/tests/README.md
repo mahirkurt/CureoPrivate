@@ -88,5 +88,5 @@ türetilmiş dosyaların elle düzenlenemediği (FR-08), tam-metin şelalesinin
 otomatik atlanmadığı (FR-09), yoktez wire'ının G7'yi hard PASS yaptığı (FR-10)
 ve doktrin tam-metin katmanının çalıştığı (FR-11).
 
-**Ağ gerektirir.** Ağsız/deterministik CI kapısı `tools/check_drift.py`'dir:
+**Ağ gerektirir.** Ağsız/deterministik CI kapısı `tools/fleetkit/check_drift.py`'dir:
 türetilmiş dosya sürüklenmesi + düzyazı filo sayısı + hook kapsam açığı.

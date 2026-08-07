@@ -7,7 +7,7 @@ argument-hint: <mevzuat + dönem — örn. "Endikasyon-dışı ilaç kullanımı
 
 Talep: **$ARGUMENTS**
 
-`lex-sanitas` flagship skill'ini **Mod 9 EX_POST_EVALUATION** olarak çalıştır. Template: [`templates/ex-post-evaluation.md`](../skills/lex-sanitas/templates/ex-post-evaluation.md).
+`lex-sanitas` flagship skill'ini **Mod 9 EX_POST_EVALUATION** olarak çalıştır. Template: [[`templates/ex-post-evaluation.md`](../skills/lex-sanitas/templates/ex-post-evaluation.md)](../skills/lex-sanitas/templates/ex-post-evaluation.md).
 
 ## Yürütme
 

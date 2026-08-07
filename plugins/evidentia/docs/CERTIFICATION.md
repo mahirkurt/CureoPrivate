@@ -5,6 +5,11 @@ remediated and re-verified) · **Scope:** the three self-host MCP connectors bui
 evidentia's documented WHO-GHO / GLOBOCAN / EMA gaps, plus their roster/doc wiring, plus the
 reader-MCP extraction-quality work (annas-reader-mcp, openathens-mcp).
 
+> ⚠️ **AMENDED 2026-08-07 — read `## Re-certification` at the end before relying on this record.**
+> This document is a POINT-IN-TIME certification (2026-07-05) and is kept intact as history. A
+> later audit falsified two of its verdicts below; those rows are annotated inline. The current
+> state of the plugin is the re-certification section, not this table.
+
 Certification method: adversarial multi-dimension audit — live end-to-end tool exercise + **cross-
 validation against the authoritative upstream** + security/keyless review + doc-consistency gates +
 build/test verification. Findings were adversarially verified before being accepted, and every
@@ -19,9 +24,9 @@ confirmed defect was fixed and re-tested against ground truth.
 | **globocan-mcp** | ✅ PASS *(after critical fix)* | Sex/type path-order bug **found, fixed, re-verified against published Türkiye figures** |
 | **who-gho-mcp** | ✅ PASS | Exact upstream match; SSRF nit hardened |
 | **ema-mcp** | ✅ PASS | AND-semantics, honest-absence, corpus↔stats cross-validation all exact |
-| **security (3 workers)** | ✅ PASS | auth.ts byte-identical ×4; keyless justified; OAuth S256; SSRF closed |
+| **security (3 workers)** | ⚠️ PASS *(amended 2026-08-07)* | auth.ts byte-identical ×4; keyless justified; OAuth S256; SSRF closed. **The ×4 identity was literally true and that is exactly what hid the defect:** `REALM` was never localised when auth.ts was copied, so ema/globocan/who-gho served `resource_name: "openfda-mcp"` in production — on the RFC 9728 PRM, the OAuth `client_id`, the 401 realm and the **authorize consent page**. Per-Worker tests could not see it (each asserts its own wrong constant); only a cross-Worker comparison could. Fixed + deployed; now gated by `scripts/g_identity.py`. |
 | **docs / roster consistency** | ✅ PASS | G-BUNDLE consistent; gap-lines correct; wrong-value claims corrected |
-| **tests / build** | ✅ PASS | typecheck + unit suites green; the `ajv` routing.test failure is environmental |
+| **tests / build** | ❌ FALSIFIED *(2026-08-07)* | The `ajv` failure was **not** environmental — it was a fixable version pin (`vitest-pool-workers@0.8.71` could not `require()` a JSON file). Calling it environmental let **49 routing/OAuth tests stay dead in all seven Workers** for a month, and this line undercounted the blast radius as four. Fixed by upgrading the pool; suite 151 → 268. |
 | **annas + openathens extraction** | ✅ PASS *(after fix)* | 84 + 93 tests green; `uv run pytest` fixed |
 
 Fleet health at certification: **G-PROBE 14 live · 0 failed**; **G-BUNDLE CONSISTENT** (20 servers);
@@ -97,17 +102,20 @@ Fleet health at certification: **G-PROBE 14 live · 0 failed**; **G-BUNDLE CONSI
   metadata, redirect allowlist, bearer gate. Root cause: `ajv/dist/core.js` `require()`s a
   JSON file and the CJS shim in `@cloudflare/vitest-pool-workers@0.8.71` parsed it as
   JavaScript. Fixed by upgrading the pool to `0.12.21` (newest release still peering on
-  vitest 3.2). All 7 workers now `npm test` exit=0; suite total 151 → **200 tests**.
-- **wrangler stays on 4.x/`^4.20.0` (installed 4.104.0) — DELIBERATE HOLD, measured 2026-08-07.**
-  The CLI prints "update available 4.119.0", but the bump is not isolatable: `wrangler@4.120`
-  declares `peerOptional @cloudflare/workers-types@^5.20260801.1`, while
-  `@cloudflare/vitest-pool-workers@0.12.21` pins `wrangler@4.72.0` (which wants
-  `workers-types@^4.20260310.1`) and `agents`→`partyserver` wants `workers-types@^4.20240729.0`.
-  So wrangler 4.119+ forces workers-types v5 and breaks both the test pool and the agents SDK.
-  Moving forward means a COORDINATED major bump — vitest 3.2→4, pool-workers 0.12→0.20,
-  workers-types 4→5, wrangler 4.104→4.120 — across all seven Workers. That is its own reviewed
-  change, not an audit side-effect. Deploys on 4.104.0 are verified working (three Workers
-  shipped 2026-08-07). Do not retry a lone `npm i -D wrangler@latest`: it ERESOLVEs.
+  vitest 3.2), then to **0.20.3 on vitest 4** the same day (see the toolchain entry below).
+  All 7 workers `npm test` exit=0; suite total 151 → **268 tests**.
+- ~~wrangler stays on 4.x — deliberate hold~~ — **HOLD LIFTED, migration DONE 2026-08-07.**
+  The hold was correct about the constraint and wrong about the remedy being out of reach: a
+  LONE `npm i -D wrangler@latest` ERESOLVEs (wrangler 4.120 wants `workers-types@^5`, while
+  pool-workers' bundled wrangler and `agents`→`partyserver` want `^4`), but asking npm to
+  resolve **all four together** succeeds. Migrated across all seven Workers:
+  vitest 3.2.6 → **4.1.10**, pool-workers 0.12.21 → **0.20.3**, workers-types 4 → **5.20260804.1**,
+  wrangler 4.104 → **4.120.0**. Required one code change: pool 0.20 dropped the `/config`
+  subpath export, so `vitest.config.ts` registers the pool as a **Vite plugin**
+  (`cloudflareTest({...})`) instead of `test.poolOptions.workers` — shape taken from the
+  package's own `codemods/vitest-v3-to-v4`, not guessed. Verified: 7/7 `npm test` exit=0
+  (268 tests, unchanged counts), 7/7 typecheck exit=0, 7/7 `wrangler deploy --dry-run` exit=0
+  with unchanged bundle sizes.
 - GLOBOCAN figures are modelled estimates (2022); EMA is a point-in-time baked snapshot
   (`generated_at` stamped, refresh via `npm run build:corpus`). Both carry mandatory caveats.
 - **IHME/GBD remains a documented gap** (no keyless API; account + ToS + row-cap) — honestly marked
@@ -119,3 +127,42 @@ Fleet health at certification: **G-PROBE 14 live · 0 failed**; **G-BUNDLE CONSI
 - Sources: `self-host/{who-gho-mcp,globocan-mcp,ema-mcp}/`; reader work in
   CureoHub `mcp-servers/{annas-reader-mcp,openathens-mcp}/` (commit `b066ed3f`, pythonpath fix on top).
 - Gates: `scripts/g_bundle.py`, `scripts/g_probe.py`, `scripts/g_identity.py` (2026-08-07), `hooks/test_hooks.py`, `skills/medical-research/evals/check_integrity.py`, `skills/medical-research/evals/rag_quality.py`, `tools/fleetkit/check_drift.py --all`.
+
+---
+
+## Re-certification — 2026-08-07
+
+**Verdict:** ✅ **RE-CERTIFIED** at plugin **v2.3.9** · **Scope:** the whole evidentia plugin
+(not just the three gap-closing connectors), after a full integrity / functionality / health audit
+and the repairs it produced.
+
+What the 2026-08-07 audit found and closed (details in the git history — commits `a7ac446`,
+`33279a3` and this one):
+
+| Finding | Outcome |
+|---|---|
+| `/evidentia` command frontmatter was invalid YAML (only such file in 42) | fixed (`276ffd1`) |
+| SessionStart preflight tracked 6 of 7 gated connectors and told the operator `titck-cache` was keyless | key map now DERIVED from `fleet.lock.json`; `fleet_probe` wired so `auth_missing` ≠ `unauthorized` |
+| three Workers identified as `openfda-mcp` in production | `REALM` localised in 7/7, deployed, pinned by the new **G-IDENTITY** gate |
+| 49 routing/OAuth tests never executed (all 7 Workers) | pool upgraded; suite 151 → 268 |
+| `g_probe` skipped all 7 gated connectors yet printed "ALL PROBED REMOTES HEALTHY" | now resolves `${VAR}`, sends the Bearer, and names what it did NOT measure |
+| user-facing pointers to a gitignored install doc | sanitised public `docs/KURULUM.md` |
+| `test_hooks.py` reported "no tests ran" + exit 0 under pytest | pytest-visible entry point; 21 → 34 assertions |
+| four Workers had untested pure logic (SSRF allowlist, FTS5 injection guard, RRF ranking, snippet cap) | `__testing` barrels + suites |
+| toolchain frozen (vitest 3.2 / pool 0.12 / types 4 / wrangler 4.104) | coordinated migration to vitest 4 / pool 0.20 / types 5 / wrangler 4.120 |
+
+**Gates at re-certification (all run, all green):** G-IDENTITY 7/7 · G-BUNDLE 20/20 ·
+hook 34/34 (standalone **and** pytest) · skill integrity ALL PASS · G-RAG PASS ·
+`check_drift --all` 9 plugins CLEAN · command frontmatter 42/42 · Workers **268 tests** +
+7 typecheck + 7 `deploy --dry-run`, all exit 0.
+
+**Live health:** fleet probe **20/20 HTTP 200** with Bearers resolved; 7/7 Workers serve their
+own `resource_name`; live functional check on the refactored `openfda` (real query returns a real
+product; the SSRF gate rejects traversal and absolute URLs).
+
+**Honest limits of this re-certification.** It covers structure, gates, dependency health and
+connector liveness. It does **not** re-validate every tool's output against its upstream — the
+2026-07-05 cross-validation for who-gho/globocan/ema still stands as the last such check, and no
+equivalent has been run for the other connectors. `@modelcontextprotocol/sdk` sourcemap warnings
+remain visible by choice (measured unsuppressable from our side). Human review is still required
+before any clinical use.

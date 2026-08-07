@@ -41,13 +41,16 @@ npm run deploy               # wrangler deploy
 BASE=https://who-gho-mcp.<subdomain>.workers.dev ./scripts/smoke_oauth_public.sh
 ```
 
-> **Test note (2026-08-07 çözüldü):** `routing.test.ts` (tam worker'ı workerd test
-> havuzuna import eder) `@cloudflare/vitest-pool-workers@0.8.71`'in CJS shim'inde
-> patlıyordu — `ajv/dist/core.js` bir JSON dosyasını `require()` ediyor ve shim onu
-> JavaScript sanıp `SyntaxError: Unexpected token ':'` atıyordu. Arıza YEDİ self-host
-> Worker'ın hepsini etkiliyordu (49 test hiç koşmuyordu), yalnız dördünü değil.
-> Onarım: pool `0.12.21`'e yükseltildi (vitest 3.2 ile uyumlu en yeni sürüm). Artık
-> üç paketin tamamı koşuyor ve `npm test` exit=0 veriyor.
+> **Test note (toolchain, 2026-08-07):** `npm test` runs on **vitest 4 +
+> `@cloudflare/vitest-pool-workers` 0.20 + `@cloudflare/workers-types` 5 + wrangler 4.120**.
+> Two migrations landed the same day: (1) pool 0.8.71 could not `require()` a JSON file
+> (`ajv/dist/core.js`), which killed `routing.test.ts` in ALL SEVEN Workers -- 49 tests never
+> ran; (2) pool 0.20 removed the `/config` subpath export, so `vitest.config.ts` now registers
+> the pool as a **Vite plugin** (`cloudflareTest`) instead of `test.poolOptions.workers`.
+> Known upstream noise: `@modelcontextprotocol/sdk` ships sourcemaps referencing unpublished
+> sources, so each run prints ~26 "points to missing source files" lines. Measured: a Vite
+> `customLogger` does NOT intercept them (they come from inside the workerd isolate), so they
+> are left visible rather than fake-fixed. Suites pass, exit 0.
 
 ## Upstream reference
 

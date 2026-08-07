@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { handleOAuth, requireBearer, __testing, type AuthEnv } from "../src/auth.js";
+import { handleOAuth, requireBearer, preflight, __testing, type AuthEnv } from "../src/auth.js";
 
 const { escHtml, constantTimeEqual, redirectAllowed, mintCode, verifyCode, pkceS256Matches } = __testing;
 
@@ -160,5 +160,50 @@ describe("RFC 9728 - OAuth discovery surface (claude.ai / ChatGPT / grok)", () =
     const wa = res!.headers.get("www-authenticate") || "";
     expect(wa).toContain("Bearer realm=");
     expect(wa).toContain('resource_metadata="https://w.example/.well-known/oauth-protected-resource/mcp"');
+  });
+});
+
+describe("CORS preflight (browser connector surface)", () => {
+  // Regression for the 2026-08-07 measurement: `OPTIONS /mcp` with `Origin: https://claude.ai`
+  // returned a bare 401 with ZERO Access-Control-* headers on every gated Worker, so browser
+  // clients (claude.ai web, grok.com, ChatGPT web) failed preflight and could never reach /mcp.
+  // Root cause: no CORS layer existed and requireBearer ran first — but a preflight is
+  // credential-free by specification, so it can never satisfy a bearer gate.
+  it("answers OPTIONS with 204 and never consults the bearer gate", () => {
+    const r = preflight(new Request("https://w.example/mcp", {
+      method: "OPTIONS",
+      headers: { origin: "https://claude.ai", "access-control-request-method": "POST" },
+    }));
+    expect(r).not.toBeNull();
+    expect(r!.status).toBe(204);
+    expect(r!.headers.get("access-control-allow-origin")).toBe("*");
+  });
+
+  it("allows Authorization on the real request, else the bearer can never be sent", () => {
+    const r = preflight(new Request("https://w.example/mcp", { method: "OPTIONS" }))!;
+    expect(r.headers.get("access-control-allow-headers")!.toLowerCase()).toContain("authorization");
+    expect(r.headers.get("access-control-allow-methods")).toContain("POST");
+  });
+
+  it("exposes WWW-Authenticate so browser JS can read the RFC 9728 pointer", () => {
+    // Without this the 401 is opaque to fetch(): the resource_metadata URL is unreadable and
+    // OAuth discovery silently dead-ends in the browser.
+    const r = preflight(new Request("https://w.example/mcp", { method: "OPTIONS" }))!;
+    expect(r.headers.get("access-control-expose-headers")!.toLowerCase()).toContain("www-authenticate");
+  });
+
+  it("returns null for non-OPTIONS, so real requests still reach the gate", () => {
+    for (const method of ["GET", "POST"]) {
+      expect(preflight(new Request("https://w.example/mcp", { method }))).toBeNull();
+    }
+  });
+
+  it("the 401 itself carries CORS headers", () => {
+    const denied = requireBearer(new Request("https://w.example/mcp", { method: "POST" }), ENV)!;
+    expect(denied.status).toBe(401);
+    expect(denied.headers.get("access-control-allow-origin")).toBe("*");
+    expect(denied.headers.get("access-control-expose-headers")!.toLowerCase())
+      .toContain("www-authenticate");
+    expect(denied.headers.get("www-authenticate")).toContain("resource_metadata=");
   });
 });

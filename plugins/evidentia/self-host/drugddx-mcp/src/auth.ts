@@ -258,9 +258,44 @@ export function requireBearer(req: Request, env: AuthEnv): Response | null {
     const prm = `${u.origin}/.well-known/oauth-protected-resource${u.pathname}`;
     return json({ error: "unauthorized" }, 401, {
       "www-authenticate": `Bearer realm="${REALM}", resource_metadata="${prm}"`,
+      // Without these the 401 is opaque to browser JS: it cannot read WWW-Authenticate,
+      // so the resource_metadata pointer above may as well not be there.
+      ...CORS,
     });
   }
   return null;
+}
+
+// ---- CORS ------------------------------------------------------------------
+// Browser-based MCP clients (claude.ai web, grok.com — the fleet's primary web-connector
+// surface — and ChatGPT web) send a CORS PREFLIGHT before the real request. A preflight is
+// by specification CREDENTIAL-FREE: the browser never attaches `Authorization` to an
+// `OPTIONS`. So a bearer gate placed in front of the preflight rejects it with 401 and the
+// browser never issues the real request at all.
+//
+// Measured 2026-08-07 on the live fleet: `OPTIONS /mcp` with `Origin: https://claude.ai`
+// returned **401 and not a single Access-Control-* header** on all three gated Workers
+// (anamnesis, evidentia-kb, openfda) — i.e. none of them could be added as a browser
+// connector. The keyless four answered 200 only because their gate never fires, so the
+// CORS headers they emit come from the SDK transport BELOW the gate; the ordering defect
+// was identical, merely unobservable without a key.
+//
+// `preflight()` is therefore called FIRST in the Worker's fetch(), ahead of requireBearer.
+// `Authorization` is in allow-headers so the real (non-preflight) request may carry the
+// bearer, and `WWW-Authenticate` is in expose-headers so browser JS can actually READ the
+// 401's RFC 9728 `resource_metadata` pointer — without that, OAuth discovery is invisible
+// to a browser client even when the 401 is correctly formed.
+export const CORS: Record<string, string> = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
+  "access-control-allow-headers": "Authorization, Content-Type, Mcp-Session-Id, MCP-Protocol-Version",
+  "access-control-expose-headers": "WWW-Authenticate, Mcp-Session-Id",
+  "access-control-max-age": "86400",
+};
+
+/** 204 for any OPTIONS; null otherwise. Must run BEFORE requireBearer. */
+export function preflight(req: Request): Response | null {
+  return req.method === "OPTIONS" ? new Response(null, { status: 204, headers: CORS }) : null;
 }
 
 // ---- OAuth router (well-known + /oauth/*) ----------------------------------

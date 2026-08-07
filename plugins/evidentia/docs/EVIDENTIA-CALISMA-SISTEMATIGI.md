@@ -179,7 +179,7 @@ daima gri-alan annas'tan (Tier 5) önce denenir; annas asla birincil paywall kap
 | **2** | Paper Search download (`read_pubmed_paper`) | PMC metin çıkarımı |
 | **3** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → `oa_fetch_fulltext`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); bağlı değilse atla; anti-bot v2: Xvfb headed profil non-interactive CF challenge'ı geçer, interactive → `challenge_required` (operatör noVNC) |
 | **4** | **Wiley** (`authenticate`, OAuth) | OpenAthens'ın kapsamadığı yayıncı tam metni (Cochrane/Wiley); hâlâ **lisanslı band** içinde |
-| **5** | **annas-mcp** (`article_download`/`book_download`) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 3+4) getiremeyince; copyright-kapılı |
+| **5** | **annas-reader** (`read_article` / `search_in_document`+`read_document`; ⚠️ `*_download` YOK) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 3+4) getiremeyince; copyright-kapılı |
 | **6** | **pubmed-epmc** (`pubmed_fetch_fulltext`) | Unpaywall yasal-OA son süpürme |
 
 Getirilen metin **anamnesis'e `ingest_document`** edilir → `semantic_search`/`hybrid_query`

@@ -202,7 +202,7 @@ J-STAGE via REST (`extended-api.md`), native `openfda:openfda_search` (drugsfda 
 
 **E. Guidelines & HTA / Epidemiology** — society-guideline PDFs (NICE/ESMO/NCCN/Cochrane) and HTA bodies have **no native MCP** → **documented gap (VERİ YOK)**, never web-scraped. Epidemiology: ICD-11 coding via `openfda`; US surveillance via **PopHIVE** (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — relay precomputed evidence; **US-ONLY**); global (WHO-GHO/GLOBOCAN/IHME) + Türkiye burden = documented gap. If the operator supplies a guideline PDF, ingest it into anamnesis.
 
-**Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 6-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **openathens `oa_resolve`/`oa_fetch_fulltext` (Tier 3 — LICENSED institutional, primary paywall gate, legal-first, BEFORE Wiley; unbound → skip)** → Wiley (auth, Tier 4) → **annas-mcp `article_search`/`article_download` (Tier 5 — LAST RESORT, after the licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA, Tier 6). Copyright: analysis only; CC-BY freely quotable; no web scraping.
+**Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 6-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **openathens `oa_resolve`/`oa_fetch_fulltext` (Tier 3 — LICENSED institutional, primary paywall gate, legal-first, BEFORE Wiley; unbound → skip)** → Wiley (auth, Tier 4) → **annas-reader `article_search`/`read_article` (Tier 5 — LAST RESORT, after the licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA, Tier 6). Copyright: analysis only; CC-BY freely quotable; no web scraping.
 
 ## Adım 2: Generosity Principle (UNCAPPED — depth across phases)
 
@@ -308,7 +308,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 | `data-extraction.md` | P4 | Extraction tables, numerical outcome capture, Extended-Tier recipes |
 | `risk-of-bias.md` | P5 | RoB2 / ROBINS-I / QUADAS-2 / Newcastle-Ottawa |
 | `extended-api.md` | P2 (as needed) | Native-MCP-first + Python REST fallback (PubChem/DOAJ/J-STAGE/…) |
-| `fulltext-retrieval.md` | P2/P4 (as needed) | Legal-first 6-tier: EPMC PMC OA → Paper Search → OpenAthens/Millet (Tier 3 licensed) → Wiley (Tier 4) → annas-mcp (Tier 5 last resort) → pubmed-epmc Unpaywall (Tier 6) |
+| `fulltext-retrieval.md` | P2/P4 (as needed) | Legal-first 6-tier: EPMC PMC OA → Paper Search → OpenAthens/Millet (Tier 3 licensed) → Wiley (Tier 4) → annas-reader (Tier 5 last resort) → pubmed-epmc Unpaywall (Tier 6) |
 | Optional enrichment layers (`oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease/drug-intelligence-layer.md`, `regulatory-intelligence.md`, `turkiye-layer.md`) | per Adım 0.5 | Domain deep-dive + appraisal checklist + native wiring (NON-mandatory) |
 | `skill-manifest.yaml` | tooling / audit | Standalone SMP manifest (runtime.mcp_servers, composition, verification gates) |
 | `execution-map.md` / `composition-runbook.md` / `benchmark-suite.md` / `benchmark-protocol.md` / `v8-wiring-patch.md` | large query / cross-skill / dev / historical | Fan-out planning, pipelines, eval harness, wiring history |
@@ -357,7 +357,7 @@ connectors_used:
   clinical_ddi: [drugddx]   # NOT a pairwise engine — cross-validate
   regulatory_epi: [openfda(openFDA+ICD11), PopHIVE(US surveillance); global/TR burden = documented gap]
   turkiye: [TİTCK, Mevzuat, TÜRKPATENT, YÖKTez]
-  fulltext: [EuropePMC PMC, PaperDownload, OpenAthens(Tier3 licensed), Wiley(auth Tier4), annas-mcp(Tier5 last-resort), pubmed-epmc(Unpaywall Tier6)]   # legal-first 6-tier
+  fulltext: [EuropePMC PMC, PaperDownload, OpenAthens(Tier3 licensed), Wiley(auth Tier4), annas-reader(Tier5 last-resort), pubmed-epmc(Unpaywall Tier6)]   # legal-first 6-tier
 composes_with:
   - carbon-html-report | carbon-pptx (consume sidecar)
   - onko-erisim | saglik-sigorta | pharmapatent | pharmaintel | lex-sanitas | promo-censor

@@ -40,7 +40,7 @@ besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
 6. **Wiley** (koşullu OAuth `authenticate`) — Tier 4, OpenAthens'in kapsamadığı yayıncılar için
    (lisanslı band'ın parçası).
 7. **Annas Reader** (Tier 5 — **SON ÇARE**; yalnız lisanslı band [OpenAthens + Wiley] getiremeyince).
-   `article_search`/`article_download` (DOI), `book_search`/`book_download` (metodoloji). **Copyright
+   `article_search`→`read_article` (DOI), `book_search`→`get_document_info`→`search_in_document`→`read_document` (metodoloji; kitabı ASLA bütün çekme). ⚠️ `article_download`/`book_download` YOKTUR (2026-08-07 ölçümü). **Copyright
    kapısı**: CC-BY dışı verbatim toplu metin **çıkarılMAZ**; künye + bağlam + ≤kısa alıntı. ⚠️ İndirme
    **kullanıcının makinesine** iner → analiz için metin yapıştırılır veya (uzunsa) anamnesis'e ingest
    edilir (Adım 9).

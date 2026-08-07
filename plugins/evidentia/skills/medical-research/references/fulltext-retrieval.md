@@ -14,14 +14,14 @@ the first tier that delivers:
 2. **Licensed institutional access** (Tier 3 **OpenAthens/Millet Kütüphanesi** + Tier 4
    **Wiley**) — the operator's *own legitimate subscription* via federated SAML; analysis/
    extraction only.
-3. **Grey-area shadow library** (Tier 5 **annas-mcp**) — **LAST RESORT**, entered only when the
+3. **Grey-area shadow library** (Tier 5 **annas-reader**) — **LAST RESORT**, entered only when the
    licensed band (Tier 3 + Tier 4) cannot supply the item.
 
 > **OpenAthens is preferred over annas by design.** A legitimate licensed copy (Tier 3) is
 > always tried before the grey-area annas (Tier 5). annas is never the primary paywall gate.
 
 **Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **openathens**
-(HP self-host — **LIVE** `openathens.cureonics.com/mcp`, §Tier 3), Wiley (`bio-research:wiley`, OAuth), **annas-mcp**
+(HP self-host — **LIVE** `openathens.cureonics.com/mcp`, §Tier 3), Wiley (`bio-research:wiley`, OAuth), **annas-reader**
 (verified, last-resort), **pubmed-epmc** (`pubmed_fetch_fulltext` — EuropePMC + Unpaywall legal-OA).
 
 ---
@@ -100,18 +100,41 @@ openathens: oa_session_status()                           # session warmth: vali
 `Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals) for publishers the
 OpenAthens tier does not cover. Graceful skip if unauthenticated. (Still inside the **licensed band**.)
 
-### Tier 5 — annas-mcp (shadow library — LAST RESORT, after the licensed band)
+### Tier 5 — annas-reader (shadow library — LAST RESORT, after the licensed band)
 **Entered only when the licensed band (Tier 3 OpenAthens + Tier 4 Wiley) cannot supply the item.**
 Grey-area; legal-first doctrine keeps it last.
+⚠️ **Re-measured 2026-08-07 — this rung was documented against an API the bundled connector does
+not have.** The wired server is `annas-reader` (`annas.cureonics.com`, v3.4.5): an **ephemeral
+reader**, not a downloader. `article_download` and `book_download` **do not exist on it** — every
+call to those names fails. Nothing lands on the user's machine; text is extracted on demand and not
+retained. The real surface is better suited to this plugin anyway: `search_in_document` is a bounded,
+page-referenced RAG primitive, i.e. retrieve-don't-dump native.
+
 ```
-annas: article_search(query="<DOI or keywords>")   # → metadata + SciDB handle
-annas: article_download(doi="10.xxxx/…")            # VERIFIED: downloads PDF to the USER's machine
-annas: book_search(query="Cochrane Handbook …")     # methodology references (§4)
-annas: book_download(hash="<md5>", format="pdf", title="…")
+# ARTICLES — by DOI
+annas: article_search(query="<DOI or keywords>", limit=3)   # → rows with title/authors/DOI
+annas: read_article(doi="10.xxxx/…", max_chars=…)           # → ephemeral full text (token-budgeted)
+
+# BOOKS — md5 handle, then bounded retrieval (NEVER read the whole book)
+annas: book_search(query="Cochrane Handbook …", limit=3)    # → rows with [md5: …]
+annas: get_document_info(md5="…")                           # → format/pages/ocr/text_quality/TOC
+annas: search_in_document(md5="…", query="risk of bias", k=3)  # → top-k PAGE-REFERENCED passages
+annas: read_document(md5="…", page_start=…, page_end=…, max_chars=…)  # → only the pages you need
 ```
-**Verified 9 Jun 2026:** `article_search("10.1136/bmj.39489.470347.AD")` resolved the GRADE 2008
-paper; `article_download` succeeded. **Note:** downloads land on the **user's computer**, not the
-sandbox — for the user + your analysis of the retrieved content, not re-upload. Copyright-gated (§3).
+**Verified 2026-08-07 (live, end-to-end):** `article_search("10.1136/bmj.39489.470347.AD")` resolved
+the GRADE 2008 paper and `read_article` returned its body (1,252 chars at `max_chars=800`, header
+included); `book_search("Cochrane Handbook …")` → md5 `47cbf17d…`; `get_document_info` → 680 pages,
+`text_quality=ok`; `search_in_document(md5, "risk of bias", k=2)` → `[page 232 · score 5.705]` from
+CH 08 "Assessing risk of bias in included studies".
+
+**Fidelity guard (do not strip it).** `read_article` prepends the Crossref citation with *"Confirm
+the body below matches this citation — Anna's Archive does not guarantee DOI↔content fidelity."*
+Anna's SciDB can return the WRONG article for a DOI; check the returned body against the citation
+before extracting anything from it. Copyright-gated (§3): analysis only, no verbatim bulk reproduction.
+
+**Order of operations for books is mandatory:** `get_document_info` → `search_in_document` →
+`read_document(page_start, page_end)`. A 680-page handbook must never be pulled whole — that is the
+exact context-overflow the retrieve-don't-dump hook exists to prevent.
 
 ### Tier 6 — pubmed-epmc Unpaywall legal-OA (final legal-OA sweep)
 `pubmed-epmc:pubmed_fetch_fulltext(...)` resolves legal open-access full text via NCBI PMC →
@@ -179,4 +202,5 @@ the anamnesis `doc_id::idx` provenance where ingested.
 *v9.0 — OpenAthens/Millet Kütüphanesi licensed tier added as Tier 3 (legal-first, before annas);
 annas moved to Tier 5 last-resort. openathens-mcp design `docs/superpowers/specs/2026-07-01-
 openathens-fulltext-evidentia-design.md` (CureoHub); deploy-pending. annas `article_search`/
-`article_download`/`book_search` + EPMC `get_full_text_article`/`get_copyright_status` verified.*
+`read_article`/`book_search`/`search_in_document` + EPMC `get_full_text_article`/`get_copyright_status` verified
+(tool names re-measured 2026-08-07: the bundled `annas-reader` has no `*_download` tools).*

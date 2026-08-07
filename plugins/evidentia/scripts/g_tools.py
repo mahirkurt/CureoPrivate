@@ -193,6 +193,99 @@ class Conn:
         return True, txt
 
 
+
+# ---------------------------------------------------------------- HTTP surface --
+# The seven self-host Workers must satisfy an HTTP contract that `initialize` cannot see.
+# Measured 2026-08-07: `OPTIONS /mcp` with `Origin: https://claude.ai` returned a bare 401 with
+# no Access-Control-* headers on all three GATED Workers — a preflight is credential-free by
+# specification, so a bearer gate in front of it makes the Worker un-addable from any browser
+# client (claude.ai web, grok.com, ChatGPT web). The four keyless Workers answered 200 only
+# because their gate never fires; the ordering defect was identical, merely unobservable.
+SELF_HOST = {
+    "anamnesis": "https://anamnesis-mcp.cureonics.workers.dev",
+    "drugddx": "https://drugddx-mcp.cureonics.workers.dev",
+    "ema": "https://ema-mcp.cureonics.workers.dev",
+    "evidentia-kb": "https://evidentia-kb-mcp.cureonics.workers.dev",
+    "globocan": "https://globocan-mcp.cureonics.workers.dev",
+    "openfda": "https://openfda-mcp.cureonics.workers.dev",
+    "who-gho": "https://who-gho-mcp.cureonics.workers.dev",
+}
+
+
+def _raw(url, method="GET", extra=None, timeout=25):
+    hdr = dict(HEADERS)
+    hdr.pop("Content-Type", None)
+    hdr.update(extra or {})
+    req = urllib.request.Request(url, headers=hdr, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, {k.lower(): v for k, v in r.headers.items()}
+    except urllib.error.HTTPError as e:
+        return e.code, {k.lower(): v for k, v in e.headers.items()}
+    except Exception as e:  # noqa: BLE001
+        return -1, {"_err": f"{type(e).__name__}: {e}"}
+
+
+def _post_status(url, timeout):
+    """Unauthenticated POST /mcp with a well-formed initialize; returns (status, lower-cased headers)."""
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+        "protocolVersion": "2025-06-18", "capabilities": {},
+        "clientInfo": {"name": "evidentia-g-tools", "version": "1.0.0"}}}).encode("utf-8")
+    req = urllib.request.Request(url, data=body, headers=dict(HEADERS), method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, {k.lower(): v for k, v in r.headers.items()}
+    except urllib.error.HTTPError as e:
+        return e.code, {k.lower(): v for k, v in e.headers.items()}
+    except Exception as e:  # noqa: BLE001
+        return -1, {"_err": f"{type(e).__name__}: {e}"}
+
+
+def check_surface(name, base, timeout):
+    issues = []
+    # 1. CORS preflight must short-circuit AHEAD of the bearer gate.
+    st, h = _raw(base + "/mcp", "OPTIONS", {
+        "Origin": "https://claude.ai", "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "authorization,content-type"}, timeout)
+    if st not in (200, 204):
+        issues.append(f"OPTIONS /mcp -> {st} (bekleneni 204; bearer kapisi preflight'in onunde)")
+    else:
+        allow = (h.get("access-control-allow-headers") or "").lower()
+        expose = (h.get("access-control-expose-headers") or "").lower()
+        if not h.get("access-control-allow-origin"):
+            issues.append("preflight'te Access-Control-Allow-Origin yok")
+        if "authorization" not in allow:
+            issues.append("allow-headers 'Authorization' icermiyor -> gercek istek bearer tasiyamaz")
+        if "www-authenticate" not in expose:
+            issues.append("expose-headers 'WWW-Authenticate' icermiyor -> RFC 9728 isaretcisi "
+                          "tarayici JS'ine gorunmez")
+    # 2. RFC 9728 protected-resource metadata, both path forms (claude.ai bare / ChatGPT inserted).
+    for path in ("/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp"):
+        s2, _ = _raw(base + path, timeout=timeout)
+        if s2 != 200:
+            issues.append(f"{path} -> {s2}")
+    s3, _ = _raw(base + "/.well-known/oauth-authorization-server", timeout=timeout)
+    if s3 != 200:
+        issues.append(f"/.well-known/oauth-authorization-server -> {s3}")
+    s4, _ = _raw(base + "/health", timeout=timeout)
+    if s4 != 200:
+        issues.append(f"/health -> {s4}")
+    # 3. An unauthenticated POST must be either a clean 401 carrying the RFC 9728 pointer
+    #    (gated) or a 200 (deliberately keyless) — never anything else. The body must be a REAL
+    #    initialize: a bodyless POST is rejected 400 by the SDK transport before the gate, which
+    #    would make every keyless Worker look broken (this check first read 400 for that reason).
+    st5, h5 = _post_status(base + "/mcp", timeout)
+    if st5 == 401:
+        if "resource_metadata" not in (h5.get("www-authenticate") or ""):
+            issues.append("401 WWW-Authenticate'inde resource_metadata yok (RFC 9728)")
+        mode = "gated"
+    elif 200 <= st5 < 300:
+        mode = "keyless"
+    else:
+        issues.append(f"kimliksiz POST /mcp -> {st5}")
+        mode = "?"
+    return mode, issues
+
 # ------------------------------------------------------------------- targets --
 def load_targets():
     raw = json.loads(MCP_JSON.read_text(encoding="utf-8"))
@@ -262,6 +355,8 @@ def compare(live, base):
 def main():
     ap = argparse.ArgumentParser(description="G-TOOLS live tool-surface contract gate")
     ap.add_argument("--smoke", action="store_true", help="also run one read-only call per server")
+    ap.add_argument("--surface", action="store_true",
+                    help="also check the 7 self-host Workers' HTTP/CORS/RFC-9728 contract")
     ap.add_argument("--update", action="store_true", help="rewrite fleet.tools.json from live")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--timeout", type=int, default=45)
@@ -338,6 +433,19 @@ def main():
           % (" + islevsel smoke" if args.smoke else ""))
     for color, tag, name, detail in report:
         print("  %s%-14s%s %-20s %s" % (color, tag, RESET, name, detail))
+    if args.surface:
+        print("\n  HTTP yuzeyi (7 self-host Worker: CORS preflight + RFC 9728 + health)")
+        with ThreadPoolExecutor(7) as ex:
+            surf = list(ex.map(lambda kv: (kv[0],) + check_surface(kv[0], kv[1], args.timeout),
+                               sorted(SELF_HOST.items())))
+        for name, mode, issues in surf:
+            if issues:
+                failed.append(name + ":surface")
+                print("  %s%-14s%s %-20s %s" % (RED, "SURFACE", RESET, name, " · ".join(issues)))
+            else:
+                print("  %s%-14s%s %-20s %s" % (GREEN, "OK", RESET, name,
+                                                "preflight 204 · PRM x2 · AS · health · %s" % mode))
+
     ok = sum(1 for c, t, _, _ in report if t == "OK")
     print("\n  %d sunucu denetlendi · %s%d sozlesmeye uygun%s · %d sorunlu"
           % (len(results), GREEN, ok, RESET, len(failed)))

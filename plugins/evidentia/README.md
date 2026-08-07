@@ -153,6 +153,13 @@ smoke) + **`G-IDENTITY`** (her self-host Worker kendi realm/paket/wrangler adın
 `G-BUNDLE` (`.mcp.json` ↔ `CONNECTORS.md` tutarlılığı) + nitel `G-TRUST` / `G-SURFACE`
 / `G-REGRESSION` / `G-COPYRIGHT`.
 
+> **`--surface` (2026-08-07):** kapılı üç Worker `OPTIONS /mcp`'ye **401 ve hiç `Access-Control-*`
+> başlığı olmadan** cevap veriyordu. Preflight tanım gereği kimlik-bilgisiz olduğu için (tarayıcı
+> `OPTIONS`'a `Authorization` iliştirmez) bearer kapısının önüne konması, connector'ın hiçbir
+> tarayıcı istemcisinden (claude.ai web · grok.com · ChatGPT web) EKLENEMEMESİ demekti. CORS
+> katmanı artık kapının önünde; `WWW-Authenticate` expose ediliyor ki 401'in RFC 9728 işaretçisi
+> tarayıcı JS'ine görünür olsun.
+>
 > **Neden `G-TOOLS` var (2026-08-07):** `G-PROBE` bir connector'ın *ulaşılabilir* olduğunu kanıtlar,
 > hangi araçları sunduğunu değil. Filo ölçüldüğünde belgeler canlı yüzeyden sessizce ayrışmıştı —
 > med-terminologies 37→31 araç, pubmed-epmc 10→11 (v2.9.7→v2.10.2), openathens 7→10, globocan 36→41
@@ -162,7 +169,9 @@ smoke) + **`G-IDENTITY`** (her self-host Worker kendi realm/paket/wrangler adın
 Koşum:
 ```bash
 python scripts/g_probe.py        # .mcp.json URL'lerinde canlı initialize
-python scripts/g_tools.py --smoke  # canlı tools/list sözleşmesi + sunucu başına 1 salt-okunur çağrı
+python scripts/g_tools.py --smoke --surface  # canlı tools/list sözleşmesi + sunucu başına 1
+                                 # salt-okunur çağrı + 7 self-host Worker'ın HTTP sözleşmesi
+                                 # (CORS preflight 204 · RFC 9728 PRM ×2 · AS · health · 401 biçimi)
 python scripts/g_identity.py     # 7 self-host Worker kimlik tutarlılığı
 python scripts/g_bundle.py       # .mcp.json ↔ CONNECTORS.md tutarlılık
 python skills/medical-research/evals/check_integrity.py        # yapısal: G-REF/G-CONN/G-ALWAYS/G-VERSION/G-COVERAGE/G-PROBE/G-XVAL/G-WHITELIST/G-SIZE/G-DESC/G-PHASES/G-DESKEW/G-AGENT

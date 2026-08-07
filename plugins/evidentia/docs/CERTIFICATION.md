@@ -98,6 +98,16 @@ Fleet health at certification: **G-PROBE 14 live · 0 failed**; **G-BUNDLE CONSI
   JSON file and the CJS shim in `@cloudflare/vitest-pool-workers@0.8.71` parsed it as
   JavaScript. Fixed by upgrading the pool to `0.12.21` (newest release still peering on
   vitest 3.2). All 7 workers now `npm test` exit=0; suite total 151 → **200 tests**.
+- **wrangler stays on 4.x/`^4.20.0` (installed 4.104.0) — DELIBERATE HOLD, measured 2026-08-07.**
+  The CLI prints "update available 4.119.0", but the bump is not isolatable: `wrangler@4.120`
+  declares `peerOptional @cloudflare/workers-types@^5.20260801.1`, while
+  `@cloudflare/vitest-pool-workers@0.12.21` pins `wrangler@4.72.0` (which wants
+  `workers-types@^4.20260310.1`) and `agents`→`partyserver` wants `workers-types@^4.20240729.0`.
+  So wrangler 4.119+ forces workers-types v5 and breaks both the test pool and the agents SDK.
+  Moving forward means a COORDINATED major bump — vitest 3.2→4, pool-workers 0.12→0.20,
+  workers-types 4→5, wrangler 4.104→4.120 — across all seven Workers. That is its own reviewed
+  change, not an audit side-effect. Deploys on 4.104.0 are verified working (three Workers
+  shipped 2026-08-07). Do not retry a lone `npm i -D wrangler@latest`: it ERESOLVEs.
 - GLOBOCAN figures are modelled estimates (2022); EMA is a point-in-time baked snapshot
   (`generated_at` stamped, refresh via `npm run build:corpus`). Both carry mandatory caveats.
 - **IHME/GBD remains a documented gap** (no keyless API; account + ToS + row-cap) — honestly marked

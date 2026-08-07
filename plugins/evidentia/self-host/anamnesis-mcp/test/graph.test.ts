@@ -3,7 +3,7 @@ import { __testing } from "../src/graph.js";
 
 const { nodeKey, edgeId } = __testing;
 
-describe("nodeKey — entity normalization", () => {
+describe("nodeKey - entity normalization", () => {
   it("lowercases and collapses whitespace", () => {
     expect(nodeKey("  Emicizumab  ")).toBe("emicizumab");
     expect(nodeKey("Hemophilia   A")).toBe("hemophilia a");
@@ -13,14 +13,14 @@ describe("nodeKey — entity normalization", () => {
   });
 });
 
-describe("edgeId — deterministic, order-sensitive", () => {
-  it("same triple ⇒ same id", async () => {
+describe("edgeId - deterministic, order-sensitive", () => {
+  it("same triple => same id", async () => {
     const a = await edgeId("emicizumab", "treats", "hemophilia a");
     const b = await edgeId("emicizumab", "treats", "hemophilia a");
     expect(a).toBe(b);
     expect(a).toMatch(/^[0-9a-f]{24}$/);
   });
-  it("different predicate ⇒ different id", async () => {
+  it("different predicate => different id", async () => {
     const a = await edgeId("emicizumab", "treats", "hemophilia a");
     const c = await edgeId("emicizumab", "associated_with", "hemophilia a");
     expect(a).not.toBe(c);

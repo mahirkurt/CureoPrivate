@@ -40,21 +40,56 @@ async function getJson(u: string): Promise<any> {
   return r.json();
 }
 
-/** INN/brand name -> RxCUI(s) via RxNav. */
-async function normalizeToRxcui(name: string): Promise<{ rxcui: string | null; candidates: any }> {
-  const j = await getJson(`${RXNAV}/rxcui.json?name=${encodeURIComponent(name)}&search=2`);
+// --- pure URL builders + parsers (split out so test/server.test.ts can pin them) ---
+const rxcuiUrl = (name: string) => `${RXNAV}/rxcui.json?name=${encodeURIComponent(name)}&search=2`;
+const approxUrl = (name: string) => `${RXNAV}/approximateTerm.json?term=${encodeURIComponent(name)}&maxEntries=3`;
+const splListUrl = (name: string) => `${DAILYMED}/spls.json?drug_name=${encodeURIComponent(name)}&pagesize=1`;
+
+/** Exact RxNav hit -> first rxnormId, else null. Pure. */
+function pickExactRxcui(j: any): { rxcui: string | null; candidates: string[] } {
   const ids: string[] = j?.idGroup?.rxnormId ?? [];
-  if (ids.length) return { rxcui: ids[0], candidates: ids };
-  // fallback: approximate match
-  const a = await getJson(`${RXNAV}/approximateTerm.json?term=${encodeURIComponent(name)}&maxEntries=3`);
+  return { rxcui: ids.length ? ids[0] : null, candidates: ids };
+}
+
+/** Approximate RxNav hit -> best candidate's rxcui, else null. Pure. */
+function pickApproxRxcui(a: any): { rxcui: string | null; candidates: any[] } {
   const cand = a?.approximateGroup?.candidate ?? [];
   return { rxcui: cand[0]?.rxcui ?? null, candidates: cand };
 }
 
+/** First SPL setid from a DailyMed listing, else null. Pure. */
+function pickSetid(list: any): string | null {
+  return list?.data?.[0]?.setid ?? null;
+}
+
+/**
+ * The bounded SPL pointer. Deliberately a POINTER, not the label body: DailyMed label text is
+ * copyright-bounded, so this tool never reproduces it in bulk (retrieve-don't-dump). Pure.
+ */
+function buildSplPointer(setid: string): string {
+  return (
+    `Drug Interactions section available in DailyMed SPL setid=${setid}. ` +
+    `Retrieve the LOINC 34073-7 section from ` +
+    `https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=${setid} ` +
+    `(label text is copyright-bounded; do not reproduce in bulk).`
+  );
+}
+
+/** INN/brand name -> RxCUI(s) via RxNav. */
+async function normalizeToRxcui(name: string): Promise<{ rxcui: string | null; candidates: any }> {
+  const exact = pickExactRxcui(await getJson(rxcuiUrl(name)));
+  // Branch on candidate COUNT, not on rxcui truthiness: that is what the pre-refactor code did,
+  // so an upstream reply carrying an empty-string id still short-circuits here rather than
+  // silently falling through to the approximate matcher.
+  if (exact.candidates.length) return exact;
+  // fallback: approximate match
+  return pickApproxRxcui(await getJson(approxUrl(name)));
+}
+
 /** DailyMed SPL "Drug Interactions" (LOINC 34073-7) section for a drug name, length-bounded. */
 async function labelInteractionSection(name: string): Promise<{ setid: string | null; title: string | null; text: string | null }> {
-  const list = await getJson(`${DAILYMED}/spls.json?drug_name=${encodeURIComponent(name)}&pagesize=1`);
-  const setid: string | undefined = list?.data?.[0]?.setid;
+  const list = await getJson(splListUrl(name));
+  const setid = pickSetid(list);
   if (!setid) return { setid: null, title: null, text: null };
   // Optional title lookup. DailyMed's per-SPL resource does not reliably serve JSON (observed
   // HTTP 415 on /spls/{setid}.json) and the title is non-essential — the tool's value is the
@@ -67,15 +102,7 @@ async function labelInteractionSection(name: string): Promise<{ setid: string | 
     title = null; // 415/non-JSON from DailyMed full-SPL endpoint — pointer below still valid.
   }
   // The full structured body is large; we surface a bounded pointer rather than dumping verbatim.
-  return {
-    setid,
-    title: title ?? null,
-    text:
-      `Drug Interactions section available in DailyMed SPL setid=${setid}. ` +
-      `Retrieve the LOINC 34073-7 section from ` +
-      `https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=${setid} ` +
-      `(label text is copyright-bounded; do not reproduce in bulk).`,
-  };
+  return { setid, title: title ?? null, text: buildSplPointer(setid) };
 }
 
 export function buildServer(): McpServer {
@@ -130,3 +157,12 @@ export function buildServer(): McpServer {
 
   return server;
 }
+
+// Pure helpers surfaced for test/server.test.ts (house pattern: who-gho / globocan / ema / openfda).
+// Added 2026-08-07: this Worker had no server.test.ts, so its RxNav fallback ladder and the
+// copyright-bounded SPL pointer were unpinned.
+export const __testing = {
+  rxcuiUrl, approxUrl, splListUrl,
+  pickExactRxcui, pickApproxRxcui, pickSetid, buildSplPointer,
+  RXNAV, DAILYMED, CAVEAT,
+};

@@ -18,13 +18,13 @@ async function pkcePair(verifier: string): Promise<string> {
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-describe("invariant 3 — reflected-XSS escaping", () => {
+describe("invariant 3 - reflected-XSS escaping", () => {
   it("escapes HTML metacharacters", () => {
     expect(escHtml(`<script>"&'`)).toBe("&lt;script&gt;&quot;&amp;&#39;");
   });
 });
 
-describe("invariant 5 — constant-time comparison", () => {
+describe("invariant 5 - constant-time comparison", () => {
   it("true for equal, false for unequal", () => {
     expect(constantTimeEqual("abc", "abc")).toBe(true);
     expect(constantTimeEqual("abc", "abd")).toBe(false);
@@ -32,7 +32,7 @@ describe("invariant 5 — constant-time comparison", () => {
   });
 });
 
-describe("invariant 1 — redirect_uri full-origin allowlist", () => {
+describe("invariant 1 - redirect_uri full-origin allowlist", () => {
   it("accepts default claude origins, rejects others & substring tricks", () => {
     expect(redirectAllowed(ENV, "https://claude.ai/callback")).toBe(true);
     expect(redirectAllowed(ENV, "https://claude.com/x")).toBe(true);
@@ -47,7 +47,7 @@ describe("invariant 1 — redirect_uri full-origin allowlist", () => {
   });
 });
 
-describe("invariant 4 — HMAC-signed auth code + TTL", () => {
+describe("invariant 4 - HMAC-signed auth code + TTL", () => {
   it("mints a code that verifies and carries the payload", async () => {
     const ch = await pkcePair("verifier-123");
     const code = await mintCode(ENV, "https://claude.ai/cb", ch);
@@ -75,7 +75,7 @@ describe("invariant 4 — HMAC-signed auth code + TTL", () => {
   });
 });
 
-describe("invariant 2 — PKCE S256 only", () => {
+describe("invariant 2 - PKCE S256 only", () => {
   it("verifier matching the S256 challenge passes", async () => {
     const ch = await pkcePair("the-verifier");
     expect(await pkceS256Matches("the-verifier", ch)).toBe(true);
@@ -89,7 +89,7 @@ describe("invariant 2 — PKCE S256 only", () => {
   });
 });
 
-describe("token endpoint — full PKCE round trip", () => {
+describe("token endpoint - full PKCE round trip", () => {
   it("issues a Bearer token for a valid code + verifier, rejects a wrong verifier", async () => {
     const verifier = "round-trip-verifier-xyz";
     const ch = await pkcePair(verifier);
@@ -135,7 +135,7 @@ describe("Bearer guard", () => {
   });
 });
 
-describe("RFC 9728 — OAuth discovery surface (claude.ai / ChatGPT / grok)", () => {
+describe("RFC 9728 - OAuth discovery surface (claude.ai / ChatGPT / grok)", () => {
   it("serves protected-resource metadata at the bare well-known path", async () => {
     const res = await handleOAuth(
       new Request("https://w.example/.well-known/oauth-protected-resource"), ENV);
@@ -145,7 +145,7 @@ describe("RFC 9728 — OAuth discovery surface (claude.ai / ChatGPT / grok)", ()
     expect(meta.authorization_servers).toEqual(["https://w.example"]);
   });
 
-  it("also serves it at the path-inserted URL ChatGPT requests (…/oauth-protected-resource/mcp)", async () => {
+  it("also serves it at the path-inserted URL ChatGPT requests (.../oauth-protected-resource/mcp)", async () => {
     const res = await handleOAuth(
       new Request("https://w.example/.well-known/oauth-protected-resource/mcp"), ENV);
     expect(res.status).toBe(200);

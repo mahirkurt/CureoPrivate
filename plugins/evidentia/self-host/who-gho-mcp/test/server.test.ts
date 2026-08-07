@@ -6,7 +6,7 @@ const {
   shapeDataRows, dimensionUrl, odataEscape, CODE_RE, DEFAULT_BASE,
 } = __testing;
 
-describe("CODE_RE — SSRF-safe indicator/dimension code allowlist", () => {
+describe("CODE_RE - SSRF-safe indicator/dimension code allowlist", () => {
   it("accepts every real GHO code shape", () => {
     for (const c of ["WHOSIS_000001", "MDG_0000000017", "SEX_BTSX", "COUNTRY", "AGEGROUP", "EUR", "E11"])
       expect(CODE_RE.test(c)).toBe(true);
@@ -17,7 +17,7 @@ describe("CODE_RE — SSRF-safe indicator/dimension code allowlist", () => {
   });
 });
 
-describe("baseOf — env override with trailing-slash trim", () => {
+describe("baseOf - env override with trailing-slash trim", () => {
   it("defaults to the public GHO OData base", () => {
     expect(baseOf({})).toBe(DEFAULT_BASE);
   });
@@ -26,7 +26,7 @@ describe("baseOf — env override with trailing-slash trim", () => {
   });
 });
 
-describe("filterIndicators — case-insensitive substring on name/code", () => {
+describe("filterIndicators - case-insensitive substring on name/code", () => {
   const rows = [
     { IndicatorCode: "WHOSIS_000001", IndicatorName: "Life expectancy at birth (years)" },
     { IndicatorCode: "MDG_0000000017", IndicatorName: "Tuberculosis mortality rate" },
@@ -46,7 +46,7 @@ describe("filterIndicators — case-insensitive substring on name/code", () => {
   });
 });
 
-describe("buildDataUrl — OData $filter assembly + SSRF-safe path", () => {
+describe("buildDataUrl - OData $filter assembly + SSRF-safe path", () => {
   it("builds SpatialDim + TimeDim + Dim1 filter with $top", () => {
     const u = new URL(buildDataUrl("https://mock.test/api", "WHOSIS_000001", { country: "tur", year: 2019, dim1: "sex_btsx", top: 10 }));
     expect(u.pathname).toBe("/api/WHOSIS_000001");
@@ -63,7 +63,7 @@ describe("buildDataUrl — OData $filter assembly + SSRF-safe path", () => {
   });
 });
 
-describe("shapeDataRows — GHO row projection + limit", () => {
+describe("shapeDataRows - GHO row projection + limit", () => {
   it("projects the fields evidentia consumes and caps at limit", () => {
     const rows = [
       { SpatialDim: "TUR", SpatialDimType: "COUNTRY", TimeDim: 2019, Dim1: "SEX_BTSX", Value: "78.6", NumericValue: 78.6, Low: 77.9, High: 79.3, Comments: null },
@@ -75,7 +75,7 @@ describe("shapeDataRows — GHO row projection + limit", () => {
   });
 });
 
-describe("dimensionUrl — dimension list vs values", () => {
+describe("dimensionUrl - dimension list vs values", () => {
   it("lists all dimensions when no arg", () => {
     expect(dimensionUrl("https://mock.test/api")).toBe("https://mock.test/api/Dimension");
   });

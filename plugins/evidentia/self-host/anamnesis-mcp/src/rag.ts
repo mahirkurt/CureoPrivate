@@ -163,10 +163,15 @@ function normalizeMatches(raw: unknown): Array<{ id: string; score: number; meta
 
 /** FTS5 lexical (BM25) arm of hybrid retrieval. Query is sanitised into an OR of quoted tokens
  *  (so FTS5 operators in user text can't break the MATCH). Returns chunk ids best-first. */
-async function lexicalSearch(env: RagEnv, query: string, n: number, docId?: string): Promise<string[]> {
+function buildFtsMatch(query: string): string | null {
   const tokens = (query.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter((t) => t.length > 1).slice(0, 24);
-  if (!tokens.length) return [];
-  const match = tokens.map((t) => `"${t.replace(/"/g, '""')}"`).join(" OR ");
+  if (!tokens.length) return null;
+  return tokens.map((t) => `"${t.replace(/"/g, '""')}"`).join(" OR ");
+}
+
+async function lexicalSearch(env: RagEnv, query: string, n: number, docId?: string): Promise<string[]> {
+  const match = buildFtsMatch(query);
+  if (match === null) return [];
   const sql = docId
     ? `SELECT id FROM chunks_fts WHERE chunks_fts MATCH ? AND doc_id = ? ORDER BY rank LIMIT ?`
     : `SELECT id FROM chunks_fts WHERE chunks_fts MATCH ? ORDER BY rank LIMIT ?`;
@@ -375,3 +380,8 @@ export async function forgetDocument(env: RagEnv, docId: string): Promise<Forget
 
   return { doc_id: docId, existed, deleted: { chunks: chunkIds.length, vectors, edges, nodes_removed, nodes_updated } };
 }
+
+// Pure helpers surfaced for test/rag.test.ts. Added 2026-08-07: anamnesis carried helper suites
+// for chunk.ts and graph.ts but NONE for rag.ts, leaving the hybrid-retrieval ranking (rrfFuse)
+// and the FTS5 injection guard (buildFtsMatch) unpinned.
+export const __testing = { chunkId, normalizeMatches, rrfFuse, buildFtsMatch };

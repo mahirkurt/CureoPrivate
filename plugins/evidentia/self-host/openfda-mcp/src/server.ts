@@ -45,6 +45,32 @@ const FDA_CAVEAT =
   "incidence/prevalence; do not present counts as rates. Label/enforcement/approval records are " +
   "point-in-time. Rate-limited (no key). Cross-verify safety signals before clinical claims.";
 
+/** Normalise a caller-supplied endpoint: trim, strip wrapping slashes. Pure. */
+function normalizeEndpoint(endpoint: unknown): string {
+  return String(endpoint ?? "").trim().replace(/^\/+|\/+$/g, "");
+}
+
+/** The SSRF gate: only the allowlisted openFDA datasets may be reached. Pure. */
+function isAllowedEndpoint(ep: string): boolean {
+  return ENDPOINTS.includes(ep);
+}
+
+/** Build the openFDA request URL. Pure — split out of openfdaQuery so it is testable. */
+function buildOpenFdaUrl(
+  endpoint: string,
+  search: string | undefined,
+  count: string | undefined,
+  limit: number | undefined,
+  skip: number | undefined,
+): string {
+  const u = new URL(`${OPENFDA}/${endpoint}.json`);
+  if (search) u.searchParams.set("search", search);
+  if (count) u.searchParams.set("count", count);
+  if (limit != null && !count) u.searchParams.set("limit", String(limit));
+  if (skip != null) u.searchParams.set("skip", String(skip));
+  return u.toString();
+}
+
 async function openfdaQuery(
   endpoint: string,
   search: string | undefined,
@@ -52,12 +78,8 @@ async function openfdaQuery(
   limit: number | undefined,
   skip: number | undefined,
 ): Promise<{ status: number; body: any }> {
-  const u = new URL(`${OPENFDA}/${endpoint}.json`);
-  if (search) u.searchParams.set("search", search);
-  if (count) u.searchParams.set("count", count);
-  if (limit != null && !count) u.searchParams.set("limit", String(limit));
-  if (skip != null) u.searchParams.set("skip", String(skip));
-  const r = await fetch(u.toString(), { headers: { accept: "application/json", "user-agent": UA } });
+  const r = await fetch(buildOpenFdaUrl(endpoint, search, count, limit, skip),
+    { headers: { accept: "application/json", "user-agent": UA } });
   let body: any = null;
   try { body = await r.json(); } catch { body = { error: { code: "NON_JSON", message: "upstream returned non-JSON" } }; }
   return { status: r.status, body };
@@ -93,12 +115,28 @@ function stripEm(s: unknown): string {
   return String(s ?? "").replace(/<\/?em[^>]*>/g, "").trim();
 }
 
-async function icd11Search(env: OpenFdaEnv, query: string, release: string, limit: number): Promise<any> {
-  const token = await whoToken(env);
+/** Build the WHO ICD-11 MMS search URL. Pure. */
+function buildIcd11SearchUrl(release: string, query: string): string {
   const u = new URL(`${WHO_ICD_BASE}/${release}/mms/search`);
   u.searchParams.set("q", query);
   u.searchParams.set("flatResults", "true");
-  const r = await fetch(u.toString(), {
+  return u.toString();
+}
+
+/** Project WHO destinationEntities into our shape. Pure — split out of icd11Search. */
+function shapeIcd11Entities(j: any, limit: number): any[] {
+  return (j?.destinationEntities ?? []).slice(0, limit).map((e: any) => ({
+    id: e.id,
+    code: e.theCode ?? null,
+    title: stripEm(e.title),
+    chapter: e.chapter ?? null,
+    score: e.score ?? null,
+  }));
+}
+
+async function icd11Search(env: OpenFdaEnv, query: string, release: string, limit: number): Promise<any> {
+  const token = await whoToken(env);
+  const r = await fetch(buildIcd11SearchUrl(release, query), {
     headers: {
       authorization: `Bearer ${token}`,
       accept: "application/json",
@@ -109,13 +147,7 @@ async function icd11Search(env: OpenFdaEnv, query: string, release: string, limi
   });
   if (!r.ok) throw new Error(`WHO ICD-11 search ${r.status}`);
   const j: any = await r.json();
-  const ents = (j?.destinationEntities ?? []).slice(0, limit).map((e: any) => ({
-    id: e.id,
-    code: e.theCode ?? null,
-    title: stripEm(e.title),
-    chapter: e.chapter ?? null,
-    score: e.score ?? null,
-  }));
+  const ents = shapeIcd11Entities(j, limit);
   return { source: `WHO ICD-11 MMS ${release}`, release, query, total: ents.length, entities: ents };
 }
 
@@ -136,8 +168,8 @@ export function registerTools(server: McpServer, env: OpenFdaEnv): void {
       skip: z.number().int().min(0).max(25000).optional().describe("Pagination offset (0-25000)."),
     },
     async ({ endpoint, search, count, limit, skip }) => {
-      const ep = String(endpoint).trim().replace(/^\/+|\/+$/g, "");
-      if (!ENDPOINTS.includes(ep)) {
+      const ep = normalizeEndpoint(endpoint);
+      if (!isAllowedEndpoint(ep)) {
         return { isError: true, content: [{ type: "text", text: `Invalid endpoint '${ep}'. Allowed: ${ENDPOINTS.join(", ")}` }] };
       }
       try {
@@ -177,3 +209,13 @@ export function registerTools(server: McpServer, env: OpenFdaEnv): void {
     },
   );
 }
+
+// Pure helpers surfaced for test/server.test.ts (house pattern: who-gho / globocan / ema).
+// These carry the SSRF gate (endpoint allowlist) and every URL/shape transform, so they are
+// exactly the logic that must not drift silently. 2026-08-07: this Worker had NO server.test.ts
+// and the allowlist was therefore unpinned.
+export const __testing = {
+  normalizeEndpoint, isAllowedEndpoint, buildOpenFdaUrl,
+  stripEm, buildIcd11SearchUrl, shapeIcd11Entities,
+  ENDPOINTS, FDA_CAVEAT, OPENFDA, WHO_ICD_BASE, ICD_DEFAULT_RELEASE,
+};

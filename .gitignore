@@ -24,3 +24,12 @@ plugins/evidentia/docs/EVIDENTIA-KURULUM-VE-KEYLER.md
 
 # Üretilen claude.ai skill paketleri (build script ile yeniden üretilir)
 plugins/*/dist/
+
+# Kök /shared/ — PLUGIN İÇERİĞİ DEĞİL, koşum çıktısı iniş alanı.
+# Plugin'lerin paylaşılan sözleşmeleri plugins/<ad>/shared/ altında yaşar ve İZLENİR.
+# Depo kökündeki /shared/ yalnızca bir ajanın çıplak "shared/..." yolunu CWD'ye çözüp
+# buraya yazmasıyla oluşur (2026-08-07 denetimi: vekayinuvis hook metni bu şekilde
+# 2026-07-09 tarihli bir araştırma çıktısını buraya düşürmüştü; kök neden hook'ta
+# ${CLAUDE_PLUGIN_ROOT} kullanılarak giderildi). Buradaki içerik plugin kataloğuna
+# ait değildir — kendi yerine taşıyın, commit ETMEYİN.
+/shared/

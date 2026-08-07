@@ -41,7 +41,7 @@ describe("splitSentences", () => {
   });
 });
 
-describe("semanticChunk — boundary detection", () => {
+describe("semanticChunk - boundary detection", () => {
   it("merges similar adjacent windows and breaks on semantic shift", async () => {
     // 4 single-sentence windows: Alpha, Alpha, Beta, Beta ⇒ expect 2 chunks
     const text = "Alpha first point here. Alpha second point here. Beta different topic now. Beta more of it.";

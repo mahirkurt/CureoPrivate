@@ -5,7 +5,7 @@ Bir arşiv/tez/literatür MCP aracı büyük bir gövde (belge transkripsiyonu, 
 PDF→HTML tam-metin, İА maddesi, IIIF within-manifest bloğu, geniş katalog sonuç seti) döndürdüğünde
 bu hook, modele ham dökümü ana bağlamda AKIL YÜRÜTMEMESİNİ hatırlatır — ham döküm bağlam-penceresini
 taşırır ve detay atlar (bağlam-ekonomisi Tier 0 ihlali). İki katmanlı yönlendirme
-(shared/context-economy-contract.md):
+(${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md):
   * küçük-eşik üstü (>threshold): ağır çok-connector getirim → `arsiv-tarama-distilleri` alt-ajanına
     delege (Tier 1); ana pencereye kompakt `arsiv_distillate` + coverage döner.
   * BÜYÜK-eşik üstü (>big_threshold): tek belge çok büyük → `anamnesis.ingest_document(doc_id=<kanonik>)`
@@ -92,7 +92,7 @@ def main():
             "anamnesis.ingest_document(doc_id=<kanonik: devarsiv:arsiv/fon/kutu-gömlek / yoktez:tez-no / "
             "doi:… / iiif:manifest-url>, text=<gövde>) → anamnesis.hybrid_query(doc_scope=<doc_id>, "
             "queries=[<hedef kişi/olay/tarih/kavram>]) ile bounded, provenance-damgalı dilim çek. Aynı "
-            "doc_id iki kez ingest edilmez (kanonik cache; shared/context-economy-contract.md §3). anamnesis "
+            "doc_id iki kez ingest edilmez (kanonik cache; ${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md §3). anamnesis "
             "anahtarı yoksa → bounded-chunk fallback: ottoman_search_within_manifest / get_yok_tez_document_"
             "markdown(page) ile hedefi lokalize et, yalnız o parçayı çek. Detay ATLAMA: grafiğe upsert_triples "
             "ile kişi↔görev↔belge / olay↔tarih↔kaynak ilişkilerini de yaz."

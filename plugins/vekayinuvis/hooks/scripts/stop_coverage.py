@@ -3,7 +3,7 @@
 
 Bir substantif vekayinüvis araştırma-modu çıktısı (SOURCE_HUNT/ARCHIVE_DEEP_DIVE/PROSOPOGRAPHY/
 EVENT_RECONSTRUCTION/HISTORIOGRAPHY/ACADEMIC_REPORT/KANUN_GEREKÇESİ) ZORUNLU olarak bir **kapsam
-manifestosu** taşımalıdır (shared/coverage-manifest.md): bağlama uygun tüm server'ların çalıştığının
+manifestosu** taşımalıdır (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md): bağlama uygun tüm server'ların çalıştığının
 (hit/empty/degraded/skipped-with-reason) kanıtı; sessiz atlama yasak. Bu hook son asistan mesajını
 inceler: substantif çıktı imzası varsa AMA manifesto yoksa ya da çekirdek server satırları eksikse,
 turu bloklamadan devam ettirir ve manifestoyu tamamlatır. Hafif/sohbet turlarında SESSİZ. Fail-open;
@@ -166,7 +166,7 @@ def main():
     missing = []
     if not (HAS_MANIFEST.search(text) and HAS_STATUS_ROWS.search(text)):
         missing.append(
-            "G0 KAPSAM MANİFESTOSU (shared/coverage-manifest.md biçimi: her server için "
+            "G0 KAPSAM MANİFESTOSU (${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md biçimi: her server için "
             "hit/empty/degraded/skipped-with-reason) — tam-filo iddiası manifesto olmadan doğrulanamaz"
         )
     else:
@@ -190,7 +190,7 @@ def main():
         "yok-akademik · detsis · anamnesis) "
         "çalıştırılmalı ve durumu manifestoya "
         "yazılmalı — sessiz atlama G0 FAIL. Herhangi biri atlandıysa gerekçesi ('anahtar yok' / "
-        "'mod için N/A' / 'session_required') yazılmalı. Biçim: shared/coverage-manifest.md."
+        "'mod için N/A' / 'session_required') yazılmalı. Biçim: ${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md."
     )
     sys.stdout.write(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(0)

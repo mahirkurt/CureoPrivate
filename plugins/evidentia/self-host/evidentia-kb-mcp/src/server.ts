@@ -12,6 +12,30 @@ export interface KbEnv {
 
 const EMBED_MODEL = "@cf/baai/bge-m3";
 
+/** Max characters of chunk body returned per hit. This IS the retrieve-don't-dump boundary:
+ *  kb_search hands back section POINTERS, and the reader loads `file#section` for full detail. */
+const SNIPPET_CHARS = 500;
+
+/** `?,?,?` for a bound IN(...) clause. Pure. Ids are BOUND, never interpolated -- keeping this
+ *  a placeholder generator (not a value joiner) is what keeps the query injection-safe. */
+function placeholders(n: number): string {
+  return new Array(n).fill("?").join(",");
+}
+
+/** Project Vectorize matches + D1 rows into hits. Pure -- split out of kb_search so the
+ *  fallback ladder (D1 row -> vector metadata -> null) and the snippet cap are pinned. */
+function shapeHits(matches: any[], textById: Record<string, any>): any[] {
+  return matches.map((m) => {
+    const row = textById[m.id] ?? m.metadata ?? {};
+    return {
+      file: row.file ?? m.metadata?.file ?? null,
+      section: row.section ?? m.metadata?.section ?? null,
+      score: m.score,
+      snippet: String(row.text ?? "").slice(0, SNIPPET_CHARS),
+    };
+  });
+}
+
 async function embed(env: KbEnv, text: string): Promise<number[]> {
   const r: any = await env.AI.run(EMBED_MODEL, { text: [text] });
   const v = r?.data?.[0] ?? r?.[0];
@@ -37,16 +61,12 @@ export function registerTools(server: McpServer, env: KbEnv): void {
         const ids = matches.map((m) => m.id);
         let textById: Record<string, any> = {};
         if (ids.length) {
-          const ph = ids.map(() => "?").join(",");
           const rows = await env.DB.prepare(
-            `SELECT id, file, section, text FROM kb_chunks WHERE id IN (${ph})`,
+            `SELECT id, file, section, text FROM kb_chunks WHERE id IN (${placeholders(ids.length)})`,
           ).bind(...ids).all();
           for (const r of (rows.results ?? [])) textById[String(r.id)] = r;
         }
-        const hits = matches.map((m) => {
-          const row = textById[m.id] ?? m.metadata ?? {};
-          return { file: row.file ?? m.metadata?.file ?? null, section: row.section ?? m.metadata?.section ?? null, score: m.score, snippet: String(row.text ?? "").slice(0, 500) };
-        });
+        const hits = shapeHits(matches, textById);
         return { content: [{ type: "text", text: JSON.stringify({ query, k: k ?? 8, hits, note: "KB section pointers for coverage; load the named file#section for full detail." }, null, 2) }] };
       } catch (e: any) {
         return { isError: true, content: [{ type: "text", text: `kb_search failed: ${e.message}` }] };
@@ -78,3 +98,8 @@ export function registerTools(server: McpServer, env: KbEnv): void {
     },
   );
 }
+
+// Pure helpers surfaced for test/server.test.ts (house pattern: who-gho / globocan / ema /
+// openfda / drugddx). Added 2026-08-07: this Worker had no server.test.ts, so the
+// retrieve-don't-dump snippet cap and the bound-placeholder query path were unpinned.
+export const __testing = { placeholders, shapeHits, SNIPPET_CHARS, EMBED_MODEL };

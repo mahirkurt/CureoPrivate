@@ -3,7 +3,7 @@ import { __testing } from "../src/server.js";
 
 const { baseOf, metaUrl, dataUrl, shapeCancers, findPopulations, shapeData, DEFAULT_BASE } = __testing;
 
-describe("baseOf — env override with trailing-slash trim", () => {
+describe("baseOf - env override with trailing-slash trim", () => {
   it("defaults to the public GLOBOCAN 2022 base", () => {
     expect(baseOf({})).toBe(DEFAULT_BASE);
   });
@@ -19,20 +19,20 @@ describe("metaUrl", () => {
   });
 });
 
-describe("dataUrl — verified contract data/rate/{type}/{sex}/({pops})/{cancer}/", () => {
+describe("dataUrl - verified contract data/rate/{type}/{sex}/({pops})/{cancer}/", () => {
   // Signature is dataUrl(base, type, sex, pops, cancer). The GCO path order is TYPE then SEX
   // (empirically verified 2026-07-05 against known Türkiye values: female breast mortality 7,360 =
   // /rate/1/2/(792)/20/; female breast incidence 25,249 = /rate/0/2/(792)/20/).
-  it("male incidence single-country single-cancer → type=0/sex=1", () => {
+  it("male incidence single-country single-cancer -> type=0/sex=1", () => {
     const u = dataUrl("https://x/2022", 0, 1, [792], "15"); // incidence, male
     expect(u.startsWith("https://x/2022/data/rate/0/1/(792)/15/?")).toBe(true);
     expect(u).toContain("include_nmsc=0");
   });
-  it("female breast mortality → type=1/sex=2 (regression: the sex/type-swap bug)", () => {
+  it("female breast mortality -> type=1/sex=2 (regression: the sex/type-swap bug)", () => {
     const u = dataUrl("https://x/2022", 1, 2, [792], "20"); // mortality, female, breast
     expect(u.startsWith("https://x/2022/data/rate/1/2/(792)/20/?")).toBe(true);
   });
-  it("both-sex prevalence all-cancers multi-country → type=2/sex=0", () => {
+  it("both-sex prevalence all-cancers multi-country -> type=2/sex=0", () => {
     const u = dataUrl("https://x/2022", 2, 0, [792, 900], "all"); // prevalence, both
     expect(u.startsWith("https://x/2022/data/rate/2/0/(792,900)/all/?")).toBe(true);
   });
@@ -45,7 +45,7 @@ describe("shapeCancers", () => {
   });
 });
 
-describe("findPopulations — resolve by name / ISO3 / code", () => {
+describe("findPopulations - resolve by name / ISO3 / code", () => {
   const rows = [
     { country: 792, label: "Turkey", country_iso3: "TUR", who_label: "WHO Europe region (EURO)", hdi_label: "High HDI", income_label: "Upper middle income" },
     { country: 276, label: "Germany", country_iso3: "DEU", who_label: "EURO", hdi_label: "Very high HDI", income_label: "High income" },
@@ -63,7 +63,7 @@ describe("findPopulations — resolve by name / ISO3 / code", () => {
   });
 });
 
-describe("shapeData — join cancer labels + project metrics", () => {
+describe("shapeData - join cancer labels + project metrics", () => {
   it("joins labels and keeps the GLOBOCAN metrics incl. UI", () => {
     const labels = new Map([[1, "Lip, oral cavity"]]);
     const ds = [{ cancer_code: 1, total: 2246, total_pop: 85561976, asr: 2.09, crude_rate: 2.62, cum_risk_74: 0.24, rank: 20, ui: { low: 1725, high: 2924 } }];

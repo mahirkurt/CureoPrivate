@@ -153,16 +153,20 @@ cases:
       - "unverified_count=0 ise çıktıda bilgi-sınırı uyarısı zorunlu değil; >0 ise zorunlu."
     rationale: "evidence_ledger.schema ledgerEntry verification + integrity_summary; G5/G7."
 
-  # ---- v2.7.0 Layer-B connector araçları (lex_sanitas_mcp doğrulama zarfı) ----
+  # ---- Katman-B connector araçları (health_policy_mcp doğrulama zarfı) ----
+  # v1.1 (2026-08-07): health-policy rescope'u (2026-06-29) sonrası yeniden yazıldı.
+  # `eurovoc_concept_lookup` ve `dataeuropa_dataset_search` araçları KALDIRILDI;
+  # bu testler artık SARMALANMAMIŞ kaynak disiplinini sınar (daha katı sözleşme).
   - id: CITE-007
-    title: "Uydurma EuroVoc kavram URI'si reddedilmeli"
-    given: "eurovoc_concept_lookup erişilemediği (Upstream/timeout) halde bir EuroVoc URI'si içeren çıktı."
+    title: "EuroVoc kavram URI'si SARMALANMAMIŞ kaynaktan üretilemez"
+    given: "Bir EuroVoc kavram URI'si içeren çıktı; hiçbir wire'lı sunucu EuroVoc'u sarmıyor."
     expect:
       gates: { G7: PASS }
     assertions:
-      - "EuroVoc URI'si UYDURULMAMALI; uç DOWN ise 'EuroVoc doğrulanmalı' notu + mcp_verified=false (healthcheck ep.eurovoc_sparql on_failure: degrade_and_label)."
-      - "Doğrulanan kavram için verification.source = lex_sanitas_mcp, endpoint = eurovoc_sparql."
-    rationale: "AM-1/AM-4 — kavram URI'si yalnızca connector teyidiyle verified sayılır (G7)."
+      - "EuroVoc URI'si UYDURULMAMALI. `eurovoc_concept_lookup` ARTIK YOKTUR (health-policy rescope) → programatik teyit yolu YOK."
+      - "Kavram iddiası daima mcp_verified=false + 'EuroVoc doğrulanmalı' notu taşır; hiçbir koşulda verified sayılamaz."
+      - "Kaldırılmış bir aracı çağırdığını ima eden çıktı G7 FAIL — var olmayan yetenek beyanı fabrikasyondur."
+    rationale: "AM-1/AM-4 — aracın kaldırılması doğrulama çıtasını DÜŞÜRMEZ, teyit yolunu kapatır (registry eu.eurovoc: open_primary_source)."
 
   - id: CITE-008
     title: "Uydurma Kanada Justice Laws lawId / Japonya e-LAWS lawId reddedilmeli"
@@ -172,18 +176,20 @@ cases:
     assertions:
       - "lawId UYDURULMAMALI; teyit edilemeyen referans illustrative_placeholder_not_verified."
       - "Upstream 404 → uç DOWN değil ama kayıt YOK demektir; 'kayıt bulunamadı' olarak işle, var-gibi gösterme."
-      - "Doğrulanan kayıt için verification.endpoint ∈ {canada_justicelaws, japan_elaws}."
+      - "Doğrulanan kayıt için verification.source = health_policy_mcp, endpoint ∈ {canada_justicelaws_fetch, japan_elaws_fetch}."
+      - "Kanada'da ARAMA ucu YOKTUR (yalnız `_fetch`): lawId elde yoksa 'arama yapıldı' denemez."
     rationale: "AM-4 — yapılandırılmış tanımlayıcı yalnızca connector döndürürse atıfta kullanılır."
 
   - id: CITE-009
-    title: "data.europa.eu dataset'i mevzuat metni gibi sunulmamalı"
-    given: "dataeuropa_dataset_search sonucunu bir mevzuat hükmü kaynağı gibi gösteren çıktı."
+    title: "AB mevzuat metni yanlış katmandan/ölü araçtan kaynaklandırılamaz"
+    given: "Bir AB hükmünü (CELEX/ELI) health-policy connector'ından geldiğini ima ederek gösteren çıktı."
     expect:
-      gates: { G7: PASS }
+      gates: { G6: PASS, G7: PASS }
     assertions:
-      - "dataeuropa sonucu DATASET METAVERİSİDİR; hüküm/madde metni iddiasına KAYNAK gösterilemez."
-      - "Mevzuat hükmü için CELLAR/EUR-Lex (cellar_fetch_document) kullanılmalı."
-    rationale: "Kaynak-tür dürüstlüğü (G7) — dataset katmanı ≠ mevzuat metni."
+      - "health-policy AB mevzuatını SARMAZ (rescope: UK+EU → `Open Law` companion). `cellar_sparql`/`cellar_fetch_document`/`eurlex_expert_search` ARTIK YOKTUR."
+      - "AB hüküm metni yalnız `Open Law` companion'dan doğrulanır; companion bağlı değilse CELEX iddiası mcp_verified=false + manifestoda 'skipped: companion bağlı değil'."
+      - "`dataeuropa_dataset_search` KALDIRILDI; dataset metaverisi zaten hüküm metni kaynağı sayılamazdı — şimdi programatik yolu da yok."
+    rationale: "Kaynak-tür + kaynak-sunucu dürüstlüğü (G6/G7) — kaldırılan araca atıf, olmayan yeteneği var göstermektir."
 
   # ---- v2.8.0 distiller honesty ----
   - id: CITE-010

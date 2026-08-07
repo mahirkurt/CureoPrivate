@@ -14,7 +14,7 @@
 # etiketini besler.
 # =============================================================================
 
-healthcheck_version: "1.0"
+healthcheck_version: "1.1"
 introduced_in_skill_version: "2.6.0"
 defaults:
   timeout_seconds: 15
@@ -116,7 +116,7 @@ endpoints:
     on_failure: degrade_and_label
     fallback: "XML erişilemezse HTML (web_primary) fallback; mcp_verified=false."
 
-  # ---- v2.7.0 Layer-B uçları (lex-sanitas-mcp ile sarılı) ----
+  # ---- Katman-B uçları (v1.1: eurovoc/dataeuropa SARMALANMADI — web-birincil) ----
   - id: ep.eurovoc_sparql
     registry_id: eu.eurovoc
     name: "EuroVoc SPARQL (SKOS thesaurus)"
@@ -176,19 +176,36 @@ endpoints:
     check_frequency: on_demand
     fallback: "medical-research sidecar'a güven; doğrudan erişim zorunlu değil"
 
-  # ---- Lex-Sanitas MCP connector (programatik Katman-2 sarmalayıcı) ----
-  - id: ep.lex_sanitas_mcp
-    registry_id: mcp.lex_sanitas
-    name: "Lex-Sanitas MCP connector (programatik Katman-2 sarmalayıcı)"
+  # ---- Health Policy MCP connector (programatik Katman-2 sarmalayıcı) ----
+  # v1.1 (2026-08-07): ep.lex_sanitas_mcp EMEKLİ. Eski uç
+  # (lex-sanitas-mcp.cureonics.workers.dev) probe'da HTTP 404 — ÖLÜ.
+  - id: ep.health_policy_mcp
+    registry_id: mcp.health_policy
+    name: "Health Policy MCP connector (programatik Katman-2 sarmalayıcı)"
     kind: mcp_streamable_http
-    base_url: "https://lex-sanitas-mcp.cureonics.workers.dev/"
-    health_path: "/health"
-    method: GET
-    expected_status: [200]
-    expected_body_contains: "ok"
+    base_url: "https://health-policy-mcp.cureonics.workers.dev/"
+    health_path: "/mcp"
+    method: POST
+    expected_status: [200, 401]   # 401 = auth kapısı ÇALIŞIYOR (canlı); 404 = ÖLÜ
     check_frequency: daily
     on_failure: degrade_and_label
-    fallback: "Connector DOWN ise sarılan uçlara (EUR-Lex/openFDA/eCFR/...) doğrudan Fetch+parse; referanslar mcp_verified=false + confidence_label.mcp_unavailability."
+    fallback: "Connector DOWN ise sarılan uçlara (eCFR/FedReg/GovInfo/e-LAWS/FRL/...) doğrudan Fetch+parse; referanslar mcp_verified=false + confidence_label.mcp_unavailability."
+
+  # ---- Katman-1 yedeği (M-5, v1.1) ----
+  - id: ep.mevzuat_bilgisi_mcp
+    registry_id: mcp.mevzuat_bilgisi
+    name: "Mevzuat Bilgisi MCP — birincil mevzuat sunucusu düştüğünde YEDEK"
+    kind: mcp_streamable_http
+    base_url: "https://mevzuat.surucu.dev/"
+    health_path: "/mcp"
+    method: POST
+    expected_status: [200, 401]
+    check_frequency: daily
+    on_failure: degrade_and_label
+    fallback: >
+      Yedek de DOWN ise Türk mevzuatı iddiası ÜRETME — `manual_required`
+      (mevzuat.gov.tr derin-bağlantısı + sorgu yankısı). `resolve_resmi_gazete`
+      KARŞILIĞI YEDEKTE YOKTUR: RG çapa çözümlemesi yalnız birincildedir.
 
 # --------------------------------------------------------------------------
 # Sonuç şeması (bir koşum üretirse beklenen kayıt)

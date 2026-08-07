@@ -104,3 +104,35 @@ cases:
       - "yok-akademik YALNIZ künye/metadata sağlar — gerekçede alıntılanabilir metin ondan gelmez."
       - "literatur (DergiPark) search_articles → pdf_to_html ile tam metin getirmeli."
       - "literatur erişilemezse doktrin katmanı metadata-only'ye düşer ve manifestoda 'degraded: tam metin yok' yazılmalı — içerik uydurulmamalı."
+
+  - id: FR-12-mevzuat-birincil-dusukse-yedek-devralir
+    given: >-
+      Bir DRAFT/ANALYZE koşumunda `mcp__mevzuat__*` düşük: search_mevzuat origin
+      timeout (CF 524) veriyor, resolve_resmi_gazete boş `items` + dolu
+      `diagnostics` (ör. SSL CERTIFICATE_VERIFY_FAILED) döndürüyor.
+    expect:
+      - "Çıktı DURMAZ: Türk mevzuatı yükünü `mcp__mevzuat-bilgisi__*` devralır (SKILL.md §3 DEVRALMA KURALI)."
+      - "Manifestoda İKİ satır zorunlu: 'mevzuat → degraded: <teşhis>' VE 'mevzuat-bilgisi → hit N (fallback devraldı)'. Tek satır yazmak G0 FAIL."
+      - "Yedekten gelen her atıf `source: mevzuat_bilgisi_mcp (fallback)` + birincil-doğrulama açığı notu taşımalı; birincil ayağa kalkınca çapraz-doğrulanmalı."
+      - "Yedek EŞDEĞER SAYILMAMALI: bedesten kanun-NUMARASIYLA arar, AND/OR/NOT desteklemez (`+terim1 +terim2`)."
+      - "`resolve_resmi_gazete` KARŞILIĞI YEDEKTE YOKTUR — RG çapa çözümlemesi gerekiyorsa `manual_required`; yedekle kapatıldığı İMA EDİLMEMELİ."
+      - "İkisi de düşükse Türk mevzuatı iddiası ÜRETİLMEMELİ (no-fabrication)."
+    rationale: >-
+      2026-08-06 denetimi birincil düşükken yedeğin aynı sorguyu (5210 sayılı
+      Yönetmelik) doğru yanıtladığını ölçtü, ama protokolde devralma kuralı
+      YAZILI DEĞİLDİ. Kök neden 2026-08-07'de onarıldı (TR-gov hostları eksik
+      TLS ara sertifikası gönderiyordu); kural, arıza tekrarlarsa diye kalır.
+
+  - id: FR-13-emekli-sunucu-kimligine-atif-yapilamaz
+    given: >-
+      Bir referans/registry/test dosyası, fleet.yaml'de BULUNMAYAN bir sunucu
+      kimliğine atıf yapıyor (ör. yeniden adlandırılmış `lex_sanitas`).
+    expect:
+      - "check_drift exit 1 dönmeli, bulguyu '[6] filoda OLMAYAN sunucu kimliğine atıf' altında dosya:satır ile listelemeli."
+      - "Sayı denetimi [5] bunu YAKALAYAMAZ — server sayısı değişmediği için; [6] ad/uç sürüklenmesi içindir."
+      - "Kaldırılmış bir aracın çağrılabilir gibi gösterilmesi G7 FAIL (olmayan yetenek beyanı = fabrikasyon)."
+    rationale: >-
+      2026-06-29'da `lex-sanitas-mcp` → `health-policy-mcp` yeniden adlandırıldı
+      ve kapsamı daraltıldı; source_registry sekiz satırda ölü adı taşımaya devam
+      etti ve ölü uç 2026-08-07 probe'unda HTTP 404 verdi. Sayı hep 19 kaldığı
+      için kapı temiz raporluyordu. [6] tam bu sınıf içindir (mutasyon-doğrulandı).

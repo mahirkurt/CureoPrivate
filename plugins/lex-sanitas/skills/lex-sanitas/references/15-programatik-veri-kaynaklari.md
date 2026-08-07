@@ -136,19 +136,20 @@ MCP ekosistemi olgunlaşmıştır; aşağıdaki sunucular Lex-Sanitas'ın araç 
 | **healthcare-mcp-public** (Cicatriiz) | openFDA, PubMed, Health.gov, ClinicalTrials, ICD-10, medRxiv | Smithery kurulumu | Çok-amaçlı klinik destek |
 | **openFDA MCP** (taru0208) | FAERS, recall, MAUDE | Anahtarsız | Farmakovijilans karşılaştırması |
 | **Akademik MCP'ler** | PubMed, arXiv, Semantic Scholar, Web of Science | Bazıları anahtar ister | Bilimsel temellendirme (yardımcı) |
-| **lex-sanitas-mcp** (Cloudflare Worker — Cureonics; **27 araç, v2.7.0**) | AB CELLAR (SPARQL+REST), UK legislation, ABD eCFR/FedReg/GovInfo/Regulations/Congress, WHO ICD-11+GHO, Health Canada DPD, openFDA, Légifrance (sandbox), İsviçre Fedlex, Almanya NeuRIS, AB EuroVoc (SKOS), Kanada Justice Laws (XML), Japonya e-LAWS, Avustralya FRL (OData), AB data.europa.eu; EMA/DrugBank opsiyonel | Anahtarlar Worker secret'ında; OAuth 2.1 connector | TÜM Katman-2 programatik erişim — HTML kazıma yerine birincil; R15 §7'nin önerdiği sarmalayıcının somut karşılığı |
+| **health-policy-mcp** (Cloudflare Worker — Cureonics; **20 araç canlı, 2026-08-07 probe**) | ABD eCFR/FedReg/GovInfo/Congress, Kanada Justice Laws (XML, yalnız fetch), Japonya e-LAWS, Avustralya FRL (OData), İspanya BOE, İrlanda eISB, Çin NPC, Meksika DOF (best-effort), `semantic_search` (Workers AI), `legal_distill_start`/`_result` | Anahtarlar Worker secret'ında; OAuth 2.1 connector | Katman-2 programatik erişim (Türkiye-dışı + Ansvar-dışı). **KAPSAM DIŞI:** AB/UK→Open Law · DE→german-law · CH/FR/IT/NL/SE/DK/FI/AT/PL→Ansvar/Fedlex Swiss · TR→mevzuat/titck · EuroVoc+data.europa.eu→SARMALANMADI |
 
-> **Mimari öneri:** En yüksek kaldıraç, Lex-Sanitas'a özel bir **CELLAR + Resmî Gazete + TİTCK MCP sarmalayıcısı** geliştirmektir — Türkiye iç hukuku ile AB karşılaştırmasını tek protokolde birleştirir. **(v2.6.1 — geliştirildi ve canlı):** Bu sarmalayıcının Katman-2 (uluslararası/karşılaştırmalı + klinik/HTA) kanadı `lex-sanitas-mcp` connector'ı ile **geliştirildi ve canlıdır** (`https://lex-sanitas-mcp.cureonics.workers.dev/mcp`); AB CELLAR + UK legislation + ABD federal uçları + WHO + Health Canada + openFDA + Légifrance tek MCP araç yüzeyinde sunulur. Türkiye iç hukuku (Resmî Gazete/Mevzuat/TİTCK) kanadı Mevzuat/Yargı/YokTez/TİTCK MCP'lerinde kalır (connector kapsamı dışı).
-
-> **(v2.7.0 — Katman-B genişletmesi, canlı):** Connector'a 7 yeni Layer-B aracı eklendi (20→27). Hepsi `structuredContent` + `verification: { mcp_verified, source: lex_sanitas_mcp, endpoint }` zarfı döndürür (mcp-builder `outputSchema`). Sınıflandırma **canlı uç probe'u ile (2026-06-07)** doğrulandı — sahte "API aracı" üretmemek için (AM-1 dürüstlük sınırı):
+> **Mimari not (v1.1 — 2026-08-07 DÜZELTMESİ).** Katman-2 sarmalayıcısı **canlıdır ama adı ve kapsamı değişmiştir**: `lex-sanitas-mcp` → **`health-policy-mcp`** (2026-06-29 yeniden adlandırma + yeniden kapsamlandırma). Eski uç `https://lex-sanitas-mcp.cureonics.workers.dev/mcp` 2026-08-07 probe'unda **HTTP 404 — ÖLÜDÜR**; canonical uç `https://health-policy-mcp.cureonics.workers.dev/mcp` (aynı probe: 401 = auth kapısı çalışıyor). Türkiye iç hukuku eskisi gibi Mevzuat/Yargı/YokTez/TİTCK MCP'lerinde kalır.
 >
-> **Sarılan (W) — programatik, doğrulandı:**
-> - **AB EuroVoc** (SKOS/SPARQL) → `eurovoc_concept_lookup` (dil filtresi zorunlu; aksi halde 24× sonuç).
-> - **Kanada Justice Laws** (LIMS XML) → `canada_justicelaws_fetch` — healthcheck'te `web_primary` → `rest_api` **yükseltildi (AM-2)**.
-> - **Japonya e-LAWS** (e-Gov API v2 JSON) → `japan_elaws_search` / `japan_elaws_fetch` (tam metin ~1.5MB → metaveri + kanonik URL).
-> - **Avustralya FRL** (OData) → `australia_legislation_search` / `australia_legislation_fetch` — `web_primary` → `rest_api` **(AM-2)**.
-> - **AB data.europa.eu** (REST hub search) → `dataeuropa_dataset_search` — yalnızca **dataset metaverisi, mevzuat metni DEĞİL**; raw SPARQL `CONTAINS` pratikte timeout olduğundan REST tercih edildi.
-> - *(v2.6.x'te sarılmıştı: İsviçre Fedlex → `fedlex_*`; Almanya NeuRIS → `germany_law_*`.)*
+> **Yeniden kapsamlandırmada KALDIRILAN araçlar — bunlar artık ÇAĞRILAMAZ, atıf kaynağı gösterilemez:**
+> - `cellar_sparql` · `cellar_fetch_document` · `eurlex_expert_search` · `uk_legislation_fetch` → **AB + UK artık `Open Law` companion'ın işidir.**
+> - `germany_law_search` / `germany_law_get` (NeuRIS beta) → **`german-law` MCP** (wire'lı, :8307; ücretsiz korpus: 8 statü aracı işlevsel, 11 araç dürüst "ücretsiz katmanda yok" döner).
+> - `fedlex_sparql` / `fedlex_fetch_document` → **`Fedlex Swiss` / `Ansvar` companion** (wire'lı DEĞİL).
+> - `eurovoc_concept_lookup` · `dataeuropa_dataset_search` → **hiçbir sunucu sarmıyor** → web-birincil; EuroVoc URI'si programatik teyit EDİLEMEZ, dolayısıyla ÜRETİLEMEZ (registry `eu.eurovoc`: `open_primary_source`).
+> - `health_canada_dpd` · `openfda` · WHO ICD-11/GHO · Légifrance → klinik/regülatuar konnektörlere taşındı.
+>
+> **Sarılı KALAN (2026-08-07 canlı araç listesiyle doğrulandı, 20 araç):** ABD `ecfr_get`/`ecfr_versions`/`federal_register_search`/`govinfo_search`/`congress_search` · `canada_justicelaws_fetch` (**yalnız fetch — arama ucu yok**) · `japan_elaws_search`/`_fetch` · `australia_legislation_search`/`_fetch` · `spain_boe_fetch` · `ireland_eisb_fetch` · `china_law_recent`/`china_law_detail` · `mexico_dof_nota` · `semantic_search` · `legal_distill_start`/`legal_distill_result` · genel `search`/`fetch`.
+>
+> ⚠️ **Bu bölümün altındaki v2.7.0 "Sarılan (W)" listesi TARİHSELDİR** — 2026-06-07 tarihli o probe'un sonucudur ve yukarıdaki düzeltmeyle geçersiz kılınmıştır. Araç adı için tek doğruluk kaynağı canlı `tools/list`'tir.
 >
 > **D-sınıfı (web-only — SARMALANMADI; `web_primary` kalır; canlı probe gerekçesi):**
 > - **Brezilya LexML** — `/apidata` ve `/busca/SRU` uçları **404**; resmî programatik uç doğrulanamadı.

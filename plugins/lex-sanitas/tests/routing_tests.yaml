@@ -174,16 +174,20 @@ cases:
     rationale: "AM-2 (web_primary→rest_api) + bağlam-taşması disiplini (R15 §11)."
 
   - id: ROUTE-013
-    title: "DRAFT/ANALYZE — EuroVoc kavram eşleme"
+    title: "DRAFT/ANALYZE — EuroVoc kavram eşleme SARMALANMAMIŞ kaynaktır"
     given: "İleri tedavi tıbbi ürünü (ATMP) konusunu standart AB EuroVoc kavramına eşle."
     expect:
       mode: ANALYZE
       routed_to: lex-sanitas
       gates: { G7: PASS }
     assertions:
-      - "eurovoc_concept_lookup çağrılmalı (lang filtresi zorunlu)."
-      - "Kavram URI'si yalnızca connector teyidiyle verified; aksi halde mcp_verified=false."
-    rationale: "§5.4.quater A.3 — eurovoc_concept_lookup ∈ DRAFT/ANALYZE/COMPARATIVE_LAW."
+      - "HİÇBİR araç çağrılamaz: `eurovoc_concept_lookup` health-policy rescope'unda (2026-06-29) KALDIRILDI, hiçbir wire'lı sunucu EuroVoc'u sarmıyor."
+      - "Kavram URI'si ÜRETİLMEZ; çıktı 'EuroVoc doğrulanmalı' notu + mcp_verified=false taşır ve manifestoda kaynak `open_primary_source` olarak beyan edilir."
+      - "Kaldırılmış aracı çağırdığını ima eden çıktı G7 FAIL."
+    rationale: >
+      v1.1 (2026-08-07) — bu vaka eskiden ölü bir aracın ÇAĞRILMASINI zorunlu
+      kılıyordu; artık aracın YOKLUĞUNDA doğru degrade davranışını sınar.
+      Kayıt: registry `eu.eurovoc` → `open_primary_source`.
 
   # ---- v2.8.0 retrieval-distiller delegation ----
   - id: ROUTE-014

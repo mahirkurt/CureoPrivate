@@ -50,4 +50,4 @@ Lex Sanitas yalnız **mevzuat reformu/üretimi** içindir. Şu talepler **kapsam
 - **Yumuşak delegasyon:** klinik kanıt → evidentia; atıf-adli + Türkçe dil → sci-audit (varsa; yoksa graceful degrade).
 - **İnsan denetimi** her çıktıda zorunludur.
 
-Detay: flagship skill `lex-sanitas` (`skills/lex-sanitas/SKILL.md`) + `references/`.
+Detay: flagship skill **`lex-sanitas`** — adıyla çağrılır (Skill aracı ya da kendi tetikleyicileri); paket içindeki yeri `skills/lex-sanitas/SKILL.md` + `references/`. **Yol bir dağıtım ayrıntısıdır, bağ değildir:** bazı yüzeylerde flagship kullanıcı katmanına kurulur ve bu göreli yol çözülmez — o hâlde de flagship ADIYLA erişilebilir olduğu için yönlendirme geçerlidir.

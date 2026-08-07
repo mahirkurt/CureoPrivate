@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 """Cureonics sürüklenme kapısı — AĞ ERİŞİMİ GEREKTİRMEZ, CI'da güvenle koşar.
 
-Beş denetim (hepsi deterministik):
+Altı denetim (hepsi deterministik):
   [1] Türetilmiş dosyalar güncel mi        gen_fleet --check
   [2] Sürüm tutarlı mı                     plugin.json ↔ marketplace ↔ codex ↔ SKILL.md
   [3] Vendor'lı fleet_probe bayt-özdeş mi  kanonik kopyayla karşılaştırılır
   [4] Çift hooks.json var mı               kök + hooks/ aynı anda
   [5] Düzyazı filo sayısı doğru mu         (fleet.yaml `prose_count_check: true` derse)
+  [6] Sunucu KİMLİĞİ filoda var mı         `mcp__<id>__*` / `mcp_server: <id>` ↔ fleet.yaml
 
 NEDEN VAR: 2026-08-06 denetimi tek koşumda üç ölü katman, iki sapmış codex bloğu
 ve beş sürüm sürüklenmesi buldu — hiçbiri bir teste takılmıyordu çünkü hiçbiri
 türetilmiyordu. Bu kapı o üç sınıfı da yakalar.
+
+[6] NEDEN EKLENDİ (2026-08-07): denetim [5] yalnız SAYI iddialarını tarıyordu
+("19 server"), AD/uç sürüklenmesini görmüyordu. Bu yüzden `lex-sanitas-mcp`
+2026-06-29'da `health-policy-mcp` olarak yeniden adlandırılıp kapsamı
+daraltıldığı hâlde `source_registry.yaml` sekiz satırda ölü adı taşımaya devam
+etti; sayı hep 19 kaldığı için kapı temiz raporladı. Ölü uç 2026-08-07'de HTTP
+404 döndürdüğü doğrulandı — yani registry, doğrulanması imkânsız bir kaynağa
+`verification` bağlıyordu. [6] tam da bu sınıfı yakalar: filoda OLMAYAN bir
+sunucu kimliğine yapılan her atıf sürüklenmedir.
 
 Kullanım:
   python3 tools/fleetkit/check_drift.py --all
@@ -70,6 +80,66 @@ def scan_prose(root: Path, expected: int, companions: int):
         for i, line in enumerate(lines, 1):
             for hit in scan_text(line, expected, companions):
                 out.append((str(path.relative_to(root)), i, hit))
+    return out
+
+
+# [6] Sunucu kimliği sürüklenmesi.
+#   `mcp__<id>__tool`  → araç-öneki biçimi (SKILL.md, ajan araç kısıtı, testler)
+#   `mcp_server: <id>` → source_registry.yaml erişim bloğu
+# Companion'lar `.mcp.json`'da DEĞİLDİR (claude.ai connector'ı) ama meşru
+# kimliklerdir → normalize edilip beyaz listeye alınır (Yargı→Yarg/Yargi vb.).
+SERVER_REF = re.compile(r"mcp__([A-Za-z0-9_-]+)__")
+REGISTRY_REF = re.compile(r"^\s*.*\bmcp_server:\s*([A-Za-z0-9_-]+)", re.M)
+# Filo dışı ama meşru ön ekler (başka plugin'lerin araçları).
+REF_ALLOW = {"playwright", "cloudflaredocs", "cloudflareapi", "sequentialthinking"}
+_FOLD = str.maketrans("ıüöçşğâîû", "uuocsgaiu")   # 'ı' fold'u aşağıda özel ele alınır
+
+
+def _squash_ref(s: str) -> str:
+    """Kimliği karşılaştırılabilir çekirdeğe indir: claude.ai öneki + ayraçlar atılır."""
+    s = s.lower()
+    for pre in ("mcp__", "claude_ai_", "plugin_"):
+        if s.startswith(pre):
+            s = s[len(pre):]
+    return re.sub(r"[^a-z0-9]", "", s)
+
+
+def _name_variants(name: str) -> set:
+    """Connector adının yüzeyde alabileceği biçimler.
+
+    claude.ai araç öneki ASCII-DIŞI harfleri ya karşılığına katlar ya da '_'
+    yapar/düşürür: 'Türk Patent' → T_rk_Patent · 'Yargı' → Yarg. Bu yüzden
+    her ada iki çekirdek üretilir: katlanmış ve ASCII-dışı-düşürülmüş.
+    """
+    low = name.lower()
+    folded = low.replace("ı", "i").translate(_FOLD)
+    dropped = re.sub(r"[^\x00-\x7f]", "", low)
+    return {_squash_ref(folded), _squash_ref(dropped)}
+
+
+def scan_server_ids(root: Path, fleet: dict):
+    """Filoda bulunmayan sunucu kimliğine yapılan atıfları döndür."""
+    known = set(REF_ALLOW)
+    for s in fleet["servers"]:
+        known |= _name_variants(s["name"])
+    for c in fleet.get("companions", []):
+        known |= _name_variants(c["name"])
+    out = []
+    for path in sorted(root.rglob("*")):
+        if (not path.is_file() or path.suffix not in SCAN_SUFFIXES
+                or path.name in SKIP_FILES or SKIP_DIRS & set(path.parts)
+                or path.name.startswith(SKIP_PREFIXES)):
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (UnicodeDecodeError, OSError):
+            continue
+        for i, line in enumerate(lines, 1):
+            for m in list(SERVER_REF.finditer(line)) + list(REGISTRY_REF.finditer(line)):
+                ref = m.group(1)
+                if _squash_ref(ref) in known:
+                    continue
+                out.append((str(path.relative_to(root)), i, ref))
     return out
 
 
@@ -138,6 +208,13 @@ def main(argv=None) -> int:
                 issues.append((f"[5] düzyazı sayı sürüklenmesi (gerçek "
                                f"{counts['servers']} server / {counts['companions']} companion)",
                                [f"{f}:{ln} → {h!r}" for f, ln, h in prose], ""))
+
+        bad_ids = scan_server_ids(d, fleet)
+        if bad_ids:
+            issues.append(("[6] filoda OLMAYAN sunucu kimliğine atıf "
+                           "(yeniden adlandırma/emeklilik sürüklenmesi)",
+                           [f"{f}:{ln} → {r!r}" for f, ln, r in bad_ids],
+                           "fleet.yaml'e ekle ya da atfı güncel sunucuya taşı"))
 
         if issues:
             failed = True

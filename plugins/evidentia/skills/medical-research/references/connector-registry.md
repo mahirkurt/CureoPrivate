@@ -163,6 +163,64 @@ called; the BROKEN tools are never invoked, and the pipeworx **generic** tools (
 
 ## 3. Per-Connector Usage Notes (from live probes)
 
+
+### 2.7 Measured argument contracts — the names that are NOT guessable (2026-08-07)
+
+Every row below was read from the connector's **live `inputSchema`** and then exercised with a real
+call on 2026-08-07. They are listed because the obvious guess is WRONG: an audit sweep that guessed
+`query`/`code`/`doi` failed 7 of 24 calls on tools that were all perfectly healthy. A wrong argument
+name costs a round-trip and returns a validation error that reads like a broken connector — so use
+these names verbatim, and when a tool is not listed here, read its schema rather than guessing.
+
+| Call | Correct argument | The wrong guess |
+|---|---|---|
+| `yok-akademik.yok_search` | **`term`** | `query` |
+| `yok-akademik.yok_search_academics` | **`name`** (+ `field_hint`/`institution_hint`/`medical_only`) | `term` |
+| `yok-akademik.yok_get_profile` | **`author_id`** (16-hex; from `yok_search`) | `id` |
+| `openathens.oa_verify_access` | **`probe_doi`** | `doi` |
+| `openathens.oa_fetch_fulltext` | `doi` **or** `url` | — |
+| `pubmed-epmc.pubmed_lookup_mesh` | **`query`** | `term` |
+| `pubmed-epmc.pubmed_convert_ids` | `ids[]` **+ `idType` (REQUIRED)** | `ids` alone |
+| `pubmed-epmc.pubmed_find_related` | **`pmid`** (string, singular) | `pmids[]` |
+| `pubmed-epmc.*` | **camelCase** (`maxResults`, `pageSize`, `maxCharacters`) | snake_case |
+| `titck.get_atc_class_summary` | **`atc_prefix`** | `code` |
+| `titck.get_atc_hierarchy` | `atc_code` **or** `code` (both accepted) | — |
+| `med-terminologies.map_icd10_to_icd11` | **`icd10_code`** | `code` |
+| `med-terminologies.validate_codes` | `codes[]` of **objects** `{terminology, code}` | strings; `system` |
+| `med-terminologies.*` | **snake_case** (`max_results`, `drug_name`) | camelCase |
+| `openalex.openalex_analyze_trends` | `filters: {"default.search": …}` | `{"search": …}` — invalid field |
+| `globocan.gco_query` | `sex`: `both\|male\|female` · `type`: `incidence\|mortality\|prevalence` | `0`/`1`/`2` (those are the INTERNAL path codes, not the API) |
+| `mevzuat-bilgisi.search_mevzuat` | **`page_size: 20`** (D7 — default 25 always fails) | omitting it |
+| `mevzuat-bilgisi.search_kanun` | **`aranacak_ifade`** | `phrase` |
+| `nih-clinicaltables.*` | `terms` + `count` | `query` + `limit` |
+| `nlm-rxnorm.rxnorm_search` / `rxnorm_get_properties` | `name` / `rxcui` | `query` / `id` |
+| `iuphar-gtopdb.*_interactions` | `target_id` / `ligand_id` (numeric, from `search_*`) | name |
+| `annas-reader.read_article` | `doi` | `id` |
+| `annas-reader.search_in_document` / `read_document` | `md5` + `query`/`k` · `md5` + `page_start`/`page_end` | `id` |
+| `anamnesis.semantic_search` / `hybrid_query` | `query` + optional **`queries[]`** (multi-query fusion) | `query` only (leaves recall on the table) |
+| `who-gho.who_gho_query` | `indicator_code` + `country` (**ISO3**, or `GLOBAL`) | country name |
+| `ema.ema_get_medicine` | `identifier` (name or product number) | `name` |
+
+**Verified functional coverage (2026-08-07).** 60+ live `tools/call` invocations across all 20
+connectors. Round-trips that matter:
+- **anamnesis mutation is clean.** `corpus_stats` 194/1091/1679/1194 → `ingest_document` → 195/1092
+  → `upsert_triples` (3 nodes/2 edges) → `graph_neighbors`/`subgraph`/`hybrid_query` all resolve →
+  `forget_document` (deleted 1 chunk, 1 vector, 2 edges, 3 nodes) → **back to the exact baseline**,
+  zero residue; the second `forget` is idempotent (`existed:false`), the deleted doc returns 0 hits
+  and its graph nodes are gone. The v1.4.1 clean-delete claim holds.
+- **globocan matches its published figures exactly.** Türkiye(792): female breast mortality 7,360 /
+  incidence 25,249; male lung incidence 33,039 / mortality 32,119. All-cancers female → 34 rows,
+  `truncated:false`, Breast rank 1. Prevalence → `prev_time` 1/3/5. Traversal (`../etc`) and
+  injection (`all; DROP`) are rejected by the input guards.
+- **OAuth 2.1 full dance passes on all three gated Workers** (anamnesis, evidentia-kb, openfda):
+  DCR **201** echoing `redirect_uris` → authorize form → code → token (`access_token` == `MCP_API_KEY`,
+  the single-tenant design) → `initialize` 200. PKCE is enforced (wrong verifier → 400) and the
+  redirect allowlist rejects a foreign origin (→ 400).
+- **`yok_search` empties are real, not broken.** "Ahmet"/"Yılmaz"/"kardiyoloji"/"hematoloji" each
+  return 20 hits; "hemofili"/"Guyatt" return 0 because no Turkish academic profile matches — an
+  honest empty, never a fabricated one.
+
+
 ### 3.1 AdisInsight — the corrected schema (CRITICAL)
 `search_drugs(drug_name="…")` returns a **complete curated profile in one call**: `development_phases` (per-country, per-indication, with `event_date`), `history_events` (regulatory milestones: ODAC, CRL, registration, trial readouts), `brand_names`, `drug_classes`, `target`, `mechanism_of_action`, `organizations` (Owner/Originator/Licensee roles), `is_orphan_drug`/`is_btt`/`is_prime` flags, `adis_insight_profile_url`. Use `get_drug` with `query_text` (HyDE, 8–10× key terms) + `resources` for document chunks. **Never** use `organisations`/`phases`/`moas`/`drugClass` parameters — they do not exist on this MCP. Full cookbook: `drug-intelligence-layer.md`.
 

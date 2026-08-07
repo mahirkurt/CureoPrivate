@@ -166,3 +166,48 @@ connector liveness. It does **not** re-validate every tool's output against its 
 equivalent has been run for the other connectors. `@modelcontextprotocol/sdk` sourcemap warnings
 remain visible by choice (measured unsuppressable from our side). Human review is still required
 before any clinical use.
+
+---
+
+## Re-certification round 2 — 2026-08-07 (functional / endpoint sweep)
+
+Round 1 audited structure. This round audited **behaviour**: 350 tools enumerated via live
+`tools/list`, 60+ real `tools/call` invocations, the HTTP/auth surface of all seven self-host
+Workers, and the mutating paths that no read-only probe can reach.
+
+**Defects found and fixed (all deployed):**
+
+| # | Defect | Why it survived |
+|---|---|---|
+| F17 | Full-text **Tier 5 was wired to tools that do not exist** — the always-load cascade recipe called `article_download`/`book_download`, but the bundled `annas-reader` is an ephemeral READER (`read_article` / `search_in_document` / `read_document`). Every last-resort full-text attempt would fail | The connector was re-architected from a downloader to a reader; the docs kept the old API. No gate read tool names |
+| F18 | **All seven Workers rejected CORS preflight.** `OPTIONS /mcp` from `https://claude.ai` returned 401 with no `Access-Control-*` headers on the three gated Workers — and a preflight is credential-free by specification, so no browser client (claude.ai web, grok.com, ChatGPT web) could ever add them | `initialize` cannot see it: a non-browser client never sends a preflight. The keyless four answered 200 only because their gate never fires |
+
+**Verified clean (no defect):**
+- **anamnesis mutation round-trip** — ingest → query → graph → forget returns the corpus to its
+  exact baseline (194/1091/1679/1194) with zero residue; `forget_document` is idempotent.
+- **globocan** reproduces its published Türkiye figures exactly (7,360 / 25,249 / 33,039 / 32,119),
+  does not silently truncate (34 rows, `truncated:false`), and rejects traversal + injection input.
+- **OAuth 2.1 full dance** on all three gated Workers: DCR 201 echoing `redirect_uris` → authorize →
+  code → token (`access_token` == `MCP_API_KEY`) → `initialize` 200; PKCE enforced (wrong verifier
+  → 400); redirect allowlist rejects a foreign origin (→ 400).
+- **Honest empties** — `yok_search` returns 20 hits for real Turkish terms and 0 for absent ones,
+  never a fabricated hit.
+
+**New gates.** `g_tools.py --surface` locks the Worker HTTP contract (preflight 204 + allow/expose
+headers · RFC 9728 PRM in both path forms · AS metadata · `/health` · 401 shape). Combined with
+`--smoke`, one command now covers reachability, tool surface, functional behaviour and auth surface.
+
+**Method note, recorded because it changes how these results should be read.** Seven of the first
+24 whitelist calls failed on *my own wrong argument names*, not on the servers. That is itself a
+finding — a model reading the registry would guess identically — so the measured argument contracts
+are now written down in `connector-registry.md` §2.7. Two reported observations in the round-2 log
+were likewise harness artifacts and are NOT defects: a missing `Access-Control-Expose-Headers`
+reading (case-sensitive dict lookup) and a 400 on unauthenticated POST (bodyless request rejected
+by the SDK before the gate). Both probes were corrected.
+
+**Honest limits of this round.** 60+ of 350 tools were exercised with real calls; the remainder were
+validated at schema level only, so their *output correctness* is unverified. `evidentia-kb.kb_upsert`
+was deliberately NOT exercised: unlike `anamnesis.forget_document` it has no inverse, so a probe
+would permanently pollute the KB index. Upstream data accuracy is unchanged since the 2026-07-05
+cross-validation for who-gho/globocan/ema; no equivalent has been run for the other connectors.
+

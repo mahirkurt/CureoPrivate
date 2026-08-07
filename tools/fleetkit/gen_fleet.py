@@ -171,28 +171,37 @@ def gen_env_table(fleet, _cfg):
     return "\n".join(rows)
 
 
-def server_prefixes(s):
-    """Bir sunucunun araç önekleri — AYNI sunucu yüzeye göre farklı adla yüklenir.
+def server_prefixes(s, plugin=None):
+    """Bir sunucunun araç önekleri — AYNI sunucu yüzeye göre ÜÇ farklı adla yüklenir.
 
-    Claude Code `.mcp.json`'ı okur → önek `mcp__<fleet adı>__`.
-    claude.ai/Cowork ise connector'ı KULLANICININ verdiği görünen adla yükler →
-    `mcp__claude_ai_<Görünen_Ad>__`; boşluk `_` olur, ASCII-dışı harf düşer ya da
-    `_` olur (ölçülen: "TİTCK Data"→T_TCK_Data, "Yargı"→Yarg, "Türk Patent"→
-    T_rk_Patent). Görünen ad bir İNSAN TERCİHİ olduğu için mekanik olarak
-    türetilemez → ampirik olarak gözlenmiş adlar fleet.yaml'da `tool_prefixes`
-    ile AÇIKÇA yazılır.
+    1. **Plugin'e paketli (Claude Code, KANONİK yol).** Plugin'in `.mcp.json`'ı
+       yüklendiğinde önek plugin adıyla NAMESPACE'LENİR:
+       `mcp__plugin_<plugin>_<server>__`. 2026-08-07 oturumunda dokuz sunucuda
+       ölçüldü (lex-sanitas/edupedia/vekayinuvis/rxpraxis/sci-audit) — kural
+       dokuzunda da tuttu. Plugin kurulu olduğunda GERÇEKTE yüklenen budur.
+    2. **Kullanıcı düzeyi `.mcp.json`** (plugin dışı, `~/.claude.json` vb.) →
+       çıplak `mcp__<server>__`.
+    3. **claude.ai/Cowork connector'ı** → `mcp__claude_ai_<Görünen_Ad>__`;
+       boşluk `_` olur, ASCII-dışı harf düşer ya da `_` olur (ölçülen:
+       "TİTCK Data"→T_TCK_Data, "Yargı"→Yarg, "Türk Patent"→T_rk_Patent).
+       Görünen ad bir İNSAN TERCİHİ olduğu için mekanik türetilemez → ampirik
+       olarak gözlenmiş adlar fleet.yaml'da `tool_prefixes` ile AÇIKÇA yazılır.
 
     Bu ayrım kritik: ajanların `tools:` frontmatter'ı SERT bir allowlist'tir —
     model öneki yorumla kapatamaz. Önek eşleşmezse sunucu ajan için YOKTUR.
+    Üçünü birden yaymak ucuzdur: tutan çalışır, tutmayan zararsızca boşta kalır.
 
-    Açık liste yoksa iki güvenli varsayılan üretilir (Claude Code + aynı adla
-    kurulmuş claude.ai connector'ı) ve ad çok-parçalıysa Title_Case varyantı
-    eklenir — hangisi tutarsa o çalışır, tutmayan zararsızca boşta kalır.
+    `tool_prefixes` verilse bile plugin-kapsamlı biçim DAİMA eklenir — o
+    kullanıcı tercihine değil, kurulum mekaniğine bağlıdır.
     """
-    if s.get("tool_prefixes"):
-        return list(s["tool_prefixes"])
     n = s["name"]
-    out = [f"mcp__{n}__", f"mcp__claude_ai_{n}__"]
+    out = []
+    if plugin:
+        out.append(f"mcp__plugin_{plugin}_{n}__")
+    if s.get("tool_prefixes"):
+        out += [p for p in s["tool_prefixes"] if p not in out]
+        return out
+    out += [f"mcp__{n}__", f"mcp__claude_ai_{n}__"]
     title = "_".join(w.capitalize() for w in re.split(r"[-_ ]+", n) if w)
     if title != n:
         out.append(f"mcp__claude_ai_{title}__")
@@ -204,7 +213,8 @@ def gen_agent_tools(fleet, cfg):
     picked = [s for s in fleet["servers"]
               if s.get("shard") in shards or s.get("shard") == "ALL" or not shards]
     tools = list(cfg.get("extra", []))
-    tools += [f"{p}*" for s in picked for p in server_prefixes(s)]
+    plug = fleet.get("plugin")
+    tools += [f"{p}*" for s in picked for p in server_prefixes(s, plug)]
     if cfg.get("companions"):
         tools += [f"{p}*" for c in fleet.get("companions", [])
                   for p in c.get("tool_prefixes", [])]

@@ -129,7 +129,7 @@ def scan_server_ids(root: Path, fleet: dict):
     known = set(REF_ALLOW)
     for s in fleet["servers"]:
         known |= _name_variants(s["name"])
-        known |= {_squash_ref(p) for p in gen_fleet.server_prefixes(s)}
+        known |= {_squash_ref(p) for p in gen_fleet.server_prefixes(s, fleet.get("plugin"))}
     for c in fleet.get("companions", []):
         known |= _name_variants(c["name"])
         known |= {_squash_ref(p) for p in c.get("tool_prefixes", [])}

@@ -44,13 +44,13 @@ npm run deploy               # wrangler deploy
 BASE=https://globocan-mcp.<subdomain>.workers.dev ./scripts/smoke_oauth_public.sh
 ```
 
-> **Test note:** `routing.test.ts` (imports the full worker into the workerd test pool) hits a
-> pre-existing `ajv` CJS/ESM shim error in `@cloudflare/vitest-pool-workers` — same failure affects
-> the sibling `who-gho`/`ema`/`openfda` workers, environmental not code. Unit suites pass. Live path
-> E2E-verified against published figures (Türkiye female breast mortality 7,360 / incidence 25,249;
-> male lung incidence 33,039 / mortality 32,119; all-cancers female → Breast #1; prevalence 1/3/5-yr).
-> The GCO path order is `{type}/{sex}` (verified 2026-07-05 — the initial release had the two slots
-> swapped, now fixed and regression-tested).
+> **Test note (2026-08-07 çözüldü):** `routing.test.ts` (tam worker'ı workerd test
+> havuzuna import eder) `@cloudflare/vitest-pool-workers@0.8.71`'in CJS shim'inde
+> patlıyordu — `ajv/dist/core.js` bir JSON dosyasını `require()` ediyor ve shim onu
+> JavaScript sanıp `SyntaxError: Unexpected token ':'` atıyordu. Arıza YEDİ self-host
+> Worker'ın hepsini etkiliyordu (49 test hiç koşmuyordu), yalnız dördünü değil.
+> Onarım: pool `0.12.21`'e yükseltildi (vitest 3.2 ile uyumlu en yeni sürüm). Artık
+> üç paketin tamamı koşuyor ve `npm test` exit=0 veriyor.
 
 ## Upstream reference (endpoints empirically captured 2026-07-05 via the Cancer Today XHR)
 

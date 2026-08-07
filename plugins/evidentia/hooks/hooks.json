@@ -1,5 +1,5 @@
 {
-  "description": "evidentia runtime enforcement — turns three prose invariants into enforced behavior: (1) PreToolUse guard denies pipeworx-generic + D1/D2/D6 broken MCP tools with a redirect (least-privilege / G-WHITELIST + broken-tool avoidance); (2) PostToolUse reminds retrieve-don't-dump on large full-text output (evidence_index); (3) SessionStart flags any missing gated-connector key (credential-free preflight, silent when all present). All command hooks are deterministic and fail-open. Disable the guard with <project>/.claude/evidentia-guard.off.",
+  "description": "evidentia runtime enforcement — turns three prose invariants into enforced behavior: (1) PreToolUse guard denies pipeworx-generic + D1/D2/D6 broken MCP tools with a redirect (least-privilege / G-WHITELIST + broken-tool avoidance); (2) PostToolUse reminds retrieve-don't-dump on large full-text output (evidence_index); (3) SessionStart preflight flags gated-connector problems, deriving the key map from fleet.lock.json (never hardcoded) and consulting the 24h-cached live fleet probe so a CONFIGURATION FAULT (401/403) is never mistaken for a legitimate key-absent degrade — silent when the fleet is healthy. All command hooks are deterministic and fail-open. Disable the guard with <project>/.claude/evidentia-guard.off; run the preflight offline with EVIDENTIA_PREFLIGHT_NO_PROBE=1.",
   "hooks": {
     "PreToolUse": [
       {
@@ -27,12 +27,13 @@
     ],
     "SessionStart": [
       {
-        "matcher": "*",
+        "matcher": "startup|resume|compact",
         "hooks": [
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/session_preflight.py\"",
-            "timeout": 10
+            "timeout": 45,
+            "statusMessage": "evidentia: kanıt filosu preflight (kapılı connector + canlı prob)"
           }
         ]
       }

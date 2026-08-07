@@ -29,6 +29,19 @@ python ${CLAUDE_PLUGIN_ROOT}/scripts/g_bundle.py
 ```
 Tutarsızlık → düzeltilecek delta'yı raporla.
 
+## 2b. G-IDENTITY — Self-host Worker Kimlik Tutarlılığı
+
+Her self-host Worker'ın kendini DÖRT yerde birden aynı adla tanıtması gerekir (`auth.ts` REALM,
+başlık yorumu, `package.json` name, `wrangler.jsonc` name):
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/g_identity.py
+```
+REALM kozmetik DEĞİLDİR: RFC 9728 `resource_name`'i, OAuth `client_id`'sini, 401 `WWW-Authenticate`
+realm'ini ve kullanıcının connector eklerken okuduğu **onay sayfasının başlığını** besler. 2026-08-07
+denetimi üç Worker'ın (`ema`/`globocan`/`who-gho`) canlıda kendini `openfda-mcp` diye tanıttığını
+buldu — `auth.ts` kopyalanırken REALM yerelleştirilmemişti. Her Worker'ın kendi testleri bunu
+göremez (hepsi kendi yanlış sabitini doğrular); yalnız bu ÇAPRAZ karşılaştırma görür.
+
 ## 3. G-PROBE — Canlı initialize Handshake
 
 `probe`/`yenile` istendiğinde (veya periyodik) Tier-K + Tier-O remote URL'lerinde canlı MCP

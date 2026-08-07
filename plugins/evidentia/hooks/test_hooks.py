@@ -2,10 +2,18 @@
 """Deterministic regression tests for the evidentia hook layer.
 
 Run: python3 hooks/test_hooks.py   (exit 0 = all pass, 1 = a failure)
+Also collectable by pytest — see test_hook_layer() at the bottom. Before 2026-08-07
+this module was named test_*.py but exposed no pytest-visible test, so a repo-wide
+`pytest` reported "no tests ran" and EXITED 0: a false green over 21 real assertions.
 
 Covers the three enforcement hooks with deny/allow/edge cases so the guard logic (least-privilege
 whitelist, D1/D2/D6 broken-tool avoidance, retrieve-don't-dump threshold, credential preflight)
 is regression-locked alongside the skill-level integrity gates.
+
+The preflight cases derive their key list from fleet.lock.json rather than hardcoding it.
+That is deliberate: the 2026-08-07 audit found the hook hardcoding SIX gated connectors
+while the fleet had SEVEN, and a hardcoded test list would have ratified the same gap.
+PREFLIGHT_ENV disables the network probe so the suite stays offline and deterministic.
 """
 import json
 import os
@@ -14,6 +22,14 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+
+
+def gated_from_lock():
+    """{connector: env_var} straight from the generated lock — single source of truth."""
+    with open(os.path.join(ROOT, "fleet.lock.json"), encoding="utf-8") as fh:
+        lock = json.load(fh)
+    return {s["name"]: s["auth_env"] for s in lock["servers"] if s.get("auth_env")}
 
 
 def run(script, payload, env=None):
@@ -99,27 +115,51 @@ def main():
         fails += 1
         print("FAIL rdd non-fulltext")
 
-    # session preflight
-    allenv = {k: "x" for k in ("OPENATHENS_MCP_API_KEY", "ANAMNESIS_MCP_API_KEY",
-              "OPENFDA_MCP_API_KEY", "EVIDENTIA_KB_MCP_API_KEY", "ANNAS_MCP_API_KEY",
-              "YOK_AKADEMIK_MCP_API_KEY")}
+    # session preflight — key list comes from fleet.lock.json, never hardcoded
+    gated = gated_from_lock()
+    allenv = {v: "x" for v in gated.values()}
+    allenv["EVIDENTIA_PREFLIGHT_NO_PROBE"] = "1"   # offline + deterministic
+
     _, j = run("session_preflight.py", {"hook_event_name": "SessionStart"}, allenv)
     if decision(j) != "ALLOW":
         fails += 1
         print("FAIL preflight all-present-silent")
-    part = dict(allenv)
-    part["OPENATHENS_MCP_API_KEY"] = ""
-    _, j = run("session_preflight.py", {"hook_event_name": "SessionStart"}, part)
-    if decision(j) != "MSG":
-        fails += 1
-        print("FAIL preflight missing-warns")
 
-    total = len(CASES_GUARD) + 8
+    # EVERY gated connector must be covered. This loop is the regression lock for
+    # audit finding MAJOR-2: titck-cache was gated in .mcp.json but absent from the
+    # hook's map, so its missing key warned nobody. Dropping any one key must warn,
+    # and the warning must NAME that connector.
+    for name, var in sorted(gated.items()):
+        part = dict(allenv)
+        part[var] = ""
+        _, j = run("session_preflight.py", {"hook_event_name": "SessionStart"}, part)
+        if decision(j) != "MSG":
+            fails += 1
+            print(f"FAIL preflight missing-warns[{name}]: {var} eksikken sessiz kaldı")
+            continue
+        ctx = j.get("hookSpecificOutput", {}).get("additionalContext", "")
+        if name not in ctx or var not in ctx:
+            fails += 1
+            print(f"FAIL preflight names-connector[{name}]: uyarı '{name}'/'{var}' içermiyor")
+
+    total = len(CASES_GUARD) + 7 + 2 * len(gated)
     if fails:
         print(f"\n{fails}/{total} FAILED")
         return 1
     print(f"ALL {total} HOOK TESTS PASSED")
     return 0
+
+
+def test_hook_layer():
+    """pytest entry point.
+
+    This module is named test_*.py, so pytest collects the FILE regardless. Without a
+    pytest-visible test function it reported "no tests ran" and exited 0 — a false green
+    that hid 21 real assertions from any repo-wide `pytest` run (2026-08-07 audit MINOR-3).
+    Delegating to main() keeps ONE implementation: the standalone runner and pytest
+    execute the same assertions, so the two paths can never disagree.
+    """
+    assert main() == 0, "evidentia hook regresyon paketi düştü (ayrıntı için stdout'a bak)"
 
 
 if __name__ == "__main__":

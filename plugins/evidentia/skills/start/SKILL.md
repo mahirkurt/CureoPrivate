@@ -68,7 +68,7 @@ Kontrol listesi (gruba göre):
 > bu remote URL'ler **Settings → Connectors → Add custom connector** ile eklenir. **Directory/OAuth
 > connector'ları (PubMed, ClinicalTrials, Consensus, Elicit, bioRxiv, NPI, AdisInsight) `.mcp.json`'da
 > HİÇ görünmez** — hesap-düzeyinde Directory/Settings-OAuth ile bağlanır (kanonik tablo +
-> yüzey-adımları: `CONNECTORS.md §1.0`; kurulum: `docs/EVIDENTIA-KURULUM-VE-KEYLER.md` Yol D).
+> yüzey-adımları: `CONNECTORS.md §1.0`; kurulum: `docs/KURULUM.md` Yol D).
 > "Her şey otomatik bağlı" varsaymayın; eksikse kullanıcıya hangi connector'ı nereden ekleyeceğini
 > söyleyin. `known_connected:` (Adım 2.0) directory connector'ları bağlı-ilan edip probe gürültüsünü
 > keser (`docs/evidentia.local.md.example`).

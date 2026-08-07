@@ -282,7 +282,7 @@ Bir `doc_id` (DOI vb.) bir kez ingest edilir; sonraki sorgular indeksten okur �
 |---|---|---|
 | **Claude Code** (plugin runtime) | ✅ Tam — `mcpServers` doğrudan bağlanır | Plugin kurulumu connector'ları yükler |
 | **claude.ai** (web) | ⚠️ Kısmî | Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom connector**; Tier-A OAuth'u Advanced settings |
-| **ChatGPT** (web · Developer Mode) | ❌ Yok — elle | **Settings → Connectors** (Plus/Pro/Business/Enterprise/Edu + **Developer Mode**). Self-host Worker URL'leri (`…/mcp`) elle eklenir; gated olanlarda OAuth, drugddx + keyless'larda "No authentication". Detay: `docs/EVIDENTIA-KURULUM-VE-KEYLER.md` Kurulum yolu **C**. |
+| **ChatGPT** (web · Developer Mode) | ❌ Yok — elle | **Settings → Connectors** (Plus/Pro/Business/Enterprise/Edu + **Developer Mode**). Self-host Worker URL'leri (`…/mcp`) elle eklenir; gated olanlarda OAuth, drugddx + keyless'larda "No authentication". Detay: `docs/KURULUM.md` Kurulum yolu **C**. |
 
 **ChatGPT uyumu (4 self-host Worker, 2026-06-30 canlı doğrulandı):** anamnesis · evidentia-kb ·
 openfda · drugddx **ChatGPT custom-connector ile çalışır**. Redirect allowlist `https://chatgpt.com`

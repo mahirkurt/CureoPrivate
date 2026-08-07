@@ -1,5 +1,5 @@
 /**
- * auth.ts — Hardened OAuth 2.1 surface for the drugddx-mcp Worker (Cureonics Family A).
+ * auth.ts — Hardened OAuth 2.1 surface for the who-gho-mcp Worker (Cureonics Family A).
  *
  * Single-tenant OAuth: the real gate is MCP_API_KEY (Bearer). OAuth exists only to satisfy
  * the discovery surface claude.ai requires for remote connectors. This file implements the
@@ -28,7 +28,7 @@ export interface AuthEnv {
 
 const DEFAULT_ALLOWED_ORIGINS = ["https://claude.ai", "https://claude.com"];
 const CODE_TTL_SECONDS = 600;               // invariant (4): 10-minute TTL
-const REALM = "openfda-mcp";
+const REALM = "who-gho-mcp";
 
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {

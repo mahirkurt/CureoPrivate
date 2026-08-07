@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# smoke_oauth_public.sh — post-deploy smoke test for openfda-mcp.
+# smoke_oauth_public.sh — post-deploy smoke test for evidentia-kb-mcp.
 # Verifies: /health, OAuth metadata advertises S256, /mcp rejects unauthenticated,
 # and an authenticated initialize succeeds. Run AFTER `wrangler deploy` + secret put.
 #
 # Usage:
-#   BASE=https://openfda-mcp.<your-subdomain>.workers.dev MCP_API_KEY=<key> ./scripts/smoke_oauth_public.sh
+#   BASE=https://evidentia-kb-mcp.<your-subdomain>.workers.dev MCP_API_KEY=<key> ./scripts/smoke_oauth_public.sh
 set -euo pipefail
 
 BASE="${BASE:?set BASE to the deployed Worker origin}"

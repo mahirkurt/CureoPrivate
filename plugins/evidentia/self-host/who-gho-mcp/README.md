@@ -41,11 +41,13 @@ npm run deploy               # wrangler deploy
 BASE=https://who-gho-mcp.<subdomain>.workers.dev ./scripts/smoke_oauth_public.sh
 ```
 
-> **Test note:** `routing.test.ts` (imports the full worker into the workerd test pool) currently
-> hits a pre-existing `ajv` CJS/ESM shim error in `@cloudflare/vitest-pool-workers` — the **same
-> failure affects the sibling `openfda-mcp`** and is environmental, not code. The unit suites
-> (`server.test.ts` 12 + `auth.test.ts` 15) pass. The live OData path is validated against the real
-> upstream (see the smoke script and `who_gho_query` against `WHOSIS_000001`/`TUR`).
+> **Test note (2026-08-07 çözüldü):** `routing.test.ts` (tam worker'ı workerd test
+> havuzuna import eder) `@cloudflare/vitest-pool-workers@0.8.71`'in CJS shim'inde
+> patlıyordu — `ajv/dist/core.js` bir JSON dosyasını `require()` ediyor ve shim onu
+> JavaScript sanıp `SyntaxError: Unexpected token ':'` atıyordu. Arıza YEDİ self-host
+> Worker'ın hepsini etkiliyordu (49 test hiç koşmuyordu), yalnız dördünü değil.
+> Onarım: pool `0.12.21`'e yükseltildi (vitest 3.2 ile uyumlu en yeni sürüm). Artık
+> üç paketin tamamı koşuyor ve `npm test` exit=0 veriyor.
 
 ## Upstream reference
 

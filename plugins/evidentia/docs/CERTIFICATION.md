@@ -91,9 +91,13 @@ Fleet health at certification: **G-PROBE 14 live · 0 failed**; **G-BUNDLE CONSI
 
 ## Known, accepted limitations (not defects)
 
-- `routing.test.ts` fails in every self-host worker (who-gho/ema/globocan/openfda) with the same
-  `ajv` CJS/ESM shim error from `@cloudflare/vitest-pool-workers` — **environmental**, not code; the
-  logic suites pass and live E2E covers the router surface.
+- ~~`routing.test.ts` fails in every self-host worker~~ — **RESOLVED 2026-08-07.** The scope in
+  this line was also understated: the failure hit **all seven** workers (not the four named),
+  so **49 routing/OAuth tests never executed** — `/health`, unknown-path 404, S256-only
+  metadata, redirect allowlist, bearer gate. Root cause: `ajv/dist/core.js` `require()`s a
+  JSON file and the CJS shim in `@cloudflare/vitest-pool-workers@0.8.71` parsed it as
+  JavaScript. Fixed by upgrading the pool to `0.12.21` (newest release still peering on
+  vitest 3.2). All 7 workers now `npm test` exit=0; suite total 151 → **200 tests**.
 - GLOBOCAN figures are modelled estimates (2022); EMA is a point-in-time baked snapshot
   (`generated_at` stamped, refresh via `npm run build:corpus`). Both carry mandatory caveats.
 - **IHME/GBD remains a documented gap** (no keyless API; account + ToS + row-cap) — honestly marked
@@ -104,4 +108,4 @@ Fleet health at certification: **G-PROBE 14 live · 0 failed**; **G-BUNDLE CONSI
 - Deployed versions: who-gho `42665235`, globocan `8825e031`, ema `ff226c89`.
 - Sources: `self-host/{who-gho-mcp,globocan-mcp,ema-mcp}/`; reader work in
   CureoHub `mcp-servers/{annas-reader-mcp,openathens-mcp}/` (commit `b066ed3f`, pythonpath fix on top).
-- Gates: `scripts/g_bundle.py`, `scripts/g_probe.py`, `hooks/test_hooks.py`.
+- Gates: `scripts/g_bundle.py`, `scripts/g_probe.py`, `scripts/g_identity.py` (2026-08-07), `hooks/test_hooks.py`, `skills/medical-research/evals/check_integrity.py`, `skills/medical-research/evals/rag_quality.py`, `tools/fleetkit/check_drift.py --all`.

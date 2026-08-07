@@ -101,6 +101,17 @@ jobs:
           sys.exit(1 if fail else 0)
           PY
 
+      # [4] Kaynak ucu sözleşmesi (programmatic_source_healthcheck.yaml).
+      #     AĞ ister ama SECRET istemez → CI'da koşabilir. BLOKE ETMEZ:
+      #     sözleşmenin kendi `on_failure: degrade_and_label` kuralı bir ucun
+      #     düşmesinin çıktıyı durdurmamasını emreder; bunu PR bloklayıcısına
+      #     çevirmek sözleşmeyi ihlal ederdi. Log'da görünür, kapıyı kapatmaz.
+      #     (Araç-düzeyi canlı kapı `check_tools.py` Bearer ister → audit_plugins
+      #     ile aynı gerekçeyle CI dışında, elle koşulur.)
+      - name: kaynak ucu sağlığı (check_sources — bilgilendirici)
+        continue-on-error: true
+        run: python3 tools/fleetkit/check_sources.py
+
       - name: özet
         if: success()
-        run: echo "Her iki kapı temiz ve ikisi de mutasyon-doğrulandı."
+        run: echo "Bloklayan üç kapı temiz ve mutasyon-doğrulandı."

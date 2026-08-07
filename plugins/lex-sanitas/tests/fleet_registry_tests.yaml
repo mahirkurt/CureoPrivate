@@ -136,3 +136,36 @@ cases:
       ve kapsamı daraltıldı; source_registry sekiz satırda ölü adı taşımaya devam
       etti ve ölü uç 2026-08-07 probe'unda HTTP 404 verdi. Sayı hep 19 kaldığı
       için kapı temiz raporluyordu. [6] tam bu sınıf içindir (mutasyon-doğrulandı).
+
+  - id: FR-14-beyan-edilen-arac-canli-yuzeyde-var-olmali
+    given: >-
+      fleet.yaml `tools_used` bir aracı beyan ediyor ama sunucunun canlı
+      `tools/list` yüzeyinde o ad YOK (fantom araç).
+    expect:
+      - "check_tools.py exit 1 dönmeli ve 'BEYAN EDİLDİ AMA YOK' satırıyla sunucu+araç adını vermeli; yakın eşleşme varsa canlı karşılığını önermeli."
+      - "audit_plugins.py bunu YAKALAYAMAZ — yalnız `initialize` gönderir; fantom araç taşıyan sunucu 200/ok raporlanır. Sağlık ≠ işlevsellik."
+      - "check_drift [6] de yakalayamaz — sunucu KİMLİĞİ geçerlidir, sürüklenen ARAÇ adıdır."
+      - "Olmayan bir aracın çağrılabilir gibi beyan edilmesi G7 FAIL: olmayan yetenek beyanı fabrikasyondur."
+    rationale: >-
+      2026-08-07 araç-düzeyi ölçümünde lex-sanitas üç fantom taşıyordu:
+      `titck.search_medical_devices` (TİTCK'in 66 aracının hiçbiri cihaz aracı
+      değil — kategori hatası; `_role` da "ilaç/tıbbi cihaz master index" diyerek
+      olmayan bir TR cihaz katmanı vaat ediyordu), `eudamed_search_actors` ve
+      `eudamed_probe`. Beyan `.mcp.json`'daki `_role` alanına aktığı için arıza
+      modelin gördüğü CANLI wiring'de duruyordu. Dokuz plugin'in tamamı aynı anda
+      `initialize` düzeyinde temizdi.
+
+  - id: FR-15-arac-varligi-tazelik-kanitlamaz
+    given: >-
+      Beyan edilen araç canlıda var ve çağrı 200 dönüyor, ancak arkasındaki veri
+      seti yıllarca güncellenmemiş (`is_stale: true`).
+    expect:
+      - "Araç kullanılabilir sayılır ama çıktı `source_as_of` tarihini AÇIKÇA yazmalı ve iddiayı 'o tarihteki durum' diye nitelemeli."
+      - "Bayat kayıt niteliksiz 'mevcut durum' kanıtı olarak sunulursa G7 FAIL."
+      - "Tazelik otoritesi CANLI `list_datasets` çıktısıdır (`source_as_of`/`is_stale`); fleet.yaml'deki liste yalnız hangi araçların risk taşıdığını gösterir, dondurulmuş gerçek değildir."
+    rationale: >-
+      2026-08-07 list_datasets ölçümü: TİTCK'in 21 veri setinden birkaçı bayat —
+      regulation_article23 2018-05-10 (sekiz yıllık), off_label_use 2023-03-17,
+      institutional_fees 2025-04-24. Bu araçlar 200 döner ve gerçek kayıt verir;
+      arıza erişimde değil, tarihin beyan EDİLMEMESİNDEDİR. Araç envanteri
+      denetimi (FR-14) bu sınıfı göremez.

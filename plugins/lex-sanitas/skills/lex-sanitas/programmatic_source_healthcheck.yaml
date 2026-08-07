@@ -43,9 +43,16 @@ endpoints:
     kind: web_primary
     base_url: "https://eur-lex.europa.eu/"
     method: HEAD
-    expected_status: [200, 301, 302]
+    # 2026-08-07 ÖLÇÜM: kök hem HEAD hem GET'e 202 döndürüyor (kenar isteği
+    # kabul ediyor, içeriği senkron servis etmiyor). 202 listede olmadığı için
+    # koşucu canlı ucu 'ölü' raporluyordu.
+    expected_status: [200, 202, 301, 302]
     query_pattern: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:{celex}"
     check_frequency: weekly
+    # 202 ERİŞİLEBİLİRLİK kanıtıdır, İÇERİK kanıtı DEĞİLDİR: bu kontrolün
+    # geçmesi bir CELEX kodunun doğrulandığı anlamına GELMEZ. CELEX doğrulaması
+    # her hâlükârda query_pattern üzerinden yapılmalıdır.
+    liveness_only: true
     fallback: "CELEX doğrulanamazsa kod ÜRETME; 'CELEX doğrulanmalı' notu (G4/G6/G7 — CITE-003)"
 
   # ---- AB SPARQL (Cellar) ----
@@ -100,8 +107,11 @@ endpoints:
     kind: web_primary
     base_url: "https://www.legislation.govt.nz/"
     method: HEAD
-    expected_status: [200, 301, 302]
+    # 2026-08-07 ÖLÇÜM: aşağıdaki `note` zaten "yalnızca 202 async" diyordu ama
+    # expected_status 202'yi DIŞLIYORDU — sözleşme kendi kendisiyle çelişiyordu.
+    expected_status: [200, 202, 301, 302]
     check_frequency: on_demand
+    liveness_only: true
     fallback: "COMPARATIVE_LAW bölümünde 'kaynak erişilemedi' notu"
     note: "D-class (v2.7.0): API yalnızca 202 async-generate/poll → temiz senkron uç YOK; SARMALANMADI."
 

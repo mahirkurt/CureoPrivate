@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.5.7"
+plugin_version: "3.5.8"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -116,17 +116,40 @@ servers:
     shard: S1
     modes: [ALL]
     gate: null
+    # 2026-08-07 ARAÇ-DÜZEYİ ölçüm (check_tools.py): canlı 66 araç, hiçbiri cihaz
+    # aracı değil. Eskiden burada duran `search_medical_devices` FANTOMDU.
     tools_used: [search_titck_guidelines, search_drugs, get_drug,
-                 get_atc_hierarchy, search_medical_devices]
+                 get_atc_hierarchy, search_reference_prices,
+                 search_regulation_article23, search_off_label_uses,
+                 search_scheduling_records, search_institutional_fees,
+                 list_datasets]
     role: >-
-      TİTCK ilaç/tıbbi cihaz master index (barkod-primer + WHO-ATC + SNOMED).
-      TİTCK yönetmelik/SUT/ruhsat reformlarında mevcut-durum + rehber envanteri
-      (search_titck_guidelines, search_drugs, get_atc_hierarchy). 2026-08-02'den
-      beri KAPILI — Bearer zorunlu (eski açık Worker cache emekli edildi,
-      önbellek sunucunun içine taşındı).
+      TİTCK BEŞERİ TIBBİ ÜRÜN master index (barkod-primer + WHO-ATC + SNOMED) —
+      ilaç indeksidir, tıbbi cihaz indeksi DEĞİLDİR (canlı araç yüzeyinde hiçbir
+      cihaz aracı yoktur; TR cihaz kaydı ÜTS'dedir ve bu filoya wire EDİLMEMİŞTİR,
+      AB cihaz benchmark'ı için eudamed kullanılır). Yönetmelik/SUT/ruhsat
+      reformunda mevcut-durum + rehber envanteri: search_titck_guidelines +
+      search_drugs + get_atc_hierarchy. Mevzuat-hükmü doğrudan karşılığı olan
+      kayıtlar: search_reference_prices (fiyat kararı/SUT), search_regulation_article23
+      (Ruhsatlandırma Yönetmeliği md.23 başvuru kaydı), search_off_label_uses
+      (endikasyon dışı kılavuz), search_scheduling_records (kontrole tabi
+      madde/reçete rejimi), search_institutional_fees (ücret tarifesi).
+      TAZELİK ZORUNLULUĞU — bu araçların bir kısmı BAYAT veri setine dayanır ve
+      "mevcut durum" kanıtı olarak sunulamaz. 2026-08-07 list_datasets ölçümü:
+      reference_price_list 2026-02-18 (taze) · scheduling_list 2026-06-10 (taze) ·
+      institutional_fees 2025-04-24 (BAYAT) · off_label_use 2023-03-17 (BAYAT) ·
+      regulation_article23 2018-05-10 (BAYAT — sekiz yıllık). Bayat kayıt
+      kullanıldığında çıktı `source_as_of` tarihini AÇIKÇA yazar ve iddiayı
+      "o tarihteki durum" diye niteler. Bu tarihler DONDURULMUŞ DEĞİLDİR:
+      canlı otorite `list_datasets`'in `source_as_of`/`is_stale` alanlarıdır —
+      buradaki liste yalnız hangi araçların risk taşıdığını gösterir.
+      2026-08-02'den beri KAPILI — Bearer zorunlu (eski açık Worker cache emekli
+      edildi, önbellek sunucunun içine taşındı).
     degrade: >-
-      Anahtar yoksa ilaç/cihaz regülasyon mevcut-durum katmanı tamamen düşer;
-      manifestoda 'skipped: anahtar yok'. 401 alınıyorsa bu DEGRADE DEĞİL
+      Anahtar yoksa ilaç regülasyonu mevcut-durum katmanı tamamen düşer;
+      manifestoda 'skipped: anahtar yok'. TR tıbbi CİHAZ katmanı zaten yoktur —
+      cihaz sorusunda bu server 'skipped: kapsam dışı (ÜTS wire değil)' yazılır,
+      AB karşılaştırması eudamed'e devredilir. 401 alınıyorsa bu DEGRADE DEĞİL
       yapılandırma arızasıdır — preflight ayrıca uyarır.
 
   - name: tbmm
@@ -293,12 +316,30 @@ servers:
     shard: S2
     modes: [ALL]
     gate: null
-    tools_used: [eudamed_search_devices, eudamed_get_device,
-                 eudamed_search_actors, eudamed_probe]
+    # 2026-08-07 ARAÇ-DÜZEYİ ölçüm (check_tools.py): canlı yüzey tam 6 araç.
+    # Eskiden burada duran `eudamed_search_actors` ve `eudamed_probe` FANTOMDU —
+    # aktör yüzeyi ARAMA değil yalnız kimlikle GETİRME sunar.
+    tools_used: [eudamed_search_devices, eudamed_get_device, eudamed_get_basic_udi,
+                 eudamed_get_manufacturer_portfolio, eudamed_get_actor,
+                 eudamed_application_info]
     role: >-
-      EUDAMED AB tıbbi cihaz DB (MDR/IVDR). Tıbbi cihaz reformunda AB benchmark +
-      cihaz/aktör kayıt yapısı. Zorunlu olgunluk _caveat (veri tabanı kademeli
-      dolum — yokluk kanıt değildir).
+      EUDAMED AB tıbbi cihaz DB (MDR/IVDR) — TR tarafı ÜTS wire edilmediği için
+      cihaz rejiminin TEK canlı kayıt kaynağı. Cihaz reformunda AB benchmark.
+      2026-08-07 CANLI ÖLÇÜM — çalışan zincir: eudamed_get_actor(name+country)
+      → SRN → eudamed_get_manufacturer_portfolio(srn, legislation) → cihaz
+      portföyü (Roche Diagnostics DE-MF-000006260 → 14 IVDR kaydı); ayrıca
+      eudamed_search_devices → uuid → eudamed_get_device. `get_actor` adına
+      rağmen TAM BİR ARAMADIR (name/country/srn ile sayfalanır) — SRN elde
+      olmadan da aktör bulunur.
+      İKİ ÖLÇÜLMÜŞ SINIRLAMA: (1) eudamed_get_basic_udi ARAMADAN ZİNCİRLENEMEZ —
+      arama satırındaki `basic_udi_data_ulid` ile çağrı 404 döner; geçerli uuid
+      yalnız EUDAMED web arayüzü URL'inden gelir, dolayısıyla bu araç ancak
+      kullanıcı uuid verirse çalışır, aksi hâlde 'manual_required'.
+      (2) get_manufacturer_portfolio `page_size`'ı YOK SAYAR (1 istendi, 20
+      döndü) — büyük portföyde bağlam-ekonomisi sözleşmesi gereği çıktı
+      çağrıldıktan SONRA kırpılır, çağrı sınırlanarak değil.
+      eudamed_application_info erişilebilirlik/olgunluk beyanıdır. Zorunlu olgunluk
+      _caveat (veri tabanı kademeli dolum — yokluk kanıt değildir).
     degrade: >-
       Erişilemezse AB cihaz kayıt yapısı benchmark'ı düşer; ilgili satır
       'manual_required' (EUDAMED portal deep-link).

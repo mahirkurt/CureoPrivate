@@ -29,7 +29,22 @@ Hiçbiri bir teste takılmıyordu, çünkü hiçbiri türetilmiyordu.
 | `fleet_probe.py` | **runtime** (hook'lar) | canlı MCP `initialize`; `auth_missing` ≠ `unauthorized` |
 | `vendor.py` | geliştirme | kanonik prob'u hook'lu plugin'lere birebir kopyalar |
 | `audit_plugins.py` | elle / periyodik | 5 eksenli **canlı** filo denetimi (ağ + Doppler ister) |
+| `check_tools.py` | elle / periyodik | **araç-düzeyi** canlı denetim: `tools_used` beyanı ↔ sunucunun gerçek `tools/list`'i (+ `--call` ile salt-okunur duman testi). Ağ + Doppler ister |
+| `check_sources.py` | **CI (bilgilendirici)** | `programmatic_source_healthcheck.yaml` sözleşmesini koşar (ağ, secret YOK) |
 | `bootstrap_fleet.py` | tek seferlik | mevcut `.mcp.json`'dan `fleet.yaml` üretir |
+
+### `check_tools.py` neden ayrı bir kapı
+
+`audit_plugins.py` her uca yalnız `initialize` gönderir. 200 dönen sunucu "sağlıklı" sayılır — ama **sağlık ≠ işlevsellik**. 2026-08-07 ölçümünde dokuz plugin'in tamamı `initialize` düzeyinde temizken `lex-sanitas` üç FANTOM araç beyan ediyordu: `titck.search_medical_devices` (TİTCK'in 66 aracının hiçbiri cihaz aracı değil — kategori hatası), `eudamed_search_actors` ve `eudamed_probe` (canlı yüzeyde yok). Beyan `.mcp.json`'daki `_role` alanına aktığı için bu, modelin gördüğü canlı wiring'de duruyordu.
+
+```bash
+# envanter karşılaştırması
+doppler run -- python3 tools/fleetkit/check_tools.py lex-sanitas
+# + argümansız salt-okunur araçları GERÇEKTEN çağır
+doppler run -- python3 tools/fleetkit/check_tools.py lex-sanitas --call
+```
+
+`--call` katı bir allowlist kullanır (yalnız envanter/kimlik uçları) — yazan, indiren veya ücret doğuran hiçbir araç çağrılmaz.
 
 ## Günlük kullanım
 

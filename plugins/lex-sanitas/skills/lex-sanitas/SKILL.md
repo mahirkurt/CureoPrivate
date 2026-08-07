@@ -11,7 +11,7 @@ description: >-
   Open Law · Ansvar · Fedlex Swiss · Türk Patent) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia,
   atıf-adli + Türkçe hukuk dili → sci-audit (kuruluysa ZORUNLU). Şüphede Scope Guard önceliklidir;
   bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi KAPSAM DIŞIDIR.
-version: 3.5.7
+version: 3.5.8
 ---
 
 # Lex-Sanitas — Türkiye Sağlık Mevzuatı Reform Protokolü

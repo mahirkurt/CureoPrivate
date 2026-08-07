@@ -51,7 +51,7 @@ cases:
       - "SessionStart preflight german-law anahtarının eksik olduğunu işaretlemiş olmalı."
       - "Manifestoda german-law → 'skipped: anahtar yok'; çıktı bu yüzden DURMAMALI."
       - "Diğer wire'lı server'lar (mevzuat/resmi-gazete/titck/saglikbakanligi vb.) normal çalışmalı."
-    rationale: "hooks/session_start.py preflight + SKILL §3 degrade_and_label."
+    rationale: "hooks/scripts/session_start.py preflight + SKILL §3 degrade_and_label."
 
   - id: FLEET-004
     title: "Stop kapısı — manifesto eksikse tamamlat"
@@ -61,7 +61,7 @@ cases:
     assertions:
       - "Stop hook (stop_coverage.py) turu devam ettirip eksik manifesto + confidence_label'ı tamamlatmalı."
       - "Tamamlanan çıktı G0 + confidence_label taşımalı."
-    rationale: "hooks/stop_coverage.py — mod-çıktısı imzası var ama zorunlu bileşenler eksik."
+    rationale: "hooks/scripts/stop_coverage.py — mod-çıktısı imzası var ama zorunlu bileşenler eksik."
 
   - id: FLEET-005
     title: "Saf idari norm — klinik-sıfır, evidentia atlanır ama beyan edilir"
@@ -96,7 +96,7 @@ cases:
     assertions:
       - "stop_coverage.py MANDATORY_ROWS denetimi eksik satırları isimleriyle raporlamalı — 7 satır (Yargı, Open Law, Ansvar, Fedlex Swiss, Türk Patent, evidentia, sci-audit). Sayı SABİT DEĞİLDİR: stop_coverage.py bunu fleet.lock.json'dan türetir (companions + delegations), dolayısıyla filo büyüdükçe kendiliğinden artar."
       - "Tamamlanan manifestoda her satır hit/empty/degraded/skipped-with-reason taşımalı."
-    rationale: "hooks/stop_coverage.py v3.1 MANDATORY_ROWS; coverage-manifest.md kural 1."
+    rationale: "hooks/scripts/stop_coverage.py v3.1 MANDATORY_ROWS; coverage-manifest.md kural 1."
 
   - id: FLEET-008
     title: "v3.1 — companion skip'i kapı etkisini beyan eder"

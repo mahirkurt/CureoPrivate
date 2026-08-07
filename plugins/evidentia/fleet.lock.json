@@ -1,12 +1,12 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "evidentia",
-  "plugin_version": "2.3.10",
+  "plugin_version": "2.4.0",
   "counts": {
     "servers": 20,
     "gated": 7,
     "public": 13,
-    "companions": 0,
+    "companions": 8,
     "delegations": 0
   },
   "servers": [
@@ -131,6 +131,76 @@
       "auth_env": "EVIDENTIA_KB_MCP_API_KEY"
     }
   ],
-  "companions": [],
+  "companions": [
+    {
+      "name": "PubMed",
+      "tool_prefixes": [
+        "mcp__claude_ai_PubMed__",
+        "mcp__pubmed-epmc__"
+      ],
+      "manifest_row": "PubMed (companion — bibliyografik çekirdek, hesap düzeyi)",
+      "degrade": "pubmed-epmc (wire'lı) PubMed/EPMC/Unpaywall yüzeyini zaten taşır."
+    },
+    {
+      "name": "Paper Search",
+      "tool_prefixes": [
+        "mcp__claude_ai_Paper_Search__",
+        "mcp__paper-search__"
+      ],
+      "manifest_row": "Paper Search (companion — preprint tam-metin read_*_paper)",
+      "degrade": "Preprint tam-metni pubmed-epmc/EuropePMC OA yoluna degrade eder."
+    },
+    {
+      "name": "Clinical Trials",
+      "tool_prefixes": [
+        "mcp__claude_ai_Clinical_Trials__"
+      ],
+      "manifest_row": "Clinical Trials (companion — ClinicalTrials.gov kayıt katmanı)",
+      "degrade": "Kayıt-temelli çalışma tespiti yapılamaz; PRISMA akışında boşluk beyan edilir."
+    },
+    {
+      "name": "AdisInsight",
+      "tool_prefixes": [
+        "mcp__claude_ai_AdisInsight__"
+      ],
+      "manifest_row": "AdisInsight (companion — ilaç/çalışma istihbaratı)",
+      "degrade": "Boru-hattı/geliştirme-fazı zenginleştirmesi düşer; çekirdek etkilenmez."
+    },
+    {
+      "name": "Elicit",
+      "tool_prefixes": [
+        "mcp__claude_ai_Elicit__"
+      ],
+      "manifest_row": "Elicit (companion — SR tarama yardımcısı)",
+      "degrade": "P3 tarama tamamen native connector'larla yürür."
+    },
+    {
+      "name": "Consensus",
+      "tool_prefixes": [
+        "mcp__consensus__",
+        "mcp__claude_ai_Consensus__"
+      ],
+      "manifest_row": "Consensus (companion — atıf-temelli uzlaşı taraması)",
+      "degrade": "Uzlaşı sinyali OpenAlex/S2 atıf ağına degrade eder."
+    },
+    {
+      "name": "YÖK Tez",
+      "tool_prefixes": [
+        "mcp__yoktez__",
+        "mcp__claude_ai_Yoktez__"
+      ],
+      "manifest_row": "YÖK Tez (companion — Türkiye tez katmanı, Türkiye Dörtlüsü)",
+      "degrade": "Türkiye Dörtlüsü'nün tez ayağı düşer → 'Türkiye Veri Boşluğu' beyan edilir."
+    },
+    {
+      "name": "Literatür",
+      "tool_prefixes": [
+        "mcp__literatur__",
+        "mcp__claude_ai_Literatur__"
+      ],
+      "manifest_row": "Literatür/DergiPark (companion — TR tam-metin)",
+      "degrade": "TR tam-metin openathens/annas şelalesine degrade eder."
+    }
+  ],
   "delegations": []
 }

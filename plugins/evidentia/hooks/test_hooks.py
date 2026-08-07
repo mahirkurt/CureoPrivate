@@ -67,18 +67,55 @@ CASES_GUARD = [
     ("mcp__claude_ai_anamnesis__forget_document", "ALLOW"),          # not 'forget'
     ("mcp__claude_ai_PubMed__search_articles", "ALLOW"),
     ("Read", "ALLOW"),
+    # D7 — argument-level guard. `search_mevzuat` without an explicit page_size (or with >20)
+    # is a call that CANNOT succeed: the server default of 25 exceeds the bedesten cap of 20 and
+    # the upstream returns the error as plain text with no isError, so the model would read a
+    # failure as data. Measured 2026-08-07: page_size=20 → 938 results; bare call → error string.
+    ("mcp__mevzuat-bilgisi__search_mevzuat", "DENY", {"phrase": "ilaç"}),
+    ("mcp__mevzuat-bilgisi__search_mevzuat", "DENY", {"phrase": "ilaç", "page_size": 25}),
+    ("mcp__mevzuat-bilgisi__search_mevzuat", "ALLOW", {"phrase": "ilaç", "page_size": 20}),
+    ("mcp__mevzuat-bilgisi__search_mevzuat", "ALLOW", {"phrase": "ilaç", "page_size": 5}),
+    # Sibling tools go through the mevzuat.gov.tr path, accept 25, and must NOT be caught.
+    ("mcp__mevzuat-bilgisi__search_khk", "ALLOW", {"mevzuat_adi": "ilaç"}),
+    ("mcp__mevzuat-bilgisi__search_tuzuk", "ALLOW", {"mevzuat_adi": "ilaç", "page_size": 25}),
+]
+
+# retrieve-don't-dump scenarios: (tool_name, result_chars, expected_decision, message_substring, label).
+#
+# SIZE — not the tool name — is the trigger (fixed 2026-08-07). The assertion that used to live
+# here demanded SILENCE for a 99,999-char non-fulltext result, i.e. it encoded the very defect the
+# hook exists to prevent. The three "bulk" sizes below are the ones MEASURED on the live fleet that
+# day, each of which the old name-keyed hook let through without a word.
+CASES_RDD = [
+    ("mcp__claude_ai_openathens__oa_fetch_fulltext", 8000, "MSG", "ingest_document",
+     "fulltext over threshold"),
+    ("mcp__claude_ai_openathens__oa_fetch_fulltext", 5, "ALLOW", None,
+     "fulltext under threshold stays silent"),
+    ("mcp__annas-reader__read_document", 8000, "MSG", "ingest_document",
+     "annas read_document (real fleet name, was missing from the list)"),
+    ("mcp__openfda__openfda_search", 254891, "MSG", "DARALT",
+     "openfda 250KB bulk dump must warn and say narrow-the-query"),
+    ("mcp__titck__search_drugs", 78837, "MSG", "DARALT", "titck 79KB bulk dump must warn"),
+    ("mcp__anamnesis__semantic_search", 50444, "MSG", "DARALT", "anamnesis 50KB bulk dump must warn"),
+    ("mcp__globocan__gco_list_cancers", 4596, "ALLOW", None,
+     "normal-sized result stays silent (hook must not become noise)"),
+    ("Read", 999999, "ALLOW", None, "non-MCP tools are out of scope"),
 ]
 
 
 def main():
     fails = 0
 
-    for tool, want in CASES_GUARD:
-        _, j = run("guard_tool_call.py", {"tool_name": tool})
+    for case in CASES_GUARD:
+        tool, want = case[0], case[1]
+        payload = {"tool_name": tool}
+        if len(case) > 2:                     # argument-level cases (D7) carry a tool_input
+            payload["tool_input"] = case[2]
+        _, j = run("guard_tool_call.py", payload)
         got = decision(j)
         if got != want:
             fails += 1
-            print(f"FAIL guard {tool}: {got} != {want}")
+            print(f"FAIL guard {tool} {case[2] if len(case) > 2 else ''}: {got} != {want}")
 
     # disable flag
     tmp = tempfile.mkdtemp()
@@ -98,22 +135,17 @@ def main():
         fails += 1
         print("FAIL guard fail-open")
 
-    # retrieve-don't-dump
-    _, j = run("retrieve_dont_dump.py",
-               {"tool_name": "mcp__claude_ai_openathens__oa_fetch_fulltext", "tool_result": "x" * 8000})
-    if decision(j) != "MSG":
-        fails += 1
-        print("FAIL rdd large-fulltext")
-    _, j = run("retrieve_dont_dump.py",
-               {"tool_name": "mcp__claude_ai_openathens__oa_fetch_fulltext", "tool_result": "short"})
-    if decision(j) != "ALLOW":
-        fails += 1
-        print("FAIL rdd small")
-    _, j = run("retrieve_dont_dump.py",
-               {"tool_name": "mcp__claude_ai_PubMed__search_articles", "tool_result": "y" * 99999})
-    if decision(j) != "ALLOW":
-        fails += 1
-        print("FAIL rdd non-fulltext")
+    # retrieve-don't-dump — table-driven so the assertion count is DERIVED, never hand-counted.
+    for tool, nchars, want, must_contain, label in CASES_RDD:
+        _, j = run("retrieve_dont_dump.py", {"tool_name": tool, "tool_result": "x" * nchars})
+        got = decision(j)
+        ok = got == want
+        if ok and must_contain:
+            ok = must_contain in (j or {}).get("systemMessage", "")
+        if not ok:
+            fails += 1
+            print(f"FAIL rdd {label}: {got} != {want}"
+                  + (f" (mesaj '{must_contain}' içermiyor)" if got == want else ""))
 
     # session preflight — key list comes from fleet.lock.json, never hardcoded
     gated = gated_from_lock()
@@ -143,7 +175,11 @@ def main():
             fails += 1
             print(f"FAIL preflight names-connector[{name}]: uyarı '{name}'/'{var}' içermiyor")
 
-    total = len(CASES_GUARD) + 7 + 2 * len(gated)
+    # Every term is DERIVED from a table or the lock — no hand-maintained magic number. The old
+    # literal `7` silently understated the headline as soon as assertions were added or removed,
+    # which is the same stale-count drift this audit found in the connector docs.
+    #   3 = guard disable-flag + guard fail-open + preflight all-present-silent
+    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 2 * len(gated)
     if fails:
         print(f"\n{fails}/{total} FAILED")
         return 1

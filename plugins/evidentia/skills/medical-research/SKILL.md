@@ -198,7 +198,7 @@ J-STAGE via REST (`extended-api.md`), native `openfda:openfda_search` (drugsfda 
 
 **C. Multi-Country AFF (EPMC native)** — `for country in [Turkey, China, Japan, Germany, Brazil, Korea]: EPMC:search_articles(f'({topic}) AND AFF:"{country}"')`. Run when geographic breadth matters.
 
-**D. Türkiye native (when TR context/enrichment active)** — TİTCK `search_drugs` (→ TİTCK Cache fallback on stall), Mevzuat `search_mevzuat` (SUT/yönetmelik), YÖK Tez, EPMC `AFF:"Turkey"`. Null → "Türkiye Veri Boşluğu" block. See `turkiye-layer.md`.
+**D. Türkiye native (when TR context/enrichment active)** — TİTCK `search_drugs` (`titck.cureonics.com`, gated — the cache-fallback rung was retired 2026-07-31; call it directly), Mevzuat `search_mevzuat` (SUT/yönetmelik), YÖK Tez, EPMC `AFF:"Turkey"`. Null → "Türkiye Veri Boşluğu" block. See `turkiye-layer.md`.
 
 **E. Guidelines & HTA / Epidemiology** — society-guideline PDFs (NICE/ESMO/NCCN/Cochrane) and HTA bodies have **no native MCP** → **documented gap (VERİ YOK)**, never web-scraped. Epidemiology: ICD-11 coding via `openfda`; US surveillance via **PopHIVE** (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — relay precomputed evidence; **US-ONLY**); global (WHO-GHO/GLOBOCAN/IHME) + Türkiye burden = documented gap. If the operator supplies a guideline PDF, ingest it into anamnesis.
 

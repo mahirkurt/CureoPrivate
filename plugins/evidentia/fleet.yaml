@@ -9,7 +9,54 @@
 
 version: 2
 plugin: evidentia
-plugin_version: "2.3.10"
+plugin_version: "2.4.0"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPANION'LAR — operatör çalışma alanına bağlı, .mcp.json'a GİRMEYEN connector'lar.
+# Kayıtta (§2.3/§2.5 + CONNECTORS.md) atıf yapılan opsiyonel bibliyografik katman.
+# Buradan `agents/evidence-synthesizer.md` içindeki GEN:agent-tools bloğu türetilir —
+# 2026-08-07'ye kadar o ajanın izin listesi ELLE yazılmıştı ve içinde HİÇ MCP aracı yoktu.
+# ─────────────────────────────────────────────────────────────────────────────
+companions:
+  - name: PubMed
+    tool_prefixes: ["mcp__claude_ai_PubMed__", "mcp__pubmed-epmc__"]
+    manifest_row: "PubMed (companion — bibliyografik çekirdek, hesap düzeyi)"
+    degrade: "pubmed-epmc (wire'lı) PubMed/EPMC/Unpaywall yüzeyini zaten taşır."
+
+  - name: Paper Search
+    tool_prefixes: ["mcp__claude_ai_Paper_Search__", "mcp__paper-search__"]
+    manifest_row: "Paper Search (companion — preprint tam-metin read_*_paper)"
+    degrade: "Preprint tam-metni pubmed-epmc/EuropePMC OA yoluna degrade eder."
+
+  - name: Clinical Trials
+    tool_prefixes: ["mcp__claude_ai_Clinical_Trials__"]
+    manifest_row: "Clinical Trials (companion — ClinicalTrials.gov kayıt katmanı)"
+    degrade: "Kayıt-temelli çalışma tespiti yapılamaz; PRISMA akışında boşluk beyan edilir."
+
+  - name: AdisInsight
+    tool_prefixes: ["mcp__claude_ai_AdisInsight__"]
+    manifest_row: "AdisInsight (companion — ilaç/çalışma istihbaratı)"
+    degrade: "Boru-hattı/geliştirme-fazı zenginleştirmesi düşer; çekirdek etkilenmez."
+
+  - name: Elicit
+    tool_prefixes: ["mcp__claude_ai_Elicit__"]
+    manifest_row: "Elicit (companion — SR tarama yardımcısı)"
+    degrade: "P3 tarama tamamen native connector'larla yürür."
+
+  - name: Consensus
+    tool_prefixes: ["mcp__consensus__", "mcp__claude_ai_Consensus__"]
+    manifest_row: "Consensus (companion — atıf-temelli uzlaşı taraması)"
+    degrade: "Uzlaşı sinyali OpenAlex/S2 atıf ağına degrade eder."
+
+  - name: YÖK Tez
+    tool_prefixes: ["mcp__yoktez__", "mcp__claude_ai_Yoktez__"]
+    manifest_row: "YÖK Tez (companion — Türkiye tez katmanı, Türkiye Dörtlüsü)"
+    degrade: "Türkiye Dörtlüsü'nün tez ayağı düşer → 'Türkiye Veri Boşluğu' beyan edilir."
+
+  - name: Literatür
+    tool_prefixes: ["mcp__literatur__", "mcp__claude_ai_Literatur__"]
+    manifest_row: "Literatür/DergiPark (companion — TR tam-metin)"
+    degrade: "TR tam-metin openathens/annas şelalesine degrade eder."
 
 servers:
   - name: med-terminologies
@@ -24,7 +71,7 @@ servers:
         community-unverified (io.github.SidneyBissoli) — least-privilege, sandbox-first,
         klinik çıktıyı bağımsız çapraz-doğrula
       _probe: >-
-        2026-06-25 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7
+        2026-08-07 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7 · 31 araç
 
   - name: nih-clinicaltables
     url: https://gateway.pipeworx.io/clinicaltables/mcp
@@ -83,7 +130,7 @@ servers:
         bağımsız çapraz-doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads
         OSS sunucusunu operatör Worker'ı olarak self-host.
       _probe: >-
-        2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç
+        2026-08-07 HTTP 200 · serverInfo openalex-mcp-server v0.7.8 · 5 araç
         (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)
 
   - name: pubmed-epmc
@@ -105,7 +152,7 @@ servers:
         (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör
         Worker'ı olarak self-host.
       _probe: >-
-        2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç
+        2026-08-07 HTTP 200 · serverInfo pubmed-mcp-server v2.10.2 · 11 araç
         (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)
 
   - name: semantic-scholar
@@ -232,7 +279,12 @@ servers:
     role: >-
       İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat
       keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA
-      numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat
+      numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat.
+      ⚠️ D7 (ölçüm 2026-08-07): `search_mevzuat` `page_size` varsayılanı 25, bedesten
+      upstream'i 20 ile sınırlı → varsayılan çağrı DAİMA hata döndürür ve bunu isError
+      OLMADAN düz metin verir (sessiz başarısızlık); DAİMA `page_size: 20` geç
+      (guard_tool_call.py bunu zorlar). `search_kanun` zorunlu argümanı `aranacak_ifade`'dir
+      (`phrase` değil)
     extra:
       _secondary: true
       _trust: >-
@@ -247,8 +299,15 @@ servers:
     tier: O
     auth_env: TITCK_MCP_API_KEY
     role: >-
-      Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal
-      TİTCK şeması
+      Türkiye ilaç indeksinin KANONİK kaynağı (Türkiye Dörtlüsü) — 66 araç, v0.5.8 (ölçüm
+      2026-08-07). ⚠️ 2026-07-31'de `titck-cache-mcp` Worker'ı EMEKLİ edildi ve önbellek
+      sunucunun içine taşındı: bu URL artık bir "önbellek/yedek basamak" DEĞİL, kapılı
+      kanonik uçtur. Eski "native TİTCK stall'da çağır" yönergesi geçersiz — bundle'daki TEK
+      TİTCK budur, doğrudan çağrılır. Whitelist: search_drugs · get_drug · get_atc_hierarchy ·
+      get_atc_class_summary · find_equivalent_products_by_substance · find_biosimilar_group ·
+      find_off_label_uses_for_drug · find_reference_prices_for_drug ·
+      compare_drug_to_alternatives · get_price_history · get_withdrawal_trend ·
+      find_authorization_cancellations_for_drug
     extra:
       _fix: >-
         2026-08-02 TİTCK kapılanması (Worker cache emekli, önbellek sunucuya taşındı) bu
@@ -272,7 +331,11 @@ servers:
     auth_env: YOK_AKADEMIK_MCP_API_KEY
     role: >-
       Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index,
-      ortak-yazar ağı, yayın, danışmanlık tezleri
+      ortak-yazar ağı, yayın, danışmanlık tezleri. 16 araç (ölçüm 2026-08-07). Whitelist:
+      yok_search (⚠️ zorunlu argüman `term`, `query` DEĞİL) · yok_search_academics ·
+      yok_get_profile · yok_get_full_profile · yok_get_publications · yok_get_collaborators ·
+      yok_get_supervised_theses · yok_get_projects · yok_list_universities/yok_list_fields
+      (taksonomi). Kimlik = 16-hex authorId; akış yok_search → authorId → yok_get_*
 
   - name: openathens
     url: https://openathens.cureonics.com/mcp
@@ -280,8 +343,10 @@ servers:
     auth_env: OPENATHENS_MCP_API_KEY
     role: >-
       Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in
-      ÖNÜNDE). 7 araç: oa_resolve · oa_fetch_fulltext(ingest) · oa_session_status ·
-      oa_list_databases · oa_server_info · oa_batch_submit/oa_batch_result. Millet
+      ÖNÜNDE). 10 araç (ölçüm 2026-08-07): oa_resolve · oa_fetch_fulltext(ingest) ·
+      oa_verify_access (DOI erişilebilir mi — getirmeden ÖNCE sor, boşa Tier-3 çağrısı
+      harcama) · oa_session_status · oa_list_databases · oa_server_info ·
+      oa_batch_submit/oa_batch_result · search/fetch (deep-research sözleşmesi). Millet
       Kütüphanesi/OpenAthens SAML →
       ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: getirme Xvfb
       altında headed kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + cf_clearance) →
@@ -300,8 +365,11 @@ servers:
       _probe: >-
         2026-07-14 CANLI + claude.ai-optimize: OAuth 2.1 tam dans doğrulandı
         (DCR→authorize→S256 PKCE→token), CORS preflight 204 + WWW-Authenticate expose
-        (browser bootstrap), 401 mutlak resource_metadata (RFC 9728), 7 araç. Anti-bot v2
-        canlı (Xvfb headed profil; gerçek PDF tam-metin teyitli).
+        (browser bootstrap), 401 mutlak resource_metadata (RFC 9728). Anti-bot v2
+        canlı (Xvfb headed profil; gerçek PDF tam-metin teyitli). 2026-08-07 yeniden ölçüm:
+        v3.4.2 · 10 araç (kayıt 7 diyordu — oa_verify_access/search/fetch belgelenmemişti);
+        oa_list_databases canlıda `manual_required: databases_unreachable` döndürüyor
+        (dürüst degrade — lisanslı DB listesi upstream'den okunamıyor, cascade etkilenmez).
 
   - name: annas-reader
     url: https://annas.cureonics.com/mcp
@@ -400,3 +468,13 @@ servers:
       _probe: >-
         2026-06-26 HTTP 401 SECURED · authenticated initialize 200 · kb_search canlı (244
         chunk/24 dosya; bge-m3 Vectorize; layer-file recall doğrulandı)
+
+generated_blocks:
+  - file: agents/evidence-synthesizer.md
+    name: agent-tools
+    generator: agent_tools
+    style: yaml
+    # shards yok → filonun TAMAMI seçilir (bu ajan tüm kanıt filosunu sürer).
+    # WebSearch KASITLI OLARAK YOK: web/OSINT tier v1.4.0'da kaldırıldı; WebFetch yalnız
+    # otoriter bir connector'ın DÖNDÜRDÜĞÜ URL'yi getirmek için (keşif değil).
+    config: {extra: [Read, Grep, Glob, Bash, WebFetch], companions: true}

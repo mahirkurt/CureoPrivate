@@ -133,7 +133,7 @@ ChEMBL fallback) · Wiley (OAuth, tam-metin tier 4).
 
 ### 3.4 Türkiye-pazarı — OPSİYONEL (zenginleştirme-modülü-kapılı)
 TİTCK (15+ araç; barcode-master + fiyat + biyobenzer + off-label) · Mevzuat (SUT/yönetmelik/fiyat
-kararnamesi) · TÜRKPATENT (IP/FTO) · YÖK Tez. + α-katman **TİTCK Cache** (latency fallback) ·
+kararnamesi) · TÜRKPATENT (IP/FTO) · YÖK Tez. + α-katman **TİTCK** (kanonik, kapılı — önbellek Worker'ı 2026-07-31'de emekli) ·
 **YÖK Akademik** (Türk KOL, §9).
 
 ### 3.5 Extended Tier-K — first-class, **araç-whitelist'li** (modül-kapılı, P4 içinde ateşlenir)

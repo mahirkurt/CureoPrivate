@@ -34,7 +34,7 @@
 | **who-gho** (self-host) | `who-gho-mcp.cureonics.workers.dev/mcp` | ❌ | — (`MCP_ALLOW_NO_AUTH=1`) | **AÇIK/keyless** — WHO GHO OData proxy (`ghoapi.azureedge.net` authless), **server-side sır YOK** → confused-deputy yok. Küresel/ülke hastalık yükü (Türkiye dahil); PopHIVE'ın ABD-only boşluğunu kapatır. ✅ CANLI 2026-07-05 (Version 30df2ff2, E2E doğrulandı) |
 | **globocan** (self-host) | `globocan-mcp.cureonics.workers.dev/mcp` | ❌ | — (`MCP_ALLOW_NO_AUTH=1`) | **AÇIK/keyless** — IARC GLOBOCAN 2022 proxy (`gco-api.iarc.fr` authless+headerless), **server-side sır YOK**. Küresel/ülke kanser insidans+mortalite (Türkiye dahil); who-gho'yu kanser-özelinde tamamlar. ✅ CANLI 2026-07-05 (Version 74cfb636, E2E doğrulandı) |
 | **ema** (self-host) | `ema-mcp.cureonics.workers.dev/mcp` | ❌ | — (`MCP_ALLOW_NO_AUTH=1`) | **AÇIK/keyless** — EMA Medicines/EPAR **baked korpus** (authless XLSX'ten build; runtime upstream/sır YOK). AB ruhsat + CHMP/EPAR (openFDA'nın AB muadili). Yenile: `npm run build:corpus`+redeploy. ✅ CANLI 2026-07-05 (Version ff226c89, 2712 ilaç, E2E doğrulandı) |
-| **titck-cache** | `titck.cureonics.com/mcp` | ❌ | — | **Open by design** — kanonik public TİTCK yüzü (titck-mcp origin'ini fronting eden read-through cache) |
+| **titck** | `titck.cureonics.com/mcp` | ✅ | `TITCK_MCP_API_KEY` | **KAPILI** (Bearer). ⚠️ 2026-07-31'de `titck-cache-mcp` Worker'ı emekli edildi, önbellek sunucunun içine taşındı ve uç KAPATILDI — bu satır 2026-08-07'ye kadar "anahtarsız/açık tasarım" diyordu, o yönergeyi izleyen kurulum 401 alır. Kanonik Türkiye ilaç indeksi, 66 araç, v0.5.8 |
 | **med-terminologies** | `medical.sidneybissoli.com/mcp` | ❌ | — | Üçüncü-taraf keyless (topluluk) |
 | **nih-clinicaltables** | `gateway.pipeworx.io/clinicaltables/mcp` | ❌ | — | Üçüncü-taraf keyless |
 | **nlm-rxnorm** | pipeworx gateway | ❌ | — | Üçüncü-taraf keyless |
@@ -58,14 +58,14 @@
 doppler run -p cureohub -c dev_personal -- claude     # tüm ${VAR}'lar otomatik enjekte
 # veya elle: export ANAMNESIS_MCP_API_KEY=...  EVIDENTIA_KB_MCP_API_KEY=...  OPENFDA_MCP_API_KEY=...
 ```
-`drugddx` + `titck-cache` + üçüncü-taraf keyless'lar **hiçbir env gerektirmez**.
+`drugddx` + üçüncü-taraf keyless'lar **hiçbir env gerektirmez** (⚠️ `titck` bu listeden 2026-08-07'de ÇIKTI — artık `TITCK_MCP_API_KEY` ister).
 
 ### B. claude.ai / Claude Desktop custom connector
 URL'yi ekle; **yalnız Bearer-gated** olanlara anahtar yapıştır:
 
 | Anahtar gerektiren | Anahtarsız (URL yeter) |
 |---|---|
-| anamnesis · evidentia-kb · openfda · annas-reader · yok-akademik · **openathens** | **drugddx** · **who-gho** · **globocan** · **ema** · titck-cache · med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar |
+| anamnesis · evidentia-kb · openfda · annas-reader · yok-akademik · **openathens** · **titck** | **drugddx** · **who-gho** · **globocan** · **ema** · med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar |
 
 Değeri çek: `doppler secrets get OPENFDA_MCP_API_KEY --plain -p cureohub -c dev_personal`
 
@@ -88,7 +88,7 @@ Her connector için **MCP Server URL = `…/mcp`**. ChatGPT'de Auth seçimi:
 | ChatGPT Auth | Connector'lar | Anahtar nasıl verilir |
 |---|---|---|
 | **OAuth** | anamnesis · evidentia-kb · openfda (+ annas-reader · yok-akademik) | ChatGPT yetkilendirme sayfasını açar → Worker'ın **authorize formuna MCP API key'i yapıştır** → ChatGPT token'ı kendisi alır. Anahtar **ChatGPT UI'ına değil, Worker'ın authorize formuna** girilir (claude.ai ile aynı tek-kiracılı model). |
-| **No authentication** | **drugddx** · **who-gho** · **globocan** · **ema** · titck-cache · üçüncü-taraf keyless (med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar) | URL yeter |
+| **No authentication** | **drugddx** · **who-gho** · **globocan** · **ema** · üçüncü-taraf keyless (med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar) | URL yeter |
 
 > Anahtar değerlerini Doppler'dan al (aşağıda §"Anahtar değerlerini alma") (ör. `OPENFDA_MCP_API_KEY`).
 > ChatGPT MCP istemcisi `/mcp`'yi **sunucu tarafından** çağırır → CORS gerekmez; OAuth dansı kullanıcının

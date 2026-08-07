@@ -2,11 +2,11 @@
  * server.ts — globocan-mcp tool layer (Cureonics self-host, evidentia Tier-K-epi).
  *
  * Serves IARC's Global Cancer Observatory (GLOBOCAN 2022) — global/country cancer INCIDENCE and
- * MORTALITY estimates for 36 cancer sites across 185+ countries (incl. Türkiye), with ASR, crude
+ * MORTALITY estimates for 41 cancer sites across 185+ countries (incl. Türkiye), with ASR, crude
  * rate, cumulative risk, rank and uncertainty intervals. This closes evidentia's global cancer-
  * burden gap that PopHIVE (US-only) and who-gho (general GHO) do not cover.
  *
- *   gco_list_cancers      — the 36 GLOBOCAN cancer sites (id, label, ICD-10) — resolve names→codes.
+ *   gco_list_cancers      — the GLOBOCAN cancer sites (41 live 2026-08-07; id, label, ICD-10) — resolve names→codes.
  *   gco_resolve_population — find a country/region code by name or ISO3 (data endpoint needs codes).
  *   gco_query             — incidence or mortality for a population × cancer(s) × sex, joined with
  *                           cancer labels; returns total cases/deaths, ASR, crude rate, rank, UI.
@@ -63,19 +63,90 @@ function shapeCancers(rows: any[]): Array<{ id: number; label: string; icd: stri
   return rows.map((r) => ({ id: r.cancer ?? r.id, label: r.label, icd: r.ICD ?? null, gender: r.gender ?? 0 }));
 }
 
+/** Strip combining marks so 'Turkiye' matches 'Türkiye' and 'Cote d Ivoire' matches "Côte d'Ivoire".
+ *  Three of GLOBOCAN's 237 population labels carry diacritics (verified 2026-08-07 against
+ *  meta/populations/all/: "Türkiye", "Côte d'Ivoire", "France, La Réunion") — an unfolded
+ *  substring match silently misses all three. */
+function fold(s: unknown): string {
+  return String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+
+/** Common English exonyms → a substring of the ACTUAL GLOBOCAN label.
+ *
+ *  Every right-hand value was verified to occur in the live meta/populations/all/ response on
+ *  2026-08-07; nothing here invents a population. Populations GLOBOCAN genuinely does not carry
+ *  (Palestine, Taiwan, Vatican/Holy See) are deliberately ABSENT — aliasing them would fabricate
+ *  coverage, and "no row" must keep meaning "no estimate".
+ *
+ *  Folding alone is not enough for these: 'Turkey' ≠ 'turkiye', 'Vietnam' ≠ 'viet nam',
+ *  'Ivory Coast' ≠ "cote d'ivoire". This is the defect that made the tool's OWN documented
+ *  example ("'Turkey' / 'TUR' → 792") return zero matches.
+ *
+ *  Keys are matched EXACTLY (after folding), never as substrings — so 'uk' resolves to the
+ *  United Kingdom instead of substring-matching Ukraine, and 'us' stops matching Australia,
+ *  Austria, Belarus, Cyprus and Russia. */
+const EXONYMS: Record<string, string> = {
+  turkey: "türkiye",
+  "ivory coast": "côte d'ivoire",
+  "czech republic": "czechia",
+  "south korea": "korea, republic of",
+  "north korea": "korea, democratic people's republic of",
+  swaziland: "eswatini",
+  burma: "myanmar",
+  laos: "lao people's democratic republic",
+  vietnam: "viet nam",
+  holland: "the netherlands",
+  usa: "united states of america",
+  us: "united states of america",
+  "united states": "united states of america",
+  uk: "united kingdom",
+  "great britain": "united kingdom",
+  russia: "russian federation",
+  "dr congo": "congo, democratic republic of",
+  drc: "congo, democratic republic of",
+  "east timor": "timor-leste",
+  "cape verde": "cabo verde",
+};
+
+/** Rank: 0 = exact label, 1 = exact ISO3/code, 2 = label prefix, 3 = label substring.
+ *  Ranking matters because a bare substring scan returns 'Congo, Republic of' and
+ *  'Congo, Democratic Republic of' in arbitrary upstream order, and 'Netherlands' would not
+ *  surface 'The Netherlands' first. Returns null when the row does not match at all. */
+function matchRank(row: any, q: string): { rank: number; on: string } | null {
+  const label = fold(row.label);
+  const iso3 = fold(row.country_iso3);
+  const code = String(row.country ?? row.country_code ?? "");
+  if (q === "") return { rank: 3, on: "all" };
+  if (label === q) return { rank: 0, on: "label" };
+  if (iso3 === q) return { rank: 1, on: "iso3" };
+  if (code === q) return { rank: 1, on: "code" };
+  if (label.startsWith(q)) return { rank: 2, on: "label_prefix" };
+  if (label.includes(q)) return { rank: 3, on: "label_substring" };
+  return null;
+}
+
 function findPopulations(rows: any[], query: string, limit: number) {
-  const q = query.trim().toLowerCase();
-  const out: any[] = [];
+  const raw = fold(query);
+  // Alias substitution is EXACT-key only, and is reported back to the caller via `resolved_via`
+  // so the rewrite is never silent — the model must be able to see which term actually matched.
+  const alias = EXONYMS[raw];
+  const q = alias ? fold(alias) : raw;
+  const scored: Array<{ rank: number; on: string; row: any }> = [];
   for (const r of rows) {
-    const label = String(r.label ?? "").toLowerCase();
-    const iso3 = String(r.country_iso3 ?? "").toLowerCase();
-    const code = String(r.country ?? r.country_code ?? "");
-    if (q === "" || label.includes(q) || iso3 === q || code === q) {
-      out.push({ code: r.country ?? r.country_code, label: r.label, iso3: r.country_iso3 ?? null, who_region: r.who_label ?? r.who_region ?? null, hdi: r.hdi_label ?? null, income: r.income_label ?? null });
-      if (out.length >= limit) break;
-    }
+    const m = matchRank(r, q);
+    if (m) scored.push({ rank: m.rank, on: m.on, row: r });
   }
-  return out;
+  scored.sort((a, b) => a.rank - b.rank);
+  return scored.slice(0, limit).map(({ on, row: r }) => ({
+    code: r.country ?? r.country_code,
+    label: r.label,
+    iso3: r.country_iso3 ?? null,
+    who_region: r.who_label ?? r.who_region ?? null,
+    hdi: r.hdi_label ?? null,
+    income: r.income_label ?? null,
+    matched_on: on,
+    ...(alias ? { resolved_via: `exonym '${query.trim()}' → '${alias}'` } : {}),
+  }));
 }
 
 function shapeData(dataset: any[], cancerLabels: Map<number, string>, limit: number) {
@@ -114,7 +185,8 @@ export function registerTools(server: McpServer, env: GlobocanEnv): void {
 
   server.tool(
     "gco_list_cancers",
-    "List the 36 GLOBOCAN cancer sites with their id, label and ICD-10 code. Use the `id` as the " +
+    "List the GLOBOCAN cancer sites with their id, label and ICD-10 code (41 sites live 2026-08-07; " +
+      "the count is whatever upstream returns — `total` in the response is authoritative). Use the `id` as the " +
       "`cancer` argument to gco_query (or 'all' for every site). " + GCO_CAVEAT,
     {},
     async () => {
@@ -166,7 +238,7 @@ export function registerTools(server: McpServer, env: GlobocanEnv): void {
       cancer: z.string().optional().describe("'all' (default) or a numeric cancer id from gco_list_cancers (e.g. '15'=trachea/bronchus/lung)"),
       sex: z.enum(["both", "male", "female"]).optional().describe("Sex (default 'both')"),
       type: z.enum(["incidence", "mortality", "prevalence"]).optional().describe("Estimate type (default 'incidence'). Prevalence returns 1/3/5-year rows per cancer."),
-      limit: z.number().int().min(1).max(300).optional().describe("Max rows (1-300, default 120 — covers all ~36 sites, incl. the 3× rows of an all-cancers prevalence query, without silent truncation)"),
+      limit: z.number().int().min(1).max(300).optional().describe("Max rows (1-300, default 120 — covers all ~41 sites, incl. the 3× rows of an all-cancers prevalence query, without silent truncation)"),
     },
     async ({ population, cancer, sex, type, limit }) => {
       const pop = String(population).trim();
@@ -199,4 +271,4 @@ export function registerTools(server: McpServer, env: GlobocanEnv): void {
   );
 }
 
-export const __testing = { baseOf, metaUrl, dataUrl, shapeCancers, findPopulations, shapeData, GCO_CAVEAT, DEFAULT_BASE };
+export const __testing = { baseOf, metaUrl, dataUrl, shapeCancers, findPopulations, shapeData, fold, matchRank, EXONYMS, GCO_CAVEAT, DEFAULT_BASE };

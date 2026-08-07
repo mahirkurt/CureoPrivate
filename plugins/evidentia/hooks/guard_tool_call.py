@@ -47,6 +47,35 @@ REDIRECT_GENERIC = (
     "Katalog-genişletme/finans/bellek jenerikleri asla çağrılmaz."
 )
 
+# D7 (2026-08-07, live-measured): mevzuat-bilgisi.search_mevzuat ships `page_size` default 25, but
+# its bedesten upstream caps the page at 20 — so EVERY call that relies on the default comes back
+#   "Search error: data.pageSize=Kayıt sayısı 20'den fazla olamaz"
+# …as ordinary result TEXT with no isError flag, i.e. a silent 100% failure that reads like success.
+# Measured the same day: page_size=20 → 938 results; bare call → the error string. The defect is in
+# a third-party server we do not own, so the only durable fix on our side is to refuse the call that
+# is certain to fail and name the working argument. Sibling tools (search_khk/search_tuzuk, which go
+# through the mevzuat.gov.tr path) accept 25 and are deliberately NOT touched.
+MEVZUAT_PAGE_CAP = 20
+REDIRECT_PAGE_SIZE = (
+    "D7: mevzuat-bilgisi.search_mevzuat `page_size` varsayılanı 25, ama bedesten upstream sayfayı "
+    "20 ile sınırlıyor → varsayılan çağrı DAİMA 'data.pageSize=Kayıt sayısı 20'den fazla olamaz' "
+    "hatası döndürür ve bunu isError olmadan düz metin olarak verir (sessiz başarısızlık). "
+    "Çağrıyı `page_size` ≤ {cap} ile tekrarla (ör. page_size=20); daha fazla kayıt için `page` "
+    "artır. Kardeş araçlar (search_khk/search_tuzuk) bu sınırdan etkilenmez."
+)
+
+
+def page_size_reason(base, tool, tool_input):
+    if base != "search_mevzuat" or "mevzuat" not in tool:
+        return None
+    if not isinstance(tool_input, dict):
+        return None
+    ps = tool_input.get("page_size")
+    if ps is None or (isinstance(ps, (int, float)) and ps > MEVZUAT_PAGE_CAP):
+        return REDIRECT_PAGE_SIZE.format(cap=MEVZUAT_PAGE_CAP)
+    return None
+
+
 # Known-broken tools → deny + redirect (connector-registry.md §8 D1/D2/D6).
 def broken_reason(base, tool):
     if base == "rxnorm_interactions":
@@ -95,6 +124,11 @@ def main():
 
     # Rule 2 — known-broken (server-aware).
     reason = broken_reason(base, tool)
+    if reason:
+        deny(reason)
+
+    # Rule 3 — argument-level: a call whose arguments guarantee an upstream failure (D7).
+    reason = page_size_reason(base, tool, data.get("tool_input"))
     if reason:
         deny(reason)
 

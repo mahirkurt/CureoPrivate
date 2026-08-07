@@ -303,7 +303,7 @@ x_evidentia_self_host_2026_06_25:
 
 # --- Verification gates (executable — evals/check_integrity.py) --------------
 verification:
-  gate_count: 11
+  gate_count: 16
   gates:
     - id: G-REF
       description: "Reference integrity — every references/*.md cited by SKILL.md exists on disk"
@@ -348,6 +348,29 @@ verification:
     - id: G-WHITELIST
       description: "No pipeworx-generic tool name (ask_pipeworx/discover_tools/remember/recall/forget/polymarket_*/scan_*/subscribe/validate_claim) appears in the connector-registry §2.6 tool whitelist (tool-level least-privilege, DEĞİŞMEZ 5)"
       command: "python3 evals/check_integrity.py --whitelist"
+      blocking: true
+    # The five entries below were IMPLEMENTED in evals/check_integrity.py but never declared
+    # here; `gate_count` said 11 while the harness ran 12 (2026-08-07 audit — the same
+    # hand-maintained-number drift the audit found in the connector docs and the hook counter).
+    - id: G-SIZE
+      description: "SKILL.md and every references/*.md stay within their size budget (context economy)"
+      command: "python3 evals/check_integrity.py --size"
+      blocking: true
+    - id: G-DESC
+      description: "SKILL.md frontmatter description carries the trigger vocabulary the router needs"
+      command: "python3 evals/check_integrity.py --desc"
+      blocking: true
+    - id: G-PHASES
+      description: "All PRISMA phases P0-P7 are declared and each points at its own reference file"
+      command: "python3 evals/check_integrity.py --phases"
+      blocking: true
+    - id: G-DESKEW
+      description: "No domain layer is mandatorily loaded on the default path (de-skew invariant)"
+      command: "python3 evals/check_integrity.py --deskew"
+      blocking: true
+    - id: G-AGENT
+      description: "Every sub-agent that drives the MCP fleet has those servers in its `tools:` allowlist, and none grants the removed web tier (WebSearch). Added after the 2026-08-07 audit found evidence-synthesizer provisioned with ZERO MCP tools but WITH WebSearch — inverse to its contract"
+      command: "python3 evals/check_integrity.py --agents"
       blocking: true
 
 # --- References -------------------------------------------------------------

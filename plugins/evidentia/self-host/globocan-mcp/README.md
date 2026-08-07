@@ -1,7 +1,7 @@
 # globocan-mcp
 
 Keyless Cloudflare Worker MCP exposing **IARC's Global Cancer Observatory (GLOBOCAN 2022)** to the
-`evidentia` plugin — global/country cancer **incidence and mortality** estimates for 36 cancer sites
+`evidentia` plugin — global/country cancer **incidence and mortality** estimates for 41 cancer sites (measured 2026-08-07)
 across 185+ countries (incl. Türkiye), with age-standardised rate (ASR), crude rate, cumulative risk,
 rank and uncertainty intervals. Live proxy over the authless `gco-api.iarc.fr`. Closes evidentia's
 global cancer-burden gap (that PopHIVE — US-only — and who-gho — general GHO — do not cover).

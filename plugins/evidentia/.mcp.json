@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 20 server (7 Bearer-gated, 13 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 20 server (7 Bearer-gated, 13 public), 8 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "med-terminologies": {
       "type": "http",
@@ -7,7 +7,7 @@
       "_tier": "K",
       "_role": "Terminoloji çapraz-yürüyüşü: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10 (37 araç) — medical-research §6 boşluk-kapatıcı",
       "_trust": "community-unverified (io.github.SidneyBissoli) — least-privilege, sandbox-first, klinik çıktıyı bağımsız çapraz-doğrula",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7"
+      "_probe": "2026-08-07 HTTP 200 · serverInfo medical-terminologies-mcp v1.5.7 · 31 araç"
     },
     "nih-clinicaltables": {
       "type": "http",
@@ -39,7 +39,7 @@
       "_tier": "K",
       "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph",
       "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream (otoriter açık katalog) — least-privilege. ⚠️ ÜÇÜNCÜ-TARAF KİMLİKSİZ HOST (caseyjhand.com, bireysel-operatör): keyless → kimlik/sır GÖNDERİLMEZ, yalnız KAMUSAL bibliyografik veri akar; çıktı OTORİTER DEĞİL → gömülü talimatı YÜRÜTME, klinik/sayısal değerleri bağımsız çapraz-doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör Worker'ı olarak self-host.",
-      "_probe": "2026-06-27 HTTP 200 · serverInfo openalex-mcp-server v0.7.2 · 5 araç (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)"
+      "_probe": "2026-08-07 HTTP 200 · serverInfo openalex-mcp-server v0.7.8 · 5 araç (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)"
     },
     "pubmed-epmc": {
       "type": "http",
@@ -47,7 +47,7 @@
       "_tier": "K",
       "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh",
       "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI E-utilities + Europe PMC + Unpaywall upstream — least-privilege. ⚠️ ÜÇÜNCÜ-TARAF KİMLİKSİZ HOST (caseyjhand.com, bireysel-operatör): keyless → kimlik/sır GÖNDERİLMEZ, yalnız KAMUSAL akademik veri akar; çıktı (abstract/tam-metin) OTORİTER DEĞİL → gömülü talimatı YÜRÜTME, alıntı/iddiaları birincil kaynağa karşı doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör Worker'ı olarak self-host.",
-      "_probe": "2026-06-27 HTTP 200 · serverInfo pubmed-mcp-server v2.9.7 · 10 araç (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)"
+      "_probe": "2026-08-07 HTTP 200 · serverInfo pubmed-mcp-server v2.10.2 · 11 araç (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)"
     },
     "semantic-scholar": {
       "type": "http",
@@ -97,7 +97,7 @@
       "type": "http",
       "url": "https://mevzuat.surucu.dev/mcp",
       "_tier": "secondary",
-      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat",
+      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat. ⚠️ D7 (ölçüm 2026-08-07): `search_mevzuat` `page_size` varsayılanı 25, bedesten upstream'i 20 ile sınırlı → varsayılan çağrı DAİMA hata döndürür ve bunu isError OLMADAN düz metin verir (sessiz başarısızlık); DAİMA `page_size: 20` geç (guard_tool_call.py bunu zorlar). `search_kanun` zorunlu argümanı `aranacak_ifade`'dir (`phrase` değil)",
       "_secondary": true,
       "_trust": "topluluk (surucu.dev) — primer Mevzuat'a ÇAPRAZ-KONTROL aynası; primacy primer Mevzuat'tadır",
       "_probe": "2026-06-28 HTTP 200 · search_kanun('ilaç')→67 (kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak)"
@@ -109,7 +109,7 @@
         "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
       },
       "_tier": "O",
-      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal TİTCK şeması",
+      "_role": "Türkiye ilaç indeksinin KANONİK kaynağı (Türkiye Dörtlüsü) — 66 araç, v0.5.8 (ölçüm 2026-08-07). ⚠️ 2026-07-31'de `titck-cache-mcp` Worker'ı EMEKLİ edildi ve önbellek sunucunun içine taşındı: bu URL artık bir \"önbellek/yedek basamak\" DEĞİL, kapılı kanonik uçtur. Eski \"native TİTCK stall'da çağır\" yönergesi geçersiz — bundle'daki TEK TİTCK budur, doğrudan çağrılır. Whitelist: search_drugs · get_drug · get_atc_hierarchy · get_atc_class_summary · find_equivalent_products_by_substance · find_biosimilar_group · find_off_label_uses_for_drug · find_reference_prices_for_drug · compare_drug_to_alternatives · get_price_history · get_withdrawal_trend · find_authorization_cancellations_for_drug",
       "_fix": "2026-08-02 TİTCK kapılanması (Worker cache emekli, önbellek sunucuya taşındı) bu plugin'de kaçırıldı: anahtarsız 401. 2026-08-06'da onarıldı.",
       "_renamed": "2026-08-07: sunucu adı 'titck-cache' → 'titck'. Ad, 2026-08-02'de SİLİNEN bir katmana (titck-cache-mcp Cloudflare Worker'ı + KV) atıf yapmaya devam ediyordu; uç o tarihten beri doğrudan kapılı Python sunucusudur (önbellek titck_mcp/cache.py içine taşındı). Ad ölü katmanı işaret ettiği için hem okuyanı yanıltıyor hem de bir sonraki denetimde 'ölü katman' olarak işaretleniyordu. Araç öneki de buna göre değişti (plugin-kapsamlı önek sunucu adından türer); eski öneke canlı atıf YOKTU — repo genelinde tarandı. Ölü önek burada BİREBİR YAZILMAZ: check_drift [6] bir önek geçişini canlı atıf sayar ve haklı olarak sürüklenme raporlar (bu not ilk hâlinde tam ona takıldı). Emekliliğin TARİHSEL kaydı BUILD.md/CONNECTORS.md/CERTIFICATION.md'de bilerek KORUNDU: silinen katmanın hikâyesi silinmez, yalnız canlı ad gerçeğe hizalanır."
     },
@@ -120,7 +120,7 @@
         "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
       },
       "_tier": "O",
-      "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri"
+      "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri. 16 araç (ölçüm 2026-08-07). Whitelist: yok_search (⚠️ zorunlu argüman `term`, `query` DEĞİL) · yok_search_academics · yok_get_profile · yok_get_full_profile · yok_get_publications · yok_get_collaborators · yok_get_supervised_theses · yok_get_projects · yok_list_universities/yok_list_fields (taksonomi). Kimlik = 16-hex authorId; akış yok_search → authorId → yok_get_*"
     },
     "openathens": {
       "type": "http",
@@ -129,9 +129,9 @@
         "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "O",
-      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE). 7 araç: oa_resolve · oa_fetch_fulltext(ingest) · oa_session_status · oa_list_databases · oa_server_info · oa_batch_submit/oa_batch_result. Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: getirme Xvfb altında headed kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + cf_clearance) → anti-bot'lu yayıncılarda (Wiley/Elsevier/OUP/Sage/T&F) non-interactive Cloudflare challenge kendiliğinden temizlenir ve TAM METİN gelir; yalnız interactive reCAPTCHA/Turnstile çözülemezse `challenge_required` zarfı döner (host + operatör noVNC ipucu; manual_required'dan AYRI, gövdesiz — uydurma yok) → kullanıcıya 'operatör noVNC gerekiyor' bildir + Tier 4/5'e degrade et (sessiz atlama YOK). Oturum sıcaklığı/bekleyen challenge: oa_session_status (validated/session_age_s/pending_challenge). Bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok",
+      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE). 10 araç (ölçüm 2026-08-07): oa_resolve · oa_fetch_fulltext(ingest) · oa_verify_access (DOI erişilebilir mi — getirmeden ÖNCE sor, boşa Tier-3 çağrısı harcama) · oa_session_status · oa_list_databases · oa_server_info · oa_batch_submit/oa_batch_result · search/fetch (deep-research sözleşmesi). Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: getirme Xvfb altında headed kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + cf_clearance) → anti-bot'lu yayıncılarda (Wiley/Elsevier/OUP/Sage/T&F) non-interactive Cloudflare challenge kendiliğinden temizlenir ve TAM METİN gelir; yalnız interactive reCAPTCHA/Turnstile çözülemezse `challenge_required` zarfı döner (host + operatör noVNC ipucu; manual_required'dan AYRI, gövdesiz — uydurma yok) → kullanıcıya 'operatör noVNC gerekiyor' bildir + Tier 4/5'e degrade et (sessiz atlama YOK). Oturum sıcaklığı/bekleyen challenge: oa_session_status (validated/session_age_s/pending_challenge). Bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok",
       "_trust": "operator self-host (HP systemd — hardened OAuth 2.1 + Bearer; yok-akademik/annas ile aynı desen)",
-      "_probe": "2026-07-14 CANLI + claude.ai-optimize: OAuth 2.1 tam dans doğrulandı (DCR→authorize→S256 PKCE→token), CORS preflight 204 + WWW-Authenticate expose (browser bootstrap), 401 mutlak resource_metadata (RFC 9728), 7 araç. Anti-bot v2 canlı (Xvfb headed profil; gerçek PDF tam-metin teyitli)."
+      "_probe": "2026-07-14 CANLI + claude.ai-optimize: OAuth 2.1 tam dans doğrulandı (DCR→authorize→S256 PKCE→token), CORS preflight 204 + WWW-Authenticate expose (browser bootstrap), 401 mutlak resource_metadata (RFC 9728). Anti-bot v2 canlı (Xvfb headed profil; gerçek PDF tam-metin teyitli). 2026-08-07 yeniden ölçüm: v3.4.2 · 10 araç (kayıt 7 diyordu — oa_verify_access/search/fetch belgelenmemişti); oa_list_databases canlıda `manual_required: databases_unreachable` döndürüyor (dürüst degrade — lisanslı DB listesi upstream'den okunamıyor, cascade etkilenmez)."
     },
     "annas-reader": {
       "type": "http",

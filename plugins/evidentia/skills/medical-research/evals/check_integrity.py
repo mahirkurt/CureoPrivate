@@ -20,6 +20,8 @@ Implements the executable gates declared in skill-manifest.yaml `verification:`:
   --whitelist   G-WHITELIST no pipeworx-generic tool appears in the §2.6 tool whitelist   (blocking)
   --strict      re-elevate out-of-tree plugin-root ref misses (G-REF) to FAIL, for
                 full-plugin-mount CI where the root MUST resolve                        (modifier)
+  --agents      G-AGENT    sub-agent `tools:` allowlists cover the MCP fleet and
+                           exclude the removed web tier                            (blocking)
   (no flag)     run all gates
 
 Stdlib only (no PyYAML dependency) — the manifest is parsed with lightweight,
@@ -38,6 +40,7 @@ the manifest spec; the skill's research logic is untouched (ADR-05).
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -591,6 +594,59 @@ def gate_desc() -> bool:
     return ok
 
 
+
+def gate_agents() -> bool:
+    """G-AGENT: every plugin sub-agent that is told to orchestrate the MCP fleet actually has
+    MCP tools in its `tools:` allowlist, and none of them carries the removed web tier.
+
+    Why this gate exists (2026-08-07). `agents/evidence-synthesizer.md` shipped with
+    `tools: Read, Bash, Glob, Grep, WebFetch, WebSearch` — not one MCP entry. Because `tools:`
+    is an ALLOWLIST, the plugin's flagship isolation agent could not reach any of the 20
+    evidence connectors its own body instructs it to drive, while it COULD reach `WebSearch`,
+    the tier the skill removed in v1.4.0 and forbids in eight places. Provisioned exactly
+    inverse to its contract, a run would either come back empty or fall back to web search —
+    the worst possible failure mode for a no-fabrication plugin. Nothing caught it, because
+    every existing gate reads the skill and the connectors, never the agents.
+
+    Mount-tolerant: skips with a WARN when the plugin root is not mounted (skill-only checkout).
+    """
+    print("G-AGENT   sub-agent tool allowlists cover the fleet, and exclude the removed web tier")
+    agents_dir = SKILL_DIR.parent.parent / "agents"
+    lock = SKILL_DIR.parent.parent / "fleet.lock.json"
+    if not agents_dir.is_dir() or not lock.exists():
+        _warn("plugin root not mounted (agents/ or fleet.lock.json absent) — skipped")
+        return True
+    fleet = [s["name"] for s in json.loads(lock.read_text(encoding="utf-8"))["servers"]]
+    ok = True
+    for md in sorted(agents_dir.glob("*.md")):
+        text = md.read_text(encoding="utf-8")
+        m = re.search(r"^tools:\s*(.+)$", text, re.M)
+        if not m:
+            _warn(f"{md.name}: no `tools:` line — inherits the default set, not gated here")
+            continue
+        tools = [x.strip() for x in m.group(1).split(",")]
+        if "WebSearch" in tools:
+            _fail(f"{md.name}: grants WebSearch — the web/OSINT tier was removed in v1.4.0 "
+                  f"and discovery-by-web is forbidden (fetching a URL an authoritative "
+                  f"connector RETURNED is what WebFetch is for)")
+            ok = False
+        # An agent that never mentions a connector is not an orchestrator; only gate the ones
+        # whose body actually names fleet servers.
+        drives_fleet = sum(1 for s in fleet if s in text) >= 3
+        if not drives_fleet:
+            _ok(f"{md.name}: not a fleet orchestrator — MCP allowlist not required")
+            continue
+        missing = [s for s in fleet if f"mcp__{s}__*" not in m.group(1)]
+        if missing:
+            _fail(f"{md.name}: drives the fleet but its allowlist omits "
+                  f"{len(missing)}/{len(fleet)} server(s): {', '.join(missing[:6])}"
+                  + (" …" if len(missing) > 6 else ""))
+            ok = False
+        else:
+            _ok(f"{md.name}: allowlist covers all {len(fleet)} fleet servers")
+    return ok
+
+
 GATES = {
     "refs": ("G-REF", gate_refs, True),
     "always-load": ("G-ALWAYS", gate_always_load, True),
@@ -604,6 +660,7 @@ GATES = {
     "desc": ("G-DESC", gate_desc, True),
     "phases": ("G-PHASES", gate_phases, True),
     "deskew": ("G-DESKEW", gate_deskew, True),
+    "agents": ("G-AGENT", gate_agents, True),
 }
 
 

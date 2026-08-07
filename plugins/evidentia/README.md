@@ -111,7 +111,7 @@ sinyali tetiklendiğinde devreye girer.
 | Katman | Ne | Auto-wire |
 |---|---|---|
 | **Tier-K** keyless remote-ready | Clinical Trials, NPI, bioRxiv + **genişletme:** med-terminologies, NIH Clinical Tables, NLM RxNorm, IUPHAR GtoPdb, **OpenAlex** (KOL/atıf-ağı), **PubMed-EPMC** (Europe PMC + Unpaywall yasal-OA), **Semantic Scholar** | ✅ |
-| **Tier-O** operatör Worker'ları | TİTCK Cache, YÖK Akademik, **Annas Reader** (tam-metin), **openfda** (FDA/WHO ICD-11), **evidentia-kb** (KB takviyesi, opsiyonel) | ✅ |
+| **Tier-O** operatör Worker'ları | TİTCK (kanonik, kapılı), YÖK Akademik, **Annas Reader** (tam-metin), **openfda** (FDA/WHO ICD-11), **evidentia-kb** (KB takviyesi, opsiyonel) | ✅ |
 | **Tier-A** auth-gerekli | PubMed/EPMC, Consensus, AdisInsight, TİTCK, Mevzuat, Türk Patent, … | env / Settings |
 | **Tier-R** REST fallback | PubChem, DailyMed, DOAJ, J-STAGE, … | (native MCP değil — bundle dışı; OpenAlex/Unpaywall/S2 artık native Tier-K) |
 
@@ -141,17 +141,31 @@ Tam envanter, fallback merdivenleri ve probe kanıtı: [`CONNECTORS.md`](./CONNE
 
 ## Doğrulama kapıları
 
-**Skill-düzeyi (12 kapı, `check_integrity.py`):** `G-REF` · `G-CONN` · `G-ALWAYS` · `G-VERSION` ·
+**Skill-düzeyi (13 kapı, `check_integrity.py`):** `G-REF` · `G-CONN` · `G-ALWAYS` · `G-VERSION` ·
 `G-COVERAGE` · `G-PROBE` · `G-XVAL` · `G-WHITELIST` · `G-SIZE` · `G-DESC` · **`G-PHASES`** (P0–P7
 hepsi tanımlı + her faz kendi referans dosyasına işaret ediyor) · **`G-DESKEW`** (varsayılan yolda
-hiçbir zenginleştirme modülü zorunlu yüklenmiyor). + **`G-RAG`** (çıktı faithfulness,
+hiçbir zenginleştirme modülü zorunlu yüklenmiyor) · **`G-AGENT`** (filoyu süren her alt-ajan o
+sunucuları `tools:` izin listesinde taşıyor + kaldırılmış web tier'ı `WebSearch` hiçbirinde yok —
+2026-08-07'de `evidence-synthesizer` SIFIR MCP aracıyla ama WebSearch'lü bulunduktan sonra eklendi). + **`G-RAG`** (çıktı faithfulness,
 `rag_quality.py`, §7.2.1). **Plugin-düzeyi:** canlı `G-PROBE` (`.mcp.json` URL'lerinde initialize
-handshake) + `G-BUNDLE` (`.mcp.json` ↔ `CONNECTORS.md` tutarlılığı) + nitel `G-TRUST` / `G-SURFACE`
-/ `G-REGRESSION` / `G-COPYRIGHT`. Koşum:
+handshake) + **`G-TOOLS`** (canlı `tools/list` **araç-yüzeyi sözleşmesi** + isteğe bağlı işlevsel
+smoke) + **`G-IDENTITY`** (her self-host Worker kendi realm/paket/wrangler adını taşıyor) +
+`G-BUNDLE` (`.mcp.json` ↔ `CONNECTORS.md` tutarlılığı) + nitel `G-TRUST` / `G-SURFACE`
+/ `G-REGRESSION` / `G-COPYRIGHT`.
+
+> **Neden `G-TOOLS` var (2026-08-07):** `G-PROBE` bir connector'ın *ulaşılabilir* olduğunu kanıtlar,
+> hangi araçları sunduğunu değil. Filo ölçüldüğünde belgeler canlı yüzeyden sessizce ayrışmıştı —
+> med-terminologies 37→31 araç, pubmed-epmc 10→11 (v2.9.7→v2.10.2), openathens 7→10, globocan 36→41
+> kanser sitesi — ve her kapı yeşildi. `G-TOOLS` araç yüzeyini `fleet.tools.json` içinde **taahhüt
+> edilmiş sözleşmeye** çevirir; sonraki sürüklenme keşif değil, kırmızı kapıdır.
+
+Koşum:
 ```bash
 python scripts/g_probe.py        # .mcp.json URL'lerinde canlı initialize
+python scripts/g_tools.py --smoke  # canlı tools/list sözleşmesi + sunucu başına 1 salt-okunur çağrı
+python scripts/g_identity.py     # 7 self-host Worker kimlik tutarlılığı
 python scripts/g_bundle.py       # .mcp.json ↔ CONNECTORS.md tutarlılık
-python skills/medical-research/evals/check_integrity.py        # yapısal: G-REF/G-CONN/G-ALWAYS/G-VERSION/G-COVERAGE/G-PROBE/G-XVAL/G-WHITELIST/G-SIZE/G-DESC/G-PHASES/G-DESKEW
+python skills/medical-research/evals/check_integrity.py        # yapısal: G-REF/G-CONN/G-ALWAYS/G-VERSION/G-COVERAGE/G-PROBE/G-XVAL/G-WHITELIST/G-SIZE/G-DESC/G-PHASES/G-DESKEW/G-AGENT
 python skills/medical-research/evals/rag_quality.py            # G-RAG: çıktı faithfulness (§7.2.1) — yapısal taban; --judge ile LLM-judge (EVIDENTIA_JUDGE_KEY)
 ```
 

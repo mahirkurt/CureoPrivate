@@ -13,7 +13,7 @@ description: >-
   (yoktez + literatur) ve lisanslı tam-metin şelalesi (openathens→annas-reader) artık wire'lı. Şüphede
   Scope Guard önceliklidir; bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi
   KAPSAM DIŞIDIR.
-version: 3.5.4
+version: 3.5.5
 ---
 
 # Lex-Sanitas — Türkiye Sağlık Mevzuatı Reform Protokolü
@@ -76,7 +76,7 @@ Wire edilmiş 19 server **`fleet.yaml`'de tanımlıdır ve `.mcp.json` ondan ür
 
 ## 3.5. Bağlam ekonomisi ve büyük-veri (zorunlu)
 
-Tam-filo, ham hâliyle onlarca büyük belge (tam kanun metni, madde ağacı, RG OCR, yabancı statute, tam gerekçe) üretir. Bunları ana pencerede akıl yürütmek pencereyi taşırır → eksik/tutarsız norm. **Üç-katmanlı ekonomi zorunludur** (tam sözleşme: `../../shared/context-economy-contract.md`, operasyon: `references/16-baglamyonetimi-ve-buyuk-veri.md`):
+Tam-filo, ham hâliyle onlarca büyük belge (tam kanun metni, madde ağacı, RG OCR, yabancı statute, tam gerekçe) üretir. Bunları ana pencerede akıl yürütmek pencereyi taşırır → eksik/tutarsız norm. **Üç-katmanlı ekonomi zorunludur** (tam sözleşme: `shared/context-economy-contract.md`, operasyon: `references/16-baglamyonetimi-ve-buyuk-veri.md`):
 
 - **Tier 0 — Ana pencere (kıt):** yalnız talep · mod planı · G0 manifesto · damıtılmış zarflar · `evidence_ledger` · nihai metin. **Ham araç çıktısı ASLA girmez.**
 - **Tier 1 — Distiller alt-ajanları (izole):** `legal-distiller` (S1 TR-çekirdek, S3 doktrin) · `comparative-law-researcher` (S2) · `evidence-synthesizer` (S4 klinik) · `gerekce-drafter` · `compliance-auditor` — ham getirimi kendi pencerelerinde tüketir, kompakt zarf döner. Sharding, tek bir distiller'ın da taşmasını önler.
@@ -105,7 +105,7 @@ Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır. Kriterler `references/06b-
 
 ## 5. Zorunlu delegasyon — evidentia + sci-audit (bağlam-tetiklemeli)
 
-Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki plugin **kuruluysa çağrılmaları opsiyonel DEĞİL, zorunludur** — bağlam tetiklendiğinde atlanmaları **G0 ihlalidir**. Degrade yalnız plugin'in gerçekten kurulu olmadığı durumda meşrudur ("veri boşluğu" işaretiyle, asla uydurmadan) ve manifestoda beyan edilir; SessionStart preflight kurulum durumunu oturum başında işaretler. Tam sözleşme: `../../shared/composition-contract.md`.
+Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki plugin **kuruluysa çağrılmaları opsiyonel DEĞİL, zorunludur** — bağlam tetiklendiğinde atlanmaları **G0 ihlalidir**. Degrade yalnız plugin'in gerçekten kurulu olmadığı durumda meşrudur ("veri boşluğu" işaretiyle, asla uydurmadan) ve manifestoda beyan edilir; SessionStart preflight kurulum durumunu oturum başında işaretler. Tam sözleşme: `shared/composition-contract.md`.
 
 - **Klinik kanıt → evidentia (her klinik-boyutlu sorguda).** Konu ilaç/cihaz/hastalık/tedavi/klinik-çalışma/geri-ödeme içeriyorsa **daima** devrede (DRAFT/ANALYZE/OPINE/RIA/COMPARATIVE/TBMM/EX_POST zorunlu; AMEND/COMPLY koşullu — ama sağlık mevzuatında klinik-boyut ≈ daima vardır). Klinik-sıfır saf idari norm → atla + manifestoda beyan et. **Zenginleştirilmiş sorgu** kur (ham değil): `main_query` (İngilizce) + `explicit_layer_request` + `lex_sanitas_legal_context` (TR referanslar + Anayasa + antlaşmalar) + `requested_sections_priority` + `citation_format:Vancouver` + `epistemic_dual_label:true`. `/evidentia` komutuna veya `evidence-synthesizer` alt-ajanına delege et; dönen sidecar'da **önce `reverse_signals`** oku. Aktarılan her TR referansı `mcp__mevzuat__*`/`mcp__Yarg__*` ile çapraz-doğrula. Kaynakça **asla karıştırma**: 8.1 Türk+uluslararası mevzuat / 8.2 bilimsel (Vancouver) / 8.3 Türk içtihat.
 - **Güvenilirlik + dil → sci-audit (her çıktıda).** Üretilen metnin atıflarını `/verify-citations`, istatistik/nicel iddialarını `/check-stats`, halüsinasyon sinyallerini ve Türkçe yazımı `/check-turkish` ile **her çıktıda** denetlet (bu, tam-filo ilkesinin çıktı-QA ayağıdır). sci-audit ekseni bilimsel-yazım odaklıdır; **hukuk dili G3/R9'da lex-sanitas'a aittir** — sci-audit'i tamamlayıcı imla/tutarlılık/atıf-bütünlüğü katmanı olarak kullan, hukuk-dili otoritesi olarak değil.
@@ -125,7 +125,7 @@ Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki 
 
 ## 7. Çıktı sözleşmesi — kapsam manifestosu + no-fabrication + confidence_label
 
-- **Kapsam manifestosu (G0, zorunlu — çıktı başında veya sonunda):** tam-filonun kanıtı. Her wire'lı MCP + bağlı companion + evidentia + sci-audit için tek satır: `server → durum (hit N kayıt / empty / degraded / skipped: <gerekçe>)`. Bu blok, "hepsi her sorguda çalıştı" iddiasının doğrulanabilir kanıtıdır; eksik satır = G0 FAIL. Örnek biçim `../../shared/coverage-manifest.md`'de.
+- **Kapsam manifestosu (G0, zorunlu — çıktı başında veya sonunda):** tam-filonun kanıtı. Her wire'lı MCP + bağlı companion + evidentia + sci-audit için tek satır: `server → durum (hit N kayıt / empty / degraded / skipped: <gerekçe>)`. Bu blok, "hepsi her sorguda çalıştı" iddiasının doğrulanabilir kanıtıdır; eksik satır = G0 FAIL. Örnek biçim `shared/coverage-manifest.md`'de.
 - **No-fabrication (G7):** kanun maddesi, CELEX, AYM/Yargıtay/YÖK-Tez, PMID, NCT, NICE-TA, FDA-Guidance başlığı **asla uydurma**. Her referans MCP- veya primer-kaynak-doğrulanmış (YÖK-Tez atıfları **wire'lı `mcp__yoktez__*`** ile — tez no/başlık/yazar — doğrulanır; bu artık companion'a bağlı değildir). Doğrulanamayan → `illustrative_placeholder_not_verified` etiketle, kullanma. Doğrulanamayan referans varsa → **"MCP üzerinden doğrulanamayan referans"** notu.
 - **evidence_ledger:** her somut bilimsel/hukuki iddia → bir `E###` kaydı (kaynak, GRADE, `mcp_verified` bayrağı, desteklenen bölümler, Vancouver atıf). `status=verified` yalnız `mcp_verified=true` ise. Şema: `schemas/evidence_ledger.schema.json`. Kanıt işaretleri `[E1]/[E2]…` sıralı.
 - **confidence_label (zorunlu, çıktı sonu):** mod + `combined_confidence` (HIGH/MODERATE/LOW) + `human_review_required:true` + çift öz-beyan (lex-sanitas MCP-erişilemezliği & belirsiz yorumlar; evidentia bilgi-boşlukları & tek-kaynak bulgular) + `scope_disclaimer`. Şema: `schemas/confidence_label.schema.json`.

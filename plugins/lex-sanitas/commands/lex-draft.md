@@ -7,7 +7,7 @@ argument-hint: <konu ve mevzuat türü — örn. "ATMP ileri tedavi tıbbi ürü
 
 Talep: **$ARGUMENTS**
 
-`lex-sanitas` flagship skill'ini **Mod 1 DRAFT** olarak çalıştır. Süit sözleşmeleri normatiftir: [`shared/composition-contract.md`](../shared/composition-contract.md), [`shared/coverage-manifest.md`](../shared/coverage-manifest.md).
+`lex-sanitas` flagship skill'ini **Mod 1 DRAFT** olarak çalıştır. Süit sözleşmeleri normatiftir: [`shared/composition-contract.md`](../skills/lex-sanitas/shared/composition-contract.md), [`shared/coverage-manifest.md`](../skills/lex-sanitas/shared/coverage-manifest.md).
 
 ## Yürütme
 

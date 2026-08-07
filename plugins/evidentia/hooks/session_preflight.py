@@ -12,7 +12,8 @@ WHAT CHANGED (2026-08-07 audit findings MAJOR-2 + MINOR-1):
     SIX connectors while `.mcp.json` had SEVEN: the 2026-08-02 TİTCK gating was
     repaired in `.mcp.json` on 2026-08-06 but never reached this hook, so a missing
     `TITCK_MCP_API_KEY` produced NO warning — and the emitted message positively
-    told the operator that `titck-cache` was keyless and unaffected. Deriving the
+    told the operator that `titck-cache` (renamed `titck` on 2026-08-07) was
+    keyless and unaffected. Deriving the
     map from the lock makes that class of drift structurally impossible.
 
   * The hook now also consults the live fleet probe (`hooks/scripts/fleet_probe.py`,

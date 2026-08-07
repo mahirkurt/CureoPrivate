@@ -126,7 +126,8 @@ def main():
         print("FAIL preflight all-present-silent")
 
     # EVERY gated connector must be covered. This loop is the regression lock for
-    # audit finding MAJOR-2: titck-cache was gated in .mcp.json but absent from the
+    # audit finding MAJOR-2: titck-cache (renamed `titck` 2026-08-07) was gated in
+    # .mcp.json but absent from the
     # hook's map, so its missing key warned nobody. Dropping any one key must warn,
     # and the warning must NAME that connector.
     for name, var in sorted(gated.items()):

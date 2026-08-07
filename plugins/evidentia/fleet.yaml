@@ -9,7 +9,7 @@
 
 version: 2
 plugin: evidentia
-plugin_version: "2.3.9"
+plugin_version: "2.3.10"
 
 servers:
   - name: med-terminologies
@@ -242,7 +242,7 @@ servers:
         2026-06-28 HTTP 200 · search_kanun('ilaç')→67 (kanun-NUMARASI lookup +
         bedesten.adalet.gov.tr ikinci kaynak)
 
-  - name: titck-cache
+  - name: titck
     url: https://titck.cureonics.com/mcp
     tier: O
     auth_env: TITCK_MCP_API_KEY
@@ -252,8 +252,19 @@ servers:
     extra:
       _fix: >-
         2026-08-02 TİTCK kapılanması (Worker cache emekli, önbellek sunucuya taşındı) bu
-        plugin'de kaçırıldı: anahtarsız 401. 2026-08-06'da onarıldı. 'titck-cache' adı
-        tarihseldir — artık ayrı bir cache Worker'ı YOK, uç doğrudan titck.cureonics.com.
+        plugin'de kaçırıldı: anahtarsız 401. 2026-08-06'da onarıldı.
+      _renamed: >-
+        2026-08-07: sunucu adı 'titck-cache' → 'titck'. Ad, 2026-08-02'de SİLİNEN bir
+        katmana (titck-cache-mcp Cloudflare Worker'ı + KV) atıf yapmaya devam ediyordu;
+        uç o tarihten beri doğrudan kapılı Python sunucusudur (önbellek titck_mcp/cache.py
+        içine taşındı). Ad ölü katmanı işaret ettiği için hem okuyanı yanıltıyor hem de
+        bir sonraki denetimde 'ölü katman' olarak işaretleniyordu. Araç öneki de buna göre
+        değişti (plugin-kapsamlı önek sunucu adından türer); eski öneke canlı atıf
+        YOKTU — repo genelinde tarandı. Ölü önek burada BİREBİR YAZILMAZ: check_drift
+        [6] bir önek geçişini canlı atıf sayar ve haklı olarak sürüklenme raporlar
+        (bu not ilk hâlinde tam ona takıldı). Emekliliğin TARİHSEL kaydı
+        BUILD.md/CONNECTORS.md/CERTIFICATION.md'de bilerek KORUNDU: silinen katmanın
+        hikâyesi silinmez, yalnız canlı ad gerçeğe hizalanır.
 
   - name: yok-akademik
     url: https://yok-akademik.cureonics.com/mcp

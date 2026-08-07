@@ -64,11 +64,12 @@
 
     "__TIER_O__operator_cureonics_workers": "🟢 auto-wire — operatörün kendi sertleştirilmiş OAuth 2.1 Worker'ları; başka operatör kendi instance'larına işaret etmeli (CONNECTORS.md)",
 
-    "titck-cache": {
+    "titck": {
       "type": "http",
       "url": "https://titck.cureonics.com/mcp",
       "_tier": "O",
-      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal TİTCK şeması"
+      "_role": "Türkiye Dörtlüsü latency fallback rung — native TİTCK/openfda stall'da; aynı mantıksal TİTCK şeması",
+      "_renamed": "2026-08-07: 'titck-cache' → 'titck'. Eski ad 2026-08-02'de SİLİNEN Worker+KV katmanına atıf yapıyordu; uç o tarihten beri doğrudan kapılı Python sunucusu (önbellek titck_mcp/cache.py içinde). Bu dosya ELLE tutulur — gen_fleet onu üretmez, bu yüzden yeniden adlandırmada ayrıca güncellenmesi gerekir."
     },
     "yok-akademik": {
       "type": "http",

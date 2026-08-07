@@ -191,9 +191,41 @@ rxpraxis · sci-audit) aynı invariantları paylaşır:
    `skills/`, `agents/`, `hooks/hooks.json`, `.mcp.json` — anahtarlar `plugin.json`'da
    belirtilmezse konvansiyonel yollardan otomatik keşfedilir).
 2. `.claude-plugin/marketplace.json` → `plugins[]` dizisine girdi ekle
-   (`name`, `source: ./plugins/<yeni-plugin>`, `version`, `description`).
+   (`name`, `displayName`, `source: ./plugins/<yeni-plugin>`, `version`,
+   `description`, `author`, `category`, `keywords`, `strict`).
    **Sürüm ve açıklama plugin.json ile senkron olmalıdır.**
-3. Commit + push → `/plugin marketplace update cureonics-marketplace`.
+3. Kapıları koştur (aşağı bkz.) → commit + push →
+   `/plugin marketplace update cureonics-marketplace`.
+
+## Kalite kapıları
+
+Bu depo GitHub üzerinden doğrudan marketplace olarak hizmet verir: **main'e giren
+her commit, ara aşama olmadan kullanıcıların kurduğu artefakttır.** İki
+deterministik, offline kapı bunu korur ve her push/PR'da CI'da koşar
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+
+```
+python3 tools/fleetkit/check_drift.py --all        # türetilmişlik + sürüm + sunucu kimliği
+python3 tools/fleetkit/check_marketplace.py        # marketplace bileşen sözleşmesi
+```
+
+| Kapı | Neyi yakalar |
+|---|---|
+| `check_drift` | türetilmiş dosya bayat · sürüm zinciri tutarsız · vendor'lı `fleet_probe` sapmış · çift `hooks.json` · düzyazı filo sayısı yanlış · **filoda olmayan sunucu kimliğine atıf** (yeniden adlandırma/emeklilik sürüklenmesi) |
+| `check_marketplace` | katalog ↔ disk uyuşmazlığı · eksik katalog alanı · skill/agent `name` ≠ dizin/dosya · eksik `description` · bilinmeyen hook olayı · **var olmayan hook betiği** · `CLAUDE_PLUGIN_ROOT` kullanmayan (taşınabilir olmayan) komut · `timeout` yok · hook betiğinde sözdizimi hatası |
+
+**Neden iki ayrı kapı:** `check_drift` yalnız *türetilen* şeyleri denetler. Skill
+frontmatter'ı, agent adı, hook betiği yolu ve komut açıklaması **türetilmez** —
+bu yüzden görünmezlerdi. Bu katmanların bozulması hata da vermez: skill sessizce
+keşfedilemez, hook her oturumda sessizce düşer, komut menüde boş görünür.
+`check_marketplace` tam olarak bu *sessiz* sınıf içindir.
+
+CI ayrıca kapılara kasıtlı kusur enjekte edip **yakaladıklarını** doğrular —
+"yeşil CI" ile "gerçekten denetleyen CI"yı ayırmak için.
+
+Canlı MCP sağlığı (`tools/fleetkit/audit_plugins.py`, 56 uca gerçek `initialize`)
+**CI'da koşmaz**: Bearer anahtarı ister ve bir upstream arızası PR'ları bloke
+ederdi. Elle koşulur.
 
 ## Güncelleme / kaldırma
 

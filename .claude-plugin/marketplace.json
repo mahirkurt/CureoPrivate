@@ -148,7 +148,8 @@
         "async-ocr",
         "resmigazete",
         "mulga-mevzuat"
-      ]
+      ],
+      "strict": false
     },
     {
       "name": "evidentia",

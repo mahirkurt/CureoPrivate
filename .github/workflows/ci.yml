@@ -1,0 +1,83 @@
+name: filo kapıları
+
+# NEDEN VAR: bu depo GitHub üzerinden bir Claude Code marketplace'i olarak
+# hizmet veriyor — `/plugin marketplace add mahirkurt/CureoPrivate`. Yani main'e
+# giren her commit, hiçbir ara aşama olmadan doğrudan kullanıcıların kurduğu
+# artefakttır. İki deterministik kapı zaten yazılıydı ama hiçbir şey onları
+# otomatik koşturmuyordu; bu iş akışı o boşluğu kapatır.
+#
+# Her iki kapı da OFFLINE ve ağ erişimsizdir — CI'da secret gerektirmez.
+# Canlı MCP sağlığı (tools/fleetkit/audit_plugins.py) BİLİNÇLİ OLARAK dışarıda:
+# gerçek uçlara Bearer anahtarıyla vurur, dolayısıyla hem secret ister hem de
+# upstream bir arıza yüzünden PR'ları bloke ederdi. O elle koşulur.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kapilar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: PyYAML kur
+        run: python -m pip install --quiet pyyaml
+
+      # [1] Türetilmişlik: fleet.yaml → .mcp.json/lock, sürüm zinciri,
+      #     vendor'lı fleet_probe bayt-özdeşliği, düzyazı sayıları ve
+      #     ([6], 2026-08-07) filoda olmayan sunucu kimliğine atıf.
+      - name: sürüklenme kapısı (check_drift)
+        run: python3 tools/fleetkit/check_drift.py --all
+
+      # [2] Marketplace sözleşmesi: katalog ↔ disk, skill/agent/komut
+      #     frontmatter'ı, hook olay+betik+timeout sözleşmesi, betik sözdizimi.
+      #     Bu katmanların hiçbiri türetilmez → [1] onları göremez.
+      - name: marketplace sözleşme kapısı (check_marketplace)
+        run: python3 tools/fleetkit/check_marketplace.py
+
+      # Kapıların kendileri de regresyona uğrayabilir. Bu adım kasıtlı bir
+      # kusur enjekte edip kapının onu YAKALADIĞINI doğrular, sonra geri alır —
+      # yani "yeşil CI" ile "gerçekten denetleyen CI"yı ayırır.
+      - name: kapılar dekoratif değil (mutasyon testi)
+        run: |
+          set -e
+          python3 - <<'PY'
+          import json, pathlib, subprocess, sys
+          def gate(script):
+              return subprocess.run([sys.executable, f'tools/fleetkit/{script}', '--quiet'],
+                                    capture_output=True).returncode
+
+          checks = [
+            ('check_marketplace.py', 'plugins/edupedia/skills/start/SKILL.md',
+             lambda s: s.replace('name: start', 'name: bozuk', 1), 'skill adı ≠ dizin'),
+            ('check_drift.py', 'plugins/lex-sanitas/skills/lex-sanitas/source_registry.yaml',
+             lambda s: s + '\n_mut:\n  - access: { mcp_server: olmayan_sunucu }\n', 'ölü sunucu kimliği'),
+          ]
+          fail = False
+          for script, path, mutate, label in checks:
+              p = pathlib.Path(path); orig = p.read_text(encoding='utf-8')
+              p.write_text(mutate(orig), encoding='utf-8')
+              args = ['--all'] if script == 'check_drift.py' else []
+              rc = subprocess.run([sys.executable, f'tools/fleetkit/{script}', *args, '--quiet'],
+                                  capture_output=True).returncode
+              p.write_text(orig, encoding='utf-8')
+              ok = rc == 1
+              print(f"  {'YAKALADI' if ok else 'KAÇIRDI'}  {label}  ({script})")
+              fail |= not ok
+          sys.exit(1 if fail else 0)
+          PY
+
+      - name: özet
+        if: success()
+        run: echo "Her iki kapı temiz ve ikisi de mutasyon-doğrulandı."

@@ -1,10 +1,10 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "lex-sanitas",
-  "plugin_version": "3.6.0",
+  "plugin_version": "3.7.0",
   "counts": {
-    "servers": 20,
-    "gated": 16,
+    "servers": 21,
+    "gated": 17,
     "public": 4,
     "companions": 4,
     "delegations": 2
@@ -214,6 +214,20 @@
       "gate": "G6"
     },
     {
+      "name": "eurlex",
+      "url": "https://eurlex.cureonics.com/mcp",
+      "tier": "comparative",
+      "auth_env": "EURLEX_MCP_API_KEY",
+      "shard": [
+        "S1",
+        "S2"
+      ],
+      "modes": [
+        "ALL"
+      ],
+      "gate": "G6"
+    },
+    {
       "name": "turk-patent",
       "url": "https://markapatent-mcp.fastmcp.app/mcp",
       "tier": "support",
@@ -261,12 +275,12 @@
         "mcp__Open_Law__",
         "mcp__claude_ai_Open_Law__"
       ],
-      "gate": "G6",
+      "gate": null,
       "modes": [
         "ALL"
       ],
-      "manifest_row": "Open Law (companion — G6 CELEX)",
-      "degrade": "CELEX konsolide doğrulaması german-law get_eu_basis → WebFetch'e degrade eder; G6 CONDITIONAL işaretlenir."
+      "manifest_row": "Open Law (companion — UK birincil metin; AB yarısı wire'landı)",
+      "degrade": "Bağlı değilse UK birincil metni PROGRAMATİK yedeğe düşer: ep.legislation_uk (references/15 §3) — arama /{tur}?title={q}, belge /{tur}/{yil}/{no}/data.akn (Akoma Ntoso; data.xml CLML'dir, AKN DEĞİL); sonuç mcp_verified=false. AB/CELEX tarafı bu companion'a ARTIK BAĞLI DEĞİLDİR — wire'lı `eurlex` sunucusu taşır, o da düşerse ep.eurlex_sparql. Ne companion ne uç erişilebilirse UK satırı 'manual_required' (legislation.gov.uk deep-link) — asla uydurma."
     },
     {
       "name": "Ansvar",

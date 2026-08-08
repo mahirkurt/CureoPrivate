@@ -70,7 +70,7 @@ def mandatory_rows(lock=None):
     """Manifestoda BULUNMASI ZORUNLU satırları lock'tan türetir.
 
     Yalnız companion (wire edilemez dış connector) + delegasyon plugin'leri
-    denetlenir. Wire'lı 20 server için satır-satır regex denetimi YAPILMAZ —
+    denetlenir. Wire'lı 21 server için satır-satır regex denetimi YAPILMAZ —
     kırılgan olur ve yanlış-pozitif üretir; onların kanıtı G0 manifestosunun
     varlığıdır. Bilinmeyen ad için ada dayalı jenerik desen üretilir.
     """

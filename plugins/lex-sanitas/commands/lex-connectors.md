@@ -1,5 +1,5 @@
 ---
-description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 20 hukuk/regülasyon MCP + 4 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 21 hukuk/regülasyon MCP + 4 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
 ---
@@ -87,6 +87,7 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 | `literatur` | doctrine | _(public — anahtar yok)_ |
 | `openathens` | fulltext | `OPENATHENS_MCP_API_KEY` |
 | `annas-reader` | fulltext | `ANNAS_MCP_API_KEY` |
+| `eurlex` | comparative | `EURLEX_MCP_API_KEY` |
 | `turk-patent` | support | _(public — anahtar yok)_ |
 | `anamnesis` | substrate | `ANAMNESIS_MCP_API_KEY` |
 | Yargı | companion | _(claude.ai connector — env anahtarı yok)_ |

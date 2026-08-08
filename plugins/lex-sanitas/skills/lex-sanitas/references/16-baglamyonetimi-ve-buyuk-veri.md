@@ -1,6 +1,6 @@
 # Referans 16 — Bağlam Yönetimi ve Büyük-Veri Operasyonel Protokolü
 
-Bu dosya, `shared/context-economy-contract.md` sözleşmesinin **operasyonel yürütme kılavuzudur** — hangi durumda hangi katmanı, hangi araç parametreleriyle çağıracağını adım adım tanımlar. Tam-filo (20 kaynak MCP her sorguda) çalışırken bağlamı boğmadan **en doğru ve kapsamlı** getirimi sağlar.
+Bu dosya, `shared/context-economy-contract.md` sözleşmesinin **operasyonel yürütme kılavuzudur** — hangi durumda hangi katmanı, hangi araç parametreleriyle çağıracağını adım adım tanımlar. Tam-filo (21 kaynak MCP her sorguda) çalışırken bağlamı boğmadan **en doğru ve kapsamlı** getirimi sağlar.
 
 ## A. Karar ağacı — bir belge geldiğinde
 

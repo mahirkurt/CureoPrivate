@@ -233,3 +233,37 @@ cases:
       `eli/cc/2001/422` — "Bundesgesetz vom 15. Dezember 2000 über Arzneimittel und
       Medizinprodukte (HMG)". Filtresiz sorgu ayrıca 5 ÖZDEŞ satır döndürdü.
       Taslağı yürürlükteki metin diye sunmak no-fabrication ihlalidir.
+
+  - id: FR-20-companion-anahtarsiz-ucu-varsa-wire-edilir
+    given: >-
+      Bir companion'ın taşıdığı yetenek, anahtarsız erişilebilir bir upstream'e
+      dayanıyor ve o upstream için açık kaynak (izin verici lisanslı) bir MCP
+      sunucusu mevcut.
+    expect:
+      - "Yetenek claude.ai OAuth companion'ında BIRAKILMAZ — self-host edilip wire'lanır; bağlı kapı (varsa) companion'dan wire'lı sunucuya taşınır ve hard PASS olur."
+      - "Upstream FORK EDİLMEZ: sürüm PİNLİ olarak çalıştırılır ve önüne OAuth kapısı konur. Fork yalnız upstream'in kendi HTTP katmanına müdahale şartsa yapılır."
+      - "Upstream 127.0.0.1'e bağlanır; kapıyı atlatan doğrudan erişim mümkün OLMAMALIDIR."
+      - "Kapıya giden Authorization YUKARI AKIŞA GEÇİRİLMEZ (en az yetki) — upstream authless çalışır."
+      - "Upstream düşükse kapı 502 + açık hata döner; 200 + boş sonuç ASLA (FR-16 ile aynı gerekçe)."
+    rationale: >-
+      2026-08-08: `Türk Patent` (markapatent-mcp) ve `Open Law`ın AB yarısı
+      (eurlex) bu yolla companion'dan wire'a taşındı. eurlex için upstream
+      `@cyanheads/eur-lex-mcp-server` (Apache-2.0) 0.9.8'e pinlenip HP'de
+      127.0.0.1:8316'da authless koşuyor, önünde tek-kiracılı OAuth 2.1 kapısı
+      (:8315 → eurlex.cureonics.com). Fork YOK. Yetkilendirme bekleyen companion
+      sayısı 3 → 1'e indi (kalan: Fedlex Swiss).
+
+  - id: FR-21-g6-artik-companion-a-bagli-degil
+    given: >-
+      G6 (CELEX konsolide doğrulaması) kapısı denetleniyor ve `Open Law`
+      companion'ı bağlı değil.
+    expect:
+      - "G6 CONDITIONAL'a DÜŞMEZ — wire'lı `eurlex` sunucusu (eurlex_lookup_celex) kapıyı taşır: hard PASS."
+      - "eurlex de erişilemezse G6 programatik yedeğe (ep.eurlex_sparql) düşer ve CONDITIONAL işaretlenir."
+      - "german-law get_eu_basis G6 ikamesi DEĞİLDİR — Almanya-çapalıdır, CELEX üretmez."
+    rationale: >-
+      yoktez ve turk-patent geçişleriyle aynı mantık: bir kapı, yetkilendirme
+      bekleyen bir dış connector'a bağlı kaldığı sürece kırılgandır. Doğrulama
+      iki BAĞIMSIZ yolla yapıldı — ham CELLAR SPARQL ve eurlex_lookup_celex,
+      CELEX 32001L0083 için aynı cellar URI'sini, aynı türü (DIR) ve aynı tarihi
+      (2001-11-06) verdi.

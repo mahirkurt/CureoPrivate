@@ -83,8 +83,8 @@ with tempfile.TemporaryDirectory() as _d:
 
 check("lock yoksa None (fail-open)", fleet_probe.load_lock("/olmayan/yol") is None)
 _lock = fleet_probe.load_lock(ROOT)
-check("fleet.lock.json okunur ve 20 server taşır",
-      bool(_lock) and _lock["counts"]["servers"] == 20)
+check("fleet.lock.json okunur ve 21 server taşır",
+      bool(_lock) and _lock["counts"]["servers"] == 21)
 with open(os.path.join(SCRIPTS, "fleet_probe.py"), encoding="utf-8") as fh:
     _src = fh.read()
 check("hook YALNIZ stdlib (PyYAML/requests yok)",
@@ -118,7 +118,7 @@ check("tam-metin şelalesi invaryantı enjekte edilir (openathens→annas sıras
       "TAM-METİN ŞELALESİ" in ctx and "YALNIZ ANALİZ" in ctx)
 
 # ── Lock + prob tümleşimi (v3.5.0) ────────────────────────────────────────
-_L = {"counts": {"servers": 20, "gated": 16, "public": 4,
+_L = {"counts": {"servers": 21, "gated": 17, "public": 4,
                  "companions": 4, "delegations": 2},
       "servers": [{"name": "titck", "auth_env": "TITCK_MCP_API_KEY"}],
       "companions": [{"name": "Yargı", "tool_prefixes": ["mcp__Yarg__"], "gate": "G5",
@@ -146,7 +146,7 @@ check("auth_missing → doppler çözüm yolu (meşru degrade)",
 
 _ctx_plain = session_start.build_context(_L, {}, {})
 check("sayılar lock'tan gelir (hardcode 14 yok)",
-      "20 hukuk MCP" in _ctx_plain and "14" not in _ctx_plain)
+      "21 hukuk MCP" in _ctx_plain and "14" not in _ctx_plain)
 check("prob boş dönse bile bağlam üretilir (fail-open)",
       _ctx_plain.startswith("[lex-sanitas]"))
 check("lock None iken de çökmez (fail-open)",

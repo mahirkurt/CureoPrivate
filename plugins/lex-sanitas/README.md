@@ -7,7 +7,7 @@ En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağ
 ## Öne çıkanlar
 
 - **9 mod:** DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION.
-- **Tam-filo aktivasyonu:** wire edilmiş **20 hukuk/regülasyon MCP + 4 zorunlu companion** (Yargı · Open Law · Ansvar · Fedlex Swiss ↔ Mod7 CH birincil metin · Türk Patent ↔ IP-boyutlu reform) her sorguda çalışır; her çıktı **kapsam manifestosu (G0)** taşır — hangi server çalıştı/boş/degrade/atlandı (sessiz atlama yasak; bağlam-dışı companion satırı dürüstçe `skipped: mod için N/A`).
+- **Tam-filo aktivasyonu:** wire edilmiş **21 hukuk/regülasyon MCP + 4 zorunlu companion** (Yargı · Open Law · Ansvar · Fedlex Swiss ↔ Mod7 CH birincil metin · Türk Patent ↔ IP-boyutlu reform) her sorguda çalışır; her çıktı **kapsam manifestosu (G0)** taşır — hangi server çalıştı/boş/degrade/atlandı (sessiz atlama yasak; bağlam-dışı companion satırı dürüstçe `skipped: mod için N/A`).
 - **Bağlam ekonomisi + büyük-veri:** tam-filo ham veriyi ana pencereye dökmez — **3-katmanlı ekonomi** (Tier 0 ana pencere · Tier 1 ≤4 paralel distiller alt-ajanı · Tier 2 **anamnesis** RAG/GraphRAG substratı) + **kanonik cache** (bir-kez-getir) + **kör-getirme-yok chunking** + **devre-kesici/extract-then-evict**. Büyük kanun/statute/OCR → anamnesis ingest→bounded query. Sözleşme: `skills/lex-sanitas/shared/context-economy-contract.md`.
 - **No-fabrication:** kanun/CELEX/AYM/Yargıtay/PMID asla uydurulmaz; her atıf MCP-doğrulanmış (`evidence_ledger`).
 - **Yumuşak delegasyon:** klinik kanıt → **evidentia**; atıf-adli + Türkçe dil → **sci-audit** (varsa; yoksa graceful degrade).
@@ -30,7 +30,7 @@ En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağ
 
 Serbest metinle de tetiklenir (skill `lex-sanitas` + `lex-sanitas-start` router). Oryantasyon için `/lex-connectors` veya "lex-sanitas nedir".
 
-## Wire edilmiş MCP filosu (20 server + 4 companion)
+## Wire edilmiş MCP filosu (21 server + 4 companion)
 
 Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`, `fleet.lock.json`, `/lex-connectors` anahtar tablosu, distiller ajanlarının `tools:` kısıtı ve mod×server matrisi **ondan üretilir** (`python3 tools/fleetkit/gen_fleet.py`); `tools/fleetkit/check_drift.py` türetilmiş≠commit'li hâlini ve düzyazıdaki yanlış filo sayılarını CI'da yakalar. **`tools/fleetkit/` KURULU PLUGIN'DE BULUNMAZ** — kaynak depoya (`CureoPrivate`) ait bir GELİŞTİRME aracıdır; kurulu pakette türetme/kapı komutları çalıştırılamaz, `fleet.yaml` ve türevleri salt-okunur kanıttır.
 
@@ -60,9 +60,9 @@ Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `ski
 ```
 lex-sanitas/
 ├── .claude-plugin/plugin.json      # manifest (v3.5.6)
-├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (20 server + 4 companion)
+├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (21 server + 4 companion)
 ├── fleet.lock.json                 # üretilir — hook'ların okuduğu stdlib türev
-├── .mcp.json                       # üretilir — 20 MCP + tam-filo rol notları
+├── .mcp.json                       # üretilir — 21 MCP + tam-filo rol notları
 ├── skills/
 │   ├── lex-sanitas/                # flagship (9 mod, G0-G9) + 19 referans + 12 template + 4 şema
 │   │   └── shared/                 # composition · coverage-manifest · context-economy (v3.5.5'te skill içine alındı)

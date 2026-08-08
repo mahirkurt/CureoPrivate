@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — lex-sanitas MCP wiring. 20 server (16 Bearer-gated, 4 public), 4 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) claude.ai connector'ıdır — wire edilemez; bkz. commands/lex-connectors.md.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — lex-sanitas MCP wiring. 21 server (17 Bearer-gated, 4 public), 4 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) claude.ai connector'ıdır — wire edilemez; bkz. commands/lex-connectors.md.",
   "mcpServers": {
     "mevzuat": {
       "type": "http",
@@ -153,6 +153,15 @@
       },
       "_tier": "fulltext",
       "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir."
+    },
+    "eurlex": {
+      "type": "http",
+      "url": "https://eurlex.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${EURLEX_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "EUR-Lex / CELLAR — G6 CELEX kapısının WIRE'LI taşıyıcısı (2026-08-08'de `Open Law` companion'ının AB yarısı buraya taşındı; companion artık yalnız UK taşır). HP self-host: upstream `@cyanheads/eur-lex-mcp-server` (Apache-2.0, sürüm PİNLİ 0.9.8) 127.0.0.1:8316'da ANAHTARSIZ koşar, önünde tek-kiracılı OAuth 2.1 kapısı (:8315) durur — fork YOK, upstream npm ile yükseltilir. 7 araç: lookup_celex (varlık/tür/tarih doğrulaması — G6'nın ta kendisi), search_documents, get_document, get_cases (CJEU), get_relations (CELLAR ilişki grafı), browse_subjects (EuroVoc), query_sparql (ham SPARQL). Upstream CELLAR SPARQL + EUR-Lex REST'e anahtarsız erişir; yukarı akışa hiçbir kimlik bilgisi gönderilmez. DOĞRULAMA (2026-08-08, iki BAĞIMSIZ yol aynı sonucu verdi): ham CELLAR SPARQL sorgusu ve bu sunucunun `eurlex_lookup_celex`'i CELEX 32001L0083 için aynı cellar URI'sini (6af3ed69-c00a-4629-9deb-a7003a30a52d), aynı türü (DIR) ve aynı tarihi (2001-11-06) döndürdü."
     },
     "turk-patent": {
       "type": "http",

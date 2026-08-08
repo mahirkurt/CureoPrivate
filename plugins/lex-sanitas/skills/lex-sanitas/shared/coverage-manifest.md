@@ -4,7 +4,7 @@
 
 ## Kurallar
 
-- Wire edilmiş **20 MCP** + **4 companion** (Yarg/Open_Law/Ansvar/Fedlex_Swiss/Turk_Patent — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
+- Wire edilmiş **21 MCP** + **4 companion** (Yarg/Open_Law/Ansvar/Fedlex_Swiss/Turk_Patent — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false`) · `skipped: <gerekçe>` (anahtar yok / mod için N/A).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.

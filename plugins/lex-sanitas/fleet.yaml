@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.6.0"
+plugin_version: "3.7.0"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -465,6 +465,44 @@ servers:
       Erişilemezse ilgili doktrin satırı 'manual_required' (kaynak künyesi + erişim
       yolu) yazılır — asla uydurma içerik.
 
+  - name: eurlex
+    url: https://eurlex.cureonics.com/mcp
+    tier: comparative
+    auth_env: EURLEX_MCP_API_KEY
+    shard: [S1, S2]
+    modes: [ALL]
+    gate: G6
+    tools_used: [eurlex_lookup_celex, eurlex_search_documents, eurlex_get_document,
+                 eurlex_get_cases, eurlex_get_relations, eurlex_browse_subjects,
+                 eurlex_query_sparql]
+    # Argümansız bilgi aracı yok → otomatik allowlist bu sunucuya hiç dokunmazdı.
+    # Beyan edilen duman çağrısı deterministik ve küçüktür (tek CELEX çözümlemesi).
+    smoke:
+      tool: eurlex_lookup_celex
+      args: { identifier: "32001L0083" }
+    role: >-
+      EUR-Lex / CELLAR — G6 CELEX kapısının WIRE'LI taşıyıcısı (2026-08-08'de
+      `Open Law` companion'ının AB yarısı buraya taşındı; companion artık yalnız
+      UK taşır). HP self-host: upstream `@cyanheads/eur-lex-mcp-server` (Apache-2.0,
+      sürüm PİNLİ 0.9.8) 127.0.0.1:8316'da ANAHTARSIZ koşar, önünde tek-kiracılı
+      OAuth 2.1 kapısı (:8315) durur — fork YOK, upstream npm ile yükseltilir.
+      7 araç: lookup_celex (varlık/tür/tarih doğrulaması — G6'nın ta kendisi),
+      search_documents, get_document, get_cases (CJEU), get_relations (CELLAR
+      ilişki grafı), browse_subjects (EuroVoc), query_sparql (ham SPARQL).
+      Upstream CELLAR SPARQL + EUR-Lex REST'e anahtarsız erişir; yukarı akışa
+      hiçbir kimlik bilgisi gönderilmez.
+      DOĞRULAMA (2026-08-08, iki BAĞIMSIZ yol aynı sonucu verdi): ham CELLAR
+      SPARQL sorgusu ve bu sunucunun `eurlex_lookup_celex`'i CELEX 32001L0083 için
+      aynı cellar URI'sini (6af3ed69-c00a-4629-9deb-a7003a30a52d), aynı türü (DIR)
+      ve aynı tarihi (2001-11-06) döndürdü.
+    degrade: >-
+      Anahtar yoksa/erişilemezse G6 CELEX doğrulaması PROGRAMATİK yedeğe düşer:
+      CELLAR SPARQL (ep.eurlex_sparql, references/15 §1) — aynı veri, MCP'siz;
+      sonuç mcp_verified=false + G6 CONDITIONAL. Bağlıysa `Open Law` companion'ı
+      ÇAPRAZ kontrol olarak kalır ama G6 artık ona BAĞLI DEĞİLDİR (hard PASS,
+      yoktez geçişiyle aynı mantık). Kapı 502 + açık hata döndürür (upstream
+      düşükse) — sessiz boş sonuç ASLA.
+
   - name: turk-patent
     url: https://markapatent-mcp.fastmcp.app/mcp
     tier: support
@@ -547,10 +585,27 @@ companions:
     tool_prefixes: ["mcp__Open_Law__", "mcp__claude_ai_Open_Law__"]
     gate: G6
     modes: [ALL]
-    manifest_row: "Open Law (companion — G6 CELEX)"
+    manifest_row: "Open Law (companion — UK birincil metin; AB yarısı wire'landı)"
+    # 2026-08-08 — İKİ DÜZELTME:
+    # (1) KAPSAM DARALDI. Bu companion UK+AB taşıyordu; AB yarısı artık WIRE'LI
+    #     `eurlex` sunucusudur (HP self-host, G6'yı taşır). Companion'a kalan
+    #     UK'dir; G6 artık ona BAĞLI DEĞİLDİR → gate: null.
+    # (2) ESKİ DEGRADE METNİ ÖLÇÜMLE ÇÜRÜTÜLDÜ. "german-law get_eu_basis →
+    #     WebFetch" diyordu; oysa german-law'ın EU araçları ALMANYA-ÇAPALIDIR
+    #     ("§ 21 AMG" → "EG 1394/2007"), CELEX kimliği ÜRETMEZ, keyfi bir CELEX'i
+    #     doğrulayamaz. Gerçek yedek CELLAR SPARQL'dir ve zaten canlıydı.
+    #     (v3.7.0'da bu metnin güncellendiği bildirilmişti; düzenleme SESSİZCE
+    #     UYGULANMAMIŞTI — arama dizgisi ayrıştırılmış YAML'dan yazıldığı için
+    #     `>-` bloğunun ham metniyle eşleşmedi. v3.7.0'da doğrulanarak düzeltildi.)
+    gate: null
     degrade: >-
-      CELEX konsolide doğrulaması german-law get_eu_basis → WebFetch'e degrade
-      eder; G6 CONDITIONAL işaretlenir.
+      Bağlı değilse UK birincil metni PROGRAMATİK yedeğe düşer:
+      ep.legislation_uk (references/15 §3) — arama /{tur}?title={q}, belge
+      /{tur}/{yil}/{no}/data.akn (Akoma Ntoso; data.xml CLML'dir, AKN DEĞİL);
+      sonuç mcp_verified=false. AB/CELEX tarafı bu companion'a ARTIK BAĞLI
+      DEĞİLDİR — wire'lı `eurlex` sunucusu taşır, o da düşerse ep.eurlex_sparql.
+      Ne companion ne uç erişilebilirse UK satırı 'manual_required'
+      (legislation.gov.uk deep-link) — asla uydurma.
 
   - name: Ansvar
     tool_prefixes: ["mcp__Ansvar__", "mcp__claude_ai_Ansvar__"]

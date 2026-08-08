@@ -211,3 +211,55 @@ was deliberately NOT exercised: unlike `anamnesis.forget_document` it has no inv
 would permanently pollute the KB index. Upstream data accuracy is unchanged since the 2026-07-05
 cross-validation for who-gho/globocan/ema; no equivalent has been run for the other connectors.
 
+---
+
+## Re-certification round 3 — 2026-08-08 (permanent hardening)
+
+Rounds 1–2 audited structure and behaviour. This round applied the **permanent fixes** the audit
+had identified but left open — and one of them stopped being hypothetical while the work was in
+progress.
+
+**§6.3P supply-chain risk MATERIALISED, then CLOSED for two of three.** `caseyjhand.com` — the
+individual-operator host carrying `openalex` and `pubmed-epmc` — returned HTTP 530 (origin down)
+for both, removing the bibliographic core's PubMed breadth and Tier 6 of the full-text cascade at
+once. Both are now operator Cloudflare Workers (`self-host/pubmed-mcp`, `self-host/openalex-mcp`),
+with tool and argument names replicated from the retired connectors' captured schemas. Proof the
+swap is drop-in: refreshing the G-TOOLS baseline reported `+none / -none` for each — the tool sets
+are identical.
+
+| Item | Outcome |
+|---|---|
+| CI never ran evidentia's gates | `tests/run_suites.py` wires 5 offline gates into the repo CI glob; mutation-verified (exit 1 on a real regression, 0 clean) |
+| `kb_upsert` had no inverse | `kb_forget(file\|id)` + forget-then-upsert ingest; the live index was rebuilt (29 files, 205 pre-existing rows dropped, 280 current chunks) |
+| `openalex` / `pubmed-epmc` on a third-party host | Migrated to operator Workers; 5 + 11 tools, 62 + 63 tests, all deployed |
+| `serverInfo` version frozen at "1.0.0" on every Worker | Fed from `package.json`; `initialize` now distinguishes deployments |
+| `--surface` covered only 7 Workers | Derived from the list; 9/9 |
+
+**Measured during the build, and written into the code where it can bite:**
+- Europe PMC field values must NOT be quoted (`SRC:"MED"` → 0 hits, `SRC:MED` → 1). The first
+  implementation's `sources` filter silently returned nothing — it would have read as "no such
+  literature".
+- OpenAlex citation filters read BACKWARDS: `cites:X` = works citing X (21,475 for GRADE 2008),
+  `cited_by:X` = the works X cites (12). Inverting them yields a plausible but wrong network.
+- Both upstreams meter per SOURCE IP while a Worker egresses from a shared pool. NCBI (3 req/s)
+  is handled with bounded backoff; OpenAlex now enforces a DAILY budget ("Insufficient budget …
+  $0 remaining"), which retrying cannot clear — so budget-429 is distinguished from transient-429
+  and the error names the two real remedies (`OPENALEX_API_KEY`, or the HP residential relay)
+  instead of degrading into a silent "no data".
+
+**Deliberately NOT done, with the measurement that decided it:**
+- **`semantic-scholar` was not migrated.** Its Graph API returned 429 on 4 of 4 consecutive
+  unauthenticated `paper/search` calls from a residential IP, while the pipeworx gateway answered
+  `initialize` 200 — the gateway holds an API key we do not. A keyless self-host would replace a
+  working path with one that fails on its primary tool. Unblocking condition: obtain an S2 API key.
+- **A snake_case alias reconciler for `pubmed-epmc` was written, deployed and REVERTED.**
+  Measurement showed zod strips unknown properties before the handler runs, so the reconciler could
+  never see the alias — it was a no-op that looked like a fix. The finding is documented instead
+  (`connector-registry.md` §2.7): an optional argument with the wrong casing is dropped and the
+  caller silently gets the default (`maxResults: 2` → 2 records, `max_results: 2` → 10).
+
+**Honest limits.** Output correctness beyond the exercised tools is still unverified, and the
+upstream cross-validation for connectors other than who-gho/globocan/ema has still not been run.
+The four pipeworx-gateway connectors and `med-terminologies` remain third-party by choice, under
+the untrusted-output discipline in §6.3P.
+

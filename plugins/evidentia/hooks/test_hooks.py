@@ -20,6 +20,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -157,6 +158,48 @@ def main():
         fails += 1
         print("FAIL preflight all-present-silent")
 
+    # --- fleet_probe cache invalidation (2026-08-08) ---------------------------------
+    # A stale cache is the MIRROR of this plugin's core sin: instead of claiming data that is not
+    # there, it claims a GAP that is not there. Measured that day: the cache written at 12:40
+    # recorded HTTP 530 for `openalex`/`pubmed-epmc` while they were still on the third-party
+    # host; both were migrated to operator Workers ~20 minutes later and became healthy, but the
+    # 24h TTL meant SessionStart kept reporting the DEAD url's failure — telling the model to
+    # declare "degraded: unreachable" for two working connectors. Age alone is not enough: the
+    # cache must also die when the roster changes.
+    sys.path.insert(0, os.path.join(HERE, "scripts"))
+    import fleet_probe as _fp   # noqa: E402
+    import tempfile as _tf
+
+    with open(os.path.join(ROOT, "fleet.lock.json"), encoding="utf-8") as fh:
+        _lock = json.load(fh)
+    fp1 = _fp.roster_fingerprint(_lock)
+    cache_file = os.path.join(_tf.mkdtemp(), "c.json")
+    _fp.write_cache(cache_file, {"x": {"status": "ok"}}, fp1)
+
+    if _fp.read_cache(cache_file, 86400, fp1) is None:
+        fails += 1
+        print("FAIL fleet_probe: unchanged roster should REUSE the cache")
+
+    for label, mutate in (
+        ("url", lambda L: L["servers"][0].__setitem__("url", "https://moved.example/mcp")),
+        ("auth_env", lambda L: L["servers"][0].__setitem__("auth_env", "NEW_KEY")),
+        ("server removed", lambda L: L["servers"].pop(0)),
+    ):
+        mutated = json.loads(json.dumps(_lock))
+        mutate(mutated)
+        if _fp.read_cache(cache_file, 86400, _fp.roster_fingerprint(mutated)) is not None:
+            fails += 1
+            print(f"FAIL fleet_probe: cache survived a roster change ({label}) — a migrated "
+                  f"connector would keep reporting its OLD url's failure")
+
+    # A pre-fingerprint cache file must not be trusted either.
+    legacy = os.path.join(_tf.mkdtemp(), "legacy.json")
+    with open(legacy, "w", encoding="utf-8") as fh:
+        json.dump({"ts": time.time(), "results": {"x": {"status": "ok"}}}, fh)
+    if _fp.read_cache(legacy, 86400, fp1) is not None:
+        fails += 1
+        print("FAIL fleet_probe: legacy cache without a roster stamp must be re-probed")
+
     # EVERY gated connector must be covered. This loop is the regression lock for
     # audit finding MAJOR-2: titck-cache (renamed `titck` 2026-08-07) was gated in
     # .mcp.json but absent from the
@@ -179,7 +222,8 @@ def main():
     # literal `7` silently understated the headline as soon as assertions were added or removed,
     # which is the same stale-count drift this audit found in the connector docs.
     #   3 = guard disable-flag + guard fail-open + preflight all-present-silent
-    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 2 * len(gated)
+    #   5 = fleet_probe cache: reuse-on-same + 3 roster mutations + legacy-format
+    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 5 + 2 * len(gated)
     if fails:
         print(f"\n{fails}/{total} FAILED")
         return 1

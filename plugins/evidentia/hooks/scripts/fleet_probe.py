@@ -27,6 +27,7 @@ fleet.lock.json'u stdlib json ile okur, böylece kullanıcı sisteminde PyYAML
 kurulu olmasa da preflight çalışır.
 """
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -198,23 +199,46 @@ def _cache_path(plugin: str = "") -> Path:
     return Path(base) / "cureonics-fleet" / f"{plugin or 'default'}.json"
 
 
-def read_cache(path, ttl: int = CACHE_TTL):
-    """Taze cache'i döner; bayat/bozuk/eksikse None."""
+def roster_fingerprint(lock) -> str:
+    """Filo kimliğinin özeti: her sunucunun ADI + URL'i + kapı değişkeni.
+
+    Cache'i YALNIZ yaşa göre geçersizleştirmek 2026-08-08'de yanlış alarma yol açtı: 12:40'ta
+    `openalex` ve `pubmed-epmc` hâlâ üçüncü-taraf host'taydı ve HTTP 530 veriyordu; ~13:00'te
+    ikisi de operatör Worker'larına TAŞINDI ve sağlıklı hâle geldi. Ama cache o 530'u
+    tutuyordu, dolayısıyla SessionStart preflight'ı ARTIK VAR OLMAYAN bir URL'nin arızasını
+    24 saat boyunca "erişilemedi" diye bildirmeye devam edecekti.
+
+    Bu, plugin'in temel disiplininin aynadaki hâli: "olmayan veriyi var gösterme" ne kadar
+    yanlışsa, ÇALIŞAN bir connector'ı yok göstermek de o kadar yanlıştır — model sahte bir
+    boşluk beyan eder ve sağlam bir kaynağı atlar. Roster değişirse cache YAŞTAN BAĞIMSIZ
+    olarak geçersizdir."""
+    rows = sorted(
+        (str(s.get("name", "")), str(s.get("url", "")), str(s.get("auth_env") or ""))
+        for s in (lock or {}).get("servers", [])
+    )
+    return hashlib.sha256(json.dumps(rows, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+
+
+def read_cache(path, ttl: int = CACHE_TTL, fingerprint: str = ""):
+    """Taze cache'i döner; bayat/bozuk/eksik VEYA roster değişmişse None."""
     try:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         if time.time() - float(data["ts"]) > ttl:
+            return None
+        # Fingerprint'i olmayan cache eski biçimdir → güvenme, yeniden probla.
+        if fingerprint and data.get("roster") != fingerprint:
             return None
         return data["results"]
     except Exception:
         return None
 
 
-def write_cache(path, results: dict) -> None:
+def write_cache(path, results: dict, fingerprint: str = "") -> None:
     try:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"ts": time.time(), "results": results}),
-                        encoding="utf-8")
+        path.write_text(json.dumps({"ts": time.time(), "roster": fingerprint,
+                                    "results": results}), encoding="utf-8")
     except Exception:
         pass  # cache yazılamaması asla akışı bozmaz
 
@@ -226,12 +250,13 @@ def cached_probe(root, env, ttl: int = CACHE_TTL, fresh: bool = False) -> dict:
         if not lock:
             return {}
         path = _cache_path((lock or {}).get("plugin", ""))
+        fp = roster_fingerprint(lock)
         if not fresh:
-            cached = read_cache(path, ttl)
+            cached = read_cache(path, ttl, fp)
             if cached is not None:
                 return cached
         results = probe_fleet(lock, env)
-        write_cache(path, results)
+        write_cache(path, results, fp)
         return results
     except Exception:
         return {}

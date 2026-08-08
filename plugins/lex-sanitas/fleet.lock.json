@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "lex-sanitas",
-  "plugin_version": "3.5.9",
+  "plugin_version": "3.6.0",
   "counts": {
     "servers": 20,
     "gated": 16,
@@ -294,7 +294,7 @@
         "COMPARATIVE_LAW"
       ],
       "manifest_row": "Fedlex Swiss (companion — Mod7 CH birincil metin)",
-      "degrade": "CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + 'manual_required' (Fedlex portal deep-link)."
+      "degrade": "Bağlı değilse CH birincil metni PROGRAMATİK yedekten çekilir: Fedlex SPARQL (ep.fedlex_sparql, references/15 §3b) — SR numarası → konsolide ELI + başlık. İKİ ZORUNLU KURAL: (1) `a jolux:ConsolidationAbstract` (veya `eli/cc/`) filtresi ŞART, yoksa Bundesblatt TASLAĞI döner (ölçüm: SR 812.21 ilk sonucu 'eli/fga/2025/3018 … (Entwurf)'); (2) DISTINCT şart (ifade başına tekrar). Ansvar çerçeve-taraması bunun YERİNE GEÇMEZ, yalnız tamamlar. İkisi de erişilemezse 'manual_required' (Fedlex portal deep-link)."
     }
   ],
   "delegations": [

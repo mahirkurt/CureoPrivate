@@ -200,3 +200,36 @@ cases:
       ama mod matrisi onu COMPARATIVE_LAW'a "IP kesişimi" olarak da atıyor (S2).
       İlk yerleştirmede yalnız S2 yazılmıştı; legal-distiller (S1+S3) erişemiyordu.
       gen_fleet `shard` için liste desteği aldı; dört ajanın dördü de erişiyor.
+
+  - id: FR-18-companion-yoklugunda-programatik-yedek-zorunlu
+    given: >-
+      `Open Law` veya `Fedlex Swiss` companion'ı bağlı değil ve çıktı UK/EU-CELEX
+      ya da CH birincil metni gerektiriyor.
+    expect:
+      - "CELEX doğrulaması CELLAR SPARQL'e (ep.eurlex_sparql) düşmeli; sonuç mcp_verified=false + G6 CONDITIONAL."
+      - "UK birincil metni ep.legislation_uk'ten `/data.akn` (Akoma Ntoso) ile çekilmeli — `/data.xml` CLML'dir, AKN değildir."
+      - "CH birincil metni ep.fedlex_sparql'den çekilmeli; Ansvar ÇERÇEVE taraması ikame SAYILMAZ (kategori hatası)."
+      - "german-law get_eu_basis CELEX doğrulamasının ikamesi DEĞİLDİR — Almanya-çapalıdır, CELEX kimliği üretmez."
+      - "Hiçbiri erişilemezse ilgili satır 'manual_required' (portal deep-link) — uydurma CELEX/SR ASLA."
+    rationale: >-
+      2026-08-08 ölçümü: (a) CELLAR SPARQL canlı ve CELEX 32001L0083'ü
+      cellar URI + 2001-11-06 + tür DIR olarak çözdü — yedek VARDI ama companion
+      degrade metninde yazılı değildi, "WebFetch'e degrade" diyordu; (b) healthcheck'te
+      UK ucu HİÇ YOKTU (AU/NZ vardı) — Open Law'a devredildiği için; (c) CH degrade'i
+      birincil metni Ansvar çerçeve taramasına devrediyordu, bu kategori hatasıdır.
+      Üç uç da anahtarsız ve canlı ölçüldü; healthcheck 15 → 17 uca çıktı.
+
+  - id: FR-19-fedlex-konsolide-metin-taslak-degildir
+    given: >-
+      Fedlex SPARQL'de bir SR numarası yalnız `classifiedByTaxonomyEntry/skos:notation`
+      ile sorgulanıyor.
+    expect:
+      - "`a jolux:ConsolidationAbstract` (veya URI'de `eli/cc/`) filtresi OLMADAN dönen sonuç 'yürürlükteki birincil metin' olarak SUNULAMAZ."
+      - "`DISTINCT` olmadan sonuç sayısı ifade (expression) çoğaltmasıdır — kayıt sayısı olarak raporlanamaz."
+      - "`eli/fga/` bir Bundesblatt/taslak kimliğidir; `eli/cc/` konsolide derlemedir."
+    rationale: >-
+      SR 812.21 sorgusunun filtresiz İLK sonucu `eli/fga/2025/3018` idi ve başlığı
+      '… (Entwurf)' taşıyordu; filtreli sorgu doğru kaydı verdi:
+      `eli/cc/2001/422` — "Bundesgesetz vom 15. Dezember 2000 über Arzneimittel und
+      Medizinprodukte (HMG)". Filtresiz sorgu ayrıca 5 ÖZDEŞ satır döndürdü.
+      Taslağı yürürlükteki metin diye sunmak no-fabrication ihlalidir.

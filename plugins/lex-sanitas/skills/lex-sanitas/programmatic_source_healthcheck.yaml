@@ -101,6 +101,30 @@ endpoints:
     on_failure: degrade_and_label
     fallback: "FRL API erişilemezse legislation.gov.au HTML fallback; mcp_verified=false."
 
+  # ---- Birleşik Krallık (Open Law companion'ının programatik YEDEĞİ) ----
+  # 2026-08-08: healthcheck'te AU ve NZ vardı ama UK YOKTU — UK bütünüyle
+  # `Open Law` companion'ına devredilmişti. O companion yetkilendirme beklerken
+  # UK'nin HİÇBİR yedeği kalmıyordu. Uç anahtarsız ve canlı (ölçüldü).
+  - id: ep.legislation_uk
+    registry_id: cmp.uk
+    name: "UK legislation.gov.uk (arama + CLML/Akoma Ntoso)"
+    kind: rest_api
+    base_url: "https://www.legislation.gov.uk/"
+    health_path: "ukpga?title=medicines"
+    method: GET
+    expected_status: [200]
+    check_frequency: on_demand
+    # ÖLÇÜLEN kalıplar (2026-08-08):
+    #   arama    → /{tur}?title={q}          → Atom/OpenSearch feed
+    #   belge    → /{tur}/{yil}/{no}/data.xml → CLML (<Legislation NumberOfProvisions=…>)
+    #   belge AKN→ /{tur}/{yil}/{no}/data.akn → gerçek <akomaNtoso>
+    # NOT: data.xml Akoma Ntoso DEĞİLDİR (CLML'dir); AKN isteniyorsa data.akn.
+    query_pattern: "https://www.legislation.gov.uk/{type}/{year}/{number}/data.akn"
+    fallback: >
+      Open Law companion bağlı değilse UK birincil metni BURADAN çekilir
+      (mcp_verified=false + confidence_label.mcp_unavailability). Ne uç ne
+      companion erişilebilirse UK satırı 'manual_required' — asla uydurma.
+
   - id: ep.legislation_nz
     registry_id: cmp.nz
     name: "Yeni Zelanda Legislation"
@@ -114,6 +138,43 @@ endpoints:
     liveness_only: true
     fallback: "COMPARATIVE_LAW bölümünde 'kaynak erişilemedi' notu"
     note: "D-class (v2.7.0): API yalnızca 202 async-generate/poll → temiz senkron uç YOK; SARMALANMADI."
+
+  # ---- İsviçre (Fedlex Swiss companion'ının programatik YEDEĞİ) ----
+  # 2026-08-08: CH birincil metni yalnız `Fedlex Swiss` companion'ına bağlıydı;
+  # o yetkilendirme beklerken degrade yolu Ansvar ÇERÇEVE taramasıydı — çerçeve
+  # birincil metin DEĞİLDİR. Fedlex SPARQL anahtarsız ve canlı (ölçüldü).
+  - id: ep.fedlex_sparql
+    registry_id: cmp.ch
+    name: "İsviçre Fedlex SPARQL (Systematische Rechtssammlung)"
+    kind: sparql
+    base_url: "https://fedlex.data.admin.ch/"
+    health_path: "sparqlendpoint?query=SELECT%20*%20WHERE%20%7B%3Fs%20%3Fp%20%3Fo%7D%20LIMIT%201"
+    method: GET
+    expected_status: [200]
+    check_frequency: on_demand
+    # ⚠️ TASLAK TUZAĞI (2026-08-08 ölçüldü): SR numarasını yalnız
+    # `classifiedByTaxonomyEntry/skos:notation` ile aramak Bundesblatt TASLAĞINI
+    # döndürebilir — SR 812.21 sorgusunun İLK sonucu `eli/fga/2025/3018 … (Entwurf)`
+    # idi. "Birincil metin" KONSOLİDE derlemedir → `a jolux:ConsolidationAbstract`
+    # (veya URI'de `eli/cc/`) filtresi ZORUNLUDUR. Ayrıca ifade (expression)
+    # başına satır tekrarlandığı için DISTINCT şarttır (filtresiz 5 özdeş satır).
+    query_pattern: |
+      PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+      SELECT DISTINCT ?act ?srn ?title WHERE {
+        ?act a jolux:ConsolidationAbstract ;
+             jolux:classifiedByTaxonomyEntry/skos:notation ?srn ;
+             jolux:isRealizedBy ?expr .
+        ?expr jolux:language <http://publications.europa.eu/resource/authority/language/DEU> ;
+              jolux:title ?title .
+        FILTER(str(?srn) = "{SR_NO}")
+      }
+    # Doğrulama koşumu: SR 812.21 → eli/cc/2001/422 ·
+    # "Bundesgesetz vom 15. Dezember 2000 über Arzneimittel und Medizinprodukte (HMG)"
+    fallback: >
+      Fedlex Swiss companion bağlı değilse CH birincil metni BURADAN çekilir
+      (mcp_verified=false). Ansvar çerçeve-taraması bunun YERİNE GEÇMEZ — çerçeve
+      taraması birincil metin değildir; ikisi de yoksa 'manual_required'.
 
   - id: ep.canada_justicelaws
     registry_id: cmp.ca

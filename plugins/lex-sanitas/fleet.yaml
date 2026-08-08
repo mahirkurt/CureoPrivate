@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.5.9"
+plugin_version: "3.6.0"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -566,9 +566,17 @@ companions:
     gate: null
     modes: [COMPARATIVE_LAW]
     manifest_row: "Fedlex Swiss (companion — Mod7 CH birincil metin)"
+    # 2026-08-08: eski degrade CH birincil metnini Ansvar ÇERÇEVE taramasına
+    # devrediyordu — çerçeve taraması birincil metin DEĞİLDİR (kategori hatası).
+    # Fedlex SPARQL anahtarsız ve canlı ölçüldü → gerçek yedek yazıldı.
     degrade: >-
-      CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + 'manual_required'
-      (Fedlex portal deep-link).
+      Bağlı değilse CH birincil metni PROGRAMATİK yedekten çekilir: Fedlex SPARQL
+      (ep.fedlex_sparql, references/15 §3b) — SR numarası → konsolide ELI + başlık.
+      İKİ ZORUNLU KURAL: (1) `a jolux:ConsolidationAbstract` (veya `eli/cc/`)
+      filtresi ŞART, yoksa Bundesblatt TASLAĞI döner (ölçüm: SR 812.21 ilk sonucu
+      'eli/fga/2025/3018 … (Entwurf)'); (2) DISTINCT şart (ifade başına tekrar).
+      Ansvar çerçeve-taraması bunun YERİNE GEÇMEZ, yalnız tamamlar. İkisi de
+      erişilemezse 'manual_required' (Fedlex portal deep-link).
 
 # NOT (2026-08-08): "Türk Patent" ARTIK COMPANION DEĞİL — wire edilmiş
 # `turk-patent` sunucusu oldu (markapatent-mcp.fastmcp.app, anahtarsız).

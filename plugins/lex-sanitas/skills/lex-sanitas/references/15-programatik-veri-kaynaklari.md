@@ -8,6 +8,7 @@
 - [§1. Avrupa Birliği — CELLAR / EUR-Lex / EMA](#1)
 - [§2. ABD Federal Düzenleyici Katman](#2)
 - [§3. Birleşik Krallık — legislation.gov.uk (Akoma Ntoso)](#3)
+- [§3b. İsviçre — Fedlex SPARQL (CH birincil metin)](#3b)
 - [§4. Avrupa İçtihat ve Çok-Ülke Portalları](#4)
 - [§5. Asya-Pasifik (Mevcut Yargı Bölgeleri) Programatik Uçlar](#5)
 - [§6. Yeni Yargı Bölgeleri — Kanada, Brezilya, Suudi Arabistan, BAE](#6)
@@ -62,6 +63,44 @@ Akoma Ntoso'yu resmî olarak destekleyen az sayıdaki ulusal sistemden biri; **k
 - **RESTful içerik müzakeresi:** herhangi bir mevzuat URL'sine ek-uzantı: `/data.xml` (CLML — Crown Legislation Markup Language), **`/data.akn`** (Akoma Ntoso, OASIS LegalDocML), `/data.html` (AKN'nin HTML5 serileştirmesi), `/data.rdf` (metadata), **`/data.feed`** (Atom — zengin metadata, ~20 sonuç/sayfa, sayfalama), `/data.pdf`, `/data.xht`.
 - **FRBR tabanlı** (Work/Expression/Manifestation). **`<ukm:UnappliedEffects>`** metadatası uygulanmamış değişiklikleri işaretler — yürürlük takibi için kritik.
 - Lisans: Open Government Licence v3.0. XSLT dönüşümleri GitHub'da açık.
+
+<a id="3b"></a>
+## §3b. İsviçre — Fedlex SPARQL (CH birincil metin)
+
+**Neden burada:** CH birincil metni bu filoda yalnız `Fedlex Swiss` **companion**'ına bağlıydı; o yetkilendirme beklerken tanımlı degrade yolu Ansvar **çerçeve** taramasıydı — çerçeve taraması birincil metin DEĞİLDİR. Uç anahtarsız ve canlı olduğu için programatik yedek yazıldı (2026-08-08 ölçümü).
+
+- **Uç:** `https://fedlex.data.admin.ch/sparqlendpoint` — anahtarsız, `GET` + `query` parametresi, `Accept: application/sparql-results+json`.
+- **Ontoloji:** jolux (`http://data.legilux.public.lu/resource/ontology/jolux#`) + SKOS. SR numarası `classifiedByTaxonomyEntry/skos:notation` üzerinden gelir.
+- **Kimlik:** ELI. Konsolide derleme `eli/cc/…`, Bundesblatt/taslak `eli/fga/…`.
+
+### ⚠️ İki ölçülmüş tuzak
+
+**1. Taslak tuzağı.** SR numarasını yalnız `skos:notation` ile aramak **Bundesblatt taslağını** döndürebilir. Ölçüm: SR `812.21` sorgusunun İLK sonucu `eli/fga/2025/3018` — başlığı `… (Entwurf)`. "Yürürlükteki birincil metin" istiyorsanız `a jolux:ConsolidationAbstract` (ya da URI'de `eli/cc/`) filtresi **zorunludur**.
+
+**2. İfade çoğaltması.** Bir eser dil/ifade başına tekrarlandığı için filtresiz sorgu özdeş satırlar üretir (ölçüm: 5 özdeş satır). **`DISTINCT` şarttır.**
+
+### Doğrulanmış sorgu
+
+```sparql
+PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+SELECT DISTINCT ?act ?srn ?title WHERE {
+  ?act a jolux:ConsolidationAbstract ;
+       jolux:classifiedByTaxonomyEntry/skos:notation ?srn ;
+       jolux:isRealizedBy ?expr .
+  ?expr jolux:language <http://publications.europa.eu/resource/authority/language/DEU> ;
+        jolux:title ?title .
+  FILTER(str(?srn) = "812.21")
+}
+```
+
+Koşum sonucu: `https://fedlex.data.admin.ch/eli/cc/2001/422` · SR `812.21` · *"Bundesgesetz vom 15. Dezember 2000 über Arzneimittel und Medizinprodukte (Heilmittelgesetz, HMG)"* — İsviçre'nin beşeri tıbbi ürün ve tıbbi cihaz temel kanunu, yani sağlık mevzuatı mukayesesinin CH ayağı.
+
+Dil URI'si değiştirilerek FRA/ITA ifadeleri alınır (`…/authority/language/FRA`, `…/ITA`).
+
+**Degrade:** Fedlex Swiss companion bağlıysa o birincildir; bağlı değilse bu uç kullanılır ve çıktı `mcp_verified=false` + `confidence_label.mcp_unavailability` taşır. İkisi de erişilemezse CH satırı `manual_required` (Fedlex portal deep-link) — asla uydurma.
+
+---
 
 <a id="4"></a>
 ## §4. Avrupa İçtihat ve Çok-Ülke Portalları

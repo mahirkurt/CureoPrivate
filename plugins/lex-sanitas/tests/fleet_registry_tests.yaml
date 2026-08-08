@@ -304,3 +304,18 @@ cases:
       `gate: null` yan yana kaldı. Hiçbir kapı görmedi çünkü check_drift de
       `safe_load` kullanıyordu; IDE'nin YAML linter'ı yakaladı. gen_fleet artık
       SafeLoader türevi katı bir yükleyici kullanır (mutasyon-doğrulandı).
+
+  - id: FR-25-bos-govde-basari-degildir
+    given: >-
+      Bir duman çağrısı HTTP 200 + JSON-RPC `result` + `isError:false` döndürüyor,
+      ama gövde çıplak `null` (ya da `{}` / `[]`).
+    expect:
+      - "Kapı bunu ARIZA saymalı — 'başarılı ama hiçbir veri yok' bir aracın ÇALIŞTIĞINI kanıtlamaz."
+      - "Önceki üç arıza katmanı bunu kaçırır: `null` bir `{` ile başlamadığı için gövde-hatası taraması onu hiç okumaz."
+      - "Boş AMA yapılı zarf (`{\"results\":[],\"total\":0}`) arıza DEĞİLDİR — o gerçek bir 'sonuç yok' cevabıdır."
+    rationale: >-
+      2026-08-08: german-law `get_provision`'ın şemada BİRİNCİL belgelenen
+      `{law, article}` biçimi (`{law:'AMG', article:'21'}`) çıplak `null` döndürdü
+      — JSON-RPC hatası yok, `isError` yok, gövdede `error` alanı yok. Aynı hüküm
+      `{id:'amg_1976:21'}` ile tam metin geldi, yani veri MEVCUT; kırık olan
+      çözücü. Dördüncü katman (`_void_body`) eklendi, mutasyonla doğrulandı.

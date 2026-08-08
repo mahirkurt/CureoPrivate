@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.8.0"
+plugin_version: "3.8.1"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -254,16 +254,46 @@ servers:
     modes: [ALL]
     gate: G6
     tools_used: [search_legislation, get_provision, get_eu_basis,
-                 validate_eu_compliance, get_german_implementations,
+                 get_provision_eu_basis, validate_eu_compliance,
+                 get_german_implementations, search_eu_implementations,
                  parse_citation, format_citation]
+    smoke:
+      - tool: get_eu_basis
+        args: {citation: "§ 21 AMG"}
+      - tool: get_provision
+        args: {id: "amg_1976:21"}
     role: >-
-      Almanya/AB hukuku (statute + case-law + preparatory + EU basis +
-      version-tracking). Mod 7 için DE emsali + AB müktesebatı köprüsü
-      (get_eu_basis/validate_eu_compliance). Free-tier: 8 statute aracı işlevsel,
-      diğerleri honest 'not available' (uydurma yok).
+      Almanya hukuku + AB müktesebatı köprüsü; Mod 7'de DE emsali.
+      ÖLÇÜLEN FREE-TIER HARİTASI (2026-08-08, araçlar tek tek çağrıldı — önceki
+      "8 işlevsel / 11 kapalı" kaydı YANLIŞTI): AB ailesinin BEŞİ DE GERÇEK VERİ
+      döndürür — get_eu_basis ("§ 21 AMG" → EG 1394/2007 + EG 1901/2006, güven
+      0.95), get_provision_eu_basis, search_eu_implementations /
+      get_german_implementations (EU 2016/679 → 58 uygulama / 14 kanun),
+      validate_eu_compliance (status "mapped", 99 eşleşme). YALNIZ BEŞ araç
+      dürüstçe kapalıdır — search_case_law + get_preparatory_works
+      (`upgradeRequired:true`), get_provision_history + diff_provision +
+      get_recent_changes (`premium:false`); uydurma YOK, o yüzden güvenilir.
+      ⚠️ ŞEMA YANILTICIDIR: AB araçlarının açıklamasında "Requires professional
+      tier" yazar ama free korpusta ÇALIŞIRLAR — şemaya bakıp atlamayın.
+      ⚠️ ÇÖZÜCÜ TUZAĞI (ölçüldü): korpus kanunları kendi `jurabk` adıyla saklanır
+      (`amg_1976`, `bdsg_2018`, `sgb_5`), günlük kısaltmayla değil.
+      (a) get_provision'ın şemada BİRİNCİL belgelenen `{law, article}` biçimi
+      ÇIPLAK `null` döner (`{law:'AMG', article:'21'}` da, `{law:'AMG 1976'}` da);
+      ÇALIŞAN tek biçim `{id:'amg_1976:21'}`'dir ve o id UYDURULMAZ — önceki bir
+      search_legislation/get_eu_basis sonucunun `id`/`sourceId` alanından gelir.
+      (b) validate_citation AMG'yi HİÇBİR biçimde doğrulayamaz: "§ 21 AMG" →
+      valid:false "no matching provision" (hüküm korpusta VARKEN — yanlış
+      negatif), "§ 21 AMG 1976" → "does not match supported German formats".
+      Bu yüzden tools_used'a ALINMADI; Alman atıf doğrulaması için kullanmayın,
+      varlık kanıtı get_provision'ın id biçimidir. (c) check_currency aynı tuzağı
+      taşır ("§ 1 BDSG" → not_found, "§ 1 BDSG 2018" → likely_in_force) — o da
+      dışarıda bırakıldı. Korpus tarihi `data_age` 2026-02-14.
     degrade: >-
-      Erişilemezse DE emsali ve CELEX degrade-yolu (Open Law yoksa ikinci basamak)
-      kaybolur → G6 CONDITIONAL, CELEX doğrulaması WebFetch'e iner.
+      Erişilemezse DE emsali ve AB↔DE uygulama haritası kaybolur → G6 CONDITIONAL.
+      CELEX doğrulaması için İKAME DEĞİLDİR: G6'nın taşıyıcısı artık wire'lı
+      `eurlex`, programatik yedeği ep.eurlex_sparql. german-law'un AB katkısı
+      CELEX ÜRETMEK değil, bir AB aktinin HANGİ Alman kanunlarınca uygulandığını
+      göstermektir — ikisi birbirinin yerine geçmez.
 
   - name: ich-guidelines
     url: https://ich.cureonics.com/mcp

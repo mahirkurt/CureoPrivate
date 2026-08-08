@@ -8,10 +8,10 @@ description: >-
   "yönetmelik/tebliğ taslağı hazırla", "şu maddeyi değiştir", "TBMM kanun teklifi", "1219 SK reform", "TİTCK
   yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki analizi/DEA",
   "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme". 23 wire'lı MCP + 3 companion (Yargı ·
-  Open Law · Ansvar · Fedlex Swiss · Türk Patent) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia,
+  Open Law · Ansvar) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia,
   atıf-adli + Türkçe hukuk dili → sci-audit (kuruluysa ZORUNLU). Şüphede Scope Guard önceliklidir;
   bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi KAPSAM DIŞIDIR.
-version: 3.8.0
+version: 3.8.1
 ---
 
 # Lex-Sanitas — Türkiye Sağlık Mevzuatı Reform Protokolü
@@ -88,7 +88,7 @@ Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır. Kriterler `references/06b-
 
 | Kapı | Ad | PASS kriteri |
 |---|---|---|
-| **G0** | Tam-filo kapsam (§3) | Wire edilmiş 23 MCP + **3 companion (Yarg/Open_Law/Ansvar/Fedlex_Swiss/Turk_Patent — zorunlu satırlar)** + evidentia (klinik-boyut varsa) + sci-audit **tamamı** ateşlenmiş; her biri kapsam manifestosunda hit/empty/degraded/skipped-with-reason olarak görünür. Companion/plugin `skipped` yalnız gerçek yoklukta meşrudur ve ilgili kapıyı (G5/G6) CONDITIONAL'a düşürür. **Sessiz atlama = FAIL.** |
+| **G0** | Tam-filo kapsam (§3) | Wire edilmiş 23 MCP + **3 companion (Yarg/Open_Law/Ansvar — zorunlu satırlar)** + evidentia (klinik-boyut varsa) + sci-audit **tamamı** ateşlenmiş; her biri kapsam manifestosunda hit/empty/degraded/skipped-with-reason olarak görünür. Companion/plugin `skipped` yalnız gerçek yoklukta meşrudur ve ilgili kapıyı (G5/G6) CONDITIONAL'a düşürür. **Sessiz atlama = FAIL.** |
 | **G1** | 5210 şekli uyum (Md.10-22) | Madde başlık formatı, fıkra-bent hiyerarşisi, Md.21 atıf (ses uyumu, sıfırsız tarih), ek/geçici madde kuralları |
 | **G2** | 5210 maddi-anayasal uyum (Md.4-9) | Üst-norm uygunluğu, AYM belirlilik, AB müktesebatı, kazanılmış hak, geriye yürümezlik |
 | **G3** | Türk hukuk dili (R9, 15-nokta) | Tabaka seçimi, Md.25 kuralları, yabancı sözcük yok, kısa cümle, ses-uyumu ekleri, anti-pattern temiz |

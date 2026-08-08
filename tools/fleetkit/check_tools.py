@@ -148,6 +148,28 @@ def _payload_error(res):
     return None
 
 
+# Gövdesi bunlardan biri olan bir sonuç HİÇBİR ŞEY kanıtlamaz.
+_VOID_BODIES = {"", "null", "{}", "[]", '""'}
+
+
+def _void_body(res):
+    """Sonuç 'başarılı' ama gövde BOŞ mu? (DÖRDÜNCÜ arıza katmanı.)
+
+    2026-08-08'de german-law ucunda ölçüldü: `get_provision` şemasının BİRİNCİL
+    olarak belgelediği `{law, article}` biçimi (`{law:'AMG', article:'21'}`) çıplak
+    `null` döndürüyor — JSON-RPC hatası YOK, `isError` YOK, gövdede `error` alanı
+    YOK. Aynı hüküm `{id:'amg_1976:21'}` ile tam metin olarak geliyor, yani veri
+    MEVCUT; kırık olan çözücü. Önceki üç katman bunu 'ok' sayardı: `null` bir `{`
+    ile başlamadığı için `_payload_error` onu hiç okumaz.
+
+    Bir duman çağrısının SÖZLEŞMESİ 'veri döndürür'dür — filo sahibi o çağrıyı
+    tam da bunun için seçer. Bu yüzden boş gövde başarı değil ARIZA sayılır;
+    aksi hâlde çözücüsü bozulmuş bir araç kapıdan yeşil geçer.
+    """
+    txt = " ".join(c.get("text") or "" for c in (res or {}).get("content", []))
+    return txt.strip() in _VOID_BODIES
+
+
 def call_safe(url, key, tools, budget=3, declared=None):
     """Salt-okunur araçları GERÇEKTEN çağır — (ok, fail, atlanan).
 
@@ -202,6 +224,8 @@ def call_safe(url, key, tools, budget=3, declared=None):
             # Hukuki/IP bağlamında bu bir yanlış-negatiftir ("Türkiye'de tescilli
             # değil"), ve yalnız `isError`e bakan her istemci bunu kaçırır.
             fail.append((name, f"gövde hatası: {msg[:60]}"))
+        elif _void_body(res):
+            fail.append((name, "boş gövde (null/{}/[]) — çağrı hiçbir veri döndürmedi"))
         else:
             ok.append(name)
     return ok, fail, len(picked)

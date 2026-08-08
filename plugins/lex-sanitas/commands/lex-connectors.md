@@ -1,5 +1,5 @@
 ---
-description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 23 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 23 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
 ---

@@ -51,6 +51,16 @@ COMPANION_CLAIM = re.compile(
     r"(?<![\w.,/§-])(?<!Mod )(\d{1,3})\s+(?:zorunlu\s+|wire'?lı\s+|bağlı\s+)?"
     r"companion\b(?!-)", re.IGNORECASE)
 
+# 'N companion (Ad · Ad · …)' — SAYI doğru olup ADLARIN bayat kalması mümkündür.
+# Sayı kapısı bunu göremez: emekliye ayrılan bir companion sayıyı düşürür ama
+# parantezdeki adı kimse silmez, ve model o listeyi okur. `**` markdown vurgusu
+# ile satır sonu araya girebildiği için tüm-metin (DOTALL) taranır.
+COMPANION_LIST = re.compile(
+    r"(\d{1,3})\s+(?:zorunlu\s+|wire'?lı\s+|bağlı\s+)?companion\**\s*\(([^)]{0,400})\)",
+    re.IGNORECASE | re.DOTALL)
+_LIST_SPLIT = re.compile(r"·|/")          # filoda kullanılan İKİ ayraç; virgül DEĞİL
+_LIST_TAIL = re.compile(r"\s+—\s+.*", re.S)  # 'Ad · Ad — açıklama' → açıklama atılır
+
 SCAN_SUFFIXES = {".md", ".yaml", ".yml", ".py", ".json"}
 SKIP_DIRS = {"__pycache__", ".git", "node_modules"}
 SKIP_FILES = {"fleet.lock.json", ".mcp.json", "fleet.yaml"}
@@ -66,21 +76,53 @@ def scan_text(text, expected, companions=None):
     return hits
 
 
-def scan_prose(root: Path, expected: int, companions: int):
+def scan_list(text, companions: int):
+    """Parantez içindeki companion ADLARI sayıyla uyuşuyor mu? → [(satır, iddia)]"""
     out = []
-    for path in sorted(root.rglob("*")):
-        if (not path.is_file() or path.suffix not in SCAN_SUFFIXES
-                or path.name in SKIP_FILES or SKIP_DIRS & set(path.parts)
-                or path.name.startswith(SKIP_PREFIXES)):
-            continue
-        try:
-            lines = path.read_text(encoding="utf-8").splitlines()
-        except (UnicodeDecodeError, OSError):
-            continue
-        for i, line in enumerate(lines, 1):
-            for hit in scan_text(line, expected, companions):
-                out.append((str(path.relative_to(root)), i, hit))
+    for m in COMPANION_LIST.finditer(text):
+        # Ayraç YALNIZ '·' ve '/': açıklama kuyruğundaki virgül ad sanılırsa kapı
+        # kendi yanlış-pozitifini üretir ve düzyazı kapıya göre eğilir.
+        body = _LIST_TAIL.sub("", m.group(2))
+        names = [x.strip() for x in _LIST_SPLIT.split(body) if x.strip()]
+        if len(names) != companions:
+            out.append((text[:m.start()].count("\n") + 1,
+                        f"{m.group(1)} companion ama {len(names)} ad: "
+                        + " · ".join(names)[:90]))
     return out
+
+
+def scan_prose(root: Path, expected: int, companions: int, extra=()):
+    """Plugin dizinini (+ `extra` ile verilen dış metinleri) düzyazı iddiası için tara.
+
+    `extra` VARDIR çünkü plugin'in en çok GÖRÜLEN iddiası plugin dizininin DIŞINDA
+    durur: kök `.claude-plugin/marketplace.json` girdisinin `description`'ı katalogda
+    kullanıcıya gösterilen metindir. Yalnız `root.rglob` taransaydı orası hiç
+    denetlenmezdi — 2026-08-08'de tam bunun yüzünden marketplace açıklaması "14 MCP
+    + 6 companion" (gerçek: 23 + 3) diyerek sürümler boyunca hayatta kaldı.
+    """
+    out = []
+    sources = [(str(p.relative_to(root)), p.read_text(encoding="utf-8"))
+               for p in sorted(root.rglob("*"))
+               if p.is_file() and p.suffix in SCAN_SUFFIXES
+               and p.name not in SKIP_FILES and not SKIP_DIRS & set(p.parts)
+               and not p.name.startswith(SKIP_PREFIXES)
+               and _readable(p)]
+    out_extra = list(extra)
+    for label, text in sources + out_extra:
+        for i, line in enumerate(text.splitlines(), 1):
+            for hit in scan_text(line, expected, companions):
+                out.append((label, i, hit))
+        for ln, hit in scan_list(text, companions):
+            out.append((label, ln, hit))
+    return out
+
+
+def _readable(p: Path) -> bool:
+    try:
+        p.read_text(encoding="utf-8")
+        return True
+    except (UnicodeDecodeError, OSError):
+        return False
 
 
 # [6] Sunucu kimliği sürüklenmesi.
@@ -180,8 +222,9 @@ def main(argv=None) -> int:
     if not (a.plugins or a.all):
         ap.error("plugin adı ya da --all gerekli")
 
-    marketplace = {p["name"]: p.get("version") for p in json.loads(
+    mk_entries = {p["name"]: p for p in json.loads(
         (REPO / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))["plugins"]}
+    marketplace = {n: p.get("version") for n, p in mk_entries.items()}
     canonical = CANONICAL_PROBE.read_bytes()
     failed, checked = False, 0
 
@@ -212,7 +255,12 @@ def main(argv=None) -> int:
                            "kök kopyayı sil (hooks/hooks.json kanonik)"))
 
         if fleet.get("prose_count_check"):
-            prose = scan_prose(d, counts["servers"], counts["companions"])
+            # Katalog açıklaması plugin dizininin DIŞINDADIR ama plugin HAKKINDA
+            # bir iddiadır — ve kullanıcının gördüğü tek metindir. Taramaya dahil.
+            mk = mk_entries.get(d.name, {})
+            extra = ([(".claude-plugin/marketplace.json (description)",
+                       mk["description"])] if mk.get("description") else [])
+            prose = scan_prose(d, counts["servers"], counts["companions"], extra)
             if prose:
                 issues.append((f"[5] düzyazı sayı sürüklenmesi (gerçek "
                                f"{counts['servers']} server / {counts['companions']} companion)",

@@ -358,6 +358,10 @@ def main():
     ap.add_argument("--surface", action="store_true",
                     help="also check the 7 self-host Workers' HTTP/CORS/RFC-9728 contract")
     ap.add_argument("--update", action="store_true", help="rewrite fleet.tools.json from live")
+    ap.add_argument("--only", metavar="NAME",
+                    help="with --update: refresh ONLY this server, leaving every other baseline "
+                         "entry untouched. For a deliberate single-server change while another "
+                         "connector is unmeasurable (e.g. a third-party outage).")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--timeout", type=int, default=45)
     args = ap.parse_args()
@@ -369,6 +373,36 @@ def main():
     targets = load_targets()
     with ThreadPoolExecutor(8) as ex:
         results = list(ex.map(lambda t: inspect(t, args.timeout, args.smoke), targets))
+
+    if args.update and args.only:
+        # Targeted refresh. The wholesale --update refuses to run while ANY server is unmeasurable,
+        # because a partial rewrite would silently drop the unmeasured connectors out of the
+        # contract. That guard is right, but it also blocks a legitimate case: one server changed
+        # on purpose while an unrelated third party is down (2026-08-08: caseyjhand.com returned
+        # HTTP 530 for openalex + pubmed-epmc). This mode touches exactly the named server and
+        # says so, so the change stays deliberate and auditable.
+        hit = next((r for r in results if r["name"] == args.only), None)
+        if hit is None:
+            print("%s--only%s: '%s' .mcp.json'da yok" % (RED, RESET, args.only))
+            return 1
+        if hit["state"] != "ok":
+            print("%s--only REDDEDILDI%s: '%s' olculemedi (%s) — taban cizgisi tahminle guncellenmez"
+                  % (RED, RESET, args.only, hit.get("detail", hit["state"])))
+            return 1
+        if not BASELINE.exists():
+            print("%sSETUP ERROR%s: %s yok" % (RED, RESET, BASELINE.name))
+            return 2
+        doc = json.loads(BASELINE.read_text(encoding="utf-8"))
+        before = doc["servers"].get(args.only, {}).get("tools", [])
+        doc["servers"][args.only] = {"version": hit.get("version"),
+                                     "tool_count": len(hit["tools"]), "tools": hit["tools"]}
+        BASELINE.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        added = sorted(set(hit["tools"]) - set(before))
+        gone = sorted(set(before) - set(hit["tools"]))
+        print("%s%s guncellendi%s — %d arac (+%s / -%s); diger %d sunucu DOKUNULMADI"
+              % (GREEN, args.only, RESET, len(hit["tools"]),
+                 ", ".join(added) or "yok", ", ".join(gone) or "yok", len(doc["servers"]) - 1))
+        return 0
 
     if args.update:
         not_ok = [r["name"] for r in results if r["state"] != "ok"]

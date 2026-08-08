@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { __testing } from "../src/server.js";
 
-const { placeholders, shapeHits, SNIPPET_CHARS, EMBED_MODEL } = __testing;
+const { placeholders, shapeHits, forgetTarget, SNIPPET_CHARS, EMBED_MODEL } = __testing;
 
 // Added 2026-08-07. This Worker shipped with no server.test.ts. Test titles are ASCII on
 // purpose -- the workerd test pool sends them in an HTTP header and warns on non-ASCII.
@@ -82,5 +82,46 @@ describe("embedding model", () => {
     // A model swap silently invalidates every stored vector: the index would still answer,
     // just with meaningless neighbours. Pin it.
     expect(EMBED_MODEL).toBe("@cf/baai/bge-m3");
+  });
+});
+
+describe("kb_forget target resolution (the invalidation path kb_upsert lacked)", () => {
+  // Chunk ids are `{file}#{ord}:{md5(file+heading)[:8]}` (scripts/kb_ingest.py) - derived from the
+  // HEADING. kb_upsert is INSERT OR REPLACE, so a renamed/removed section is never overwritten by
+  // re-ingest; it orphans a row forever. Measured on the live index 2026-08-08: kb_search still
+  // returned `connector-registry.md § 3.5 annas-mcp` carrying the retired `article_download(doi=...)`
+  // text, and `fulltext-retrieval.md § Tier 3 - annas-mcp`, a heading that no longer exists.
+  it("deletes by file - the rebuild unit kb_ingest.py works in", () => {
+    expect(forgetTarget({ file: "fulltext-retrieval.md" })).toEqual({
+      sql: "SELECT id FROM kb_chunks WHERE file = ?", bind: ["fulltext-retrieval.md"],
+    });
+  });
+
+  it("deletes by single chunk id", () => {
+    expect(forgetTarget({ id: "oncology-layer.md#3:abcd1234" })).toEqual({
+      sql: "SELECT id FROM kb_chunks WHERE id = ?", bind: ["oncology-layer.md#3:abcd1234"],
+    });
+  });
+
+  it("REFUSES a call with neither id nor file - there is no delete-everything form", () => {
+    // A bare kb_forget that wiped the index would be one keystroke from destroying the KB.
+    expect(() => forgetTarget({})).toThrow(/required/);
+    expect(() => forgetTarget({ id: "", file: "  " })).toThrow(/required/);
+  });
+
+  it("REFUSES an ambiguous call carrying both", () => {
+    expect(() => forgetTarget({ id: "a.md#0:xy", file: "a.md" })).toThrow(/not both/);
+  });
+
+  it("trims, so a stray space cannot turn into a whole-index delete", () => {
+    expect(forgetTarget({ file: "  a.md  " }).bind).toEqual(["a.md"]);
+  });
+
+  it("binds the target, never interpolates it (injection safety)", () => {
+    const hostile = "x.md' OR 1=1 --";
+    const t = forgetTarget({ file: hostile });
+    expect(t.sql).toBe("SELECT id FROM kb_chunks WHERE file = ?");
+    expect(t.sql).not.toContain("1=1");
+    expect(t.bind).toEqual([hostile]);   // travels as a bound value, never as SQL
   });
 });

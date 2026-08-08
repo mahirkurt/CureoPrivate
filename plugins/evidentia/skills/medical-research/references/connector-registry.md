@@ -72,7 +72,7 @@ P2 (retrieval/dedup), and P4 (full-text enrichment when abstract is insufficient
 | Connector | Server | Verified primary tools | Notes |
 |---|---|---|---|
 | **anamnesis** | `anamnesis-mcp.cureonics.workers.dev` | `ingest_document`, `semantic_search`, `hybrid_query`, `upsert_triples`, `graph_neighbors`, `subgraph`, `corpus_stats`, `forget_document` | RAG/GraphRAG retrieval substrate — long full-text/tool output is indexed here rather than dumped into context (§3 `evidence_index`); core P4 discipline, not a domain module |
-| **evidentia-kb** | `evidentia-kb-mcp.cureonics.workers.dev` | `kb_search` | Semantic recall over SKILL.md + `references/*.md` for Adım 0.4 routing; optional booster if unreachable (map-only degrade), but not a domain/enrichment module |
+| **evidentia-kb** | `evidentia-kb-mcp.cureonics.workers.dev` | `kb_search` | Semantic recall over SKILL.md + `references/*.md` for Adım 0.4 routing; optional booster if unreachable (map-only degrade), but not a domain/enrichment module **`kb_forget(file=…|id=…)`** (SETUP-ONLY, destructive) is the invalidation path added 2026-08-08: chunk ids embed `md5(file+heading)`, so `kb_upsert`'s INSERT OR REPLACE never overwrites a RENAMED or DELETED section — it orphans the row and `kb_search` keeps serving it as current guidance (measured: the live index was still returning the retired `article_download` API). `scripts/kb_ingest.py` now purges each file before re-adding it. |
 
 > **Web tier removed (v1.4.0):** Exa and Tavily are no longer connectors. evidentia resolves only via native MCP + native REST; if a need has no native API it is reported as a documented gap (§0 tier 3), never web-scraped or fabricated.
 

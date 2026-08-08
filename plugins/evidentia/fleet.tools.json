@@ -49,8 +49,9 @@
     },
     "evidentia-kb": {
       "version": "1.0.0",
-      "tool_count": 2,
+      "tool_count": 3,
       "tools": [
+        "kb_forget",
         "kb_search",
         "kb_upsert"
       ]

@@ -166,8 +166,16 @@ smoke) + **`G-IDENTITY`** (her self-host Worker kendi realm/paket/wrangler adın
 > kanser sitesi — ve her kapı yeşildi. `G-TOOLS` araç yüzeyini `fleet.tools.json` içinde **taahhüt
 > edilmiş sözleşmeye** çevirir; sonraki sürüklenme keşif değil, kırmızı kapıdır.
 
+**CI.** Depo CI'ı (`.github/workflows/ci.yml`) `plugins/*/tests/run_suites.py` glob'uyla plugin
+kapılarını koşar. 2026-08-08'e dek evidentia'da o dosya YOKTU — yani yukarıdaki kapı katmanının
+tamamı yalnız elle koşuyordu. Artık `tests/run_suites.py` beş **çevrimdışı** kapıyı (skill
+integrity · hook paketi · G-BUNDLE · G-IDENTITY · G-RAG yapısal) CI'a bağlıyor; ağ + Bearer
+isteyen `g_probe`/`g_tools` bilinçli olarak DIŞARIDA ve koşucu bunları adıyla listeliyor, ki
+"yeşil CI" ile "tam kapsam" karıştırılmasın.
+
 Koşum:
 ```bash
+python tests/run_suites.py       # CI'ın koştuğu 5 çevrimdışı kapı (ağ yok, secret yok)
 python scripts/g_probe.py        # .mcp.json URL'lerinde canlı initialize
 python scripts/g_tools.py --smoke --surface  # canlı tools/list sözleşmesi + sunucu başına 1
                                  # salt-okunur çağrı + 7 self-host Worker'ın HTTP sözleşmesi

@@ -86,16 +86,46 @@ def main():
     call("initialize", {"protocolVersion": "2025-06-18", "capabilities": {},
                         "clientInfo": {"name": "kb-ingest", "version": "1"}})
     call("notifications/initialized", notif=True)
-    n, errs = 0, 0
+    # FORGET-THEN-UPSERT, per file (2026-08-08). kb_upsert is INSERT OR REPLACE and the chunk id
+    # embeds md5(file + heading), so a RENAMED or DELETED section is never overwritten — it orphans
+    # a row that kb_search keeps returning. This was not theoretical: on 2026-08-08 the live index
+    # still served `connector-registry.md § 3.5 annas-mcp` with the retired `article_download`
+    # API, and `fulltext-retrieval.md § Tier 3 — annas-mcp`, a heading that no longer exists.
+    # Dropping each file's chunks immediately before re-adding them makes the index a faithful
+    # mirror of the corpus instead of an append-only pile.
+    by_file = {}
     for c in chunks():
-        res = call("tools/call", {"name": "kb_upsert", "arguments": c})
-        if isinstance(res, dict) and res.get("result", {}).get("isError"):
+        by_file.setdefault(c["file"], []).append(c)
+
+    n, errs, purged = 0, 0, 0
+    for fname, cs in by_file.items():
+        res = call("tools/call", {"name": "kb_forget", "arguments": {"file": fname}})
+        body = (res or {}).get("result", {})
+        if body.get("isError"):
+            # A failed purge would silently leave stale rows behind the fresh ones — say so loudly
+            # rather than printing a clean DONE over a half-updated index.
             errs += 1
-            print("  ERR", c["id"], res.get("result"))
-        n += 1
-        if n % 25 == 0:
-            print(f"  upserted {n}…", flush=True)
-    print(f"DONE — {n} chunks ingested ({errs} errors)")
+            print(f"  PURGE-ERR {fname}: {body}")
+        else:
+            try:
+                deleted = json.loads(body["content"][0]["text"])["deleted"]["chunks"]
+            except Exception:
+                deleted = 0
+            purged += deleted
+            print(f"  {fname}: dropped {deleted} existing row(s)", flush=True)
+        for c in cs:
+            res = call("tools/call", {"name": "kb_upsert", "arguments": c})
+            if isinstance(res, dict) and res.get("result", {}).get("isError"):
+                errs += 1
+                print("  ERR", c["id"], res.get("result"))
+            n += 1
+            if n % 25 == 0:
+                print(f"  upserted {n}…", flush=True)
+    # `purged` counts EVERY pre-existing row for these files, not only the stale ones — the rebuild
+    # is drop-then-add, so it cannot distinguish them. The stale subset is whatever no longer has a
+    # matching heading in the corpus; the point is that after this run the index mirrors the corpus.
+    print(f"DONE — {len(by_file)} files · {purged} pre-existing rows dropped · {n} current chunks "
+          f"ingested ({errs} errors)")
 
 
 if __name__ == "__main__":

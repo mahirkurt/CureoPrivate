@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "evidentia",
-  "plugin_version": "2.5.0",
+  "plugin_version": "2.6.0",
   "counts": {
     "servers": 20,
     "gated": 7,
@@ -36,13 +36,13 @@
     },
     {
       "name": "openalex",
-      "url": "https://openalex.caseyjhand.com/mcp",
+      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
       "tier": "K",
       "auth_env": null
     },
     {
       "name": "pubmed-epmc",
-      "url": "https://pubmed.caseyjhand.com/mcp",
+      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
       "tier": "K",
       "auth_env": null
     },

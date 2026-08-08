@@ -1,6 +1,6 @@
 {
   "name": "drugddx-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Hardened-OAuth Cloudflare Worker MCP — RxNorm normalization + DailyMed label interaction section (clinical-DDI gap fallback for the evidentia plugin). NOT a clinical pairwise DDI engine.",
   "type": "module",

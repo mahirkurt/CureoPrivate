@@ -20,13 +20,18 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools, type GlobocanEnv } from "./server.js";
 import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
+// serverInfo.version is fed from package.json so `initialize` can distinguish deployments.
+// Until 2026-08-08 every Worker advertised a hardcoded "1.0.0" that never moved, so the
+// handshake could not tell one deploy from another — the audit had to read wrangler output
+// instead. Bump package.json on a behaviour change and the wire reflects it.
+import pkg from "../package.json";
 
 export interface Env extends AuthEnv, GlobocanEnv {
   MCP_OBJECT: DurableObjectNamespace;
 }
 
 export class Globocan extends McpAgent<Env> {
-  server = new McpServer({ name: "globocan-mcp", version: "1.0.0" });
+  server = new McpServer({ name: "globocan-mcp", version: pkg.version });
   async init(): Promise<void> {
     registerTools(this.server, this.env as unknown as GlobocanEnv);
   }

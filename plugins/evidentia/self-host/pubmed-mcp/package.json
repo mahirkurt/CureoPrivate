@@ -1,12 +1,11 @@
 {
-  "name": "ema-mcp",
-  "version": "1.1.0",
+  "name": "pubmed-mcp",
+  "version": "1.0.0",
   "private": true,
-  "description": "Keyless Cloudflare Worker MCP exposing the EMA EPAR medicines dataset (European Public Assessment Reports) to the evidentia plugin: EU medicine authorisation status, CHMP opinion/decision dates, orphan/conditional/accelerated flags, ATC, INN, MAH, indication and EPAR URLs. Baked corpus (build_corpus.mjs) from the authless EMA XLSX; closes evidentia's EMA/CHMP-EPAR gap.",
+  "description": "Keyless Cloudflare Worker MCP — typed WHO Global Health Observatory (GHO) OData access for the evidentia plugin: global/country disease-burden, mortality, risk-factor and coverage indicators. Tools who_gho_search_indicators / who_gho_query / who_gho_dimensions. Authless public GHO OData upstream (ghoapi.azureedge.net); closes evidentia's global-burden gap (PopHIVE is US-only).",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "build:corpus": "node scripts/build_corpus.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "dev": "wrangler dev",
@@ -23,7 +22,6 @@
     "@cloudflare/workers-types": "^5.20260804.1",
     "typescript": "^5.6.0",
     "vitest": "^4.1.10",
-    "wrangler": "^4.120.0",
-    "xlsx": "^0.18.5"
+    "wrangler": "^4.120.0"
   }
 }

@@ -151,8 +151,8 @@ yalnız drug/terminology zenginleştirme sinyali (Adım 0.5) ateşlendiğinde ç
 | **nih-clinicaltables** | `https://gateway.pipeworx.io/clinicaltables/mcp` | ✅ 200 · keyless | NIH Clinical Tables (ICD/LOINC/NPI/condition) | topluluk · NIH upstream |
 | **nlm-rxnorm** | `https://gateway.pipeworx.io/rxnorm/mcp` | ✅ 200 · keyless | RxNorm normalizasyonu (INN↔RxCUI) | topluluk · NLM upstream |
 | **iuphar-gtopdb** | `https://gateway.pipeworx.io/guidetopharmacology/mcp` | ✅ 200 · keyless | GtoPdb hedef/ligand | topluluk · IUPHAR upstream |
-| **openalex** | `https://openalex.caseyjhand.com/mcp` | ✅ 200 (2026-08-07) · v0.7.8 · 5 araç | OpenAlex katalog (works/authors/institutions/topics/funders) — **KOL/atıf-ağı/kurum disambiguasyon** (§8); REST-fallback→native terfi | topluluk (cyanheads) · OpenAlex upstream |
-| **pubmed-epmc** | `https://pubmed.caseyjhand.com/mcp` | ✅ 200 (2026-08-07) · v2.10.2 · 11 araç | PubMed/PMC + **Europe PMC** + **Unpaywall YASAL OA tam-metin** (annas gri-alanına alternatif) | topluluk (cyanheads) · NCBI/EPMC/Unpaywall upstream |
+| **openalex** | `https://openalex-mcp.cureonics.workers.dev/mcp` | ✅ SELF-HOST 2026-08-08 · 5 araç · 62 test | **§6.3P kalıcı sertleştirmesi uygulandı** — eski üçüncü-taraf host `openalex.caseyjhand.com` aynı gün HTTP 530 verince operatör Worker'ına taşındı. Araç adları birebir replika (drop-in). ⚠️ OpenAlex isteği KAYNAK-IP başına günlük bütçeyle ölçüyor; Worker paylaşılan egress'ten çıktığı için liste/group çağrıları `Insufficient budget` 429'u alabilir (tek-varlık GET çalışır) → `OPENALEX_API_KEY` veya HP residential relay. Hata dürüst, "veri yok" demiyor | operatör self-host | K |
+| **pubmed-epmc** | `https://pubmed-mcp.cureonics.workers.dev/mcp` | ✅ SELF-HOST 2026-08-08 · 11 araç · 63 test · 11/11 canlı doğrulandı | **§6.3P kalıcı sertleştirmesi uygulandı** — eski `pubmed.caseyjhand.com` HTTP 530 verince operatör Worker'ına taşındı. NCBI E-utilities + Europe PMC + Unpaywall (hepsi authless, keyless Worker). Uçtan uca: BMJ 2008;336:924→PMID 18436948, PMC13240037 OA tam metin 60.801 karakter. NCBI 3 req/s IP kısıtına karşı sınırlı backoff | operatör self-host | K |
 | **semantic-scholar** | `https://gateway.pipeworx.io/semanticscholar/mcp` | ✅ 200 (2026-06-27) · pipeworx gateway · S2 pack | Semantic Scholar atıf-grafiği/etki-atıfı (ikincil; Consensus+Scholar Gateway'i tamamlar) | topluluk · S2 upstream (aynı gateway) |
 
 ### 1.6 Self-Host (klinik DDI boşluğu + RAG/GraphRAG substratı + openFDA + WHO GHO + GLOBOCAN + EMA)
@@ -289,7 +289,7 @@ openfda · drugddx **ChatGPT custom-connector ile çalışır**. Redirect allowl
 içerir; OAuth keşfi **RFC 9728**'e göre sağlamlaştırıldı (401 `WWW-Authenticate` →
 `resource_metadata`; PRM **path-insertion** `…/oauth-protected-resource/mcp`). Tümü **additive** —
 claude.ai/grok yüzeyleri bozulmaz. ChatGPT istemcisi `/mcp`'yi sunucu tarafından çağırır → CORS
-gerekmez. Üçüncü-taraf keyless connector'ların (med-terminologies, pipeworx gateway'leri, caseyjhand)
+gerekmez. Üçüncü-taraf keyless connector'ların (med-terminologies, pipeworx gateway'leri; ⚠️ caseyjhand ikilisi 2026-08-08'de self-host'a taşındı)
 ChatGPT-uyumu **upstream operatöre** bağlıdır. **openathens (HP self-host, 2026-07-03)** aynı
 OAuth 2.1 + Bearer desenini kullanan **5.** self-host connector'dur — ChatGPT bağımsız doğrulaması
 2026-06-30 batch'inin parçası DEĞİLDİR (yukarıdaki tarihli iddia orijinal 4 CF Worker'a özgüdür).

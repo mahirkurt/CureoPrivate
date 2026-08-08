@@ -15,13 +15,18 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools, type OpenFdaEnv } from "./server.js";
 import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
+// serverInfo.version is fed from package.json so `initialize` can distinguish deployments.
+// Until 2026-08-08 every Worker advertised a hardcoded "1.0.0" that never moved, so the
+// handshake could not tell one deploy from another — the audit had to read wrangler output
+// instead. Bump package.json on a behaviour change and the wire reflects it.
+import pkg from "../package.json";
 
 export interface Env extends AuthEnv, OpenFdaEnv {
   MCP_OBJECT: DurableObjectNamespace;
 }
 
 export class OpenFda extends McpAgent<Env> {
-  server = new McpServer({ name: "openfda-mcp", version: "1.0.0" });
+  server = new McpServer({ name: "openfda-mcp", version: pkg.version });
   async init(): Promise<void> {
     // icd11_search needs ICD11_CLIENT_ID/SECRET from env -> register here where this.env exists.
     registerTools(this.server, this.env as unknown as OpenFdaEnv);

@@ -24,6 +24,11 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+// serverInfo.version is fed from package.json so `initialize` can distinguish deployments.
+// Until 2026-08-08 every Worker advertised a hardcoded "1.0.0" that never moved, so the
+// handshake could not tell one deploy from another. drugddx builds its McpServer inside
+// server.ts (not index.ts like the others), which is why the wiring lives here.
+import pkg from "../package.json";
 
 const RXNAV = "https://rxnav.nlm.nih.gov/REST";
 const DAILYMED = "https://dailymed.nlm.nih.gov/dailymed/services/v2";
@@ -106,7 +111,7 @@ async function labelInteractionSection(name: string): Promise<{ setid: string | 
 }
 
 export function buildServer(): McpServer {
-  const server = new McpServer({ name: "drugddx-mcp", version: "1.0.0" });
+  const server = new McpServer({ name: "drugddx-mcp", version: pkg.version });
 
   server.tool(
     "normalize_drug",

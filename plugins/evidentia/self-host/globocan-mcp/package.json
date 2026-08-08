@@ -1,6 +1,6 @@
 {
   "name": "globocan-mcp",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Keyless Cloudflare Worker MCP exposing IARC's Global Cancer Observatory (GLOBOCAN 2022) to the evidentia plugin: global/country cancer incidence and mortality estimates (36 sites, 185+ countries incl. Türkiye) with ASR, crude rate, cumulative risk, rank and uncertainty intervals. Live proxy over the authless gco-api.iarc.fr; closes evidentia's global cancer-burden gap.",
   "type": "module",

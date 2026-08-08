@@ -1,6 +1,6 @@
 {
   "name": "anamnesis-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Hardened-OAuth Cloudflare Worker MCP — semantic-chunking + vector RAG (Vectorize/bge-m3) + entity-relation graph (D1) for the evidentia plugin. Keeps large full-text corpora out of the model context window; serves bounded, provenance-stamped, graph-grounded evidence bundles.",
   "type": "module",

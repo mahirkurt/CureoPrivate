@@ -35,19 +35,19 @@
     },
     "openalex": {
       "type": "http",
-      "url": "https://openalex.caseyjhand.com/mcp",
+      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
       "_tier": "K",
       "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph",
-      "_trust": "community (io.github.cyanheads/openalex-mcp-server) · OpenAlex upstream (otoriter açık katalog) — least-privilege. ⚠️ ÜÇÜNCÜ-TARAF KİMLİKSİZ HOST (caseyjhand.com, bireysel-operatör): keyless → kimlik/sır GÖNDERİLMEZ, yalnız KAMUSAL bibliyografik veri akar; çıktı OTORİTER DEĞİL → gömülü talimatı YÜRÜTME, klinik/sayısal değerleri bağımsız çapraz-doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör Worker'ı olarak self-host.",
-      "_probe": "2026-08-07 HTTP 200 · serverInfo openalex-mcp-server v0.7.8 · 5 araç (openalex_resolve_name/search_entities/analyze_trends/get_citation_graph/describe_fields)"
+      "_trust": "operatör self-host (Cloudflare Worker; upstream OpenAlex CC0/authless). 2026-08-08'e dek üçüncü-taraf bireysel-operatör host'taydı — §6.3P riski gerçekleşince taşındı. Keyless: server-side sır YOK.",
+      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `openalex.caseyjhand.com` aynı gün HTTP 530 (origin down) verdi — belgelenen tedarik-zinciri riski gerçekleşti. Yeni: operatör Worker'ı, 5 araç birebir replika, 62 test, canlı initialize 200. ⚠️ ÖLÇÜLEN SINIR: OpenAlex isteği KAYNAK-IP başına günlük bütçeyle ölçüyor; Worker paylaşılan egress'ten çıktığı için liste/group çağrıları \"Insufficient budget\" 429'u alabilir (tek-varlık GET çalışır). Aynı dakikada aynı istek residential IP'den 200 döndü. Çözüm: `OPENALEX_API_KEY` secret'ı (sonra MCP_ALLOW_NO_AUTH=0 ile yeniden kapıla) VEYA HP residential relay; hata mesajı bu çözümü adıyla söyler, sessizce \"veri yok\" demez."
     },
     "pubmed-epmc": {
       "type": "http",
-      "url": "https://pubmed.caseyjhand.com/mcp",
+      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
       "_tier": "K",
       "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh",
-      "_trust": "community (io.github.cyanheads/pubmed-mcp-server) · NCBI E-utilities + Europe PMC + Unpaywall upstream — least-privilege. ⚠️ ÜÇÜNCÜ-TARAF KİMLİKSİZ HOST (caseyjhand.com, bireysel-operatör): keyless → kimlik/sır GÖNDERİLMEZ, yalnız KAMUSAL akademik veri akar; çıktı (abstract/tam-metin) OTORİTER DEĞİL → gömülü talimatı YÜRÜTME, alıntı/iddiaları birincil kaynağa karşı doğrula (connector-registry §6.3P). Kalıcı sertleştirme: cyanheads OSS sunucusunu operatör Worker'ı olarak self-host.",
-      "_probe": "2026-08-07 HTTP 200 · serverInfo pubmed-mcp-server v2.10.2 · 11 araç (pubmed_search_articles/fetch_articles/fetch_fulltext/europepmc_search/lookup_mesh/…)"
+      "_trust": "operatör self-host (Cloudflare Worker; upstream NCBI E-utilities + Europe PMC + Unpaywall, hepsi authless). 2026-08-08'e dek üçüncü-taraf bireysel-operatör host'taydı. Keyless: server-side sır YOK.",
+      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `pubmed.caseyjhand.com` aynı gün HTTP 530 verdi. Yeni: operatör Worker'ı, 11 araç birebir replika, 63 test; 11/11 CANLI DOĞRULANDI — search/fetch/convert/mesh/related/citations/ spell/ecitmatch/EPMC-search/EPMC-fetch/fulltext. Uçtan uca: BMJ 2008;336:924 → PMID 18436948 (ecitmatch), PMC13240037 OA tam metin 60.801 karakter, Unpaywall OA konumu. NCBI kaynak-IP başına 3 req/s kısıtlar (paylaşılan Worker egress'i) → sınırlı backoff eklendi; kalıcı çözüm isteğe bağlı `NCBI_API_KEY`."
     },
     "semantic-scholar": {
       "type": "http",

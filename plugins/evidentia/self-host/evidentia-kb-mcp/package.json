@@ -1,6 +1,6 @@
 {
   "name": "evidentia-kb-mcp",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Hardened-OAuth Cloudflare Worker MCP — semantic search + upsert over the medical-research knowledge base (bge-m3 Vectorize). Two tools: kb_search (read) and kb_upsert (WRITE — Bearer-gated, never opened public). Recall booster for evidentia Adım 0.4 / Completeness Gate.",
   "type": "module",

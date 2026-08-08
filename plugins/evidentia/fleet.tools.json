@@ -2,7 +2,7 @@
   "_comment": "evidentia MCP tool-surface contract — the COMMITTED expectation that `python3 scripts/g_tools.py` checks against live. Regenerate deliberately with `--update` (under `doppler run`, so gated connectors are included) and review the diff: a vanished tool is a capability the skill may still be documenting.",
   "servers": {
     "anamnesis": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "tool_count": 8,
       "tools": [
         "corpus_stats",
@@ -30,7 +30,7 @@
       ]
     },
     "drugddx": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "tool_count": 2,
       "tools": [
         "interaction_label",
@@ -38,7 +38,7 @@
       ]
     },
     "ema": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "tool_count": 4,
       "tools": [
         "ema_filter",
@@ -48,7 +48,7 @@
       ]
     },
     "evidentia-kb": {
-      "version": "1.0.0",
+      "version": "1.2.0",
       "tool_count": 3,
       "tools": [
         "kb_forget",
@@ -57,7 +57,7 @@
       ]
     },
     "globocan": {
-      "version": "1.0.0",
+      "version": "1.2.0",
       "tool_count": 3,
       "tools": [
         "gco_list_cancers",
@@ -264,7 +264,7 @@
       ]
     },
     "openalex": {
-      "version": "0.7.8",
+      "version": "1.0.0",
       "tool_count": 5,
       "tools": [
         "openalex_analyze_trends",
@@ -291,7 +291,7 @@
       ]
     },
     "openfda": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "tool_count": 2,
       "tools": [
         "icd11_search",
@@ -312,7 +312,7 @@
       ]
     },
     "pubmed-epmc": {
-      "version": "2.10.2",
+      "version": "1.0.0",
       "tool_count": 11,
       "tools": [
         "pubmed_convert_ids",
@@ -442,7 +442,7 @@
       ]
     },
     "who-gho": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "tool_count": 3,
       "tools": [
         "who_gho_dimensions",

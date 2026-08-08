@@ -1,5 +1,5 @@
 /**
- * index.ts — ema-mcp Worker entrypoint (Cureonics self-host, evidentia Tier-O).
+ * index.ts — openalex-mcp Worker entrypoint (Cureonics self-host, evidentia Tier-O).
  *
  * Router:
  *   GET  /health                      -> "ok" (liveness; no auth)
@@ -8,17 +8,18 @@
  *   POST /mcp   (Streamable HTTP)      -> MCP  (requireBearer — but KEYLESS: MCP_ALLOW_NO_AUTH=1)
  *   GET  /sse   (legacy SSE)           -> MCP  (requireBearer)
  *
- * KEYLESS by design (drugddx precedent): serves a BAKED public dataset (EMA EPAR medicines, built
- * from the authless EMA XLSX by scripts/build_corpus.mjs) — no upstream call at runtime, no
- * server-side secret, no confused-deputy surface. The hardened OAuth layer is retained (additive)
- * for claude.ai/ChatGPT connector flows. Set MCP_ALLOW_NO_AUTH="0" to re-gate.
+ * KEYLESS by design (drugddx precedent): the upstream OpenAlex catalog
+ * (api.openalex.org, CC0) is authless and this Worker holds NO server-side secret, so there is
+ * no credential to protect and no confused-deputy surface. The hardened OAuth layer is retained
+ * (additive) so claude.ai/ChatGPT connector flows keep working, but `MCP_ALLOW_NO_AUTH=1` lets
+ * plain URL clients connect without a Bearer. Set MCP_ALLOW_NO_AUTH="0" to re-gate.
  *
- * The Durable Object class `Ema` is exported and bound as MCP_OBJECT in wrangler.jsonc.
+ * The Durable Object class `Openalex` is exported and bound as MCP_OBJECT in wrangler.jsonc.
  */
 
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerTools } from "./server.js";
+import { registerTools, type OpenalexEnv } from "./server.js";
 import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
 // serverInfo.version is fed from package.json so `initialize` can distinguish deployments.
 // Until 2026-08-08 every Worker advertised a hardcoded "1.0.0" that never moved, so the
@@ -26,14 +27,14 @@ import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
 // instead. Bump package.json on a behaviour change and the wire reflects it.
 import pkg from "../package.json";
 
-export interface Env extends AuthEnv {
+export interface Env extends AuthEnv, OpenalexEnv {
   MCP_OBJECT: DurableObjectNamespace;
 }
 
-export class Ema extends McpAgent<Env> {
-  server = new McpServer({ name: "ema-mcp", version: pkg.version });
+export class Openalex extends McpAgent<Env> {
+  server = new McpServer({ name: "openalex-mcp", version: pkg.version });
   async init(): Promise<void> {
-    registerTools(this.server);
+    registerTools(this.server, this.env as unknown as OpenalexEnv);
   }
 }
 
@@ -62,8 +63,8 @@ export default {
       const denied = requireBearer(req, env);   // null when MCP_ALLOW_NO_AUTH=1 (keyless)
       if (denied) return denied;
       return p === "/sse"
-        ? Ema.serveSSE("/sse").fetch(req, env, ctx)
-        : Ema.serve("/mcp").fetch(req, env, ctx);
+        ? Openalex.serveSSE("/sse").fetch(req, env, ctx)
+        : Openalex.serve("/mcp").fetch(req, env, ctx);
     }
 
     return new Response("not found", { status: 404, headers: { "content-type": "text/plain" } });

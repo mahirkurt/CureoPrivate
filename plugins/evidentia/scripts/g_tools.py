@@ -73,10 +73,15 @@ SMOKE: dict = {
     "nlm-rxnorm": ("rxnorm_get_properties", {"rxcui": "11289"}, "warfarin"),
     "iuphar-gtopdb": ("search_targets", {"name": "thrombin", "limit": 3}, "thrombin"),
     "semantic-scholar": ("search_papers", {"query": "emicizumab hemophilia A", "limit": 3}, None),
-    "openalex": ("openalex_resolve_name",
-                 {"entity_type": "institutions", "query": "Hacettepe University"}, "ror.org"),
+    # Single-entity GET, deliberately: OpenAlex meters LIST/GROUP requests against a daily budget
+    # scoped to the source IP, and a Worker's shared egress often has $0 left (measured 2026-08-08).
+    # A budget-429 is an upstream quota fact, not a broken connector, so the smoke exercises the
+    # request class that is always available — and openalex_search_entities(id) still proves the
+    # whole path: auth, routing, upstream fetch, shaping.
+    "openalex": ("openalex_search_entities",
+                 {"entity_type": "works", "id": "W2165010366"}, "GRADE"),
     "pubmed-epmc": ("pubmed_search_articles",
-                    {"query": "emicizumab hemophilia A", "maxResults": 3}, "pubmed"),
+                    {"query": "emicizumab hemophilia A", "maxResults": 3}, "pubmed.ncbi.nlm.nih.gov"),
     "pophive": ("get_current_status", {"disease": "covid"}, None),
     "who-gho": ("who_gho_query",
                 {"indicator_code": "WHOSIS_000001", "country": "TUR", "year": 2019}, "77"),
@@ -209,6 +214,9 @@ SELF_HOST = {
     "globocan": "https://globocan-mcp.cureonics.workers.dev",
     "openfda": "https://openfda-mcp.cureonics.workers.dev",
     "who-gho": "https://who-gho-mcp.cureonics.workers.dev",
+    # Added 2026-08-08 with the §6.3P self-host migration off caseyjhand.com.
+    "pubmed-epmc": "https://pubmed-mcp.cureonics.workers.dev",
+    "openalex": "https://openalex-mcp.cureonics.workers.dev",
 }
 
 
@@ -468,8 +476,8 @@ def main():
     for color, tag, name, detail in report:
         print("  %s%-14s%s %-20s %s" % (color, tag, RESET, name, detail))
     if args.surface:
-        print("\n  HTTP yuzeyi (7 self-host Worker: CORS preflight + RFC 9728 + health)")
-        with ThreadPoolExecutor(7) as ex:
+        print("\n  HTTP yuzeyi (%d self-host Worker: CORS preflight + RFC 9728 + health)" % len(SELF_HOST))
+        with ThreadPoolExecutor(len(SELF_HOST)) as ex:
             surf = list(ex.map(lambda kv: (kv[0],) + check_surface(kv[0], kv[1], args.timeout),
                                sorted(SELF_HOST.items())))
         for name, mode, issues in surf:

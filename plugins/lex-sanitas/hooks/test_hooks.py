@@ -83,8 +83,8 @@ with tempfile.TemporaryDirectory() as _d:
 
 check("lock yoksa None (fail-open)", fleet_probe.load_lock("/olmayan/yol") is None)
 _lock = fleet_probe.load_lock(ROOT)
-check("fleet.lock.json okunur ve 21 server taşır",
-      bool(_lock) and _lock["counts"]["servers"] == 21)
+check("fleet.lock.json okunur ve 23 server taşır",
+      bool(_lock) and _lock["counts"]["servers"] == 23)
 with open(os.path.join(SCRIPTS, "fleet_probe.py"), encoding="utf-8") as fh:
     _src = fh.read()
 check("hook YALNIZ stdlib (PyYAML/requests yok)",
@@ -118,8 +118,8 @@ check("tam-metin şelalesi invaryantı enjekte edilir (openathens→annas sıras
       "TAM-METİN ŞELALESİ" in ctx and "YALNIZ ANALİZ" in ctx)
 
 # ── Lock + prob tümleşimi (v3.5.0) ────────────────────────────────────────
-_L = {"counts": {"servers": 21, "gated": 17, "public": 4,
-                 "companions": 4, "delegations": 2},
+_L = {"counts": {"servers": 23, "gated": 19, "public": 4,
+                 "companions": 3, "delegations": 2},
       "servers": [{"name": "titck", "auth_env": "TITCK_MCP_API_KEY"}],
       "companions": [{"name": "Yargı", "tool_prefixes": ["mcp__Yarg__"], "gate": "G5",
                       "manifest_row": "Yargı (companion — G5 içtihat)",
@@ -146,7 +146,7 @@ check("auth_missing → doppler çözüm yolu (meşru degrade)",
 
 _ctx_plain = session_start.build_context(_L, {}, {})
 check("sayılar lock'tan gelir (hardcode 14 yok)",
-      "21 hukuk MCP" in _ctx_plain and "14" not in _ctx_plain)
+      "23 hukuk MCP" in _ctx_plain and "14" not in _ctx_plain)
 check("prob boş dönse bile bağlam üretilir (fail-open)",
       _ctx_plain.startswith("[lex-sanitas]"))
 check("lock None iken de çökmez (fail-open)",
@@ -202,17 +202,17 @@ rc, out = run("stop_coverage.py", {"last_assistant_message": partial, "stop_hook
 reason = (out or {}).get("reason", "")
 check("manifesto var ama companion/delegasyon satırları eksik → block + isim listesi",
       (out or {}).get("decision") == "block" and all(x in reason for x in (
-          "Yargı", "Open Law", "Ansvar", "Fedlex",
+          "Yargı", "Open Law", "Ansvar",
           "evidentia", "sci-audit")))
 
 # ── Zorunlu satırlar lock'tan türer (v3.5.0) ──────────────────────────────
 _rows = stop_coverage.mandatory_rows()
-check("zorunlu satır sayısı = 4 companion + 2 delegasyon", len(_rows) == 6,
+check("zorunlu satır sayısı = 3 companion + 2 delegasyon", len(_rows) == 5,
       f"{len(_rows)}: {sorted(_rows)}")
 check("yoktez ARTIK zorunlu companion satırı değil (wire'landı)",
       not [k for k in _rows if "YokTez" in k or "YÖK-Tez" in k], sorted(_rows))
 check("lock yoksa gömülü listeye düşer (fail-open)",
-      len(stop_coverage.mandatory_rows({})) == 6)
+      len(stop_coverage.mandatory_rows({})) == 5)
 with open(os.path.join(SCRIPTS, "stop_coverage.py"), encoding="utf-8") as fh:
     _sc = fh.read()
 check("hardcoded MANDATORY_ROWS sabiti kaldırıldı", "\nMANDATORY_ROWS = {" not in _sc)

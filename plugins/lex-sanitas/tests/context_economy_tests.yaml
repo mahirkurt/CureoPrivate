@@ -6,7 +6,7 @@ suite:
   target_version: ">= 3.0.0"
   evaluator: [manual, smp-orchestrator, skill-censor]
   description: >
-    Tam-filo (21 kaynak MCP her sorguda) çalışırken bağlamın boğulmamasını
+    Tam-filo (23 kaynak MCP her sorguda) çalışırken bağlamın boğulmamasını
     doğrular: 3-katmanlı ekonomi (Tier 0 ana pencere / Tier 1 sharded distiller /
     Tier 2 anamnesis RAG), kanonik cache (bir-kez-getir), kör-getirme-yok chunking,
     devre-kesici ve extract-then-evict. Referans: shared/context-economy-contract.md
@@ -15,14 +15,14 @@ suite:
 cases:
   - id: CTX-001
     title: "Sharded tam-filo — tek distiller taşması önlenir"
-    given: "Organ ve doku nakli mevzuatını kapsamlı reform için analiz et (21 server tam-filo)."
+    given: "Organ ve doku nakli mevzuatını kapsamlı reform için analiz et (23 server tam-filo)."
     expect:
       full_fleet: true
       sharding: true
     assertions:
       - "Getirim ≤4 paralel shard'a bölünmeli: S1 TR-çekirdek (legal-distiller), S2 karşılaştırmalı (comparative-law-researcher), S3 doktrin/içtihat (legal-distiller), S4 klinik (evidentia)."
       - "Ana pencere yalnız 4 kompakt zarf + birleşik G0 manifestosu görmeli — ham getirim görmemeli."
-      - "Tek bir distiller'a 21 server verilip penceresi taşırılmamalı."
+      - "Tek bir distiller'a 23 server verilip penceresi taşırılmamalı."
     rationale: "context-economy-contract §2 + references/16 §B; tam-filo'yu bağlam-güvenli kılan sharding."
 
   - id: CTX-002

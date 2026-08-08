@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.7.0"
+plugin_version: "3.8.0"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -503,6 +503,86 @@ servers:
       yoktez geçişiyle aynı mantık). Kapı 502 + açık hata döndürür (upstream
       düşükse) — sessiz boş sonuç ASLA.
 
+  - name: fedlex
+    url: https://fedlex.cureonics.com/mcp
+    tier: comparative
+    auth_env: FEDLEX_MCP_API_KEY
+    shard: S2
+    modes: [COMPARATIVE_LAW, RIA, DRAFT]
+    gate: null
+    tools_used: [fedlex_get_law_by_sr, fedlex_search_laws, fedlex_get_law_history,
+                 fedlex_get_upcoming_changes, fedlex_search_treaties,
+                 fedlex_search_gazette, termdat_lookup_term]
+    # ⚠️ ARGÜMAN SÖZLEŞMESİ: bu sunucu TÜM araç argümanlarını bir `params`
+    # nesnesine SARAR (FastMCP/pydantic deseni). Düz `{"sr_number": …}` gönderen
+    # çağrı `Field required` doğrulama hatası alır. Duman çağrısı bu biçimi
+    # kayda geçirir ki sözleşme sessizce unutulmasın.
+    smoke:
+      tool: fedlex_get_law_by_sr
+      args: { params: { sr_number: "812.21" } }
+    role: >-
+      İsviçre federal hukuku (Fedlex SPARQL) — `Fedlex Swiss` companion'ının
+      WIRE'LI karşılığı (2026-08-08). HP self-host: upstream `fedlex-mcp`
+      (MIT, PyPI, sürüm PİNLİ 2.0.1) 127.0.0.1:8321'de ANAHTARSIZ koşar,
+      önünde tek-kiracılı OAuth 2.1 kapısı (:8317). 12 araç; Mod 7 CH birincil
+      metni: get_law_by_sr (SR → konsolide ELI + yürürlük durumu), search_laws
+      (`keywords` alır, `query` DEĞİL), law_history, upcoming_changes (yürürlüğe
+      girecek değişiklikler — reform zamanlaması için), search_treaties,
+      search_gazette, termdat (resmî terminoloji).
+      DOĞRULAMA (2026-08-08): SR 812.21 → "Bundesgesetz vom 15. Dezember 2000
+      über Arzneimittel und Medizinprodukte (HMG)", `eli/cc/2001/422`,
+      "✅ In Kraft", yürürlük 2002-01-01 — bu sonuç ham Fedlex SPARQL ölçümüyle
+      BİREBİR aynı ELI'yi verdi (üçüncü bağımsız teyit).
+    degrade: >-
+      Erişilemezse CH birincil metni programatik yedeğe düşer (ep.fedlex_sparql,
+      references/15 §3b) — orada `a jolux:ConsolidationAbstract` filtresi ve
+      DISTINCT ZORUNLUDUR, aksi hâlde Bundesblatt TASLAĞI döner. Ansvar çerçeve
+      taraması İKAME DEĞİLDİR. İkisi de yoksa 'manual_required'.
+
+  - name: uk-legal
+    url: https://uk-law.cureonics.com/mcp
+    tier: comparative
+    auth_env: UK_LEGAL_MCP_API_KEY
+    shard: S2
+    modes: [COMPARATIVE_LAW, ANALYZE, OPINE]
+    gate: null
+    # BEYAN YALNIZ ÖLÇÜLEREK ÇALIŞTIĞI DOĞRULANAN ARAÇLARI İÇERİR.
+    # `legislation_*` araçları BİLEREK DIŞARIDA — aşağıdaki role'e bakın.
+    tools_used: [case_law_search, judgment_get_index, judgment_get_paragraph,
+                 case_law_grep_judgment, parliament_search_hansard,
+                 bills_search_bills, votes_search_divisions,
+                 committees_search_evidence, citations_parse, citations_format_oscola]
+    smoke:
+      tool: case_law_search
+      args: { query: "medicines act" }
+    role: >-
+      Birleşik Krallık hukuku — `Open Law` companion'ının UK yarısının WIRE'LI
+      karşılığı, ama KAPSAMI FARKLI ve DAHA GENİŞ. HP self-host: upstream
+      `uk-legal-mcp` (MIT, PyPI, sürüm PİNLİ 0.6.0) 127.0.0.1:8322'de koşar,
+      önünde OAuth 2.1 kapısı (:8318). Canlı yüzey 35 araç. GETİRDİĞİ YENİ
+      YETENEK: İngiliz İÇTİHADI (Find Case Law), Hansard/parlamento tutanağı,
+      bills, divisions, komisyon delilleri, OSCOLA atıf biçimlendirme —
+      companion'da bunların hiçbiri yoktu.
+      ⚠️ ÖLÇÜLEN SINIRLAMA — MEVZUAT METNİ BU SUNUCUDAN GELMEZ: `legislation_*`
+      araçları (search/get_toc/get_section) 2026-08-08'de HEM fly.dev örneğinde
+      HEM kendi HP dağıtımımızda başarısız oldu; upstream hatayı "AWS WAF is
+      blocking the XML endpoint" diye açıklıyor. Bu TEŞHİS DOĞRULANAMADI: aynı
+      URL'ler (`/search?title=…` ve `/ukpga/1968/67/data.xml|.akn`) hem
+      Lenovo'dan hem HP'den düz curl ile HTTP 200 döndü — yani blok köken-IP
+      değil, upstream'in KENDİ HTTP istemcisi kaynaklı (7 sn zaman aşımı /
+      parmak izi). "HP residential IP çözer" hipotezi ÖLÇÜMLE ÇÜRÜTÜLDÜ.
+      UK MEVZUAT METNİ için programatik yol kullanılır: ep.legislation_uk
+      (references/15 §3, `/data.akn`) — ölçülü çalışıyor.
+      Arıza DÜRÜSTTÜR (`isError:true` + açık gerekçe), turk-patent'teki sessiz
+      yanlış-negatif deseni DEĞİLDİR — bu yüzden sunucu güvenilir sayılır.
+    degrade: >-
+      Erişilemezse İngiliz içtihadı/parlamento katmanı düşer ve ilgili satır
+      'manual_required' (caselaw.nationalarchives.gov.uk / hansard deep-link).
+      UK MEVZUAT METNİ zaten bu sunucuya BAĞLI DEĞİLDİR — ep.legislation_uk
+      taşır; o da düşerse 'manual_required' (legislation.gov.uk deep-link).
+      `legislation_*` araçları upstream'de düzelirse tools_used'a EKLENMEDEN
+      ÖNCE check_tools --call ile doğrulanmalıdır.
+
   - name: turk-patent
     url: https://markapatent-mcp.fastmcp.app/mcp
     tier: support
@@ -583,7 +663,6 @@ companions:
 
   - name: Open Law
     tool_prefixes: ["mcp__Open_Law__", "mcp__claude_ai_Open_Law__"]
-    gate: G6
     modes: [ALL]
     manifest_row: "Open Law (companion — UK birincil metin; AB yarısı wire'landı)"
     # 2026-08-08 — İKİ DÜZELTME:
@@ -594,9 +673,9 @@ companions:
     #     WebFetch" diyordu; oysa german-law'ın EU araçları ALMANYA-ÇAPALIDIR
     #     ("§ 21 AMG" → "EG 1394/2007"), CELEX kimliği ÜRETMEZ, keyfi bir CELEX'i
     #     doğrulayamaz. Gerçek yedek CELLAR SPARQL'dir ve zaten canlıydı.
-    #     (v3.7.0'da bu metnin güncellendiği bildirilmişti; düzenleme SESSİZCE
+    #     (v3.8.0'da bu metnin güncellendiği bildirilmişti; düzenleme SESSİZCE
     #     UYGULANMAMIŞTI — arama dizgisi ayrıştırılmış YAML'dan yazıldığı için
-    #     `>-` bloğunun ham metniyle eşleşmedi. v3.7.0'da doğrulanarak düzeltildi.)
+    #     `>-` bloğunun ham metniyle eşleşmedi. v3.8.0'da doğrulanarak düzeltildi.)
     gate: null
     degrade: >-
       Bağlı değilse UK birincil metni PROGRAMATİK yedeğe düşer:
@@ -616,22 +695,11 @@ companions:
       CH/FR/IT/NL/SE/DK/FI/AT/PL ve yatay çerçeve (GDPR/NIS2) satırları
       'manual_required' + kapsam boşluğu beyanı.
 
-  - name: Fedlex Swiss
-    tool_prefixes: ["mcp__Fedlex_Swiss__", "mcp__claude_ai_Fedlex_Swiss__"]
-    gate: null
-    modes: [COMPARATIVE_LAW]
-    manifest_row: "Fedlex Swiss (companion — Mod7 CH birincil metin)"
-    # 2026-08-08: eski degrade CH birincil metnini Ansvar ÇERÇEVE taramasına
-    # devrediyordu — çerçeve taraması birincil metin DEĞİLDİR (kategori hatası).
-    # Fedlex SPARQL anahtarsız ve canlı ölçüldü → gerçek yedek yazıldı.
-    degrade: >-
-      Bağlı değilse CH birincil metni PROGRAMATİK yedekten çekilir: Fedlex SPARQL
-      (ep.fedlex_sparql, references/15 §3b) — SR numarası → konsolide ELI + başlık.
-      İKİ ZORUNLU KURAL: (1) `a jolux:ConsolidationAbstract` (veya `eli/cc/`)
-      filtresi ŞART, yoksa Bundesblatt TASLAĞI döner (ölçüm: SR 812.21 ilk sonucu
-      'eli/fga/2025/3018 … (Entwurf)'); (2) DISTINCT şart (ifade başına tekrar).
-      Ansvar çerçeve-taraması bunun YERİNE GEÇMEZ, yalnız tamamlar. İkisi de
-      erişilemezse 'manual_required' (Fedlex portal deep-link).
+# NOT (2026-08-08): "Fedlex Swiss" ARTIK COMPANION DEĞİL — wire edilmiş
+# `fedlex` sunucusu oldu (HP self-host, upstream fedlex-mcp MIT/PyPI 2.0.1).
+# yoktez · turk-patent · eurlex ile aynı geçiş: anahtarsız doğrudan upstream'i
+# olan bir yeteneği claude.ai OAuth companion'ında bırakmak gereksiz
+# kırılganlıktır. Companion 4 → 3; yetkilendirme bekleyen companion 2 → 1.
 
 # NOT (2026-08-08): "Türk Patent" ARTIK COMPANION DEĞİL — wire edilmiş
 # `turk-patent` sunucusu oldu (markapatent-mcp.fastmcp.app, anahtarsız).

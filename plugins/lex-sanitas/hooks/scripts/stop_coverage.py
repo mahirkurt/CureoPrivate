@@ -38,18 +38,15 @@ _TOKEN_RX = {
     "Yargı": r"\bYarg",
     "Open Law": r"Open[_ ]?Law",
     "Ansvar": r"\bAnsvar",
-    "Fedlex Swiss": r"Fedlex",
     "evidentia": r"\bevidentia",
     "sci-audit": r"\bsci[- ]?audit",
 }
 
-# Lock okunamazsa kullanılacak asgari liste (fail-open) — 4 companion + 2 delegasyon.
+# Lock okunamazsa kullanılacak asgari liste (fail-open) — 3 companion + 2 delegasyon.
 _FALLBACK_ROWS = {
     "Yargı (companion — G5 içtihat)": re.compile(_TOKEN_RX["Yargı"], re.IGNORECASE),
     "Open Law (companion — G6 CELEX)": re.compile(_TOKEN_RX["Open Law"], re.IGNORECASE),
     "Ansvar (companion — Mod7 58-yargı)": re.compile(_TOKEN_RX["Ansvar"], re.IGNORECASE),
-    "Fedlex Swiss (companion — Mod7 CH birincil metin)":
-        re.compile(_TOKEN_RX["Fedlex Swiss"], re.IGNORECASE),
     "evidentia (klinik delegasyon)": re.compile(_TOKEN_RX["evidentia"], re.IGNORECASE),
     "sci-audit (çıktı-QA delegasyonu)": re.compile(_TOKEN_RX["sci-audit"], re.IGNORECASE),
 }
@@ -70,7 +67,7 @@ def mandatory_rows(lock=None):
     """Manifestoda BULUNMASI ZORUNLU satırları lock'tan türetir.
 
     Yalnız companion (wire edilemez dış connector) + delegasyon plugin'leri
-    denetlenir. Wire'lı 21 server için satır-satır regex denetimi YAPILMAZ —
+    denetlenir. Wire'lı 23 server için satır-satır regex denetimi YAPILMAZ —
     kırılgan olur ve yanlış-pozitif üretir; onların kanıtı G0 manifestosunun
     varlığıdır. Bilinmeyen ad için ada dayalı jenerik desen üretilir.
     """

@@ -1,12 +1,12 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "lex-sanitas",
-  "plugin_version": "3.7.0",
+  "plugin_version": "3.8.0",
   "counts": {
-    "servers": 21,
-    "gated": 17,
+    "servers": 23,
+    "gated": 19,
     "public": 4,
-    "companions": 4,
+    "companions": 3,
     "delegations": 2
   },
   "servers": [
@@ -228,6 +228,32 @@
       "gate": "G6"
     },
     {
+      "name": "fedlex",
+      "url": "https://fedlex.cureonics.com/mcp",
+      "tier": "comparative",
+      "auth_env": "FEDLEX_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "COMPARATIVE_LAW",
+        "RIA",
+        "DRAFT"
+      ],
+      "gate": null
+    },
+    {
+      "name": "uk-legal",
+      "url": "https://uk-law.cureonics.com/mcp",
+      "tier": "comparative",
+      "auth_env": "UK_LEGAL_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "COMPARATIVE_LAW",
+        "ANALYZE",
+        "OPINE"
+      ],
+      "gate": null
+    },
+    {
       "name": "turk-patent",
       "url": "https://markapatent-mcp.fastmcp.app/mcp",
       "tier": "support",
@@ -275,11 +301,11 @@
         "mcp__Open_Law__",
         "mcp__claude_ai_Open_Law__"
       ],
-      "gate": null,
       "modes": [
         "ALL"
       ],
       "manifest_row": "Open Law (companion — UK birincil metin; AB yarısı wire'landı)",
+      "gate": null,
       "degrade": "Bağlı değilse UK birincil metni PROGRAMATİK yedeğe düşer: ep.legislation_uk (references/15 §3) — arama /{tur}?title={q}, belge /{tur}/{yil}/{no}/data.akn (Akoma Ntoso; data.xml CLML'dir, AKN DEĞİL); sonuç mcp_verified=false. AB/CELEX tarafı bu companion'a ARTIK BAĞLI DEĞİLDİR — wire'lı `eurlex` sunucusu taşır, o da düşerse ep.eurlex_sparql. Ne companion ne uç erişilebilirse UK satırı 'manual_required' (legislation.gov.uk deep-link) — asla uydurma."
     },
     {
@@ -296,19 +322,6 @@
       ],
       "manifest_row": "Ansvar (companion — Mod7 58-yargı)",
       "degrade": "CH/FR/IT/NL/SE/DK/FI/AT/PL ve yatay çerçeve (GDPR/NIS2) satırları 'manual_required' + kapsam boşluğu beyanı."
-    },
-    {
-      "name": "Fedlex Swiss",
-      "tool_prefixes": [
-        "mcp__Fedlex_Swiss__",
-        "mcp__claude_ai_Fedlex_Swiss__"
-      ],
-      "gate": null,
-      "modes": [
-        "COMPARATIVE_LAW"
-      ],
-      "manifest_row": "Fedlex Swiss (companion — Mod7 CH birincil metin)",
-      "degrade": "Bağlı değilse CH birincil metni PROGRAMATİK yedekten çekilir: Fedlex SPARQL (ep.fedlex_sparql, references/15 §3b) — SR numarası → konsolide ELI + başlık. İKİ ZORUNLU KURAL: (1) `a jolux:ConsolidationAbstract` (veya `eli/cc/`) filtresi ŞART, yoksa Bundesblatt TASLAĞI döner (ölçüm: SR 812.21 ilk sonucu 'eli/fga/2025/3018 … (Entwurf)'); (2) DISTINCT şart (ifade başına tekrar). Ansvar çerçeve-taraması bunun YERİNE GEÇMEZ, yalnız tamamlar. İkisi de erişilemezse 'manual_required' (Fedlex portal deep-link)."
     }
   ],
   "delegations": [

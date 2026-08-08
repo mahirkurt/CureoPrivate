@@ -1,5 +1,5 @@
 ---
-description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 21 hukuk/regülasyon MCP + 4 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 23 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
 ---
@@ -88,12 +88,13 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 | `openathens` | fulltext | `OPENATHENS_MCP_API_KEY` |
 | `annas-reader` | fulltext | `ANNAS_MCP_API_KEY` |
 | `eurlex` | comparative | `EURLEX_MCP_API_KEY` |
+| `fedlex` | comparative | `FEDLEX_MCP_API_KEY` |
+| `uk-legal` | comparative | `UK_LEGAL_MCP_API_KEY` |
 | `turk-patent` | support | _(public — anahtar yok)_ |
 | `anamnesis` | substrate | `ANAMNESIS_MCP_API_KEY` |
 | Yargı | companion | _(claude.ai connector — env anahtarı yok)_ |
 | Open Law | companion | _(claude.ai connector — env anahtarı yok)_ |
 | Ansvar | companion | _(claude.ai connector — env anahtarı yok)_ |
-| Fedlex Swiss | companion | _(claude.ai connector — env anahtarı yok)_ |
 <!-- GEN:fleet-env-table END -->
 
 > anamnesis bir *kaynak* değil, bağlam-ekonomisi Tier 2 RAG substratıdır (büyük tam-metin ingest→bounded query). Anahtarı yoksa büyük belge işleme bounded-chunk fallback'e degrade eder (`references/16` §C) — plugin yine çalışır.

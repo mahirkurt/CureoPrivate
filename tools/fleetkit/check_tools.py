@@ -49,21 +49,38 @@ class KeepPost(urllib.request.HTTPRedirectHandler):
 OPENER = urllib.request.build_opener(KeepPost)
 
 
-def _payload(body):
+def _payload(body, expect_id=None):
     """JSON-RPC gövdesini düz JSON'dan VEYA SSE `data:` çerçevelerinden çıkar.
 
     Streamable HTTP sunucuları aynı ucu iki content-type ile servis edebilir;
     yalnız `json.loads(body)` denemek SSE konuşan sağlıklı sunucuyu 'error'
     gösterir.
+
+    `expect_id` VERİLMEZSE İLK çerçeve döner — ve bu 2026-08-08'de YANLIŞ YEŞİL
+    üretti: fedlex `tools/call` yanıtından ÖNCE bir `notifications/message` log
+    çerçevesi yolluyor. İlk çerçeve alınınca `result` yok sayılıyor, `isError`
+    okunamıyor, gövde-hatası taraması boşa düşüyor ve araç KOŞULSUZ 'ok'
+    sayılıyordu. Yanıt çerçevesi ARTIK id ile seçilir; id'li arama başarısız
+    olursa `result`/`error` taşıyan İLK çerçeveye düşülür (bildirimlerin
+    hiçbiri bu iki anahtarı taşımaz).
     """
+    frames = []
     for raw in [body] + [l[5:].strip() for l in body.splitlines() if l.startswith("data:")]:
         raw = raw.strip()
-        if raw.startswith("{"):
-            try:
-                return json.loads(raw)
-            except ValueError:
-                continue
-    return None
+        if not raw.startswith("{"):
+            continue
+        try:
+            frames.append(json.loads(raw))
+        except ValueError:
+            continue
+    if expect_id is not None:
+        for f in frames:
+            if f.get("id") == expect_id:
+                return f
+    for f in frames:
+        if "result" in f or "error" in f:
+            return f
+    return frames[0] if frames else None
 
 
 def _post(url, obj, headers, _retry=True):
@@ -167,7 +184,7 @@ def call_safe(url, key, tools, budget=3, declared=None):
     for name, args in picked:
         st, body, _ = _post(url, {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
                                   "params": {"name": name, "arguments": args}}, h)
-        p = _payload(body) or {}
+        p = _payload(body, expect_id=3) or {}
         res = p.get("result")
         if st != 200 or "error" in p:
             msg = p.get("error", {}).get("message", f"http {st}")
@@ -222,7 +239,7 @@ def live_tools(url, key):
                                           "method": "tools/list", "params": params}, h)
         except Exception as e:
             return None, type(e).__name__
-        p = _payload(body)
+        p = _payload(body, expect_id=2)
         if st != 200 or not p or "result" not in p:
             err = (p or {}).get("error", {}).get("message", f"http {st}")
             return None, f"tools/list: {str(err)[:60]}"

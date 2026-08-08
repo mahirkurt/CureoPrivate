@@ -1,6 +1,6 @@
 # Lex Sanitas — Bağlam Ekonomisi ve Büyük-Veri Sözleşmesi
 
-**Problem:** lex-sanitas **tam-filo** çalışır — 21 kaynak MCP + companion + evidentia her sorguda ateşlenir. Bu, ham hâliyle **onlarca büyük belge** (tam kanun metinleri, madde ağaçları, RG OCR, yabancı statute'lar, tam gerekçeler) üretir; hepsini ana bağlam penceresine dökmek pencereyi taşırır ve **eksik/tutarsız** norm-üretimine yol açar. Bu sözleşme, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştıran **zorunlu** disiplindir.
+**Problem:** lex-sanitas **tam-filo** çalışır — 23 kaynak MCP + companion + evidentia her sorguda ateşlenir. Bu, ham hâliyle **onlarca büyük belge** (tam kanun metinleri, madde ağaçları, RG OCR, yabancı statute'lar, tam gerekçeler) üretir; hepsini ana bağlam penceresine dökmek pencereyi taşırır ve **eksik/tutarsız** norm-üretimine yol açar. Bu sözleşme, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştıran **zorunlu** disiplindir.
 
 **Değişmez:** ana pencere yalnız (a) kullanıcı talebi, (b) mod planı, (c) G0 kapsam manifestosu, (d) damıtılmış zarflar (`retrieval_distillate`), (e) `evidence_ledger`, (f) nihai artefakt tutar. **Ham araç çıktısı ana pencerede ASLA akıl yürütülmez.**
 

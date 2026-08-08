@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — lex-sanitas MCP wiring. 21 server (17 Bearer-gated, 4 public), 4 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) claude.ai connector'ıdır — wire edilemez; bkz. commands/lex-connectors.md.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — lex-sanitas MCP wiring. 23 server (19 Bearer-gated, 4 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) claude.ai connector'ıdır — wire edilemez; bkz. commands/lex-connectors.md.",
   "mcpServers": {
     "mevzuat": {
       "type": "http",
@@ -162,6 +162,24 @@
       },
       "_tier": "comparative",
       "_role": "EUR-Lex / CELLAR — G6 CELEX kapısının WIRE'LI taşıyıcısı (2026-08-08'de `Open Law` companion'ının AB yarısı buraya taşındı; companion artık yalnız UK taşır). HP self-host: upstream `@cyanheads/eur-lex-mcp-server` (Apache-2.0, sürüm PİNLİ 0.9.8) 127.0.0.1:8316'da ANAHTARSIZ koşar, önünde tek-kiracılı OAuth 2.1 kapısı (:8315) durur — fork YOK, upstream npm ile yükseltilir. 7 araç: lookup_celex (varlık/tür/tarih doğrulaması — G6'nın ta kendisi), search_documents, get_document, get_cases (CJEU), get_relations (CELLAR ilişki grafı), browse_subjects (EuroVoc), query_sparql (ham SPARQL). Upstream CELLAR SPARQL + EUR-Lex REST'e anahtarsız erişir; yukarı akışa hiçbir kimlik bilgisi gönderilmez. DOĞRULAMA (2026-08-08, iki BAĞIMSIZ yol aynı sonucu verdi): ham CELLAR SPARQL sorgusu ve bu sunucunun `eurlex_lookup_celex`'i CELEX 32001L0083 için aynı cellar URI'sini (6af3ed69-c00a-4629-9deb-a7003a30a52d), aynı türü (DIR) ve aynı tarihi (2001-11-06) döndürdü."
+    },
+    "fedlex": {
+      "type": "http",
+      "url": "https://fedlex.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FEDLEX_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "İsviçre federal hukuku (Fedlex SPARQL) — `Fedlex Swiss` companion'ının WIRE'LI karşılığı (2026-08-08). HP self-host: upstream `fedlex-mcp` (MIT, PyPI, sürüm PİNLİ 2.0.1) 127.0.0.1:8321'de ANAHTARSIZ koşar, önünde tek-kiracılı OAuth 2.1 kapısı (:8317). 12 araç; Mod 7 CH birincil metni: get_law_by_sr (SR → konsolide ELI + yürürlük durumu), search_laws (`keywords` alır, `query` DEĞİL), law_history, upcoming_changes (yürürlüğe girecek değişiklikler — reform zamanlaması için), search_treaties, search_gazette, termdat (resmî terminoloji). DOĞRULAMA (2026-08-08): SR 812.21 → \"Bundesgesetz vom 15. Dezember 2000 über Arzneimittel und Medizinprodukte (HMG)\", `eli/cc/2001/422`, \"✅ In Kraft\", yürürlük 2002-01-01 — bu sonuç ham Fedlex SPARQL ölçümüyle BİREBİR aynı ELI'yi verdi (üçüncü bağımsız teyit)."
+    },
+    "uk-legal": {
+      "type": "http",
+      "url": "https://uk-law.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${UK_LEGAL_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "Birleşik Krallık hukuku — `Open Law` companion'ının UK yarısının WIRE'LI karşılığı, ama KAPSAMI FARKLI ve DAHA GENİŞ. HP self-host: upstream `uk-legal-mcp` (MIT, PyPI, sürüm PİNLİ 0.6.0) 127.0.0.1:8322'de koşar, önünde OAuth 2.1 kapısı (:8318). Canlı yüzey 35 araç. GETİRDİĞİ YENİ YETENEK: İngiliz İÇTİHADI (Find Case Law), Hansard/parlamento tutanağı, bills, divisions, komisyon delilleri, OSCOLA atıf biçimlendirme — companion'da bunların hiçbiri yoktu. ⚠️ ÖLÇÜLEN SINIRLAMA — MEVZUAT METNİ BU SUNUCUDAN GELMEZ: `legislation_*` araçları (search/get_toc/get_section) 2026-08-08'de HEM fly.dev örneğinde HEM kendi HP dağıtımımızda başarısız oldu; upstream hatayı \"AWS WAF is blocking the XML endpoint\" diye açıklıyor. Bu TEŞHİS DOĞRULANAMADI: aynı URL'ler (`/search?title=…` ve `/ukpga/1968/67/data.xml|.akn`) hem Lenovo'dan hem HP'den düz curl ile HTTP 200 döndü — yani blok köken-IP değil, upstream'in KENDİ HTTP istemcisi kaynaklı (7 sn zaman aşımı / parmak izi). \"HP residential IP çözer\" hipotezi ÖLÇÜMLE ÇÜRÜTÜLDÜ. UK MEVZUAT METNİ için programatik yol kullanılır: ep.legislation_uk (references/15 §3, `/data.akn`) — ölçülü çalışıyor. Arıza DÜRÜSTTÜR (`isError:true` + açık gerekçe), turk-patent'teki sessiz yanlış-negatif deseni DEĞİLDİR — bu yüzden sunucu güvenilir sayılır."
     },
     "turk-patent": {
       "type": "http",

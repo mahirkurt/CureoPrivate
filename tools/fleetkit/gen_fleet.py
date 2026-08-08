@@ -53,8 +53,45 @@ def plugin_dirs(only=None):
         yield d
 
 
+class _StrictLoader(yaml.SafeLoader):
+    """Yinelenen eşleme anahtarını HATA sayar.
+
+    PyYAML varsayılan olarak yinelenen anahtarı SESSİZCE kabul eder ve
+    SONUNCUSUNU alır. 2026-08-08'de bu gerçek bir tuzak üretti: `Open Law`
+    companion'ında hem eski `gate: G6` hem yeni `gate: null` yan yana durdu.
+    Davranış tesadüfen doğruydu (son değer kazandı) ama sıralamaya bağlıydı ve
+    hiçbir kapı görmüyordu — `check_drift` de `safe_load` kullanıyordu. Bir
+    satırın yerini değiştirmek kapı yapılandırmasını sessizce tersine çevirirdi.
+
+    GÜVENLİK NOTU: aşağıdaki `yaml.load(..., Loader=_StrictLoader)` çağrısı
+    `yaml.load`'ın tehlikeli biçimi DEĞİLDİR. Bu sınıf `yaml.SafeLoader`'dan
+    türer; yalnızca eşleme kurucusunu yineleneni REDDEDECEK şekilde geçersiz
+    kılar. `!!python/object` gibi etiketler SafeLoader'ın kurucu tablosunda
+    bulunmadığı için burada da çözülemez — yani güvenlik yüzeyi
+    `yaml.safe_load` ile birebir aynıdır, davranış yalnız daha KATIDIR.
+    """
+
+
+def _no_duplicate_keys(loader, node, deep=False):
+    seen = set()
+    for key_node, _ in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in seen:
+            raise ValueError(
+                f"fleet.yaml: yinelenen anahtar '{key}' "
+                f"(satır {key_node.start_mark.line + 1}) — PyYAML bunu sessizce "
+                f"kabul edip sonuncusunu alır; belirsizlik bırakmayın.")
+        seen.add(key)
+    return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+
+_StrictLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicate_keys)
+
+
 def load_fleet(root: Path) -> dict:
-    fleet = yaml.safe_load((root / "fleet.yaml").read_text(encoding="utf-8"))
+    fleet = yaml.load((root / "fleet.yaml").read_text(encoding="utf-8"),
+                      Loader=_StrictLoader)
     validate_fleet(fleet)
     return fleet
 

@@ -45,7 +45,7 @@ cases:
     expect:
       - "Kesişim BOŞ olmalı — bir ad hem wire'lı hem companion olamaz (validate_fleet bunu ValueError ile reddeder)."
       - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 5 üye taşımalı."
-      - "Stop hook'un zorunlu manifesto satırı sayısı 7 olmalı (4 companion + 2 delegasyon)."
+      - "Stop hook'un zorunlu manifesto satırı sayısı 7 olmalı (3 companion + 2 delegasyon)."
 
   - id: FR-05-preflight-401-i-ariza-olarak-bildirir
     given: >-
@@ -267,3 +267,40 @@ cases:
       iki BAĞIMSIZ yolla yapıldı — ham CELLAR SPARQL ve eurlex_lookup_celex,
       CELEX 32001L0083 için aynı cellar URI'sini, aynı türü (DIR) ve aynı tarihi
       (2001-11-06) verdi.
+
+  - id: FR-22-upstream-arac-argumani-sarmalayabilir
+    given: >-
+      Wire'lı bir sunucu araç argümanlarını `{"params": {...}}` gibi bir
+      sarmalayıcı içinde bekliyor (FastMCP/pydantic deseni).
+    expect:
+      - "Düz argüman gönderen çağrı `Field required` doğrulama hatası alır; bu bir VERİ YOKLUĞU değil ÇAĞRI HATASIDIR ve öyle raporlanmalıdır."
+      - "Sözleşme fleet.yaml `smoke` alanında kayıtlı olmalı ki kapı her koşumda doğru biçimi doğrulasın."
+    rationale: >-
+      2026-08-08: `fedlex` sunucusunun TÜM araçları argümanları `params` içine
+      sarar (`fedlex_get_law_by_sr` → `{"params":{"sr_number":"812.21"}}`) ve
+      `fedlex_search_laws` `keywords` alır, `query` DEĞİL. Düz biçimle yapılan
+      ilk çağrılar pydantic hatası verdi.
+
+  - id: FR-23-sse-yanit-cercevesi-id-ile-secilir
+    given: >-
+      Bir sunucu `tools/call` yanıtından ÖNCE `notifications/message` gibi SSE
+      çerçeveleri yolluyor.
+    expect:
+      - "Denetim İLK çerçeveyi yanıt sanmamalı — yanıt çerçevesi JSON-RPC `id` ile seçilmelidir."
+      - "Aksi hâlde `result` okunamaz, `isError` ve gövde-hatası taraması boşa düşer ve araç KOŞULSUZ 'ok' sayılır: YANLIŞ YEŞİL."
+    rationale: >-
+      2026-08-08: fedlex `tools/call` öncesi bir log bildirimi yolluyor.
+      check_tools'un `_payload`'ı ilk çerçeveyi alıyordu; fedlex çağrıları boş
+      `result` gösteriyor ama duman testinden GEÇİYORDU. `expect_id` ile
+      düzeltildi; id bulunamazsa `result`/`error` taşıyan ilk çerçeveye düşülür.
+
+  - id: FR-24-fleet-yaml-yinelenen-anahtar-yasak
+    given: "fleet.yaml'da aynı eşleme içinde bir anahtar iki kez geçiyor."
+    expect:
+      - "gen_fleet/check_drift HATA vermeli — PyYAML yineleneni SESSİZCE kabul edip SONUNCUSUNU alır."
+      - "Davranış tesadüfen doğru olsa bile sıralamaya bağlıdır: satır yeri değişince kapı yapılandırması sessizce tersine döner."
+    rationale: >-
+      2026-08-08: `Open Law` companion'ında hem eski `gate: G6` hem yeni
+      `gate: null` yan yana kaldı. Hiçbir kapı görmedi çünkü check_drift de
+      `safe_load` kullanıyordu; IDE'nin YAML linter'ı yakaladı. gen_fleet artık
+      SafeLoader türevi katı bir yükleyici kullanır (mutasyon-doğrulandı).

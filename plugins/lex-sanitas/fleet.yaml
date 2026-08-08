@@ -20,7 +20,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.5.8"
+plugin_version: "3.5.9"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -31,6 +31,10 @@ prose_count_check: true
 #
 # tier   : primary | secondary | comparative | support | doctrine | fulltext | substrate
 # shard  : S1 TR-çekirdek · S2 karşılaştırmalı · S3 doktrin · S4 tam-metin · ALL (her shard'a girer)
+#          LİSTE de olabilir ([S1, S2]) — bir sunucu gerçekten iki shard'a aitse.
+#          Ajan `tools:` KATI allowlist olduğu için yanlış shard = sessiz yetenek kaybı.
+# smoke  : (ops.) {tool, args} — argümansız bilgi aracı olmayan sunucular için
+#          check_tools --call'un çağıracağı KÜÇÜK salt-okunur sorgu.
 # modes  : [ALL] veya modların alt kümesi
 # gate   : bağlı olduğu kalite kapısı (G5/G6/G7) veya null
 # ─────────────────────────────────────────────────────────────────────────────
@@ -461,6 +465,46 @@ servers:
       Erişilemezse ilgili doktrin satırı 'manual_required' (kaynak künyesi + erişim
       yolu) yazılır — asla uydurma içerik.
 
+  - name: turk-patent
+    url: https://markapatent-mcp.fastmcp.app/mcp
+    tier: support
+    auth_env: null
+    # İKİ shard: S1 çünkü TÜRKPATENT Türkiye'nin KENDİ sınai-mülkiyet sicilidir
+    # (yabancı/karşılaştırmalı yargı değil) → TR-çekirdek distiller'ı erişmeli;
+    # S2 çünkü mod matrisi onu COMPARATIVE_LAW'a "IP kesişimi" olarak atıyor →
+    # o modun ajanı da erişmeli. Tek shard'a zorlanırsa biri sessizce düşer.
+    shard: [S1, S2]
+    modes: [DRAFT, RIA, COMPARATIVE_LAW]
+    gate: null
+    tools_used: [search_trademarks, get_trademark_details, search_patents,
+                 get_patent_details, search_designs, get_design_details]
+    # Duman çağrısı BEYAN EDİLİR: bu sunucunun hiç argümansız bilgi aracı yok,
+    # dolayısıyla otomatik allowlist onu hiç çağırmaz ve sunucu ölçülmeden ✓
+    # görünürdü. Küçük, salt-okunur, deterministik bir sorgu seçildi.
+    smoke:
+      tool: search_trademarks
+      args: { trademark_name: aspirin }
+    role: >-
+      TÜRKPATENT (marka/patent/tasarım) — companion'dan WIRE'A taşındı
+      (2026-08-08): uç anahtarsız ve doğrudan erişilebilir, claude.ai OAuth
+      companion'ına gerek yok. İlaç patenti/SPC/veri imtiyazı/patent linkage ve
+      6769 SMK kesişimi; marka tarafı beşeri tıbbi ürün adlandırma reformunda
+      mevcut-durum kanıtı. 6 araç: search_/get_ × trademarks/patents/designs.
+      ⚠️ ÖLÇÜLEN DURUM (2026-08-08, 5/5 araç, iki ayrı koşumda kalıcı): upstream
+      TÜRKPATENT CAPTCHA korumalı ve sunucunun CAPTCHA çözücü bakiyesi TÜKENMİŞ →
+      HER araç `{"error":"... Capsolver ... service balance is insufficient"}`
+      döndürüyor. Bakiye dolduğunda kod değişikliği olmadan çalışır.
+    degrade: >-
+      YANLIŞ-NEGATİF TUZAĞI — BU SUNUCUYA ÖZEL, ZORUNLU KURAL: arıza HTTP 200 +
+      `isError:false` ile gelir ve arama araçlarında yanında `total:0, items:[]`
+      taşır. Yani "kayıt yok" ile "sorgu çalışmadı" AYNI görünür. Bir yanıtta
+      `error` alanı varsa sonuç `degraded` sayılır ve manifestoya
+      'degraded: upstream CAPTCHA bakiyesi' yazılır — ASLA 'empty' ve ASLA
+      "Türkiye'de tescil/patent yok" denmez. Böyle bir durumda ilgili satır
+      'manual_required' (TÜRKPATENT portal deep-link + sorgu yankısı) üretir.
+      Bu tuzak `check_tools.py --call` ile otomatik yakalanır (gövde-hatası
+      katmanı); beyan edilen `smoke` çağrısı da bu yüzden vardır.
+
   # ── Substrat (her shard'a girer) ───────────────────────────────────────────
   - name: anamnesis
     url: https://anamnesis-mcp.cureonics.workers.dev/mcp
@@ -526,15 +570,11 @@ companions:
       CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + 'manual_required'
       (Fedlex portal deep-link).
 
-  - name: Türk Patent
-    tool_prefixes: ["mcp__T_rk_Patent__", "mcp__claude_ai_T_rk_Patent__"]
-    gate: null
-    modes: [DRAFT, RIA, COMPARATIVE_LAW]
-    manifest_row: "Türk Patent (companion — IP/SPC/veri imtiyazı)"
-    degrade: >-
-      İlaç patenti/SPC/veri imtiyazı/patent linkage/6769 SMK kesişimi satırı
-      'manual_required' (TÜRKPATENT portal deep-link).
-
+# NOT (2026-08-08): "Türk Patent" ARTIK COMPANION DEĞİL — wire edilmiş
+# `turk-patent` sunucusu oldu (markapatent-mcp.fastmcp.app, anahtarsız).
+# yoktez ile aynı geçiş: bir companion'ın anahtarsız doğrudan ucu varsa onu
+# claude.ai OAuth'una bağlı bırakmak gereksiz kırılganlıktır. Companion sayısı
+# 5 → 4; kullanıcı yetkilendirmesi bekleyen companion sayısı 3 → 2.
 # ─────────────────────────────────────────────────────────────────────────────
 # DELEGASYON — kuruluysa çağrılmaları ZORUNLU plugin'ler.
 # ─────────────────────────────────────────────────────────────────────────────

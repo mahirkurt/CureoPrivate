@@ -1,12 +1,12 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "lex-sanitas",
-  "plugin_version": "3.5.8",
+  "plugin_version": "3.5.9",
   "counts": {
-    "servers": 19,
+    "servers": 20,
     "gated": 16,
-    "public": 3,
-    "companions": 5,
+    "public": 4,
+    "companions": 4,
     "delegations": 2
   },
   "servers": [
@@ -214,6 +214,22 @@
       "gate": "G6"
     },
     {
+      "name": "turk-patent",
+      "url": "https://markapatent-mcp.fastmcp.app/mcp",
+      "tier": "support",
+      "auth_env": null,
+      "shard": [
+        "S1",
+        "S2"
+      ],
+      "modes": [
+        "DRAFT",
+        "RIA",
+        "COMPARATIVE_LAW"
+      ],
+      "gate": null
+    },
+    {
       "name": "anamnesis",
       "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
       "tier": "substrate",
@@ -279,21 +295,6 @@
       ],
       "manifest_row": "Fedlex Swiss (companion — Mod7 CH birincil metin)",
       "degrade": "CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + 'manual_required' (Fedlex portal deep-link)."
-    },
-    {
-      "name": "Türk Patent",
-      "tool_prefixes": [
-        "mcp__T_rk_Patent__",
-        "mcp__claude_ai_T_rk_Patent__"
-      ],
-      "gate": null,
-      "modes": [
-        "DRAFT",
-        "RIA",
-        "COMPARATIVE_LAW"
-      ],
-      "manifest_row": "Türk Patent (companion — IP/SPC/veri imtiyazı)",
-      "degrade": "İlaç patenti/SPC/veri imtiyazı/patent linkage/6769 SMK kesişimi satırı 'manual_required' (TÜRKPATENT portal deep-link)."
     }
   ],
   "delegations": [

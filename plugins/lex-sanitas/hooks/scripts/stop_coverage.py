@@ -31,26 +31,25 @@ HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_re
 # plugin'leri (durum ne olursa olsun: hit/empty/degraded/skipped-with-reason).
 # v3.5.0'da liste HARDCODE DEĞİL, fleet.lock.json'dan türetilir: yoktez wire'landığı
 # için companion olmaktan çıktı (8 → 7 satır) ve bu değişikliğin burada elle
-# yapılması gerekseydi kaçınılmaz olarak unutulurdu.
+# yapılması gerekseydi kaçınılmaz olarak unutulurdu. 2026-08-08'de AYNI geçiş
+# Türk Patent'te yaşandı (7 → 6 satır): anahtarsız doğrudan ucu (markapatent-mcp)
+# bulununca companion olmaktan çıkıp wire'lı `turk-patent` sunucusu oldu.
 _TOKEN_RX = {
     "Yargı": r"\bYarg",
     "Open Law": r"Open[_ ]?Law",
     "Ansvar": r"\bAnsvar",
     "Fedlex Swiss": r"Fedlex",
-    "Türk Patent": r"T[üu]rk[_ ]?Patent",
     "evidentia": r"\bevidentia",
     "sci-audit": r"\bsci[- ]?audit",
 }
 
-# Lock okunamazsa kullanılacak asgari liste (fail-open) — 5 companion + 2 delegasyon.
+# Lock okunamazsa kullanılacak asgari liste (fail-open) — 4 companion + 2 delegasyon.
 _FALLBACK_ROWS = {
     "Yargı (companion — G5 içtihat)": re.compile(_TOKEN_RX["Yargı"], re.IGNORECASE),
     "Open Law (companion — G6 CELEX)": re.compile(_TOKEN_RX["Open Law"], re.IGNORECASE),
     "Ansvar (companion — Mod7 58-yargı)": re.compile(_TOKEN_RX["Ansvar"], re.IGNORECASE),
     "Fedlex Swiss (companion — Mod7 CH birincil metin)":
         re.compile(_TOKEN_RX["Fedlex Swiss"], re.IGNORECASE),
-    "Türk Patent (companion — IP/SPC/veri imtiyazı)":
-        re.compile(_TOKEN_RX["Türk Patent"], re.IGNORECASE),
     "evidentia (klinik delegasyon)": re.compile(_TOKEN_RX["evidentia"], re.IGNORECASE),
     "sci-audit (çıktı-QA delegasyonu)": re.compile(_TOKEN_RX["sci-audit"], re.IGNORECASE),
 }
@@ -71,7 +70,7 @@ def mandatory_rows(lock=None):
     """Manifestoda BULUNMASI ZORUNLU satırları lock'tan türetir.
 
     Yalnız companion (wire edilemez dış connector) + delegasyon plugin'leri
-    denetlenir. Wire'lı 19 server için satır-satır regex denetimi YAPILMAZ —
+    denetlenir. Wire'lı 20 server için satır-satır regex denetimi YAPILMAZ —
     kırılgan olur ve yanlış-pozitif üretir; onların kanıtı G0 manifestosunun
     varlığıdır. Bilinmeyen ad için ada dayalı jenerik desen üretilir.
     """

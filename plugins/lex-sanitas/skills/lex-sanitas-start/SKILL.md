@@ -5,7 +5,7 @@ description: >-
   onu flagship `lex-sanitas` skill'ine/komutlarına yönlendirir. Kullan — "lex-sanitas nedir / nereden başlamalıyım /
   hangi modu kullanmalıyım / hangi komut", "connector'larım bağlı mı / hepsi çalışıyor mu / tam-filo durumu", ya da
   kullanıcı sağlık mevzuatı reformu istiyor ama hangi modun (DRAFT/AMEND/ANALYZE/COMPLY/OPINE/RIA/COMPARATIVE/TBMM/
-  EX_POST) uygun olduğu belirsizse. 19 hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder,
+  EX_POST) uygun olduğu belirsizse. 20 hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder,
   9 modu ve 10 komutu tanıtır, niyet→komut yönlendirmesi yapar. Somut bir drafting talebi (ör. "yönetmelik taslağı
   hazırla") NET ise doğrudan flagship `lex-sanitas` skill'i devreye girer — bu router araya girmez.
 version: 3.4.0
@@ -17,7 +17,7 @@ Bu skill, Lex Sanitas süitinin giriş kapısıdır: **tam-filo durumunu kontrol
 
 ## 1. Önce tam-filo durumunu göster
 
-Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı / hepsi çalışıyor mu" diye sorduysa, **`/lex-connectors`** komutunu çalıştır — 19 wire'lı MCP + companion + evidentia/sci-audit'in canlı erişilebilirliğini raporlar (SessionStart preflight çıktısıyla tutarlı).
+Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı / hepsi çalışıyor mu" diye sorduysa, **`/lex-connectors`** komutunu çalıştır — 20 wire'lı MCP + companion + evidentia/sci-audit'in canlı erişilebilirliğini raporlar (SessionStart preflight çıktısıyla tutarlı).
 
 ## 2. Niyet → mod/komut yönlendirmesi
 

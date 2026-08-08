@@ -45,7 +45,7 @@ cases:
     expect:
       - "Kesişim BOŞ olmalı — bir ad hem wire'lı hem companion olamaz (validate_fleet bunu ValueError ile reddeder)."
       - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 5 üye taşımalı."
-      - "Stop hook'un zorunlu manifesto satırı sayısı 7 olmalı (5 companion + 2 delegasyon)."
+      - "Stop hook'un zorunlu manifesto satırı sayısı 7 olmalı (4 companion + 2 delegasyon)."
 
   - id: FR-05-preflight-401-i-ariza-olarak-bildirir
     given: >-
@@ -169,3 +169,34 @@ cases:
       institutional_fees 2025-04-24. Bu araçlar 200 döner ve gerçek kayıt verir;
       arıza erişimde değil, tarihin beyan EDİLMEMESİNDEDİR. Araç envanteri
       denetimi (FR-14) bu sınıfı göremez.
+
+  - id: FR-16-govde-hatasi-bos-sonuc-degildir
+    given: >-
+      Bir sunucu HTTP 200 + JSON-RPC `result` + `isError:false` döndürüyor, ama
+      gövdedeki JSON bir `error` alanı taşıyor ve arama araçlarında bunun yanında
+      `total:0, items:[]` da var.
+    expect:
+      - "Sonuç ASLA `empty` sayılmaz — `degraded` sayılır ve manifestoya gerekçesiyle yazılır."
+      - "IP/hukuk bağlamında 'Türkiye'de tescil/patent yok' SONUCUNA VARILAMAZ; ilgili satır 'manual_required' (portal deep-link + sorgu yankısı) üretir."
+      - "check_tools.py --call bunu üçüncü arıza katmanı olarak yakalar; yalnız `isError`e bakan denetim kaçırır."
+    rationale: >-
+      2026-08-08'de `turk-patent` (markapatent-mcp.fastmcp.app) ucunda 5/5 araçta
+      iki ayrı koşumda ölçüldü: upstream TÜRKPATENT CAPTCHA korumalı ve sunucunun
+      çözücü bakiyesi tükenmiş → her araç `{"error":"… Capsolver … service balance
+      is insufficient","total":0,"items":[]}` döndürüyor. Envanter denetimi bu
+      sunucuyu TEMİZ raporlar (6 araç da mevcut); yalnız işlevsel çağrı yakalar.
+      Sessiz yanlış-negatif, bu filoda no-fabrication invaryantının doğrudan ihlali.
+
+  - id: FR-17-sunucu-iki-sharda-ait-olabilir
+    given: >-
+      Bir sunucu hem TR-çekirdek hem karşılaştırmalı bağlamda gerekli
+      (`shard: [S1, S2]`).
+    expect:
+      - "Her iki shard'ın distiller ajanı da o sunucunun araç öneklerini `tools:` allowlist'inde taşımalı."
+      - "Tek shard'a zorlanırsa diğer ajan onu ÇAĞIRAMAZ — ajan `tools:` KATI allowlist'tir, model önek uyuşmazlığını yorumla köprüleyemez → yetenek SESSİZCE düşer."
+      - "`ALL` ile çözmek yanlıştır: `ALL` substrat anlamı taşır (anamnesis) ve sunucuyu ilgisiz shard'lara da sokar."
+    rationale: >-
+      turk-patent TÜRKPATENT'tir — Türkiye'nin KENDİ sınai-mülkiyet sicili (S1),
+      ama mod matrisi onu COMPARATIVE_LAW'a "IP kesişimi" olarak da atıyor (S2).
+      İlk yerleştirmede yalnız S2 yazılmıştı; legal-distiller (S1+S3) erişemiyordu.
+      gen_fleet `shard` için liste desteği aldı; dört ajanın dördü de erişiyor.

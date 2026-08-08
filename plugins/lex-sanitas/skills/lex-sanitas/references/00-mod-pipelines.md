@@ -1,6 +1,6 @@
 # Mod Pipeline'ları — adım-adım + tam-filo server listesi
 
-> **Tam-filo ilkesi:** Aşağıdaki "load-bearing" ve "çapraz-kontrol" ayrımı **öncelik**tir, aktivasyon kapısı değil. Wire edilmiş 19 MCP + bağlı companion'ların **tamamı her sorguda** `legal-distiller` alt-ajanı tarafından süpürülür ve sonucu kapsam manifestosuna girer. Load-bearing = o modda sentezi taşıyan; çapraz-kontrol = doğrulama/tamamlama için ateşlenen ama sonucu manifestoda "empty/N/A" olabilecek server.
+> **Tam-filo ilkesi:** Aşağıdaki "load-bearing" ve "çapraz-kontrol" ayrımı **öncelik**tir, aktivasyon kapısı değil. Wire edilmiş 20 MCP + bağlı companion'ların **tamamı her sorguda** `legal-distiller` alt-ajanı tarafından süpürülür ve sonucu kapsam manifestosuna girer. Load-bearing = o modda sentezi taşıyan; çapraz-kontrol = doğrulama/tamamlama için ateşlenen ama sonucu manifestoda "empty/N/A" olabilecek server.
 
 **Bağlam-güvenli dağıtım (zorunlu):** tek bir distiller'a 14+ server vermek onun penceresini de taşırabilir. Bu yüzden süpürme **≤4 paralel shard**'a bölünür (bkz. `references/16-baglamyonetimi-ve-buyuk-veri.md` §B + `shared/context-economy-contract.md` §2):
 
@@ -77,12 +77,12 @@ Bu matris, bir companion/server satırının hangi modda `skipped: mod için N/A
 | `literatur` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `openathens` (fulltext) | · | · | ✓ | · | ✓ | ✓ | ✓ | · | ✓ |
 | `annas-reader` (fulltext) | · | · | ✓ | · | · | · | ✓ | · | · |
+| `turk-patent` (support) | ✓ | · | · | · | · | ✓ | ✓ | · | · |
 | `anamnesis` (substrate) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Yargı** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Open Law** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Ansvar** (companion) | · | · | ✓ | · | · | ✓ | ✓ | · | · |
 | **Fedlex Swiss** (companion) | · | · | · | · | · | · | ✓ | · | · |
-| **Türk Patent** (companion) | ✓ | · | · | · | · | ✓ | ✓ | · | · |
 
 > `✓` = bu modda taranır · `·` = bu modda **mantıksal olarak N/A** → manifestoda `skipped: mod için N/A` yazılır (satır atlanamaz).
 <!-- GEN:mode-server-matrix END -->

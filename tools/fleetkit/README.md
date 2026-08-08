@@ -46,6 +46,10 @@ doppler run -- python3 tools/fleetkit/check_tools.py lex-sanitas --call
 
 `--call` katı bir allowlist kullanır (yalnız envanter/kimlik uçları) — yazan, indiren veya ücret doğuran hiçbir araç çağrılmaz.
 
+**Üç arıza katmanı ayrılır.** (1) JSON-RPC `error`; (2) `isError:true`; (3) **`isError:false` ama gövdedeki JSON bir `error` alanı taşıyor**. Üçüncüsü 2026-08-08'de `turk-patent` ucunda ölçüldü: HTTP 200 + `isError:false` + `{"error":"… Capsolver … balance is insufficient","total":0,"items":[]}`. Yani arıza **boş sonuç gibi** görünüyor — hukuki bağlamda "Türkiye'de tescilli değil" yanlış-negatifi. Yalnız `isError`e bakan istemci bunu kaçırır.
+
+**`smoke:` alanı.** Bir sunucunun hiç argümansız bilgi aracı yoksa otomatik allowlist onu hiç çağırmaz; sunucu ölçülmeden ✓ görünür (`duman —`). `fleet.yaml`'da `smoke: {tool, args}` yazılırsa kapı o küçük salt-okunur sorguyu çağırır. Hangi çağrının güvenli olduğuna sezgisel değil **filo sahibi** karar verir.
+
 ## Günlük kullanım
 
 ```bash

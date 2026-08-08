@@ -63,7 +63,7 @@ Bu beşi claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da w
 | **Open Law** | `mcp__Open_Law__fetch_eurlex` · `lookup_statute` · `legislation_toc` · `search_caselaw` · `fetch_hudoc` | CELEX/EUR-Lex **konsolide doğrulama** (G6'nın birincil aracı) · Mod 7 UK satırı · AB müktesebat uyum tablosu · AİHM (HUDOC) içtihadı | **G6** | CELEX doğrulaması german-law `get_eu_basis` → WebFetch'e degrade + G6 CONDITIONAL; manifesto beyanı |
 | **Ansvar** | `mcp__Ansvar__search(jurisdictions=…)` · `get_provision` · `list_coverage` · `validate_citation` | Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL veya diğer 58-yargı korpusu kapsamındaki ülke satırı · yatay çerçeve/standart (GDPR/NIS2/veri güvenliği) sorguları | Mod 7 kapsam bütünlüğü | O yargı satırı `manual_required` + kapsam-boşluğu beyanı; satır tablodan SİLİNMEZ |
 | **Fedlex Swiss** | `mcp__Fedlex_Swiss__search_by_title` · `get_law_text` · `get_article` · `list_amendments` | Mod 7 karşılaştırma kapsamına **CH** girdiğinde İsviçre federal mevzuatının birincil metni (SR-numaralı; HMG/KVG/HFG rejimleri); CH-dışı sorguda satır `skipped: mod için N/A` | CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + `manual_required` (Fedlex portal deep-link) |
-| **Türk Patent** | `mcp__T_rk_Patent__search_patents` · `get_patent_details` · `search_trademarks` · `search_designs` | Konu sınai-mülkiyet kesişimliyse: ilaç patenti · SPC/veri imtiyazı · patent linkage · biyobenzer lansmanı · 6769 SMK kesişimi (DRAFT/RIA/COMPARATIVE); IP-boyutsuz sorguda satır `skipped: mod için N/A` | IP-boyutlu satır `manual_required` (TÜRKPATENT portal deep-link) |
+| **Türk Patent** | `mcp__turk-patent__search_patents` · `get_patent_details` · `search_trademarks` · `search_designs` | Konu sınai-mülkiyet kesişimliyse: ilaç patenti · SPC/veri imtiyazı · patent linkage · biyobenzer lansmanı · 6769 SMK kesişimi (DRAFT/RIA/COMPARATIVE); IP-boyutsuz sorguda satır `skipped: mod için N/A` | IP-boyutlu satır `manual_required` (TÜRKPATENT portal deep-link) |
 
 > **v3.5.0 — companion'dan wire'a terfi:** `yoktez` artık companion DEĞİL, `fleet.yaml`'de first-class wire'lıdır (`mcp__yoktez__*`, authless). Sonuç: **G7 YÖK-Tez atıf doğrulaması kullanıcının connector bağlamasına bağlı değildir** — tez no/başlık/yazar `get_yok_tez_thesis_details` ile teyit edilir, uydurma tez atfı deterministik yakalanır (hard PASS). Aynı sürümde `literatur` (DergiPark makale tam-metni), `openathens` (Tier 3 lisanslı) ve `annas-reader` (Tier 4 son çare, yalnız analiz) de wire edildi. Şelale disiplini: openathens'in erişilemez olması annas-reader'ı OTOMATİK AÇMAZ.
 
@@ -73,7 +73,7 @@ Bu beşi claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da w
 
 | Durum | Davranış | Manifesto satırı |
 |---|---|---|
-| evidentia + sci-audit kurulu, 5 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
+| evidentia + sci-audit kurulu, 4 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
 | evidentia kurulu ama klinik-boyutlu sorguda ÇAĞRILMADI | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
 | sci-audit kurulu ama çıktı denetimsiz teslim edildi | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
 | yalnız evidentia kurulu | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |

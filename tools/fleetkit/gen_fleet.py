@@ -210,8 +210,22 @@ def server_prefixes(s, plugin=None):
 
 def gen_agent_tools(fleet, cfg):
     shards = cfg.get("shards", [])
-    picked = [s for s in fleet["servers"]
-              if s.get("shard") in shards or s.get("shard") == "ALL" or not shards]
+
+    def in_shard(s):
+        """`shard` tek değer VEYA liste olabilir.
+
+        Bir sunucu gerçekten iki shard'a ait olabilir — turk-patent hem TR
+        çekirdeğidir (S1: TÜRKPATENT Türkiye'nin kendi sicili) hem de
+        karşılaştırmalı çalışmada IP-kesişimi katmanıdır (S2, mod matrisinde
+        COMPARATIVE_LAW'a atanmış). Tek değere zorlanınca ya S2 distiller'ı onu
+        çağıramaz (ajan `tools:` KATI allowlist'tir → IP katmanı sessizce düşer)
+        ya da `ALL` yazılıp substrat gibi gösterilir. Liste ikisini de önler.
+        """
+        sh = s.get("shard")
+        vals = sh if isinstance(sh, list) else [sh]
+        return (not shards) or "ALL" in vals or any(v in shards for v in vals)
+
+    picked = [s for s in fleet["servers"] if in_shard(s)]
     tools = list(cfg.get("extra", []))
     plug = fleet.get("plugin")
     tools += [f"{p}*" for s in picked for p in server_prefixes(s, plug)]

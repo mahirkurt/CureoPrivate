@@ -107,13 +107,44 @@ SAFE_RX = re.compile(
 )
 
 
-def call_safe(url, key, tools, budget=3):
-    """Argümansız salt-okunur araçları GERÇEKTEN çağır — (ok, fail, atlanan).
+def _payload_error(res):
+    """`isError:false` diyen bir sonucun GÖVDESİNDE hata var mı?
+
+    Bazı sunucular her arızayı 200 + `isError:false` ile döndürüp hatayı yalnız
+    JSON gövdesindeki `error` alanına yazar. Arama araçlarında bunun yanına
+    `total:0, items:[]` da eklenirse arıza BOŞ SONUÇTAN ayırt edilemez hâle
+    gelir — sessiz yanlış-negatif. Bu yardımcı o alanı görünür kılar.
+    """
+    for c in (res or {}).get("content", []):
+        txt = (c.get("text") or "").strip()
+        if not txt.startswith("{"):
+            continue
+        try:
+            obj = json.loads(txt)
+        except ValueError:
+            continue
+        err = obj.get("error")
+        if isinstance(err, str) and err:
+            return err
+        if isinstance(err, dict) and err:
+            return str(err)
+    return None
+
+
+def call_safe(url, key, tools, budget=3, declared=None):
+    """Salt-okunur araçları GERÇEKTEN çağır — (ok, fail, atlanan).
 
     `tools/list` bir aracın VAR olduğunu kanıtlar, ÇALIŞTIĞINI değil. Upstream
     şeması bozulduğunda, arka uç deposu düştüğünde veya araç yalnız kayıtlıyken
     gövdesi hata verdiğinde uç hâlâ 200/`initialize` döner ve envanter denetimi
     temiz görünür. Bu katman o boşluğu kapatır.
+
+    İki kaynak: (1) otomatik seçim — SAFE_RX'e uyan ve ZORUNLU argümanı olmayan
+    envanter/kimlik araçları; (2) `declared` — fleet.yaml'ın `smoke:` alanı.
+    (1) evrensel ama dardır: bir sunucunun hiç argümansız bilgi aracı yoksa
+    duman testi boş kalır (`duman —`) ve sunucu ölçülmeden ✓ görünür. `smoke:`
+    o boşluğu sunucu-özel, salt-okunur, KÜÇÜK bir sorguyla kapatır — hangi
+    çağrının güvenli olduğuna filo sahibi karar verir, sezgisel değil.
     """
     h = _headers(key)
     st, body, hdrs = _post(url, {
@@ -125,25 +156,37 @@ def call_safe(url, key, tools, budget=3):
         h["Mcp-Session-Id"] = sid
     _post(url, {"jsonrpc": "2.0", "method": "notifications/initialized"}, h)
 
-    picked = [t for t in tools
-              if SAFE_RX.search(t["name"])
-              and not (t.get("inputSchema") or {}).get("required")][:budget]
+    auto = [(t["name"], {}) for t in tools
+            if SAFE_RX.search(t["name"])
+            and not (t.get("inputSchema") or {}).get("required")][:budget]
+    live = {t["name"] for t in tools}
+    # Beyan edilen duman çağrısı ÖNCE gelir — sunucu-özel ve kasıtlıdır.
+    picked = [(d["tool"], d.get("args") or {}) for d in (declared or [])
+              if d.get("tool") in live] + auto
     ok, fail = [], []
-    for t in picked:
+    for name, args in picked:
         st, body, _ = _post(url, {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
-                                  "params": {"name": t["name"], "arguments": {}}}, h)
+                                  "params": {"name": name, "arguments": args}}, h)
         p = _payload(body) or {}
         res = p.get("result")
         if st != 200 or "error" in p:
             msg = p.get("error", {}).get("message", f"http {st}")
-            fail.append((t["name"], str(msg)[:70]))
+            fail.append((name, str(msg)[:70]))
         elif res is not None and res.get("isError"):
             # JSON-RPC başarılı ama ARAÇ hata döndürdü — `error` anahtarı yok,
             # `isError:true` var. Bu ayrım gözetilmezse kırık araç 'ok' sayılır.
             txt = " ".join(c.get("text", "") for c in res.get("content", []))
-            fail.append((t["name"], txt[:70] or "isError"))
+            fail.append((name, txt[:70] or "isError"))
+        elif (msg := _payload_error(res)):
+            # ÜÇÜNCÜ arıza katmanı (2026-08-08'de markapatent ucunda ölçüldü):
+            # HTTP 200 + JSON-RPC `result` + `isError:false` — ama gövdedeki JSON
+            # bir `error` alanı taşıyor ve arama araçları bunun YANINDA
+            # `total:0, items:[]` döndürüyor. Yani arıza BOŞ SONUÇ gibi görünür.
+            # Hukuki/IP bağlamında bu bir yanlış-negatiftir ("Türkiye'de tescilli
+            # değil"), ve yalnız `isError`e bakan her istemci bunu kaçırır.
+            fail.append((name, f"gövde hatası: {msg[:60]}"))
         else:
-            ok.append(t["name"])
+            ok.append(name)
     return ok, fail, len(picked)
 
 
@@ -203,16 +246,19 @@ def audit(plugin_dir, only=None, do_call=False):
         entry = mcp.get(n, {})
         auth = entry.get("headers", {}).get("Authorization", "")
         env = (ENV_RX.findall(auth) or [None])[0]
+        sm = s.get("smoke")
+        sm = [sm] if isinstance(sm, dict) else list(sm or [])
         targets.append((n, entry.get("url") or s.get("url"), env,
-                        list(s.get("tools_used") or [])))
+                        list(s.get("tools_used") or []), sm))
 
     def run(t):
-        n, url, env, declared = t
+        n, url, env, declared, smoke_spec = t
         key = os.environ.get(env) if env else None
         if env and not key:
             return n, declared, None, f"${env} ortamda yok", None
         tools, err = live_tools(url, key)
-        smoke = call_safe(url, key, tools) if (do_call and tools) else None
+        smoke = (call_safe(url, key, tools, declared=smoke_spec)
+                 if (do_call and tools) else None)
         return n, declared, tools, err, smoke
 
     with ThreadPoolExecutor(max_workers=8) as ex:

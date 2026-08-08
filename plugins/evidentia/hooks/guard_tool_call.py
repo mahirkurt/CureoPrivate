@@ -36,6 +36,11 @@ PIPEWORX_GENERIC = {
 
 # Server identifiers whose generic surface is forbidden (substring-matched against the tool name,
 # tolerant of the mcp__claude_ai_<server>__ and mcp__<server>__ prefixes).
+# NOTE (2026-08-08): `semantic-scholar` was migrated to the operator Worker
+# `semanticscholar-mcp`, which implements ONLY the 4 whitelisted tools — the ~31 pipeworx
+# generics no longer exist there, so its entry below is now defence-in-depth rather than an
+# active rule. It is KEPT deliberately: if the connector is ever re-pointed at a gateway, the
+# deny fires again without anyone having to remember to re-add it.
 PIPEWORX_SERVERS = ("semantic-scholar", "nih-clinicaltables", "nlm-rxnorm", "iuphar-gtopdb")
 
 REDIRECT_GENERIC = (

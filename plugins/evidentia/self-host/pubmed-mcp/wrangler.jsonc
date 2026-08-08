@@ -1,6 +1,6 @@
 {
   // pubmed-mcp — Cloudflare Worker (Cureonics self-host, evidentia Tier-O). Deploy: `wrangler deploy`.
-  // KEYLESS by design: upstreams (NCBI E-utilities / Europe PMC / Unpaywall) are authless and this Worker
+  // GATED since 2026-08-08 (was keyless): upstreams (NCBI E-utilities / Europe PMC / Unpaywall) are authless and this Worker
   // holds NO server-side secret, so there is no credential to protect. MCP_ALLOW_NO_AUTH="1"
   // (drugddx precedent). The hardened OAuth layer is retained (additive) for claude.ai/ChatGPT
   // connector flows. SECRETS ARE NOT DECLARED HERE (invariant 6); only needed if you re-gate:
@@ -24,9 +24,13 @@
   // NON-SECRET vars only. MCP_ALLOW_NO_AUTH="1" => keyless (read-only authless-upstream proxy).
   // OAUTH_ALLOWED_REDIRECT_ORIGINS keeps the additive OAuth surface working for web connectors.
   "vars": {
-    "MCP_ALLOW_NO_AUTH": "1",
+    // RE-GATED 2026-08-08. This Worker now holds an upstream API key (PUBMED_API_KEY (NCBI)), so the
+    // keyless rationale — "there is no credential to protect" — no longer applies: an open
+    // endpoint would let anyone spend the operator's quota through it (confused deputy).
+    // MCP_API_KEY + AUTH_HMAC_SECRET are set via `wrangler secret put` (invariant 6).
+    "MCP_ALLOW_NO_AUTH": "0",
     // PUBLIC courtesy contact for the NCBI/Unpaywall polite pools — not a credential.
-    "CONTACT_EMAIL": "ops@cureonics.com",
+    "CONTACT_EMAIL": "drmahirkurt@gmail.com",
     "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
   },
 

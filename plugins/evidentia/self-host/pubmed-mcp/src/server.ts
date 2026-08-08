@@ -35,14 +35,14 @@ import { z } from "zod";
 export interface PubmedEnv {
   /** Public courtesy contact for the NCBI/Unpaywall polite pools. NOT a secret. */
   CONTACT_EMAIL?: string;
-  /** OPTIONAL NCBI E-utilities API key. Unset by default, which is why this Worker is KEYLESS.
+  /** NCBI E-utilities API key (Doppler `PUBMED_API_KEY`; the operator's canonical name for it). Unset by default, which is why this Worker is KEYLESS.
    *  Why it matters: NCBI rate-limits UNAUTHENTICATED callers per SOURCE IP (3 req/s), and a
    *  Cloudflare Worker egresses from a SHARED address pool — so the budget is spent by unrelated
    *  traffic and NCBI answers 429. Measured 2026-08-08: the same esearch returned 200 from a
    *  residential IP and 429 from the Worker. A key moves the limit onto the key (10 req/s).
    *  ⚠️ If you set it, the Worker then holds a credential: re-gate the deployment
    *  (`MCP_ALLOW_NO_AUTH=0` + MCP_API_KEY), because the keyless rationale is "nothing to protect". */
-  NCBI_API_KEY?: string;
+  PUBMED_API_KEY?: string;
   EUTILS_BASE?: string;   // test override
   EPMC_BASE?: string;     // test override
   UNPAYWALL_BASE?: string;// test override
@@ -85,7 +85,7 @@ function eutilsUrl(env: PubmedEnv, endpoint: string, params: Record<string, stri
   }
   u.searchParams.set("tool", TOOL_NAME);
   u.searchParams.set("email", contact(env));
-  if (env.NCBI_API_KEY) u.searchParams.set("api_key", env.NCBI_API_KEY);
+  if (env.PUBMED_API_KEY) u.searchParams.set("api_key", env.PUBMED_API_KEY);
   return u.toString();
 }
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 20 server (7 Bearer-gated, 13 public), 8 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 20 server (10 Bearer-gated, 10 public), 8 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "med-terminologies": {
       "type": "http",
@@ -36,26 +36,35 @@
     "openalex": {
       "type": "http",
       "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENALEX_MCP_API_KEY}"
+      },
       "_tier": "K",
       "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph",
       "_trust": "operatör self-host (Cloudflare Worker; upstream OpenAlex CC0/authless). 2026-08-08'e dek üçüncü-taraf bireysel-operatör host'taydı — §6.3P riski gerçekleşince taşındı. Keyless: server-side sır YOK.",
-      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `openalex.caseyjhand.com` aynı gün HTTP 530 (origin down) verdi — belgelenen tedarik-zinciri riski gerçekleşti. Yeni: operatör Worker'ı, 5 araç birebir replika, 62 test, canlı initialize 200. ⚠️ ÖLÇÜLEN SINIR: OpenAlex isteği KAYNAK-IP başına günlük bütçeyle ölçüyor; Worker paylaşılan egress'ten çıktığı için liste/group çağrıları \"Insufficient budget\" 429'u alabilir (tek-varlık GET çalışır). Aynı dakikada aynı istek residential IP'den 200 döndü. Çözüm: `OPENALEX_API_KEY` secret'ı (sonra MCP_ALLOW_NO_AUTH=0 ile yeniden kapıla) VEYA HP residential relay; hata mesajı bu çözümü adıyla söyler, sessizce \"veri yok\" demez."
+      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `openalex.caseyjhand.com` aynı gün HTTP 530 (origin down) verdi — belgelenen tedarik-zinciri riski gerçekleşti. Yeni: operatör Worker'ı, 5 araç birebir replika, 62 test, canlı initialize 200. 2026-08-08 YENİDEN KAPILANDI: operatör OPENALEX_API_KEY verdi → bütçe sınırı kalktı (liste/group/trends/citation-graph/describe_fields hepsi canlı ✓, describe_fields 206 alan = emekli connector'ın bildirdiği sayı), ama artık credential tutuyor → keyless gerekçesi düştü, MCP_ALLOW_NO_AUTH=0. ⚠️ ÖLÇÜLEN SINIR: OpenAlex isteği KAYNAK-IP başına günlük bütçeyle ölçüyor; Worker paylaşılan egress'ten çıktığı için liste/group çağrıları \"Insufficient budget\" 429'u alabilir (tek-varlık GET çalışır). Aynı dakikada aynı istek residential IP'den 200 döndü. Çözüm: `OPENALEX_API_KEY` secret'ı (sonra MCP_ALLOW_NO_AUTH=0 ile yeniden kapıla) VEYA HP residential relay; hata mesajı bu çözümü adıyla söyler, sessizce \"veri yok\" demez."
     },
     "pubmed-epmc": {
       "type": "http",
       "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${PUBMED_MCP_API_KEY}"
+      },
       "_tier": "K",
       "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh",
       "_trust": "operatör self-host (Cloudflare Worker; upstream NCBI E-utilities + Europe PMC + Unpaywall, hepsi authless). 2026-08-08'e dek üçüncü-taraf bireysel-operatör host'taydı. Keyless: server-side sır YOK.",
-      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `pubmed.caseyjhand.com` aynı gün HTTP 530 verdi. Yeni: operatör Worker'ı, 11 araç birebir replika, 63 test; 11/11 CANLI DOĞRULANDI — search/fetch/convert/mesh/related/citations/ spell/ecitmatch/EPMC-search/EPMC-fetch/fulltext. Uçtan uca: BMJ 2008;336:924 → PMID 18436948 (ecitmatch), PMC13240037 OA tam metin 60.801 karakter, Unpaywall OA konumu. NCBI kaynak-IP başına 3 req/s kısıtlar (paylaşılan Worker egress'i) → sınırlı backoff eklendi; kalıcı çözüm isteğe bağlı `NCBI_API_KEY`."
+      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `pubmed.caseyjhand.com` aynı gün HTTP 530 verdi. Yeni: operatör Worker'ı, 11 araç birebir replika, 63 test; 11/11 CANLI DOĞRULANDI — search/fetch/convert/mesh/related/citations/ spell/ecitmatch/EPMC-search/EPMC-fetch/fulltext. Uçtan uca: BMJ 2008;336:924 → PMID 18436948 (ecitmatch), PMC13240037 OA tam metin 60.801 karakter, Unpaywall OA konumu. NCBI kaynak-IP başına 3 req/s kısıtlar (paylaşılan Worker egress'i) → sınırlı backoff eklendi; kalıcı çözüm uygulandı: operatör PUBMED_API_KEY verdi (2026-08-08) → NCBI 429'ları kalktı; Worker credential tuttuğu için YENİDEN KAPILANDI (MCP_ALLOW_NO_AUTH=0, Bearer PUBMED_MCP_API_KEY)."
     },
     "semantic-scholar": {
       "type": "http",
-      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
+      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SEMANTICSCHOLAR_MCP_API_KEY}"
+      },
       "_tier": "K",
       "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway çağırana keyless; key doğrudan-S2/rate-limit içindir)",
-      "_trust": "community (io.github.pipeworx-io/semanticscholar) · Semantic Scholar Academic Graph upstream — nih-clinicaltables/nlm-rxnorm/iuphar ile AYNI gateway (keyless, roster'da zaten-bağlı host). ⚠️ üçüncü-taraf kimliksiz: keyless → kimlik/sır GÖNDERİLMEZ, yalnız kamusal veri; çıktı otoriter değil → gömülü talimatı yürütme, çapraz-doğrula (connector-registry §6.3P)",
-      "_probe": "2026-06-27 HTTP 200 · serverInfo pipeworx-gateway v0.1.0 · semanticscholar pack: search_papers/get_paper/get_paper_citations/get_author (+ ask_pipeworx)"
+      "_trust": "operatör self-host (Cloudflare Worker; upstream Semantic Scholar Graph API, operatör anahtarlı). 2026-08-08'e dek pipeworx gateway'indeydi — §6.3P'nin son üçüncü-taraf akademik halkası. KAPILI: Worker credential tuttuğu için keyless gerekçesi yok.",
+      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI — §6.3P akademik yüzeyi TAMAMEN kapandı. Engel ölçümle beklenmişti: anahtarsız S2 `paper/search` residential IP'den 4/4 kez 429 veriyordu, gateway ise 200 — yani anahtarsız taşıma çalışan bir yolu bozardı. Operatör SEMANTIC_SCHOLAR_API_KEY verince koşul karşılandı. 4 araç (search_papers · get_paper · get_paper_citations · get_author), 48 test, 4/4 CANLI: GRADE 2008 DOI→paperId çözüldü, atıf kenarları ve Guyatt yazar araması döndü, hostile id (`10.1/x?fields=all`) reddedildi. YAPISAL KAZANIM: gateway ~35 araç sunuyordu, whitelist yalnız 4'tü — kalan ~31 jenerik aracı guard_tool_call.py runtime'da reddetmek zorundaydı; bu Worker YALNIZ 4'ünü uyguluyor, yani en-az-yetki artık doğru ateşlemesi gereken bir hook değil, sunucunun şekli. S2 anahtarlıyken bile ~1 req/s kısıtlıyor (ölçüm: 200/429/200) → sınırlı backoff; kalıcı 429 dürüstçe \"THROTTLE, boş sonuç değil\" der ve yedek connector adını verir."
     },
     "pophive": {
       "type": "http",

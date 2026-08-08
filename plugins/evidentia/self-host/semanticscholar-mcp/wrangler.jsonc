@@ -1,36 +1,32 @@
 {
-  // openalex-mcp — Cloudflare Worker (Cureonics self-host, evidentia Tier-O). Deploy: `wrangler deploy`.
-  // GATED since 2026-08-08 (was keyless): upstream OpenAlex (api.openalex.org, CC0) is authless and this Worker
+  // semanticscholar-mcp — Cloudflare Worker (Cureonics self-host, evidentia Tier-O). Deploy: `wrangler deploy`.
+  // KEYLESS by design: upstream Semantic Scholar Graph API needs an operator key and this Worker
   // holds NO server-side secret, so there is no credential to protect. MCP_ALLOW_NO_AUTH="1"
   // (drugddx precedent). The hardened OAuth layer is retained (additive) for claude.ai/ChatGPT
   // connector flows. SECRETS ARE NOT DECLARED HERE (invariant 6); only needed if you re-gate:
   //   wrangler secret put MCP_API_KEY
   //   wrangler secret put AUTH_HMAC_SECRET
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "openalex-mcp",
+  "name": "semanticscholar-mcp",
   "main": "src/index.ts",
   "compatibility_date": "2025-06-01",
   "compatibility_flags": ["nodejs_compat"],
 
   "durable_objects": {
     "bindings": [
-      { "name": "MCP_OBJECT", "class_name": "Openalex" }
+      { "name": "MCP_OBJECT", "class_name": "S2" }
     ]
   },
   "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["Openalex"] }
+    { "tag": "v1", "new_sqlite_classes": ["S2"] }
   ],
 
   // NON-SECRET vars only. MCP_ALLOW_NO_AUTH="1" => keyless (read-only authless-upstream proxy).
   // OAUTH_ALLOWED_REDIRECT_ORIGINS keeps the additive OAuth surface working for web connectors.
   "vars": {
-    // RE-GATED 2026-08-08. This Worker now holds an upstream API key (OPENALEX_API_KEY), so the
-    // keyless rationale — "there is no credential to protect" — no longer applies: an open
-    // endpoint would let anyone spend the operator's quota through it (confused deputy).
-    // MCP_API_KEY + AUTH_HMAC_SECRET are set via `wrangler secret put` (invariant 6).
+    // GATED from the start: this Worker holds SEMANTIC_SCHOLAR_API_KEY, so an open endpoint would
+    // let anyone spend the operator's S2 quota through it (confused deputy).
     "MCP_ALLOW_NO_AUTH": "0",
-    // PUBLIC polite-pool contact — not a credential.
-    "CONTACT_EMAIL": "drmahirkurt@gmail.com",
     "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
   },
 

@@ -194,7 +194,7 @@ describe("NCBI throttle handling (shared Worker egress IP)", () => {
     expect(new URL(eutilsUrl({}, "esearch.fcgi", { db: "pubmed" })).searchParams.has("api_key")).toBe(false);
   });
   it("sends api_key when one IS configured", () => {
-    const u = new URL(eutilsUrl({ NCBI_API_KEY: "k123" }, "esearch.fcgi", { db: "pubmed" }));
+    const u = new URL(eutilsUrl({ PUBMED_API_KEY: "k123" }, "esearch.fcgi", { db: "pubmed" }));
     expect(u.searchParams.get("api_key")).toBe("k123");
   });
 });

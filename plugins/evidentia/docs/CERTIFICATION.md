@@ -263,3 +263,42 @@ upstream cross-validation for connectors other than who-gho/globocan/ema has sti
 The four pipeworx-gateway connectors and `med-terminologies` remain third-party by choice, under
 the untrusted-output discipline in §6.3P.
 
+---
+
+## Round 3b — 2026-08-08 (operator keys supplied; §6.3P fully closed)
+
+The operator supplied the five API keys the round-3 record had named as unblocking conditions
+(NCBI/PubMed, OpenAlex, Semantic Scholar + two contact addresses). All five are stored in Doppler
+(`cureohub` / `dev_personal`); the three API keys are installed as Worker secrets.
+
+**Every rate/budget limit round 3 measured is gone — verified live, not assumed:**
+- OpenAlex: `resolve_name`, `search_entities` (list), `analyze_trends`, `get_citation_graph` and
+  `describe_fields` all returned 200 again. `describe_fields` reported **206 fields — the same
+  count the retired third-party connector advertised**, an independent confirmation that the
+  replication is faithful.
+- PubMed/NCBI: `search_articles`, `find_related`, `spell_check`, `lookup_mesh` all clear.
+
+**Both keyed Workers were RE-GATED.** They now hold upstream credentials, so the keyless rationale
+("there is nothing to protect") no longer holds — an open endpoint would let anyone spend the
+operator's quota through it (confused deputy). `MCP_ALLOW_NO_AUTH=0`, gate secrets installed,
+verified: an unauthenticated `POST /mcp` returns 401 on both; a Bearer request returns 200.
+
+**§6.3P is now fully closed.** `semanticscholar-mcp` was the last third-party academic connector.
+It had been held back on a measured basis (keyless S2 `paper/search` → 429 on 4/4 residential-IP
+calls, versus the gateway's 200), which the key resolved. 4 tools, 48 tests, 4/4 live: the GRADE
+2008 DOI resolved to its S2 paperId, citation edges and the Guyatt author search returned, and a
+hostile id (`10.1/x?fields=all`) was rejected by the path-injection guard.
+
+**Structural, not just custodial.** The pipeworx gateway advertised ~35 tools of which only 4 were
+whitelisted; the Worker implements ONLY those 4. Refreshing the G-TOOLS baseline printed the
+difference exactly: `-31` tools, all of them the pipeworx generics `guard_tool_call.py` previously
+had to deny at runtime. Least-privilege stopped being a hook that must fire correctly and became
+the shape of the server. The guard entry is kept as defence-in-depth, annotated as such.
+
+**Fleet after this round:** 10 self-host Workers (7 gated / 3 keyless), 20 connectors, 10/10
+identity-consistent, 10/10 HTTP surface clean, 20/20 tool-surface contract holding.
+
+**⚠️ Key hygiene.** The five keys were pasted into a chat transcript, so they exist in that
+session log on disk. Rotating them once the migration is settled is the safe move; nothing in the
+code or repo contains a key value (all five live only in Doppler and the Cloudflare secret store).
+

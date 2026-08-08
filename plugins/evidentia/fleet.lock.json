@@ -1,11 +1,11 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "evidentia",
-  "plugin_version": "2.6.1",
+  "plugin_version": "2.7.0",
   "counts": {
     "servers": 20,
-    "gated": 7,
-    "public": 13,
+    "gated": 10,
+    "public": 10,
     "companions": 8,
     "delegations": 0
   },
@@ -38,19 +38,19 @@
       "name": "openalex",
       "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
       "tier": "K",
-      "auth_env": null
+      "auth_env": "OPENALEX_MCP_API_KEY"
     },
     {
       "name": "pubmed-epmc",
       "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
       "tier": "K",
-      "auth_env": null
+      "auth_env": "PUBMED_MCP_API_KEY"
     },
     {
       "name": "semantic-scholar",
-      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
+      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
       "tier": "K",
-      "auth_env": null
+      "auth_env": "SEMANTICSCHOLAR_MCP_API_KEY"
     },
     {
       "name": "pophive",

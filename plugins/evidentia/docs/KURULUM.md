@@ -58,14 +58,14 @@
 doppler run -p cureohub -c dev_personal -- claude     # tüm ${VAR}'lar otomatik enjekte
 # veya elle: export ANAMNESIS_MCP_API_KEY=...  EVIDENTIA_KB_MCP_API_KEY=...  OPENFDA_MCP_API_KEY=...
 ```
-`drugddx` + üçüncü-taraf keyless'lar **hiçbir env gerektirmez** (⚠️ `titck` bu listeden 2026-08-07'de ÇIKTI — artık `TITCK_MCP_API_KEY` ister).
+`drugddx` + üçüncü-taraf keyless'lar **hiçbir env gerektirmez** (⚠️ `titck` bu listeden 2026-08-07'de, `openalex` ve `pubmed-epmc` ise 2026-08-08'de ÇIKTI — ikincisi operatör API anahtarı (OpenAlex bütçesi / NCBI rate-limit) tuttukları için yeniden kapılandı: açık uç, operatörün kotasını herkese harcatırdı (confused deputy).)
 
 ### B. claude.ai / Claude Desktop custom connector
 URL'yi ekle; **yalnız Bearer-gated** olanlara anahtar yapıştır:
 
 | Anahtar gerektiren | Anahtarsız (URL yeter) |
 |---|---|
-| anamnesis · evidentia-kb · openfda · annas-reader · yok-akademik · **openathens** · **titck** | **drugddx** · **who-gho** · **globocan** · **ema** · med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar |
+| anamnesis · evidentia-kb · openfda · annas-reader · yok-akademik · **openathens** · **titck** · **pubmed-epmc** · **openalex** · **semantic-scholar** | **drugddx** · **who-gho** · **globocan** · **ema** · med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar |
 
 Değeri çek: `doppler secrets get OPENFDA_MCP_API_KEY --plain -p cureohub -c dev_personal`
 
@@ -88,7 +88,8 @@ Her connector için **MCP Server URL = `…/mcp`**. ChatGPT'de Auth seçimi:
 | ChatGPT Auth | Connector'lar | Anahtar nasıl verilir |
 |---|---|---|
 | **OAuth** | anamnesis · evidentia-kb · openfda (+ annas-reader · yok-akademik) | ChatGPT yetkilendirme sayfasını açar → Worker'ın **authorize formuna MCP API key'i yapıştır** → ChatGPT token'ı kendisi alır. Anahtar **ChatGPT UI'ına değil, Worker'ın authorize formuna** girilir (claude.ai ile aynı tek-kiracılı model). |
-| **No authentication** | **drugddx** · **who-gho** · **globocan** · **ema** · üçüncü-taraf keyless (med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb · openalex · pubmed-epmc · semantic-scholar) | URL yeter |
+| **No authentication** | **drugddx** · **who-gho** · **globocan** · **ema** · üçüncü-taraf keyless (med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb) | URL yeter |
+| **OAuth** (2026-08-08'de eklendi) | **pubmed-epmc** · **openalex** · **semantic-scholar** | Self-host'a taşındıktan sonra operatör API anahtarı aldılar → kapılandı |
 
 > Anahtar değerlerini Doppler'dan al (aşağıda §"Anahtar değerlerini alma") (ör. `OPENFDA_MCP_API_KEY`).
 > ChatGPT MCP istemcisi `/mcp`'yi **sunucu tarafından** çağırır → CORS gerekmez; OAuth dansı kullanıcının

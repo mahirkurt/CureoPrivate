@@ -72,14 +72,12 @@ SMOKE: dict = {
     "nih-clinicaltables": ("drugs", {"terms": "warfarin", "count": 3}, "Warfarin"),
     "nlm-rxnorm": ("rxnorm_get_properties", {"rxcui": "11289"}, "warfarin"),
     "iuphar-gtopdb": ("search_targets", {"name": "thrombin", "limit": 3}, "thrombin"),
-    "semantic-scholar": ("search_papers", {"query": "emicizumab hemophilia A", "limit": 3}, None),
-    # Single-entity GET, deliberately: OpenAlex meters LIST/GROUP requests against a daily budget
-    # scoped to the source IP, and a Worker's shared egress often has $0 left (measured 2026-08-08).
-    # A budget-429 is an upstream quota fact, not a broken connector, so the smoke exercises the
-    # request class that is always available — and openalex_search_entities(id) still proves the
-    # whole path: auth, routing, upstream fetch, shaping.
-    "openalex": ("openalex_search_entities",
-                 {"entity_type": "works", "id": "W2165010366"}, "GRADE"),
+    "semantic-scholar": ("get_paper", {"paper_id": "10.1136/bmj.39489.470347.AD"}, "8da686b7"),
+    # Back to the LIST class: the operator supplied OPENALEX_API_KEY on 2026-08-08, which moves
+    # the daily budget off Cloudflare's shared egress IP and onto the key. Verified the same day —
+    # resolve_name/search/trends/citation-graph/describe_fields all returned 200 again.
+    "openalex": ("openalex_resolve_name",
+                 {"entity_type": "institutions", "query": "Hacettepe University"}, "ror.org"),
     "pubmed-epmc": ("pubmed_search_articles",
                     {"query": "emicizumab hemophilia A", "maxResults": 3}, "pubmed.ncbi.nlm.nih.gov"),
     "pophive": ("get_current_status", {"disease": "covid"}, None),
@@ -217,6 +215,7 @@ SELF_HOST = {
     # Added 2026-08-08 with the §6.3P self-host migration off caseyjhand.com.
     "pubmed-epmc": "https://pubmed-mcp.cureonics.workers.dev",
     "openalex": "https://openalex-mcp.cureonics.workers.dev",
+    "semantic-scholar": "https://semanticscholar-mcp.cureonics.workers.dev",
 }
 
 

@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "historia-medicinae",
+  "displayName": "Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü",
+  "version": "0.1.0",
+  "description": "Küresel tıp tarihi araştırma orkestratörü — Avrupa-merkezli olmayan, Mezopotamya/Mısır'dan çağdaş küresel sağlığa uzanan kapsamda birincil-kaynak-öncelikli araştırma ve iki dilli akademik rapor üretimi. TAM-FİLO (25 server) beş banda ayrılır: akademik çekirdek (OpenAlex + PubMed/EPMC MeSH K01.400 tarih aparatı + Semantic Scholar + Google Scholar/CrossRef + Consensus + Scholar Gateway), birincil kaynak (jenerik IIIF motoru — ölçülmüş yetenek matrisi: Wellcome sayfa-düzeyi tam-metin araması + Gallica/Internet Archive/Princeton manifest + DPLA; LoC ve NLM ölçülmüş biçimde bloklu), tam-metin şelalesi (lisanslı OpenAthens → son çare Anna's Reader; tıp tarihi monograf-ağırlıklı bir alandır), tarihsel yasama (Hansard 1803+, GovInfo/Congress, uluslararası sözleşmeler, mevzuat/TBMM/Resmî Gazete) ve terminoloji/epidemiyoloji (MeSH-ICD eşlemesi, WHO GHO, GLOBOCAN). 11 araştırma modu — SOURCE_HUNT, MORBUS (salgın ve hastalık biyografisi), INSTITUTIO (kurum ve meslekleşme), CONCEPTUS (fikir ve kavram tarihi), ETHICA (etik ve karanlık bölümler), PROSOPOGRAPHIA, THERAPEUTICA, SANITAS_PUBLICA, HISTORIOGRAPHIA, EDITIO, RELATIO. Metodolojik omurga alanın kendi literatürüyle temellendirilmiştir: retrospektif tanı karar prosedürü (Karenberg 2009 / Arrizabalaga 2002 / Mitchell 2011 — yasak değil, işaretli izin), kaynak eleştirisi (ölüm nedeni serileri patolojiyi değil sertifikayı yazanın bilgisini kodlar), kurban-merkezli zulüm etiği (Weindling 2016 + Viyana Protokolü), Avrupa-merkezsizleştirme tüzüğü (BHM 2015) ve dijital korpus OCR çekincesi (yokluk kanıt değildir). G0 kapsam manifestosu ile tam-filo garantisi; Tier-1 tarih-tarama-distilleri alt-ajanı ve Tier-2 anamnesis RAG/GraphRAG substratı ile bağlam ekonomisi. carbon-html-report ve carbon-quarto-scientific ile bileşir, sci-audit ile denetlenir, Osmanlıca paleografi/HTR zanaatını vekayinuvis'e, çağdaş klinik geçerliliği evidentia'ya delege eder.",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://github.com/mahirkurt/CureoPrivate/tree/main/plugins/historia-medicinae",
+  "repository": "https://github.com/mahirkurt/CureoPrivate",
+  "license": "UNLICENSED",
+  "keywords": [
+    "history-of-medicine", "tip-tarihi", "medical-humanities", "global-health-history",
+    "historiography", "quellenkritik", "kaynak-elestirisi", "retrospective-diagnosis",
+    "retrodiagnoz", "anachronism-guard", "presentism", "epidemic-history", "salgin-tarihi",
+    "plague", "cholera", "1918-influenza", "smallpox-eradication", "germ-theory",
+    "humoralism", "miasma", "bimaristan", "medical-ethics-history", "nuremberg-code",
+    "vienna-protocol", "tuskegee", "colonial-medicine", "eugenics-history", "prosopography",
+    "iiif", "wellcome-collection", "gallica", "hansard", "sanitary-conventions",
+    "mesh-k01-400", "historical-article", "icd10h", "academic-report", "chicago-citation",
+    "tam-filo", "context-economy", "anamnesis-rag"
+  ],
+  "userConfig": {
+    "report_language": {
+      "type": "string",
+      "title": "Rapor dili (tr | en)",
+      "description": "RELATIO (akademik rapor) modunun varsayılan çıktı dili. 'tr' → Türkçe akademik makale (özgün terimler korunur), 'en' → İngilizce akademik makale (Türkçe özet). Boş bırakılırsa her rapor çağrısında sorulur. Proje bazında .claude/historia-medicinae.local.md ile de ayarlanabilir.",
+      "required": false
+    },
+    "smithery_api_key": {
+      "type": "string",
+      "title": "Smithery API key",
+      "description": "Paper Search (Smithery host) için API anahtarı — girilmezse paper-search graceful degrade eder; tıp tarihinin MONOGRAF/kitap-bölümü kapsamı daralır ve bu kapsam manifestosunda beyan edilir.",
+      "sensitive": true,
+      "required": false
+    },
+    "smithery_profile": {
+      "type": "string",
+      "title": "Smithery profile",
+      "description": "Smithery profil tanımlayıcısı (opsiyonel).",
+      "required": false
+    },
+    "openalex_api_key": {
+      "type": "string",
+      "title": "OpenAlex MCP key",
+      "description": "openalex MCP anahtarı — tıp tarihi literatürünün büyük kısmı BEŞERİ BİLİMLER dergilerindedir ve PubMed'de görünmez; OpenAlex bu literatürü kapsayan çekirdek graftır. NOT: .mcp.json header'ı OPENALEX_MCP_API_KEY ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş, bkz. code.claude.com/docs/en/plugins-reference). Buraya değer girerseniz AYNI ZAMANDA onu OPENALEX_MCP_API_KEY ortam değişkeni olarak da dışa aktarmanız gerekir (ör. Doppler/secrets.env).",
+      "sensitive": true,
+      "required": false
+    },
+    "pubmed_api_key": {
+      "type": "string",
+      "title": "PubMed/EPMC MCP key",
+      "description": "pubmed-epmc MCP anahtarı — header PUBMED_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. Anahtar yoksa MeSH K01.400 tarih tanımlayıcılarıyla DÖNEM-KİLİTLİ arama yapılamaz; arama serbest-metne düşer ve bu kapsam kaybı manifestoda beyan edilir.",
+      "sensitive": true,
+      "required": false
+    },
+    "semanticscholar_api_key": {
+      "type": "string",
+      "title": "Semantic Scholar MCP key",
+      "description": "semantic-scholar MCP anahtarı — header SEMANTICSCHOLAR_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "ottoman_api_key": {
+      "type": "string",
+      "title": "IIIF / Ottoman Archives MCP key",
+      "description": "ottoman-archives MCP anahtarı — bu plugin'de BİRİNCİL KAYNAK motorudur. IIIF katmanı jeneriktir: Wellcome Collection (sayfa-düzeyi tam-metin araması ölçülmüş biçimde ÇALIŞIR), Gallica, Internet Archive, Princeton, DPLA. header OTTOMAN_ARCHIVES_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. Anahtar yoksa dijitalleştirilmiş birincil kaynağa programatik erişim kapanır; belge içeriği ASLA uydurulmaz.",
+      "sensitive": true,
+      "required": false
+    },
+    "devarsiv_api_key": {
+      "type": "string",
+      "title": "Devlet Arşivleri MCP key",
+      "description": "devlet-arsivleri MCP anahtarı (Türkiye kolu resmî katalog) — header DEVARSIV_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. TEK-CİHAZ OTURUM KİLİDİ: anahtar geçerli olsa da HP oturumu düşükse katman degraded raporlanır (skip değil).",
+      "sensitive": true,
+      "required": false
+    },
+    "openathens_api_key": {
+      "type": "string",
+      "title": "OpenAthens MCP key",
+      "description": "openathens MCP anahtarı (lisanslı tam-metin Tier 3) — header OPENATHENS_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "annas_api_key": {
+      "type": "string",
+      "title": "Anna's Reader MCP key",
+      "description": "annas-reader MCP anahtarı (son çare tam-metin Tier 4; YALNIZ analiz için, gövde kopyalanmaz) — header ANNAS_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "uk_legal_api_key": {
+      "type": "string",
+      "title": "UK Legal (Hansard) MCP key",
+      "description": "uk-legal MCP anahtarı — Hansard (1803+) küresel tıp tarihinin en zengin programatik BİRİNCİL yasama kaydıdır (Medical Act 1858, Contagious Diseases Acts, Vaccination Acts, NHS 1946). header UK_LEGAL_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "health_policy_api_key": {
+      "type": "string",
+      "title": "Health Policy MCP key",
+      "description": "health-policy MCP anahtarı (GovInfo/Congress tarihsel ABD kaydı + JP/AU/ES/IE/CN/MX/CA) — header HEALTH_POLICY_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "intl_treaty_api_key": {
+      "type": "string",
+      "title": "International Treaty MCP key",
+      "description": "intl-treaty MCP anahtarı (Oviedo CETS 164, MEDICRIME 211, BM sözleşmeleri — ETHICA normatif soyağacı) — header INTL_TREATY_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "mevzuat_api_key": {
+      "type": "string",
+      "title": "Mevzuat MCP key",
+      "description": "mevzuat MCP anahtarı (TR mülga sağlık mevzuatı + gerekçe; 1219/1593 kuruluş metinleri) — header MEVZUAT_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "tbmm_api_key": {
+      "type": "string",
+      "title": "TBMM MCP key",
+      "description": "tbmm MCP anahtarı (TBMM zabıtları — Hansard'ın Türkiye karşılığı) — header TBMM_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "resmigazete_api_key": {
+      "type": "string",
+      "title": "Resmî Gazete MCP key",
+      "description": "resmigazete MCP anahtarı (erken-Cumhuriyet birincil yayın kaydı) — header RESMI_GAZETE_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "yok_akademik_api_key": {
+      "type": "string",
+      "title": "YÖK Akademik MCP key",
+      "description": "yok-akademik MCP anahtarı (destekleyici — çağdaş tıp tarihçisi prosopografisi) — header YOK_AKADEMIK_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın.",
+      "sensitive": true,
+      "required": false
+    },
+    "tavily_api_key": {
+      "type": "string",
+      "title": "Tavily API key",
+      "description": "tavily MCP anahtarı (ÜÇÜNCÜL web katmanı) — header TAVILY_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. Web katmanı kanıt hiyerarşisinin en altıdır ve tek başına akademik iddia taşıyamaz; yokluğu akademik kapsamı bozmaz.",
+      "sensitive": true,
+      "required": false
+    },
+    "anamnesis_api_key": {
+      "type": "string",
+      "title": "Anamnesis MCP key",
+      "description": "anamnesis MCP anahtarı (RAG/GraphRAG bağlam-ekonomisi substratı; doc_id ön-eki histmed:) — header ANAMNESIS_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. Anahtar yoksa büyük tam-metin sınırlı-parça getirime düşer; ham döküm ASLA yapılmaz.",
+      "sensitive": true,
+      "required": false
+    }
+  },
+  "mcpServers": "./.mcp.json",
+  "defaultEnabled": false
+}

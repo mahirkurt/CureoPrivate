@@ -1,0 +1,33 @@
+---
+# historia-medicinae proje ayarları
+# Kopyala: .claude/historia-medicinae.local.md  (gitignore'a ekle)
+
+enabled: true
+
+# Rapor dili: tr | en. Boşsa her rapor çağrısında sorulur.
+report_language: tr
+
+# Bu connector'lar bağlı kabul edilir, yeniden probe edilmez.
+known_connected: []
+
+# Varsayılan bölgesel odak (region-layers.md anahtarları).
+# Boşsa konu neyi gerektiriyorsa o taranır.
+default_region: ""
+
+# Tam-metin şelalesi:
+#   copyright_gated (varsayılan) — Tier 4 (annas-reader) telif kapısıyla açık
+#   off                          — Tier 4 hiç kullanılmaz
+fulltext_tier: copyright_gated
+
+# G0 kapsam manifestosu sıkılığı: lenient | standard | strict
+coverage_gate: standard
+
+# Büyük tam-metin otomatik olarak anamnesis'e ingest edilsin mi (histmed: ön-ekiyle)
+auto_ingest_rag: true
+---
+
+# Proje notları
+
+Bu dosyanın gövdesi serbesttir; projeye özgü kapsam kararlarını buraya yazın.
+Örnek: "Bu proje yalnız 19. yüzyıl Akdeniz karantina rejimleriyle ilgilenir;
+Doğu Asya katmanı kapsam dışıdır."

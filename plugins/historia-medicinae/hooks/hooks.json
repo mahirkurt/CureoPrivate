@@ -1,0 +1,48 @@
+{
+  "description": "historia-medicinae runtime enforcement — dört düz-yazı invaryantını uygulanan davranışa çevirir: (1) SessionStart connector-preflight, 25 server'lık filonun anahtar durumunu ve kalıcı blokları (LoC 403 / NLM bot kapısı / Perseus CTS ölü / HathiTrust 403) enjekte eder, üç adlandırılmış tuzağı (retrospektif tanı, presentizm, difüzyonizm) ve bağlam-ekonomisi konvansiyonlarını hatırlatır (fail-open); (2) PostToolUse retrieve-don't-dump, büyük akademik/IIIF/zabıt gövdesinde (>6KB) Tier-1 tarih-tarama-distilleri'ne, çok büyükte (>30KB) Tier-2 anamnesis ingest'e yönlendirir (advisory, bloklamaz); (3) Stop stop_coverage, substantif araştırma çıktısı tam-filo G0 kapsam manifestosunu taşımıyorsa tamamlatır; (4) Stop anachronism_guard, çıktıda işaretsiz retrospektif tanı, teleolojik kalıp veya çift-tarihsiz Miladî-olmayan tarih varsa düzeltme ister. Hiçbir MCP çağrısı bloklanmaz; tümü deterministik ve fail-open.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
+            "timeout": 15,
+            "statusMessage": "historia-medicinae: filo preflight + tarihsel akıl yürütme konvansiyonları"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/retrieve_dont_dump.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/stop_coverage.py\"",
+            "timeout": 15,
+            "statusMessage": "historia-medicinae: G0 kapsam manifestosu kontrolü"
+          },
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/anachronism_guard.py\"",
+            "timeout": 15,
+            "statusMessage": "historia-medicinae: anakronizm ve retro-tanı taraması"
+          }
+        ]
+      }
+    ]
+  }
+}

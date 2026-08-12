@@ -1,0 +1,369 @@
+{
+  "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
+  "plugin": "historia-medicinae",
+  "plugin_version": "0.1.0",
+  "counts": {
+    "servers": 25,
+    "gated": 16,
+    "public": 9,
+    "companions": 3,
+    "delegations": 3
+  },
+  "servers": [
+    {
+      "name": "openalex",
+      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "tier": "academic-core",
+      "auth_env": "OPENALEX_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "pubmed-epmc",
+      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "tier": "academic-core",
+      "auth_env": "PUBMED_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "semantic-scholar",
+      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "tier": "academic-core",
+      "auth_env": "SEMANTICSCHOLAR_MCP_API_KEY",
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "paper-search",
+      "url": "https://server.smithery.ai/@adamamer20/paper-search-mcp-openai/mcp?api_key=${user_config.smithery_api_key}&profile=${user_config.smithery_profile}",
+      "tier": "academic-core",
+      "auth_env": null,
+      "shard": "S1",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "consensus",
+      "url": "https://mcp.consensus.app/mcp",
+      "tier": "academic-core",
+      "auth_env": null,
+      "shard": "S1",
+      "modes": [
+        "MORBUS",
+        "CONCEPTUS",
+        "HISTORIOGRAPHIA",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "scholar-gateway",
+      "url": "https://connector.scholargateway.ai/mcp",
+      "tier": "academic-core",
+      "auth_env": null,
+      "shard": "S1",
+      "modes": [
+        "HISTORIOGRAPHIA",
+        "CONCEPTUS",
+        "ETHICA",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "ottoman-archives",
+      "url": "https://ottoman.cureonics.com/mcp",
+      "tier": "primary-source",
+      "auth_env": "OTTOMAN_ARCHIVES_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "SOURCE_HUNT",
+        "MORBUS",
+        "INSTITUTIO",
+        "CONCEPTUS",
+        "EDITIO",
+        "PROSOPOGRAPHIA",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "devlet-arsivleri",
+      "url": "https://devarsiv.cureonics.com/mcp",
+      "tier": "primary-source",
+      "auth_env": "DEVARSIV_MCP_API_KEY",
+      "shard": "S2",
+      "modes": [
+        "SOURCE_HUNT",
+        "INSTITUTIO",
+        "PROSOPOGRAPHIA",
+        "SANITAS_PUBLICA",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "openathens",
+      "url": "https://openathens.cureonics.com/mcp",
+      "tier": "fulltext",
+      "auth_env": "OPENATHENS_MCP_API_KEY",
+      "shard": "S3",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "annas-reader",
+      "url": "https://annas.cureonics.com/mcp",
+      "tier": "fulltext",
+      "auth_env": "ANNAS_MCP_API_KEY",
+      "shard": "S3",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "uk-legal",
+      "url": "https://uk-law.cureonics.com/mcp",
+      "tier": "legal-history",
+      "auth_env": "UK_LEGAL_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "SANITAS_PUBLICA",
+        "INSTITUTIO",
+        "ETHICA",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "health-policy",
+      "url": "https://health-policy-mcp.cureonics.workers.dev/mcp",
+      "tier": "legal-history",
+      "auth_env": "HEALTH_POLICY_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "SANITAS_PUBLICA",
+        "ETHICA",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "intl-treaty",
+      "url": "https://intl-treaty-mcp.cureonics.workers.dev/mcp",
+      "tier": "legal-history",
+      "auth_env": "INTL_TREATY_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "SANITAS_PUBLICA",
+        "ETHICA",
+        "MORBUS",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "mevzuat",
+      "url": "https://mevzuat.cureonics.com/mcp",
+      "tier": "legal-history",
+      "auth_env": "MEVZUAT_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "SANITAS_PUBLICA",
+        "INSTITUTIO",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "tbmm",
+      "url": "https://tbmm.cureonics.com/mcp",
+      "tier": "legal-history",
+      "auth_env": "TBMM_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "SANITAS_PUBLICA",
+        "INSTITUTIO",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "resmigazete",
+      "url": "https://resmi-gazete-mcp.cureonics.workers.dev/mcp",
+      "tier": "legal-history",
+      "auth_env": "RESMI_GAZETE_MCP_API_KEY",
+      "shard": "S4",
+      "modes": [
+        "SANITAS_PUBLICA",
+        "INSTITUTIO"
+      ]
+    },
+    {
+      "name": "med-terminologies",
+      "url": "https://medical.sidneybissoli.com/mcp",
+      "tier": "terminology",
+      "auth_env": null,
+      "shard": "S5",
+      "modes": [
+        "MORBUS",
+        "EDITIO",
+        "CONCEPTUS",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "who-gho",
+      "url": "https://who-gho-mcp.cureonics.workers.dev/mcp",
+      "tier": "epidemiology",
+      "auth_env": null,
+      "shard": "S5",
+      "modes": [
+        "MORBUS",
+        "SANITAS_PUBLICA"
+      ]
+    },
+    {
+      "name": "globocan",
+      "url": "https://globocan-mcp.cureonics.workers.dev/mcp",
+      "tier": "epidemiology",
+      "auth_env": null,
+      "shard": "S5",
+      "modes": [
+        "MORBUS"
+      ]
+    },
+    {
+      "name": "yoktez",
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "tier": "turkiye",
+      "auth_env": null,
+      "shard": "S6",
+      "modes": [
+        "SOURCE_HUNT",
+        "INSTITUTIO",
+        "PROSOPOGRAPHIA",
+        "MORBUS",
+        "RELATIO"
+      ]
+    },
+    {
+      "name": "literatur",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "tier": "turkiye",
+      "auth_env": null,
+      "shard": "S6",
+      "modes": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "yok-akademik",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "tier": "support",
+      "auth_env": "YOK_AKADEMIK_MCP_API_KEY",
+      "shard": "S6",
+      "modes": [
+        "PROSOPOGRAPHIA",
+        "HISTORIOGRAPHIA"
+      ]
+    },
+    {
+      "name": "exa",
+      "url": "https://mcp.exa.ai/mcp",
+      "tier": "web",
+      "auth_env": null,
+      "shard": "S7",
+      "modes": [
+        "SOURCE_HUNT",
+        "INSTITUTIO",
+        "PROSOPOGRAPHIA"
+      ]
+    },
+    {
+      "name": "tavily",
+      "url": "https://mcp.tavily.com/mcp",
+      "tier": "web",
+      "auth_env": "TAVILY_API_KEY",
+      "shard": "S7",
+      "modes": [
+        "SOURCE_HUNT",
+        "INSTITUTIO"
+      ]
+    },
+    {
+      "name": "anamnesis",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "tier": "substrate",
+      "auth_env": "ANAMNESIS_MCP_API_KEY",
+      "shard": "S8",
+      "modes": [
+        "ALL"
+      ]
+    }
+  ],
+  "companions": [
+    {
+      "name": "PubMed",
+      "tool_prefixes": [
+        "mcp__claude_ai_PubMed__",
+        "mcp__PubMed__"
+      ],
+      "gate": null,
+      "modes": [
+        "ALL"
+      ],
+      "manifest_row": "PubMed (companion — claude.ai yüzeyi)",
+      "degrade": "Bağlı değilse wire'lı pubmed-epmc taşır; kayıp yok."
+    },
+    {
+      "name": "Paper Search",
+      "tool_prefixes": [
+        "mcp__claude_ai_Paper_Search__",
+        "mcp__claude_ai_paper-search__"
+      ],
+      "gate": null,
+      "modes": [
+        "ALL"
+      ],
+      "manifest_row": "Paper Search (companion — claude.ai yüzeyi)",
+      "degrade": "Bağlı değilse wire'lı paper-search taşır; kayıp yok."
+    },
+    {
+      "name": "Elicit",
+      "tool_prefixes": [
+        "mcp__claude_ai_Elicit__"
+      ],
+      "gate": null,
+      "modes": [
+        "HISTORIOGRAPHIA",
+        "RELATIO"
+      ],
+      "manifest_row": "Elicit (companion — sistematik tarama)",
+      "degrade": "Bağlı değilse tarama elle yürütülür; beyan edilir."
+    }
+  ],
+  "delegations": [
+    {
+      "name": "vekayinuvis",
+      "plugin_id_prefix": "vekayinuvis@",
+      "trigger": "Osmanlıca EL YAZMASI paleografi/HTR, BOA/BCA belge satın-alma ve 300 DPI arşiv-öncelikli okuma, ebced/kronogram çözümü, fon/kutu/gömlek düzeyinde kapsamlı süpürme (devarsiv_deep_search)",
+      "manifest_row": "vekayinuvis (Osmanlıca arşiv-zanaatı delegasyonu)",
+      "degrade": "Kurulu değilse Osmanlıca el yazması TRANSKRİPSİYONU YAPILMAZ; katalog künyesi düzeyinde kalınır ve kullanıcıya vekayinuvis kurulum önerisi verilir. Metin ASLA uydurulmaz."
+    },
+    {
+      "name": "evidentia",
+      "plugin_id_prefix": "evidentia@",
+      "trigger": "Tarihsel bir tedavinin GÜNCEL klinik etkililiği/güvenliği sorulduğunda (ör. \"artemisinin bugün ne kadar etkili\") — yani soru tarihten kanıta kaydığında",
+      "manifest_row": "evidentia (klinik kanıt delegasyonu)",
+      "degrade": "Kurulu değilse çağdaş klinik iddia UNVERIFIED bırakılır; uydurulmaz."
+    },
+    {
+      "name": "sci-audit",
+      "plugin_id_prefix": "sci-audit@",
+      "trigger": "her RELATIO (akademik rapor) çıktısı — atıf-adli + dil denetimi",
+      "manifest_row": "sci-audit (çıktı-QA delegasyonu)",
+      "degrade": "Kurulu değilse atıf doğrulaması ve Türkçe bilimsel dil taraması yapılmaz; çıktıda 'bağımsız QA uygulanmadı' olarak beyan edilir."
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+{
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — historia-medicinae MCP wiring. 25 server (16 Bearer-gated, 9 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Beş bant: akademik çekirdek (her sorguda) · birincil kaynak/IIIF · tam-metin şelalesi (lisanslı → son çare) · tarihsel yasama · terminoloji/epidemiyoloji, artı Türkiye kolu, üçüncül web ve anamnesis substratı. Web bandı kanıt hiyerarşisinin EN ALTIDIR ve tek başına akademik iddia taşıyamaz.",
+  "mcpServers": {
+    "openalex": {
+      "type": "http",
+      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENALEX_MCP_API_KEY}"
+      },
+      "_tier": "academic-core",
+      "_role": "ÇEKİRDEK disiplinler-arası akademik graf — tıp tarihi PubMed'de değil çoğunlukla BEŞERİ BİLİMLER dergilerindedir (Bull Hist Med, Med Hist, Soc Hist Med, Isis, J Hist Med Allied Sci, Osiris); OpenAlex bu literatürü tarih/bilim-tarihi topic'leriyle birlikte kapsayan tek geniş graf. Atıf grafı ekol/etki haritası (HISTORIOGRAPHIA), trend analizi periyodizasyon kontrolü sağlar."
+    },
+    "pubmed-epmc": {
+      "type": "http",
+      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${PUBMED_MCP_API_KEY}"
+      },
+      "_tier": "academic-core",
+      "_role": "ÇEKİRDEK biyotıp indeksi + tıp tarihi arama stratejisinin ALTYAPISI. Kritik yetenek MeSH tarih aparatıdır: `Publication Type: Historical Article`, `History of Medicine` ağacı ve yüzyıl tanımlayıcıları (`History, Ancient` … `History, 21st Century`) bir konuyu DÖNEME kilitlemeyi sağlar — serbest-metin aramanın yapamadığı şey. Europe PMC kolu OA tam-metin getirir."
+    },
+    "semantic-scholar": {
+      "type": "http",
+      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SEMANTICSCHOLAR_MCP_API_KEY}"
+      },
+      "_tier": "academic-core",
+      "_role": "ÇEKİRDEK ikinci akademik görüş — OpenAlex'ten bağımsız indeks; bir tarihyazımı iddiasının tek bir katalogun tuhaflığına dayanmadığını doğrulayan çapraz kontrol."
+    },
+    "paper-search": {
+      "type": "http",
+      "url": "https://server.smithery.ai/@adamamer20/paper-search-mcp-openai/mcp?api_key=${user_config.smithery_api_key}&profile=${user_config.smithery_profile}",
+      "_tier": "academic-core",
+      "_role": "ÇEKİRDEK Google Scholar + CrossRef kapısı — tıp tarihinin KİTAP ve kitap-bölümü ağırlıklı literatürü (monograf, Cambridge/Oxford el kitapları, festschrift) ne PubMed'de ne OpenAlex'te tam görünür; Scholar bunları yakalayan tek geniş yüzey."
+    },
+    "consensus": {
+      "type": "http",
+      "url": "https://mcp.consensus.app/mcp",
+      "_tier": "academic-core",
+      "_role": "Hakemli sentez — tartışmalı tarihyazımı iddialarında (ör. \"Kara Ölüm gerçekten Y. pestis miydi\", \"germ teorisi ne zaman baskın oldu\") çoklu-çalışma özeti. OAuth 2.0 tarayıcı akışı."
+    },
+    "scholar-gateway": {
+      "type": "http",
+      "url": "https://connector.scholargateway.ai/mcp",
+      "_tier": "academic-core",
+      "_role": "Pasaj-düzeyi tam-metin arama — bir tarihyazımı tezinin hangi sayfada savunulduğunu/çürütüldüğünü gösterir; alıntı-doğru atıf için gerekli."
+    },
+    "ottoman-archives": {
+      "type": "http",
+      "url": "https://ottoman.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OTTOMAN_ARCHIVES_MCP_API_KEY}"
+      },
+      "_tier": "primary-source",
+      "_role": "BİRİNCİL KAYNAK motoru — adı Osmanlı olsa da IIIF katmanı JENERİKTİR: Gallica (BnF tıp koleksiyonu), Library of Congress, Internet Archive, Princeton Figgy, Europeana, DPLA üzerinde arama + HERHANGİ bir IIIF v2/v3 manifestini ayrıştırma + manifest-içi tam-metin arama. Vesalius, herbal, veba risalesi, anatomi atlası gibi küresel tıp tarihi kaynakları bu kapıdan okunur. Ayrıca çok-takvimli tarih çevirisi (Hicrî/Rumî/Miladî) ve TDV İA maddeleri."
+    },
+    "devlet-arsivleri": {
+      "type": "http",
+      "url": "https://devarsiv.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DEVARSIV_MCP_API_KEY}"
+      },
+      "_tier": "primary-source",
+      "_role": "Türkiye kolu için resmî katalog (BOA/BCA/Diplomatik/Askeri) — Tıbhâne-i Âmire, Mekteb-i Tıbbiye, karantina/tahaffuzhane, Hıfzıssıhha kurumsal kayıtları. TEK-CİHAZ OTURUM KİLİDİ: sorgudan önce `devarsiv_session_status` ile canlılık doğrulanır. Derin Osmanlıca paleografi/HTR/satın-alma zanaatı BU PLUGIN'DE DEĞİL — `vekayinuvis` delegasyonudur (bkz. delegations)."
+    },
+    "openathens": {
+      "type": "http",
+      "url": "https://openathens.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens üzerinden paywall'lı monograf, el kitabı ve ansiklopedi maddesi. Tıp tarihinde belirleyici literatürün büyük kısmı OA DEĞİLDİR; yasal-öncelikli banttır."
+    },
+    "annas-reader": {
+      "type": "http",
+      "url": "https://annas.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "SON ÇARE tam-metin (Tier 4) — yalnız lisanslı bant getiremediğinde, açık gerekçeyle ve YALNIZ ANALİZ için. Baskısı tükenmiş tıp tarihi monografları (Sigerist, Ackerknecht, Temkin külliyatı) çoğu kez başka yolla okunamaz. Getirilen metin çıktıya GÖVDE olarak kopyalanmaz; > eşik → anamnesis ingest."
+    },
+    "uk-legal": {
+      "type": "http",
+      "url": "https://uk-law.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${UK_LEGAL_MCP_API_KEY}"
+      },
+      "_tier": "legal-history",
+      "_role": "HANSARD (1803+) — küresel tıp tarihinin en zengin programatik BİRİNCİL yasama kaydı. Medical Act 1858 (hekimlik mesleğinin doğuşu), Contagious Diseases Acts, Vaccination Acts ve NHS 1946 tartışmaları doğrudan zabıttan okunur; bu, ikincil literatürün aktardığı özet DEĞİL kaynağın kendisidir. ⚠️ `legislation_*` araçları ölçülmüş biçimde bozuktur (upstream HTTP istemcisi); mevzuat METNİ için legislation.gov.uk `/data.akn` programatik yolu kullanılır."
+    },
+    "health-policy": {
+      "type": "http",
+      "url": "https://health-policy-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${HEALTH_POLICY_MCP_API_KEY}"
+      },
+      "_tier": "legal-history",
+      "_role": "Türkiye-dışı sağlık mevzuatı — GovInfo/Congress tarihsel ABD kaydı (1906 Pure Food and Drugs Act, 1938 FD&C, 1962 Kefauver-Harris) + JP/AU/ES/IE/CN/MX/CA. SANITAS_PUBLICA modunun karşılaştırmalı omurgası."
+    },
+    "intl-treaty": {
+      "type": "http",
+      "url": "https://intl-treaty-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${INTL_TREATY_MCP_API_KEY}"
+      },
+      "_tier": "legal-history",
+      "_role": "Uluslararası norm katmanı — Uluslararası Sanitary Konvansiyonları geleneğinin mirasçısı belgeler, Oviedo (CETS 164) biyoetik sözleşmesi, MEDICRIME (211) ve BM insan hakları sözleşmelerinin sağlık maddeleri. ETHICA modunda Nürnberg → Helsinki → Oviedo normatif soyağacının doğrulanabilir ucu. ⚠️ coe.int canlı yolu inerttir → küratörlü anlık-görüntüler servis edilir (`snapshot_age_days` + `mcp_verified:false` taşır)."
+    },
+    "mevzuat": {
+      "type": "http",
+      "url": "https://mevzuat.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
+      },
+      "_tier": "legal-history",
+      "_role": "Türkiye yasama kolu — özellikle `search_mulga_mevzuat` (yürürlükten kalkmış sağlık mevzuatı) ve `get_mevzuat_gerekce`: 1219 sayılı Tababet ve Şuabatı Sanatlarının Tarzı İcrasına Dair Kanun (1928), 1593 Umumi Hıfzıssıhha Kanunu (1930) gibi kuruluş metinlerinin gerekçe ve zaman çizgisi."
+    },
+    "tbmm": {
+      "type": "http",
+      "url": "https://tbmm.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TBMM_MCP_API_KEY}"
+      },
+      "_tier": "legal-history",
+      "_role": "TBMM yasama soyağacı ve zabıtları — Hansard'ın Türkiye karşılığı: 1219 ve 1593 müzakerelerinde hekimlik mesleğinin nasıl tanımlandığı doğrudan tutanaktan okunur. Açık Erişim DSpace geç-Osmanlı/erken-Cumhuriyet meclis kayıtları."
+    },
+    "resmigazete": {
+      "type": "http",
+      "url": "https://resmi-gazete-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RESMI_GAZETE_MCP_API_KEY}"
+      },
+      "_tier": "legal-history",
+      "_role": "T.C. Resmî Gazete erken-Cumhuriyet arşivi (1920+) — bir sağlık düzenlemesinin BİRİNCİL yayın kaydı ve tarihi; taranmış sayfalar OCR ile metne çevrilir."
+    },
+    "med-terminologies": {
+      "type": "http",
+      "url": "https://medical.sidneybissoli.com/mcp",
+      "_tier": "terminology",
+      "_role": "Terminoloji otoritesi — tarihsel hastalık adının (consumption, dropsy, apoplexy, ague, sıtma-yı muhrika) modern karşılığını ARAŞTIRMA NESNESİ olarak ele almayı sağlar. Bu eşleme bir CEVAP değil bir HİPOTEZDİR: retrospektif tanı disiplini (bkz. references/retrospective-diagnosis.md) eşlemeyi asla kesin tanı saymaz. MeSH ağacı ayrıca dönem tanımlayıcılarının kaynağıdır."
+    },
+    "who-gho": {
+      "type": "http",
+      "url": "https://who-gho-mcp.cureonics.workers.dev/mcp",
+      "_tier": "epidemiology",
+      "_role": "20. yüzyıl sonrası küresel sağlık göstergeleri — çiçek eradikasyonu, aşılama kapsamı, çocuk ölümlülüğü gibi uzun serilerin NİCEL ucu. Yalnız WHO'nun yayımladığı dönem için geçerlidir; öncesine PROJEKSİYON YAPILMAZ."
+    },
+    "globocan": {
+      "type": "http",
+      "url": "https://globocan-mcp.cureonics.workers.dev/mcp",
+      "_tier": "epidemiology",
+      "_role": "Kanser epidemiyolojisi (IARC) — onkolojinin 20.–21. yüzyıl tarihinde bugünkü yük tablosunun referans noktası. Tarihsel seri DEĞİL, çağdaş kesittir."
+    },
+    "yoktez": {
+      "type": "http",
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "_tier": "turkiye",
+      "_role": "YÖK Ulusal Tez Merkezi — Türkiye'de tıp tarihi ve deontoloji anabilim dallarının tez üretimi; arşiv belgesi transkripsiyonlarına erişimin birincil dolaylı yolu. Authless."
+    },
+    "literatur": {
+      "type": "http",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "_tier": "turkiye",
+      "_role": "DergiPark tam-metin — Türkçe tıp tarihi dergileri (Osmanlı Bilimi Araştırmaları, Tıp Tarihi Araştırmaları, Lokman Hekim Dergisi) ve referans çıkarımı. Bu literatür Batı indekslerinde büyük ölçüde GÖRÜNMEZ; Türkiye kolunun taşıyıcısı."
+    },
+    "yok-akademik": {
+      "type": "http",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
+      },
+      "_tier": "support",
+      "_role": "DESTEKLEYİCİ — modern tıp tarihçilerinin profili, ekol ve eş-yazar ağı (çağdaş prosopografi). Tarihsel şahsiyet için DEĞİL, alanın bugünkü haritası için."
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp",
+      "_tier": "web",
+      "_role": "ÜÇÜNCÜL — müze/kütüphane koleksiyon sayfaları, dijital sergiler, kurum tarihçeleri, ansiklopedi maddeleri. Kanıt hiyerarşisinde EN ALT basamak; akademik bir iddianın TEK dayanağı olamaz (bkz. shared/quellenkritik-contract.md)."
+    },
+    "tavily": {
+      "type": "http",
+      "url": "https://mcp.tavily.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TAVILY_API_KEY}"
+      },
+      "_tier": "web",
+      "_role": "ÜÇÜNCÜL geniş web tarama + koleksiyon sitesi crawl — bir arşivin çevrimiçi envanterini haritalamak için. exa ile aynı kanıt kısıtına tabidir."
+    },
+    "anamnesis": {
+      "type": "http",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
+      },
+      "_tier": "substrate",
+      "_role": "Bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük tam-metin (monograf, tez PDF, IIIF manifest-içi blok, Hansard zabıt serisi) ana pencerede akıl yürütülmez: kanonik doc_id ile BİR KEZ ingest edilir → sınırlı, provenance damgalı dilim çekilir. `upsert_triples` hekim↔kurum↔yayın↔olay grafiği kurar (PROSOPOGRAPHIA ve CONCEPTUS'un aktarım-zinciri analizi)."
+    }
+  }
+}

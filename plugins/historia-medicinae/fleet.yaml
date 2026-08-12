@@ -17,7 +17,7 @@
 
 version: 2
 plugin: historia-medicinae
-plugin_version: "0.1.0"
+plugin_version: "0.1.1"
 
 servers:
   # ── A. Akademik çekirdek — HER substantif sorguda ateşlenir ────────────────

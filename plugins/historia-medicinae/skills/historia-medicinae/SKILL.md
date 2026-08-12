@@ -1,8 +1,8 @@
 ---
 name: historia-medicinae
 description: "Küresel tıp tarihi araştırma orkestrasyon protokolü — Avrupa-merkezli olmayan, Mezopotamya/Mısır ve Greko-Romen dünyadan İslâm altın çağına, Latin Batı'dan Çin/Ayurveda geleneklerine, sömürge tıbbından çağdaş küresel sağlığa. Birincil kaynak (IIIF yazma/erken basma: Wellcome sayfa-içi tam-metin araması, Gallica, Internet Archive, Princeton, DPLA; Devlet Arşivleri) → ikincil (Bull Hist Med, Med Hist, Soc Hist Med, Isis, Osiris, DergiPark) → üçüncül (ansiklopedi, müze sayfası) kanıt hiyerarşisi. Tarihsel yasama birincil kaydı: Hansard 1803+, GovInfo/Congress, uluslararası sözleşmeler, TBMM zabıtları, Resmî Gazete. 11 mod — SOURCE_HUNT, MORBUS (salgın/hastalık biyografisi), INSTITUTIO (kurum/meslekleşme), CONCEPTUS (fikir/kavram tarihi), ETHICA (etik/karanlık bölümler), PROSOPOGRAPHIA, THERAPEUTICA, SANITAS_PUBLICA, HISTORIOGRAPHIA, EDITIO, RELATIO. Zorunlu disiplinler: retrospektif tanı karar prosedürü, Quellenkritik, presentizm/anakronizm koruması, anti-difüzyonizm. USE for tıp tarihi, medicine history, salgın tarihi, veba, kolera, 1918 gribi, çiçek eradikasyonu, humoralizm, miyazma, germ teorisi, hastane tarihi, bimaristan, tıp fakültesi tarihi, hekim biyografisi, Hipokrat, Galen, İbn Sînâ, Vesalius, anestezi, antisepsi, aşı tarihi, materia medica, Nürnberg Kodu, Tuskegee, öjeni, sömürge tıbbı, tıp etiği tarihi, tıp tarihyazımı, Foucault klinik. carbon-html-report ve sci-audit ile bileşir; Osmanlıca paleografi vekayinuvis'e delege edilir. When in doubt USE."
-version: 0.1.0
-last_updated: 2026-08-11
+version: 0.1.1
+last_updated: 2026-08-12
 ---
 
 # Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü

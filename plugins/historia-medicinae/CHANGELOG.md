@@ -1,5 +1,13 @@
 # Changelog — historia-medicinae
 
+## 0.1.1 — 2026-08-12
+
+- `displayName` "Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü" → **"Historia
+  Medicinae"**. Katalogdaki diğer dokuz plugin kısa ad kullanıyor (Vekayinüvis, Lex Sanitas,
+  Evidentia…); uzun ad marketplace listesinde tek istisnaydı. Uzun tanım `description`
+  alanında kalıyor — kaybolan bilgi yok.
+- Sürüm yükseltildi ki kurulu kopya (`installed_plugins.json`, sha'ya sabitlenmiş) tazelensin.
+
 ## 0.1.0 — 2026-08-11
 
 İlk sürüm. Küresel tıp tarihi araştırma protokolü.

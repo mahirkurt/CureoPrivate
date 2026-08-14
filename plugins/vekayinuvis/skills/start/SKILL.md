@@ -1,8 +1,8 @@
 ---
 name: start
 description: Vekayinüvis süitine giriş ve yönlendirme. Bağlı MCP connector'larını (Ottoman Archives, Devlet Arşivleri, YÖK Tez + tamamlayıcı akademik katman) kontrol eder, flagship vekayinuvis skill'ini, dokuz çalışma modunu ve sepet→satın-alma→arşiv-okuma→async-OCR akış üçlüsünü tanıtır, kullanıcının niyetine göre doğru moda/akışa veya slash komutuna yönlendirir. İlk kez süitle çalışırken, hangi connector'ların bağlı olduğunu görmek için, ya da "vekayinuvis nedir / nereden başlamalıyım / hangi modu kullanmalıyım" türü oryantasyon sorularında kullanın. Tetikleyiciler — vekayinuvis başlat, süit oryantasyonu, connector kontrolü, Osmanlı arşivi bağlı mı, "ne yapabilirsin", "nereden başlayayım", "hangi mod".
-version: 3.2.0
-last_updated: 2026-07-19
+version: 3.4.12
+last_updated: 2026-08-14
 ---
 
 # Vekayinüvis — Başlangıç ve Yönlendirme
@@ -81,9 +81,11 @@ connector'ın **canlı**, hangisinin **bağlı değil** olduğunu açıkça beli
   `exa` (akademik web) · `tavily` (geniş web tarama)
 
 **Tam-metin şelalesi (kitap+makale):**
-- `openathens` (Tier 3 **lisanslı** — Millet Kütüphanesi/OpenAthens SAML, 309 DB) →
-  `annas-reader` (Tier 4 **son çare** — Anna's Archive; yalnız analiz). Paywall'lı
-  monograf/makale/ansiklopedi maddesine erişim; getirilen tam-metin → anamnesis'e ingest.
+- `openathens` (Tier 3 **lisanslı** — metin/RAG `oa_fetch_fulltext`, orijinal provider PDF
+  `oa_fetch_pdf(doi|url)`) → `annas-reader` (Tier 4 **son çare** — bounded reader,
+  orijinal PDF/EPUB/etc. `download_document(id=DOI|MD5)`; yalnız analiz). Dosya araçları
+  kısa-ömürlü resource link + SHA-256/provenance döndürür; link derhal tüketilir,
+  uzun tam-metin anamnesis'e ingest edilir.
 
 **Substrat (bağlam ekonomisi altyapısı):**
 - `anamnesis` — büyük-veri RAG/GraphRAG; büyük tam-metin (belge transkripsiyonu,

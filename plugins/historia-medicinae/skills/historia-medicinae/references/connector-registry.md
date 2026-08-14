@@ -39,8 +39,12 @@ atıflanır; tanımlayıcı **uydurulmaz**.
 
 | Tier | Server | Kural |
 |---|---|---|
-| 3 | `openathens` | Lisanslı band — **önce burası** |
-| 4 | `annas-reader` | Son çare; yalnız ANALİZ; gövde kopyalanmaz; > eşik → anamnesis |
+| 3 | `openathens` | Lisanslı band — **önce burası**. `oa_fetch_fulltext` = metin/RAG; `oa_fetch_pdf(doi\|url)` = provider-nötr orijinal PDF, kısa-ömürlü resource link + SHA-256/provenance |
+| 4 | `annas-reader` | Son çare; reader akışı bounded analiz için. `download_document(id=DOI\|32-hex MD5)` = PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS, kısa-ömürlü resource link + checksum. Yalnız ANALİZ; gövde kopyalanmaz; > eşik → anamnesis |
+
+Dosya linkleri kalıcı kaynak değildir: derhal tüketilir; atıf/provenance kaydında DOI veya
+MD5 ile dönen SHA-256 tutulur. `oa_fetch_pdf` HTML-only sayfayı PDF diye uydurmaz;
+`pdf_unavailable` dürüst degrade'dir.
 
 ---
 

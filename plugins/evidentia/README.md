@@ -3,7 +3,7 @@
 **Genel-amaçlı PRISMA tıbbi literatür inceleme aracı** — bir Claude Code / claude.ai
 marketplace plugin'i. Tüm tıp alanlarını ve her soru tipini (tedavi/tanı/prognoz/etiyoloji/
 önleme) kapsayan uçtan uca **PRISMA 2020 / PRISMA-ScR sistematik/kapsam derlemesi** motoru.
-`medical-research` v9.0.0 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
+`medical-research` v9.0.1 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
 connector'ları, opsiyonel bağlam-tetiklemeli zenginleştirme modüllerini ve `mcp-scout` ile
 canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette toplar.
 
@@ -11,7 +11,7 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
 
 ## Ne sağlar
 
-- **Flagship skill:** `medical-research` v9.0.0 — omurga **P0–P7 PRISMA hattı**, soru
+- **Flagship skill:** `medical-research` v9.0.1 — omurga **P0–P7 PRISMA hattı**, soru
   konusundan bağımsız her derlemede aynı sekiz fazı çalıştırır:
   - **P0 Protokol** — PICO/PECO/PCC çerçeveleme, derleme tipi (sistematik/kapsam), uygunluk
     kriterleri, protokol ön-kaydı.
@@ -37,8 +37,8 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
 - **7 komut:**
   - `/evidentia` — uçtan uca P0→P7 koşumu (herhangi bir tıbbi araştırma sorusu, her uzmanlık).
   - `/evidentia-protocol` — P0–P1 (PICO/PECO + veritabanı-başına MeSH/Emtree arama stratejisi).
-  - `/evidentia-fulltext` — copyright-kapılı tam-metin kademesi (EPMC→Paper Search→annas-mcp→
-    Wiley→Unpaywall).
+  - `/evidentia-fulltext` — copyright-kapılı tam-metin kademesi (EPMC→Paper Search→
+    OpenAthens→Wiley→Anna's Reader→Unpaywall); metin/RAG veya orijinal PDF/EPUB teslimini seçer.
   - `/evidentia-synthesize` — P4+P6 graph-temelli derin sentez (anamnesis RAG/GraphRAG üzerinden
     `evidence-synthesizer` alt-ajanını çağırır).
   - `/evidentia-appraise` — P5–P6 (RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST yanlılık riski
@@ -54,8 +54,10 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
   TÜRKPATENT), Epidemiyoloji (openfda ICD-11 + PopHIVE ABD). Sinyal yoksa çekirdek bibliyografik
   PRISMA hattı tek başına koşar — bu **de-skew** değişmezi `G-DESKEW`/`G-PHASES` kapılarıyla
   denetlenir.
-- **Tam-metin connector'ı:** **Annas Reader** (operatör-bağlı Cloud Run, OAuth-gated) — makale/kitap
-  tam-metin erişimi (`article_search`/`download`, `book_search`/`download`).
+- **Tam-metin dosya teslimi:** **OpenAthens** `oa_fetch_pdf(doi|url)` ile hesaba açık
+  sağlayıcılardan orijinal PDF; **Anna's Reader** `download_document(id=DOI|MD5)` ile
+  PDF/EPUB ve desteklenen diğer formatları sunar. Her ikisi de kısa-ömürlü opaque
+  `resource_link` + SHA-256/provenance döndürür; link derhal tüketilir.
 - **RAG/GraphRAG substratı:** **anamnesis** self-host Worker — semantik chunking (bge-m3 1024-d) +
   Vectorize + D1 bilgi grafiği. Tam-metin/büyük araç çıktılarını **bağlama dökmeden** indeksler;
   `hybrid_query` ile context-window'a sığan, provenance-damgalı kanıt paketi sunar
@@ -162,7 +164,7 @@ smoke) + **`G-IDENTITY`** (her self-host Worker kendi realm/paket/wrangler adın
 >
 > **Neden `G-TOOLS` var (2026-08-07):** `G-PROBE` bir connector'ın *ulaşılabilir* olduğunu kanıtlar,
 > hangi araçları sunduğunu değil. Filo ölçüldüğünde belgeler canlı yüzeyden sessizce ayrışmıştı —
-> med-terminologies 37→31 araç, pubmed-epmc 10→11 (v2.9.7→v2.10.2), openathens 7→10, globocan 36→41
+> med-terminologies 37→31 araç, pubmed-epmc 10→11 (v2.9.7→v2.10.2), openathens 10→11, annas-reader 8→9, globocan 36→41
 > kanser sitesi — ve her kapı yeşildi. `G-TOOLS` araç yüzeyini `fleet.tools.json` içinde **taahhüt
 > edilmiş sözleşmeye** çevirir; sonraki sürüklenme keşif değil, kırmızı kapıdır.
 
@@ -214,8 +216,8 @@ bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py` (21 deny/allow/e
 
 ---
 
-*AS IS; no warranty. Internal-use grant. **Plugin v2.0.0 / flagship skill `medical-research`
-v9.0.0** — v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
+*AS IS; no warranty. Internal-use grant. **Plugin v2.7.2 / flagship skill `medical-research`
+v9.0.1** — v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
 PRISMA-ScR P0–P7 hattına** yeniden yazıldı; eski eksenler silinmedi, **opsiyonel, bağlam-tetiklemeli
 zenginleştirme modülleri**ne dönüştü (Adım 0.5, de-skew invariant). Native-MCP-first, temiz-kopya,
 retrieve-don't-dump, no-fabrication, cömertlik ve tek-sefer/kanonik-önbellek doktrinleri ADR-05-safe

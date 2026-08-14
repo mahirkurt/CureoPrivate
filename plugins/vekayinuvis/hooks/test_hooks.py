@@ -50,6 +50,10 @@ def check(name, cond, detail=""):
         print(f"  [FAIL] {name}" + (f" — {detail}" if detail else ""))
 
 
+def additional_context(out):
+    return ((out or {}).get("hookSpecificOutput") or {}).get("additionalContext", "")
+
+
 # --- gerçek atıf örnekleri (hook ATEŞLEMELİ / disiplin tamsa susmalı) ---------------
 CITATION_NO_DATE = (
     "Tahaffuzhane inşasına dair kayıt: BOA, DH.MKT 1234/56. Belge karantina "
@@ -106,6 +110,24 @@ check("uygulama planı düzyazısı → sessiz",
 check("stop_hook_active → sessiz (döngü koruması)",
       not blocks("citation_discipline.py", CITATION_NO_DATE, {"stop_hook_active": True}))
 check("boş mesaj → sessiz", not blocks("citation_discipline.py", ""))
+
+print("== full-text delivery hooks ==")
+pdf_out = run(
+    "retrieve_dont_dump.py", "",
+    {"tool_name": "mcp__openathens__oa_fetch_pdf", "tool_result": "x" * 7000},
+)
+check("oa_fetch_pdf büyük çıktısı retrieve-don't-dump uyarısı üretir",
+      "retrieve-don't-dump" in additional_context(pdf_out))
+download_out = run(
+    "retrieve_dont_dump.py", "",
+    {"tool_name": "mcp__annas-reader__download_document", "tool_result": "x" * 31000},
+)
+check("download_document çok büyük çıktısı anamnesis'e yönlenir",
+      "anamnesis.ingest_document" in additional_context(download_out))
+session_out = run("session_start.py", "")
+session_ctx = additional_context(session_out)
+check("SessionStart yeni dosya araçlarını ve checksum disiplinini enjekte eder",
+      all(s in session_ctx for s in ("oa_fetch_pdf", "download_document", "SHA-256")))
 
 print("== stop_coverage.py ==")
 MANIFEST_ROWS = " ".join(

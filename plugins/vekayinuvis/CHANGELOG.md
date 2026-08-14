@@ -1,5 +1,16 @@
 # Changelog — Vekayinüvis Plugin
 
+## 3.4.12 — 2026-08-14
+
+- OpenAthens `oa_fetch_pdf(doi|url)` ile hesaba açık sağlayıcılardan provider-nötr
+  orijinal PDF; Anna's Reader `download_document(id=DOI|MD5)` ile PDF/EPUB/MOBI/AZW/
+  DjVu/FB2/CBZ/CBR/XPS teslimi tam-metin shard'ına eklendi.
+- Kısa-ömürlü opaque resource link derhal tüketilir; DOI/MD5 + SHA-256/provenance
+  saklanır ve uzun dosya anamnesis'te bounded sorgulanır. OpenAthens → Anna's legal-first
+  sırası ve Anna's yalnız-analiz telif kapısı korunur.
+- Yeni büyük-dosya regresyonu, >30 KB PostToolUse yolundaki `${CLAUDE_PLUGIN_ROOT}`
+  biçimlendirme hatasını yakaladı; `KeyError` giderildi ve anamnesis yönlendirmesi doğrulandı.
+
 Bu plugin [Semantic Versioning](https://semver.org/lang/tr/) kullanır.
 Flagship skill kendi sürüm geçmişini `skills/vekayinuvis/SKILL.md` frontmatter
 `changelog` alanında tutar.

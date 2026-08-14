@@ -14,7 +14,7 @@ description: >
   derleme, kapsam derleme, PRISMA, PICO, PECO, screening, risk of bias, GRADE, kanıt
   sentezi, meta-analiz, dahil hariç kriterleri.
 metadata:
-  version: 9.0.0
+  version: 9.0.1
 ---
 
 > ## 🧩 Plugin entegrasyon notu (evidentia)
@@ -29,11 +29,11 @@ metadata:
 >   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; openfda
 >   tekil+retry+skippable). P2 retrieval'ın paralel çağrı listesi bu sözleşmeye tabidir.
 >
-> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.0**
+> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.1**
 > (v9 = 10-eksen zorunlu yükleyici → **P0–P7 PRISMA hattı + opsiyonel zenginleştirme sınıflandırıcısı**;
 > web tier / OSINT ekseni kaldırılmıştı — saf yapısal-kanıt korunur). Plugin sürümü skill'den ayrıdır.
 
-# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.0 (medical-research)
+# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.1 (medical-research)
 
 **This block is read and applied before any other structure. It runs on every invocation.**
 
@@ -202,7 +202,7 @@ J-STAGE via REST (`extended-api.md`), native `openfda:openfda_search` (drugsfda 
 
 **E. Guidelines & HTA / Epidemiology** — society-guideline PDFs (NICE/ESMO/NCCN/Cochrane) and HTA bodies have **no native MCP** → **documented gap (VERİ YOK)**, never web-scraped. Epidemiology: ICD-11 coding via `openfda`; US surveillance via **PopHIVE** (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — relay precomputed evidence; **US-ONLY**); global (WHO-GHO/GLOBOCAN/IHME) + Türkiye burden = documented gap. If the operator supplies a guideline PDF, ingest it into anamnesis.
 
-**Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 6-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **openathens `oa_resolve`/`oa_fetch_fulltext` (Tier 3 — LICENSED institutional, primary paywall gate, legal-first, BEFORE Wiley; unbound → skip)** → Wiley (auth, Tier 4) → **annas-reader `article_search`/`read_article` (Tier 5 — LAST RESORT, after the licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA, Tier 6). Copyright: analysis only; CC-BY freely quotable; no web scraping.
+**Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 6-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **openathens `oa_resolve` + `oa_fetch_fulltext` for text or `oa_fetch_pdf(doi|url)` for the provider's original PDF (Tier 3 — LICENSED institutional, provider-neutral, primary paywall gate, legal-first, BEFORE Wiley; unbound → skip)** → Wiley (auth, Tier 4) → **annas-reader reader flow or `download_document(id=DOI|MD5)` for the original PDF/EPUB/etc. (Tier 5 — LAST RESORT, after the licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA, Tier 6). Both file tools return short-lived opaque `resource_link`s: consume promptly, record SHA-256/provenance, never cache the link as a permanent source. Copyright: analysis only; CC-BY freely quotable; no web scraping.
 
 ## Adım 2: Generosity Principle (UNCAPPED — depth across phases)
 
@@ -336,7 +336,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 ```yaml
 skill_manifest_protocol: 1.0
 skill_name: medical-research
-skill_version: 9.0.0
+skill_version: 9.0.1
 produces:
   - prisma-systematic-review-markdown (P0–P7; PRISMA flow diagram + Summary-of-Findings)
   - clean-copy-report (journal-grade reader-facing article; tooling/telemetry/viz carried

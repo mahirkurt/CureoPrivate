@@ -1,4 +1,4 @@
-# Full-Text Retrieval Cascade (v9.0)
+# Full-Text Retrieval Cascade (v9.0.1)
 
 **Loaded:** ALWAYS (Adım 0). Feeds **P4 Data Extraction** (`data-extraction.md`): full text is
 retrieved here, then extracted into the `evidence_table` — never dumped raw into context.
@@ -81,10 +81,16 @@ openathens: oa_resolve(doi="10.xxxx/…" | pmid="…" | title="…")
                                                           # → target URL + OpenAthens redirector URL(s) + covering DB/publisher (mcp_verified:false)
 openathens: oa_fetch_fulltext(doi="10.xxxx/…", ingest=true)
                                                           # copyright-gated delivery; long text → anamnesis manifest + provenance-stamped slices; short → cited quote; reports which DB served it
+openathens: oa_fetch_pdf(doi="10.xxxx/…" | url="https://publisher.example/…")
+                                                          # provider-neutral original PDF → short-lived opaque resource_link + filename/MIME/size/SHA-256/acquired_via
 openathens: oa_session_status()                           # session warmth: validated, session_age_s, headless, pending_challenge{host,age_s} — check before/after an anti-bot fetch
 ```
-- **Delivery (retrieve-don't-dump):** the download happens server-side on HP, so the server reads
-  the text. Long (≳1–2 pages) → anamnesis `ingest_document(doc_id=<DOI>, source="openathens:<db>")`
+- **Delivery (retrieve-don't-dump):** use `oa_fetch_fulltext` for excerpt/search/RAG delivery and
+  `oa_fetch_pdf` only when the original provider PDF is actually needed. The file tool validates
+  `%PDF-`, refuses HTML masquerading as PDF (`pdf_unavailable`) and caps delivery at 100 MiB.
+  Its opaque `resource_link` is short-lived: consume it immediately, never cache it as a permanent
+  source, and retain DOI + SHA-256 + `acquired_via` as provenance. Long (≳1–2 pages) →
+  anamnesis `ingest_document(doc_id=<DOI>, source="openathens:<db>")`
   → manifest, then `semantic_search`/`hybrid_query` for query-bounded, provenance-stamped slices
   (`evidence_index`). Short → reasoned short quote. **Raw verbatim is never dumped to context.**
   anamnesis unreachable → summary (not verbatim) + "full text landed on HP" note.
@@ -103,12 +109,10 @@ OpenAthens tier does not cover. Graceful skip if unauthenticated. (Still inside 
 ### Tier 5 — annas-reader (shadow library — LAST RESORT, after the licensed band)
 **Entered only when the licensed band (Tier 3 OpenAthens + Tier 4 Wiley) cannot supply the item.**
 Grey-area; legal-first doctrine keeps it last.
-⚠️ **Re-measured 2026-08-07 — this rung was documented against an API the bundled connector does
-not have.** The wired server is `annas-reader` (`annas.cureonics.com`, v3.4.5): an **ephemeral
-reader**, not a downloader. `article_download` and `book_download` **do not exist on it** — every
-call to those names fails. Nothing lands on the user's machine; text is extracted on demand and not
-retained. The real surface is better suited to this plugin anyway: `search_in_document` is a bounded,
-page-referenced RAG primitive, i.e. retrieve-don't-dump native.
+⚠️ **Re-measured 2026-08-14:** the wired `annas-reader` exposes nine tools. Its bounded
+reader remains the preferred analysis path; `download_document` adds original-file delivery when
+PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS is genuinely required. The old names
+`article_download`/`book_download` still do not exist.
 
 ```
 # ARTICLES — by DOI
@@ -120,7 +124,14 @@ annas: book_search(query="Cochrane Handbook …", limit=3)    # → rows with [m
 annas: get_document_info(md5="…")                           # → format/pages/ocr/text_quality/TOC
 annas: search_in_document(md5="…", query="risk of bias", k=3)  # → top-k PAGE-REFERENCED passages
 annas: read_document(md5="…", page_start=…, page_end=…, max_chars=…)  # → only the pages you need
+
+# ORIGINAL FILE — DOI or exact 32-hex MD5; consume the short-lived link promptly
+annas: download_document(id="10.xxxx/…" | "<32-hex-md5>")
+                                                              # → opaque resource_link + format/size/SHA-256
 ```
+For DOI input the server applies Crossref/content-identity gates. Record the DOI or MD5 together
+with the returned SHA-256 and format; never preserve the opaque link as a durable citation. For
+long-file analysis, ingest the consumed file into anamnesis and query bounded slices.
 **Verified 2026-08-07 (live, end-to-end):** `article_search("10.1136/bmj.39489.470347.AD")` resolved
 the GRADE 2008 paper and `read_article` returned its body (1,252 chars at `max_chars=800`, header
 included); `book_search("Cochrane Handbook …")` → md5 `47cbf17d…`; `get_document_info` → 680 pages,
@@ -178,8 +189,9 @@ the anamnesis `doc_id::idx` provenance where ingested.
 ---
 
 ## 6. Known limitations
-1. **Downloads are host-side** — annas → user machine; OpenAthens → HP (server reads it). The
-   pipeline validates retrieval; context sees only the anamnesis-indexed, provenance-stamped slice.
+1. **File delivery is link-based** — `oa_fetch_pdf` and `download_document` return validated,
+   short-lived opaque resource links plus checksum/provenance metadata. Consume promptly; context
+   sees only the anamnesis-indexed, provenance-stamped slice, never a base64 dump.
 2. **Copyright** — the dominant constraint; default to paraphrase + data extraction.
 3. **OpenAthens LIVE, partial publisher coverage** — `openathens-mcp` is deployed
    (`openathens.cureonics.com/mcp`) with working OpenAthens SP-initiated SAML federation. Full-text
@@ -199,8 +211,7 @@ the anamnesis `doc_id::idx` provenance where ingested.
 
 ---
 
-*v9.0 — OpenAthens/Millet Kütüphanesi licensed tier added as Tier 3 (legal-first, before annas);
-annas moved to Tier 5 last-resort. openathens-mcp design `docs/superpowers/specs/2026-07-01-
-openathens-fulltext-evidentia-design.md` (CureoHub); deploy-pending. annas `article_search`/
-`read_article`/`book_search`/`search_in_document` + EPMC `get_full_text_article`/`get_copyright_status` verified
-(tool names re-measured 2026-08-07: the bundled `annas-reader` has no `*_download` tools).*
+*v9.0.1 — OpenAthens provider-neutral original-PDF delivery (`oa_fetch_pdf`) and Anna's
+original-file delivery (`download_document`) added without changing the legal-first order. Both
+use short-lived opaque resource links; checksum/provenance retention and anamnesis bounded analysis
+are mandatory. The old `article_download`/`book_download` names remain invalid.*

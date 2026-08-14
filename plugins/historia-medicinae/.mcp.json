@@ -71,7 +71,7 @@
         "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens üzerinden paywall'lı monograf, el kitabı ve ansiklopedi maddesi. Tıp tarihinde belirleyici literatürün büyük kısmı OA DEĞİLDİR; yasal-öncelikli banttır."
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens üzerinden paywall'lı monograf, el kitabı ve ansiklopedi maddesi. Tıp tarihinde belirleyici literatürün büyük kısmı OA DEĞİLDİR; yasal-öncelikli banttır. Metin/arama için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i gerektiğinde `oa_fetch_pdf(doi|url)` kullanılır. PDF, kısa-ömürlü opaque resource_link + SHA-256/provenance olarak gelir; derhal tüketilir, kalıcı URL diye saklanmaz."
     },
     "annas-reader": {
       "type": "http",
@@ -80,7 +80,7 @@
         "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "SON ÇARE tam-metin (Tier 4) — yalnız lisanslı bant getiremediğinde, açık gerekçeyle ve YALNIZ ANALİZ için. Baskısı tükenmiş tıp tarihi monografları (Sigerist, Ackerknecht, Temkin külliyatı) çoğu kez başka yolla okunamaz. Getirilen metin çıktıya GÖVDE olarak kopyalanmaz; > eşik → anamnesis ingest."
+      "_role": "SON ÇARE tam-metin (Tier 4) — yalnız lisanslı bant getiremediğinde, açık gerekçeyle ve YALNIZ ANALİZ için. Baskısı tükenmiş tıp tarihi monografları (Sigerist, Ackerknecht, Temkin külliyatı) çoğu kez başka yolla okunamaz. Getirilen metin çıktıya GÖVDE olarak kopyalanmaz; > eşik → anamnesis ingest. Orijinal PDF/EPUB veya diğer desteklenen dosya gerekiyorsa `download_document(id=<DOI|32-hex MD5>)` kullanılır; kısa-ömürlü resource_link derhal tüketilir ve format/size/SHA-256 provenance kaydı korunur."
     },
     "uk-legal": {
       "type": "http",

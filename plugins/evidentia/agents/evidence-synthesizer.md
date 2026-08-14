@@ -6,7 +6,7 @@ description: >-
   tam-metin + çıkarım + RoB + GRADE") çağrılır; P2–P6 fan-out'unun (arama → tarama → çıkarım →
   yanlılık riski → sentez) onlarca connector çağrısının ham gürültüsünü kendi bağlam penceresinde
   tüketir ve ana pencereye YALNIZ damıtılmış kanıt paketini + numaralı SR sentez çıktısını
-  döndürür. medical-research v9.0.0 PRISMA protokolünü (P0–P7) çalıştırır; temiz-kopya doktrinine
+  döndürür. medical-research v9.0.1 PRISMA protokolünü (P0–P7) çalıştırır; temiz-kopya doktrinine
   ve tek-sefer/kanonik-önbellek sözleşmesine tabidir. Tek-fazlı/hızlı sorgular için ÇAĞIRMA —
   doğrudan /evidentia yeterlidir; bu ajan bağlam-pencere ekonomisi gerektiğinde devreye girer.
 # GEN:agent-tools BEGIN
@@ -65,6 +65,13 @@ hızlı sorgular sana gelmez.
    provenance-damgalı, graph-temelli** dilim çek (`evidence_index`). İlişki çıkarımını **sen** yapar,
    `upsert_triples` ile grafiğe yazarsın (LLM-in-the-loop GraphRAG); anamnesis depolar+gezer.
    Bu disiplin context-window taşması kaynaklı **eksik/tutarsız** değerlendirmeyi önler.
+
+   **Tam-metin dosya seçimi.** Lisanslı Tier 3'te metin/alıntı/RAG için
+   `oa_fetch_fulltext`; sağlayıcının orijinal PDF'si gerektiğinde `oa_fetch_pdf(doi|url)` kullan.
+   Lisanslı band başarısızsa ve telif kapısı izin veriyorsa Tier 5'te okuma araçlarını, yalnız
+   orijinal PDF/EPUB vb. gerekiyorsa `download_document(id=<DOI|MD5>)` kullan. İki dosya aracı da
+   kısa-ömürlü opaque `resource_link` döndürür: hemen tüket, linki kalıcı cache'e yazma; kanonik
+   kayıtta DOI/MD5 + SHA-256 + provenance tut ve uzun dosyayı anamnesis'e ingest et.
 
 4. **İzolasyon.** Ham tool çıktıları, ara JSON, başarısız-deneme gürültüsü **senin** bağlamında
    kalır. Ana asistana **yalnız**: (a) damıtılmış kanonik artefakt özetleri, (b) P7 SR rapor

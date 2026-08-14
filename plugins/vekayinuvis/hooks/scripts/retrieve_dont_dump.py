@@ -37,7 +37,8 @@ BIG_OUTPUT_TOOLS = {
     "devarsiv_ocr_belge_pages", "devarsiv_ocr_archive_pages", "devarsiv_get_archive_pdf",
     "devarsiv_ocr_result",
     # Tam-metin (kitap+makale)
-    "oa_fetch_fulltext", "oa_batch_result",
+    "oa_fetch_fulltext", "oa_fetch_pdf", "oa_batch_result",
+    "download_document",
     "read_document", "read_article", "get_document_info", "search_in_document",
 }
 # Literatür (DergiPark) ve diğer tam-metin araçları için isim-desen sezgiseli (kesin ad bilinmiyorsa).
@@ -92,7 +93,7 @@ def main():
             "anamnesis.ingest_document(doc_id=<kanonik: devarsiv:arsiv/fon/kutu-gömlek / yoktez:tez-no / "
             "doi:… / iiif:manifest-url>, text=<gövde>) → anamnesis.hybrid_query(doc_scope=<doc_id>, "
             "queries=[<hedef kişi/olay/tarih/kavram>]) ile bounded, provenance-damgalı dilim çek. Aynı "
-            "doc_id iki kez ingest edilmez (kanonik cache; ${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md §3). anamnesis "
+            "doc_id iki kez ingest edilmez (kanonik cache; ${{CLAUDE_PLUGIN_ROOT}}/shared/context-economy-contract.md §3). anamnesis "
             "anahtarı yoksa → bounded-chunk fallback: ottoman_search_within_manifest / get_yok_tez_document_"
             "markdown(page) ile hedefi lokalize et, yalnız o parçayı çek. Detay ATLAMA: grafiğe upsert_triples "
             "ile kişi↔görev↔belge / olay↔tarih↔kaynak ilişkilerini de yaz."

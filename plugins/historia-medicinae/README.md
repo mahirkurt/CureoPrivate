@@ -78,7 +78,12 @@ Filo durumunu görmek için: `/historia-medicinae:durum`
 |---|---|
 | **Akademik çekirdek** | openalex · pubmed-epmc · semantic-scholar · paper-search · consensus · scholar-gateway |
 | **Birincil kaynak** | ottoman-archives (jenerik IIIF motoru) · devlet-arsivleri |
-| **Tam-metin şelalesi** | openathens (Tier 3 lisanslı) → annas-reader (Tier 4 son çare) |
+| **Tam-metin şelalesi** | openathens (Tier 3 lisanslı: metin/RAG + provider-nötr orijinal PDF) → annas-reader (Tier 4 son çare: bounded reader + PDF/EPUB/etc. dosya teslimi) |
+
+Orijinal dosya gerektiğinde OpenAthens `oa_fetch_pdf(doi|url)`, Anna's Reader
+`download_document(id=DOI|32-hex MD5)` kullanır. Dönen opaque resource link kısa ömürlüdür;
+derhal tüketilir, DOI/MD5 + SHA-256/provenance saklanır ve uzun dosya anamnesis'te bounded
+sorgularla incelenir.
 | **Tarihsel yasama** | uk-legal (Hansard 1803+) · health-policy · intl-treaty · mevzuat · tbmm · resmigazete |
 | **Terminoloji/epi** | med-terminologies · who-gho · globocan |
 | **Türkiye kolu** | yoktez · literatur · yok-akademik |

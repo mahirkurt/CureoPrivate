@@ -16,11 +16,12 @@
       ]
     },
     "annas-reader": {
-      "version": "3.4.5",
-      "tool_count": 8,
+      "version": "3.4.7",
+      "tool_count": 9,
       "tools": [
         "article_search",
         "book_search",
+        "download_document",
         "fetch",
         "get_document_info",
         "read_article",
@@ -276,12 +277,13 @@
     },
     "openathens": {
       "version": "3.4.2",
-      "tool_count": 10,
+      "tool_count": 11,
       "tools": [
         "fetch",
         "oa_batch_result",
         "oa_batch_submit",
         "oa_fetch_fulltext",
+        "oa_fetch_pdf",
         "oa_list_databases",
         "oa_resolve",
         "oa_server_info",

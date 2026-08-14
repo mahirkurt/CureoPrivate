@@ -33,7 +33,7 @@ distiller verilir. Aynı anda **en fazla 4** distiller çalışır.
 |---|---|---|
 | **S1** | Akademik çekirdek | openalex · pubmed-epmc · semantic-scholar · paper-search · consensus · scholar-gateway |
 | **S2** | Birincil kaynak | ottoman-archives (IIIF) · devlet-arsivleri |
-| **S3** | Tam-metin şelalesi | openathens → annas-reader |
+| **S3** | Tam-metin şelalesi | openathens (`oa_fetch_fulltext` / `oa_fetch_pdf`) → annas-reader (reader / `download_document`) |
 | **S4** | Tarihsel yasama | uk-legal · health-policy · intl-treaty · mevzuat · tbmm · resmigazete |
 | **S5** | Terminoloji/epi | med-terminologies · who-gho · globocan |
 | **S6** | Türkiye kolu | yoktez · literatur · yok-akademik |
@@ -54,7 +54,7 @@ getirilmez**:
 |---|---|
 | Makale | `histmed:doi/<doi>` veya `histmed:pmid/<pmid>` |
 | IIIF belgesi | `histmed:<kaynak>/<id>` (ör. `histmed:wellcome/b3135631x`) |
-| Monograf (tam-metin) | `histmed:openathens/<yazar>-<yıl>` veya `histmed:annas/<md5>` |
+| Monograf (tam-metin) | `histmed:openathens/<doi-veya-yazar-yıl>` veya `histmed:annas/<md5>`; dosya linki değil DOI/MD5 + SHA-256 provenance cache'lenir |
 | Arşiv belgesi | `histmed:devarsiv/<arşiv>/<fon>/<kutu>-<gömlek>` |
 | Zabıt | `histmed:hansard/<tarih>/<debate-id>` · `histmed:tbmm/<dönem>/<birleşim>` |
 | Tez | `histmed:yoktez/<tez-no>` |
@@ -70,8 +70,9 @@ diğerinin sorgusuna sızar.
 1. **IIIF:** `ottoman_fetch_iiif_manifest` önce canvas listesini verir; **tüm sayfaları çekme**.
    Wellcome'da `search_service` varsa `ottoman_search_within_manifest` ile hedef canvas'ı bul,
    yalnız onu oku. Diğer kaynaklarda metadata + hedef aralık.
-2. **Monograf:** `search_in_document` (BM25) ile konum bul → yalnız o bölümü oku → > 30 KB ise
-   Tier 2.
+2. **Monograf:** reader varsa `search_in_document` (BM25) ile konum bul → yalnız o bölümü
+   oku. Orijinal dosya gerekiyorsa `oa_fetch_pdf` veya `download_document`; kısa-ömürlü
+   resource link'i derhal tüket, SHA-256/provenance kaydet → > 30 KB ise Tier 2.
 3. **Zabıt:** tarih + konuşmacı ile daralt; tüm oturumu çekme.
 4. **Tez:** `get_yok_tez_document_markdown` sayfa-bazlıdır; içindekilerden hedef sayfaya git.
 

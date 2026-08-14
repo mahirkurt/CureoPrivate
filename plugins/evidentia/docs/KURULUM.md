@@ -8,15 +8,16 @@
 > yaşar (aşağıda §Anahtar değerlerini alma).
 
 
-> **Güncel:** 2026-07-05 · evidentia plugin **v2.0.0** / flagship skill `medical-research` **v9.0.0**
+> **Güncel:** 2026-08-14 · evidentia plugin **v2.7.2** / flagship skill `medical-research` **v9.0.1**
 > · CureoPrivate `plugins/evidentia`
 > · **ChatGPT custom-connector uyumu** (orijinal **4 CF self-host Worker**, 2026-06-30 canlı doğrulandı; bkz. Kurulum yolu **C**)
-> · **openathens (HP self-host) full-text Tier-3 eklendi** (2026-07-03; 5. self-host connector — gated, `OPENATHENS_MCP_API_KEY` Doppler'da → ek credential yok)
+> · **openathens (HP self-host) full-text Tier-3**: 11 araç; metin + sağlayıcı-nötr orijinal PDF
+> (`oa_fetch_fulltext`/`oa_fetch_pdf`). **annas-reader Tier-5 son çare**: 9 araç; okuma +
+> PDF/EPUB ve desteklenen diğer formatlar (`download_document`).
 >
-> 🔒 **GÜVENLİK.** Bu dosya **canlı MCP API anahtarlarını içerir** (en altta gömülü) →
-> `.gitignore` ile korunur (`EVIDENTIA-KURULUM-VE-KEYLER.md` + `*-KEYLER.md` + tam yol) ve
-> **asla commit edilmez.** Anahtarların tek doğruluk kaynağı yine **Doppler**
-> (`cureohub` / `dev_personal`); aşağıdaki gömülü değerler ondan türetildi. Bir değeri tazele:
+> 🔒 **GÜVENLİK.** Bu kamuya açık dosya hiçbir canlı MCP anahtar değeri içermez. Anahtarların tek
+> doğruluk kaynağı **Doppler** (`cureohub` / `dev_personal`); değerleri belgeye, sohbete veya Git'e
+> yapıştırma. Yetkili operatörün yerel oturumunda bir değeri tazelemesi gerekirse:
 > ```bash
 > doppler secrets get <VAR> --plain -p cureohub -c dev_personal
 > ```
@@ -42,9 +43,9 @@
 | **openalex** | caseyjhand.com | ❌ | — | Üçüncü-taraf kimliksiz keyless (yalnız kamusal bibliyografik veri) |
 | **pubmed-epmc** | caseyjhand.com | ❌ | — | Üçüncü-taraf kimliksiz keyless |
 | **semantic-scholar** | pipeworx gateway | ⚠️ ops. | `SEMANTIC_SCHOLAR_API_KEY` | Keyless çalışır; opsiyonel S2 anahtarı yalnız rate-limit yükseltir (sunucu tarafı) |
-| **annas-reader** | `annas.cureonics.com/mcp` | ✅ | `ANNAS_MCP_API_KEY` | Operatör-bağlı HP self-host (Docker, 2026-07 Cloud Run göçü); static-Bearer veya OAuth. (2026-06-28 `stateless_http=True` fix sonrası tools/list sorunsuz.) |
+| **annas-reader** | `annas.cureonics.com/mcp` | ✅ | `ANNAS_MCP_API_KEY` | Operatör-bağlı HP self-host (Docker); static-Bearer veya OAuth. 9 araç: Tier-5 son çare okuma + `download_document(id=<DOI\|MD5>)`; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque link + SHA-256, yalnız analiz. |
 | **yok-akademik** | `yok-akademik.cureonics.com/mcp` | ✅ | `YOK_AKADEMIK_MCP_API_KEY` | Operatör-bağlı HP self-host; OAuth 2.1 + Bearer |
-| **openathens** (self-host) | `openathens.cureonics.com/mcp` | ✅ | `OPENATHENS_MCP_API_KEY` | Operatör-bağlı HP self-host (systemd, 2026-07-03); OAuth 2.1 + Bearer. Tam-metin **Tier 3 LİSANSLI** (Millet Kütüphanesi/OpenAthens SAML; annas'ın önünde, legal-öncelikli); anti-bot yayıncı → manual_required |
+| **openathens** (self-host) | `openathens.cureonics.com/mcp` | ✅ | `OPENATHENS_MCP_API_KEY` | Operatör-bağlı HP self-host (systemd); OAuth 2.1 + Bearer. 11 araç: tam-metin **Tier 3 LİSANSLI**; `oa_fetch_fulltext` + sağlayıcı-nötr `oa_fetch_pdf(doi\|url)` (kısa-ömürlü opaque link + PDF doğrulama/SHA-256; 100 MiB tavanı). annas'ın önünde, legal-öncelikli. |
 
 > **Suite bağlamı (evidentia dışı):** `CUREONICS_SUITE_MCP_KEY` — fon-mcp/titck-mcp/mevzuat-mcp'nin
 > additive suite kapısı (CureoSuite bundle). evidentia self-host worker'larıyla ilgisizdir; burada
@@ -87,7 +88,7 @@ Her connector için **MCP Server URL = `…/mcp`**. ChatGPT'de Auth seçimi:
 
 | ChatGPT Auth | Connector'lar | Anahtar nasıl verilir |
 |---|---|---|
-| **OAuth** | anamnesis · evidentia-kb · openfda (+ annas-reader · yok-akademik) | ChatGPT yetkilendirme sayfasını açar → Worker'ın **authorize formuna MCP API key'i yapıştır** → ChatGPT token'ı kendisi alır. Anahtar **ChatGPT UI'ına değil, Worker'ın authorize formuna** girilir (claude.ai ile aynı tek-kiracılı model). |
+| **OAuth** | anamnesis · evidentia-kb · openfda (+ annas-reader · yok-akademik · openathens) | ChatGPT yetkilendirme sayfasını açar → sunucunun **authorize formuna MCP API key'i yapıştır** → ChatGPT token'ı kendisi alır. Anahtar **ChatGPT UI'ına değil, authorize formuna** girilir (claude.ai ile aynı tek-kiracılı model). |
 | **No authentication** | **drugddx** · **who-gho** · **globocan** · **ema** · üçüncü-taraf keyless (med-terminologies · nih-clinicaltables · nlm-rxnorm · iuphar-gtopdb) | URL yeter |
 | **OAuth** (2026-08-08'de eklendi) | **pubmed-epmc** · **openalex** · **semantic-scholar** | Self-host'a taşındıktan sonra operatör API anahtarı aldılar → kapılandı |
 

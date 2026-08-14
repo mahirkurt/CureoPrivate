@@ -12,7 +12,7 @@ protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-or
 # --- Skill identity ---------------------------------------------------------
 skill:
   name: medical-research
-  version: "9.0.0"
+  version: "9.0.1"
   title: "General Medical Literature-Review Engine (PRISMA)"
   description: >
     General-purpose medical literature review engine. Runs an end-to-end PRISMA 2020 /
@@ -202,10 +202,10 @@ runtime:
       tools: [npi_search, npi_lookup, npi_validate]
     - name: openathens               # openathens.cureonics.com/mcp — full-text Tier 3 LICENSED (Millet Kütüphanesi/OpenAthens SAML; legal-first, ahead of annas Tier 5). Bearer ${OPENATHENS_MCP_API_KEY} (Doppler). Anti-bot v2 (Xvfb headed profile): non-interactive CF challenge self-clears → full text; interactive reCAPTCHA/Turnstile → challenge_required (operator noVNC, distinct from manual_required); unbound → skip Tier 4/5.
       status: conditional
-      tools: [oa_server_info, oa_session_status, oa_list_databases, oa_resolve, oa_fetch_fulltext, oa_batch_submit, oa_batch_result]
+      tools: [oa_server_info, oa_session_status, oa_list_databases, oa_resolve, oa_fetch_fulltext, oa_fetch_pdf, oa_batch_submit, oa_batch_result]
     - name: annas-mcp                 # full-text cascade tier 5 — LAST RESORT (verified), after the licensed band (OpenAthens Tier 3 + Wiley Tier 4); copyright discipline
       status: wired
-      tools: [article_search, book_search, article_download, book_download]
+      tools: [article_search, book_search, get_document_info, search_in_document, read_document, read_article, download_document]
     # --- α-layer additions (UP-005): already connected in operator workspace, high-trust ---
     - name: TİTCK Cache               # titck.cureonics.com/mcp — fast cache/fallback for Türkiye Dörtlüsü
       status: fallback
@@ -299,7 +299,7 @@ x_evidentia_self_host_2026_06_25:
     note: "entity/relation extraction is orchestrator(Claude)-in-the-loop via upsert_triples; Microsoft-GraphRAG global community summarization deferred to documented Cloud Run indexer — NOT shipped as weak in-Worker approximation"
   - id: "annas-reader (operator-connected)"
     url: "https://annas.cureonics.com/mcp"
-    x_evidentia_probe_2026_06_25: "HTTP 401 SECURED (Cloud Run OAuth gate active — expected/correct, like yok-akademik) → wired live Tier-O in ../../.mcp.json. Full-text downloads land on the USER machine (not sandbox) → ingest into anamnesis or paste for analysis. Copyright: analysis-only, no verbatim bulk."
+    x_evidentia_probe_2026_06_25: "HTTP 401 SECURED (operator OAuth/Bearer gate active — expected/correct, like yok-akademik) → wired live Tier-O in ../../.mcp.json. 2026-08-14: download_document returns PDF/EPUB and supported formats as a short-lived opaque resource_link with SHA-256/provenance; consume promptly, do not cache the link, ingest long documents into anamnesis. Copyright: analysis-only, no verbatim bulk."
 
 # --- Verification gates (executable — evals/check_integrity.py) --------------
 verification:
@@ -383,14 +383,15 @@ references:
 
 # --- Build ------------------------------------------------------------------
 build:
-  version: "9.0.0"
-  release_date: "2026-07-01"          # v9.0.0 PRISMA pipeline rewrite + de-skew
-  release_name: "PRISMA Pipeline Rewrite & De-Skew"
+  version: "9.0.1"
+  release_date: "2026-08-14"
+  release_name: "Licensed PDF and Document Delivery"
   compatibility:
     backward_compatible_with: ["8.5", "8.4", "8.3", "8.2", "8.1", "8.0"]
     breaking_changes:
       - "v9.0.0: mandatory 10-axis domain matrix replaced by a fixed PRISMA 2020 / PRISMA-ScR pipeline (P0-P7); Adım 0.5 changed from a MANDATORY axis loader into an OPTIONAL, context-triggered enrichment classifier — default review path loads NO domain layer"
     additive_changes:
+      - "v9.0.1: OpenAthens Tier 3 adds provider-neutral oa_fetch_pdf(doi|url); Anna Tier 5 adds download_document(DOI|MD5) for PDF/EPUB and supported formats; both return short-lived opaque resource links with checksum/provenance and route long documents through anamnesis"
       # v9.0.0 — PRISMA Pipeline Rewrite & De-Skew
       - "v9.0.0: end-to-end PRISMA 2020/PRISMA-ScR pipeline P0-P7 (protocol/PICO -> search-strategy -> retrieval+dedup -> screening -> data-extraction -> risk-of-bias -> GRADE -> PRISMA-reporting), each phase pointing at its own reference file; new always-load prisma-reporting.md (PRISMA flow diagram + SoF table + checklist)"
       - "v9.0.0: description reframed to a general-purpose systematic/scoping-review engine (PRISMA/PICO/PECO/screening/RoB/GRADE triggers); therapeutic-area/commercial framing no longer dominates the identity"

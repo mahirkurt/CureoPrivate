@@ -1,8 +1,8 @@
 ---
 name: historia-medicinae
 description: "Küresel tıp tarihi araştırma orkestrasyon protokolü — Avrupa-merkezli olmayan, Mezopotamya/Mısır ve Greko-Romen dünyadan İslâm altın çağına, Latin Batı'dan Çin/Ayurveda geleneklerine, sömürge tıbbından çağdaş küresel sağlığa. Birincil kaynak (IIIF yazma/erken basma: Wellcome sayfa-içi tam-metin araması, Gallica, Internet Archive, Princeton, DPLA; Devlet Arşivleri) → ikincil (Bull Hist Med, Med Hist, Soc Hist Med, Isis, Osiris, DergiPark) → üçüncül (ansiklopedi, müze sayfası) kanıt hiyerarşisi. Tarihsel yasama birincil kaydı: Hansard 1803+, GovInfo/Congress, uluslararası sözleşmeler, TBMM zabıtları, Resmî Gazete. 11 mod — SOURCE_HUNT, MORBUS (salgın/hastalık biyografisi), INSTITUTIO (kurum/meslekleşme), CONCEPTUS (fikir/kavram tarihi), ETHICA (etik/karanlık bölümler), PROSOPOGRAPHIA, THERAPEUTICA, SANITAS_PUBLICA, HISTORIOGRAPHIA, EDITIO, RELATIO. Zorunlu disiplinler: retrospektif tanı karar prosedürü, Quellenkritik, presentizm/anakronizm koruması, anti-difüzyonizm. USE for tıp tarihi, medicine history, salgın tarihi, veba, kolera, 1918 gribi, çiçek eradikasyonu, humoralizm, miyazma, germ teorisi, hastane tarihi, bimaristan, tıp fakültesi tarihi, hekim biyografisi, Hipokrat, Galen, İbn Sînâ, Vesalius, anestezi, antisepsi, aşı tarihi, materia medica, Nürnberg Kodu, Tuskegee, öjeni, sömürge tıbbı, tıp etiği tarihi, tıp tarihyazımı, Foucault klinik. carbon-html-report ve sci-audit ile bileşir; Osmanlıca paleografi vekayinuvis'e delege edilir. When in doubt USE."
-version: 0.1.1
-last_updated: 2026-08-12
+version: 0.1.2
+last_updated: 2026-08-14
 ---
 
 # Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü
@@ -184,6 +184,12 @@ immoraux*). Sonuçlar başlık/tarih ile **elenir**, körlemesine kabul edilmez.
 ### 5.3 Tam-metin şelalesi — yasal-öncelikli
 
 `openathens` (Tier 3, lisanslı) → `annas-reader` (Tier 4, **son çare**, yalnız analiz).
+OpenAthens'te metin/arama/RAG için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i
+gerektiğinde provider-nötr `oa_fetch_pdf(doi|url)` kullanılır. Anna's bandında bounded
+okuma önceliklidir; orijinal PDF/EPUB veya desteklenen diğer format gerçekten gerekirse
+`download_document(id=<DOI|32-hex MD5>)` kullanılır. Her iki dosya aracı kısa-ömürlü
+opaque `resource_link` + SHA-256/provenance döndürür: link derhal tüketilir, kalıcı
+kaynak diye cache'lenmez; uzun dosya `histmed:` doc_id ile anamnesis'e ingest edilir.
 Tıp tarihi **monograf-ağırlıklı** bir alandır; belirleyici literatürün büyük kısmı açık erişimli
 değildir ve DOI'siz olabilir (Rosenberg *Framing Disease* 1992, Arnold *Colonizing the Body*
 1993, Porter 1985 — hiçbiri bu filonun indekslerinde DOI ile çözülmez). Bu **yapısal bir kör

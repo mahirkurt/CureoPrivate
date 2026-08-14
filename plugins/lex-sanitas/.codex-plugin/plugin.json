@@ -1,6 +1,6 @@
 {
   "name": "lex-sanitas",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "description": "Türkiye sağlık mevzuatının her düzlemde (kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge) reform, değişiklik ve yeniden yazımı için en ileri düzey norm-üretim protokolü. Çekirdek amaç: yeni mevzuat üretmek (DRAFT) + mevcut mevzuatı değiştirmek (AMEND) + TBMM kanun teklifi hazırlamak (TBMM_KANUN_TEKLIFI). Destekleyen modlar: analiz · 5210 uyum denetimi · paydaş/bilirkişi görüşü · RIA (DEA/BEF) · karşılaştırmalı hukuk · ex post değerlendirme (9 mod). 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12 çerçevesi; G0-G9 kalite kapıları + R6b 21-nokta yürütülebilir uyum rubriği + evidence_ledger no-fabrication disiplini. TÜRETİLMİŞ FİLO (v3.5.0): 23 hukuk/regülasyon MCP tek bir fleet.yaml kaynağından wire edilir (.mcp.json · lock · hook anahtar haritası · komut tablosu · ajan araç kısıtı ondan üretilir; check_drift.py sürüklenmeyi CI'da yakalar). PRİMER mevzuat + mevzuat-bilgisi + resmi-gazete + titck + tbmm + saglikbakanligi + detsis · KARŞILAŞTIRMALI health-policy [yabancı ülke] + german-law + ich + intl-treaty + eudamed + oecd · DOKTRİN yok-akademik + yoktez [tez tam-metin, G7 atıf doğrulaması] + literatur [DergiPark tam-metin] · TAM-METİN ŞELALESİ openathens [Tier 3 lisanslı] → annas-reader [Tier 4 son çare, yalnız analiz] · SUBSTRAT anamnesis. Canlı MCP prob'lu preflight 'anahtar yok' (meşru degrade) ile 'sunucu 401 verdi' (yapılandırma arızası) hâllerini ayırır. Bağlam-tetiklemeli ZORUNLU delegasyon (kuruluysa atlanamaz; yoksa graceful degrade): klinik kanıt → evidentia plugin; AI güvenilirlik + atıf-adli + Türkçe hukuk dili → sci-audit plugin. 3 companion connector (Yargı↔G5 içtihat, Open Law↔G6 CELEX, Ansvar↔Mod7 58-yargı, Fedlex Swiss↔Mod7 CH birincil metin, Türk Patent↔ilaç IP/SPC/veri imtiyazı) tam-filonun zorunlu üyeleri — manifesto satırları her çıktıda zorunlu. Kapsam: reform/norm-üretim; bireysel dava (SGK red, AYM başvuru), malpraktis, promosyon denetimi KAPSAM DIŞI (Scope Guard).",
   "author": {
     "name": "Cureonics",
@@ -190,7 +190,7 @@
         "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens SAML üzerinden 309 lisanslı veritabanı. Yabancı hukuk doktrini (monograf, hakemli makale) için paywall'lı kaynaklara YASAL erişim. Mod 7 karşılaştırmalı analizin ve G6 uluslararası kaynak teyidinin doktrin desteği — birincil norm metni DEĞİL (o health-policy/german-law/Open Law'dadır)."
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens SAML üzerinden 309 lisanslı veritabanı. Yabancı hukuk doktrini (monograf, hakemli makale) için paywall'lı kaynaklara YASAL erişim. Mod 7 karşılaştırmalı analizin ve G6 uluslararası kaynak teyidinin doktrin desteği — birincil norm metni DEĞİL (o health-policy/german-law/Open Law'dadır). Doktrin metnini ayıklamak için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i gerektiğinde `oa_fetch_pdf(doi|url)` kullanılır. Kısa-ömürlü resource_link derhal tüketilir, kalıcı URL diye cache'lenmez; SHA-256/provenance evidence_ledger'a yazılır."
     },
     "annas-reader": {
       "type": "http",
@@ -199,7 +199,7 @@
         "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir."
+      "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir. Bounded okuma için reader araçları; orijinal PDF/EPUB ve diğer desteklenen dosya için `download_document(id=<DOI|32-hex MD5>)` kullanılır. Opaque resource_link kısa ömürlüdür; derhal tüketilir ve SHA-256/provenance kaydedilir."
     },
     "eurlex": {
       "type": "http",

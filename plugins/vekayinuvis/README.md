@@ -21,7 +21,7 @@ sepet/arşiv/OCR akış-skill'i** sunar. Her mod bir slash-komut girişine sahip
 
 | Bileşen | Yol | Açıklama |
 |---------|-----|----------|
-| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.2.0) + 9 referans dosyası |
+| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.4.12) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
 | Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,olay,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 11 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü; `olay`=EVENT_RECONSTRUCTION v3.1'de eklendi, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
 | Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async OCR zinciri (bkz. **Yeni Akışlar**) |
@@ -69,7 +69,10 @@ katman tanımlarıyla birebir):
   kesin sayı deploy'a göre değişir), `yoktez`.
 - **Akademik triangülasyon** (6): `literatur`, `consensus`, `scholar-gateway`,
   `exa`, `tavily`, `paper-search`.
-- **Tam-metin şelalesi** (2): `openathens`, `annas-reader`.
+- **Tam-metin şelalesi** (2): `openathens` (`oa_fetch_fulltext` + provider-nötr
+  `oa_fetch_pdf`) → `annas-reader` (bounded reader + `download_document`, son çare).
+  Orijinal PDF/EPUB ve desteklenen diğer dosyalar kısa-ömürlü opaque resource link +
+  SHA-256/provenance ile teslim edilir; link derhal tüketilir, uzun dosya anamnesis'e ingest edilir.
 - **Yasama/mevzuat** (3, yeni v3.0): `resmigazete`, `mevzuat`, `tbmm`.
 - **Destekleyici** (2, `detsis` yeni v3.0): `yok-akademik` (modern
   akademisyen/ekol haritası), `detsis` (kurumsal prosopografi,
@@ -243,5 +246,5 @@ python3 ./plugins/vekayinuvis/scripts/vekayinuvis_doctor.py --topic preflight --
 
 ## Sürüm
 
-- Plugin paketi: `v3.2.0`
-- Flagship skill: `v3.2.0` (bkz. `CHANGELOG.md`)
+- Plugin paketi: `v3.4.12`
+- Flagship skill: `v3.4.12` (bkz. `CHANGELOG.md`)

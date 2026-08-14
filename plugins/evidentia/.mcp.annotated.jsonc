@@ -83,16 +83,16 @@
       "headers": { "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}" },
       "_tier": "O",
       "_trust": "operator self-host (HP systemd — hardened OAuth 2.1 + Bearer; yok-akademik/annas ile aynı desen)",
-      "_probe": "2026-07-03 HTTP 401 SECURED (Bearer kapısı aktif) · openathens-mcp CANLI (SP-initiated OpenAthens SAML via Millet Kütüphanesi)",
-      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in ÖNÜNDE): oa_resolve/oa_fetch_fulltext(ingest)/oa_list_databases/oa_batch_submit/oa_batch_result. Anti-bot yayıncı → manual_required deep-link; bağlı değilse cascade Tier 4/5'e düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok"
+      "_probe": "2026-08-14 CANLI · 11 araç · oa_fetch_pdf provider-nötr orijinal PDF teslimi doğrulandı",
+      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (annas Tier 5'in ÖNÜNDE): metin/RAG için oa_fetch_fulltext; orijinal sağlayıcı PDF'i için oa_fetch_pdf(doi|url) → kısa-ömürlü opaque resource_link + SHA-256/provenance. Link derhal tüketilir, kalıcı kaynak diye cache'lenmez. Key ${OPENATHENS_MCP_API_KEY} Doppler'da."
     },
     "annas-reader": {
       "type": "http",
       "url": "https://annas.cureonics.com/mcp",
       "_tier": "O",
-      "_trust": "operator-connected (Cloud Run, OAuth-gated) — yok-akademik ile aynı kimlik-doğrulama deseni",
-      "_probe": "2026-06-25 HTTP 401 SECURED (Cloud Run OAuth kapısı aktif — beklenen/doğru durum)",
-      "_role": "Tam-metin geri-çağırma (full-text cascade Tier 5 — SON ÇARE, lisanslı band [OpenAthens Tier 3 + Wiley Tier 4] getiremeyince): article_search/article_download (DOI), book_search/book_download (MD5+format). ⚠️ İndirmeler KULLANICININ makinesine iner (sandbox'a değil) → içerik analizi için anamnesis'e ingest/yapıştır. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1)"
+      "_trust": "operator self-host (HP Docker, hardened OAuth 2.1 + Bearer)",
+      "_probe": "2026-08-14 CANLI · 9 araç · download_document PDF/EPUB ve desteklenen diğer dosyalar için doğrulandı",
+      "_role": "Tam-metin cascade Tier 5 — SON ÇARE: bounded analiz için reader araçları; orijinal PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS için download_document(id=DOI|MD5) → kısa-ömürlü resource_link + SHA-256. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. Telif: yalnız analiz, toplu birebir çoğaltma yok."
     },
 
     "__TIER_A__auth_required__env_placeholder": "🟡 Tier-A AÇIK/web tier YOK — RegulatoryMCP (openFDA/ICD-11/WHO GHO) v1.4.0'da kaldırıldı; openFDA + ICD-11 artık openfda self-host Tier-O'dan (yukarıda). Bu satır tarihsel iskelet olarak korunur.",

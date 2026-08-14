@@ -143,7 +143,7 @@
         "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens SAML üzerinden 309 lisanslı veritabanı. Yabancı hukuk doktrini (monograf, hakemli makale) için paywall'lı kaynaklara YASAL erişim. Mod 7 karşılaştırmalı analizin ve G6 uluslararası kaynak teyidinin doktrin desteği — birincil norm metni DEĞİL (o health-policy/german-law/Open Law'dadır)."
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens SAML üzerinden 309 lisanslı veritabanı. Yabancı hukuk doktrini (monograf, hakemli makale) için paywall'lı kaynaklara YASAL erişim. Mod 7 karşılaştırmalı analizin ve G6 uluslararası kaynak teyidinin doktrin desteği — birincil norm metni DEĞİL (o health-policy/german-law/Open Law'dadır). Doktrin metnini ayıklamak için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i gerektiğinde `oa_fetch_pdf(doi|url)` kullanılır. Kısa-ömürlü resource_link derhal tüketilir, kalıcı URL diye cache'lenmez; SHA-256/provenance evidence_ledger'a yazılır."
     },
     "annas-reader": {
       "type": "http",
@@ -152,7 +152,7 @@
         "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir."
+      "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir. Bounded okuma için reader araçları; orijinal PDF/EPUB ve diğer desteklenen dosya için `download_document(id=<DOI|32-hex MD5>)` kullanılır. Opaque resource_link kısa ömürlüdür; derhal tüketilir ve SHA-256/provenance kaydedilir."
     },
     "eurlex": {
       "type": "http",

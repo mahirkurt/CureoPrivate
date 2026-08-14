@@ -1,6 +1,6 @@
 {
   "name": "vekayinuvis",
-  "version": "3.4.11",
+  "version": "3.4.12",
   "userConfig": {
     "smithery_api_key": {
       "type": "string",
@@ -235,7 +235,7 @@
         "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "LİSANSLI kurumsal tam-metin kapısı (kitap+makale) — Millet Kütüphanesi / OpenAthens SAML üzerinden 309 lisanslı veritabanından tam metin çeker. Tarih araştırmasında paywall'lı monograf/makale/ansiklopedi maddesine yasal erişim (Türk/Osmanlı çalışmaları için Millet Kütüphanesi kritik). 6 araç: oa_server_info · oa_list_databases · oa_resolve · oa_fetch_fulltext · oa_batch_submit · oa_batch_result. Tam-metin şelalesinde Tier 3 (literatur/paper-search'ten SONRA, annas'tan ÖNCE). Getirilen tam-metin > eşik → anamnesis'e ingest. Sunucu-taraflı SAML creds (claude.ai/grok'a GİRİLMEZ)."
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (kitap+makale) — Millet Kütüphanesi / OpenAthens SAML üzerinden 309 lisanslı veritabanından tam metin çeker. Tarih araştırmasında paywall'lı monograf/makale/ansiklopedi maddesine yasal erişim (Türk/Osmanlı çalışmaları için Millet Kütüphanesi kritik). 11 araç (2026-08-14): oa_server_info · oa_session_status · oa_list_databases · oa_resolve · oa_verify_access · oa_fetch_fulltext · oa_fetch_pdf · oa_batch_submit · oa_batch_result · search · fetch. Metin/arama için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i için provider-nötr `oa_fetch_pdf(doi|url)` kullanılır ve kısa-ömürlü resource_link derhal tüketilir. Tam-metin şelalesinde Tier 3 (literatur/paper-search'ten SONRA, annas'tan ÖNCE). Getirilen tam-metin > eşik → anamnesis'e ingest. Sunucu-taraflı SAML creds (claude.ai/grok'a GİRİLMEZ)."
     },
     "annas-reader": {
       "type": "http",
@@ -244,7 +244,7 @@
         "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
       },
       "_tier": "fulltext",
-      "_role": "SON-ÇARE kitap+makale tam-metin (Anna's Archive efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. book_search/article_search → get_document_info → read_document/read_article/search_in_document (BM25). Out-of-print Osmanlı çalışmaları, nadir monograflar, paywall-dışı makaleler. Telif: yalnız ANALİZ, toplu birebir çoğaltma yok; getirilen tam-metin > eşik → anamnesis'e ingest → bounded query. DjVu=djvutxt. İndirmeler kullanıcının makinesine iner."
+      "_role": "SON-ÇARE kitap+makale tam-metin (Anna's Archive efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. 9 araç (2026-08-14): book_search/article_search → get_document_info → read_document/read_article/search_in_document (BM25) ve orijinal dosya için `download_document(id=<DOI|32-hex MD5>)`. PDF/EPUB/MOBI/AZW/DjVu/FB2/ CBZ/CBR/XPS kısa-ömürlü opaque resource_link + SHA-256/format metadata olarak gelir. Out-of-print Osmanlı çalışmaları, nadir monograflar, paywall-dışı makaleler. Telif: yalnız ANALİZ, toplu birebir çoğaltma yok; getirilen tam-metin > eşik → anamnesis'e ingest → bounded query. DjVu=djvutxt. Resource link derhal tüketilir, kalıcı kaynak diye cache'lenmez."
     },
     "anamnesis": {
       "type": "http",

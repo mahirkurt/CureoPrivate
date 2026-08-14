@@ -17,7 +17,7 @@
 
 version: 2
 plugin: historia-medicinae
-plugin_version: "0.1.1"
+plugin_version: "0.1.2"
 
 servers:
   # ── A. Akademik çekirdek — HER substantif sorguda ateşlenir ────────────────
@@ -187,6 +187,7 @@ servers:
       - oa_session_status
       - oa_resolve
       - oa_fetch_fulltext
+      - oa_fetch_pdf
       - oa_list_databases
       - oa_batch_submit
       - oa_batch_result
@@ -194,6 +195,9 @@ servers:
       LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens
       üzerinden paywall'lı monograf, el kitabı ve ansiklopedi maddesi. Tıp tarihinde
       belirleyici literatürün büyük kısmı OA DEĞİLDİR; yasal-öncelikli banttır.
+      Metin/arama için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i gerektiğinde
+      `oa_fetch_pdf(doi|url)` kullanılır. PDF, kısa-ömürlü opaque resource_link +
+      SHA-256/provenance olarak gelir; derhal tüketilir, kalıcı URL diye saklanmaz.
     degrade: "Bağlanamazsa şelale Tier 4'e iner; atlama değil, sıradaki basamak."
 
   - name: annas-reader
@@ -208,11 +212,15 @@ servers:
       - get_document_info
       - read_document
       - search_in_document
+      - download_document
     role: >-
       SON ÇARE tam-metin (Tier 4) — yalnız lisanslı bant getiremediğinde, açık
       gerekçeyle ve YALNIZ ANALİZ için. Baskısı tükenmiş tıp tarihi monografları
       (Sigerist, Ackerknecht, Temkin külliyatı) çoğu kez başka yolla okunamaz.
       Getirilen metin çıktıya GÖVDE olarak kopyalanmaz; > eşik → anamnesis ingest.
+      Orijinal PDF/EPUB veya diğer desteklenen dosya gerekiyorsa
+      `download_document(id=<DOI|32-hex MD5>)` kullanılır; kısa-ömürlü resource_link
+      derhal tüketilir ve format/size/SHA-256 provenance kaydı korunur.
     degrade: "Anahtar yoksa tam-metin şelalesi Tier 3'te biter; eksik metin dürüstçe işaretlenir."
 
   # ── D. Tarihsel yasama & hukuk — tıbbın kurumsallaşması hukuk kaydında yaşar ─

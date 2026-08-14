@@ -55,9 +55,11 @@ ACADEMIC_REPORT kaynak-temeli).
    - `search_yok_tez_detailed` → belgenin transkripsiyonunu içeren tezler.
    - `literatur` → DergiPark tam-metin makaleler + referanslar (bağlıysa).
    - **Tam-metin şelalesi (kitap/makale gerekiyorsa):** literatur/paper-search →
-     `openathens` (lisanslı — `oa_resolve`→`oa_fetch_fulltext`, Millet Kütüphanesi) →
-     `annas-reader` (son çare — `book_search`/`article_search`→`read_document`; yalnız analiz).
-     Getirilen tam-metin > eşik → adım 3 (anamnesis ingest). Telif: birebir toplu çoğaltma yok.
+     `openathens` (lisanslı — metin/RAG `oa_resolve`→`oa_fetch_fulltext`; orijinal provider
+     PDF `oa_fetch_pdf(doi|url)`) → `annas-reader` (son çare — bounded reader akışı;
+     orijinal PDF/EPUB/etc. `download_document(id=DOI|MD5)`; yalnız analiz). Kısa-ömürlü
+     resource link'i derhal tüket; distillate'a linki değil DOI/MD5 + format + SHA-256/
+     provenance'ı koy. Getirilen tam-metin > eşik → adım 3. Telif: birebir toplu çoğaltma yok.
 3. **Büyük tam-metin → anamnesis (Tier 2):** bir tez/belge-transkripsiyonu/DergiPark tam-metin
    > ~6-30KB ise ana pencerene ALMA — `anamnesis.ingest_document(doc_id=<kanonik: yoktez:tez-no /
    devarsiv:arsiv/fon/kutu-gömlek / doi:… / iiif:…>, text=<gövde>)` ile indeksle →

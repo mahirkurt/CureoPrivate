@@ -115,7 +115,8 @@ check("konvansiyon enjeksiyonu (TAM-FİLO + NO-FABRICATION + companion zorunlulu
       all(s in ctx for s in ("TAM-FİLO", "NO-FABRICATION", "ZORUNLU üyeleridir")))
 check("delegasyon kurulum algısı satırı", "[preflight/delegasyon]" in ctx or "KURULU" in ctx)
 check("tam-metin şelalesi invaryantı enjekte edilir (openathens→annas sırası)",
-      "TAM-METİN ŞELALESİ" in ctx and "YALNIZ ANALİZ" in ctx)
+      all(s in ctx for s in ("TAM-METİN ŞELALESİ", "YALNIZ ANALİZ",
+                             "oa_fetch_pdf", "download_document", "SHA-256")))
 
 # ── Lock + prob tümleşimi (v3.5.0) ────────────────────────────────────────
 _L = {"counts": {"servers": 23, "gated": 19, "public": 4,

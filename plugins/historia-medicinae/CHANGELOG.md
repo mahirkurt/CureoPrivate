@@ -1,5 +1,14 @@
 # Changelog — historia-medicinae
 
+## 0.1.2 — 2026-08-14
+
+- OpenAthens `oa_fetch_pdf(doi|url)` ile hesap kapsamındaki sağlayıcılardan provider-nötr
+  orijinal PDF; Anna's Reader `download_document(id=DOI|MD5)` ile PDF/EPUB ve desteklenen
+  diğer formatlar pluginin S3 tam-metin shard'ına eklendi.
+- Her iki teslim yolu kısa-ömürlü opaque resource link + SHA-256/provenance olarak ele alınır;
+  link derhal tüketilir, uzun dosya `histmed:` ad alanıyla anamnesis'e ingest edilir.
+- Yasal-öncelikli OpenAthens → Anna's sırası ve Anna's için yalnız-analiz telif kapısı korunur.
+
 ## 0.1.1 — 2026-08-12
 
 - `displayName` "Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü" → **"Historia

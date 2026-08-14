@@ -1,5 +1,5 @@
 ---
-description: Copyright-kapılı tam-metin getirme kademesi. Bir referans (DOI/PMID/PMCID/başlık) için EPMC→Paper Search→annas-mcp→Wiley→Unpaywall merdivenini yürütür; her adımda lisans/copyright durumunu doğrular; CC-BY dışı içerikte verbatim toplu reprodüksiyon yapmaz.
+description: Copyright-kapılı tam-metin getirme kademesi. Bir referans (DOI/PMID/PMCID/başlık) için EPMC→Paper Search→OpenAthens→Wiley→Anna's Reader→Unpaywall merdivenini yürütür; metin veya orijinal PDF/EPUB teslim yolunu seçer, lisans/copyright durumunu doğrular ve CC-BY dışı içerikte verbatim toplu reprodüksiyon yapmaz.
 argument-hint: <DOI / PMID / PMCID / makale başlığı>
 ---
 
@@ -22,7 +22,10 @@ besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
 5. **OpenAthens / Millet Kütüphanesi** (Tier 3 — **lisanslı kurumsal, legal-öncelikli; annas'ın
    ÖNÜNDE**). `openathens` connector (HP self-host, `openathens.cureonics.com/mcp` — **CANLI**;
    bağlı değilse bu adımı atla, Tier 4/5'e düş). `oa_resolve(doi/pmid/title)` → kapsayan DB +
-   OpenAthens redirector; `oa_fetch_fulltext(doi, ingest=true)` → copyright-gated teslim (uzun metin
+   OpenAthens redirector; metin/arama/RAG için `oa_fetch_fulltext(doi, ingest=true)`, orijinal
+   sağlayıcı PDF'i gerektiğinde provider-nötr `oa_fetch_pdf(doi|url)` kullan. PDF aracı
+   kısa-ömürlü opaque `resource_link` + filename/MIME/size/SHA-256/acquired_via döndürür;
+   linki derhal tüket, kalıcı URL diye saklama. `oa_fetch_fulltext` copyright-gated teslimdir (uzun metin
    **HP'de** iner → anamnesis manifest; verbatim bağlama dökülmez; hangi DB'nin verdiği raporlanır).
    **Kapsam gerçeği (anti-bot v2, 2026-07-13):** getirme, Xvfb altında **headed** kalıcı-profilli
    Chromium ile sürer (gerçek tarayıcı parmak-izi + `cf_clearance` profilde saklı). Anti-bot duvarı
@@ -40,10 +43,14 @@ besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
 6. **Wiley** (koşullu OAuth `authenticate`) — Tier 4, OpenAthens'in kapsamadığı yayıncılar için
    (lisanslı band'ın parçası).
 7. **Annas Reader** (Tier 5 — **SON ÇARE**; yalnız lisanslı band [OpenAthens + Wiley] getiremeyince).
-   `article_search`→`read_article` (DOI), `book_search`→`get_document_info`→`search_in_document`→`read_document` (metodoloji; kitabı ASLA bütün çekme). ⚠️ `article_download`/`book_download` YOKTUR (2026-08-07 ölçümü). **Copyright
-   kapısı**: CC-BY dışı verbatim toplu metin **çıkarılMAZ**; künye + bağlam + ≤kısa alıntı. ⚠️ İndirme
-   **kullanıcının makinesine** iner → analiz için metin yapıştırılır veya (uzunsa) anamnesis'e ingest
-   edilir (Adım 9).
+   Bounded analiz için `article_search`→`read_article` (DOI),
+   `book_search`→`get_document_info`→`search_in_document`→`read_document` (kitabı ASLA
+   bütün çekme). Orijinal PDF/EPUB veya diğer desteklenen dosya gerektiğinde
+   `download_document(id=<DOI|32-hex MD5>)`; dönen opaque `resource_link` kısa ömürlüdür,
+   derhal tüketilir ve DOI/MD5 + format + SHA-256 kaydedilir. ⚠️ Eski
+   `article_download`/`book_download` adları YOKTUR. **Copyright kapısı**: CC-BY dışı
+   verbatim toplu metin **çıkarılMAZ**; künye + bağlam + ≤kısa alıntı. Uzun dosya
+   anamnesis'e ingest edilir (Adım 9).
 8. **Unpaywall** (Tier 6 — son legal-OA süpürmesi) — yasal açık-erişim PDF lokasyonu (pubmed-epmc
    Unpaywall entegrasyonu; yalnız legal-OA, verbatim toplu reprodüksiyon yok).
 9. **anamnesis ingest (uzun metin → indeks, ham metin DEĞİL).** Getirilen tam metin **kısa**

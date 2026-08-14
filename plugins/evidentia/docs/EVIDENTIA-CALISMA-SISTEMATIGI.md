@@ -1,7 +1,7 @@
 # evidentia — Çalışma Sistematiği (A'dan Z'ye)
 
-> **Sürüm:** plugin **2.0.0** · flagship skill `medical-research` **9.0.0** · connector canlı
-> re-probe **2026-06-28** (`CONNECTORS.md` §9) · belge güncellemesi **2026-07-05**.
+> **Sürüm:** plugin **2.7.2** · flagship skill `medical-research` **9.0.1** · connector canlı
+> re-probe **2026-08-14** (`CONNECTORS.md` §9) · belge güncellemesi **2026-08-14**.
 > **Bu sürümün headline'ı:** tam-metin kademesi **legal-first 6-katmana** genişletildi —
 > **OpenAthens/Millet Kütüphanesi** yeni **Tier 3 (lisanslı kurumsal, birincil paywall kapısı)**,
 > **annas** **Tier 5'e (SON ÇARE)** indirildi (`openathens-mcp` HP self-host **CANLI**
@@ -159,9 +159,14 @@ kararnamesi) · TÜRKPATENT (IP/FTO) · YÖK Tez. + α-katman **TİTCK** (kanoni
   `openathens.cureonics.com/mcp` (`openathens-mcp`, 2026-07-03; hardened OAuth 2.1 + Bearer,
   `OPENATHENS_MCP_API_KEY`). Cumhurbaşkanlığı Millet Kütüphanesi üzerinden gerçek OpenAthens
   SP-initiated SAML federasyonu → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/Springer/JSTOR/
-  Cochrane/Scopus/WoS/IEEE. **7 araç:** `oa_server_info` · `oa_session_status` · `oa_list_databases`
-  · `oa_resolve` (DOI/PMID/başlık → hedef + redirector URL + kapsayan DB) · `oa_fetch_fulltext`(ingest=true)
-  · `oa_batch_submit`/`oa_batch_result`. **Anti-bot v2 (2026-07-13):** getirme Xvfb altında **headed**
+  Cochrane/Scopus/WoS/IEEE. **11 araç:** `oa_server_info` · `oa_session_status` ·
+  `oa_list_databases` · `oa_resolve` (DOI/PMID/başlık → hedef + redirector URL + kapsayan DB) ·
+  `oa_verify_access` · `oa_fetch_fulltext`(ingest=true) · `oa_fetch_pdf(doi|url)` ·
+  `oa_batch_submit`/`oa_batch_result` · `search`/`fetch`. `oa_fetch_pdf` Elsevier'a özel değildir:
+  OpenAthens hesabının erişebildiği sağlayıcıdan doğrulanmış orijinal PDF'yi kısa-ömürlü opaque
+  `resource_link` + filename/MIME/size/SHA-256/provenance ile teslim eder. HTML-only sonuç
+  `pdf_unavailable` döndürür; geçersiz PDF ve 100 MiB üstü dosya reddedilir. **Anti-bot v2
+  (2026-07-13):** getirme Xvfb altında **headed**
   kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + `cf_clearance`). Anti-bot'suz yayıncı
   (Springer/Nature) → **gerçek tam metin**; anti-bot'lu (Wiley/Elsevier/OUP/Sage/T&F) → non-interactive
   CF challenge kendiliğinden geçer (çoğu tam metin verir); yalnız interactive reCAPTCHA/Turnstile →
@@ -177,15 +182,17 @@ daima gri-alan annas'tan (Tier 5) önce denenir; annas asla birincil paywall kap
 |---|---|---|
 | **1** | EuropePMC PMC (`get_copyright_status` → `get_full_text_article`) | Ücretsiz açık erişim (native); önce lisans belirle |
 | **2** | Paper Search download (`read_pubmed_paper`) | PMC metin çıkarımı |
-| **3** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → `oa_fetch_fulltext`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); bağlı değilse atla; anti-bot v2: Xvfb headed profil non-interactive CF challenge'ı geçer, interactive → `challenge_required` (operatör noVNC) |
+| **3** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → metin için `oa_fetch_fulltext`, sağlayıcı PDF'si için `oa_fetch_pdf`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); sağlayıcı-nötr; bağlı değilse atla; anti-bot v2: Xvfb headed profil non-interactive CF challenge'ı geçer, interactive → `challenge_required` (operatör noVNC) |
 | **4** | **Wiley** (`authenticate`, OAuth) | OpenAthens'ın kapsamadığı yayıncı tam metni (Cochrane/Wiley); hâlâ **lisanslı band** içinde |
-| **5** | **annas-reader** (`read_article` / `search_in_document`+`read_document`; ⚠️ `*_download` YOK) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 3+4) getiremeyince; copyright-kapılı |
+| **5** | **annas-reader** (okuma: `read_article` / `search_in_document`+`read_document`; orijinal dosya: `download_document(id=<DOI|MD5>)`) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 3+4) getiremeyince; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS; copyright-kapılı |
 | **6** | **pubmed-epmc** (`pubmed_fetch_fulltext`) | Unpaywall yasal-OA son süpürme |
 
-Getirilen metin **anamnesis'e `ingest_document`** edilir → `semantic_search`/`hybrid_query`
-(uzun metin bağlama dökülmez; indekslenir, sınırlı paket çekilir — §7). ⚠️ annas indirmeleri
-**kullanıcının makinesine** iner (sandbox'a değil) → analiz için anamnesis'e ingest/yapıştır;
-telif: yalnız analiz, toplu birebir çoğaltma YOK. Komut yüzeyi: `/evidentia-fulltext`.
+Getirilen metin veya dosya **anamnesis'e `ingest_document`** edilir →
+`semantic_search`/`hybrid_query` (uzun metin bağlama dökülmez; indekslenir, sınırlı paket çekilir —
+§7). `oa_fetch_pdf` ve `download_document` dosyayı kısa-ömürlü opaque `resource_link` olarak verir:
+link hemen tüketilir, kalıcı kaynak diye cache'lenmez; kanonik kayıtta DOI/MD5 + SHA-256 +
+provenance tutulur. Telif: yalnız analiz, toplu birebir çoğaltma YOK. Komut yüzeyi:
+`/evidentia-fulltext`.
 
 ### 3.8 İkincil / koşullu
 PDF Viewer · NPI Registry (ABD PI/KOL) · **Mevzuat Bilgisi** (ikincil TR-mevzuat çapraz-kontrol;
@@ -318,7 +325,8 @@ Türkiye-pazarı** (TR bağlamı/modülü aktifken) — TİTCK + Mevzuat + YÖK 
 yok); ICD-11 openfda ile, ABD sürveyansı PopHIVE ile. **Tam-metin** (özet yetersizse) —
 **legal-first 6-katman** (§3.7): EPMC `get_copyright_status`/`get_full_text_article` (Tier 1) →
 Paper Search (Tier 2) → **OpenAthens/Millet Kütüphanesi** (Tier 3, lisanslı — birincil paywall
-kapısı) → Wiley (Tier 4) → **annas** (Tier 5, SON ÇARE) → pubmed-epmc Unpaywall (Tier 6 süpürme).
+kapısı; metin için `oa_fetch_fulltext`, sağlayıcı PDF'si için `oa_fetch_pdf`) → Wiley (Tier 4) →
+**annas** (Tier 5, SON ÇARE; okuma veya `download_document`) → pubmed-epmc Unpaywall (Tier 6 süpürme).
 
 ### Adım 2 — Cömertlik İlkesi (UNCAPPED — tüm fazlarda)
 Çağrı sayısı/derinlik sınırlanmaz; varsayılan = **maksimum derinlik**, P0'dan P7'ye kadar tüm
@@ -361,7 +369,7 @@ sonraki adımlar oradan **okur**. Çift connector sorgusu engellenir.
 | `regulatory_snapshot` | İlk openfda + **PopHIVE** | epidemiyoloji modülü, güvenlik, kodlama |
 | `terminology_map` | İlk Extended Tier-K | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar | KOL haritası (`/evidentia-kol`), ağ |
-| `evidence_index` | İlk anamnesis ingest (Tier 3 openathens `oa_fetch_fulltext` · Wiley · annas · yüklenen PDF) | P4/P6 sentez, tam-metin — **indeks, ham metin değil** |
+| `evidence_index` | İlk anamnesis ingest (Tier 3 openathens `oa_fetch_fulltext`/`oa_fetch_pdf` · Wiley · annas okuma/`download_document` · yüklenen PDF/EPUB) | P4/P6 sentez, tam-metin — **indeks, ham metin değil**; DOI/MD5 + SHA-256 + provenance korunur |
 
 **Tekil kurallar:** TİTCK tek-sefer (barcode bir kez) · openfda tekil+1retry+skippable · PopHIVE
 US-only + birebir-aktar · Tier-K ilk-liveness-sonrası yeniden-probe yok.
@@ -426,7 +434,7 @@ döner.
 | **G-REF** | SKILL.md'nin andığı her `references/*.md` diskte var (mount-toleranslı) |
 | **G-CONN** | connector-registry'deki her connector manifest runtime'da çözülür |
 | **G-ALWAYS** | 6 always-load dosyası mevcut |
-| **G-VERSION** | Sürüm üçlüsü hizalı (SKILL fm + H1 + manifest skill/build = 9.0.0) |
+| **G-VERSION** | Sürüm üçlüsü hizalı (SKILL fm + H1 + manifest skill/build = 9.0.1) |
 | **G-COVERAGE** | knowledge-map tüm korpusu + fazları + opsiyonel modülleri kapsıyor, dangling yok |
 | **G-PROBE** | Her first-class Extended Tier-K/O connector'ın §8 Probe Log'da **WIRE tablo-satırı** var |
 | **G-XVAL** | Her Extended-Tier reçetesi bir çapraz-doğrulama kapısı taşıyor |
@@ -482,7 +490,7 @@ PASSED` beklenir) + `rag_quality.py` (G-RAG) + `scripts/g_probe.py`/`scripts/g_b
 ---
 
 ## 12. Sürümleme + iki-kopya senkron (operasyonel)
-- **Sürüm:** plugin (`2.x`) ≠ flagship skill (`9.x`). Şu an plugin **2.0.0** / skill **9.0.0** /
+- **Sürüm:** plugin (`2.x`) ≠ flagship skill (`9.x`). Şu an plugin **2.7.2** / skill **9.0.1** /
   12 skill-gate + G-RAG + plugin-düzeyi G-BUNDLE/G-TRUST/G-SURFACE. G-VERSION üçlüsü: SKILL fm +
   H1 + manifest skill/build.
 - **v9.0.0 headline:** zorunlu 10-eksen alan matrisi, uçtan uca **PRISMA 2020/PRISMA-ScR P0–P7
@@ -493,6 +501,10 @@ PASSED` beklenir) + `rag_quality.py` (G-RAG) + `scripts/g_probe.py`/`scripts/g_b
   **Tier 3 lisanslı birincil paywall kapısı** olarak canlıya alındı, annas **Tier 5 son çareye**
   indirildi (§3.6/§3.7). (2) Plugin MCP wiring'leri Cloud Run → HP+Pi self-host URL'lerine
   geçirildi (ölü `*.run.app` → `annas.cureonics.com` vb.; key'ler değişmedi).
+- **2026-08-14 dosya teslim güncellemesi:** OpenAthens Tier 3'e sağlayıcı-nötr
+  `oa_fetch_pdf(doi|url)`; annas Tier 5'e `download_document(id=<DOI|MD5>)` eklendi. İki araç da
+  dosyayı kısa-ömürlü opaque `resource_link` + checksum/provenance ile verir; link kalıcı olarak
+  cache'lenmez, uzun belge anamnesis'e ingest edilir.
 - **İki kopya:** `evidentia-cc/` (git'siz build/deploy workspace) ↔ `CureoPrivate/plugins/evidentia/`
   (kanonik, git-izli katalog). Düzenle cc → aynala CP → commit **yalnız CP** (main). Self-host
   CF worker'ları (anamnesis/drugddx/openfda/evidentia-kb) `evidentia-cc/self-host/`'tan wrangler

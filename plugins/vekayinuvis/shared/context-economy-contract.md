@@ -26,7 +26,7 @@ Tek bir distiller'a tüm fleet'i vermek onun KENDİ penceresini de taşırabilir
 |---|---|---|
 | **S1 — Resmî katalog** | devlet-arsivleri (arsiv=1/2/3/4; search / semantic_search / **deep_search→deep_result** kapsamlı süpürme, store kapalıysa list_fon_categories→detailed_search enumerasyon; boş sonuçtan önce **coverage**) | fon/kutu/gömlek + künye + 1000-tavan aşımı + kapsam manifestosu |
 | **S2 — Keşif + IIIF + takvim** | ottoman-archives (registry, IIIF, İА, convert_date, HTR) | dijital nüsha + kavram tabanı |
-| **S3 — Tez + literatür + tam-metin** | yoktez + literatur (DergiPark tam-metin) + openathens (lisanslı) + annas-reader (son çare) | transkripsiyon + hakemli makale + kitap/makale tam-metin şelalesi |
+| **S3 — Tez + literatür + tam-metin** | yoktez + literatur + openathens (`oa_fetch_fulltext` / `oa_fetch_pdf`) + annas-reader (reader / `download_document`, son çare) | transkripsiyon + hakemli makale + kitap/makale tam-metin şelalesi |
 | **S4 — Akademik/doktrin** | consensus · scholar-gateway · exa · tavily · paper-search · yok-akademik | tarihyazımı + uzman/ekol |
 
 Shard'lar **paralel** dağıtılır. Tüm server'lar ateşlenir (tam-filo korunur) AMA hiçbir distiller penceresi taşmaz ve ana pencere yalnız ≤4 kompakt zarf görür.
@@ -45,6 +45,10 @@ Büyük bir belgeyi **asla** kör (`max_chars` limitsiz / tam PDF) getirme. Prot
 2. **Yalnız hedef parçayı çek:** `ottoman_search_within_manifest` (belge içi arama) · `get_yok_tez_document_markdown(page)` (sayfa-bazlı) · DergiPark makalesinin ilgili bölümü. Belge_url yalnız referans olarak taşınır — tam görüntü/PDF ana pencereye çekilmez.
 3. **Tam-metin gerekiyorsa** (transkripsiyon analizi, tarihyazımı sentezi, tam rapor): Tier 2 `anamnesis`'e ingest → bounded query. Kanonik doc_id ile bölüm-düzeyi getirim; tam konsolide metni ana pencereye çekme.
 4. **Taranmış/OCR gerektiren nüsha:** IIIF görüntü → `devarsiv_ocr_image` (Transleyt varsayılan, ölçülen en iyi okuyucu) → çıktı > eşik ise anamnesis'e ingest. eScriptorium yalnız matbu korpus taraması içindir.
+
+OpenAthens/Anna's dosya araçları kısa-ömürlü opaque `resource_link` döndürür.
+Link derhal tüketilir ve kalıcı cache'e girmez; kanonik cache DOI/MD5 + SHA-256/
+provenance tutar. Tüketilen uzun dosya Tier 2 anamnesis'e ingest edilir.
 
 ## 5. Bağlam bütçesi + devre-kesici
 

@@ -29,7 +29,7 @@ kaynağı `fleet.yaml`'dır (`tests/run_suites.py` ve `check_drift` sapmayı yak
 | **S1 — TR çekirdek** | mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
 | **S2 — Karşılaştırmalı** | health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law · Ansvar · Fedlex Swiss companion) | `comparative-law-researcher` |
 | **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı · Türk Patent companion) | `legal-distiller` · `gerekce-drafter` |
-| **S4 — Tam-metin şelalesi** | **openathens** (Tier 3 lisanslı) → **annas-reader** (Tier 4 son çare) | `comparative-law-researcher` |
+| **S4 — Tam-metin şelalesi** | **openathens** (`oa_fetch_fulltext` / `oa_fetch_pdf`, Tier 3 lisanslı) → **annas-reader** (reader / `download_document`, Tier 4 son çare) | `comparative-law-researcher` |
 | **ALL** | anamnesis (Tier 2 substrat — her shard'da erişilebilir) | tümü |
 
 > **S4 bir KLİNİK shard'ı DEĞİLDİR.** Klinik kanıt bir shard değil bir
@@ -56,6 +56,11 @@ Büyük bir belgeyi **asla** kör (`max_chars` limitsiz / tam PDF) getirme. Prot
 2. **Yalnız hedef parçayı çek:** `madde_acikla(madde_no)` drill-down · `get_mevzuat_text(start_page,end_page / chunk_index,chunk_size / max_chars)` · `download_mevzuat_document(include_base64=false)` (yalnız URL — bağlam taşması yok).
 3. **Tam-metin gerekiyorsa** (karşılaştırma, gerekçe, ex-post trend): Tier 2 anamnesis'e ingest → bounded query. Yabancı hukukta programatik kimlik (CELEX/ECLI/AKN section) + bölüm-düzeyi fetch; tam konsolide metni ana pencereye çekme.
 4. **RG OCR / taranmış PDF:** `rg_ocr_submit` → `rg_ocr_result` (async); sonucu > eşik ise anamnesis'e ingest.
+
+OpenAthens/Anna's dosya araçları base64 gövde değil kısa-ömürlü opaque
+`resource_link` + checksum/provenance döndürür. Link derhal tüketilir ve kalıcı cache'e
+girmez; cache anahtarı DOI/MD5 + SHA-256'dır. Tüketilen uzun dosya Tier 2 anamnesis'e ingest
+edilir, ana pencereye yalnız bounded dilim gelir.
 
 ## 5. Bağlam bütçesi + devre-kesici
 

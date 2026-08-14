@@ -30,13 +30,15 @@ import sys
 
 # Tools whose output is full-text / large bibliographic bodies (basename match). These get the
 # ingest-once message; everything else gets the narrow-the-query message. Names verified against
-# the live fleet inventory 2026-08-07 (`read_document`/`read_article` are annas-reader's real
-# names — the previous `article_download`/`book_download` entries matched no tool in the fleet).
+# the live fleet inventory 2026-08-14. The original-file tools normally return only compact link
+# metadata, but remain classified here so an unexpectedly embedded body is still diverted to RAG.
 FULLTEXT_TOOLS = {
     "oa_fetch_fulltext",            # openathens Tier 3 licensed
+    "oa_fetch_pdf",                 # openathens original PDF resource link
     "pubmed_fetch_fulltext",        # pubmed-epmc, Unpaywall legal-OA
     "pubmed_europepmc_fetch",       # pubmed-epmc, Europe PMC body
     "read_document", "read_article", "search_in_document",   # annas-reader
+    "download_document",            # annas original-file resource link
     "get_full_text_article",        # claude.ai PubMed connector (operator-connected)
     "read_pubmed_paper", "read_semantic_paper", "read_biorxiv_paper",
     "read_medrxiv_paper", "read_crossref_paper", "read_arxiv_paper",  # Paper Search (operator)

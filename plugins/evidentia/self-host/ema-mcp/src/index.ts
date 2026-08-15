@@ -3,8 +3,8 @@
  *
  * Router:
  *   GET  /health                      -> "ok" (liveness; no auth)
- *   GET  /.well-known/oauth-*          -> OAuth discovery metadata (RFC 9728 / RFC 8414)
- *   *    /oauth/*                      -> OAuth authorize/token/register surface
+ *   GET  /.well-known/oauth-*          -> OAuth discovery metadata (RFC 9728 / RFC 8414); 404 when KEYLESS
+ *   *    /oauth/*                      -> OAuth authorize/token/register surface; 404 when KEYLESS
  *   POST /mcp   (Streamable HTTP)      -> MCP  (requireBearer — but KEYLESS: MCP_ALLOW_NO_AUTH=1)
  *   GET  /sse   (legacy SSE)           -> MCP  (requireBearer)
  *
@@ -54,7 +54,18 @@ export default {
       return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
     }
 
+    // In KEYLESS mode the gate is off (requireBearer returns null), so advertising an OAuth
+    // surface is a lie that BREAKS discovery-driven clients rather than helping them: they read
+    // the RFC 9728 PRM, conclude the resource is protected, and run the dance — whose authorize
+    // form asks for a connector key that CANNOT exist, because MCP_API_KEY is unset in a keyless
+    // deploy (`wrangler secret list` -> []) and every submission 403s. Measured 2026-08-08:
+    // Codex (`codex mcp login`) prompted for a key against this Worker for exactly this reason,
+    // while an anonymous — or garbage-Bearer — `initialize` returned 200. Public mode must
+    // therefore 404 the whole OAuth surface, so clients see an open server and just connect.
     if (p.startsWith("/.well-known/oauth") || p.startsWith("/oauth/")) {
+      if (env.MCP_ALLOW_NO_AUTH === "1") {
+        return new Response("not found", { status: 404, headers: { "content-type": "text/plain" } });
+      }
       return handleOAuth(req, env);
     }
 

@@ -65,3 +65,50 @@ describe("router", () => {
     expect(wa).toContain('resource_metadata="https://w.example/.well-known/oauth-protected-resource/mcp"');
   });
 });
+
+// The production deploy is KEYLESS (wrangler.jsonc vars: MCP_ALLOW_NO_AUTH="1"). An open server
+// that still answers OAuth discovery tells clients "I am protected", sending them into a dance
+// whose authorize form demands a key that cannot exist — MCP_API_KEY is unset in this mode, so
+// every submission 403s. The whole OAuth surface must disappear, not merely be bypassable.
+describe("router — KEYLESS mode (MCP_ALLOW_NO_AUTH=1)", () => {
+  const OPEN = { ...ENV, MCP_ALLOW_NO_AUTH: "1" } as Env;
+  const get = (p: string) => worker.fetch(new Request(`https://w.example${p}`), OPEN, ctx);
+
+  it("protected-resource metadata is NOT advertised", async () => {
+    expect((await get("/.well-known/oauth-protected-resource")).status).toBe(404);
+  });
+
+  it("path-inserted protected-resource metadata is NOT advertised", async () => {
+    expect((await get("/.well-known/oauth-protected-resource/mcp")).status).toBe(404);
+  });
+
+  it("authorization-server metadata is NOT advertised", async () => {
+    expect((await get("/.well-known/oauth-authorization-server")).status).toBe(404);
+  });
+
+  it("the authorize form — which prompts for a connector key — does not render", async () => {
+    const res = await get("/oauth/authorize?response_type=code&client_id=ema-mcp");
+    expect(res.status).toBe(404);
+    expect(await res.text()).not.toContain("api_key");
+  });
+
+  it("dynamic client registration does not succeed", async () => {
+    const res = await worker.fetch(
+      new Request("https://w.example/oauth/register", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ client_name: "codex", redirect_uris: ["http://127.0.0.1:1455/cb"] }),
+      }), OPEN, ctx);
+    expect(res.status).toBe(404);
+  });
+
+  it("token exchange does not succeed", async () => {
+    const res = await worker.fetch(
+      new Request("https://w.example/oauth/token", { method: "POST" }), OPEN, ctx);
+    expect(res.status).toBe(404);
+  });
+
+  it("/health stays public", async () => {
+    expect((await get("/health")).status).toBe(200);
+  });
+});

@@ -18,7 +18,7 @@ Claude Code oturumunda (REPL):
 /plugin install <plugin>@cureonics-marketplace
 ```
 
-> Bu repo **private**'ıtır; Claude Code, klonlama için sistemdeki GitHub kimlik bilgisini
+> Bu repo **private**'tır; Claude Code, klonlama için sistemdeki GitHub kimlik bilgisini
 > (`gh auth` / credential helper) kullanır. Katalog kaynağı taşınabilirdir (yerel yol
 > içermez), bu yüzden çok-düğümlü `settings.json` senkronizasyonuyla uyumludur.
 
@@ -42,7 +42,7 @@ bunlarla senkron tutulur (tek doğruluk kaynağı = plugin.json).
 
 ### Bileşen envanteri
 
-Sayılar diskteki `commands/` dosyaları, `skills/` alt dizinleri, `agents/` alt-ajan dosyaları (`openai.yaml` hariç), `hooks/` varlığı ve `.mcp.json` → `mcpServers` anahtarlarıdır. `marketplace.json` / `plugin.json` sürümleriyle hizalıdır.
+Sayılar diskteki `commands/` dosyaları, `skills/` alt dizinleri, `agents/` alt-ajan dosyaları (`openai.yaml` hariç), `hooks/` varlığı ve `.mcp.json` → `mcpServers` anahtarlardır. `marketplace.json` / `plugin.json` sürümleriyle hizalıdır.
 
 | Plugin | Komut | Skill | Alt-ajan | Hook | Paketli MCP |
 |---|---:|---:|---:|:---:|---:|

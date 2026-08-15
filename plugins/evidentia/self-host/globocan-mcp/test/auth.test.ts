@@ -207,3 +207,29 @@ describe("CORS preflight (browser connector surface)", () => {
     expect(denied.headers.get("www-authenticate")).toContain("resource_metadata=");
   });
 });
+
+describe("POST /oauth/authorize - pasted-key whitespace (regression)", () => {
+  const submit = (apiKey: string) => handleOAuth(new Request("https://w.example/oauth/authorize", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      api_key: apiKey,
+      redirect_uri: "https://claude.ai/cb",
+      state: "s",
+      code_challenge: "cccccccccccccccccccccccccccccccccccccccccccc",
+      code_challenge_method: "S256",
+    }),
+  }), ENV);
+
+  it("accepts the key with a trailing newline or surrounding spaces (paste artifacts)", async () => {
+    for (const v of [ENV.MCP_API_KEY + "\n", " " + ENV.MCP_API_KEY, ENV.MCP_API_KEY + " "]) {
+      expect((await submit(v)).status).toBe(302);
+    }
+  });
+
+  it("still refuses a genuinely wrong key with access_denied", async () => {
+    const res = await submit("not-the-key");
+    expect(res.status).toBe(403);
+    expect((await res.json() as any).error).toBe("access_denied");
+  });
+});

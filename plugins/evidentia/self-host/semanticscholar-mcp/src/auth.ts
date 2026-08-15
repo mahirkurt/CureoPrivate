@@ -207,7 +207,11 @@ button{padding:.6rem 1rem;cursor:pointer}</style></head><body>
 // ---- POST /oauth/authorize : verify key, mint code, 302 --------------------
 async function authorizeSubmit(req: Request, url: URL, env: AuthEnv): Promise<Response> {
   const form = await req.formData();
-  const apiKey = String(form.get("api_key") || "");
+  // .trim(): pasted keys routinely carry a trailing newline/space (copy from a doc, a table cell,
+  // or a password manager). The whitespace is not key material, and an untrimmed compare turned
+  // every such paste into an opaque `access_denied` 403. Trimming widens no attack surface: the
+  // secret itself is unchanged, and a wrong key still fails the constant-time compare below.
+  const apiKey = String(form.get("api_key") || "").trim();
   const redirectUri = String(form.get("redirect_uri") || "");
   const state = String(form.get("state") || "");
   const codeChallenge = String(form.get("code_challenge") || "");

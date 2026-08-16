@@ -140,7 +140,7 @@ _FOLD = str.maketrans("ıüöçşğâîû", "uuocsgaiu")   # 'ı' fold'u aşağ�
 def _squash_ref(s: str) -> str:
     """Kimliği karşılaştırılabilir çekirdeğe indir: claude.ai öneki + ayraçlar atılır."""
     s = s.lower()
-    for pre in ("mcp__", "claude_ai_", "plugin_"):
+    for pre in ("mcp__", "claude_ai_", "plugin_", "plugin-"):
         if s.startswith(pre):
             s = s[len(pre):]
     return re.sub(r"[^a-z0-9]", "", s)
@@ -201,6 +201,9 @@ def versions(d: Path, marketplace: dict):
     codex = d / ".codex-plugin" / "plugin.json"
     if codex.is_file():
         vs["codex"] = json.loads(codex.read_text(encoding="utf-8")).get("version")
+    cursor = d / ".cursor-plugin" / "plugin.json"
+    if cursor.is_file():
+        vs["cursor"] = json.loads(cursor.read_text(encoding="utf-8")).get("version")
     for sk in sorted((d / "skills").glob("*/SKILL.md")):
         if sk.parent.name != name:
             continue

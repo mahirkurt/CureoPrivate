@@ -3,7 +3,9 @@
 # Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
 #   .mcp.json
 #   .codex-plugin/plugin.json  (mcpServers bloğu + version)
+#   .cursor-plugin/plugin.json (version + mcpServers yolu, dosya varsa)
 #   fleet.lock.json            (hook'ların okuduğu stdlib-türev)
+#   CONNECTORS.md              (⟨GEN⟩ connector roster)
 #   commands/lex-connectors.md (⟨GEN⟩ anahtar tablosu)
 #   agents/*.md                (⟨GEN⟩ tools: satırı)
 #   skills/lex-sanitas/references/00-mod-pipelines.md (⟨GEN⟩ mod×server matrisi)
@@ -20,7 +22,7 @@
 
 version: 2
 plugin: lex-sanitas
-plugin_version: "3.8.2"
+plugin_version: "3.8.3"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # lex-sanitas bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -772,6 +774,10 @@ generated_blocks:
     name: fleet-env-table
     generator: env_table
 
+  - file: CONNECTORS.md
+    name: connector-roster
+    generator: connector_roster
+
   - file: skills/lex-sanitas/references/00-mod-pipelines.md
     name: mode-server-matrix
     generator: mode_matrix
@@ -810,5 +816,6 @@ mcp_comment: >-
   TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam
   kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite
   önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır
-  (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk
-  Patent) claude.ai connector'ıdır — wire edilemez; bkz. commands/lex-connectors.md.
+  (retrieve-don't-dump).   Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır —
+  wire edilemez. Fedlex ve Türk Patent 2026-08-08'de wire edildi.
+  G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.

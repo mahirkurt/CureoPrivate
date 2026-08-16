@@ -1,4 +1,5 @@
 ---
+name: lex-analyze
 description: Mod 3 ANALYZE — mevcut sağlık mevzuatının reform-öncesi analizi (7-boyut uyum denetimi + AB/uluslararası sapma + Türk yargı/doktrin filtresi + iptal-riski). "Neyi değiştireceğiz?" sorusunu yanıtlar. Argüman = incelenecek mevzuat.
 argument-hint: <incelenecek mevzuat — örn. "1219 sayılı Tababet Kanunu belirlilik denetimi">
 ---

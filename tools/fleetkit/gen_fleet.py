@@ -4,6 +4,7 @@
 Üretilenler (hepsi opsiyonel, fleet.yaml neyi bildiriyorsa):
   <plugin>/.mcp.json                    Claude Code MCP wiring
   <plugin>/.codex-plugin/plugin.json    mcpServers bloğu + version (yerinde)
+  <plugin>/.cursor-plugin/plugin.json   version + mcpServers yolu (dosya varsa)
   <plugin>/fleet.lock.json              hook'ların okuduğu stdlib türev
   fleet.yaml `generated_blocks` ile bildirilen ⟨GEN⟩ blokları
 
@@ -208,17 +209,42 @@ def gen_env_table(fleet, _cfg):
     return "\n".join(rows)
 
 
+def gen_connector_roster(fleet, _cfg):
+    """CONNECTORS.md URL tablosu — anahtar DEĞERİ yok, yalnız ad + uç + env adı."""
+    rows = [
+        "| Server | Endpoint | Auth | Doppler var | Tier |",
+        "|---|---|:---:|---|---|",
+    ]
+    for s in fleet["servers"]:
+        url = s["url"].rstrip("/")
+        if s.get("auth_env"):
+            auth, env = "Bearer", f"`{s['auth_env']}`"
+        else:
+            auth, env = "public", "—"
+        rows.append(f"| `{s['name']}` | `{url}` | {auth} | {env} | {s.get('tier', '—')} |")
+    for c in fleet.get("companions", []):
+        rows.append(
+            f"| **{c['name']}** | _(kararlı self-host URL yok)_ | OAuth | "
+            f"claude.ai / ChatGPT / Cursor **Settings → Connectors** | companion |"
+        )
+    return "\n".join(rows)
+
+
 def server_prefixes(s, plugin=None):
-    """Bir sunucunun araç önekleri — AYNI sunucu yüzeye göre ÜÇ farklı adla yüklenir.
+    """Bir sunucunun araç önekleri — AYNI sunucu yüzeye göre farklı adla yüklenir.
 
     1. **Plugin'e paketli (Claude Code, KANONİK yol).** Plugin'in `.mcp.json`'ı
        yüklendiğinde önek plugin adıyla NAMESPACE'LENİR:
        `mcp__plugin_<plugin>_<server>__`. 2026-08-07 oturumunda dokuz sunucuda
        ölçüldü (lex-sanitas/edupedia/vekayinuvis/rxpraxis/sci-audit) — kural
        dokuzunda da tuttu. Plugin kurulu olduğunda GERÇEKTE yüklenen budur.
-    2. **Kullanıcı düzeyi `.mcp.json`** (plugin dışı, `~/.claude.json` vb.) →
+    2. **Cursor native plugin MCP.** Cursor katalog kimliği tirelidir:
+       `plugin-<plugin>-<server>` (ölçüldü: `plugin-lex-sanitas-mevzuat`).
+       Ajan `tools:` allowlist'i `mcp__plugin-<plugin>-<server>__*` ister;
+       yalnız alt-çizgili Claude Code biçimi varsa distiller MCP'yi çağırmaz.
+    3. **Kullanıcı düzeyi `.mcp.json`** (plugin dışı, `~/.claude.json` vb.) →
        çıplak `mcp__<server>__`.
-    3. **claude.ai/Cowork connector'ı** → `mcp__claude_ai_<Görünen_Ad>__`;
+    4. **claude.ai/Cowork connector'ı** → `mcp__claude_ai_<Görünen_Ad>__`;
        boşluk `_` olur, ASCII-dışı harf düşer ya da `_` olur (ölçülen:
        "TİTCK Data"→T_TCK_Data, "Yargı"→Yarg, "Türk Patent"→T_rk_Patent).
        Görünen ad bir İNSAN TERCİHİ olduğu için mekanik türetilemez → ampirik
@@ -226,15 +252,18 @@ def server_prefixes(s, plugin=None):
 
     Bu ayrım kritik: ajanların `tools:` frontmatter'ı SERT bir allowlist'tir —
     model öneki yorumla kapatamaz. Önek eşleşmezse sunucu ajan için YOKTUR.
-    Üçünü birden yaymak ucuzdur: tutan çalışır, tutmayan zararsızca boşta kalır.
+    Hepsini yaymak ucuzdur: tutan çalışır, tutmayan zararsızca boşta kalır.
 
-    `tool_prefixes` verilse bile plugin-kapsamlı biçim DAİMA eklenir — o
+    `tool_prefixes` verilse bile plugin-kapsamlı biçimler DAİMA eklenir — o
     kullanıcı tercihine değil, kurulum mekaniğine bağlıdır.
     """
     n = s["name"]
     out = []
     if plugin:
         out.append(f"mcp__plugin_{plugin}_{n}__")
+        hyphen = f"mcp__plugin-{plugin}-{n}__"
+        if hyphen not in out:
+            out.append(hyphen)
     if s.get("tool_prefixes"):
         out += [p for p in s["tool_prefixes"] if p not in out]
         return out
@@ -293,7 +322,8 @@ def gen_mode_matrix(fleet, cfg):
 
 
 GENERATORS = {"env_table": gen_env_table, "agent_tools": gen_agent_tools,
-              "mode_matrix": gen_mode_matrix}
+              "mode_matrix": gen_mode_matrix,
+              "connector_roster": gen_connector_roster}
 
 
 # ── Yazma ───────────────────────────────────────────────────────────────────
@@ -323,6 +353,13 @@ def write_all(root: Path, fleet: dict, check: bool = False) -> list:
         d["version"] = fleet["plugin_version"]
         d["mcpServers"] = build_mcp_servers(fleet)
         _write(codex, _json_text(d), check, changed)
+
+    cursor = root / ".cursor-plugin" / "plugin.json"
+    if cursor.is_file():
+        d = json.loads(cursor.read_text(encoding="utf-8"))
+        d["version"] = fleet["plugin_version"]
+        d["mcpServers"] = "./.mcp.json"
+        _write(cursor, _json_text(d), check, changed)
 
     for blk in fleet.get("generated_blocks", []):
         path = root / blk["file"]

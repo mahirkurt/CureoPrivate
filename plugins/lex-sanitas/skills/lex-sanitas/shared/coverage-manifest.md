@@ -8,8 +8,8 @@
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false`) · `skipped: <gerekçe>` (anahtar yok / mod için N/A).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.
-- **Companion skip'inin kapı etkisi manifesto satırında görünür:** `Yarg → skipped: companion bağlı değil ⇒ G5 CONDITIONAL` · `Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL (CELEX degrade: german-law→WebFetch)` · Ansvar skip'inde etkilenen yargı satırları `manual_required` kalır, tablodan silinmez.
-- **Bağlam-bağımlı companion satırları** (Fedlex_Swiss · Turk_Patent) da her manifestoda mevcuttur; ilgili bağlam yoksa durum dürüstçe `skipped: mod için N/A` yazılır (örn. CH karşılaştırması yok / IP-boyut yok). İlgili bağlam varken bağlıyken atlanmaları G0 ihlalidir.
+- **Companion skip'inin kapı etkisi manifesto satırında görünür:** `Yarg → skipped: companion bağlı değil ⇒ G5 CONDITIONAL` · `Open_Law → skipped: companion bağlı değil ⇒ UK metni ep.legislation_uk (G6'yı düşürmez)` · Ansvar skip'inde etkilenen yargı satırları `manual_required` kalır, tablodan silinmez.
+- **Wire'lı Fedlex / Türk Patent** companion DEĞİLDİR; manifesto karşılaştırmalı/destek katmanında durur. CH/IP bağlamı yoksa `skipped: mod için N/A`. G6 skip'i `eurlex → skipped/degraded` satırındadır.
 - Manifesto, `legal-distiller`'ın döndürdüğü `coverage` bloğundan türetilir; alt-ajan çağrılmadıysa doğrudan araç çağrılarından derlenir.
 
 ## Örnek
@@ -27,10 +27,14 @@ TR mevzuat çekirdeği
 Karşılaştırmalı katman
   health-policy        → hit 5   (US 21 CFR 1271, AU TGA biologicals, ES BOE)
   german-law           → hit 3   (AMG §4b, GewebeG; EU 1394/2007 basis)
+  eurlex               → hit 1   (CELEX 32007R1394 — G6)
+  fedlex               → skipped: mod için N/A (CH karşılaştırma kapsamında değil)
+  uk-legal             → skipped: mod için N/A (UK içtihat/Hansard gerekmedi)
   ich-guidelines       → hit 2   (Q5A(R2), S12 gene therapy)
   intl-treaty          → hit 1   (Oviedo CETS 164 — Md.90/5)
   eudamed              → empty   (ATMP ilaç sınıfı — cihaz DB N/A, yine de tarandı)
   oecd                 → hit 1   (sağlık Ar-Ge harcama göstergesi — RIA girdisi)
+  turk-patent          → skipped: mod için N/A (IP-boyut yok)
 Doktrin + tam-metin şelalesi
   yok-akademik         → hit 4   (ATMP regülasyon doktrin makaleleri — künye/metadata)
   yoktez               → hit 1   (ATMP hukuku doktora tezi, tez-no teyitli)
@@ -39,10 +43,8 @@ Doktrin + tam-metin şelalesi
   annas-reader         → skipped: şelale sırası korundu (Tier 4 yalnız Tier 3 denendikten sonra)
 Companion
   Yarg                 → hit 2   (Danıştay 10.D ruhsat iptali emsali)
-  Open_Law             → skipped: companion bağlı değil ⇒ G6 CONDITIONAL (CELEX degrade: german-law get_eu_basis)
+  Open_Law             → skipped: companion bağlı değil ⇒ UK metni ep.legislation_uk (G6'yı düşürmez)
   Ansvar               → skipped: companion bağlı değil (Mod 7'de CH/FR/… yargısı yoktu — kapsam etkisi yok)
-  Fedlex_Swiss         → skipped: mod için N/A (CH karşılaştırma kapsamında değil)
-  Turk_Patent          → skipped: mod için N/A (IP-boyut yok)
 Delegasyon
   evidentia            → hit     (klinik kanıt: CAR-T/gen tedavi GRADE, sidecar reverse_signals okundu)
   sci-audit            → hit     (atıf-adli 0 uydurma; TR imla 3 düzeltme; istatistik N/A)

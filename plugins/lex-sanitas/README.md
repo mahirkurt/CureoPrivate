@@ -4,6 +4,8 @@ En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağ
 
 > Eski `lex-sanitas` skill'inin (v2.9.0) mirasçısı. Yabancı-ülke mevzuat tarama işlevi ayrı bir MCP'ye (**health-policy**) taşındı; bu plugin onu *bir kaynak katmanı* olarak wire eder. Sürüm 3.0.0 = plugin mimarisi + tam-filo aktivasyonu. Sürüm 3.1.0 = bağlam-tetiklemeli ZORUNLU entegrasyon: evidentia/sci-audit kuruluysa atlanamaz; companion'lar (Yargı↔G5, Open Law↔G6, Ansvar↔Mod7) tam-filonun zorunlu üyeleri. Sürüm 3.2.0 = health-policy **semantic_search** doğal-dil giriş kapısı (çok-dilli keşif US/JP/AU/CN → fetch ile doğrulama), in-plugin **legal-distiller** ajanı, `start`→`lex-sanitas-start` skill yeniden adlandırması, hook test harness'ı + PostToolUse devre-kesicinin `additionalContext` kanalına taşınması. Sürüm 3.3.0 = **koşullu companion katmanı**: Fedlex Swiss (Mod7 CH birincil metin — Ansvar CH satırı çerçeve-teyide düşer) + YokTez (tez doktrini + G7 YÖK-Tez atıf doğrulama) + Türk Patent (ilaç IP/SPC/veri imtiyazı) — bağlıyken ilgili bağlam tetiklenince zorunlu; connector önek-eşleştirme notu (`mcp__<Ad>__*` / `mcp__claude_ai_<Ad>__*`). Sürüm 3.5.0 = **türetilmiş filo**: `fleet.yaml` tek kaynak → `.mcp.json`/codex/lock/komut/ajan türetilir + `tools/fleetkit/check_drift.py` sürüklenme kapısı; **canlı MCP prob'lu preflight** (`auth_missing` ≠ `unauthorized`); **titck Bearer gate onarımı** (2026-08-02 kapılanması kaçırılmıştı → katman 401 alıyordu); filo **15→19** (yoktez + literatur + openathens + annas-reader wire), companion **6→5** (yoktez first-class'a terfi → **G7 hard PASS**); distiller ajanlarına shard-tabanlı araç kısıtı; kök `hooks.json` kopyası kaldırıldı. Sürüm 3.4.0 = Fedlex Swiss/YokTez/Türk Patent **zorunlu companion kategorisine terfi**: manifesto satırları her çıktıda zorunlu (bağlam yoksa `skipped: mod için N/A`); Stop-hook zorunlu satır sayısı **sabit olmaktan çıkıp `fleet.lock.json`'dan türer** (companions + delegations = **7**; eski düzyazıdaki “5→8” yanlıştı). Sürüm 3.5.4 = 2026-08-06 denetimi: ölü `lex-sanitas-mcp` adı registry/healthcheck/testlerden ayrıldı (uç 404), `mevzuat-bilgisi` devralma kuralı yazıldı, `check_drift` [6] sunucu-kimliği kapısı eklendi. Sürüm 3.5.5 = `shared/` skill'in içine alındı (claude.ai düzleştirilmiş paketinde `../../shared/` çözülmüyordu). Sürüm 3.5.6 = 2026-08-07 denetimi: **connector ad-eşleme katmanı** (`tool_prefixes` — aynı sunucu Claude Code'da `mcp__<ad>__`, claude.ai'de `mcp__claude_ai_<Görünen_Ad>__` yüklenir; ajan `tools:` allowlist'i sert olduğu için eşleşmezse sunucu ajan için YOKTUR), 2 komutun geçersiz YAML frontmatter'ı, `tests/run_suites.py` (70 vaka), shard/kapsam/companion sözleşme tablolarının fleet'e bağlanması. Sürüm 3.5.8 = **araç-düzeyi canlı kapı** (`check_tools.py`: `tools_used` beyanı ↔ canlı `tools/list`, + `--call` duman testi) — 3 fantom araç düzeltildi. Sürüm 3.5.9 = **Türk Patent companion'dan wire'a**; ÜÇÜNCÜ arıza katmanı (`isError:false` ama GÖVDEDE `error` → sessiz yanlış-negatif). Sürüm 3.6.0 = Open Law + Fedlex için **programatik yedek** (ep.legislation_uk / ep.fedlex_sparql) — companion'a bağımlılık kırıldı. Sürüm 3.7.0 = **eurlex wire'landı** (HP self-host, upstream pinli, önünde OAuth kapısı) → **G6 companion'dan kurtuldu, hard PASS**. Sürüm 3.8.0 = **fedlex + uk-legal wire'landı** (aynı desen; `mcp-oauth-gateway` genelleştirildi), Fedlex Swiss + Türk Patent companion'dan emekli → filo **23 server / 3 companion**; SSE yanıt çerçevesi artık JSON-RPC `id` ile seçilir (yanlış-yeşil onarımı) + fleet.yaml yinelenen-anahtar kapısı. Sürüm 3.8.1 = 2026-08-08 ölçümü: **german-law free-tier haritası düzeltildi** (AB ailesinin 5'i de ÇALIŞIYOR; yalnız case-law/preparatory/version-tracking kapalı) + çözücü tuzakları belgelendi (`get_provision` yalnız `{id}` biçimiyle, `validate_citation` AMG'yi doğrulayamıyor); **DÖRDÜNCÜ arıza katmanı** (boş gövde `null`/`{}`/`[]` = arıza) + `check_drift` companion **ad-listesi** kapısı ve kök marketplace açıklamasının taranması.
 >
+> **Sürüm 3.8.3 (2026-08-16):** marketplace yüzey wiring — `.claude-plugin/plugin.json` artık `mcpServers` / `hooks` / `skills` / `commands` / `agents` bildirir; native `.cursor-plugin/plugin.json`; Codex `openai.yaml` `.codex-plugin/` altına taşındı; `CONNECTORS.md` Claude Code / Cursor / claude.ai / ChatGPT ayrımını sabitledi (web'de hook yok, MCP elle connector). Distiller `tools:` allowlist'ine Cursor tireli önek (`mcp__plugin-lex-sanitas-<server>__*`) eklendi.
+>
 > **Sürüm 3.8.2 (2026-08-14):** OpenAthens `oa_fetch_pdf(doi|url)` ve Anna's Reader `download_document(id=DOI|MD5)` S4 tam-metin shard'ına eklendi; kısa-ömürlü resource link, SHA-256/provenance ve anamnesis bounded-analysis disipliniyle. Legal-first sıra ve Anna's yalnız-analiz kapısı değişmedi.
 
 ## Öne çıkanlar
@@ -39,29 +41,39 @@ Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`
 | Katman | Shard | Server'lar |
 |---|---|---|
 | TR primer/idari | S1 | mevzuat (primer) · mevzuat-bilgisi (ikincil çapraz-kontrol) · resmi-gazete · titck · tbmm · saglikbakanligi · detsis |
-| Karşılaştırmalı/uluslararası | S2 | health-policy (yabancı ülke) · german-law · ich-guidelines · intl-treaty · eudamed · oecd |
+| Karşılaştırmalı/uluslararası | S2 | health-policy (yabancı ülke) · german-law · **eurlex (G6 CELEX)** · **fedlex (CH birincil)** · **uk-legal (UK içtihat/Hansard)** · ich-guidelines · intl-treaty · eudamed · oecd · **turk-patent** (IP; S1'e de düşer) |
 | Doktrin | S3 | yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması) · **literatur** (DergiPark makale tam-metni) |
 | Tam-metin şelalesi | S4 | **openathens** (Tier 3: `oa_fetch_fulltext` / `oa_fetch_pdf`) → **annas-reader** (Tier 4: reader / `download_document`, son çare, yalnız analiz) |
 | Büyük-veri substratı | tümü | anamnesis (RAG/GraphRAG evidence_index — kaynak değil, bağlam-ekonomisi Tier 2) |
-| **Companion** (wire edilemez — claude.ai connector) | — | Yargı içtihat · Open Law (UK+EU) · Ansvar (300+ reg korpus) · Fedlex Swiss (CH) · Türk Patent (IP/SPC) |
+| **Companion** (wire edilemez — claude.ai connector) | — | Yargı içtihat · Open Law (UK birincil metin; AB yarısı `eurlex`) · Ansvar (58-yargı tarama) |
 
-16'sı Bearer-gated, 3'ü public (`mevzuat-bilgisi`, `yoktez`, `literatur`).
+19'u Bearer-gated, 4'ü public (`mevzuat-bilgisi`, `yoktez`, `literatur`, `turk-patent`).
 
 ## Kurulum ve kimlik doğrulama
 
-Auth'lu server'lar Bearer anahtarını süreç ortamından çözer (Doppler-injected). Oturumu şöyle başlat:
+Üç ajan yüzeyi **aynı paketi** yükler ama MCP/hook bağlama yolu farklıdır. Tam sözleşme: [`CONNECTORS.md`](CONNECTORS.md).
 
 ```bash
+# Claude Code
 doppler run -p cureohub -c dev_personal -- claude
+
+# Cursor (süreç ortamı ${ENV} interpolasyonunu besler)
+doppler run -p cureohub -c dev_personal -- cursor
 ```
 
-Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `skipped: anahtar yok`) — çıktı durmaz, asla uydurma yapılmaz. Anahtar env-var haritası: `/lex-connectors`. Companion connector'lar (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) claude.ai connector ayarlarından eklenir. Canlı filo sağlığı: `/lex-connectors` veya `python3 hooks/scripts/fleet_probe.py --fresh`.
+claude.ai ve ChatGPT (Developer Mode) `.mcp.json`'ı otomatik yüklemez: her uç `CONNECTORS.md` roster'ından **Settings → Connectors** ile eklenir. Python hook bu iki web yüzeyinde **koşmaz** — G0 kapsam manifestosunu model yazar.
+
+Auth'lu server'lar Bearer anahtarını süreç ortamından çözer. Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `skipped: anahtar yok`) — çıktı durmaz, asla uydurma yapılmaz. Anahtar env-var haritası: `/lex-connectors`. Companion connector'lar (Yargı/Open Law/Ansvar) connector ayarlarından eklenir. Fedlex ve Türk Patent wire'lıdır. Canlı filo sağlığı (Python'lu host): `/lex-connectors` veya `python3 hooks/scripts/fleet_probe.py --fresh`.
 
 ## Mimari
 
 ```
 lex-sanitas/
-├── .claude-plugin/plugin.json      # manifest (v3.5.6)
+├── .claude-plugin/plugin.json      # Claude Code / claude.ai marketplace (mcpServers+hooks+userConfig)
+├── .cursor-plugin/plugin.json      # Cursor native manifest
+├── .codex-plugin/plugin.json       # ChatGPT / Codex (inline mcpServers)
+├── .codex-plugin/openai.yaml       # ChatGPT interface stub
+├── CONNECTORS.md                   # yüzey matrisi + connector roster (üretilen tablo)
 ├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (23 server + 3 companion)
 ├── fleet.lock.json                 # üretilir — hook'ların okuduğu stdlib türev
 ├── .mcp.json                       # üretilir — 23 MCP + tam-filo rol notları
@@ -72,9 +84,9 @@ lex-sanitas/
 ├── commands/                       # 10 komut (9 mod + connectors)
 ├── agents/                         # comparative-law-researcher · compliance-auditor · gerekce-drafter · legal-distiller
 ├── hooks/                          # SessionStart canlı-prob preflight · fleet_probe.py · UserPromptSubmit scope-guard · PostToolUse retrieve-don't-dump · Stop G0-kapsam kapısı
-└── tests/                          # 7 süit / 70 vaka — routing · scope-boundary · citation-hallucination
+└── tests/                          # 7 süit — routing · scope-boundary · citation-hallucination
                                     #   · context-economy · fleet-registry · full-fleet-coverage · mod9
-                                    #   + run_suites.py (koşucu; şema/referans/fixture denetimi)
+                                    #   + run_suites.py (koşucu; şema/referans/fixture + yüzey wiring)
 ```
 
 > `tools/fleetkit/` (üretici + kapılar) **kaynak depoda kalır, kurulu pakette bulunmaz.**

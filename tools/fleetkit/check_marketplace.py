@@ -14,6 +14,7 @@ Altı denetim (hepsi deterministik, hepsi offline):
   [4] Komut frontmatter     description var mı (yoksa /komut menüde boş görünür)
   [5] Hook sözleşmesi       geçerli olay · betik mevcut · CLAUDE_PLUGIN_ROOT · timeout
   [6] Hook betiği sözdizimi her .py derleniyor mu
+  [7] Manifest yolları      plugin.json / .cursor-plugin bildirilen path gerçek ve `..`'suz
 
 NEDEN VAR: bu katmanların hiçbiri türetilmiyor, dolayısıyla check_drift onları
 görmüyordu. Bir SKILL.md'nin `name`'i dizin adından saparsa skill sessizce
@@ -122,6 +123,21 @@ def check_catalog(catalog):
     return issues
 
 
+def _declared_path_ok(root: Path, rel: str, field: str, value, issues: list) -> None:
+    """Manifestteki bileşen yolu plugin dizini içinde ve gerçekten var mı?"""
+    paths = value if isinstance(value, list) else [value]
+    for item in paths:
+        if not isinstance(item, str):
+            continue
+        p = Path(item)
+        if p.is_absolute() or ".." in p.parts:
+            issues.append(f"{rel}: {field} mutlak veya `..` içeriyor → {item}")
+            continue
+        target = root / item
+        if not target.exists():
+            issues.append(f"{rel}: {field} yolu yok → {item}")
+
+
 def check_plugin(root: Path):
     """Bir plugin dizininin bileşen sözleşmesini denetle."""
     issues = []
@@ -195,6 +211,34 @@ def check_plugin(root: Path):
             compile(py.read_text(encoding="utf-8"), str(py), "exec")
         except SyntaxError as e:
             issues.append(f"{py.relative_to(REPO)}:{e.lineno}: sözdizimi hatası — {e.msg}")
+
+    man_path = root / ".claude-plugin" / "plugin.json"
+    if man_path.is_file():
+        try:
+            man = json.loads(man_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            issues.append(f"{man_path.relative_to(REPO)}: BOZUK JSON — {e}")
+            man = None
+        if isinstance(man, dict):
+            rel = str(man_path.relative_to(REPO))
+            for field in ("mcpServers", "hooks", "skills", "commands", "agents"):
+                if field in man:
+                    _declared_path_ok(root, rel, field, man[field], issues)
+
+    cursor_path = root / ".cursor-plugin" / "plugin.json"
+    if cursor_path.is_file():
+        rel = str(cursor_path.relative_to(REPO))
+        try:
+            cur = json.loads(cursor_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            issues.append(f"{rel}: BOZUK JSON — {e}")
+            cur = None
+        if isinstance(cur, dict):
+            if not cur.get("name"):
+                issues.append(f"{rel}: 'name' eksik — Cursor plugin keşfedilemez")
+            for field in ("mcpServers", "hooks", "skills", "commands", "agents", "rules"):
+                if field in cur:
+                    _declared_path_ok(root, rel, field, cur[field], issues)
 
     return issues
 

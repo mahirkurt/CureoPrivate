@@ -5,8 +5,8 @@
 **Bağlam-güvenli dağıtım (zorunlu):** tek bir distiller'a 14+ server vermek onun penceresini de taşırabilir. Bu yüzden süpürme **≤4 paralel shard**'a bölünür (bkz. `references/16-baglamyonetimi-ve-buyuk-veri.md` §B + `shared/context-economy-contract.md` §2):
 
 - **S1 — TR çekirdek** (`legal-distiller`): mevzuat · mevzuat-bilgisi · resmi-gazete · saglikbakanligi · titck · tbmm · detsis.
-- **S2 — Karşılaştırmalı** (`comparative-law-researcher`): health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open_Law · Ansvar · Fedlex_Swiss).
-- **S3 — Doktrin/içtihat** (`legal-distiller`): yok-akademik · Yarg · YokTez · Turk_Patent (bağlıysa).
+- **S2 — Karşılaştırmalı** (`comparative-law-researcher`): health-policy · german-law · eurlex (G6) · fedlex (CH) · uk-legal · ich-guidelines · intl-treaty · eudamed · oecd · turk-patent (+Open_Law UK · Ansvar, bağlıysa).
+- **S3 — Doktrin/içtihat** (`legal-distiller`): yok-akademik · Yarg · YokTez · literatur.
 - **S4 — Klinik** (evidentia `evidence-synthesizer`): zenginleştirilmiş sorgu.
 
 Her shard'a verilecek görev şablonu:

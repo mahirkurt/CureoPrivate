@@ -1,4 +1,5 @@
 ---
+name: lex-amend
 description: Mod 2 AMEND — mevcut sağlık mevzuatında değişiklik (madde/ibare değişikliği, ek madde, geçici madde, ilga). Md.18-21 değişiklik tekniği + kümülatif önceki metinler + karşılaştırma cetveli + madde gerekçesi. Argüman = değiştirilecek mevzuat ve değişikliğin niteliği.
 argument-hint: <mevzuat + değişiklik — örn. "Beşeri Tıbbi Ürünler Ruhsat Yön. m.12 fıkra ekle">
 ---

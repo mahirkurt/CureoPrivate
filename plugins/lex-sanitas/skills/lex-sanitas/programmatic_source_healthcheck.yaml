@@ -139,10 +139,10 @@ endpoints:
     fallback: "COMPARATIVE_LAW bölümünde 'kaynak erişilemedi' notu"
     note: "D-class (v2.7.0): API yalnızca 202 async-generate/poll → temiz senkron uç YOK; SARMALANMADI."
 
-  # ---- İsviçre (Fedlex Swiss companion'ının programatik YEDEĞİ) ----
-  # 2026-08-08: CH birincil metni yalnız `Fedlex Swiss` companion'ına bağlıydı;
-  # o yetkilendirme beklerken degrade yolu Ansvar ÇERÇEVE taramasıydı — çerçeve
-  # birincil metin DEĞİLDİR. Fedlex SPARQL anahtarsız ve canlı (ölçüldü).
+  # ---- İsviçre (wire'lı fedlex MCP'nin programatik YEDEĞİ) ----
+  # 2026-08-08: CH birincil metni companion'dan wire'lı `fedlex`'e taşındı.
+  # Bu SPARQL uç, mcp__fedlex__* erişilemezse yedektir. Ansvar ÇERÇEVE
+  # taraması birincil metin DEĞİLDİR. Fedlex SPARQL anahtarsız ve canlı (ölçüldü).
   - id: ep.fedlex_sparql
     registry_id: cmp.ch
     name: "İsviçre Fedlex SPARQL (Systematische Rechtssammlung)"
@@ -172,7 +172,7 @@ endpoints:
     # Doğrulama koşumu: SR 812.21 → eli/cc/2001/422 ·
     # "Bundesgesetz vom 15. Dezember 2000 über Arzneimittel und Medizinprodukte (HMG)"
     fallback: >
-      Fedlex Swiss companion bağlı değilse CH birincil metni BURADAN çekilir
+      Wire'lı mcp__fedlex__* erişilemezse CH birincil metni BURADAN çekilir
       (mcp_verified=false). Ansvar çerçeve-taraması bunun YERİNE GEÇMEZ — çerçeve
       taraması birincil metin değildir; ikisi de yoksa 'manual_required'.
 

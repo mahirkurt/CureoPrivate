@@ -1,4 +1,5 @@
 ---
+name: lex-draft
 description: Mod 1 DRAFT — sıfırdan sağlık mevzuatı taslağı üretimi (yönetmelik/tebliğ/CBK). 5210 Md.15 madde sırası + üst-norm zinciri + AB/uluslararası benchmark + içtihat/doktrin + genel/madde gerekçesi. Argüman = üretilecek düzenlemenin konusu ve türü.
 argument-hint: <konu ve mevzuat türü — örn. "ATMP ileri tedavi tıbbi ürünleri yönetmeliği">
 ---

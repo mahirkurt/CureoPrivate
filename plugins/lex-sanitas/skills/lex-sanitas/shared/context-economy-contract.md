@@ -27,8 +27,8 @@ kaynağı `fleet.yaml`'dır (`tests/run_suites.py` ve `check_drift` sapmayı yak
 | Shard | Server kümesi (fleet.yaml `shard:`) | Distiller |
 |---|---|---|
 | **S1 — TR çekirdek** | mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
-| **S2 — Karşılaştırmalı** | health-policy · german-law · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law · Ansvar · Fedlex Swiss companion) | `comparative-law-researcher` |
-| **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı · Türk Patent companion) | `legal-distiller` · `gerekce-drafter` |
+| **S2 — Karşılaştırmalı** | health-policy · german-law · **eurlex (G6)** · **fedlex (CH)** · **uk-legal** · ich-guidelines · intl-treaty · eudamed · oecd · turk-patent (+Open Law UK · Ansvar companion) | `comparative-law-researcher` |
+| **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı companion) | `legal-distiller` · `gerekce-drafter` |
 | **S4 — Tam-metin şelalesi** | **openathens** (`oa_fetch_fulltext` / `oa_fetch_pdf`, Tier 3 lisanslı) → **annas-reader** (reader / `download_document`, Tier 4 son çare) | `comparative-law-researcher` |
 | **ALL** | anamnesis (Tier 2 substrat — her shard'da erişilebilir) | tümü |
 

@@ -253,15 +253,16 @@ comparative_jurisdiction:
     verification: health_policy_mcp
   - id: cmp.ch
     name: "İsviçre — Fedlex (Classified Compilation RS/SR)"
-    access: { url: "https://www.fedlex.admin.ch/" }
-    wrapped: "COMPANION — `Fedlex Swiss` connector (fedlex_sparql/_fetch_document, JOLux/ELI, Akoma Ntoso)"
-    verification: fedlex_swiss_companion
+    access: { url: "https://www.fedlex.admin.ch/", mcp_server: fedlex }
+    wrapped: "WIRE'LI — mcp__fedlex__* (fedlex_get_law_by_sr params.sr_number, fedlex_search_laws keywords)"
+    verification: fedlex_mcp
     note: >
-      v1.1: İsviçre health-policy rescope'unda (2026-06-29) DÜŞÜRÜLDÜ (CH →
-      Ansvar / Fedlex Swiss). Fedlex Swiss `.mcp.json`'da wire'lı DEĞİLDİR —
-      claude.ai companion connector'ıdır. Bağlı değilse Mod 7'de CH satırı
-      `skipped: companion bağlı değil` ile manifestoda BEYAN EDİLİR (G0),
-      sessizce atlanamaz.
+      v3.8.0 (2026-08-08) — Fedlex Swiss companion'dan WIRE'A terfi etti
+      (`fedlex.cureonics.com`, OAuth kapısı). CH birincil metin artık
+      kullanıcının connector bağlamasına bağlı değildir. Argümanlar `params`
+      nesnesine sarılır; `search_laws` `keywords` alır (`query` değil).
+      Yedek: ep.fedlex_sparql (`a jolux:ConsolidationAbstract` + DISTINCT
+      zorunlu, yoksa Bundesblatt taslağı döner). Ansvar CH satırı çerçeve-teyit.
   - id: cmp.de
     name: "Almanya — federal mevzuat (german-law-mcp, FTS5 statü korpusu)"
     access: { url: "https://german-law.cureonics.com/mcp", mcp_server: german-law }
@@ -271,9 +272,15 @@ comparative_jurisdiction:
       v1.1: Almanya health-policy rescope'unda (2026-06-29) DÜŞÜRÜLDÜ (DE →
       german-law-mcp). Eski `germany_law_search/_get` (NeuRIS beta) araçları
       ARTIK YOK. UYARI — german-law ÜCRETSİZ korpusla çalışır (6.870 statü /
-      91.843 hüküm): 8 statü aracı tam işlevsel, içtihat · hazırlık çalışmaları ·
-      AB · sürüm-takibi aracı (11 adet) dürüst "ücretsiz katmanda yok" mesajı
-      döner — ASLA uydurmaz. Alman İÇTİHADI bu satırdan doğrulanamaz.
+      91.843 hüküm). 2026-08-08 ölçümü: AB ailesinin BEŞİ de gerçek veri döner
+      (`get_eu_basis` / `get_provision_eu_basis` / `search_eu_implementations` /
+      `get_german_implementations` / `validate_eu_compliance`). Yalnız beş araç
+      dürüstçe kapalıdır (`search_case_law` + `get_preparatory_works`
+      upgradeRequired; `get_provision_history` + `diff_provision` +
+      `get_recent_changes` premium:false). Şema "Requires professional tier"
+      der ama AB araçları free korpusta ÇALIŞIR. `get_provision` yalnız
+      `{id:'jurabk:n'}` biçimiyle çalışır (`{law, article}` çıplak null).
+      `validate_citation` AMG'yi doğrulayamaz — tools_used dışı.
   - id: cmp.br
     name: "Brezilya — ANVISA mevzuatı / Diário Oficial (v2.5 yeni)"
     access: { url: "https://www.gov.br/anvisa/" }
@@ -347,9 +354,10 @@ mcp_server:
       (lex-sanitas-mcp.cureonics.workers.dev) 2026-08-07 probe'unda **HTTP 404**
       döndü — ÖLÜ; yeni uç aynı probe'da 401 (auth kapısı, canlı) döndü.
       SINIRLAR (rescope'ta bu araçlar KALDIRILDI, artık burada aranmaz):
-      AB CELLAR/EUR-Lex + UK legislation → `Open Law` companion;
-      Almanya → `german-law` (wire'lı); İsviçre Fedlex + CH/FR/IT/NL/SE/DK/FI/AT/PL
-      → `Ansvar` / `Fedlex Swiss` companion; Türkiye → `mevzuat`/`titck`;
+      AB CELLAR/EUR-Lex → wire'lı `eurlex` (G6); UK legislation → `uk-legal` +
+      Open Law companion + `ep.legislation_uk`; Almanya → `german-law` (wire'lı);
+      İsviçre Fedlex → wire'lı `fedlex`; CH/FR/IT/NL/SE/DK/FI/AT/PL tarama →
+      `Ansvar` companion; Türkiye → `mevzuat`/`titck`;
       EuroVoc + data.europa.eu → SARMALANMADI (web-birincil);
       WHO GHO / openFDA / Health Canada DPD → klinik konnektörler.
 

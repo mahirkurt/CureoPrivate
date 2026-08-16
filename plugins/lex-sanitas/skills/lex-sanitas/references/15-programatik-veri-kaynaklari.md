@@ -67,7 +67,7 @@ Akoma Ntoso'yu resmî olarak destekleyen az sayıdaki ulusal sistemden biri; **k
 <a id="3b"></a>
 ## §3b. İsviçre — Fedlex SPARQL (CH birincil metin)
 
-**Neden burada:** CH birincil metni bu filoda yalnız `Fedlex Swiss` **companion**'ına bağlıydı; o yetkilendirme beklerken tanımlı degrade yolu Ansvar **çerçeve** taramasıydı — çerçeve taraması birincil metin DEĞİLDİR. Uç anahtarsız ve canlı olduğu için programatik yedek yazıldı (2026-08-08 ölçümü).
+**Neden burada:** CH birincil metni 2026-08-08'de companion'dan **wire'lı `fedlex` MCP**'ye taşındı (`fedlex.cureonics.com`). Bu SPARQL uç, `mcp__fedlex__*` erişilemezse programatik yedektir. Eski degrade yolu (Ansvar **çerçeve** taraması) birincil metin DEĞİLDİR.
 
 - **Uç:** `https://fedlex.data.admin.ch/sparqlendpoint` — anahtarsız, `GET` + `query` parametresi, `Accept: application/sparql-results+json`.
 - **Ontoloji:** jolux (`http://data.legilux.public.lu/resource/ontology/jolux#`) + SKOS. SR numarası `classifiedByTaxonomyEntry/skos:notation` üzerinden gelir.
@@ -98,7 +98,7 @@ Koşum sonucu: `https://fedlex.data.admin.ch/eli/cc/2001/422` · SR `812.21` · 
 
 Dil URI'si değiştirilerek FRA/ITA ifadeleri alınır (`…/authority/language/FRA`, `…/ITA`).
 
-**Degrade:** Fedlex Swiss companion bağlıysa o birincildir; bağlı değilse bu uç kullanılır ve çıktı `mcp_verified=false` + `confidence_label.mcp_unavailability` taşır. İkisi de erişilemezse CH satırı `manual_required` (Fedlex portal deep-link) — asla uydurma.
+**Degrade:** Wire'lı `mcp__fedlex__*` birincildir. O erişilemezse bu SPARQL uç kullanılır ve çıktı `mcp_verified=false` + `confidence_label.mcp_unavailability` taşır. İkisi de erişilemezse CH satırı `manual_required` (Fedlex portal deep-link) — asla uydurma.
 
 ---
 
@@ -175,14 +175,14 @@ MCP ekosistemi olgunlaşmıştır; aşağıdaki sunucular Lex-Sanitas'ın araç 
 | **healthcare-mcp-public** (Cicatriiz) | openFDA, PubMed, Health.gov, ClinicalTrials, ICD-10, medRxiv | Smithery kurulumu | Çok-amaçlı klinik destek |
 | **openFDA MCP** (taru0208) | FAERS, recall, MAUDE | Anahtarsız | Farmakovijilans karşılaştırması |
 | **Akademik MCP'ler** | PubMed, arXiv, Semantic Scholar, Web of Science | Bazıları anahtar ister | Bilimsel temellendirme (yardımcı) |
-| **health-policy-mcp** (Cloudflare Worker — Cureonics; **20 araç canlı, 2026-08-07 probe**) | ABD eCFR/FedReg/GovInfo/Congress, Kanada Justice Laws (XML, yalnız fetch), Japonya e-LAWS, Avustralya FRL (OData), İspanya BOE, İrlanda eISB, Çin NPC, Meksika DOF (best-effort), `semantic_search` (Workers AI), `legal_distill_start`/`_result` | Anahtarlar Worker secret'ında; OAuth 2.1 connector | Katman-2 programatik erişim (Türkiye-dışı + Ansvar-dışı). **KAPSAM DIŞI:** AB/UK→Open Law · DE→german-law · CH/FR/IT/NL/SE/DK/FI/AT/PL→Ansvar/Fedlex Swiss · TR→mevzuat/titck · EuroVoc+data.europa.eu→SARMALANMADI |
+| **health-policy-mcp** (Cloudflare Worker — Cureonics; **20 araç canlı, 2026-08-07 probe**) | ABD eCFR/FedReg/GovInfo/Congress, Kanada Justice Laws (XML, yalnız fetch), Japonya e-LAWS, Avustralya FRL (OData), İspanya BOE, İrlanda eISB, Çin NPC, Meksika DOF (best-effort), `semantic_search` (Workers AI), `legal_distill_start`/`_result` | Anahtarlar Worker secret'ında; OAuth 2.1 connector | Katman-2 programatik erişim (Türkiye-dışı + Ansvar-dışı). **KAPSAM DIŞI:** AB→wire'lı `eurlex` · UK→`uk-legal` + Open Law companion + `ep.legislation_uk` · DE→german-law · CH→wire'lı `fedlex` · FR/IT/NL/SE/DK/FI/AT/PL tarama→Ansvar · TR→mevzuat/titck · EuroVoc+data.europa.eu→SARMALANMADI |
 
 > **Mimari not (v1.1 — 2026-08-07 DÜZELTMESİ).** Katman-2 sarmalayıcısı **canlıdır ama adı ve kapsamı değişmiştir**: `lex-sanitas-mcp` → **`health-policy-mcp`** (2026-06-29 yeniden adlandırma + yeniden kapsamlandırma). Eski uç `https://lex-sanitas-mcp.cureonics.workers.dev/mcp` 2026-08-07 probe'unda **HTTP 404 — ÖLÜDÜR**; canonical uç `https://health-policy-mcp.cureonics.workers.dev/mcp` (aynı probe: 401 = auth kapısı çalışıyor). Türkiye iç hukuku eskisi gibi Mevzuat/Yargı/YokTez/TİTCK MCP'lerinde kalır.
 >
 > **Yeniden kapsamlandırmada KALDIRILAN araçlar — bunlar artık ÇAĞRILAMAZ, atıf kaynağı gösterilemez:**
-> - `cellar_sparql` · `cellar_fetch_document` · `eurlex_expert_search` · `uk_legislation_fetch` → **AB + UK artık `Open Law` companion'ın işidir.**
-> - `germany_law_search` / `germany_law_get` (NeuRIS beta) → **`german-law` MCP** (wire'lı, :8307; ücretsiz korpus: 8 statü aracı işlevsel, 11 araç dürüst "ücretsiz katmanda yok" döner).
-> - `fedlex_sparql` / `fedlex_fetch_document` → **`Fedlex Swiss` / `Ansvar` companion** (wire'lı DEĞİL).
+> - `cellar_sparql` · `cellar_fetch_document` · `eurlex_expert_search` · `uk_legislation_fetch` → **AB = wire'lı `eurlex` (G6)**; **UK = `uk-legal` + Open Law companion + `ep.legislation_uk`**.
+> - `germany_law_search` / `germany_law_get` (NeuRIS beta) → **`german-law` MCP** (wire'lı, :8307; ücretsiz korpus: AB ailesinin 5'i çalışır; yalnız case-law/preparatory/version-tracking dürüst kapalı).
+> - `fedlex_sparql` / `fedlex_fetch_document` → **wire'lı `fedlex` MCP** (`fedlex.cureonics.com`); yedek `ep.fedlex_sparql`.
 > - `eurovoc_concept_lookup` · `dataeuropa_dataset_search` → **hiçbir sunucu sarmıyor** → web-birincil; EuroVoc URI'si programatik teyit EDİLEMEZ, dolayısıyla ÜRETİLEMEZ (registry `eu.eurovoc`: `open_primary_source`).
 > - `health_canada_dpd` · `openfda` · WHO ICD-11/GHO · Légifrance → klinik/regülatuar konnektörlere taşındı.
 >

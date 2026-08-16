@@ -1,4 +1,5 @@
 ---
+name: lex-opine
 description: Mod 5 OPINE — reform sürecinde resmi kurum görüşü + paydaş görüşü + bilirkişi mütalaası (TİTCK/SGK-politika/AB Başkanlığı/KVKK/TBMM Sağlık Komisyonu perspektifi; EK-1 yapılı görüş + Md.7 15-gün zımni-onay). Bireysel SGK/AYM dava savunması DEĞİL (→ saglik-sigorta/onko-erisim). Argüman = görüş verilecek taslak + görüş-veren kurum.
 argument-hint: <taslak + kurum — örn. "SUT değişikliği taslağı, TİTCK görüşü">
 ---

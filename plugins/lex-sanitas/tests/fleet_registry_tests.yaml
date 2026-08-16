@@ -44,8 +44,8 @@ cases:
     given: "fleet.yaml servers[] ve companions[] adları karşılaştırılır."
     expect:
       - "Kesişim BOŞ olmalı — bir ad hem wire'lı hem companion olamaz (validate_fleet bunu ValueError ile reddeder)."
-      - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 5 üye taşımalı."
-      - "Stop hook'un zorunlu manifesto satırı sayısı 7 olmalı (3 companion + 2 delegasyon)."
+      - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 3 üye taşımalı (Yargı · Open Law · Ansvar)."
+      - "Stop hook'un zorunlu manifesto satırı sayısı 5 olmalı (3 companion + 2 delegasyon)."
 
   - id: FR-05-preflight-401-i-ariza-olarak-bildirir
     given: >-
@@ -203,12 +203,12 @@ cases:
 
   - id: FR-18-companion-yoklugunda-programatik-yedek-zorunlu
     given: >-
-      `Open Law` veya `Fedlex Swiss` companion'ı bağlı değil ve çıktı UK/EU-CELEX
-      ya da CH birincil metni gerektiriyor.
+      `Open Law` companion'ı bağlı değil ve çıktı UK birincil metni gerektiriyor;
+      ya da wire'lı `eurlex`/`fedlex` erişilemiyor.
     expect:
-      - "CELEX doğrulaması CELLAR SPARQL'e (ep.eurlex_sparql) düşmeli; sonuç mcp_verified=false + G6 CONDITIONAL."
-      - "UK birincil metni ep.legislation_uk'ten `/data.akn` (Akoma Ntoso) ile çekilmeli — `/data.xml` CLML'dir, AKN değildir."
-      - "CH birincil metni ep.fedlex_sparql'den çekilmeli; Ansvar ÇERÇEVE taraması ikame SAYILMAZ (kategori hatası)."
+      - "G6 CELEX doğrulaması Open Law skip'inde DÜŞMEZ — wire'lı eurlex_lookup_celex hard PASS. eurlex de erişilemezse ep.eurlex_sparql + G6 CONDITIONAL."
+      - "UK birincil metni ep.legislation_uk'ten `/data.akn` (Akoma Ntoso) ile çekilmeli — `/data.xml` CLML'dir, AKN değildir. uk-legal legislation_* tools_used dışıdır."
+      - "CH birincil metni wire'lı mcp__fedlex__*'tedir; o da düşerse ep.fedlex_sparql. Ansvar ÇERÇEVE taraması ikame SAYILMAZ (kategori hatası)."
       - "german-law get_eu_basis CELEX doğrulamasının ikamesi DEĞİLDİR — Almanya-çapalıdır, CELEX kimliği üretmez."
       - "Hiçbiri erişilemezse ilgili satır 'manual_required' (portal deep-link) — uydurma CELEX/SR ASLA."
     rationale: >-
@@ -246,12 +246,13 @@ cases:
       - "Kapıya giden Authorization YUKARI AKIŞA GEÇİRİLMEZ (en az yetki) — upstream authless çalışır."
       - "Upstream düşükse kapı 502 + açık hata döner; 200 + boş sonuç ASLA (FR-16 ile aynı gerekçe)."
     rationale: >-
-      2026-08-08: `Türk Patent` (markapatent-mcp) ve `Open Law`ın AB yarısı
-      (eurlex) bu yolla companion'dan wire'a taşındı. eurlex için upstream
-      `@cyanheads/eur-lex-mcp-server` (Apache-2.0) 0.9.8'e pinlenip HP'de
-      127.0.0.1:8316'da authless koşuyor, önünde tek-kiracılı OAuth 2.1 kapısı
-      (:8315 → eurlex.cureonics.com). Fork YOK. Yetkilendirme bekleyen companion
-      sayısı 3 → 1'e indi (kalan: Fedlex Swiss).
+      2026-08-08: `Türk Patent` (markapatent-mcp), `Open Law`ın AB yarısı
+      (eurlex) ve `Fedlex Swiss` bu yolla companion'dan wire'a taşındı. eurlex
+      için upstream `@cyanheads/eur-lex-mcp-server` (Apache-2.0) 0.9.8'e pinlenip
+      HP'de 127.0.0.1:8316'da authless koşuyor, önünde tek-kiracılı OAuth 2.1
+      kapısı (:8315 → eurlex.cureonics.com). Fork YOK. Kalan companion'lar
+      (Yargı / Open Law UK / Ansvar) claude.ai OAuth yüzeyidir — kararlı
+      self-host URL yok, wire edilemez.
 
   - id: FR-21-g6-artik-companion-a-bagli-degil
     given: >-
@@ -319,3 +320,20 @@ cases:
       — JSON-RPC hatası yok, `isError` yok, gövdede `error` alanı yok. Aynı hüküm
       `{id:'amg_1976:21'}` ile tam metin geldi, yani veri MEVCUT; kırık olan
       çözücü. Dördüncü katman (`_void_body`) eklendi, mutasyonla doğrulandı.
+
+  - id: FR-26-marketplace-yuzey-wiring
+    given: >-
+      lex-sanitas GitHub marketplace'ten kuruluyor (claude.ai / ChatGPT /
+      Cursor / Claude Code).
+    expect:
+      - ".claude-plugin/plugin.json mcpServers './.mcp.json', hooks './hooks/hooks.json', skills/commands/agents yollarını bildirmeli — metadata-only manifest marketplace kurulumunda MCP'siz yüklenir."
+      - ".cursor-plugin/plugin.json name=lex-sanitas + mcpServers './.mcp.json' taşımalı (Cursor native keşif)."
+      - ".codex-plugin/openai.yaml ChatGPT interface stub'unu agents/ altında DEĞİL .codex-plugin/ altında tutmalı (agents/*.yaml ajan sanılır)."
+      - "CONNECTORS.md yüzey matrisini yazmalı: Claude Code/Cursor auto-wire; claude.ai/ChatGPT elle connector; web'de Python hook koşmaz."
+      - "Distiller tools: allowlist hem mcp__plugin_lex-sanitas_<server>__* (Claude Code) hem mcp__plugin-lex-sanitas-<server>__* (Cursor tireli id) taşımalı — tek biçim diğer yüzeyde sessiz yetenek kaybıdır."
+    rationale: >-
+      2026-08-16: plugin Claude Code'da .mcp.json otokeşifle çalışıyordu ama
+      .claude-plugin/plugin.json mcpServers/hooks bildirmiyordu; Cursor native
+      manifesti yoktu; ChatGPT openai.yaml agents/ altında duruyordu; web
+      yüzeylerde hook olmadığı belgelenmemişti. Marketplace kurulumu "eksiksiz
+      plugin" vaat edip MCP/hook/ajanı yüzeye göre sessizce düşürüyordu.

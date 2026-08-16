@@ -1,4 +1,5 @@
 ---
+name: lex-comply
 description: Mod 4 COMPLY — bir reform metninin 5210 uyum denetimi (R6b 21-nokta yürütülebilir rubrik; her kontrol PASS/FAIL/CONDITIONAL/N/A + test + düzeltme + risk ağırlığı). Yalnız YENİ reform metnini denetler; promosyon materyali DEĞİL (→ promo-censor). Argüman = denetlenecek taslak metin.
 argument-hint: <denetlenecek taslak — dosya yolu veya yapıştırılan metin>
 ---

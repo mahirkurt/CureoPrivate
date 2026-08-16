@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""lex-sanitas davranış süiti koşucusu — 7 YAML süiti · 70 vaka · AĞ ERİŞİMİ YOK.
+"""lex-sanitas davranış süiti koşucusu — 7 YAML süiti · 83 vaka · AĞ ERİŞİMİ YOK.
 
 NE YAPAR (deterministik, offline):
   [1] ŞEMA        her süit `suite`+`cases`; her vaka `id`/`given`/`expect`;
@@ -187,6 +187,32 @@ def main(argv=None) -> int:
                                         f"{present} yazılmış, {missing} yok "
                                         f"(fleet: {len(comp_names)})"))
 
+    # [6] Marketplace yüzey wiring — plugin.json mcpServers yoksa kurulum
+    # MCP'siz yüklenir ve hiçbir süit vakası bunu görmez.
+    man = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    if man.get("mcpServers") not in ("./.mcp.json", ".mcp.json"):
+        issues.append(("WIRING", "claude plugin.json mcpServers './.mcp.json' değil"))
+    if man.get("hooks") not in ("./hooks/hooks.json", "hooks/hooks.json"):
+        issues.append(("WIRING", "claude plugin.json hooks bildirmiyor"))
+    for field in ("skills", "commands", "agents"):
+        if field not in man:
+            issues.append(("WIRING", f"claude plugin.json '{field}' yok"))
+    if not (ROOT / "CONNECTORS.md").is_file():
+        issues.append(("WIRING", "CONNECTORS.md yok"))
+    curp = ROOT / ".cursor-plugin" / "plugin.json"
+    if not curp.is_file():
+        issues.append(("WIRING", ".cursor-plugin/plugin.json yok"))
+    else:
+        cur = json.loads(curp.read_text(encoding="utf-8"))
+        if cur.get("name") != "lex-sanitas":
+            issues.append(("WIRING", "cursor plugin.json name sapması"))
+        if cur.get("mcpServers") not in ("./.mcp.json", ".mcp.json"):
+            issues.append(("WIRING", "cursor plugin.json mcpServers yok"))
+    if not (ROOT / ".codex-plugin" / "openai.yaml").is_file():
+        issues.append(("WIRING", ".codex-plugin/openai.yaml yok"))
+    if (ROOT / "agents" / "openai.yaml").exists():
+        issues.append(("WIRING", "agents/openai.yaml duruyor — Codex stub ajan sanılır"))
+
     if not a.quiet:
         for name in sorted({s.name for s in suites}):
             bad = [m for f, m in issues if f == name]
@@ -197,6 +223,13 @@ def main(argv=None) -> int:
                     print(f"      · {m}")
             else:
                 print(f"✓ {name:36s} {n:>2d} vaka")
+        wire = [m for f, m in issues if f == "WIRING"]
+        if wire:
+            print("\n⚠ yüzey wiring")
+            for m in wire:
+                print(f"      · {m}")
+        else:
+            print("✓ yüzey wiring                        ok")
         print(f"\n{'İHLAL VAR' if issues else 'SÜİTLER TEMİZ'} — "
               f"{total} vaka / {len(suites)} süit denetlendi"
               + ("" if jsonschema else "  (jsonschema yok → fixture doğrulaması ATLANDI)"))

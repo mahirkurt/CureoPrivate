@@ -1,4 +1,5 @@
 ---
+name: lex-connectors
 description: Lex Sanitas tam-filo bağlantı durumu — wire edilmiş 23 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
@@ -14,7 +15,7 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 
 1. **Filoyu oku.** [`fleet.yaml`](../fleet.yaml) tek gerçek kaynaktır; [`fleet.lock.json`](../fleet.lock.json) onun makine-okunur türevidir (`counts` + server/companion/delegasyon listeleri). `.mcp.json` de bunlardan üretilir — **elle düzenlenmez**.
 
-2. **Canlı prob'u koştur.** Kullanıcı "taze"/"fresh"/"güncel" dediyse `--fresh` ekle; aksi hâlde 24 saatlik cache kullanılır (ağ trafiği yok):
+2. **Canlı prob'u koştur** — yalnız Python'lu host'ta (Claude Code / Cursor). `python3` veya `${CLAUDE_PLUGIN_ROOT}` yoksa (claude.ai, ChatGPT) bu adımı **atlanmış** yaz: plugin kökü `CONNECTORS.md` roster'ını ve kullanıcının elle eklediği connector'ları raporla; canlı `ok`/`unauthorized` **iddia etme**. Kullanıcı "taze"/"fresh"/"güncel" dediyse ve probe çalışabiliyorsa `--fresh` ekle; aksi hâlde 24 saatlik cache kullanılır (ağ trafiği yok):
 
    ```bash
    python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/fleet_probe.py" --json
@@ -34,19 +35,20 @@ Lex Sanitas'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalış
 
 4. **Katmanlara göre grupla** (`fleet.lock.json`'daki `tier` alanı):
    - **TR primer/idari** (`primary`/`secondary`/`support`, shard S1): mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis
-   - **Karşılaştırmalı/uluslararası** (`comparative`, shard S2): health-policy (**semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · ich-guidelines · intl-treaty · eudamed · oecd
+   - **Karşılaştırmalı/uluslararası** (`comparative`, shard S2): health-policy (**semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · **eurlex (G6 CELEX)** · **fedlex (CH)** · **uk-legal (UK içtihat/Hansard)** · ich-guidelines · intl-treaty · eudamed · oecd · turk-patent
    - **Doktrin** (`doctrine`, shard S3): yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması — v3.5.0'da wire'landı, artık companion DEĞİL) · **literatur** (DergiPark makale tam-metni)
    - **Tam-metin şelalesi** (`fulltext`, shard S4): **openathens** (Tier 3 lisanslı) → **annas-reader** (Tier 4 son çare, yalnız analiz). Şelale sırasını raporda belirt.
    - **Büyük-veri substratı** (`substrate`): anamnesis — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
-   - **Companion (wire edilemez — claude.ai connector):** Yargı · Open Law · Ansvar · Fedlex Swiss · Türk Patent
+   - **Companion (wire edilemez — claude.ai connector):** Yargı · Open Law (UK) · Ansvar
    - **Delegasyon:** evidentia (klinik kanıt) · sci-audit (atıf-adli + dil)
 
 5. **Kapı etkisini göster.** Eksik katmanın maliyetini açıkça yaz:
    - `Yargı bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat zinciri doğrulanamaz)`
-   - `Open Law bağlı değil ⇒ G6 CONDITIONAL (CELEX doğrulaması german-law→WebFetch'e degrade)`
-   - `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL satırları manual_required`
-   - `Fedlex Swiss bağlı değil ⇒ Mod 7 CH birincil-metin satırı Ansvar çerçeve-taramasına degrade + manual_required`
-   - `Türk Patent bağlı değil ⇒ IP-boyutlu satır manual_required`
+   - `Open Law bağlı değil ⇒ UK birincil metin ep.legislation_uk'ye degrade; G6'yı düşürmez (G6 = wire'lı eurlex)`
+   - `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL tarama satırları manual_required`
+   - `eurlex erişilemiyor ⇒ G6 CONDITIONAL (CELEX yedeği ep.eurlex_sparql; german-law get_eu_basis CELEX üretmez)`
+   - `fedlex erişilemiyor ⇒ Mod 7 CH birincil-metin satırı ep.fedlex_sparql + Ansvar çerçeve-taramasına degrade`
+   - `turk-patent gövde-hatası (Capsolver) ⇒ degraded, asla empty/"tescil yok"`
    - `yoktez erişilemiyor ⇒ G7 YÖK-Tez atıf doğrulaması yapılamaz; tez atıfları illustrative_placeholder_not_verified → KULLANILMAZ`
    - `literatur erişilemiyor ⇒ doktrin metadata-only'ye düşer (atıf yapılabilir, içerik alıntılanamaz)`
    - `openathens erişilemiyor ⇒ lisanslı band kapalı; annas-reader OTOMATİK AÇILMAZ (şelale sırası korunur)`

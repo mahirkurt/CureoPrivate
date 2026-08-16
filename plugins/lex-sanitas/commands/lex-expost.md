@@ -1,4 +1,5 @@
 ---
+name: lex-expost
 description: Mod 9 EX_POST_EVALUATION — yürürlükteki reformun geriye dönük etki değerlendirmesi (12-36 ay sonra). 5 OECD kriteri (Etkililik/Verimlilik/Tutarlılık/İlgililik/AB-değeri) + ex-ante↔ex-post karşılaştırma + karar (K-1 Koru / K-2 Revize→AMEND / K-3 Sunset/İlga). evidentia ex_post_metrics zorunlu. Argüman = değerlendirilecek yürürlükteki mevzuat + dönem.
 argument-hint: <mevzuat + dönem — örn. "Endikasyon-dışı ilaç kullanımı yönetmeliği, 24 ay">
 ---

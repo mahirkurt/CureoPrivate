@@ -21,10 +21,10 @@ Her sorguda 4 shard'ı **paralel** dağıt (bağımsız görevler — tek turda)
 > "Konu: <T>. Mod: <M>. Şu server'ları süpür: mevzuat, mevzuat-bilgisi, resmi-gazete, saglikbakanligi, titck, tbmm, detsis. TR-mevzuatta KEYWORD arama. Büyük metinleri sen tüket; bana ≤15 bulgu + coverage (her server hit/empty/degraded/skipped) döndür. Kanonik id'leri (mevzuat_no+tur+tertip) not et."
 
 **S2 — Karşılaştırmalı** (`comparative-law-researcher`):
-> "Konu: <T>. Yabancı katman: health-policy, german-law, ich-guidelines, intl-treaty, eudamed, oecd (+bağlıysa Open_Law, Ansvar, Fedlex_Swiss — CH'de SR-numaralı birincil metin Fedlex'ten, Ansvar CH bulgusu çerçeve-teyit; CH kapsam dışıysa coverage'a 'skipped: mod için N/A' yaz). Programatik kimlik (CELEX/ECLI/ELI/AKN/SR) zorunlu; URL'siz bulgu döndürme. Mukayese matrisi + coverage döndür."
+> "Konu: <T>. Yabancı katman: health-policy, german-law, eurlex (G6 CELEX), fedlex (CH birincil), uk-legal, ich-guidelines, intl-treaty, eudamed, oecd, turk-patent (+bağlıysa Open_Law UK, Ansvar — CH'de SR-numaralı birincil metin wire'lı fedlex'ten, Ansvar CH bulgusu çerçeve-teyit; CH kapsam dışıysa coverage'a 'skipped: mod için N/A' yaz). Programatik kimlik (CELEX/ECLI/ELI/AKN/SR) zorunlu; URL'siz bulgu döndürme. Mukayese matrisi + coverage döndür."
 
 **S3 — Doktrin/içtihat** (`legal-distiller`):
-> "Konu: <T>. Server: yok-akademik, literatur (DergiPark tam-metin), yoktez (wire'lı — tez doktrini + tez no/başlık/yazar teyidi), Yargı (bağlıysa), Türk Patent (bağlıysa — IP kesişimi; IP-boyut yoksa coverage'a 'skipped: mod için N/A' yaz). Doktrin + içtihat zinciri (AYM/Danıştay/Yargıtay). ≤10 bulgu + coverage. İçtihat reform-GEREKÇE sinyalidir; dava dilekçesi değil."
+> "Konu: <T>. Server: yok-akademik, literatur (DergiPark tam-metin), yoktez (wire'lı — tez doktrini + tez no/başlık/yazar teyidi), Yargı (bağlıysa). IP kesişimi varsa wire'lı turk-patent (bağlı companion DEĞİL). Doktrin + içtihat zinciri (AYM/Danıştay/Yargıtay). ≤10 bulgu + coverage. İçtihat reform-GEREKÇE sinyalidir; dava dilekçesi değil."
 
 **S4 — Klinik** (evidentia `evidence-synthesizer` / `/evidentia`): zenginleştirilmiş sorgu (composition-contract §1).
 

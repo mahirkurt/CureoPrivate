@@ -1,4 +1,5 @@
 ---
+name: lex-ria
 description: "Mod 6 RIA — reform-öncesi düzenleyici etki analizi (DEA + BEF). Etkilenen aktör haritası + yurtiçi/uluslararası benchmark + maliyet-fayda (JCA) + risk-belirsizlik senaryoları (iyimser/baz/kötümser). Klinik: ICER/BIA/MEA/SGK → evidentia. Argüman = etki analizi yapılacak reform."
 argument-hint: <reform konusu — örn. "biyobenzer geri-ödeme reformu DEA">
 ---

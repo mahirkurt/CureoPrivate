@@ -29,11 +29,10 @@ HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b|hit \d|sk
 HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_review_required|güven etiketi)", re.IGNORECASE)
 # Manifesto varsa içinde görünmesi ZORUNLU satırlar — companion'lar + delegasyon
 # plugin'leri (durum ne olursa olsun: hit/empty/degraded/skipped-with-reason).
-# v3.5.0'da liste HARDCODE DEĞİL, fleet.lock.json'dan türetilir: yoktez wire'landığı
-# için companion olmaktan çıktı (8 → 7 satır) ve bu değişikliğin burada elle
-# yapılması gerekseydi kaçınılmaz olarak unutulurdu. 2026-08-08'de AYNI geçiş
-# Türk Patent'te yaşandı (7 → 6 satır): anahtarsız doğrudan ucu (markapatent-mcp)
-# bulununca companion olmaktan çıkıp wire'lı `turk-patent` sunucusu oldu.
+# v3.5.0'da liste HARDCODE DEĞİL, fleet.lock.json'dan türetilir: yoktez
+# wire'landığı için companion olmaktan çıktı. 2026-08-08'de AYNI geçiş
+# Türk Patent + Fedlex Swiss'te yaşandı — ikisi de wire'lı sunucu oldu.
+# Zorunlu satır = companions + delegations (şu an 3 + 2 = 5).
 _TOKEN_RX = {
     "Yargı": r"\bYarg",
     "Open Law": r"Open[_ ]?Law",
@@ -45,7 +44,7 @@ _TOKEN_RX = {
 # Lock okunamazsa kullanılacak asgari liste (fail-open) — 3 companion + 2 delegasyon.
 _FALLBACK_ROWS = {
     "Yargı (companion — G5 içtihat)": re.compile(_TOKEN_RX["Yargı"], re.IGNORECASE),
-    "Open Law (companion — G6 CELEX)": re.compile(_TOKEN_RX["Open Law"], re.IGNORECASE),
+    "Open Law (companion — UK birincil metin)": re.compile(_TOKEN_RX["Open Law"], re.IGNORECASE),
     "Ansvar (companion — Mod7 58-yargı)": re.compile(_TOKEN_RX["Ansvar"], re.IGNORECASE),
     "evidentia (klinik delegasyon)": re.compile(_TOKEN_RX["evidentia"], re.IGNORECASE),
     "sci-audit (çıktı-QA delegasyonu)": re.compile(_TOKEN_RX["sci-audit"], re.IGNORECASE),

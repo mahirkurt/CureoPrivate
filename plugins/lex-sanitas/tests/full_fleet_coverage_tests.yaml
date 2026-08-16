@@ -7,7 +7,7 @@ suite:
   evaluator: [manual, smp-orchestrator, skill-censor]
   description: >
     v3.0.0 tam-filo invaryantını doğrular: wire edilmiş 23 hukuk/regülasyon MCP
-    + bağlı companion (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent) + evidentia (klinik-boyut) + sci-audit
+    + bağlı companion (Yargı/Open Law/Ansvar) + evidentia (klinik-boyut) + sci-audit
     HER sorguda devreye alınır ve her çıktı bir G0 kapsam manifestosu taşır
     (server → hit/empty/degraded/skipped-with-reason). Sessiz atlama = G0 FAIL.
     Degrade dürüsttür: eksik katman 'skipped' beyanı alır, asla uydurma.
@@ -29,14 +29,14 @@ cases:
 
   - id: FLEET-002
     title: "Companion bağlı değil — dürüst skipped beyanı"
-    given: "1219 sayılı Kanun'un tabip yetkilerini karşılaştırmalı analiz et (Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent connector'larının hiçbiri bağlı DEĞİL)."
+    given: "1219 sayılı Kanun'un tabip yetkilerini karşılaştırmalı analiz et (Yargı/Open Law/Ansvar connector'larının hiçbiri bağlı DEĞİL)."
     expect:
       mode: COMPARATIVE_LAW
       full_fleet: true
       gates: { G0: PASS }
     assertions:
-      - "Manifestoda Yargı/Open Law/Ansvar/Fedlex Swiss/Türk Patent → 'skipped: companion bağlı değil' olarak beyan edilmeli."
-      - "Bağlı olan health-policy/german-law/ich/intl-treaty/eudamed/oecd yine de ateşlenmeli."
+      - "Manifestoda Yargı/Open Law/Ansvar → 'skipped: companion bağlı değil' olarak beyan edilmeli."
+      - "Bağlı/wire'lı health-policy/german-law/eurlex/fedlex/uk-legal/ich/intl-treaty/eudamed/oecd/turk-patent yine de ateşlenmeli."
       - "Eksik companion için içtihat/karşılaştırma UYDURULMAMALI — sadece dürüst boşluk."
     rationale: "composition-contract §3 degrade matrisi; no-fabrication değişmezi."
 
@@ -94,18 +94,18 @@ cases:
     expect:
       stop_hook: block
     assertions:
-      - "stop_coverage.py MANDATORY_ROWS denetimi eksik satırları isimleriyle raporlamalı — 7 satır (Yargı, Open Law, Ansvar, Fedlex Swiss, Türk Patent, evidentia, sci-audit). Sayı SABİT DEĞİLDİR: stop_coverage.py bunu fleet.lock.json'dan türetir (companions + delegations), dolayısıyla filo büyüdükçe kendiliğinden artar."
+      - "stop_coverage.py MANDATORY_ROWS denetimi eksik satırları isimleriyle raporlamalı — 5 satır (Yargı, Open Law, Ansvar, evidentia, sci-audit). Sayı SABİT DEĞİLDİR: stop_coverage.py bunu fleet.lock.json'dan türetir (companions + delegations)."
       - "Tamamlanan manifestoda her satır hit/empty/degraded/skipped-with-reason taşımalı."
     rationale: "hooks/scripts/stop_coverage.py v3.1 MANDATORY_ROWS; coverage-manifest.md kural 1."
 
   - id: FLEET-008
-    title: "v3.1 — companion skip'i kapı etkisini beyan eder"
+    title: "v3.8 — G6 CELEX wire'lı eurlex'e bağlıdır, Open Law'a değil"
     given: "AB müktesebat uyum tablosu isteniyor; Open Law connector'ı bu oturumda bağlı değil."
     expect:
       mode: COMPARATIVE_LAW
-      gates: { G0: PASS, G6: CONDITIONAL }
+      gates: { G0: PASS, G6: PASS }
     assertions:
-      - "Manifesto satırı kapı etkisini içermeli: 'Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL'."
-      - "CELEX doğrulaması german-law get_eu_basis → WebFetch zincirine degrade etmeli, sonuç mcp_verified=false etiketli olmalı."
-      - "Kullanıcıya Open Law connector'ını bağlaması önerilmeli."
-    rationale: "SKILL §3 companion↔kapı bağı; composition-contract §3 tablo."
+      - "Manifesto: 'Open_Law → skipped: companion bağlı değil' UK metnini ep.legislation_uk'ye düşürür; G6 CONDITIONAL YAZILMAZ."
+      - "CELEX doğrulaması wire'lı mcp__eurlex__eurlex_lookup_celex ile yapılır (hard PASS)."
+      - "eurlex erişilemezse G6 CONDITIONAL + ep.eurlex_sparql yedeği; german-law get_eu_basis CELEX üretmez."
+    rationale: "SKILL §3 companion↔kapı bağı (v3.8: G6 = eurlex); composition-contract §3 tablo."

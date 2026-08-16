@@ -194,9 +194,17 @@ def main(argv=None) -> int:
         issues.append(("WIRING", "claude plugin.json mcpServers './.mcp.json' değil"))
     if man.get("hooks") not in ("./hooks/hooks.json", "hooks/hooks.json"):
         issues.append(("WIRING", "claude plugin.json hooks bildirmiyor"))
-    for field in ("skills", "commands", "agents"):
+    for field in ("skills", "commands"):
         if field not in man:
             issues.append(("WIRING", f"claude plugin.json '{field}' yok"))
+    agents = man.get("agents")
+    if not isinstance(agents, list) or not agents:
+        issues.append(("WIRING", "claude plugin.json agents ajan .md dosya listesi olmalı "
+                                 "(dizin stringi Claude CLI'da Invalid input)"))
+    else:
+        for item in agents:
+            if not isinstance(item, str) or not (ROOT / item).is_file():
+                issues.append(("WIRING", f"claude plugin.json agents yolu yok/dosya değil → {item}"))
     if not (ROOT / "CONNECTORS.md").is_file():
         issues.append(("WIRING", "CONNECTORS.md yok"))
     curp = ROOT / ".cursor-plugin" / "plugin.json"

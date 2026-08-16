@@ -50,7 +50,7 @@ hedefli parçalar çek (tüm dosyayı context'e almak zorunda değilsin — bkz.
 
 ## Yürütme sözleşmesi — dört denetim ekseni
 
-### 1. Validator (14 kapı, deterministik)
+### 1. Validator (16 kapı, deterministik)
 
 Deterministik script her zaman **önce** çalışır; onun bulguları senin yargından önce
 gelir ve senin katmanın yalnız **ekler**, geçersiz kılmaz.
@@ -59,9 +59,9 @@ gelir ve senin katmanın yalnız **ekler**, geçersiz kılmaz.
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/carbon-edupedia/scripts/validate_module.py" <module.html>
 ```
 
-14 kapının tamamını (G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
-G-WELLBEING, G-SVG, G-AUDIO, G-TOKEN, G-CURRICULUM — koşullu, G-FLOW — koşullu,
-G-CARBON-GRID) satır satır raporla: her FAIL **Kritik**, her WARN en az **Önemli**
+16 kapının tamamını (G-EMOJI, G-CARBON, G-A11Y, G-INTERACT, G-SELFCONTAINED, G-CONTRAST,
+G-WELLBEING, G-VOICE, G-SVG, G-AUDIO, G-TOKEN, G-CURRICULUM — koşullu, G-VERIFY — koşullu,
+G-FLOW — koşullu, G-CARBON-GRID, G-EXAM — koşullu) satır satır raporla: her FAIL **Kritik**, her WARN en az **Önemli**
 (bağlama göre Küçük'e indirilebilir, ama gerekçelendir). Script'in `PASS` dediği bir
 kapıyı sen FAIL'e çeviremezsin — arşivlenmiş arayanın işi.
 
@@ -104,6 +104,11 @@ kalanı ekle.
   `meta.sourceCitation`'a izlenebilir mi? Kaynağı olmayan, uydurma görünen veya kazanım
   kapsamını aşan bir iddia varsa **Kritik** olarak işaretle — bu no-fabrication
   invariant'ının modül-düzeyi karşılığıdır.
+- **Nihai dil (öğrenci yüzeyi).** G-VOICE deterministik kalıpları tarar; sen nüansı
+  eklersin: öğrenciye görünen anlatım kitaba/sayfaya/"ünitede gördüğün"e göndermeden
+  kendi başına duruyor mu? "Kitabın tanımı", "kitaptaki yazıyı hatırla", yarım veya
+  atıflı kopya cümle **Kritik**. Tanım tanımdır — kitap karakter değildir. PhET
+  CC BY-NC künyesi lisans atfıdır (ihlal değil). Edebi eser olarak "kitap" meşrudur.
 
 ## KRİTİK ayırt edici yetkinlik — çalışma-anı (runtime) akış doğrulaması
 
@@ -150,7 +155,7 @@ formatını döndür.
 ```
 # Modül Denetimi — <dosya adı>
 
-## Kritik (yayına engel)
+## Kritik (teslime engel)
 - [<eksen>] <bulgu> — <neden> (<konum/segment/gate adı>)
 
 ## Önemli (düzeltilmeli, engel değil)

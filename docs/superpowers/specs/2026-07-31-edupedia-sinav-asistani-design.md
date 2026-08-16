@@ -18,8 +18,8 @@ Girdi olarak *soru* alan bir yol yok. Ayrıca sınav sorusu üç yeni gerilim ge
 1. **Çerçeve tersine döner.** Mevcut akışta çerçeveyi ders kitabı çizer ve üretimin
    sınırıdır. Sınav sorusu ise dışarıdan gelir (LGS denemesi, yayınevi föyü, okul yazılısı)
    ve çerçeveye *sonradan* bağlanmalıdır.
-2. **Telif.** Modüller `edupedia.cureonics.com`'da public okunur. Telifli bir soru
-   birebir gömülüp yayınlanırsa ihlal olur.
+2. **Telif.** Plugin modülü public katalogda yayınlamaz. Telifli bir soru
+   birebir gömülüp paylaşılırsa ihlal olur.
 3. **Ödev-çözme riski.** Cevabı doğrudan veren bir asistan öğrenme aracı değil, kopya
    aracıdır. Bu, yapısal olarak engellenmelidir — iyi niyete bırakılamaz.
 

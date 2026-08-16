@@ -1018,3 +1018,230 @@ def test_ginteract_ignores_exam_stem():
     # sayimdan cikarilmazsa G-INTERACT sahte bir "cevapsiz soru" FAIL'i uretir.
     rows = run_gate(vm.gate_interact, EXAM_OK)
     assert status_of(rows, "G-INTERACT") == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# G-EXAM (v3.10.0) — çoklu soru: topics[] + exams[]
+# ---------------------------------------------------------------------------
+
+EXAM_MULTI = '''<html lang="tr"><body><script>
+const MODULE_DATA = {
+  meta: { mode: "EXAM", title: "Kesir ve oran", sourceCitation: "MEB Matematik 6" },
+  topics: [
+    { id: "t-kesir", title: "Kesirle carpma",
+      chain: [
+        { concept: "birim fiyat", outcomeCode: "MAT.6.1.4.1", mappedTo: ["t-kesir-1"] }
+      ] },
+    { id: "t-oran", title: "Oran",
+      chain: [
+        { concept: "oran", outcomeCode: "MAT.6.1.5.1", mappedTo: ["t-oran-1"] }
+      ] }
+  ],
+  exams: [
+    { id: "q1", topicId: "t-kesir",
+      stem: "3/4 kg elma 24 TL ise 2/3 kg kac TL?",
+      options: ["12 TL", "16 TL", "18 TL"],
+      source: "ogrenci fotografi",
+      integrity: "sound",
+      transcriptionCheck: "tc-q1",
+      distractorAnalysis: "d-q1",
+      workedId: "w-q1" },
+    { id: "q2", topicId: "t-kesir",
+      stem: "1/2 kg armut 10 TL ise 3/4 kg kac TL?",
+      options: ["12 TL", "15 TL", "20 TL"],
+      source: "ogrenci fotografi",
+      integrity: "sound",
+      transcriptionCheck: "tc-q2",
+      distractorAnalysis: "d-q2",
+      workedId: "w-q2" },
+    { id: "q3", topicId: "t-oran",
+      stem: "12 kiside 3 kirmizi top varsa 20 kiside kac kirmizi top?",
+      source: "ogrenci fotografi",
+      integrity: "sound",
+      transcriptionCheck: "tc-q3",
+      workedId: "w-q3" }
+  ],
+  segments: [
+    { type: "teach", id: "t-kesir-1", title: "Birim fiyat" },
+    { type: "selfExplain", id: "tc-q1", prompt: "Boyle okudum." },
+    { type: "worked", id: "w-q1", title: "Cozum 1",
+      steps: [ { text: "24 : 3/4 = 32" }, { text: "32 x 2/3 = ?", answer: ["21,33"] } ],
+      fadeFrom: 1 },
+    { type: "mcq", id: "d-q1",
+      questions: [ { stem: "B sikki neden cazip ama yanlis?", correctIndex: 1 } ] },
+    { type: "selfExplain", id: "tc-q2", prompt: "Boyle okudum." },
+    { type: "worked", id: "w-q2", title: "Cozum 2",
+      steps: [ { text: "10 : 1/2 = 20" }, { text: "20 x 3/4 = ?", answer: ["15"] } ],
+      fadeFrom: 1 },
+    { type: "mcq", id: "d-q2",
+      questions: [ { stem: "A sikki neden yanlis?", correctIndex: 0 } ] },
+    { type: "teach", id: "t-oran-1", title: "Oran" },
+    { type: "selfExplain", id: "tc-q3", prompt: "Boyle okudum." },
+    { type: "worked", id: "w-q3", title: "Cozum 3",
+      steps: [ { text: "3/12 = 1/4" }, { text: "20 x 1/4 = ?", answer: ["5"] } ],
+      fadeFrom: 1 }
+  ]
+};
+</script></body></html>'''
+
+
+def test_gexam_pass_on_multi_topics_exams():
+    rows = run_gate(vm.gate_exam, EXAM_MULTI)
+    assert status_of(rows, "G-EXAM") == "PASS"
+
+
+def test_gexam_fail_when_one_worked_id_lacks_fade():
+    # q1 ve q3 fadeFrom tasir; yalniz q2'nin worked'i tam acik. Eski kural
+    # (modülde HERHANGI bir worked yeter) bunu PASS verirdi — cokluda yasak.
+    html = EXAM_MULTI.replace(
+        '{ type: "worked", id: "w-q2", title: "Cozum 2",\n'
+        '      steps: [ { text: "10 : 1/2 = 20" }, { text: "20 x 3/4 = ?", answer: ["15"] } ],\n'
+        '      fadeFrom: 1 }',
+        '{ type: "worked", id: "w-q2", title: "Cozum 2",\n'
+        '      steps: [ { text: "10 : 1/2 = 20" }, { text: "20 x 3/4 = ?", answer: ["15"] } ],\n'
+        '      fadeFrom: 2 }',
+    )
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    msg = next(m for g, s, m in rows if g == "G-EXAM")
+    assert "q2" in msg
+    assert "fadeFrom" in msg
+
+
+def test_gexam_fail_on_broken_topic_id():
+    html = EXAM_MULTI.replace('topicId: "t-oran"', 'topicId: "t-yok"')
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+    msg = next(m for g, s, m in rows if g == "G-EXAM")
+    assert "t-yok" in msg
+
+
+def _five_exams_html():
+    items = []
+    segs = ['{ type: "teach", id: "t-k", title: "Konu" }']
+    for i in range(1, 6):
+        qid = f"q{i}"
+        items.append(
+            f'{{ id: "{qid}", topicId: "t-k",'
+            f' stem: "Soru {qid} metni.",'
+            f' source: "ogrenci fotografi",'
+            f' integrity: "sound",'
+            f' transcriptionCheck: "tc-{qid}",'
+            f' workedId: "w-{qid}" }}'
+        )
+        segs.append(f'{{ type: "selfExplain", id: "tc-{qid}", prompt: "okudum" }}')
+        segs.append(
+            f'{{ type: "worked", id: "w-{qid}", title: "Cozum {qid}",'
+            f' steps: [ {{ text: "a" }}, {{ text: "b", answer: ["1"] }} ],'
+            f' fadeFrom: 1 }}'
+        )
+    return f'''<html lang="tr"><body><script>
+const MODULE_DATA = {{
+  meta: {{ mode: "EXAM", title: "Bes soru" }},
+  topics: [ {{ id: "t-k", title: "Konu",
+    chain: [ {{ concept: "temel", mappedTo: ["t-k"] }} ] }} ],
+  exams: [ {", ".join(items)} ],
+  segments: [ {", ".join(segs)} ]
+}};
+</script></body></html>'''
+
+
+def test_gexam_warn_when_more_than_four_exams():
+    rows = run_gate(vm.gate_exam, _five_exams_html())
+    assert status_of(rows, "G-EXAM") == "WARN"
+    msg = next(m for g, s, m in rows if g == "G-EXAM")
+    assert "> 4" in msg
+
+
+def test_gexam_empty_exams_array_falls_back_to_legacy():
+    html = EXAM_OK.replace(
+        "const MODULE_DATA = {",
+        "const MODULE_DATA = {\n  exams: [],",
+    )
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "PASS"
+
+
+def test_gexam_fail_when_mode_exam_empty_exams_and_no_exam_block():
+    html = '''<html><body><script>
+const MODULE_DATA = { meta: { mode: "EXAM" }, exams: [] };
+</script></body></html>'''
+    rows = run_gate(vm.gate_exam, html)
+    assert status_of(rows, "G-EXAM") == "FAIL"
+
+
+def test_ginteract_ignores_exams_stems():
+    # EXAM_MULTI: 3 exams[].stem + 2 mcq stem; 2 correctIndex.
+    # exams[] cikarilmazsa G-INTERACT sahte "cevapsiz soru" FAIL uretir.
+    rows = run_gate(vm.gate_interact, EXAM_MULTI)
+    assert status_of(rows, "G-INTERACT") == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# G-VOICE (v3.8.0) — öğrenci yüzeyinde kaynak-meta atıf yok; nihai dil
+# ---------------------------------------------------------------------------
+
+def test_gvoice_fails_on_kitabin_tanimi():
+    html = _mod('segments: [{ type: "teach", id: "t1", body: ["<p>Kitabın tanımı: hücre canlının en küçük birimidir.</p>"] }]')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "FAIL"
+    assert "kitab" in next(m for g, s, m in rows if g == "G-VOICE").casefold()
+
+
+def test_gvoice_fails_on_kitaptaki_yaziyi_hatirla():
+    html = _mod('segments: [{ type: "mcq", id: "q1", questions: [{ stem: "Kitaptaki yazıyı hatırla: mitokondri ne işe yarar?", correctIndex: 0 }] }]')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "FAIL"
+
+
+def test_gvoice_fails_on_ders_kitabinda():
+    html = _mod('segments: [{ type: "teach", id: "t1", explanation: "Ders kitabında anlatıldığı gibi fotosentez ışık ister." }]')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "FAIL"
+
+
+def test_gvoice_ignores_source_citation_backstage():
+    """meta.sourceCitation yazar katmanıdır — 'ders kitabı' orada meşru, öğrenci görmez."""
+    html = _mod('meta: { sourceCitation: "MEB Fen 5 ders kitabı, s. 112 / FB.5.3.1.1" }, segments: [{ type: "teach", id: "t1", body: ["<p>Hücre, canlının en küçük yapı birimidir.</p>"] }]')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "PASS"
+
+
+def test_gvoice_ignores_verification_backstage():
+    html = _mod('''
+      verification: {
+        frame_source: { kind: "textbook", document_id: 197, pages: "112-120" },
+        claims: [{ claim: "x", grounding: { document_id: 197, page: 115 }, verdict: "supported" }]
+      },
+      segments: [{ type: "teach", id: "t1", body: ["<p>Hücre, canlının en küçük yapı birimidir.</p>"] }]
+    ''')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "PASS"
+
+
+def test_gvoice_allows_literary_kitap():
+    """Türkçe dersinde edebi eser olarak 'kitap' meşrudur; 'kitabın tanımı' değil."""
+    html = _mod(
+        'segments: [{ type: "teach", id: "t1", '
+        'body: ["<p>Bu kitabın yazarı Yaşar Kemaldir. Romanın konusu Toroslardır.</p>"] }]'
+    )
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "PASS"
+
+
+def test_gvoice_allows_retrieval_without_textbook():
+    """'Hatırla' tek başına (geri getirme) meşru; yasak olan kitaba bağlanan hatırlatmadır."""
+    html = _mod('segments: [{ type: "hook", id: "h1", question: "Enerji santralini hatırla: hangisi?" }]')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "PASS"
+
+
+def test_gvoice_passes_minimal_fixture():
+    rows = run_gate(vm.gate_voice, open("tests/fixtures/minimal_pass.html").read())
+    assert status_of(rows, "G-VOICE") == "PASS"
+
+
+def test_gvoice_allows_phet_attribution():
+    html = _mod('segments: [{ type: "teach", id: "t1", body: ["<p>Simülasyon: PhET Fotosentez (CC BY-NC 4.0, Colorado Üniversitesi).</p>"] }]')
+    rows = run_gate(vm.gate_voice, html)
+    assert status_of(rows, "G-VOICE") == "PASS"

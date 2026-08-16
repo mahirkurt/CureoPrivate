@@ -26,7 +26,7 @@ Kaynak yanlış değil, PAKETLEYİCİ eksikti. Çözüm: normatif belgeler `plug
 vendor'lanır ve bağlantılar derinlik-duyarlı olarak yeniden yazılır.
 
 `commands/*.md` VENDOR'LANMAZ: claude.ai'da komut diye bir şey yok. O bağlantılar, taşıdıkları
-tek anlam olan komut ADINA indirgenir (`../commands/yayinla.md` → `/edupedia:yayinla`).
+tek anlam olan komut ADINA indirgenir (`../commands/modul.md` → `/edupedia:modul`).
 
 KAPI: paket kurulduktan sonra ZIP'İN İÇİNDEN doğrulanır — paketlenmiş her .md'deki `../`
 ile kaçan her .md/.json bağlantısı zip üyesi olmak ZORUNDA. Değilse build DURUR. Bu kapı
@@ -36,8 +36,8 @@ DIŞLANANLAR: tests/ docs/ evals/ __pycache__ .pytest_cache — geliştirme yük
 (docs/ dışlanır ama denetlenebilirlik kanıtı olan MCP introspeksiyon çıktısı vendor'lanır.)
 
 `scripts/` DAHİL EDİLİR: claude.ai kod-çalıştırma açıkken script koşturabilir, yani
-`validate_module.py` yerel ön-kontrol olarak işe yarar. Ama OTORİTE DEĞİLDİR — kapıları
-yayın sunucusu ölçer. Koşmazsa üretim yine çalışır (kapı 422'de görünür).
+`validate_module.py` kalite kapısı olarak işe yarar. Koşmazsa üretim yine çalışır;
+kapıları "PASS" diye beyan etmeyin.
 """
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ VENDOR: dict[str, Path] = {
     "mcp-introspection-2026-07-06.json": PLUGIN / "docs" / "mcp-introspection-2026-07-06.json",
 }
 
-# `../commands/yayinla.md` → `/edupedia:yayinla` (claude.ai'da dosya yok, komut adı var)
+# `../commands/modul.md` → `/edupedia:modul` (claude.ai'da dosya yok, komut adı var)
 CMD_RE = re.compile(r"(?:\.{1,2}/)+commands/([a-z][a-z0-9-]*)\.md")
 # `../../../CONNECTORS.md`, `./shared/run-manifest-schema.json`, … → plugin-context/<ad>
 VENDOR_RE = re.compile(

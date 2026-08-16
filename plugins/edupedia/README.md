@@ -4,7 +4,7 @@
 etkileşimli öğrenim modülü üreticisi.**
 
 `edupedia`, flagship `carbon-edupedia` skill'ini (IBM Carbon Design System v11 · WCAG 2.1 AA ·
-8 mod · 14 kalite kapısı) **Maarif Modeli MCP** (`maarif-mufredat`) connector'ıyla paketleyen,
+8 mod · 16 kalite kapısı) **Maarif Modeli MCP** (`maarif-mufredat`) connector'ıyla paketleyen,
 kurulur-kurulmaz connector'ı devreye alan, komut-yüzeyli bir Claude plugin'idir. Modüller
 tek-dosya, bağımsız (offline çalışır), emojisiz ama ikon/piktogram/SVG zengindir; her olgusal
 iddia bir MEB kazanım koduna izlenebilir (G-CURRICULUM provenansı).
@@ -20,19 +20,19 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 |---|---|---|
 | `/edupedia:modul` | Bir MEB kazanım kodundan kazanım-izlenebilir etkileşimli modül üretir | `<kazanım-kodu>` (örn. `FB.5.3.1.1`) |
 | `/edupedia:mufredat` | Ders + sınıf + konudan kazanım keşfi → modül üretir | `<ders> <sınıf> <konu>` (örn. `Fen 5 hücre`) |
+| `/edupedia:soru` | Bir veya birden fazla sınav sorusundan tek HTML üretir (fotoğraf veya metin) | `<soru fotoğrafı veya metni>` |
 | `/edupedia:kazanim-bul` | Konuya denk gelen kazanımları KB becerisi ↔ etkileşim desenine haritalar (**üretim yok**) | `<konu> [sınıf] [ders]` |
-| `/edupedia:yayinla` | Üretilen modülü `edupedia.cureonics.com`'da yayınlar, public bağlantı verir | `<modul.html yolu>` |
-| `/edupedia:durum` | `maarif-mufredat` connector sağlığı + Tier-2 (`get_figure`) yeteneği + önbellek durumu | — |
+| `/edupedia:durum` | `maarif-mufredat` + `egitim-kaynak` sağlığı + Tier-2 (`get_figure`) yeteneği | — |
 
 İlk kez mi? `edupedia:start` skill'i oryantasyon + connector kontrolü + niyet→komut yönlendirmesi yapar.
 
 ## Skill'ler
 
-- **carbon-edupedia** (flagship, v3.5.1) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
-  modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 13 kalite
-  kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-AUDIO/
-  G-CURRICULUM/G-TOKEN/G-FLOW/G-CARBON-GRID). Token otoritesi `@carbon/*` npm.
-- **start** (yönlendirici, v1.0.0) — süit girişi ve yönlendirme.
+- **carbon-edupedia** (flagship, v3.10.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
+  modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 16 kalite
+  kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-VOICE/
+  G-AUDIO/G-CURRICULUM/G-VERIFY/G-TOKEN/G-FLOW/G-CARBON-GRID/G-EXAM). Token otoritesi `@carbon/*` npm.
+- **start** (yönlendirici, v1.2.0) — süit girişi ve yönlendirme.
 
 ## Connector
 
@@ -58,16 +58,11 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
   **Vikipedi-TR** (CC BY-SA 4.0 — **arka plan/örnek, otorite değil**). *Vikikitap düşürüldü:
   9 aktif editör.* Getirme: **BM25 önce, vektör YEDEK** (`bge-m3`/Workers AI) — RRF füzyonu
   2026-07-17'de kaldırıldı: ölçüm hibridi 3/8, saf BM25'i 6/8 verdi.
-- **modul-yayin** — `modul-yayin` · `https://edupedia.cureonics.com/mcp` · yayın connector'ı · 4
-  araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`).
-  Tek-kiracılı OAuth 2.1; Claude Code'da `.mcp.json` üzerinden `EDUPEDIA_PUBLISH_TOKEN`
-  bearer'ı, claude.ai'de connector ayarlarında OAuth ile bağlanır. *(Eski adı `edupedia`;
-  MCP connector'ı plugin adıyla çakışmasın diye yeniden adlandırıldı — endpoint/token aynı.)*
 
 Tam envanter, kimlik/PDF uyarıları, provenans standardı ve Tier-1/Tier-2 görüntü-dayanak
-politikası (Maarif MCP): **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk kaynağı — yayın
-connector'ı `modul-yayin` ve RAG connector'ı `egitim-kaynak` de burada tanımlıdır). Tek-sefer disiplini ve `get_figure`
-yetenek-probu: **[shared/canonical-cache-contract.md](./shared/canonical-cache-contract.md)**.
+politikası (Maarif MCP): **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk kaynağı).
+Tek-sefer disiplini ve `get_figure` yetenek-probu:
+**[shared/canonical-cache-contract.md](./shared/canonical-cache-contract.md)**.
 
 ### Görüntü-dayanak (Tier-1 / Tier-2)
 
@@ -83,35 +78,11 @@ yetenek-probu: **[shared/canonical-cache-contract.md](./shared/canonical-cache-c
 baskı raporu (→ `carbon-html-report`) veya slayt (→ `carbon-pptx`) kapsam dışıdır. Erişilebilirlik
 (WCAG 2.1 AA) ve emojisizlik skill sözleşmesi gereği korunur.
 
-## Yayınlama
+## Teslim
 
-Üretilen modüller `/edupedia:yayinla` ile **edupedia.cureonics.com**'a yayınlanır
-(Pi'de host edilen Carbon kataloglu site; okuma public, yayın token'lı). İki yol vardır —
-komut hangisinin bağlı olduğuna göre otomatik seçer:
-
-- **MCP yolu (tercih edilen):** `modul-yayin` connector'ı (`.mcp.json`, OAuth'lu) bağlıysa
-  `edupedia_publish` aracı doğrudan çağrılır. Manifest dosyası istemci tarafında
-  kurulmaz — sunucu manifesti `run_id`/`requested_scope` düz alanlarından (html, run_id,
-  subject_slug, grade, topic, mode, outcome_codes) kendisi kurar ve kalite kapılarını
-  kendisi ölçer. claude.ai'de bu yol tek başına yeterlidir: HTML dosyaya hiç yazılmadan
-  doğrudan `edupedia_publish`'in `html` argümanına üretilip yayınlanabilir.
-- **REST yolu (yedek):** `edupedia_publish` aracı yoksa (tipik salt Claude Code oturumu),
-  `/edupedia:modul` / `/edupedia:mufredat` üretim akışlarının son adımında yazılan
-  HTML + aynı ad + `.manifest.json` run-manifest ikilisi `POST /api/publish` ile
-  `EDUPEDIA_PUBLISH_TOKEN` bearer'ıyla gönderilir (bkz. `shared/canonical-cache-contract.md §1`).
-
-Her iki yolda da kalite kapılarının OTORİTESİ sunucudur — istemcinin beyanı yok sayılır.
-
-- Modül kalıcı bir adres alır: `edupedia.cureonics.com/m/<slug>` — link asla değişmez.
-- Yeniden yayın sürümü artırır; eski sürüm `/m/<slug>/v<N>` altında kalır.
-- Bir kalite kapısı `FAIL` ise yayın reddedilir (`force` ile geçilebilir) —
-  siteye emojili, erişilemez veya kazanım-izlenemez modül düşmez.
-- Her iki yolda da: sunucudan `url` dönmediyse "yayınlandı" denmez.
-
-Yayın token'ı Doppler'da (`cureohub` / `dev_personal` / `EDUPEDIA_PUBLISH_TOKEN`); Claude
-Code'da REST yolu için oturumu `doppler run -p cureohub -c dev_personal -- claude` ile
-başlatın. claude.ai'de aynı token, connector ayarlarında OAuth ile bağlanır — sohbete
-hiç girmez.
+Üretilen modül **yerel tek-dosya HTML**'dir. Plugin yayınlamaz: `/edupedia:yayinla`,
+`modul-yayin` ve `edupedia_publish` kaldırıldı (0.8.0). Kalite kapılarının otoritesi
+yerel `scripts/validate_module.py`'dir.
 
 ## Genişleme
 

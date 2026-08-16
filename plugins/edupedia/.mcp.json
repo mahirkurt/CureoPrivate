@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — edupedia MCP wiring. 3 server (3 Bearer-gated, 0 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — edupedia MCP wiring. 2 server (2 Bearer-gated, 0 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "maarif-mufredat": {
       "type": "http",
@@ -14,13 +14,6 @@
       "url": "https://egitim-kaynak.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${EGITIM_KAYNAK_MCP_API_KEY}"
-      }
-    },
-    "modul-yayin": {
-      "type": "http",
-      "url": "https://edupedia.cureonics.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${EDUPEDIA_PUBLISH_TOKEN}"
       }
     }
   }

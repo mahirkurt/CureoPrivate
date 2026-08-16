@@ -1,10 +1,10 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "edupedia",
-  "plugin_version": "0.7.3",
+  "plugin_version": "0.9.0",
   "counts": {
-    "servers": 3,
-    "gated": 3,
+    "servers": 2,
+    "gated": 2,
     "public": 0,
     "companions": 0,
     "delegations": 0
@@ -19,11 +19,6 @@
       "name": "egitim-kaynak",
       "url": "https://egitim-kaynak.cureonics.com/mcp",
       "auth_env": "EGITIM_KAYNAK_MCP_API_KEY"
-    },
-    {
-      "name": "modul-yayin",
-      "url": "https://edupedia.cureonics.com/mcp",
-      "auth_env": "EDUPEDIA_PUBLISH_TOKEN"
     }
   ],
   "companions": [],

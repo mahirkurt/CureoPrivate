@@ -1,9 +1,9 @@
 ---
-description: Üç MCP connector'ının (maarif-mufredat, egitim-kaynak, modul-yayin) sağlığını ve Tier-2 (get_figure) yeteneğini raporlar
+description: İki MCP connector'ının (maarif-mufredat, egitim-kaynak) sağlığını ve Tier-2 (get_figure) yeteneğini raporlar
 argument-hint: "(argüman gerekmez)"
 ---
 
-Plugin'in **üç MCP connector'ının** sağlık kontrolünü yap. Bu, `edupedia:start` skill'inin Adım 2'sini
+Plugin'in **iki MCP connector'ının** sağlık kontrolünü yap. Bu, `edupedia:start` skill'inin Adım 2'sini
 komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
 
 ## Yürütme protokolü
@@ -37,19 +37,14 @@ komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
    insan denetimi geçene kadar bilinçli kapalıdır; bu bir arıza DEĞİL, no-fabrication gereğidir.
    O halde kazanım konusunu `kb_search`'e sorgu olarak verin.
 
-5. **Modül Yayın (`modul-yayin`) sağlığı:** `edupedia_server_info` araç listesinde varsa çağır
-   (`gate_count`, `max_upload_bytes`, `base_url`); yayın MCP yolu **canlı**. Yoksa `/edupedia:yayinla`
-   `POST /api/publish` REST yedeğine düşer (`EDUPEDIA_PUBLISH_TOKEN` ile) — yayın yine mümkün.
-
-6. **Kanonik-önbellek durumu:** Bu oturumda üretilmiş kanonik artefaktları (`subject_registry`,
+5. **Kanonik-önbellek durumu:** Bu oturumda üretilmiş kanonik artefaktları (`subject_registry`,
    `outcomes_extract`, `framework_map`, `figure_probe`) ve `connector_call_ledger`'ı
    (`single_shot_enforced`) özetle.
 
 ## Çıktı
 
-Kısa durum kartı, **üç connector** için canlılık:
+Kısa durum kartı, **iki connector** için canlılık:
 - `maarif-mufredat`: korpus sürümü · araç kümeleri (A/B/C/D, 21) · `get_figure` (Tier-2 yeteneği)
 - `egitim-kaynak`: faz · getirme yöntemi · hizalama durumu · chunk sayısı
-- `modul-yayin`: MCP yolu mu REST yedeği mi
 Ayrıca kanonik-önbellek durumu. Her eksik connector'ın etkisini söyle — hiçbiri üretimi bloke etmez
-(Maarif yoksa offline yol; egitim-kaynak yoksa zenginleştirme atlanır; modul-yayin yoksa REST yayın).
+(Maarif yoksa offline yol; egitim-kaynak yoksa zenginleştirme atlanır). Plugin yayınlamaz.

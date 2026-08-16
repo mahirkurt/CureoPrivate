@@ -87,6 +87,13 @@ def test_svg_wrapper_escapes_alt_text():
     assert "&lt;b&gt;" in svg
 
 
+def test_svg_wrapper_default_alt_is_not_textbook_deixis():
+    """Boş alt/caption 'Ders kitabı görseli' yazmamalı — o öğrenci yüzeyine sızan meta-atıftır."""
+    svg = ff.svg_wrapper("QQ==", "image/jpeg", 10, 10)
+    assert "ders kitab" not in svg.casefold()
+    assert "Şekil" in svg
+
+
 def test_embed_figures_replaces_placeholder(tmp_path):
     pdf = _make_pdf(tmp_path)
     out, report = ff.embed_figures(HTML_WITH_FIGURES, resolve_pdf=lambda url: pdf)

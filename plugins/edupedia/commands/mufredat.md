@@ -30,20 +30,18 @@ ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üret
    çerçeveyi o çizer), Adım 3 (kitabın KENDİ figürleri öncelikli) ve Adım 3.5 (kapsam +
    doğruluk denetimi) DAHİL, hepsi zorunlu**: beceri → etkileşim haritalama
    (`framework_map`, skill §4) · modülü üret + `scripts/validate_module.py` kapıları
-   (G-CURRICULUM + G-VERIFY + G-SVG dahil) +
+   (G-CURRICULUM + G-VERIFY + G-VOICE + G-SVG dahil) +
    `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
    `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
-   sözleşmesi `../shared/canonical-cache-contract.md §1`). **`python scripts/validate_module.py
-   --json <html>` çıktısını manifeste yazmak İSTEĞE BAĞLI bir yerel ön-kontroldür.** Kalite
-   kapılarının OTORİTESİ yayın sunucusudur: yayın sırasında sunucu HTML'i kendisi ölçer ve
-   istemcinin `quality_gates` beyanını yok sayar; kapı düşerse yayın 422 ile reddedilir
-   (bkz. `../commands/yayinla.md`). Manifeste yine de yazılıyorsa kapı sonuçlarını elle yazma,
-   konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme — koşturulmayan/uygulanamayan
-   kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`). `run_id`
-   **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>`
-   — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>`
-   sürüm tamsayısı; şema kısıtı `run-manifest-schema.json` `properties.run_id.pattern`).
-   Manifest'siz `/edupedia:yayinla` çalışamaz.
+   sözleşmesi    `../shared/canonical-cache-contract.md §1`). Kalite kapılarının OTORİTESİ yerel
+   `scripts/validate_module.py`'dir. `quality_gates` yazılacaksa `python
+   scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisi olmalı —
+   elle yazma, konsol raporundan transkribe, hiçbir kapıyı PASS'a yükseltme yok.
+   Koşturulmayan kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`).
+   `run_id` **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA):
+   `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260712-fen5-hucre-v1`
+   (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı
+   `run-manifest-schema.json` `properties.run_id.pattern`).
 
 ## Sınırlılık
 
@@ -51,14 +49,7 @@ Tek bir kazanım kodu verildiyse → `/edupedia:modul` (doğrulama+çekme kısay
 (üretim yok) isteniyorsa → `/edupedia:kazanim-bul`. Ders Türkiye MEB dışıysa (IB/Cambridge) →
 kapsam dışı, connector çağrılmaz.
 
-## Yayın teklifi
+## Teslim
 
-Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
-"Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
-`/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
-ısrar etme.
-
-**claude.ai'de:** modülü dosyaya yazmak yerine, HTML'i doğrudan `edupedia_publish`
-aracının `html` argümanına üret. Böylece modül tek seferde üretilir ve yayınlanır;
-ikinci kez emit edilmesi gerekmez. Kullanıcı modülü siteden indirebilir.
-**Claude Code'da:** mevcut akış korunur (dosyaya yaz, sonra `/edupedia:yayinla`).
+Modül yerel tek-dosya HTML'dir. Yayınlama, siteye yükleme veya `edupedia_publish` **yok**.
+claude.ai'de HTML'i sohbet artefaktı olarak sun; Claude Code'da dosyaya yaz.

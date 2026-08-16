@@ -302,9 +302,9 @@ const MODULE_DATA = {
 ## 4. İskeleden doldurmaya — adım adım
 
 1. Kaynağı **kazanımlara** ayır (her kazanım → bir öğretim segmenti).
-2. Her kazanım için: `teach` yaz (kaynağa sadık, sadeleştirilmiş, görselli) →
-   ardından uygun etkileşim seç (interaction-patterns.md) ve **kaynaktan** soru/
-   çift/cevap üret.
+2. Her kazanım için: `teach` yaz (kaynağa sadık **ama kitaba atıf etmeyen** nihai dil —
+   SKILL.md §7; G-VOICE) → ardından uygun etkileşim seç (interaction-patterns.md) ve
+   **kaynaktan** soru/çift/cevap üret (öğrenci "kitabı hatırlasın" değil, bu modülde öğrensin).
 3. Akışı kur: teach→etkileşim→(mola)→teach→... → checkpoint.
 4. `meta.accent`'i derse göre seç (carbon-child-system §3); piktogramları seç
    (icon-pictogram-svg); gereken kavram için özgün SVG çiz.
@@ -321,4 +321,5 @@ const MODULE_DATA = {
 - [ ] Aksan derse uygun; metin rengi daima `--cds-text-primary` (aksan değil).
 - [ ] Görseller satır içi; emoji yok; durum çift-kanal (renk+ikon+metin).
 - [ ] `meta.sourceCitation` dolu; süre varsayılan kapalı.
+- [ ] Öğrenci yüzeyi nihai dil: kitaba/sayfaya/üniteye meta-atıf yok (SKILL.md §7; G-VOICE).
 - [ ] Ton teşvik edici; ceza mekaniği yok (§3 etik).

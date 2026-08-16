@@ -1,17 +1,17 @@
 # edupedia — Paylaşılan Connector Sözleşmesi (CONNECTORS.md)
 
 **Belge sınıfı:** Normatif connector envanteri — plugin-düzeyi tek doğruluk kaynağı
-**Sürüm:** 1.2.0
-**Kapsam:** `edupedia` plugin'inin paketlediği ÜÇ MCP connector'ı:
+**Sürüm:** 1.3.0
+**Kapsam:** `edupedia` plugin'inin paketlediği İKİ MCP connector'ı:
 1. **Maarif Modeli MCP** (`maarif-mufredat`) — flagship `carbon-edupedia` skill'inin (ve
    ileride `carbon-html-report` / `carbon-pptx` sibling skill'lerinin) tükettiği kazanım/
-   müfredat kaynağı (§0-§6 aşağıda, değişmedi).
+   müfredat kaynağı (§0-§6 aşağıda).
 2. **Eğitim Kaynak RAG MCP** (`egitim-kaynak`) — açık eğitsel kaynak (OER) getirme katmanı;
    modül üretirken **konu içeriği, açıklayıcı materyal ve (Faz 2'den) kazanıma-hizalı pasaj**
-   çeker. Kazanımı `maarif-mufredat` verir, İÇERİĞİ `egitim-kaynak` zenginleştirir (§9 aşağıda, yeni).
-3. **Modül Yayın MCP** (`modul-yayin`) — `/edupedia:yayinla` komutunun ve claude.ai üretim
-   akışının tercih ettiği yayın connector'ı (§8 aşağıda). **Not:** eski adı `edupedia` idi;
-   MCP connector'ı plugin adıyla çakışmasın diye `modul-yayin`'e alındı — endpoint/token aynı.
+   çeker. Kazanımı `maarif-mufredat` verir, İÇERİĞİ `egitim-kaynak` zenginleştirir (§9 aşağıda).
+
+Plugin **yayınlamaz.** Eski `modul-yayin` / `/edupedia:yayinla` yüzeyi plugin 0.8.0'da
+kaldırıldı (§8). Teslim yerel tek-dosya HTML'dir.
 
 **Birlikte normatif:** `./shared/canonical-cache-contract.md` (tek-sefer disiplini +
 `get_figure` yetenek-probu) · `./shared/run-manifest-schema.json` (çift-sorgu denetim kanıtı)
@@ -33,7 +33,7 @@
 | **Connector adı** | `maarif-mufredat` (`.mcp.json`'da bildirilir) |
 | **Endpoint** | `https://mufredat.cureonics.com/mcp` |
 | **Transport** | `http` (streamable-HTTP MCP) |
-| **Auth** | Yok — public read-only (plugin `.mcp.json`'ı header taşımaz) |
+| **Auth** | **Bearer** — `.mcp.json` `Authorization: Bearer ${MUFREDAT_MCP_API_KEY}` (Doppler `cureohub/dev_personal`). Anahtarsız çağrı 401. |
 | **Kapsam (hard)** | **YALNIZ Türkiye MEB / Türkiye Yüzyılı Maarif Modeli (2024).** Yabancı müfredat (IB, Cambridge), üniversite içeriği veya genel konu anlatımı **kapsam dışı** — bunlar için connector çağrılmaz, kullanıcı kaynağı / yerleşik bilgi kullanılır (skill `SKILL.md §7`). |
 | **Korpus (introspeksiyon 2026-07-06)** | `tymm.meb.gov.tr` · corpus_version **1.4** · build 2026-06-14 · 60 ders · 10.855 kazanım (4.069 kanonik) · 13 çerçeve (266 madde) · 105 ders kitabı · 22.414 figür · 157 video |
 
@@ -259,61 +259,13 @@ standardını **buradan** tüketir — kendi içlerinde yeniden tanımlamazlar. 
 
 ---
 
-## 8. `modul-yayin` connector'ı — yayın (yayın connector'ı, plugin 0.5.0)
+## 8. Yayın yüzeyi — kaldırıldı (plugin 0.8.0)
 
-> **Yeniden adlandırma (plugin 0.5.0):** bu connector'ın adı `edupedia` → `modul-yayin`
-> oldu (MCP connector'ı `edupedia` plugin adıyla çakışmasın diye). **Endpoint, token, araçlar
-> ve davranış birebir aynı** — yalnız `.mcp.json` anahtarı ve connector kimliği değişti.
-> Araç adları (`edupedia_publish` vb.) sunucu tarafı olduğundan DEĞİŞMEDİ.
-
-| Alan | Değer |
-|---|---|
-| **Connector adı** | `modul-yayin` (`.mcp.json` iç anahtarı; eski ad `edupedia`; claude.ai/Gemini/ChatGPT'da görünen display adı **"Modül Yayını"** = `serverInfo.name`) |
-| **Endpoint** | `https://edupedia.cureonics.com/mcp` |
-| **Transport** | `http` (streamable-HTTP MCP, stateless) |
-| **Auth** | Tek-kiracılı OAuth 2.1 (RFC 8414/7591/9728) — sunucunun tek sırrı
-  `EDUPEDIA_PUBLISH_TOKEN` hem `/mcp` bearer kapısını hem `/api/publish` REST kapısını
-  korur (ayrı bir `AUTH_HMAC_SECRET` YOK — bu servis Python-filo'nun "access_token = master
-  key" desenini izler, `mcp-servers/` altındaki Cloud-Run-lineage servislerin çoğuyla aynı).
-  Claude Code'da `.mcp.json`'daki `Authorization: Bearer ${EDUPEDIA_PUBLISH_TOKEN}` başlığı
-  ortam değişkeninden okunur; claude.ai'de kullanıcı connector ayarlarında OAuth ile bağlanır
-  ve token sohbete hiç girmez. |
-| **Kapsam** | Yalnız `edupedia.cureonics.com`'da modül yayınlama/listeleme/kaldırma —
-  Maarif MCP'nin kazanım/müfredat kapsamıyla ilgisizdir. |
-| **Public okuma yolları** | `/`, `/m/<slug>`, `/api/index.json`, `/health` token'sız açık
-  (bearer yalnız `/mcp` ve mutasyon REST uçlarına uygulanır). |
-
-### 8.1 Araç Envanteri (4 araç)
-
-| Araç | İmza | Rol |
-|---|---|---|
-| `edupedia_publish` | `(html, run_id, subject_slug, grade, topic, mode, outcome_codes, subject?, slug?, title?, force?) → JSON` | Modülü yayınla. **Manifest istemci tarafında kurulmaz** — sunucu `run_id`/`requested_scope`'u bu düz alanlardan kendisi kurar. Kalite kapılarını **sunucu** ölçer (istemci beyanı yok sayılır). Başarıda `{slug, version, url, forced, gates}`; kapı FAIL'de (ve `force` yoksa) `{"error": ..., "status_code": 422}` — asla `url` uydurmaz. |
-| `edupedia_list` | `(subject?, grade?, mode?, query?) → JSON` | Yayınlanmış modülleri filtreli listele (`/edupedia:durum` ve keşif için). |
-| `edupedia_unpublish` | `(slug) → JSON` | Modülü katalogdan gizle (dosyalar diskte kalır — geri döndürülebilir işlem değildir ama veri kaybı da değildir). |
-| `edupedia_server_info` | `() → JSON` | `gate_count`, `max_upload_bytes`, `base_url`, `gates_measured_by:"server"` — canlılık + kapasite pre-flight'ı. |
-
-**Araç şeması kısıtı:** grok.com uyumluluğu için `minLength`/`maxLength`/`pattern`/`allOf`
-JSON-schema anahtarları KULLANILMAZ (fleet-genel kural, bkz. CureoHub `reference_grok_mcp.md`);
-doğrulama yalnız sunucu tarafında (`app/gates.py`, `app/publish.py`) yapılır.
-
-### 8.2 `/edupedia:yayinla` ve claude.ai için tercih sırası
-
-`edupedia_publish` bağlı araç listesinde görünüyorsa **her zaman tercih edilir** —
-`../commands/yayinla.md` Yol A. Görünmüyorsa (connector eklenmemiş, tipik Claude Code
-oturumu) `../commands/yayinla.md` Yol B'deki REST akışına (`POST /api/publish` +
-`EDUPEDIA_PUBLISH_TOKEN`) düşülür. claude.ai'de dosya sistemi yoktur — model HTML'i
-`edupedia_publish`'in `html` argümanına doğrudan üretir (`../commands/modul.md` /
-`../commands/mufredat.md` "Yayın teklifi" bölümü); bu sürüm hiçbir zaman diske yazılmaz,
-kullanıcı modülü yayınlandıktan sonra siteden indirir.
-
-### 8.3 Fallback / Graceful Degradation
-
-- **`edupedia_publish` yok / connector kopuk:** `/edupedia:yayinla` sessizce Yol B'ye düşer;
-  hard-fail yok, kullanıcı token'ı zaten Doppler'dan sağlıyorsa akış aynı sonuca ulaşır.
-- **Kapı FAIL (422):** her iki yolda da aynı anlam — sunucu ölçtü, düşen kapı adları
-  yanıtta gelir, kullanıcı onayı olmadan `force` denenmez.
-- **Sunucuya ulaşılamıyor:** yerel HTML dosyasına (varsa) dokunulmaz; kullanıcıya durum
-  bildirilir, sonra tekrar denenir.
+`modul-yayin` connector'ı, `/edupedia:yayinla` komutu ve `edupedia_publish` /
+`POST /api/publish` ajan yolları **plugin'den çıkarıldı.** Modül teslimi yerel
+tek-dosya HTML'dir (Claude Code: çıktı dizinine yaz; claude.ai: sohbet artefaktı).
+Kalite kapılarının otoritesi yerel `scripts/validate_module.py` (ve PostToolUse
+hook'u)dır. Ajan siteye yayınlamaz ve `edupedia_site` deploy etmez.
 
 ---
 
@@ -329,7 +281,7 @@ lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİ
 | **Connector adı** | `egitim-kaynak` (`.mcp.json` iç anahtarı; claude.ai/Gemini/ChatGPT'da görünen display adı **"Eğitim Kaynakları"** = `serverInfo.name`) |
 | **Endpoint** | `https://egitim-kaynak.cureonics.com/mcp` |
 | **Transport** | `http` (streamable-HTTP MCP, stateless) |
-| **Auth** | **OAuth 2.1 + Bearer — keyed (2026-07-19).** Önceden kasıtlı anahtarsızdı (2026-07-17→2026-07-19; `titck-cache-mcp` emsali) ama **plugin-dışı Gemini/ChatGPT standalone kullanım** için anahtarlandı. Sunucuda `MCP_API_KEY` set + `MCP_ALLOW_NO_AUTH=0` (Pi env); OAuth access_token = `MCP_API_KEY`, ayrı `AUTH_HMAC_SECRET` yok (Python/FastMCP filo kuralı). Redirect allowlist claude.ai/claude.com/grok/chatgpt + `oauth-redirect.googleusercontent.com` (Gemini); ChatGPT RFC 9728 (401 `resource_metadata` + PRM path-insertion) kodda hazır. **Plugin bağlanışı:** `.mcp.json` `Authorization: Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` (Doppler `cureohub/dev_personal`) — modul-yayin gibi; claude.ai/Gemini/ChatGPT'da OAuth akışıyla anahtar formuna girilir. Anahtar çözülmezse connector 401 (SessionStart preflight hook her iki bearer-anahtarını da kontrol edip uyarır). Geri alma: sunucu env'de `MCP_API_KEY` boşalt + `MCP_ALLOW_NO_AUTH=1` + restart → public mod. |
+| **Auth** | **OAuth 2.1 + Bearer — keyed (2026-07-19).** Önceden kasıtlı anahtarsızdı (2026-07-17→2026-07-19; `titck-cache-mcp` emsali) ama **plugin-dışı Gemini/ChatGPT standalone kullanım** için anahtarlandı. Sunucuda `MCP_API_KEY` set + `MCP_ALLOW_NO_AUTH=0` (Pi env); OAuth access_token = `MCP_API_KEY`, ayrı `AUTH_HMAC_SECRET` yok (Python/FastMCP filo kuralı). Redirect allowlist claude.ai/claude.com/grok/chatgpt + `oauth-redirect.googleusercontent.com` (Gemini); ChatGPT RFC 9728 (401 `resource_metadata` + PRM path-insertion) kodda hazır. **Plugin bağlanışı:** `.mcp.json` `Authorization: Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` (Doppler `cureohub/dev_personal`); claude.ai/Gemini/ChatGPT'da OAuth akışıyla anahtar formuna girilir. Anahtar çözülmezse connector 401 (SessionStart preflight hook her iki bearer-anahtarını da kontrol edip uyarır). Geri alma: sunucu env'de `MCP_API_KEY` boşalt + `MCP_ALLOW_NO_AUTH=1` + restart → public mod. |
 | **Node** | Pi :8312 (systemd `egitim-kaynak-mcp`); CureoHub `mcp-servers/egitim-kaynak-mcp/`. |
 | **Faz** | **Faz 1 (canlı 2026-07-17):** BM25/FTS5 **+ vektör yedeği** (`@cf/baai/bge-m3`, Cloudflare Workers AI; korpus kapsaması 1.0). Kaynaklar: Vikipedi-TR + **PhET**. **Faz 2 (kazanım hizalaması) bilinçli olarak KAPALI** → `kb_for_outcome` dürüstçe `alignment_not_built` döner. Canlı sayımlar: 6.352 belge / 32.924 chunk / 2 kaynak (`kb_server_info` ile doğrula — bu tablo değil, sunucu otoritedir). |
 | **Getirme** | **BM25 önce, vektör YEDEK — RRF füzyonu YOK** (2026-07-17'de kaldırıldı: ölçüm hibridi 3/8, saf BM25'i 6/8 verdi; RRF *uzlaşmayı* ödüllendirdiği için gürültülü vektör tarafı doğru cevabı boğuyordu). Vektör yalnız BM25 metin kanıtı bulamayınca konuşur. **`retrieval` adını iki AYRI alan taşır:** `kb_server_info`'daki *sunucu modudur* (`bm25+vector-fallback` / `fts5-bm25`); `kb_search` sonucundaki *o sorguda izlenen yoldur* (`fts5-bm25` / `vector-fallback`). Karıştırmayın. |
@@ -350,7 +302,8 @@ lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİ
 Kazanım al (`maarif-mufredat` `list_learning_outcomes`) → **içerik zenginleştir**
 (`egitim-kaynak` `kb_for_outcome(kod)` hazırsa, aksi halde `kb_search(konu)`) → modülü yaz.
 Her çıktı `mcp_verified:false` + `caveat` taşır. **Lisans disiplini:** `quote_allowed:false`
-bir kaynaktan birebir uzun alıntı yapılmaz (yalnız öğrenilir); yayın kapısı (Faz 4) bunu uygular.
+bir kaynaktan birebir uzun alıntı yapılmaz (yalnız öğrenilir); G-VOICE / lisans
+disiplini bunu yerel kapıda denetler.
 
 ### 9.3 Fallback / Graceful Degradation
 

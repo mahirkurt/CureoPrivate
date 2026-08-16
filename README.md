@@ -37,7 +37,7 @@ bunlarla senkron tutulur (tek doğruluk kaynağı = plugin.json).
 | **fon-uzmani** (Fon Uzmanı) | 1.3.1 | finans | Türkiye yatırım (YAT) + emeklilik (EMK) fonları **karar-destek** süiti: 8-aşamalı `fon-analiz-orkestratoru` (G0–G7) + 6 kaynak skill + 12-modül saf-Python kuant kütüphanesi (Sharpe…HRP). Borsa MCP + fon-mcp omurgası; beş mod. SPK yatırım tavsiyesi **değildir**. |
 | **bist-analyst** (BIST Uzmanı) | 1.1.9 | finans | **Borsa İstanbul** analist kopilotu — çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini tek gerekçeli brifingde sentezler (tek hisse, haftalık tarama, KAP olayı, izleme listesi modları). Borsa MCP omurgası paket içinde. Yatırım tavsiyesi **değildir**. |
 | **sci-audit** (Scientific Audit) | 0.2.4 | bilimsel bütünlük | LLM-üretimi bilimsel metinler için **alan-bağımsız adli + dilsel denetçi**. Yedi eksen: (A) referans bütünlüğü · (B) iddia temellendirme + tam-metin doğrulama · (C) belge-içi istatistik tutarlılığı (statcheck/GRIM/GRIMMER/SPRITE) · (D) halüsinasyon sinyalleri + varlık doğrulama · (E) 14 raporlama kılavuzu (PRISMA/CONSORT/STROBE/TRIPOD…) · (F) AI-şeffaflığı (ICMJE/COPE) · (G) Türkçe bilimsel dil. Deterministik çekirdek **saf Python stdlib**. Çözülemeyen kaynak `unverified` olur, asla "geçti" olmaz. |
-| **edupedia** (Edupedia) | 0.7.3 | eğitim | MEB **Türkiye Yüzyılı Maarif Modeli** (2024) kazanımlarından kazanım-izlenebilir, WCAG 2.1 AA erişilebilir, tek-dosya etkileşimli **HTML öğrenim modülleri** üretir (DEHB-odaklı, IBM Carbon v11). `carbon-edupedia` flagship + start. Üç MCP: `maarif-mufredat` · `egitim-kaynak` · `modul-yayin` (`edupedia.cureonics.com`). Kapsam yalnız Türkiye MEB. |
+| **edupedia** (Edupedia) | 0.9.0 | eğitim | MEB **Türkiye Yüzyılı Maarif Modeli** (2024) kazanımlarından kazanım-izlenebilir, WCAG 2.1 AA erişilebilir, tek-dosya etkileşimli **HTML öğrenim modülleri** üretir (DEHB-odaklı, IBM Carbon v11). `carbon-edupedia` flagship + start. İki MCP: `maarif-mufredat` · `egitim-kaynak`. Teslim yerel HTML; plugin yayınlamaz. `/edupedia:soru` bir veya birden fazla soruyu tek HTML'de çözer. Kapsam yalnız Türkiye MEB. |
 | **brand-ecosystem-core** (Brand Ecosystem) | 1.1.3 | marka | Brand Ecosystem'in stratejik + sözel + görsel katmanları: 12 skill (brand-audit · brand-platform · brand-story · brand-maker · brand-visual · figma-forge · brand-touchpoint · brand-launch · brand-verify · brand-market-signal …) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa **opsiyonel**. Ses katmanı ayrı `brand-voice` plugin'ine aittir. |
 
 ### Bileşen envanteri
@@ -54,7 +54,7 @@ Sayılar diskteki `commands/` dosyaları, `skills/` alt dizinleri, `agents/` alt
 | fon-uzmani | 5 | 8 | — | — | 2 |
 | bist-analyst | — | 2 | — | — | 1 |
 | sci-audit | 7 | 7 | 8 | ✅ | 4 |
-| edupedia | 6 | 2 | 1 | ✅ | 3 |
+| edupedia | 5 | 2 | 1 | ✅ | 2 |
 | brand-ecosystem-core | 1 | 12 | 5 | ✅ | 7 |
 
 **Komutu olmayan plugin'ler** (vekayinuvis, historia-medicinae, bist-analyst) önek-siz **skill mimarisi** kullanır:
@@ -165,7 +165,7 @@ sci-audit'e delege edilir. Birincil kaynak IIIF motorudur (Wellcome sayfa-düzey
 ```
 /plugin install edupedia@cureonics-marketplace
 /edupedia:kazanim-bul <konu>               # kazanım keşfi
-/edupedia:modul <kazanım-kodu>             # modül üret → /edupedia:yayinla ile yayınla
+/edupedia:modul <kazanım-kodu>             # yerel tek-dosya HTML modül üret
 ```
 
 **rxpraxis** — jenerik/biyobenzer fırsat taraması

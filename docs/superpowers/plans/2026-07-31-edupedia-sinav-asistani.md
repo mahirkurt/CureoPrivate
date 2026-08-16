@@ -967,7 +967,7 @@ Bu komut kuralı **tekrarlamaz**; aşağıdaki liste yalnız bir haritadır.
 `/edupedia:mufredat`'ın aksine "yayınlamamı ister misin?" sorusu **sorulmaz**.
 
 Kullanıcı kendisi isterse: telif uyarısını ver ("bu soru size ait değilse
-edupedia.cureonics.com'da yayınlamak telif ihlali olabilir"), sonra karar kullanıcınındır —
+public katalogda yayınlamak telif ihlali olabilir"), sonra karar kullanıcınındır —
 engelleme.
 
 ## Sınırlılık

@@ -2,6 +2,44 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.10.0] — 2026-08-16
+
+### Eklendi — EXAM çoklu soru (`topics[]` + `exams[]`)
+
+`/edupedia:soru` bir veya birden fazla soruyu **tek HTML**'de işler. Konu zinciri
+küme başına (K6); her soru kendi `workedId` + `fadeFrom` ile çözülür. G-EXAM
+öğe bazında fadeFrom zorlar (modülde başka bir worked yetmez). `exams.length > 4`
+WARN, FAIL değil. Boş `exams: []` yok hükmünde → legacy `exam:{}`. G-INTERACT
+`exams[].stem` saymaz. Motor/`module-template.html` değişmez.
+
+## [3.9.0] — 2026-08-16
+
+### Kaldırıldı — yayın MCP'si ve siteye teslim
+
+Plugin artık modül yayınlamaz. `modul-yayin` connector'ı, `/edupedia:yayinla` ve
+`edupedia_publish` / REST yayın yolları skill sözleşmesinden çıktı. Teslim yerel
+tek-dosya HTML'dir (Claude Code: çıktı dizini; claude.ai: sohbet artefaktı). Kalite
+kapılarının otoritesi yerel `scripts/validate_module.py`'dir.
+
+## [3.8.0] — 2026-08-16
+
+### Eklendi — G-VOICE: öğrenci yüzeyinde kaynak-meta atıf yok; nihai dil
+
+Üretilen modüllerde öğrenciye "kitabın tanımı", "kitaptaki yazıyı hatırla", "ders
+kitabında", "ünitede gördüğün" gibi anlamsız atıflar sızıyordu. Kitap yazarın
+doğruluk kaynağıdır; öğrenciye görünen anlatım bu modülün kendi tamamlanmış
+cümleleridir.
+
+- **SKILL.md §7** + curriculum-integration Adım 5.6: öğrenci yüzeyi (body/stem/
+  explanation/recap/prompt/keyTerms) kitaba/sayfaya göndermez. Provenans yalnız
+  `verification` + `sourceCitation` + `sourceRef` içinde kalır.
+- **G-VOICE (FAIL):** öğrenci yüzeyini tarar; yazar katmanını (verification,
+  sourceCitation) tarama dışı bırakır. PhET CC BY-NC künyesi lisans atfıdır
+  (yasak değil). Edebi eser olarak "kitap" meşrudur.
+- `fetch_figure.svg_wrapper` varsayılan alt metni "Ders kitabı görseli" → "Şekil"
+  (öğrenci yüzeyine meta-atıf sızmasın).
+- Sunucu-tarafı vendored kopya (`edupedia_site/app/gates/`) lockstep senkronlandı.
+
 ## [3.6.0] — 2026-07-19
 
 ### Eklendi — G-VERIFY dördüncü verdict: `supported_by_source` (ders kitabı OLMAYAN sınıflar)

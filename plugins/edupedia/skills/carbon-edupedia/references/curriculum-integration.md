@@ -249,16 +249,23 @@ Sonucu **§6.1 şemasındaki `verification` bloğuna** yaz: her iddia için `cla
 kaynağına bağla ya modülden çıkar** — `verdict:"general_knowledge"` bir kaçış deliği değil,
 bir **borçtur** (kapı WARN verir; çoğunluk öyleyse FAIL).
 
+**Adım 5.6 — ÖĞRENCİ YÜZEYİ: NİHAİ DİL (ZORUNLU; G-VOICE).**
+`verification` ve `sourceCitation` **yazar katmanıdır** — öğrenci bunları görmez. Öğrenciye
+görünen `body` / `stem` / `explanation` / `recap` / `prompt` / `keyTerms` kitaba, sayfaya
+veya "ünitede gördüğün"e göndermez. Kavramı bu modülün kendi tamamlanmış cümleleriyle yaz:
+"Hücre, canlının en küçük yapı birimidir." — **değil** "Kitabın tanımı: …" veya "Kitaptaki
+yazıyı hatırla." Kitaptan kopyalanmış cümleyi atıfla sarmalama; pedagojik olarak yeniden yaz.
+PhET CC BY-NC künyesi lisans atfıdır (görünür kalır). Tam kural: SKILL.md §7.
+
 **Adım 6 — Modülü kur, doğrula, sun.** Normal `carbon-edupedia` iş akışına dön
 (SKILL.md §8 Adım 2 ve sonrası): segmentleri kazanımlara göre kurgula, şablona yerleştir,
-kaydet/yayınla (yüzeye göre — SKILL.md §8 Adım 6). `meta.sourceCitation` çekilen kazanım
+kaydet (yüzeye göre — SKILL.md §8 Adım 6). `meta.sourceCitation` çekilen kazanım
 kodlarını + korpus sürümünü içermeli.
 
-> **Kapıların otoritesi yayın sunucusudur.** `validate_module.py` (G-CURRICULUM + **G-VERIFY**
-> dâhil 14 kapı) yalnız **yerel ön-kontroldür**; yayında sunucu HTML'i kendisi ölçer ve
-> istemcinin beyanını yok sayar — kapı düşerse 422. Yani `verification` bloğunu "kapıyı
-> geçmek için" değil, **denetimi gerçekten yaptığın için** yaz: kapı dayanağın
-> GÖSTERİLDİĞİNİ ölçer, iddianın DOĞRU olduğunu **ölçemez** (çevrimdışı, MCP erişimi yok).
+> **Kapıların otoritesi yerel `validate_module.py`'dir** (G-CURRICULUM + **G-VERIFY**
+> + **G-VOICE** dâhil). Plugin yayınlamaz. `verification` bloğunu "kapıyı geçmek için"
+> değil, **denetimi gerçekten yaptığın için** yaz: kapı dayanağın GÖSTERİLDİĞİNİ ölçer,
+> iddianın DOĞRU olduğunu **ölçemez** (çevrimdışı, MCP erişimi yok).
 
 ## 4. Beceri → etkileşim deseni haritalama tablosu  ← ÇEKİRDEK KATMA DEĞER
 
@@ -393,8 +400,8 @@ tutarlı mı.
 
 Bu ayrım pazarlık konusu değil. Python "bilimsel olarak doğru mu" diye karar veremez; bir kapı
 ancak **kaydın var ve eksiksiz olduğunu** ölçebilir. Tersine, modelin "denetledim" beyanına da
-güvenilemez — bu kod tabanının biçim kapılarında sunucunun istemci beyanını yok saymasının
-sebebi tam olarak budur.
+güvenilemez — biçim kapılarının `--json` çıktısından başka bir "PASS" beyanı
+kabul etmemesinin sebebi tam olarak budur.
 
 Çözüm: modül, her olgusal iddianın **hangi ders kitabı sayfasına dayandığını** gösteren bir
 `verification` bloğu taşır. Model yargılar; kapı, her iddianın bir dayanağı olduğunu ve
@@ -413,7 +420,7 @@ zorunlu kılar.
     "title": "Fen Bilimleri 5.Sınıf Ders Kitabı (1.Kitap)"
   },
   "scope": {
-    "in_frame": true,               // false ise ÜRETME — modül yayınlanmaz
+    "in_frame": true,               // false ise ÜRETME
     "excluded": [                   // çerçeve dışı kaldığı için BİLEREK atılanlar
       "mitokondri iç zar kıvrımları — 5. sınıf çerçevesinde yok"
     ]
@@ -439,7 +446,7 @@ zorunlu kılar.
 **Denetler (FAIL/WARN üretir):**
 - `verification` bloğu **zorunlu** (CURRICULUM modunda / ders+sınıf verilmiş üretimde).
 - `frame_source` bir `document_id` + `kind` taşımalı.
-- `scope.in_frame` **true** olmalı; `false` → **FAIL**, yayınlanmaz.
+- `scope.in_frame` **true** olmalı; `false` → **FAIL**, üretilmez.
 - `claims[]` boş olmamalı; **her** öğede `claim` + `grounding` + `verdict` olmalı.
 - `verdict:"general_knowledge"` → **WARN** (dayanaksız; ya kaynağını bul ya çıkar).
   Olgusal iddiaların çoğunluğu `general_knowledge` ise → **FAIL**.

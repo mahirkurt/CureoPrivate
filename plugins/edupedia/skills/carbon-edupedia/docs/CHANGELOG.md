@@ -2,6 +2,31 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.10.0] — 2026-08-16
+
+### Eklendi — EXAM çoklu soru (`topics[]` + `exams[]`)
+
+`/edupedia:soru` bir veya birden fazla soruyu tek HTML'de işler. Konu zinciri küme
+başına; G-EXAM her `workedId` üzerinde fadeFrom zorlar. n>4 WARN, FAIL değil.
+Eski `exam:{}` yeşil kalır. Motor değişmez.
+
+## [3.9.0] — 2026-08-16
+
+### Kaldırıldı — yayın MCP'si ve siteye teslim
+
+Plugin artık modül yayınlamaz. Teslim yerel tek-dosya HTML'dir. Kalite kapılarının
+otoritesi yerel `scripts/validate_module.py`'dir.
+
+## [3.8.0] — 2026-08-16
+
+### Eklendi — G-VOICE: öğrenci yüzeyinde kaynak-meta atıf yok; nihai dil
+
+Üretilen modüllerde öğrenciye "kitabın tanımı", "kitaptaki yazıyı hatırla" gibi
+anlamsız atıflar sızıyordu. Kitap yazarın doğruluk kaynağıdır; öğrenciye görünen
+anlatım bu modülün kendi tamamlanmış cümleleridir. G-VOICE (FAIL) öğrenci
+yüzeyini tarar; verification/sourceCitation yazar katmanıdır. PhET CC BY-NC
+künyesi lisans atfıdır. Normatif: SKILL.md §7.
+
 ## [3.5.2] — 2026-07-17
 
 ### Düzeltildi — konsol raporu SKIPPED kapıyı GEÇTİ gösteriyordu (denetim bulgusu #5)

@@ -16,8 +16,8 @@ description: >-
   etkileşimli öğrenimde USE.
 license: MIT
 metadata:
-  version: 3.7.0
-  last_updated: 2026-07-31
+  version: 3.10.0
+  last_updated: 2026-08-16
   manifest: ./skill-manifest.yaml
 ---
 
@@ -54,9 +54,9 @@ yapılandırılabilir** (varsayılan: 12 yaş, ortaokul, DEHB tanılı).
 - "şu konuyu eğlenceli/etkileşimli hale getir"
 
 **Sınav sorusu tetikleyicileri (EXAM modu):**
-- bir sınav sorusunun **fotoğrafı** yüklendi veya soru metni yapıştırıldı
-- "bu soruyu çöz", "bu soruyu açıkla", "bunu nasıl yaparım"
-- "sınav sorusu", "test sorusu", "deneme sorusu", "yazılı sorusu"
+- bir veya birden fazla sınav sorusunun **fotoğrafı** yüklendi veya soru metni yapıştırıldı
+- "bu soruyu çöz", "bu soruları çöz", "bu soruyu açıkla", "bunu nasıl yaparım"
+- "sınav sorusu", "test sorusu", "deneme sorusu", "yazılı sorusu", "yazılı kâğıdı"
 - "bu soruyu anlamadım", "bu soru neden B değil"
 - Bu sinyallerde **`references/exam-solving.md` okunur ve akışın tamamı uygulanır**.
 
@@ -82,39 +82,29 @@ Yetkinlik **her zaman** şunu üretir:
    Harici dosya bağımlılığı yok; çevrimdışı açılabilir olmalı.
 2. **Teslim yüzeye göre** (§8 Adım 6): **Claude Code'da** `/mnt/user-data/outputs/` altına
    açıklayıcı kebab-case adla kaydedilir (örn. `hucre-ve-organeller-fen-7-modul.html`);
-   **claude.ai'de** dosya sistemi yoktur → HTML doğrudan `edupedia_publish`'in `html`
-   argümanına üretilir (tek emisyon).
+   **claude.ai'de** dosya sistemi yoktur → HTML sohbet artefaktı olarak sunulur.
+   Plugin yayınlamaz.
 3. Modern tarayıcıda açılır, etkileşimler (quiz/oyun/flashcard) **JavaScript ile
    gerçekten çalışır**; durum bellekte tutulur.
 4. **Emoji içermez.** Tüm görsel anlam ikon, piktogram ve SVG çizimle taşınır.
 5. **IBM Carbon v11** token sistemine ve IBM Plex tipografisine uyar.
 6. WCAG 2.1 AA: klavye erişimi, ARIA, `prefers-reduced-motion`, ≥44px hedef.
 7. **Run-manifest'i DİSKE yazar — yalnız Claude Code'da.** (claude.ai'de dosya sistemi
-   yoktur ve manifest'in tek okuyucusu `/edupedia:yayinla` orada mevcut değildir; yayın
-   argümanları — `run_id`, `slug`, `subject_slug`, `grade`, `topic`, `mode`,
-   `outcome_codes` — doğrudan `edupedia_publish` çağrısında verilir. Aşağıdaki `run_id`
-   kalıbı **her iki yüzeyde de** geçerlidir.) HTML'in yanına, **aynı ad + `.manifest.json`** ile (aynı
+   yoktur; orada HTML sohbet artefaktıdır.) HTML'in yanına, **aynı ad + `.manifest.json`** ile (aynı
    dizin; örn. `hucre-ve-organeller-fen-7-modul.html` →
    `hucre-ve-organeller-fen-7-modul.manifest.json`; sabit `run_manifest.json` adı KULLANILMAZ).
    İçerik `../../shared/run-manifest-schema.json`'a uyar: `run_id`, `ts`, `plugin_version`,
    `requested_scope`, `connector_call_ledger`, `canonical_artifacts`, `tier2_status`,
-   `deliverable_path`, `caveats` ve opsiyonel `quality_gates`. **`python
-   scripts/validate_module.py --json <html>` çıktısını manifest'e yazmak İSTEĞE BAĞLI bir
-   yerel ön-kontroldür.** Kalite kapılarının OTORİTESİ yayın sunucusudur: yayın sırasında
-   sunucu HTML'i kendisi ölçer ve istemcinin `quality_gates` beyanını yok sayar. Kapı
-   düşerse yayın 422 ile reddedilir (yayın yolu yüzeye göre: Claude Code
-   `/edupedia:yayinla`, claude.ai doğrudan `edupedia_publish`). Manifeste yine de
-   `quality_gates` yazılıyorsa kapı sonuçlarını elle yazmayın, konsol raporundan
-   (renkli/insan-okur mod) transkribe etmeyin, hiçbir kapıyı PASS'a yükseltmeyin — `--json`
-   çıktısı yalnız `PASS`/`FAIL`/`WARN`/`SKIPPED` durumlarını içerir; koşturulmayan/uygulanamayan
-   bir kapı `--json` içinde kendiliğinden `SKIPPED` olarak gelir (asla `PASS`). `run_id`
-   **NORMATİF KALIP** ile (verbatim, başka bir
+   `deliverable_path`, `caveats` ve opsiyonel `quality_gates`. Kalite kapılarının OTORİTESİ
+   yerel `scripts/validate_module.py`'dir. `quality_gates` yazılacaksa `python
+   scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisi olmalı — elle yazma,
+   konsol raporundan transkribe, hiçbir kapıyı PASS'a yükseltme yok. `--json` çıktısı yalnız
+   `PASS`/`FAIL`/`WARN`/`SKIPPED` durumlarını içerir; koşturulmayan kapı kendiliğinden
+   `SKIPPED` gelir (asla `PASS`). `run_id` **NORMATİF KALIP** ile (verbatim, başka bir
    biçim KULLANMA): `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260706-fen5-hucre-v1`
    (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı
-   `../../shared/run-manifest-schema.json` `properties.run_id.pattern`). Bu kalıba uymayan bir
-   run_id, `/edupedia:yayinla` açık bir `slug` göndermezse sunucu tarafında 400 ile reddedilir.
-   Bu manifest, `/edupedia:yayinla`'nın okuduğu tek girdidir (bkz.
-   `../../shared/canonical-cache-contract.md §1`).
+   `../../shared/run-manifest-schema.json` `properties.run_id.pattern`).
+   Bkz. `../../shared/canonical-cache-contract.md §1`.
 
 > **Neden tek-dosya etkileşimli HTML, React değil?** Claude.ai artifact ortamı
 > React'te yalnız Tailwind çekirdek sınıflarına izin verir; Carbon token sistemi
@@ -156,8 +146,8 @@ hatalardır. İlgili referansı **emisyondan önce** okuyun.
 | `references/color-system.md` | İşlevsel renk rolleri, wayfinding aksanı, kontrast/CVD kuralları. |
 | `references/subject-packs.md` | Derse-özel güçler: kimlik aksanı + Matematik / Fen / Sosyal / Dil paketleri (etiketli diyagram, ilişki akışı, kavram kartları, satır-arası çözümleme, çekim tablosu). |
 | `references/audio-system.md` | İşitsel geri bildirim (earcon) tasarımı, kanıt ve sorumlu kullanım; ses + görsel oyunlaştırma. |
-| `references/curriculum-integration.md` | **Müfredat MCP entegrasyonu — CURRICULUM modunda ZORUNLU, §3 akışının TAMAMI** (kullanıcı sözleşmesi, 2026-07-17): 21 aracın orkestrasyonu; **Adım 0 sınıf+ders KAPISI** (koddan çıkarma — doğrula), kazanım çekme, **Adım 3 ÇERÇEVE: ders kitabını AÇ** (105'in 103'ü tam metin — çerçeve üretimin sınırıdır), **beceri (KB2.x) → etkileşim deseni haritalama tablosu**, `curriculum` şeması, **§2.1 görsel önceliği: kitabın figürü birincil / yazar-SVG yedek**, **Adım 5.5 + §6.1 `verification` bloğu** (kapsam + doğruluk dayanağı → G-VERIFY), provenans + G-CURRICULUM, hata/geri-dönüş. |
-| `references/exam-solving.md` | **EXAM modunda ZORUNLU — akışın TAMAMI.** Fotoğrafı çekilen/yapıştırılan bir sınav sorusunu çözen modül: dört karar (K1-K4), 8 adımlı akış (transkripsiyon → sınıf/ders kapısı → geriye çözümleme → kazanım → çerçeve → çöz → kurgu → teslim), `exam` blok şeması, 11 segmentlik kurgu, beş degrade protokolü (D1-D5) ve EXAM/CURRICULUM fark tablosu. Yayın bu modda **teklif edilmez** (telif). |
+| `references/curriculum-integration.md` | **Müfredat MCP entegrasyonu — CURRICULUM modunda ZORUNLU, §3 akışının TAMAMI** (kullanıcı sözleşmesi, 2026-07-17): 21 aracın orkestrasyonu; **Adım 0 sınıf+ders KAPISI** (koddan çıkarma — doğrula), kazanım çekme, **Adım 3 ÇERÇEVE: ders kitabını AÇ** (105'in 103'ü tam metin — çerçeve üretimin sınırıdır), **beceri (KB2.x) → etkileşim deseni haritalama tablosu**, `curriculum` şeması, **§2.1 görsel önceliği: kitabın figürü birincil / yazar-SVG yedek**, **Adım 5.5 + §6.1 `verification` bloğu** (kapsam + doğruluk dayanağı → G-VERIFY), **Adım 5.6 öğrenci yüzeyi nihai dil (G-VOICE)** — kitaba/sayfaya meta-atıf yok, provenans + G-CURRICULUM, hata/geri-dönüş. |
+| `references/exam-solving.md` | **EXAM modunda ZORUNLU — akışın TAMAMI.** Fotoğrafı çekilen/yapıştırılan bir veya birden fazla sınav sorusunu çözen modül: K1–K8, transkripsiyon → kümeleme → sınıf/ders kapısı → konu başına zincir → çöz → kurgu → teslim; `exam:{}` (tek) veya `topics[]`+`exams[]` (çoklu); tek soruda 11 segment, çokluda sıkıştırılmış kurgu; D1–D5 öğe bazında. Yayın bu modda **teklif edilmez** (telif). |
 | `references/newgen-question-design.md` | Modüle **"yeni nesil" / LGS tarzı** soru bloğu eklerken — uyaran-temelli muhakeme taksonomisi, bilişsel eşleme, yazım reçetesi. Ön koşul: `adhd-pedagogy.md` + `interaction-patterns.md`. **Kapsam notu:** bu blok tema kazanımının **ötesinde** ileri bir katmandır, yerine geçmez — CURRICULUM modunda çerçeve kapısına (§6.1 `scope`) yine tabidir. |
 | `references/content-enrichment.md` | İçerik zenginleştirme kaynağı/tekniği seçerken (Wikidata olgu-çipi, Wikimedia PD/CC-BY görsel, native MathML, çapraz-oturum aralıklı-tekrar veri modeli) veya PhET/GeoGebra/Desmos/Khan/EBA/Açık Ders gibi bir kaynağı gömme isteği geldiğinde — lisans/entegrasyon kısıtları + dürüst "yapılamaz" listesi + dyslexia-font miti. |
 | `references/carbon-excellence.md` | Görsel-yoğun bir modül (hero, `sim`, `conceptMap`, `vizChart`, çok kartlı düzen) üretirken veya gözden geçirirken — Carbon estetik mükemmelliği: 15-madde uzman-vs-jenerik checklist (2x grid, en-boy oranı, layer-elevation, koreografi, expressive/productive tip-seti, veri-viz palet, ikon/piktogram disiplini); **G-CARBON-GRID** doğrulayıcı kapısının normatif kaynağı. |
@@ -177,7 +167,7 @@ Varsayılan **MODULE**. Kullanıcı talebine göre seçin:
 | **ASSESSMENT** | Tanılayıcı/kontrol noktası; ustalık (mastery) takibi | "ön/son test", "seviye ölç" |
 | **SERIES** | Çok modüllü öğrenme yolu (birden çok HTML veya tek dosyada bölümler) | "bütün üniteyi modüle çevir" |
 | **CURRICULUM** | **Müfredat-temelli tam modül**: MEB kazanım kodundan veya ders+sınıf+konudan üretilir; kazanım çekilir, resmî beceri (KB2.x) etkileşime haritalanır, `curriculum` provenans bloğu doldurulur, G-CURRICULUM ile doğrulanır | "müfredata uygun ders", "FB.5.3.1.1 ile modül", "5. sınıf fen müfredatından hücre" |
-| **EXAM** | **Sınav sorusu çözme modülü**: fotoğrafı çekilen veya yapıştırılan BİR soru transkribe edilip yeniden inşa edilir; geriye çözümlemeyle kavram zinciri öğretilir; çözüm `worked` + `fadeFrom` ile verilir (cevap asla doğrudan değil); `exam` bloğu doldurulur, G-EXAM ile doğrulanır | "bu soruyu çöz", "sınav sorusu", soru fotoğrafı yüklendi |
+| **EXAM** | **Sınav sorusu çözme modülü**: fotoğrafı çekilen veya yapıştırılan bir veya birden fazla soru transkribe edilip yeniden inşa edilir; konu başına kavram zinciri öğretilir; her soru kendi `worked` + `fadeFrom` ile çözülür (cevap asla doğrudan değil); `exam:{}` veya `topics[]`+`exams[]` doldurulur, G-EXAM ile doğrulanır | "bu soruyu/soruları çöz", "sınav sorusu", soru fotoğrafı yüklendi |
 
 **Müfredat-duyarlılık tüm modlarda opsiyoneldir.** CURRICULUM ayrı bir mod
 olmasının yanında, yukarıdaki **herhangi bir mod** (MODULE/QUIZ/FLASHCARDS/...)
@@ -225,6 +215,24 @@ uygulayın: modüldeki her olgusal iddia (anlatım cümlesi, quiz cevabı, eşle
 bidirectional content check*. Bu, tek-yönlü (yalnız atlamayı engelleyen) bir kuralın
 açık bıraktığı kısaltma açımlaması, parantez içi gloss ve yorumsal çerçeveleme
 sızıntısını kapatır.
+
+**Öğrenci yüzeyi — orijinal ve nihai dil (KRİTİK, G-VOICE):**
+Kitap/program **yazarın** doğruluk kaynağıdır; öğrenciye görünen metin o kaynağı
+*anımsatmaz*. `body`, `stem`, `explanation`, `recap`, `prompt`, `keyTerms`,
+`instructions`, `question` bu modülün kendi tamamlanmış (nihai) cümleleridir —
+tanım tanımdır, "kitabın tanımı" değil. Provenans yalnız `verification` +
+`meta.sourceCitation` + `sourceRef` içinde kalır (öğrenci bunları görmez).
+
+Yasak (öğrenci yüzeyinde):
+- "kitabın tanımı", "kitaptaki yazıyı hatırla", "kitaba göre", "ders kitabında"
+- "ünitede gördüğün / öğrendiğin", "sayfa 42'de", "kaynakta belirtildiği gibi"
+- Kitabı hatırlatan yarım dil; kitaptan kopyalanmış cümleyi atıfla sarmalama
+
+Doğru: kavramı bu modülün sesiyle, yaş düzeyine sadeleştirilmiş tam cümlelerle
+yeniden yaz. Geri getirme meşrudur ("Enerji santralini hatırla") — yasak olan
+kitaba bağlanan hatırlatmadır. PhET CC BY-NC künyesi lisans atfıdır, kitap-meta
+değildir; görünür kalır. Türkçe dersinde edebi eser olarak "kitap" ("bu kitabın
+yazarı") meşrudur.
 
 ## 8. İnşa iş akışı (Build workflow)
 
@@ -276,36 +284,26 @@ Bu dosya, tüm Carbon stilini ve etkileşim motorunu (engine) içeren çalışan
 yerleştirin; aksanı/temayı ayarlayın; gerekli ek piktogram/SVG'leri satır içi
 gömün. Motoru yeniden yazmayın; veriyi doldurun.
 
-**Adım 5 — Doğrula (isteğe bağlı yerel ön-kontrol).** `python scripts/validate_module.py
+**Adım 5 — Doğrula.** `python scripts/validate_module.py
 <çıktı.html>` çalıştırın. Kapılar: emoji-yok, Carbon token kullanımı, IBM Plex yüklemesi,
 ARIA/erişilebilirlik asgarileri, etkileşim bütünlüğü (her quiz sorusunda doğru cevap +
 açıklama), satır-içi varlık (harici bağımlılık yok), müfredat provenansı + kapsam/doğruluk
-dayanağı (G-CURRICULUM + G-VERIFY). İhlalleri giderin. Bu adım kalite kapılarının
-OTORİTESİ DEĞİLDİR — yayın sunucusu HTML'i kendisi ölçer (bkz. §3 madde 7); burası yalnız
-erken geri bildirim için. İhlalsiz koşumdan sonra dilerseniz `--json` bayrağıyla tekrar
-çalıştırıp manifeste gömebilirsiniz.
+dayanağı (G-CURRICULUM + G-VERIFY), öğrenci yüzeyi nihai dil (G-VOICE). İhlalleri giderin.
+Kalite kapılarının OTORİTESİ bu yerel doğrulayıcıdır (PostToolUse hook'u da aynı betiği
+koşar). `--json` çıktısı manifeste gömülebilir.
 
-> **claude.ai'de bu adım atlanabilir.** Script yalnız kod-çalıştırma açıkken koşar ve
-> zaten otorite değildir; oradaki gerçek kapı `edupedia_publish`'in 422'sidir. Script
-> koşmuyorsa **kapıları "PASS" diye beyan etmeyin** — ölçülmemiş kapı ölçülmemiştir.
+> **claude.ai'de script koşmuyorsa** kapıları "PASS" diye beyan etmeyin — ölçülmemiş kapı
+> ölçülmemiştir. HTML'i sohbet artefaktı olarak sunun.
 
-**Adım 6 — Teslim (YÜZEYE GÖRE değişir — hangi yüzeydesiniz, ona bakın).**
+**Adım 6 — Teslim (YÜZEYE GÖRE).**
 
-Kapı otoritesi her iki yüzeyde de **yayın sunucusudur**: sunucu HTML'i kendisi ölçer (14
-kapı) ve istemcinin `quality_gates` beyanını **yok sayar**; kapı düşerse yayın 422 ile
-reddedilir ve hangi kapıların düştüğü döner.
+Plugin yayınlamaz. Siteye yükleme, `edupedia_publish` ve `/edupedia:yayinla` **yok**.
 
-- **claude.ai'de (dosya sistemi YOK):** modülü dosyaya yazmayın. HTML'i **doğrudan
-  `edupedia_publish` aracının `html` argümanına** üretin — tek emisyon, tek adımda yayın.
-  `slug`'ı **açıkça gönderin** (yoksa 400: "run_id'den slug türetilemedi"). `force=true`
-  **kullanmayın**: kapı düştüyse bilgi odur; düzeltip tekrar yayınlayın. Yayın sonrası
-  kullanıcıya kalıcı bağlantıyı verin (`/m/<slug>`). Kullanıcı yayın istemiyorsa modülü
-  sohbette artefakt olarak sunun — ısrar etmeyin.
+- **claude.ai'de (dosya sistemi YOK):** HTML'i sohbet artefaktı olarak sunun.
 - **Claude Code'da:** `/mnt/user-data/outputs/` altına kebab-case adla kaydedin; **aynı ad +
-  `.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7 — `quality_gates`
-  opsiyonel; yazılırsa Adım 5'te üretilen `validate_module.py --json` çıktısının BİREBİR
-  kendisi olmalı: elle yazma/transkribe/PASS'a yükseltme yok). `present_files` ile sunun.
-  Yayın için `/edupedia:yayinla`.
+  `.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7). `present_files` ile sunun.
+
+Her iki yüzeyde de kısa bir özet + "nasıl kullanılır" notu ekleyin.
 
 Her iki yüzeyde de kısa bir özet + "nasıl kullanılır" notu ekleyin.
 
@@ -494,19 +492,14 @@ asla jenerik veya tek-tip değil:
 
 ## 12. Kalite kapıları (Quality gates)
 
-**OTORİTE yayın sunucusudur.** Bu bölümdeki `scripts/validate_module.py` koşumu yalnız
-İSTEĞE BAĞLI bir yerel ön-kontroldür — yayın sırasında sunucu HTML'i kendisi ölçer ve
-manifestteki `quality_gates` beyanını (varsa) tamamen yok sayar; kapı düşerse yayın 422
-ile reddedilir (yayın yolu yüzeye göre: Claude Code `/edupedia:yayinla`, claude.ai
-doğrudan `edupedia_publish`).
+**OTORİTE yerel `scripts/validate_module.py`'dir** (PostToolUse hook'u aynı betiği koşar).
+Plugin yayınlamaz; kapı sonuçlarını "sunucu geçti" diye beyan etmeyin.
 
 `scripts/validate_module.py` aşağıdakileri denetler (ihlal = düzelt). İnsan-okur konsol
 raporu varsayılan moddur; **`--json` bayrağı** (v3.2.0) stdout'a yalnız geçerli JSON basar —
 `{"G-EMOJI": {"status": "PASS"}, ...}` şeklinde, dilenirse manifest `quality_gates` alanına
 doğrudan gömülebilir biçimde (bkz. §3 madde 7, Adım 5-6). `status` yalnız `PASS`/`FAIL`/`WARN`/
-`SKIPPED` olur; koşturulmayan/uygulanamayan bir kapı `SKIPPED` yazılır (asla `PASS`) — bu,
-manifeste yazılıyorsa "quality_gates yalnız gerçek çıktıdan doldurulur" ilkesini modelin
-dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
+`SKIPPED` olur; koşturulmayan/uygulanamayan bir kapı `SKIPPED` yazılır (asla `PASS`).
 - **G-EMOJI:** Çıktıda hiçbir emoji yok (Unicode emoji aralıkları taranır).
 - **G-CARBON:** IBM Plex yüklü; çekirdek `--cds-*` token'ları tanımlı ve kullanımda.
 - **G-A11Y:** `lang`, `<title>`, odak görünürlüğü, ARIA rolleri, reduced-motion bloğu.
@@ -515,6 +508,11 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
 - **G-CONTRAST (öneri):** Metin/zemin kontrastı WCAG AA eşiğinde.
 - **G-SVG:** Figür SVG'leri `role="img"`+başlık/etiket taşır; ham-hex yerine token renk (uyarı).
 - **G-WELLBEING:** Cezalandırıcı/süre-baskısı dili yok; uzun modülde mola/azaltılmış hareket (uyarı).
+- **G-VOICE (v3.8.0):** Öğrenci yüzeyinde kaynak-meta atıf yok ("kitabın tanımı",
+  "kitaptaki yazıyı hatırla", "ders kitabında", "ünitede gördüğün", "sayfa N'de").
+  Anlatım bu modülün kendi tamamlanmış (nihai) cümleleridir. `verification` /
+  `sourceCitation` / `sourceRef` yazar katmanıdır, taranmaz. PhET CC BY-NC künyesi
+  lisans atfıdır (yasak değil). Edebi eser olarak "kitap" meşrudur. Tam kural: §7.
 - **G-AUDIO:** İşitsel katman(lar) — earcon **ve/veya** sesli-okuma (TTS) — opsiyonel,
   susturulabilir/durdurulabilir, reduced-motion duyarlı ve varsayılan kapalı; autoplay/loop ve
   otomatik-okuma yok. TTS kullanılıyorsa `toggleTTS`/`#ttsBtn`, `speechSynthesis.cancel` ve
@@ -531,7 +529,7 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
   "bilimsel olarak doğru mu" diye karar veremez, ama "her iddianın dayanağı gösterilmiş mi"
   diye ölçebilir. **Denetler (çevrimdışı, regex — validator'ın MCP erişimi YOKTUR):**
   `verification` bloğu var; `frame_source` bir `document_id` + `kind` taşıyor;
-  `scope.in_frame` **true** (false → FAIL, yayınlanmaz); `claims[]` boş değil ve **her** öğede
+  `scope.in_frame` **true** (false → FAIL, üretilmez); `claims[]` boş değil ve **her** öğede
   `claim`+`grounding`+`verdict` var; dayanaksız (`verdict:"general_knowledge"`) iddia → WARN,
   çoğunluk öyleyse → FAIL. **Dört verdict (v3.6.0):** `supported` (ders kitabı) ·
   `supported_by_program` (öğretim programı) · `supported_by_source` (alternatif kaynak —
@@ -564,16 +562,14 @@ dürüstlüğüne değil deterministik bir CLI sözleşmesine bağlar.
   `box-shadow` = layer-elevation ihlali (**FAIL**); 2×-grid konteyneri,
   en-boy oranı (`aspect-ratio`) ve >500ms koreografi eksikliği (**WARN**).
   Normatif kaynak: `references/carbon-excellence.md` §3.
-- **G-EXAM (v3.7.0, koşullu):** Yalnız `mode:"EXAM"` ise veya `exam` bloğu varsa
-  tetiklenir (yoksa atlanır — geriye dönük uyum). Denetler: `exam.stem` dolu;
-  `exam.transcriptionCheck` var olan bir segment id'sini gösteriyor (transkripsiyon
-  doğrulaması atlanamaz); **`fadeFrom < adım sayısı` olan bir `worked` segmenti var**
-  (cevap doğrudan verilemez — bu kapının çekirdek değeri); `exam.chain[]` dolu ve her
-  halka `concept` + `segments[]`'te var olan bir `mappedTo` taşıyor;
-  `exam.integrity` ∈ {`sound`, `flawed`, `out_of_frame`} ve `sound` değilse
-  `integrityNote` dolu. WARN: `source` beyanı yok; `options` var ama
-  `distractorAnalysis` yok. **DENETLEYEMEZ:** transkripsiyonun sadakatini, çözümün
-  doğruluğunu, zincirin eksiksizliğini — hiçbiri çevrimdışı ölçülemez. Tam kural:
+- **G-EXAM (v3.10.0, koşullu):** Yalnız `mode:"EXAM"` ise veya `exam:{}` veya dolu
+  `exams:[]` varsa tetiklenir (yoksa atlanır — geriye dönük uyum). Legacy: `exam.stem`
+  dolu; `transcriptionCheck` var olan bir segment id'sini gösteriyor; **`fadeFrom <
+  adım sayısı` olan bir `worked`**; `exam.chain[]` dolu ve her halka `mappedTo` taşıyor;
+  `integrity` ∈ {`sound`, `flawed`, `out_of_frame`}. Çoklu: her `exams[]` öğesi kendi
+  `workedId` fadeFrom'u + `topicId` → `topics[].chain`. WARN: `source` yok; şık var ama
+  `distractorAnalysis` yok; `exams.length > 4`. **DENETLEYEMEZ:** transkripsiyon
+  sadakati, çözüm doğruluğu, zincir eksiksizliği. Tam kural:
   `references/exam-solving.md` §6.
 
 ## 13. Composability (SMP v1.0)

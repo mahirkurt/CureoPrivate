@@ -7,13 +7,13 @@ protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/
 
 skill:
   name: start
-  version: 1.1.0
+  version: 1.2.0
   title: edupedia — Başlangıç ve Yönlendirme
   description: >-
-    edupedia süitine giriş: bağlı ÜÇ MCP connector'ını (maarif-mufredat müfredat/kazanım,
-    egitim-kaynak açık eğitsel kaynak RAG, modul-yayin yayın) kontrol eder, flagship
-    carbon-edupedia skill'ini ve beş komutu (modul, mufredat, kazanim-bul, durum,
-    yayinla) tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir.
+    edupedia süitine giriş: bağlı İKİ MCP connector'ını (maarif-mufredat müfredat/kazanım,
+    egitim-kaynak açık eğitsel kaynak RAG) kontrol eder, flagship
+    carbon-edupedia skill'ini ve komutları (modul, mufredat, soru, kazanim-bul,
+    durum) tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir.
     Connector envanteri + Tier-1/Tier-2 görüntü-dayanak politikası için ../../CONNECTORS.md'ye
     referans verir.
   entry_point: ./SKILL.md

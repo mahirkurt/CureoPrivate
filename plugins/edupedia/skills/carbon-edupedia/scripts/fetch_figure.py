@@ -181,7 +181,7 @@ def svg_wrapper(b64, mime, width, height, caption="", alt=""):
     renk yoktur (raster görselin rengi kendisindedir) — G-SVG bunu WARN olarak
     bildirir, FAIL değil.
     """
-    title = _html.escape(alt or caption or "Ders kitabı görseli", quote=True)
+    title = _html.escape(alt or caption or "Şekil", quote=True)
     return (
         f'<svg class="viz-figure" viewBox="0 0 {width} {height}" '
         f'role="img" aria-label="{title}" preserveAspectRatio="xMidYMid meet">'

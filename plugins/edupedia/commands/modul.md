@@ -4,7 +4,7 @@ argument-hint: "<kazanım-kodu> (örn. FB.5.3.1.1) [+ opsiyonel öğrenci profil
 ---
 
 `edupedia:carbon-edupedia` skill'ini **CURRICULUM modunda** çağır. Mantığı burada tekrarlama —
-skill'in 8 modu, 14 kalite kapısı ve pedagojik davranışı olduğu gibi geçerlidir; bu komut yalnız
+skill'in 8 modu, 16 kalite kapısı ve pedagojik davranışı olduğu gibi geçerlidir; bu komut yalnız
 kazanım-kodu → modül giriş noktasını kanonikleştirir.
 
 **Hedef kazanım:** $ARGUMENTS
@@ -50,25 +50,23 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
    bağlanır ya çıkarılır.
 
 4. **Üret + doğrula + damgala:** Modülü kur (segmentleri hedef kazanıma göre kurgula),
-   `scripts/validate_module.py` ile kalite kapılarını (G-CURRICULUM + G-VERIFY + G-SVG dahil) geçir,
+   `scripts/validate_module.py` ile kalite kapılarını (G-CURRICULUM + G-VERIFY + G-VOICE + G-SVG dahil) geçir,
    `meta.sourceCitation`'ı kazanım kodu + korpus sürümüyle (`server_info.corpus_version`) damgala,
    `/mnt/user-data/outputs/` altına kebab-case adla kaydet.
 
-5. **Manifest'i yaz (yayın için zorunlu ön koşul):** HTML ile **aynı dizine**, aynı ad +
-   `.manifest.json` uzantısıyla (örn. `hucre-modul.html` → `hucre-modul.manifest.json`) bir
-   run-manifest yaz — şema `../shared/run-manifest-schema.json`, dosya adı sözleşmesi
-   `../shared/canonical-cache-contract.md §1`. **`python scripts/validate_module.py --json
-   <html>` çıktısını manifeste yazmak İSTEĞE BAĞLI bir yerel ön-kontroldür.** Kalite
-   kapılarının OTORİTESİ yayın sunucusudur: yayın sırasında sunucu HTML'i kendisi ölçer ve
-   istemcinin `quality_gates` beyanını yok sayar; kapı düşerse yayın 422 ile reddedilir
-   (bkz. `../commands/yayinla.md`). Manifeste yine de yazılıyorsa kapı sonuçlarını elle
-   yazma, konsol raporundan transkribe etme, hiçbir kapıyı PASS'a yükseltme —
-   koşturulmayan/uygulanamayan kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir
-   (asla `PASS`). `connector_call_ledger`/`canonical_artifacts` bu komutun Adım 1'inde yapılan Müfredat MCP
+5. **Manifest'i yaz:** HTML ile **aynı dizine**, aynı ad + `.manifest.json` uzantısıyla
+   (örn. `hucre-modul.html` → `hucre-modul.manifest.json`) bir run-manifest yaz — şema
+   `../shared/run-manifest-schema.json`, dosya adı sözleşmesi
+   `../shared/canonical-cache-contract.md §1`. Kalite kapılarının OTORİTESİ yerel
+   `scripts/validate_module.py`'dir. `quality_gates` yazılacaksa `python
+   scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisi olmalı —
+   elle yazma, konsol raporundan transkribe, hiçbir kapıyı PASS'a yükseltme yok.
+   Koşturulmayan kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`).
+   `connector_call_ledger`/`canonical_artifacts` bu komutun Adım 1'inde yapılan Müfredat MCP
    çağrılarından gelir. `run_id` **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA):
    `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260712-fen5-hucre-v1` (`<ders>`/`<konu>`
    yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı `run-manifest-schema.json`
-   `properties.run_id.pattern`). Bu manifest olmadan `/edupedia:yayinla` çalışamaz.
+   `properties.run_id.pattern`).
 
 ## Belirsiz / hatalı kod
 
@@ -81,14 +79,7 @@ Girdi bir kazanım kodu değil, ders+sınıf+konu ise → bu komut yerine `/edup
 "hangi kazanımlar" keşfi isteniyorsa → `/edupedia:kazanim-bul`. Kaynak metin yapıştırıldıysa MCP'siz
 doğrudan skill yeterlidir.
 
-## Yayın teklifi
+## Teslim
 
-Modül üretildikten ve kalite kapıları koştuktan sonra kullanıcıya sor:
-"Bu modülü edupedia.cureonics.com'da yayınlamamı ister misin?" Onaylarsa
-`/edupedia:yayinla <üretilen-html-yolu>` akışını izle. Reddederse dosya yerel kalır —
-ısrar etme.
-
-**claude.ai'de:** modülü dosyaya yazmak yerine, HTML'i doğrudan `edupedia_publish`
-aracının `html` argümanına üret. Böylece modül tek seferde üretilir ve yayınlanır;
-ikinci kez emit edilmesi gerekmez. Kullanıcı modülü siteden indirebilir.
-**Claude Code'da:** mevcut akış korunur (dosyaya yaz, sonra `/edupedia:yayinla`).
+Modül yerel tek-dosya HTML'dir. Yayınlama, siteye yükleme veya `edupedia_publish` **yok**.
+claude.ai'de HTML'i sohbet artefaktı olarak sun; Claude Code'da dosyaya yaz.

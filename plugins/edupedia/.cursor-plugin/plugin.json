@@ -7,8 +7,9 @@
     "name": "Cureonics",
     "url": "https://cureonics.com"
   },
-  "license": "MIT",
   "homepage": "https://cureonics.com",
+  "repository": "https://github.com/mahirkurt/CureoPrivate",
+  "license": "MIT",
   "keywords": [
     "education",
     "maarif",
@@ -23,9 +24,9 @@
     "wcag-2.1-aa",
     "turkiye"
   ],
-  "commands": "./commands",
-  "skills": "./skills",
-  "agents": "./agents",
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "commands": "./commands/",
   "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }

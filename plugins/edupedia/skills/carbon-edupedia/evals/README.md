@@ -12,8 +12,8 @@ CURRICULUM, GAME/QUIZ) ve bir anti-tetikleyici/disambiguation senaryosunu kapsar
 python scripts/validate_module.py <module.html>
 ```
 
-Hedef: **11/11 FAIL kapısı geçer, 0 uyarı** (G-EMOJI, G-CARBON, G-A11Y,
-G-INTERACT, G-SELFCONTAINED, G-CONTRAST, G-SVG, G-WELLBEING, G-AUDIO,
+Hedef: **FAIL kapıları geçer, 0 uyarı** (G-EMOJI, G-CARBON, G-A11Y,
+G-INTERACT, G-SELFCONTAINED, G-CONTRAST, G-SVG, G-WELLBEING, G-VOICE, G-AUDIO,
 G-CURRICULUM, G-TOKEN). Carbon token otoritesi ayrıca:
 
 ```bash

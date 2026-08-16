@@ -1,8 +1,8 @@
 ---
 name: start
-description: edupedia süitine giriş ve yönlendirme. Bağlı ÜÇ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme, modul-yayin yayın) kontrol eder, flagship carbon-edupedia skill'ini ve beş komutu tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
-version: 1.1.0
-last_updated: 2026-07-17
+description: edupedia süitine giriş ve yönlendirme. Bağlı İKİ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme) kontrol eder, flagship carbon-edupedia skill'ini ve komutları tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
+version: 1.2.0
+last_updated: 2026-08-16
 ---
 
 # edupedia — Başlangıç ve Yönlendirme
@@ -94,11 +94,6 @@ sorgu olarak verin. *(Ölçüm 2026-07-17: korpusu büyütmek tek başına yetme
 kazanım↔pasaj kosinüsleri konuyu değil "ikisi de uzun resmî Türkçe"yi ölçüyor; bu yüzden
 hizalama bir eşik ayarıyla açılamaz.)*
 
-**Modül Yayın MCP (`modul-yayin` · `https://edupedia.cureonics.com/mcp`) — yayın:**
-4 araç (`edupedia_publish`, `edupedia_list`, `edupedia_unpublish`, `edupedia_server_info`);
-`/edupedia:yayinla`'nın tercih ettiği yol. Bağlı değilse `POST /api/publish` REST yedeğine düşülür.
-*(Eski connector adı `edupedia` idi — plugin adıyla çakışmasın diye `modul-yayin` oldu; endpoint/token aynı.)*
-
 Connector bağlı değilse: kullanıcıya Settings → Connectors'tan etkinleştirmesini bildirin ve
 `carbon-edupedia`'nın **MCP olmadan da** (kullanıcının verdiği ders metniyle) çalıştığını, üretimin
 bloke olmadığını söyleyin.
@@ -107,7 +102,7 @@ bloke olmadığını söyleyin.
 
 | Bileşen | Ne Yapar |
 |---|---|
-| **carbon-edupedia** (flagship skill) | 8 mod, 14 kalite kapısı (yayında SUNUCU ölçer) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
+| **carbon-edupedia** (flagship skill) | 8 mod, 16 kalite kapısı (yerel `validate_module.py`) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
 | **start** (bu skill) | Oryantasyon + connector kontrolü + niyet→komut yönlendirme |
 
 ## Adım 4 — Komutları Tanıt
@@ -116,10 +111,9 @@ bloke olmadığını söyleyin.
 |---|---|---|
 | `/edupedia:modul` | Kazanım kodundan modül üretir | `<kazanım-kodu>` (örn. FB.5.3.1.1) |
 | `/edupedia:mufredat` | Ders+sınıf+konudan modül üretir | `<ders> <sınıf> <konu>` (örn. Fen 5 hücre) |
-| `/edupedia:soru` | Sınav sorusundan modül üretir (fotoğraf veya metin) — çözer + kavram zincirini öğretir | `<soru fotoğrafı veya metni>` |
+| `/edupedia:soru` | Bir veya birden fazla sınav sorusundan tek HTML üretir (fotoğraf veya metin) — konu anlatır + her soruyu çözer | `<soru fotoğrafı veya metni>` |
 | `/edupedia:kazanim-bul` | Konu→kazanım keşfi + KB/etkileşim haritası (**üretim yok**) | `<konu> [sınıf] [ders]` |
 | `/edupedia:durum` | Connector sağlık + Tier-2 (get_figure) kontrolü | — |
-| `/edupedia:yayinla` | Modülü edupedia.cureonics.com'da yayınlar (MCP tercihli, REST yedekli) | `<modul.html yolu>` |
 
 ## Adım 5 — Niyete Göre Yönlendir
 
@@ -127,12 +121,12 @@ Kullanıcının ne üzerinde çalıştığını sorun ve yönlendirin:
 
 1. **Kazanım kodu verildi** (`FB.5.3.1.1`) → `/edupedia:modul`.
 2. **Ders + sınıf + konu** ("5. sınıf fen hücre") → `/edupedia:mufredat`.
-3. **Sınav sorusu fotoğrafı veya metni verildi** ("bu soruyu çöz", "bunu anlamadım") →
-   `/edupedia:soru`. Yayın bu modda teklif edilmez (telif).
+3. **Sınav sorusu fotoğrafı veya metni verildi** ("bu soruyu çöz", "bu soruları çöz",
+   "bunu anlamadım") → `/edupedia:soru` (bir veya birden fazla; tek HTML). Teslim
+   yerel HTML'dir; sınav sorusu paylaşılmaz (telif).
 4. **"Bu konuya hangi kazanımlar denk geliyor?"** (yalnız keşif) → `/edupedia:kazanim-bul`.
 5. **Connector çalışıyor mu / Tier-2 var mı?** → `/edupedia:durum`.
-6. **Modül üretildi, paylaşılacak** → `/edupedia:yayinla`.
-7. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
+6. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
    çağır; opsiyonel olarak ilgili kazanımla hizalama öner.
 
 **Ayrım rehberi (disambiguation):**

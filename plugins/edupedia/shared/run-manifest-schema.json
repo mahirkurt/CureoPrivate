@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://cureonics.com/edupedia/run-manifest-schema.json",
   "title": "edupedia Run Manifest",
-  "description": "edupedia (carbon-edupedia + Maarif MCP) her modül üretim koşumu için üretilen kayıt. Kanonik artefakt önbelleğini, Maarif MCP connector call ledger'ını (çift-sorgu denetim kanıtı), Tier-2 görüntü-dayanak durumunu ve 14 kalite kapısını içerir (carbon-edupedia 3.0.0 — G-FLOW + G-CARBON-GRID; 2026-07-17 içerik sözleşmesi — G-VERIFY: kapsam + doğruluk dayanağı). Dosya adı sözleşmesi (normatif tanım: canonical-cache-contract.md §1): üretilen HTML ile aynı dizine, aynı ad + '.manifest.json' uzantısıyla yazılır (ör. modul.html -> modul.manifest.json) — sabit 'run_manifest.json' adı KULLANILMAZ. Normatif: CONNECTORS.md + canonical-cache-contract.md.",
+  "description": "edupedia (carbon-edupedia + Maarif MCP) her modül üretim koşumu için üretilen kayıt. Kanonik artefakt önbelleğini, Maarif MCP connector call ledger'ını (çift-sorgu denetim kanıtı), Tier-2 görüntü-dayanak durumunu ve 16 kalite kapısını içerir (carbon-edupedia 3.0.0 — G-FLOW + G-CARBON-GRID; 2026-07-17 içerik sözleşmesi — G-VERIFY: kapsam + doğruluk dayanağı). Dosya adı sözleşmesi (normatif tanım: canonical-cache-contract.md §1): üretilen HTML ile aynı dizine, aynı ad + '.manifest.json' uzantısıyla yazılır (ör. modul.html -> modul.manifest.json) — sabit 'run_manifest.json' adı KULLANILMAZ. Normatif: CONNECTORS.md + canonical-cache-contract.md.",
   "type": "object",
   "required": [
     "run_id",
@@ -17,7 +17,7 @@
     "run_id": {
       "type": "string",
       "pattern": "^Edupedia-\\d{8}-[a-z0-9]+(?:-[a-z0-9]+)*-v\\d+$",
-      "description": "NORMATİF KALIP (verbatim): Edupedia-YYYYMMDD-<ders>-<konu>-v<N> — ör. Edupedia-20260706-fen5-hucre-v1. Bu alan 'run_id'den slug türetilebilmesi için sunucu tarafında ayrıştırılır (services/edupedia_site/app/publish.py: derive_slug/_RUN_ID_RE); yukarıdaki 'pattern' o ayrıştırmanın kabul ettiği bir ALT-KÜMEDİR (sunucu '-v<N>' sonekini opsiyonel kabul eder, bu şema ise onu ZORUNLU kılar — hiçbir çelişki yok, yalnız üretim tarafında daha sıkı bir disiplin). <ders> ve <konu> yalnız küçük harf/rakam/tire (ör. 'fen5', 'hucre'); <N> pozitif tamsayı sürüm numarası. Bu kalıba UYMAYAN bir run_id yazma — /edupedia:yayinla, açık bir 'slug' alanı göndermediği sürece bu run_id'yi ayrıştıramayabilir ve 400 ile reddedebilir."
+      "description": "NORMATİF KALIP (verbatim): Edupedia-YYYYMMDD-<ders>-<konu>-v<N> — ör. Edupedia-20260706-fen5-hucre-v1. <ders> ve <konu> yalnız küçük harf/rakam/tire (ör. 'fen5', 'hucre'); <N> pozitif tamsayı sürüm numarası. Bu kalıba UYMAYAN bir run_id yazma."
     },
     "ts": {
       "type": "string",
@@ -152,7 +152,7 @@
     },
     "quality_gates": {
       "type": "object",
-      "description": "scripts/validate_module.py 14 kapısı (koşullu G-CURRICULUM + G-VERIFY + G-FLOW dahil; carbon-edupedia 3.0.0'da G-FLOW + G-CARBON-GRID, 2026-07-17 içerik sözleşmesinde G-VERIFY eklendi). Yayın sırasında kapılar SUNUCUDA ölçülür; bu alan yalnız yerel ön-kontrol kaydıdır ve sunucu tarafından yok sayılır.",
+      "description": "scripts/validate_module.py 16 kapısı (koşullu G-CURRICULUM + G-VERIFY + G-FLOW + G-EXAM dahil; v3.8.0 G-VOICE: öğrenci yüzeyi nihai dil). Yayın sırasında kapılar SUNUCUDA ölçülür; bu alan yalnız yerel ön-kontrol kaydıdır ve sunucu tarafından yok sayılır.",
       "properties": {
         "G-EMOJI": {
           "$ref": "#/definitions/gate"

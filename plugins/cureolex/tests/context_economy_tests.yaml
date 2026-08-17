@@ -1,0 +1,83 @@
+suite:
+  id: context_economy
+  title: "Bağlam Ekonomisi ve Büyük-Veri Yönetimi Testleri (v3.0.0)"
+  version: "1.0"
+  target_skill: cureolex
+  target_version: ">= 3.0.0"
+  evaluator: [manual, smp-orchestrator, skill-censor]
+  description: >
+    Tam-filo (22 kaynak MCP her sorguda) çalışırken bağlamın boğulmamasını
+    doğrular: 3-katmanlı ekonomi (Tier 0 ana pencere / Tier 1 sharded distiller /
+    Tier 2 anamnesis RAG), kanonik cache (bir-kez-getir), kör-getirme-yok chunking,
+    devre-kesici ve extract-then-evict. Referans: shared/context-economy-contract.md
+    + references/16-baglamyonetimi-ve-buyuk-veri.md.
+
+cases:
+  - id: CTX-001
+    title: "Sharded tam-filo — tek distiller taşması önlenir"
+    given: "Organ ve doku nakli mevzuatını kapsamlı reform için analiz et (22 server tam-filo)."
+    expect:
+      full_fleet: true
+      sharding: true
+    assertions:
+      - "Getirim ≤4 paralel shard'a bölünmeli: S1 TR-çekirdek (legal-distiller), S2 karşılaştırmalı (comparative-law-researcher), S3 doktrin/içtihat (legal-distiller), S4 klinik (evidentia)."
+      - "Ana pencere yalnız 4 kompakt zarf + birleşik G0 manifestosu görmeli — ham getirim görmemeli."
+      - "Tek bir distiller'a 22 server verilip penceresi taşırılmamalı."
+    rationale: "context-economy-contract §2 + references/16 §B; tam-filo'yu bağlam-güvenli kılan sharding."
+
+  - id: CTX-002
+    title: "Büyük belge → anamnesis Tier 2 (ham dökme yok)"
+    given: "1219 sayılı Kanun'un tam metni üzerinde tabiplik yetkilerini karşılaştır (belge >30KB)."
+    expect:
+      tier: 2
+    assertions:
+      - "Tam kanun metni ana pencerede HAM işlenmemeli (Tier 0 ihlali)."
+      - "anamnesis.ingest_document(collection='cureolex:sess:<id>', doc_id='cureolex:sess:<id>:mevzuat:1219/1') ile bir kez indekslenmeli."
+      - "anamnesis.hybrid_query(collection=…, doc_ids=[…], queries=[...]) ile bounded, provenance-damgalı dilim çekilmeli (doc_scope yoktur; atıf doc_id::idx)."
+      - "PostToolUse retrieve_dont_dump hook (>30KB) anamnesis ingest yönlendirmesi enjekte etmiş olmalı."
+    rationale: "context-economy-contract §6 + retrieve_dont_dump.py Tier 2 dalı."
+
+  - id: CTX-003
+    title: "Kanonik cache — bir-kez-getir (mod/kapı tekrarında yeniden getirme yok)"
+    given: "Bir yönetmelik taslağını üret (DRAFT), sonra aynı üst-norm kanununu G1→G5→gerekçe→COMPLY boyunca kullan."
+    expect:
+      canonical_cache: true
+    assertions:
+      - "Üst-norm kanunu (kararlı id ile) yalnız BİR KEZ getirilmeli."
+      - "Sonraki modlar/kapılar cache'lenen distillate/anamnesis doc_id'ye atıfla çalışmalı — yeniden fetch etmemeli."
+      - "Aynı doc_id iki kez ingest edilmemeli."
+    rationale: "context-economy-contract §3 kanonik artefakt cache."
+
+  - id: CTX-004
+    title: "Kör-getirme-yok chunking — yapısal navigasyon önce"
+    given: "Beşeri Tıbbi Ürünler Ruhsat Yönetmeliği'nin ruhsat başvurusu maddesini incele."
+    expect:
+      chunking: true
+    assertions:
+      - "Önce get_mevzuat_madde_tree ile hedef madde LOKALİZE edilmeli (hafif)."
+      - "Sonra yalnız hedef chunk çekilmeli (madde_acikla / get_mevzuat_text chunk_index/start_page-end_page/max_chars)."
+      - "Tüm yönetmelik limitsiz max_chars ile ana pencereye çekilmemeli."
+    rationale: "context-economy-contract §4 + references/16 §C."
+
+  - id: CTX-005
+    title: "anamnesis anahtarı yok → bounded-chunk fallback (degrade, ham dökme yok)"
+    given: "Büyük bir kanun metni gerekiyor ama ANAMNESIS_MCP_API_KEY süreç ortamında YOK."
+    expect:
+      tier: 1
+      degrade: true
+    assertions:
+      - "SessionStart preflight anamnesis anahtarının eksik olduğunu işaretlemiş olmalı."
+      - "Büyük belge yine de HAM dökülmemeli — madde_tree navigasyonu + bounded-chunk fetch ile işlenmeli."
+      - "Manifestoda anamnesis → 'skipped: anahtar yok (bounded-chunk fallback)' beyan edilmeli."
+    rationale: "context-economy-contract §5 + session_start.py preflight + references/16 §C fallback."
+
+  - id: CTX-006
+    title: "Devre-kesici + extract-then-evict"
+    given: "Çok-fazlı bir RIA koşumu; her faz büyük getirim üretiyor."
+    expect:
+      circuit_breaker: true
+    assertions:
+      - "Tek çıktı >6KB → ham işlenmemeli, distiller/anamnesis'e yönlenmeli (devre-kesici)."
+      - "Her faz sonunda ara getirimler evidence_ledger'a çökürülmeli, ham iz evict edilmeli."
+      - "Sonraki faz yalnız evidence_ledger + kanonik cache görmeli."
+    rationale: "context-economy-contract §5 devre-kesici + extract-then-evict."

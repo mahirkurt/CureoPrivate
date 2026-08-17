@@ -1,0 +1,153 @@
+suite:
+  id: full_fleet_coverage
+  title: "Tam-Filo Aktivasyonu ve G0 Kapsam Manifestosu Testleri (v3.0.0)"
+  version: "1.0"
+  target_skill: cureolex
+  target_version: ">= 3.0.0"
+  evaluator: [manual, smp-orchestrator, skill-censor]
+  description: >
+    v3.0.0 tam-filo invaryantını doğrular: wire edilmiş 22 hukuk/regülasyon MCP
+    + bağlı companion (Yargı/Open Law/Ansvar) + evidentia (klinik-boyut) + sci-audit
+    HER sorguda devreye alınır ve her çıktı bir G0 kapsam manifestosu taşır
+    (server → hit/empty/degraded/skipped-with-reason). Sessiz atlama = G0 FAIL.
+    Degrade dürüsttür: eksik katman 'skipped' beyanı alır, asla uydurma.
+
+cases:
+  - id: FLEET-001
+    title: "DRAFT — tam-filo süpürme + kapsam manifestosu zorunlu"
+    given: "Biyobenzer ilaçların değiştirilebilirliği (interchangeability) için TİTCK yönetmeliği taslağı hazırla."
+    expect:
+      mode: DRAFT
+      full_fleet: true
+      gates: { G0: PASS, G1: PASS, G2: PASS, G7: PASS }
+    assertions:
+      - "Çıktı bir kapsam manifestosu (G0) içermeli: 22 wire'lı MCP + companion + evidentia + sci-audit için birer satır."
+      - "Her server satırı hit/empty/degraded/skipped-with-reason durumlarından biriyle işaretlenmeli."
+      - "Hiçbir server sessizce atlanmamalı — atlandıysa gerekçe ('anahtar yok' / 'mod için N/A') yazılmalı."
+      - "Ağır getirim legal-distiller alt-ajanına delege edilmeli (ana bağlamda ham döküm olmamalı)."
+    rationale: "SKILL §3 tam-filo + §4 G0 + §7 kapsam manifestosu; shared/coverage-manifest.md biçimi."
+
+  - id: FLEET-002
+    title: "Companion bağlı değil — dürüst skipped beyanı"
+    given: "1219 sayılı Kanun'un tabip yetkilerini karşılaştırmalı analiz et (Yargı/Open Law/Ansvar connector'larının hiçbiri bağlı DEĞİL)."
+    expect:
+      mode: COMPARATIVE_LAW
+      full_fleet: true
+      gates: { G0: PASS }
+    assertions:
+      - "Manifestoda Yargı/Open Law/Ansvar → 'skipped: companion bağlı değil' olarak beyan edilmeli."
+      - "Bağlı/wire'lı health-policy/german-law/eurlex/fedlex/uk-legal/ich/intl-treaty/eudamed/oecd yine de ateşlenmeli."
+      - "Eksik companion için içtihat/karşılaştırma UYDURULMAMALI — sadece dürüst boşluk."
+    rationale: "composition-contract §3 degrade matrisi; no-fabrication değişmezi."
+
+  - id: FLEET-003
+    title: "Anahtar yok — graceful degrade, çıktı durmaz"
+    given: "Endikasyon-dışı ilaç kullanımı genelgesini incele (GERMAN_LAW_MCP_API_KEY süreç ortamında YOK)."
+    expect:
+      mode: ANALYZE
+      full_fleet: true
+      gates: { G0: PASS }
+    assertions:
+      - "SessionStart preflight german-law anahtarının eksik olduğunu işaretlemiş olmalı."
+      - "Manifestoda german-law → 'skipped: anahtar yok'; çıktı bu yüzden DURMAMALI."
+      - "Diğer wire'lı server'lar (mevzuat/resmi-gazete/titck/saglikbakanligi vb.) normal çalışmalı."
+    rationale: "hooks/scripts/session_start.py preflight + SKILL §3 degrade_and_label."
+
+  - id: FLEET-004
+    title: "Stop kapısı — manifesto eksikse tamamlat"
+    given: "Bir yönetmelik taslağı üretildi ama çıktıda kapsam manifestosu ve confidence_label yok."
+    expect:
+      stop_hook: block
+    assertions:
+      - "Stop hook (stop_coverage.py) turu devam ettirip eksik manifesto + confidence_label'ı tamamlatmalı."
+      - "Tamamlanan çıktı G0 + confidence_label taşımalı."
+    rationale: "hooks/scripts/stop_coverage.py — mod-çıktısı imzası var ama zorunlu bileşenler eksik."
+
+  - id: FLEET-005
+    title: "Saf idari norm — klinik-sıfır, evidentia atlanır ama beyan edilir"
+    given: "Bir sağlık kuruluşunun iç arşiv-yönetimi işleyiş yönetmeliği taslağı hazırla (klinik içerik yok)."
+    expect:
+      mode: DRAFT
+      full_fleet: true
+      gates: { G0: PASS }
+    assertions:
+      - "Hukuk MCP'leri (mevzuat/resmi-gazete/detsis/saglikbakanligi) yine tam-filo çalışmalı."
+      - "evidentia → 'skipped: saf idari norm — klinik-sıfır' olarak manifestoda beyan edilmeli."
+      - "sci-audit yine çalışmalı (her çıktıda dil/atıf QA)."
+    rationale: "composition-contract §1 klinik-sıfır istisnası; tam-filo yalnız gerekçeli istisna kabul eder."
+
+  - id: FLEET-006
+    title: "v3.1 — kurulu delegasyon plugin'i atlanamaz (evidentia)"
+    given: "ATMP geri-ödeme yönetmeliği taslağı hazırla (evidentia plugin KURULU, sorgu klinik-boyutlu) — model evidentia'yı çağırmadan taslağı üretmeye çalışıyor."
+    expect:
+      mode: DRAFT
+      gates: { G0: FAIL }
+    assertions:
+      - "SessionStart preflight 'KURULU: evidentia' işaretini enjekte etmiş olmalı."
+      - "Kuruluyken klinik-boyutlu sorguda evidentia'nın atlanması G0 ihlali sayılmalı; manifesto 'skipped: plugin kurulu değil' YAZAMAMALI."
+      - "Stop hook manifesto satır denetiminde eksik/yanlış beyanı tamamlatmalı."
+    rationale: "composition-contract v3.1 karar kuralı: kurulu + tetiklenmiş bağlam = zorunlu çağrı."
+
+  - id: FLEET-007
+    title: "v3.1 — companion satırları manifestoda zorunlu (durum ne olursa olsun)"
+    given: "SUT değişikliği için karşılaştırmalı analiz üretildi; manifesto 22 wire'lı MCP'yi listeliyor ama Yargı/Open_Law/Ansvar/evidentia/sci-audit satırları hiç yok."
+    expect:
+      stop_hook: block
+    assertions:
+      - "stop_coverage.py MANDATORY_ROWS denetimi eksik satırları isimleriyle raporlamalı — 5 satır (Yargı, Open Law, Ansvar, evidentia, sci-audit). Sayı SABİT DEĞİLDİR: stop_coverage.py bunu fleet.lock.json'dan türetir (companions + delegations)."
+      - "Tamamlanan manifestoda her satır hit/empty/degraded/skipped-with-reason taşımalı."
+    rationale: "hooks/scripts/stop_coverage.py v3.1 MANDATORY_ROWS; coverage-manifest.md kural 1."
+
+  - id: FLEET-008
+    title: "v3.8 — G6 CELEX wire'lı eurlex'e bağlıdır, Open Law'a değil"
+    given: "AB müktesebat uyum tablosu isteniyor; Open Law connector'ı bu oturumda bağlı değil."
+    expect:
+      mode: COMPARATIVE_LAW
+      gates: { G0: PASS, G6: PASS }
+    assertions:
+      - "Manifesto: 'Open_Law → skipped: companion bağlı değil' UK metnini ep.legislation_uk'ye düşürür; G6 CONDITIONAL YAZILMAZ."
+      - "CELEX doğrulaması wire'lı mcp__eurlex__eurlex_lookup_celex ile yapılır (hard PASS)."
+      - "eurlex erişilemezse G6 CONDITIONAL + ep.eurlex_sparql yedeği; german-law get_eu_basis CELEX üretmez."
+    rationale: "SKILL §3 companion↔kapı bağı (v3.8: G6 = eurlex); composition-contract §3 tablo."
+
+  - id: FLEET-009
+    title: "Mod 8 — tbmm-mcp 0.2.1 sira_no onerge + DSpace zabıt dürüstlüğü"
+    given: >-
+      Hücresel tedavilere erişimi düzenleyen bir TBMM kanun teklifi hazırla.
+      legal-distiller S1 shard'ında tbmm sunucusu wire'lı ve anahtarlı.
+    expect:
+      mode: TBMM_KANUN_TEKLIFI
+      full_fleet: true
+      gates: { G0: PASS, G8: PASS }
+    assertions:
+      - "tbmm satırı skipped olmamalı — Mod 8 load-bearing; araçlar çağrılmalı (tools_used zaten 12 tbmm_*)."
+      - "Teklif dossier: tbmm_search_kanun_teklifi sonra tbmm_get_kanun_teklifi(sira_no) — onerge özet+imza+komisyon aşaması."
+      - "kanun_no yalnız kanunlar.durumu locator; tam kanun metni mcp__mevzuat__* (tbmm'den gövde uydurulmaz)."
+      - "Gerekçe gövdesi get_mevzuat_gerekce; tbmm_search_kanun locator."
+      - "Komisyon: tbmm_search_komisyon_raporu / tbmm_get_komisyon_raporu; havale tbmm_list_komisyon_havale query'siz deep-link (?komisyon= yok)."
+      - "Tutanak SPA manual_required ise related_acik_erisim 'kütüphane zabıt / dspace_fallback' etiketi taşır — canlı Genel Kurul DEĞİLDİR."
+      - "Sponsor tbmm_get_milletvekili (güncel dönem); tarihsel OA tbmm_list_acik_erisim_collections + tbmm_search_acik_erisim(page/year/collection)."
+      - "tasari_teklif_sd.onerge kullanılmamalı (302→anasayfa)."
+    rationale: >-
+      tbmm-mcp 0.2.1 (2026-08-17): sira_no → kanun_teklifi_sd.onerge_bilgileri+imza
+      canlı; SPA Genel Kurul/komisyon hâlâ manual_required; DSpace zabıt ≠ live
+      tutanak. Pipeline boşluğu: tools_used doluydu, distiller prompt'u
+      mevzuat-only'ye düşüyordu. SKILL §3 TBMM rota + 00-mod-pipelines Mod 8.
+
+  - id: FLEET-010
+    title: "Md.90/5 — intl-treaty ateş (COMPARATIVE + DRAFT coverage)"
+    given: >-
+      ATMP yönetmeliği karşılaştırmalı analizi ve taslak gerekçesi üretiliyor;
+      intl-treaty wire'lı ve anahtarlı.
+    expect:
+      mode: COMPARATIVE_LAW
+      full_fleet: true
+      gates: { G0: PASS, G6: PASS }
+    assertions:
+      - "COMPARATIVE/DRAFT coverage treaty_status ve coe_treaty_signatories listeler (ICESCR + Oviedo 164 / MEDICRIME 211)."
+      - "intl_treaty_info dosya başına bir kez çağrılır (live_coe:false beyanlı degrade)."
+      - "UHRI tools_used dışı — coverage'da ancak UN tavsiyesi gerekirse portal deep-link."
+      - "intl-treaty satırı sessiz skip olamaz; live_coe:false = degraded: snapshot."
+    rationale: >-
+      SKILL §3 Anayasa Md. 90/5 ateş listesi + fleet.yaml intl-treaty role.
+      Snapshot recapture 0.2.8 as_of 2026-08-17; coe.int canlı 403 durur.

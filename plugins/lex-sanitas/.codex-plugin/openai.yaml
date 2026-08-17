@@ -1,4 +1,0 @@
-interface:
-  display_name: "Lex Sanitas"
-  short_description: "Türkiye sağlık mevzuatı analizi, reformu ve norm metni üretimi protokolü."
-  default_prompt: "Draft Turkish health regulation text for this policy goal."

@@ -1,0 +1,548 @@
+---
+# =============================================================================
+# Cureolex Source Registry (v1.0 — introduced in skill v2.6.0)
+# =============================================================================
+# Cureolex'ın atıf yaptığı/araştırdığı kaynakların kanonik envanteri.
+# Amaç: (a) evidence_ledger entry'lerindeki source.registry_id'ye kararlı bağ
+# sağlamak; (b) G5/G6/G7 kapılarının hangi kaynak katmanından beslendiğini
+# makine-okunur kılmak; (c) programmatic_source_healthcheck.yaml ile
+# erişilebilirlik izlemeyi mümkün kılmak.
+#
+# Katmanlar (tier):
+#   constitution | primary_legislation | case_law | international_acquis |
+#   international_guidance | comparative_jurisdiction | mcp_server |
+#   scientific_connector | hta_body
+#
+# Doğrulama (verification): mevzuat_mcp | mevzuat_bilgisi_mcp | yargi_mcp |
+#   yoktez_mcp | titck_mcp | health_policy_mcp | german_law_mcp |
+#   fedlex_swiss_companion | open_primary_source | medical_research_connector |
+#   manual
+#
+# EMEKLİ (v1.1, 2026-08-07): `lex_sanitas_mcp`. Sarmalayıcı Worker
+# 2026-06-29'da `health-policy-mcp` adına taşındı ve kapsamı daraltıldı;
+# eski uç (lex-sanitas-mcp.cureonics.workers.dev) 2026-08-07 probe'unda
+# **404** döndü — ÖLÜ. Bu enum değeri hiçbir satırda kullanılmamalıdır;
+# tools/fleetkit/check_drift.py artık bunu CI'da yakalar.
+# =============================================================================
+
+registry_version: "1.1"
+introduced_in_skill_version: "2.6.0"
+generated_at: "2026-08-07T00:00:00Z"
+maintainer_note: >
+  Bu envanter REFORM ekseni içindir. Bireysel hak-arama (AYM bireysel başvuru,
+  bireysel SGK red savunması), TİTCK dava dilekçesi ve promosyonel materyal
+  denetimi kapsam-dışıdır (Scope Guard). İçtihat kaynakları reform-GEREKÇE
+  sinyali olarak kullanılır, dava dilekçesi üretimi için DEĞİL.
+
+# --------------------------------------------------------------------------
+# 1. Anayasal temeller
+# --------------------------------------------------------------------------
+constitution:
+  - id: tr.const.1982
+    name: "Türkiye Cumhuriyeti Anayasası (1982)"
+    key_articles:
+      - { art: "5",  topic: "Devletin temel amaç ve görevleri" }
+      - { art: "13", topic: "Temel hak ve hürriyetlerin sınırlanması (kanunilik)" }
+      - { art: "17", topic: "Yaşam hakkı, vücut bütünlüğü" }
+      - { art: "20", topic: "Özel hayatın gizliliği → KVKK m. 6 (sağlık verisi)" }
+      - { art: "56", topic: "Sağlık hakkı (ana hüküm)" }
+      - { art: "90/5", topic: "Usulüne uygun andlaşmaların kanun hükmü + ICESCR Md. 12" }
+      - { art: "88", topic: "Kanun teklif ve görüşülmesi (Mod 8)" }
+      - { art: "124", topic: "Yönetmeliklerin kanuna aykırı olamayacağı" }
+    access: { url: "https://www.mevzuat.gov.tr/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 2. Primer mevzuat (kanun düzlemi)
+# --------------------------------------------------------------------------
+primary_legislation:
+  - id: tr.law.1262
+    name: "1262 sayılı İspençiyari ve Tıbbi Müstahzarlar Kanunu"
+    enacted: "1928-05-14"
+    domain: "İlaç ruhsatlandırma (temel kanun)"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.1219
+    name: "1219 sayılı Tababet ve Şuabatı San'atlarının Tarzı İcrasına Dair Kanun"
+    enacted: "1928-04-11"
+    domain: "Sağlık mesleklerinin icrası"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.3359
+    name: "3359 sayılı Sağlık Hizmetleri Temel Kanunu"
+    enacted: "1987-05-07"
+    domain: "Sağlık hizmetleri organizasyonu"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.6197
+    name: "6197 sayılı Eczacılar ve Eczaneler Hakkında Kanun"
+    enacted: "1953-12-18"
+    domain: "Eczane düzenlemesi"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.5258
+    name: "5258 sayılı Aile Hekimliği Kanunu"
+    enacted: "2004-11-24"
+    domain: "Aile hekimliği"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.5510
+    name: "5510 sayılı Sosyal Sigortalar ve Genel Sağlık Sigortası Kanunu"
+    enacted: "2006-05-31"
+    domain: "GSS zemini (SUT dayanağı) — POLİTİKA reformu ekseni"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+  - id: tr.law.6502
+    name: "6502 sayılı Tüketicinin Korunması Hakkında Kanun"
+    enacted: "2013-11-07"
+    domain: "TKHK — sağlık hizmeti tüketimi kesişimi"
+    status: in_force
+    access: { url: "https://www.mevzuat.gov.tr/", mcp_server: mevzuat }
+    verification: mevzuat_mcp
+
+secondary_legislation_reference_files:
+  note: "Yönetmelik/tebliğ/genelge düzlemi paket içi referanslarda haritalanır."
+  files:
+    - references/02-saglik-mevzuat-haritasi.md
+    - references/07-mevzuat-mcp-workflow.md
+
+# --------------------------------------------------------------------------
+# 3. İçtihat (reform-gerekçe sinyali — dava dilekçesi DEĞİL)
+# --------------------------------------------------------------------------
+case_law:
+  - id: tr.court.aym
+    name: "Anayasa Mahkemesi (norm denetimi + içtihat)"
+    use: "Belirlilik/ölçülülük + sağlık hakkı reform gerekçe sinyali"
+    scope_note: "Bireysel başvuru DİLEKÇESİ üretimi KAPSAM DIŞI (→ onko-erisim)."
+    access: { url: "https://www.anayasa.gov.tr/", mcp_server: yargi }
+    verification: yargi_mcp
+  - id: tr.court.danistay
+    name: "Danıştay (idari yargı içtihatı)"
+    use: "Yönetmelik iptal riski analizi (ANALYZE)"
+    scope_note: "İptal davası DİLEKÇESİ üretimi KAPSAM DIŞI."
+    access: { url: "https://www.danistay.gov.tr/", mcp_server: yargi }
+    verification: yargi_mcp
+  - id: tr.court.yargitay
+    name: "Yargıtay (adli yargı içtihatı)"
+    use: "Doktrin + içtihat zinciri (G5)"
+    access: { url: "https://www.yargitay.gov.tr/", mcp_server: yargi }
+    verification: yargi_mcp
+  - id: intl.court.echr
+    name: "AİHM / ECtHR"
+    use: "AİHS Md. 2/8 reform gerekçe sinyali (örn. Mehmet Şentürk, Asiye Genç)"
+    access: { url: "https://hudoc.echr.coe.int/" }
+    verification: open_primary_source
+  - id: intl.court.cjeu
+    name: "ABAD / CJEU"
+    use: "AB müktesebatı yorumu (COMPARATIVE_LAW)"
+    access: { url: "https://curia.europa.eu/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 4. Uluslararası müktesebat (AB — CELEX zorunlu, G6)
+# --------------------------------------------------------------------------
+international_acquis:
+  - id: eu.celex.32014R0536
+    name: "Klinik Araştırmalar Tüzüğü (CTR)"
+    celex: "32014R0536"
+    access: { url: "https://eur-lex.europa.eu/", consolidated: true, mcp_server: eurlex }
+    verification: open_primary_source
+  - id: eu.celex.32007R1394
+    name: "İleri Tedavi Tıbbi Ürünleri Tüzüğü (ATMP)"
+    celex: "32007R1394"
+    access: { url: "https://eur-lex.europa.eu/", consolidated: true, mcp_server: eurlex }
+    verification: open_primary_source
+  - id: eu.celex.32001L0083
+    name: "Beşeri Tıbbi Ürünler Direktifi"
+    celex: "32001L0083"
+    access: { url: "https://eur-lex.europa.eu/", consolidated: true, mcp_server: eurlex }
+    verification: open_primary_source
+  - id: eu.celex.MDR_IVDR
+    name: "MDR (2017/745) + IVDR (2017/746)"
+    celex: ["32017R0745", "32017R0746"]
+    access: { url: "https://eur-lex.europa.eu/", mcp_server: eurlex }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 4.bis AB referans sözlüğü / açık veri
+#   v1.1 (2026-08-07): health-policy yeniden-kapsamlandırmasında (2026-06-29)
+#   eurovoc_concept_lookup ve dataeuropa_dataset_search araçları KALDIRILDI.
+#   Bu iki kaynak artık HİÇBİR wire'lı sunucu tarafından sarılmıyor → web-birincil.
+# --------------------------------------------------------------------------
+eu_reference_data:
+  - id: eu.eurovoc
+    name: "EuroVoc — çok dilli AB thesaurus (SKOS)"
+    use: "Kavram→kanonik EuroVoc URI eşleme (DRAFT/ANALYZE/COMPARATIVE_LAW); uydurma kavram riskini düşürür (G7)"
+    access: { url: "https://publications.europa.eu/webapi/rdf/sparql" }
+    wrapped: "SARMALANMADI (v1.1) — eurovoc_concept_lookup health-policy rescope'unda kaldırıldı."
+    verification: open_primary_source
+    note: >
+      EuroVoc URI'si programatik olarak doğrulanamıyor → URI ÜRETME.
+      Kavram iddiası 'EuroVoc doğrulanmalı' notuyla mcp_verified=false taşır (G7).
+  - id: eu.dataeuropa
+    name: "data.europa.eu — AB açık-veri portalı"
+    use: "Resmî gazete/dataset keşfi (RIA/COMPARATIVE_LAW). MEVZUAT METNİ DEĞİL — dataset metaverisi."
+    access: { url: "https://data.europa.eu/" }
+    wrapped: "SARMALANMADI (v1.1) — dataeuropa_dataset_search health-policy rescope'unda kaldırıldı."
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 5. Uluslararası rehber/norm (R10/R11/R12)
+# --------------------------------------------------------------------------
+international_guidance:
+  - id: un.icescr.art12
+    name: "ICESCR Md. 12 + Genel Yorum 14 (AAAQ)"
+    use: "Anayasa Md. 90/5 köprüsü (erişilebilirlik kriteri)"
+    access:
+      url: "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=IV-3&chapter=4&clang=_en"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-3). mcp_verified:false."
+  - id: un.iccpr
+    name: "ICCPR — Medeni ve Siyasi Haklar Sözleşmesi (MTDSG IV-4)"
+    use: "Anayasa Md. 90/5 uluslararası insan-hakları andlaşması"
+    access:
+      url: "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=IV-4&chapter=4&clang=_en"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-4). mcp_verified:false. UHRI portalı tools_used dışı."
+  - id: un.cedaw
+    name: "CEDAW — Kadınlara Karşı Her Türlü Ayrımcılığın Önlenmesi (MTDSG IV-8)"
+    use: "Anayasa Md. 90/5 + sağlık/eşitlik kesişimi"
+    access:
+      url: "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=IV-8&chapter=4&clang=_en"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-8). mcp_verified:false."
+  - id: un.crc
+    name: "CRC — Çocuk Hakları Sözleşmesi (MTDSG IV-11)"
+    use: "Anayasa Md. 90/5 + çocuk sağlığı"
+    access:
+      url: "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=IV-11&chapter=4&clang=_en"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-11). mcp_verified:false."
+  - id: un.crpd
+    name: "CRPD — Engelli Hakları Sözleşmesi (MTDSG IV-15)"
+    use: "Anayasa Md. 90/5 + sağlık/erişilebilirlik"
+    access:
+      url: "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=IV-15&chapter=4&clang=_en"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-15). mcp_verified:false."
+  - id: coe.oviedo.cets164
+    name: "Oviedo — İnsan Hakları ve Biyotıp Sözleşmesi (CETS 164)"
+    use: "Anayasa Md. 90/5 + sağlık/biyotıp. Yapısal imza tablosu anlık görüntü (coe.int canlı 403)."
+    access:
+      url: "https://www.coe.int/en/web/conventions/full-list?module=treaty-detail&treatynum=164"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "coe_treaty_signatories; mcp_verified:false; live_coe:false. Taraf statüsü anlık görüntüden okunur (as_of damgalı); uydurulmaz."
+  - id: coe.medicrime.cets211
+    name: "MEDICRIME — Tıbbi Ürünlerin Sahteciliği Sözleşmesi (CETS 211)"
+    use: "Anayasa Md. 90/5 + sahte ilaç. Yapısal imza tablosu anlık görüntü (coe.int canlı 403)."
+    access:
+      url: "https://www.coe.int/en/web/conventions/full-list?module=treaty-detail&treatynum=211"
+      mcp_server: intl-treaty
+    verification: open_primary_source
+    note: "coe_treaty_signatories; mcp_verified:false; live_coe:false. Taraf statüsü anlık görüntüden okunur (as_of damgalı); uydurulmaz."
+  - id: ohchr.uhri
+    name: "OHCHR UHRI — UN insan hakları tavsiyeleri (insan portalı)"
+    use: "UN tavsiyesi gerektiğinde coverage deep-link. Sorgu API yok; 109 MB dump Worker'a GET edilmez."
+    access:
+      url: "https://uhri.ohchr.org/"
+    verification: open_primary_source
+    note: "uhri_search / uhri_fetch_document tools_used DIŞIDIR (manual_required). treaty_status/treaty_reservations UN katılım/çekince kaynağıdır."
+  - id: who.guidance
+    name: "WHO operasyonel rehberleri"
+    access: { url: "https://www.who.int/" }
+    verification: open_primary_source
+  - id: ich.guidelines
+    name: "ICH kılavuzları (Q/S/E/M; M4 CTD + M8 eCTD spesifikasyonu)"
+    use: >-
+      Norm-düzeyi harmonizasyon + CTD/eCTD dosya-yapısı spesifikasyonu
+      (modüller, granularity, bölgesel M1 vs ICH M2–M5, spesifikasyon sürümleri,
+      M8 Q&A). COMPARATIVE/DRAFT dosya-yapısı atıfı. Şirket sequence doldurma
+      veya EMA/TİTCK gönderimi değil (ops → pharmaintel).
+    access: { url: "https://www.ich.org/", mcp: "https://ich.cureonics.com/mcp" }
+    verification: open_primary_source
+  - id: pics.gmp
+    name: "PIC/S GMP rehberleri"
+    access: { url: "https://picscheme.org/" }
+    verification: open_primary_source
+  - id: imdrf.guidance
+    name: "IMDRF tıbbi cihaz rehberleri"
+    access: { url: "https://www.imdrf.org/" }
+    verification: open_primary_source
+
+# --------------------------------------------------------------------------
+# 6. Karşılaştırmalı yargı bölgeleri (COMPARATIVE_LAW; v2.5 yeni bölgeler)
+# --------------------------------------------------------------------------
+comparative_jurisdiction:
+  - id: cmp.hk
+    name: "Hong Kong — Cap. 138 vd."
+    access: { url: "https://www.elegislation.gov.hk/" }
+    verification: open_primary_source
+  - id: cmp.au
+    name: "Avustralya — Federal Register of Legislation (Therapeutic Goods Act vd.)"
+    access: { url: "https://www.legislation.gov.au/", mcp_server: health-policy }
+    wrapped: "australia_legislation_search / australia_legislation_fetch (FRL OData, $skip) — 2026-08-17 canlı; C2016C00945 400 NRE → upstream_unusable"
+    verification: health_policy_mcp
+  - id: cmp.nz
+    name: "Yeni Zelanda — Medicines Act 1981"
+    access: { url: "https://www.legislation.govt.nz/" }
+    verification: open_primary_source
+    note: "D-class (web_primary): API yalnızca 202 async-generate/poll döner; temiz senkron uç YOK → SARMALANMADI."
+  - id: cmp.ca
+    name: "Kanada — Justice Laws (Food and Drugs Act vd.)"
+    access: { url: "https://laws-lois.justice.gc.ca/", mcp_server: health-policy }
+    wrapped: "canada_justicelaws_fetch (LIMS XML) — 2026-08-17 canlı (F-27 text/xml ~296KB); arama ucu yok"
+    verification: health_policy_mcp
+    note: >
+      v1.1: `health_canada_dpd` aracı health-policy rescope'unda KALDIRILDI —
+      DPD (ilaç ürün veritabanı) artık klinik konnektörlerin işidir, burada
+      yalnız mevzuat METNİ (Justice Laws) sarılıdır. Kanada'da ARAMA ucu yok:
+      yalnız `_fetch` (kimlikle getirme) mevcuttur.
+  - id: cmp.jp
+    name: "Japonya — e-LAWS (e-Gov Law Search, v2.7.0 yeni)"
+    access: { url: "https://laws.e-gov.go.jp/", mcp_server: health-policy }
+    wrapped: "japan_elaws_search / japan_elaws_fetch (e-LAWS API v2, law_data 64KB prefix) — 2026-08-17 canlı"
+    verification: health_policy_mcp
+  - id: cmp.ch
+    name: "İsviçre — Fedlex (Classified Compilation RS/SR)"
+    access: { url: "https://www.fedlex.admin.ch/", mcp_server: fedlex }
+    wrapped: "WIRE'LI — mcp__fedlex__* (fedlex_get_law_by_sr params.sr_number, fedlex_search_laws keywords)"
+    verification: fedlex_mcp
+    note: >
+      v3.8.0 (2026-08-08) — Fedlex Swiss companion'dan WIRE'A terfi etti
+      (`fedlex.cureonics.com` → :8317, upstream fedlex-mcp 2.0.1 @ 127.0.0.1:8321).
+      CH birincil metin connector bağlamasına bağlı değildir.
+      ÇAĞRI SÖZLEŞMESİ: her araç `{"params":{…}}` ister — düz alan = Field required
+      (çağrı hatası, yokluk kanıtı değil). search_laws → params.keywords
+      (params.query YOK); get_law_by_sr → params.sr_number (örn. "812.21" → HMG /
+      eli/cc/2001/422, ölçülmüş). tools_used = 7 yük-taşıyan araç (upstream 12;
+      fantom ekleme). Kanun metni uydurma. Yedek: ep.fedlex_sparql
+      (`a jolux:ConsolidationAbstract` + DISTINCT; yoksa BBl taslağı).
+      Ansvar CH satırı yalnız çerçeve-teyit.
+  - id: cmp.de
+    name: "Almanya — federal mevzuat (german-law-mcp, FTS5 statü korpusu)"
+    access: { url: "https://german-law.cureonics.com/mcp", mcp_server: german-law }
+    wrapped: "search_legislation / get_provision / get_eu_basis / validate_citation / check_currency (wire'lı, :8307)"
+    verification: german_law_mcp
+    note: >
+      v1.2 (2026-08-17): `get_provision` / `validate_citation` / `check_currency`
+      günlük kısaltmayı (`AMG`→`amg_1976`, `BDSG`→`bdsg_2018`) çözer; çözülemeyen
+      kısaltma `{found:false, reason}` — çıplak null yok. AB araçları free
+      korpusta çalışır (şema artık professional-tier yalanı taşımaz). Yalnız
+      case_law/prep (`upgradeRequired`) + history/diff/recent (`premium:false`)
+      dürüst kapalı. Eski `germany_law_search/_get` (NeuRIS beta) YOK.
+  - id: cmp.uk
+    name: "Birleşik Krallık — Find Case Law / Hansard (uk-legal-mcp)"
+    access: { url: "https://uk-law.cureonics.com/mcp", mcp_server: uk-legal }
+    wrapped: >-
+      case_law_search / judgment_* / parliament_search_hansard / bills_* /
+      votes_* / committees_search_evidence / citations_* (OSCOLA) — wire'lı :8318
+    verification: open_primary_source
+    note: >
+      WIRE'LI (uk-law.cureonics.com, OAuth kapısı :8318; upstream 0.6.0
+      127.0.0.1:8322 via loopback_entry). Tercih: içtihat + parlamento.
+      `legislation_*` tools_used DIŞIDIR (ölçülen upstream HTTP istemci kırığı;
+      WAF teşhisi doğrulanmadı). UK statute TEXT → ep.legislation_uk `/data.akn`
+      veya Open Law companion — başarısız legislation_* yokluk kanıtı değildir.
+  - id: cmp.br
+    name: "Brezilya — ANVISA mevzuatı / Diário Oficial (v2.5 yeni)"
+    access: { url: "https://www.gov.br/anvisa/" }
+    verification: open_primary_source
+    note: "D-class (web_primary): LexML SRU/apidata uçları 404 (2026-06-07 probe); resmî programatik uç doğrulanamadı → SARMALANMADI."
+  - id: cmp.sa
+    name: "Suudi Arabistan — SFDA / Saudi Open Data (v2.5 yeni)"
+    access: { url: "https://www.sfda.gov.sa/" }
+    verification: open_primary_source
+    note: "D-class (web_primary): open.data.gov.sa erişilemedi/CKAN doğrulanamadı (2026-06-07 probe) → SARMALANMADI."
+  - id: cmp.ae
+    name: "BAE — MoHAP (v2.5 yeni)"
+    access: { url: "https://mohap.gov.ae/" }
+    verification: open_primary_source
+    note: "D-class: UAE Legislation Portal public API yok; MoHAP Open Data onboarding bekliyor (Dalga 3) → SARMALANMADI."
+
+# --------------------------------------------------------------------------
+# 7. MCP sunucuları (operasyonel omurga)
+# --------------------------------------------------------------------------
+mcp_server:
+  - id: mcp.mevzuat
+    name: "Mevzuat MCP"
+    role: "Türk mevzuat metni doğrulama (DRAFT/ANALYZE)"
+    verification: mevzuat_mcp
+  - id: mcp.yargi
+    name: "Hukuki Veritabanları / Yargı MCP"
+    role: "AYM/Danıştay/Yargıtay içtihat doğrulama (G5)"
+    verification: yargi_mcp
+  - id: mcp.yoktez
+    name: "YokTez MCP"
+    role: "Akademik tez/doktrin taraması (G5)"
+    verification: yoktez_mcp
+  - id: mcp.titck
+    name: "TİTCK MCP"
+    role: "Beşeri tıbbi ürün master index (barkod/ATC/SNOMED); cihaz/ÜTS değil. Snapshot tazeliği list_datasets.is_stale."
+    verification: titck_mcp
+  - id: mcp.tbmm
+    name: "TBMM MCP"
+    role: >
+      Yasama tarihçesi (tbmm-mcp 0.2.1) — Mod 8 omurgası; diğer modlarda çapraz.
+      Rota: tbmm_search_kanun_teklifi → tbmm_get_kanun_teklifi(sira_no) özet+imza+
+      komisyon aşaması (onerge); kanun_no → kanunlar.durumu locator (gerekçe
+      GÖVDESİ mevzuat get_mevzuat_gerekce). Komisyon search/get +
+      tbmm_list_komisyon_havale (query'siz deep-link). Tutanak search/get;
+      SPA related_acik_erisim kütüphane zabıtıdır, canlı Genel Kurul değildir.
+      Sponsor tbmm_get_milletvekili (güncel dönem). OA:
+      list_acik_erisim_collections → search_acik_erisim(page/year/collection)
+      → get_acik_erisim_document. tasari_teklif_sd.onerge kullanılmaz
+      (302→anasayfa). Tam kanun metni mevzuat-mcp; Resmî Gazete bu sunucunun
+      işi değildir.
+    access: { url: "https://tbmm.cureonics.com/mcp", mcp_server: tbmm }
+    verification: open_primary_source
+  - id: mcp.detsis
+    name: "DETSİS MCP"
+    role: >
+      Devlet Teşkilatı Merkezi Kayıt Sistemi — kurumsal prosopografi (genelgeyi
+      çıkaran birimin resmî adı, DETSİS no, hiyerarşi, hizmet/belge/mevzuat
+      sekmeleri, kapatılan birim için birimTarihceId → islem_kunye). Yokluk
+      kesin kanıt değil (caveat). faaliyetDurumuId etiketlenmez.
+    access: { url: "https://detsis.cureonics.com/mcp", mcp_server: detsis }
+    verification: open_primary_source
+  - id: mcp.mevzuat_bilgisi
+    name: "Mevzuat Bilgisi MCP (bedesten.adalet.gov.tr + mevzuat.gov.tr)"
+    role: >
+      Katman-1 YEDEĞİ (v1.1, 2026-08-07 eklendi). `mcp.mevzuat` birincil sunucusu
+      düştüğünde (upstream TLS/erişim arızası, origin timeout) aynı Türk mevzuat
+      sorgusunu BAĞIMSIZ bir uygulama ve BAĞIMSIZ bir upstream (bedesten REST)
+      üzerinden yanıtlar. 2026-08-06 denetiminde birincil düşükken 5210 sayılı
+      Yönetmeliği doğru döndürdüğü fiilen ölçüldü.
+    access: { url: "https://mevzuat.surucu.dev/mcp", mcp_server: mevzuat-bilgisi }
+    verification: mevzuat_bilgisi_mcp
+    note: >
+      YEDEK, EŞDEĞER DEĞİL. Primer (mevzuat-mcp 0.15.0, yerel paket) first-party
+      bedesten taşır: kanun/mevzuat NUMARASI lookup, `phrase` (Solr),
+      `search_within_mevzuat`, `get_mevzuat_gerekce` tam metin. HP production
+      henüz 0.15.0'a kesilmedi — canlı uç 0.14.x ise bu üçü o uçta yoktur.
+      Farklılıklar zorunlu olarak beyan edilir:
+      (a) yapısal graf (`madde_tree`/`madde_diff`/`timeline`/`relations`) yalnız
+      primerdedir; ikincil bağımsız ikinci oydur (çatışmada primer);
+      (b) ikincil `search_mevzuat` AND/OR/NOT DESTEKLEMEZ → `+terim1 +terim2`;
+      belge-içi AND/OR/NOT primere `search_within_mevzuat` aittir;
+      (c) `resolve_resmi_gazete` KARŞILIĞI YOKTUR — RG çapa yalnız birincil
+      `mcp.mevzuat`tadır, yedek bu boşluğu KAPATMAZ.
+      Playwright-yalnız ikincil yüzeyleri (CB karar/genelge PDF markdown,
+      OpenRouter semantik search_within) primere mal etme.
+      Yedekten gelen her atıf `source: mevzuat_bilgisi_mcp (fallback)` etiketi ve
+      birincil doğrulama açığı notu taşır; birincil ayağa kalkınca çapraz-doğrulanır.
+
+  - id: mcp.health_policy
+    name: "Health Policy MCP (Cloudflare Worker connector)"
+    role: >
+      Programatik Katman-2 sarmalayıcı — Türkiye-DIŞI ve Ansvar-KAPSAMADIĞI
+      sağlık mevzuatı metni: ABD (eCFR / Federal Register / GovInfo / Congress),
+      Kanada Justice Laws, Japonya e-LAWS, Avustralya FRL, İspanya BOE,
+      İrlanda eISB, Çin NPC, Meksika DOF (CN/MX best-effort) + `semantic_search`
+      (çok-dilli) + `legal_distill_start`/`_result` (sunucu-tarafı distilasyon).
+    access: { url: "https://health-policy-mcp.cureonics.workers.dev/mcp", mcp_server: health-policy }
+    verification: health_policy_mcp
+    note: >
+      v1.1 (2026-08-07) — BU KAYIT `mcp.lex_sanitas` KAYDININ YERİNİ ALIR.
+      Sarmalayıcı 2026-06-29'da `lex-sanitas-mcp` → `health-policy-mcp` olarak
+      yeniden adlandırıldı VE kapsamı daraltıldı. Eski uç
+      (lex-sanitas-mcp.cureonics.workers.dev) 2026-08-07 probe'unda **HTTP 404**
+      döndü — ÖLÜ; yeni uç aynı probe'da 401 (auth kapısı, canlı) döndü.
+      SINIRLAR (rescope'ta bu araçlar KALDIRILDI, artık burada aranmaz):
+      AB CELLAR/EUR-Lex → wire'lı `eurlex` (G6); UK statute TEXT → Open Law
+      companion + `ep.legislation_uk` (/data.akn) — wire'lı `uk-legal` yalnız
+      içtihat/Hansard/bills (`legislation_*` tools_used dışı, kırık istemci);
+      Almanya → `german-law` (wire'lı); İsviçre Fedlex → wire'lı `fedlex`;
+      CH/FR/IT/NL/SE/DK/FI/AT/PL tarama → `Ansvar` companion; Türkiye →
+      `mevzuat`/`titck`; EuroVoc + data.europa.eu → SARMALANMADI (web-birincil);
+      WHO GHO / openFDA / Health Canada DPD → klinik konnektörler.
+      v3.1.0 (2026-08-17): SSRF allowlist + gövde tavanı + charset; stamp kaynağı
+      `health_policy_mcp`; distill KV `progress:v2:`; ES/MX/CA/IE hâlâ ID-only.
+      NZ/BR/SG (ve Ansvar belirsiz CL) SARMALANMADI.
+
+  - id: mcp.eurlex
+    name: "EUR-Lex / CELLAR MCP (OAuth gateway + pinned upstream)"
+    role: >
+      G6 CELEX taşıyıcısı — wire'lı `eurlex` (eurlex.cureonics.com). Upstream
+      `@cyanheads/eur-lex-mcp-server` 0.9.8 loopback :8316; OAuth kapısı :8315;
+      fork yok. Birincil araç: eurlex_lookup_celex (varlık/tür/tarih). Ayrıca
+      search/get_document/get_cases/get_relations/browse_subjects/query_sparql.
+      Authorization upstream'e iletilmez; upstream düşünce 502 + mcp_verified:false
+      (sessiz boş sonuç değil).
+    access: { url: "https://eurlex.cureonics.com/mcp", mcp_server: eurlex }
+    verification: open_primary_source
+    note: >
+      Doğrulama (2026-08-08 + 2026-08-17): CELEX 32001L0083 → cellar
+      6af3ed69-c00a-4629-9deb-a7003a30a52d, DIR, 2001-11-06 (ham CELLAR SPARQL
+      ile aynı). Degrade: ep.eurlex_sparql + G6 CONDITIONAL. german-law
+      get_eu_basis CELEX üretmez — ikame değildir. Open Law AB yarısı buraya
+      taşındı; G6 artık Open Law'a bağlı değil.
+
+  - id: mcp.uk_legal
+    name: "UK Legal MCP (OAuth kapısı + pinli upstream)"
+    role: >
+      Birleşik Krallık içtihat (Find Case Law), Hansard, bills, divisions,
+      komisyon delilleri, OSCOLA. Wire'lı tools_used yalnız ölçülerek çalışan
+      araçlar; legislation_* DIŞARIDA.
+    access: { url: "https://uk-law.cureonics.com/mcp", mcp_server: uk-legal }
+    verification: open_primary_source
+    note: >
+      Kapı :8318 → upstream uk-legal-mcp==0.6.0 @ 127.0.0.1:8322
+      (loopback_entry; 0.0.0.0 yasak). UK statute TEXT bu kayıttan gelmez —
+      ep.legislation_uk `/data.akn` veya Open Law. legislation_* kırık
+      (upstream istemci; WAF teşhisi doğrulanmadı); isError dürüst + honesty scrub.
+
+  - id: mcp.intl_treaty
+    name: "International Treaty MCP (Cloudflare Worker connector)"
+    role: >
+      UN MTDSG katılım/çekince (treaty_status / treaty_reservations, chapter IV)
+      + CoE anlık görüntü (coe_treaty_signatories; coe.int canlı 403) + UHRI
+      manual_required. Anayasa Md.90/5. Her çıktı mcp_verified:false.
+    access: { url: "https://intl-treaty-mcp.cureonics.workers.dev/mcp", mcp_server: intl-treaty }
+    verification: open_primary_source
+    note: >
+      UHRI dump (~109 MB) Worker'a GET edilmez; UHRI tools_used dışı (insan
+      portalı / coverage deep-link). Yakalanmamış CETS → manual_required
+      (imzacı listesi uydurulmaz). live_coe:false beyanlı degrade (skip değil).
+      Taraf/çekince yalnız treaty_status / treaty_reservations / coe_treaty_signatories.
+
+# --------------------------------------------------------------------------
+# 8. Bilimsel konnektörler (medical-research üzerinden — dolaylı)
+# --------------------------------------------------------------------------
+scientific_connector:
+  via: medical-research
+  note: "Cureolex bunları doğrudan çağırmaz; medical-research handoff ile sidecar.connectors_used'da görünür."
+  connectors:
+    - { id: sci.pubmed,         name: "PubMed" }
+    - { id: sci.epmc,           name: "Europe PMC" }
+    - { id: sci.clinicaltrials, name: "ClinicalTrials.gov" }
+    - { id: sci.dailymed,       name: "DailyMed" }
+    - { id: sci.openfda,        name: "openFDA" }
+    - { id: sci.ema,            name: "EMA / EPAR" }
+    - { id: sci.adisinsight,    name: "AdisInsight" }
+    - { id: sci.consensus,      name: "Consensus" }
+    - { id: sci.biorxiv,        name: "bioRxiv / medRxiv" }
+
+# --------------------------------------------------------------------------
+# 9. HTA gövdeleri (OPINE/RIA)
+# --------------------------------------------------------------------------
+hta_body:
+  - id: hta.icer
+    name: "ICER (ABD)"
+    access: { url: "https://icer.org/" }
+    verification: open_primary_source
+  - id: hta.nice
+    name: "NICE (İngiltere)"
+    access: { url: "https://www.nice.org.uk/" }
+    verification: open_primary_source

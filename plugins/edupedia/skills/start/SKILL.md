@@ -71,7 +71,7 @@ Bağlıysa modül üretiminde **`kb_search(konu)`** ile tamamlayıcı materyal �
   Yani **237 kayıt sayısıdır, korpus içeriği değildir**.)* Etkileşimli modül üretirken **en
   değerli kaynak budur**: konuya uygun simülasyonu `kb_search` ile bulup modülde
   bağlantılayın/gömün. Fizik/kimya/matematik güçlü; **biyoloji ince** (fotosentez/mitoz YOK).
-- **Vikipedi-TR** — CC BY-SA 4.0. **Arka plan ve örnek malzemedir, OTORİTE DEĞİLDİR.** Üçüncül
+- **Vikipedi-TR** — CC BY-SA 4.0. **124 doğrulanmış müfredat kategorisi** (tüm fen, matematik, sosyal/tarih, coğrafya, Türkçe/edebiyat, felsefe, bilişim). **Arka plan ve örnek malzemedir, OTORİTE DEĞİLDİR.** Üçüncül
   kaynaktır ve Türkçe sürümü incedir (ölçüm: İngilizce'nin %9,6'sı kadar madde, ama yalnız
   **%1,8'i kadar aktif editör** → madde başına denetim ~5 kat az). Bir kazanımı Vikipedi'ye
   dayandırmayın; ders kitabına dayandırın.

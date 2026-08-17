@@ -75,6 +75,12 @@ runtime:
         when: >-
           Adım 2 connector canlılık kontrolü + Tier-2 (get_figure) yetenek probu.
           Bağlı değilse offline yola işaret eder; üretim bloke olmaz.
+      - name: 'egitim-kaynak (Eğitim Kaynakları OER RAG MCP)'
+        transport: 'streamable-http (MCP)'
+        tools: 6
+        when: >-
+          Adım 2 connector kontrolü ve konu/kavram içerik zenginleştirme (124 kategori, PhET 175 sim).
+          Bağlı değilse zenginleştirme atlanır; üretim bloke olmaz.
 
 constraints:
   out_of_scope:

@@ -9,10 +9,17 @@ kurulur-kurulmaz connector'ı devreye alan, komut-yüzeyli bir Claude plugin'idi
 tek-dosya, bağımsız (offline çalışır), emojisiz ama ikon/piktogram/SVG zengindir; her olgusal
 iddia bir MEB kazanım koduna izlenebilir (G-CURRICULUM provenansı).
 
-## Kurulum
+## Kurulum ve Çoklu Platform Desteği
 
-Plugin yüklendiğinde `maarif-mufredat` connector'ı (`.mcp.json`) otomatik devreye girer — ayrı
-bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için `/edupedia:durum`.
+Plugin ve MCP konnektörleri tüm modern LLM ortamlarında tam uyumlulukla çalışır:
+- **Claude Code (CLI)**: `doppler run -p cureohub -c dev_personal -- claude` (otomatik `.mcp.json` enjeksiyonu ve kancalar).
+- **claude.ai (Web/Desktop)**: `python3 plugins/edupedia/scripts/build_claude_ai_skill.py` ile derlenen skill zip paketi + Custom Connectors.
+- **Cursor IDE**: Composer & Agent Mode uyumlu `.cursor-plugin/` ve MCP Settings entegrasyonu.
+- **ChatGPT / OpenAI Codex**: Developer Mode OAuth 2.1 RFC 9728 Custom Connector desteği.
+- **Google Gemini / AI Studio**: Streamable HTTP MCP ve `oauth-redirect.googleusercontent.com` desteği.
+- **VS Code / Roo Code / Cline / Windsurf / Claude Desktop**: Standart JSON MCP tanımları.
+
+> Tüm platformlar için adım adım yapılandırma ve kopyalanabilir JSON blokları: **[KURULUM.md](./KURULUM.md)**.
 
 ## Komutlar
 
@@ -40,7 +47,7 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 
 - **Maarif Modeli MCP** — `maarif-mufredat` · `https://mufredat.cureonics.com/mcp` ·
   **yalnız Türkiye MEB / Türkiye Yüzyılı Maarif Modeli (2024)** · 21 araç (dört küme: Keşif ·
-  Kazanım · Beceri çerçevesi · Belge+medya). Auth yok (public read-only).
+  Kazanım · Beceri çerçevesi · Belge+medya). OAuth 2.1 / Bearer (`${MUFREDAT_MCP_API_KEY}`).
 - **egitim-kaynak** — `egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp` · açık
   eğitsel kaynak (OER) RAG · 6 araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`,
   `kb_sources`, `kb_server_info`). Kazanımı Maarif verir, İÇERİĞİ bu zenginleştirir
@@ -55,8 +62,8 @@ bir kurulum adımı gerekmez, auth yoktur (public read-only). Doğrulamak için 
 
   **Kaynaklar:** **PhET** (CC BY-NC 4.0, **atıf zorunlu**; korpusta **175 sim**, tamamı Türkçe
   — etkileşimli modülde en değerlisi; fizik/kimya/matematik güçlü, biyoloji ince) ·
-  **Vikipedi-TR** (CC BY-SA 4.0 — **arka plan/örnek, otorite değil**). *Vikikitap düşürüldü:
-  9 aktif editör.* Getirme: **BM25 önce, vektör YEDEK** (`bge-m3`/Workers AI) — RRF füzyonu
+  **Vikipedi-TR** (CC BY-SA 4.0 — 124 doğrulanmış müfredat kategorisi; fen, matematik, sosyal/tarih, coğrafya, Türkçe/edebiyat, felsefe, bilişim dalları — **arka plan/örnek, otorite değil**). *Vikikitap düşürüldü:
+  9 aktif editör.* Getirme: **BM25 önce (Türkçe harf-katlama varyantlı), vektör YEDEK** (`bge-m3`/Workers AI) — RRF füzyonu
   2026-07-17'de kaldırıldı: ölçüm hibridi 3/8, saf BM25'i 6/8 verdi.
 
 Tam envanter, kimlik/PDF uyarıları, provenans standardı ve Tier-1/Tier-2 görüntü-dayanak

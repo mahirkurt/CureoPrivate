@@ -240,14 +240,21 @@ runtime:
     - node                       # şablon JS motoru sözdizimi doğrulaması (node --check)
   mcp_servers:
     optional:
-      - name: 'Müfredat MCP'
+      - name: 'maarif-mufredat (Maarif Modeli MCP)'
         transport: 'streamable-http (MCP)'
-        tools: 19
+        tools: 21
         when: >-
           Müfredat-temelli modül istendiğinde (kazanım kodu, "MEB kazanımına göre",
           ders+sınıf+konu, "Maarif Modeli"). Derleme anında çağrılır; çekilen içerik
           kaynak olur, üretilmiş modül yine bağımsız/çevrimdışıdır. Erişilemezse
           offline yola dönülür. Bkz. references/curriculum-integration.md.
+      - name: 'egitim-kaynak (Eğitim Kaynakları OER RAG MCP)'
+        transport: 'streamable-http (MCP)'
+        tools: 6
+        when: >-
+          Açık eğitsel kaynak (OER) getirme katmanı (124 kategori, PhET 175 sim).
+          Konu içeriği ve pedagojik materyal zenginleştirmesi için çağrılır.
+          Bağlı değilse zenginleştirme atlanır; üretim bloke olmaz.
       - name: 'Figma MCP'
         transport: 'streamable-http (MCP)'
         tools: 8

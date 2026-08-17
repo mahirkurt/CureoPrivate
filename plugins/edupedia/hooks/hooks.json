@@ -1,5 +1,5 @@
 {
-  "description": "edupedia runtime desteği — iki fail-open hook: (1) SessionStart preflight, İKİ Bearer connector'ın kadrosunu bildirir (`maarif-mufredat`→`${MUFREDAT_MCP_API_KEY}`, `egitim-kaynak`→`${EGITIM_KAYNAK_MCP_API_KEY}`) ve anahtar çözülmüyorsa UYARIR; (2) PostToolUse validate-module, MODULE_DATA taşıyan bir .html yazıldığında 16 kalite kapısını çalıştırır. Hiçbiri bloklamaz: kapı ihlali uyarı olarak raporlanır. Kapı otoritesi yerel validate_module.py'dir. Plugin yayınlamaz.",
+  "description": "edupedia runtime desteği — iki fail-open hook: (1) SessionStart preflight, fleet.lock.json'daki filoya canlı prob atar (24 saat cache'li) ve anahtar eksikliği / arızasını ayırır, süit konvansiyonlarını enjekte eder; (2) PostToolUse validate_module_hook, MODULE_DATA taşıyan bir .html yazıldığında 16 kalite kapısını advisory olarak denetler. Hiçbiri bloklamaz. Kapı otoritesi yerel validate_module.py'dir. Plugin yayınlamaz.",
   "hooks": {
     "SessionStart": [
       {
@@ -7,20 +7,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/preflight.sh\"",
-            "timeout": 10,
-            "statusMessage": "edupedia: connector kadrosu preflight"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
+            "timeout": 45,
+            "statusMessage": "edupedia: connector kadrosu preflight ve konvansiyonlar"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|StrReplace",
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/validate-module.sh\"",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate_module_hook.py\"",
             "timeout": 30,
             "statusMessage": "edupedia: modül kalite kapıları (advisory)"
           }

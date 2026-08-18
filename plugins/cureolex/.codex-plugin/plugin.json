@@ -1,0 +1,243 @@
+{
+  "name": "cureolex",
+  "version": "3.8.6",
+  "description": "Türkiye sağlık mevzuatının her düzlemde (kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge) reform, değişiklik ve yeniden yazımı için en ileri düzey norm-üretim protokolü. Çekirdek amaç: yeni mevzuat üretmek (DRAFT) + mevcut mevzuatı değiştirmek (AMEND) + TBMM kanun teklifi hazırlamak (TBMM_KANUN_TEKLIFI). Destekleyen modlar: analiz · 5210 uyum denetimi · paydaş/bilirkişi görüşü · RIA (DEA/BEF) · karşılaştırmalı hukuk · ex post değerlendirme (9 mod). 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12 çerçevesi; G0-G9 kalite kapıları + R6b 21-nokta yürütülebilir uyum rubriği + evidence_ledger no-fabrication disiplini. TÜRETİLMİŞ FİLO (v3.5.0): 22 hukuk/regülasyon MCP tek bir fleet.yaml kaynağından wire edilir (.mcp.json · lock · hook anahtar haritası · komut tablosu · ajan araç kısıtı ondan üretilir; check_drift.py sürüklenmeyi CI'da yakalar). PRİMER mevzuat + mevzuat-bilgisi + resmi-gazete + titck + tbmm + saglikbakanligi + detsis · KARŞILAŞTIRMALI health-policy [yabancı ülke] + german-law + eurlex [G6 CELEX] + fedlex [CH] + uk-legal + ich + intl-treaty + eudamed + oecd · DOKTRİN yok-akademik + yoktez [tez tam-metin, G7 atıf doğrulaması] + literatur [DergiPark tam-metin] · TAM-METİN ŞELALESİ openathens [Tier 3 lisanslı] → annas-reader [Tier 4 son çare, yalnız analiz] · SUBSTRAT anamnesis. Canlı MCP prob'lu preflight 'anahtar yok' (meşru degrade) ile 'sunucu 401 verdi' (yapılandırma arızası) hâllerini ayırır. Bağlam-tetiklemeli ZORUNLU delegasyon (kuruluysa atlanamaz; yoksa graceful degrade): klinik kanıt → evidentia plugin; AI güvenilirlik + atıf-adli + Türkçe hukuk dili → sci-audit plugin. 3 companion connector (Yargı↔G5 içtihat, Open Law↔UK birincil metin, Ansvar↔Mod7 58-yargı) tam-filonun zorunlu üyeleri — manifesto satırları her çıktıda zorunlu. Kapsam: reform/norm-üretim; bireysel dava (SGK red, AYM başvuru), malpraktis, promosyon denetimi KAPSAM DIŞI (Scope Guard).",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://cureonics.com",
+  "license": "Internal skill asset, not for external redistribution",
+  "keywords": [
+    "turkish-health-law",
+    "regulatory-drafting",
+    "mevzuat-reformu",
+    "5210-yonetmelik",
+    "kanun-teklifi",
+    "yonetmelik-taslagi",
+    "teblig-taslagi",
+    "regulatory-impact-assessment",
+    "comparative-regulation",
+    "titck",
+    "sgk",
+    "aym-belirlilik",
+    "oecd-better-regulation",
+    "ex-post-evaluation",
+    "no-fabrication",
+    "evidence-ledger"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "agents": "./agents/",
+  "interface": {
+    "displayName": "Cureolex",
+    "shortDescription": "Türkiye sağlık mevzuatı analizi, reformu ve norm metni üretimi protokolü.",
+    "longDescription": "Türkiye sağlık mevzuatının her düzlemde (kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge) reform, değişiklik ve yeniden yazımı için en ileri düzey norm-üretim protokolü. Dokuz mod: DRAFT (yeni mevzuat) · AMEND (değişiklik) · ANALYZE · COMPLY (5210 uyum, R6b 21-nokta rubrik) · OPINE (kurum/bilirkişi görüşü) · RIA (DEA/BEF) · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI (Anayasa Md.88) · EX_POST_EVALUATION. 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12 çerçevesi; G0-G9 kalite kapıları + evidence_ledger no-fabrication disiplini. TAM-FİLO aktivasyonu: wire edilmiş 22 hukuk/regülasyon MCP + 3 companion HER SORGUDA çalışır, çıktı kapsam manifestosu (G0) taşır. Filo tek bir fleet.yaml kaynağından türetilir; canlı MCP prob'lu preflight yapılandırma arızasını (401) meşru degrade'den (anahtar yok) ayırır. Doktrin katmanı tam-metin okur (yoktez YÖK Tez + literatur DergiPark), G7 YÖK-Tez atıf doğrulaması artık companion'a bağlı değil — hard PASS. Yabancı hukuk doktrini için lisanslı→son-çare tam-metin şelalesi (openathens → annas-reader; son çare yalnız analiz için). Yumuşak delegasyon: klinik kanıt → evidentia; atıf-adli + Türkçe hukuk dili → sci-audit (yoksa graceful degrade). Kapsam reform/norm-üretim; bireysel dava (SGK red, AYM başvuru), malpraktis, promosyon denetimi KAPSAM DIŞI (Scope Guard). Karar-destek niteliğindedir; resmî hukuki mütalaa değildir, insan denetimi zorunludur.",
+    "developerName": "Cureonics",
+    "category": "Regulatory Drafting",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://cureonics.com",
+    "brandColor": "#1D4ED8",
+    "defaultPrompt": [
+      "Draft Turkish health regulation text for this policy goal.",
+      "Analyze this health regulation for compliance and clarity.",
+      "Prepare a TBMM health law proposal package."
+    ],
+    "screenshots": []
+  },
+  "mcpServers": {
+    "mevzuat": {
+      "type": "http",
+      "url": "https://mevzuat.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
+      },
+      "_tier": "primary",
+      "_role": "PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover 2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz): list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun → get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/ relations → search_within_mevzuat → get_mevzuat_gerekce → resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup, phrase, search_within, gerekçe tam metin). Tüm modların TR-mevzuat omurgası."
+    },
+    "mevzuat-bilgisi": {
+      "type": "http",
+      "url": "https://mevzuat.surucu.dev/mcp",
+      "_tier": "secondary",
+      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — her sorguda çalıştırılır. Primer v0.15.1+ (HP production) kanun/mevzuat NUMARASI lookup, search_within_mevzuat ve bedesten gerekçe tam metnini kendisi taşır; bu server bağımsız ikinci oy + Playwright-yüzey çaprazıdır. Çatışmada primer kazanır, sonuç manifestoya girer."
+    },
+    "resmi-gazete": {
+      "type": "http",
+      "url": "https://resmi-gazete-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RESMI_GAZETE_MCP_API_KEY}"
+      },
+      "_tier": "primary",
+      "_role": "T.C. Resmî Gazete resmi yayın metni + tarih/sayı çözümleme. Semantik sıra: rg_info (bir kez) → rg_resolve_date|rg_list_recent → rg_search → rg_get_issue_toc → rg_get_item → rg_get_pdf (atıf nüshası) → büyük PDF'de rg_ocr_submit→rg_ocr_result. Yürürlük/RG sayı/mükerrer teyidi (Mevzuat resolve_resmi_gazete tamamlayıcısı). DRAFT/AMEND yürürlük + EX_POST kronoloji. ChatGPT search/fetch alias'ları tools_used dışı."
+    },
+    "titck": {
+      "type": "http",
+      "url": "https://titck.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
+      },
+      "_tier": "primary",
+      "_role": "TİTCK BEŞERİ TIBBİ ÜRÜN master index (barkod-primer + WHO-ATC + SNOMED) — ilaç indeksidir, tıbbi cihaz indeksi DEĞİLDİR (canlı araç yüzeyinde hiçbir cihaz aracı yoktur; TR cihaz kaydı ÜTS'dedir ve bu filoya wire EDİLMEMİŞTİR, AB cihaz benchmark'ı için eudamed kullanılır). Yönetmelik/SUT/ruhsat reformunda mevcut-durum + rehber envanteri: search_titck_guidelines + search_drugs + get_atc_hierarchy. Mevzuat-hükmü doğrudan karşılığı olan kayıtlar: search_reference_prices (fiyat kararı/SUT), search_regulation_article23 (Ruhsatlandırma Yönetmeliği md.23 başvuru kaydı), search_off_label_uses (endikasyon dışı kılavuz), search_scheduling_records (kontrole tabi madde/reçete rejimi), search_institutional_fees (ücret tarifesi). TAZELİK ZORUNLULUĞU — bu araçların bir kısmı BAYAT veri setine dayanır ve \"mevcut durum\" kanıtı olarak sunulamaz. 2026-08-07 list_datasets ölçümü: reference_price_list 2026-02-18 (taze) · scheduling_list 2026-06-10 (taze) · institutional_fees 2025-04-24 (BAYAT) · off_label_use 2023-03-17 (BAYAT) · regulation_article23 2018-05-10 (BAYAT — sekiz yıllık). Bayat kayıt kullanıldığında çıktı `source_as_of` tarihini AÇIKÇA yazar ve iddiayı \"o tarihteki durum\" diye niteler. Bu tarihler DONDURULMUŞ DEĞİLDİR: canlı otorite `list_datasets`'in `source_as_of`/`is_stale` alanlarıdır — buradaki liste yalnız hangi araçların risk taşıdığını gösterir. 2026-08-02'den beri KAPILI — Bearer zorunlu (eski açık Worker cache emekli edildi, önbellek sunucunun içine taşındı)."
+    },
+    "tbmm": {
+      "type": "http",
+      "url": "https://tbmm.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TBMM_MCP_API_KEY}"
+      },
+      "_tier": "primary",
+      "_role": "TBMM yasama tarihçesi (0.2.1) — Mod 8 omurgası; diğer modlarda çapraz. Rota (SEARCH BEFORE GET, atlama yok): teklif → tbmm_search_kanun_teklifi sonra tbmm_get_kanun_teklifi(sira_no) özet+imza+komisyon aşaması (onerge_bilgileri); kanun_no yalnız kanunlar.durumu locator (rg_sayisi/donem pin). Gerekçe GÖVDESİ mevzuat get_mevzuat_gerekce; TBMM locator tbmm_search_kanun. Komisyon → search/get_komisyon_raporu; havale → tbmm_list_komisyon_havale (query'siz deep-link, ?komisyon= yok). Tutanak → search/get_tutanak (bilinen TutanakGoster id/PDF); SPA ise related_acik_erisim kütüphane zabıtıdır, canlı Genel Kurul DEĞİLDİR. Sponsor → tbmm_get_milletvekili (güncel dönem; donem_filter_ignored). Tarihsel OA → list_acik_erisim_collections sonra search_acik_erisim(page/year/collection) + get_acik_erisim_document. tasari_teklif_sd.onerge kullanılmaz (302→anasayfa). Tam kanun metni mevzuat-mcp."
+    },
+    "saglikbakanligi": {
+      "type": "http",
+      "url": "https://saglik-mcp.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SAGLIK_BAKANLIGI_MCP_API_KEY}"
+      },
+      "_tier": "primary",
+      "_role": "T.C. Sağlık Bakanlığı ikincil mevzuat / soft-law (genelge·yönerge·rehber· kurul kararı·SKS) — Resmî Gazete/mevzuat.gov.tr'de OLMAYAN idari norm. Semantik sıra: sb_server_info → sb_list_birimler → sb_list_kategoriler → sb_list_belgeler|kilavuzlar|kurul_kararlari → sb_search/sb_resolve_genelge → sb_get_document; sb_list_taslaklar her zaman çağrılır ama sonuç manual_required (uydurma yok). ChatGPT search/fetch tools_used dışı."
+    },
+    "detsis": {
+      "type": "http",
+      "url": "https://detsis.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DETSIS_MCP_API_KEY}"
+      },
+      "_tier": "support",
+      "_role": "DETSİS devlet-teşkilatı registry — kurumsal atıf doğruluğu. Semantik sıra: resolve/search → get_kunye → list_alt/get_alt_birim_sayisi → (gerekirse walk) → hizmetler/belgeler/mevzuatlar → degisiklikler; kapatılan birim → degisiklikler.birimTarihceId → get_islem_kunye (id uydurulmaz). milestones/kategorik/server_info kapsam beyanı. Yokluk kesin kanıt değil. detsis_get_gecmis_birim / list_iller_ilceler / list_taxonomies reform omurgasında N/A → conscious exclude (coverage'da gerekçeli skip)."
+    },
+    "health-policy": {
+      "type": "http",
+      "url": "https://health-policy-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${HEALTH_POLICY_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "YABANCI ÜLKE sağlık mevzuatı resmî-metin portalları: US (eCFR T21/FedReg/ GovInfo/Congress), CA JusticeLaws, JP e-LAWS, AU FRL, ES BOE, IE eISB, CN NPC, MX DOF. Semantik sıra: semantic_search (keşif) → govinfo/congress/federal_register/japan_elaws_search/australia_legislation_search/ china_law_recent (ID keşfi) → ilgili *_fetch/ecfr_get/ecfr_versions (doğrulama) → legal_distill_start/result (çok-yargı sunucu-tarafı distil). ID-only ES/MX/CA/IE → doğrudan fetch. ChatGPT search/fetch tools_used dışı. Sınırlar: DE→german-law; UK+EU→uk-legal/eurlex/Open Law; TR→mevzuat/titck; CH/FR/IT/NL/SE + 58-yargı→Ansvar."
+    },
+    "german-law": {
+      "type": "http",
+      "url": "https://german-law.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GERMAN_LAW_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "Almanya hukuku + AB müktesebatı köprüsü; Mod 7'de DE emsali. SEMANTİK SIRA (atlanamaz): search_legislation → parse/validate_citation → get_provision (id=jurabk:n veya çözülmüş AMG/BDSG) → check_currency → ANCAK ONDAN SONRA get_eu_basis / get_provision_eu_basis / search_eu_implementations / get_german_implementations / validate_eu_compliance. Çözücü yoksa EU ailesi çağrılmaz (kör CELEX yok). ÖLÇÜLEN FREE-TIER: AB ailesinin BEŞİ çalışır. BİLEREK DIŞARI (premium/ upgradeRequired): search_case_law, get_preparatory_works, get_provision_history, diff_provision, get_recent_changes — uydurma YOK. ⚠️ get_eu_basis CELEX ÜRETMEZ (G6 taşıyıcısı eurlex). Korpus data_age 2026-02-14."
+    },
+    "ich-guidelines": {
+      "type": "http",
+      "url": "https://ich.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ICH_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "ICH Q/S/E/M harmonizasyon rehberleri — norm-düzeyi benchmark. Semantik sıra: ich_server_info → ich_list_guidelines(category) → ich_search → ich_get_guideline → ich_guideline_history. Dosya-yapısı / CTD / eCTD reformunda M4 ve M8 ZORUNLU ateş (modül, granularity, bölgesel M1 vs ICH M2–M5, spesifikasyon sürümü, Q&A). COMPARATIVE ve DRAFT hukuki/regülatuar atıfı; şirket sequence / \"0001 gönderildi\" iddiası yok (ops → pharmaintel)."
+    },
+    "intl-treaty": {
+      "type": "http",
+      "url": "https://intl-treaty-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${INTL_TREATY_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "Anayasa Md.90/5 taşıyıcısı (usulüne uygun temel-hak andlaşması = kanun hükmü; çatışmada andlaşma esas). Her dosyada ZORUNLU ateş: treaty_status + treaty_reservations (ICESCR IV-3, ICCPR IV-4, CEDAW IV-8, CRC IV-11, CRPD IV-15 + dosyanın adlandırdığı chapter-IV alias); coe_treaty_signatories (Oviedo CETS 164, MEDICRIME CETS 211 — 9 CETS anlık görüntü, snapshot_age_days, mcp_verified:false, live_coe:false); intl_treaty_info bir kez (kapsam manifestosu: live_coe:false beyanlı degrade, sessiz atlama DEĞİL). COMPARATIVE / Md.90/5 / ICESCR dosyalarında treaty+coe+info SONRASI uhri_search (sağlık konusu + ülke) → uhri_fetch_document(id) ZORUNLU (yerine geçmez; atlanırsa G0 FAIL). Boş sonuç yokluk kanıtı değildir. Onay/çekince UYDURULMAZ."
+    },
+    "eudamed": {
+      "type": "http",
+      "url": "https://eudamed-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${EUDAMED_MCP_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "EUDAMED AB tıbbi cihaz DB (MDR/IVDR) — TR ÜTS wire EDİLMEMİŞTİR; cihaz sorusunda TİTCK DEĞİL, bu sunucu (+ AB benchmark). Semantik sıra: eudamed_application_info → eudamed_search_devices | eudamed_get_actor → eudamed_get_device | eudamed_get_manufacturer_portfolio; basic_udi yalnız kullanıcı uuid'si ile (arama ULID 404 → manual_required). İlaç/ATMP dosyasında empty beyanlı tarama; cihaz dosyasında atlama G0 FAIL. Olgunluk _caveat zorunlu (yokluk kanıt değildir)."
+    },
+    "oecd": {
+      "type": "http",
+      "url": "https://oecd.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OECD_MCP_API_KEY}"
+      },
+      "_tier": "support",
+      "_role": "OECD ekonomik/istatistik verisi (SDMX) — 9 salt-okunur araç, hepsi tools_used. Semantik sıra (RIA/DEA/EX_POST): get_categories| list_categories_detailed → search_dataflows|list_dataflows(category=GOV|HEA) → get_popular_datasets → search_indicators → get_data_structure → query_data → get_dataflow_url (atıf linki). RIA ZORUNLU: GOV_REG alias (Better Regulation / RIA / ex-post endeksleri; DSD_GOV_REG@DF_GOV_REG_2025) + HEA sağlık harcaması/ilaç fiyatı. Authless upstream."
+    },
+    "yok-akademik": {
+      "type": "http",
+      "url": "https://yok-akademik.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
+      },
+      "_tier": "doctrine",
+      "_role": "YÖK Akademik — hukuk/tıp DOKTRİN sinyali (ANALYZE/gerekçe akademik dayanak). Semantik sıra: yok_search|yok_search_academics → yok_get_profile|yok_get_full_profile → yok_get_publications/projects/ supervised_theses/collaborators. METADATA katmanı — tam metin literatur (DergiPark) + yoktez. yok_get_photo / yok_browse / list_* taxonomy reform omurgasında N/A → conscious exclude."
+    },
+    "yoktez": {
+      "type": "http",
+      "url": "https://yoktezmcp.fastmcp.app/mcp",
+      "_tier": "doctrine",
+      "_role": "YÖK Ulusal Tez Merkezi tam-metin — tez-düzeyi Türk hukuk/tıp doktrini (gerekçe akademik dayanağı, ANALYZE doktrin taraması) + G7 YÖK-Tez ATIF DOĞRULAMASI (tez no/başlık/yazar teyidi → uydurma tez atfı deterministik yakalanır). yok-akademik profil-metadata'sının tam-metin tamamlayıcısı. Authless (FastMCP remote). v3.5.0'da companion'dan first-class'a terfi etti."
+    },
+    "literatur": {
+      "type": "http",
+      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "_tier": "doctrine",
+      "_role": "DergiPark Türk akademik dergi makaleleri — arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. Doktrin katmanının tek OKUNABİLİR TR kaynağı: yok-akademik yalnız metadata verir, bu tam metin verir. Gerekçe akademik dayanağı + ANALYZE doktrin taraması. Authless (surucu.dev)."
+    },
+    "openathens": {
+      "type": "http",
+      "url": "https://openathens.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "LİSANSLI kurumsal tam-metin kapısı (Tier 3) — Millet Kütüphanesi/OpenAthens SAML üzerinden 309 lisanslı veritabanı. Yabancı hukuk doktrini (monograf, hakemli makale) için paywall'lı kaynaklara YASAL erişim. Mod 7 karşılaştırmalı analizin ve G6 uluslararası kaynak teyidinin doktrin desteği — birincil norm metni DEĞİL (o health-policy/german-law/Open Law'dadır). Doktrin metnini ayıklamak için `oa_fetch_fulltext`; orijinal sağlayıcı PDF'i gerektiğinde `oa_fetch_pdf(doi|url)` kullanılır. Kısa-ömürlü resource_link derhal tüketilir, kalıcı URL diye cache'lenmez; SHA-256/provenance evidence_ledger'a yazılır."
+    },
+    "annas-reader": {
+      "type": "http",
+      "url": "https://annas.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
+      },
+      "_tier": "fulltext",
+      "_role": "SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir. Bounded okuma için reader araçları; orijinal PDF/EPUB ve diğer desteklenen dosya için `download_document(id=<DOI|32-hex MD5>)` kullanılır. Opaque resource_link kısa ömürlüdür; derhal tüketilir ve SHA-256/provenance kaydedilir."
+    },
+    "eurlex": {
+      "type": "http",
+      "url": "https://eurlex.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${EURLEX_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "EUR-Lex / CELLAR — G6 CELEX kapısının WIRE'LI taşıyıcısı. Semantik sıra: eurlex_browse_subjects (EuroVoc) → eurlex_search_documents → eurlex_lookup_celex (G6 varlık/tür/tarih) → eurlex_get_document → eurlex_get_relations → eurlex_get_cases (içtihat) → eurlex_query_sparql (çok-hop yedek). Upstream pinli 0.9.8 loopback; Authorization upstream'e gitmez. DOĞRULAMA: CELEX 32001L0083 → cellar 6af3ed69-… DIR 2001-11-06."
+    },
+    "fedlex": {
+      "type": "http",
+      "url": "https://fedlex.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FEDLEX_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "İsviçre federal hukuku (Fedlex SPARQL) — `Fedlex Swiss` companion'ının WIRE'LI karşılığı (2026-08-08). HP self-host: upstream `fedlex-mcp` (MIT, PyPI, sürüm PİNLİ 2.0.1) 127.0.0.1:8321'de ANAHTARSIZ koşar, önünde tek-kiracılı OAuth 2.1 kapısı (:8317 → fedlex.cureonics.com). Upstream 12 araç; `tools_used` = 7 SR/birincil + 3 Vernehmlassung (danışma) — fantom beyan yok. `fedlex_get_recent_publications` + `termdat_get_concept` hâlâ conscious exclude. İSTEMCİ ÇAĞRI SÖZLEŞMESİ: her tools/call argümanı `params` sarmalayıcısında. SEMANTİK SIRA: (1) SEARCH BEFORE GET — `fedlex_search_laws({\"params\":{\"keywords\":\"…\"}})` (`query` YOK) → `fedlex_get_law_by_sr({\"params\":{\"sr_number\":\"…\"}})` (noktalı SR, örn. 812.21) → history / upcoming / treaties / gazette / termdat_lookup_term; (2) **RIA (Mod 6) paydaş/alternatif bölümünde**, SR get'ten SONRA CH danışma manzarası: `fedlex_get_open_consultations` → `fedlex_search_consultations` → `fedlex_get_consultation({params:{event_id}})` (eventId açık listeden; uydurma yok). Vernehmlassung = İsviçre ön-parlamento usulü — TR yönetmelik DRAFT/5210 görüş sürecinin ikamesi DEĞİLDİR; mukayese/RIA benchmark olarak aktarılır. Identifier = SR; konsolide ELI `eli/cc/…` (eli/fga = BBl/taslak — birincil metin diye sunma). Kapı Authorization'ı upstream'e iletmez; upstream düşükse 502 + açık hata. DOĞRULAMA (2026-08-08; 2026-08-17 yeniden): SR 812.21 → HMG, `eli/cc/2001/422`, \"✅ In Kraft\", yürürlük 2002-01-01. Metin icat etme."
+    },
+    "uk-legal": {
+      "type": "http",
+      "url": "https://uk-law.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${UK_LEGAL_MCP_API_KEY}"
+      },
+      "_tier": "comparative",
+      "_role": "Birleşik Krallık hukuku — `Open Law` companion'ının UK yarısının WIRE'LI karşılığı, ama KAPSAMI FARKLI ve DAHA GENİŞ. HP self-host: upstream `uk-legal-mcp` (MIT, PyPI, sürüm PİNLİ 0.6.0) 127.0.0.1:8322'de koşar, önünde OAuth 2.1 kapısı (:8318). Canlı yüzey 35 araç. İngiliz İÇTİHADI (Find Case Law), Hansard, bills, divisions, komisyon delilleri, OSCOLA — ve UK MEVZUAT METNİ: `legislation_search` → `legislation_get_toc` → `legislation_get_section` (CLML `/data.xml`). Kök neden (2026-08-18): pinli paketin `curl_cffi impersonate=chrome` istemcisi HTTP 437 veriyordu; loopback `legislation_http_fix` httpx + browser-like UA ile değiştirir (fork yok). DOĞRULAMA: Medicines Act 1968 → ukpga/1968/67; s.1 Ministers metni. Origin 403/404/WAF → dürüst `isError` — metin uydurma yok. Yedek: ep.legislation_uk `/data.akn` veya Open Law companion."
+    },
+    "anamnesis": {
+      "type": "http",
+      "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
+      },
+      "_tier": "substrate",
+      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük hukuk metni ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(collection=cureolex:sess:<id>, doc_id=<collection>:mevzuat|celex|ecli|rg:…) ile BİR KEZ indekslenir → hybrid_query(collection=…, doc_ids=[…], queries[]) ile sınırlı, provenance-damgalı dilim çekilir (doc_id::idx). doc_scope YOKTUR. G0–G9 aynı sess; lib varsayılan değil. forget_document (forget_collection yoksa N× fallback) oturum sonunda yalnız bu koleksiyonu siler. shared/context-economy-contract.md Tier 2."
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cureonics.local/schemas/retrieval_distillate.schema.json",
+  "title": "Retrieval Distillate Envelope (v1.1)",
+  "description": "The single, compact, citation-bearing object a retrieval-distiller subagent returns to the main agent. Raw DB output never appears here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["topic", "domain", "sources_queried", "findings", "coverage"],
+  "properties": {
+    "topic": { "type": "string", "minLength": 1, "description": "Binding question, verbatim from the main agent." },
+    "domain": { "type": "string", "enum": ["legal", "medical", "academic"] },
+    "sources_queried": { "type": "array", "items": { "type": "string" } },
+    "findings": {
+      "type": "array",
+      "maxItems": 50,
+      "description": "Keep the envelope compact. Prompts soft-cap to ~15-20 top findings; 50 is a hard backstop against pathological bloat (surplus belongs in coverage.discarded).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "source", "relevance", "cite"],
+        "anyOf": [
+          { "required": ["identifier"] },
+          { "required": ["url"] }
+        ],
+        "properties": {
+          "claim": { "type": "string", "minLength": 1, "description": "One topic-relevant finding." },
+          "source": { "type": "string", "description": "Human source label, e.g. PubMed, Cureolex/CELLAR." },
+          "identifier": { "type": "string", "description": "PMID/DOI/NCT/CELEX/URN/thesis-id etc. Provide this or url so the finding is locatable." },
+          "url": { "type": "string", "description": "Resolvable URL. Provide this or identifier." },
+          "relevance": { "type": "number", "minimum": 0, "maximum": 1 },
+          "cite": { "type": "string", "pattern": "^\\[E[0-9]+\\]$", "description": "[E1], [E2], ... sequential." },
+          "meta": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "v1.1 OPTIONAL enrichment, populated ONLY from upstream-asserted values (honesty-by-omission).",
+            "properties": {
+              "jurisdiction": { "type": "string", "enum": ["EU","CH","DE","FR","UK","US","CA","AU","JP","TR","WHO","INTL"] },
+              "instrument_type": { "type": "string", "enum": ["regulation","directive","decision","statute","act","ordinance","constitutional","case_law","guidance","dataset","other"] },
+              "status": { "type": "string", "enum": ["in_force","consolidated","repealed","superseded","not_yet_in_force","draft","unknown"] },
+              "effective_date": { "type": "string", "description": "Upstream-asserted effective/in-force date (ISO-8601 preferred)." },
+              "authority": { "type": "string", "maxLength": 80 },
+              "lang": { "type": "string" },
+              "grounding": { "type": "string", "enum": ["fetched_fulltext","fetched_metadata","search_snippet","inferred"] },
+              "id_kind": { "type": "string", "enum": ["celex","eli","legiarti","ecfr","sr","ukpath","jp_lawid","mevzuat","doi","url","other"] },
+              "verified_against": { "type": "string", "description": "Identifier whose fetched body grounded this finding." },
+              "as_of_date": { "type": "string", "description": "in-force as-of date used for the currency check." }
+            }
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["examined", "kept", "discarded", "empty_or_failed"],
+      "properties": {
+        "examined": { "type": "integer", "minimum": 0 },
+        "kept": { "type": "integer", "minimum": 0 },
+        "discarded": { "type": "integer", "minimum": 0 },
+        "empty_or_failed": { "type": "array", "items": { "type": "string" } },
+        "passes": { "type": "integer", "minimum": 0, "description": "v1.1: number of search/gap passes the loop ran." },
+        "saturation": { "type": "string", "enum": ["reached", "capped", "voluntary"], "description": "v1.1: why the loop stopped." },
+        "source_status": {
+          "type": "array",
+          "description": "v1.1 OPTIONAL structured mirror of empty_or_failed; the string[] stays authoritative for compact display.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source", "status"],
+            "properties": {
+              "source": { "type": "string" },
+              "status": { "type": "string", "enum": ["examined_empty","failed","partial","rate_limited","skipped","auth_missing"] },
+              "attempts": { "type": "integer", "minimum": 0 },
+              "detail": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "distiller_note": { "type": "string", "description": "What was dropped & why; domain caveats. No silent loss." },
+    "comparative": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "v1.1 OPTIONAL; populated only when kept findings span >=2 jurisdictions. Asserts nothing not already in findings[]; cites existing [E#] only.",
+      "properties": {
+        "summary": { "type": "string", "maxLength": 1200 },
+        "axes": { "type": "array", "maxItems": 8, "items": { "type": "object" } }
+      }
+    }
+  }
+}

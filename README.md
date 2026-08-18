@@ -30,7 +30,7 @@ bunlarla senkron tutulur (tek doğruluk kaynağı = plugin.json).
 | Plugin | Sürüm | Alan | Açıklama |
 |---|---|---|---|
 | **evidentia** (Evidentia) | 2.7.2 | araştırma | Genel-amaçlı **PRISMA 2020 / PRISMA-ScR** tıbbi literatür inceleme motoru — her soru tipi (tedavi/tanı/prognoz/etiyoloji/önleme). `medical-research` v9.0.1 flagship: P0 protokol/PICO → P1 arama → P2 getirim+dedup → P3 tarama → P4 çıkarım → P5 yanlılık riski (RoB2/ROBINS-I/QUADAS-2/NOS/PROBAST) → P6 GRADE → P7 PRISMA akış + SoF. Bibliyografik çekirdek her-zaman-açık; legal-first tam-metin şelalesi (OpenAthens/Millet Kütüphanesi Tier 3 lisanslı → Wiley → Anna's Reader son çare → Unpaywall); anamnesis RAG/GraphRAG. Tedavi-alanı/HTA/KOL/Türkiye-pazarı/epidemiyoloji katmanları **opsiyonel** (de-skew invariantı). On bir self-host connector. |
-| **lex-sanitas** (Lex Sanitas) | 3.8.2 | regülasyon | Türkiye **sağlık mevzuatı norm-üretim** protokolü (kanun · CBK · CB kararı · yönetmelik · tebliğ · genelge). Dokuz mod: DRAFT · AMEND · ANALYZE · COMPLY (5210 uyum) · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION. 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation çerçevesi; G0–G9 kalite kapıları + `evidence_ledger` no-fabrication disiplini. Tam-filo: 23 wire'lı MCP + 3 companion. Bireysel dava/malpraktis **kapsam dışı** (Scope Guard). |
+| **cureolex** (Cureolex) | 3.8.6 | regülasyon | Türkiye **sağlık mevzuatı norm-üretim** protokolü (kanun · CBK · CB kararı · yönetmelik · tebliğ · genelge). Dokuz mod: DRAFT · AMEND · ANALYZE · COMPLY (5210 uyum) · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION. 5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation çerçevesi; G0–G9 kalite kapıları + `evidence_ledger` no-fabrication disiplini. Tam-filo: 22 wire'lı MCP + 3 companion. Bireysel dava/malpraktis **kapsam dışı** (Scope Guard). |
 | **vekayinuvis** (Vekayinüvis) | 3.4.12 | araştırma | Birincil-kaynak-öncelikli **Osmanlı/Türk tarih** araştırma orkestratörü. Devlet Arşivleri resmî kataloğu + Ottoman Archives + YÖK Tez + DergiPark + yasama/mevzuat katmanı + lisanslı tam-metin şelalesi (OpenAthens → Anna's Reader son çare) + anamnesis RAG/GraphRAG. 17-server filo; IJMES/TDV İA çeviriyazı, Chicago atıf; 9 çalışma modu. **`defaultEnabled: false`** (opt-in). |
 | **historia-medicinae** (Historia Medicinae) | 0.1.2 | araştırma | Küresel **tıp tarihi** araştırma orkestratörü — Avrupa-merkezli olmayan, Mezopotamya/Mısır'dan çağdaş küresel sağlığa. 11 araştırma modu (SOURCE_HUNT · MORBUS · INSTITUTIO · CONCEPTUS · ETHICA · PROSOPOGRAPHIA · THERAPEUTICA · SANITAS_PUBLICA · HISTORIOGRAPHIA · EDITIO · RELATIO) + metodoloji skill'leri. 25-server filo; Wellcome sayfa-düzeyi tam-metin + lisanslı OpenAthens → Anna's son çare. Osmanlıca paleografi/HTR → vekayinuvis; çağdaş klinik geçerlilik → evidentia. **`defaultEnabled: false`** (opt-in). |
 | **rxpraxis** (Rx Analyzer) | 1.2.3 | farma | Türkiye-merkezli **jenerik/biyobenzer fırsat tarama** süiti. `rxos` orkestratörü (7-aşamalı deterministik boru hattı, G0–G6 kapıları) + medical-research · pharmaintel · pharmapatent · thoughtspot-roche kaynak skill'leri. Retail/topluluk-eczanesi, oral+topikal küçük molekül, tüm TA. Hospital/IV **kapsam dışı**. |
@@ -47,7 +47,7 @@ Sayılar diskteki `commands/` dosyaları, `skills/` alt dizinleri, `agents/` alt
 | Plugin | Komut | Skill | Alt-ajan | Hook | Paketli MCP |
 |---|---:|---:|---:|:---:|---:|
 | evidentia | 7 | 2 | 1 | ✅ | 20 |
-| lex-sanitas | 10 | 2 | 4 | ✅ | 23 |
+| cureolex | 10 | 2 | 4 | ✅ | 22 |
 | vekayinuvis | — | 16 | 1 | ✅ | 17 |
 | historia-medicinae | — | 17 | 2 | ✅ | 25 |
 | rxpraxis | 6 | 6 | — | — | 6 |
@@ -77,7 +77,7 @@ CureoPrivate/                             ← repo kökü (Claude Code'a EKLENEC
     │   ├── commands/ (7)   skills/ (start · medical-research)   agents/   shared/
     │   ├── self-host/ (anamnesis · drugddx · openfda · evidentia-kb · who-gho · globocan · ema · pubmed-epmc · openalex · semantic-scholar)
     │   └── CONNECTORS.md · README.md
-    ├── lex-sanitas/                      ← sağlık mevzuatı norm-üretimi
+    ├── cureolex/                      ← sağlık mevzuatı norm-üretimi
     │   ├── .claude-plugin/plugin.json · .mcp.json · hooks/
     │   ├── commands/ (10: lex-draft … lex-expost)   skills/   agents/ (4)
     │   └── README.md
@@ -122,10 +122,10 @@ globocan · ema · pubmed-epmc · openalex · semantic-scholar · openathens) pa
 `.mcp.json` ile gelir; akademik/klinik connector'lar sizin bağlantılarınızdan
 tüketilir. Anahtarlar için (operatöre özel, repo dışı) `EVIDENTIA-KURULUM-VE-KEYLER.md`.
 
-**lex-sanitas** — sağlık mevzuatı taslak/reform
+**cureolex** — sağlık mevzuatı taslak/reform
 
 ```
-/plugin install lex-sanitas@cureonics-marketplace
+/plugin install cureolex@cureonics-marketplace
 /lex-connectors                            # tam-filo sağlık kontrolü
 /lex-draft <konu>                          # · /lex-amend · /lex-comply · /lex-ria · /lex-bill …
 ```
@@ -193,7 +193,7 @@ sci-audit'e delege edilir. Birincil kaynak IIIF motorudur (Wellcome sayfa-düzey
 
 ## Ortak sözleşmeler
 
-Katalogdaki araştırma/regülasyon plugin'leri (evidentia · lex-sanitas · vekayinuvis ·
+Katalogdaki araştırma/regülasyon plugin'leri (evidentia · cureolex · vekayinuvis ·
 historia-medicinae · rxpraxis · sci-audit) aynı invariantları paylaşır:
 
 - **No-fabrication.** Native kaynakta veri yoksa çıktı "VERİ YOK"/`unverified` olur; asla

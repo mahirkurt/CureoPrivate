@@ -1,0 +1,86 @@
+# Cureolex — Kompozisyon Sözleşmesi (evidentia + sci-audit + companion connector'lar — bağlam-tetiklemeli ZORUNLU entegrasyon)
+
+Cureolex **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 modu çalıştırır. Ancak **kurulu/bağlı olan** komşu plugin ve companion connector'lar için entegrasyon **opsiyonel değildir**: bağlam tetiklendiğinde çağrılmaları **zorunludur**; atlanmaları **G0 ihlalidir**. "Yumuşak" olan tek şey *yokluk hâlidir* — plugin/connector gerçekten kurulu/bağlı değilse zarifçe degrade edilir, bu kapsam manifestosunda (G0) gerekçesiyle beyan edilir ve ilgili kalite kapısı CONDITIONAL'a düşer. Hiçbir degrade uydurmaya yol açmaz. (Plugin'ler ayrı marketplace girişi olarak kalır.)
+
+**Karar kuralı (her sorguda):** (1) SessionStart preflight'ın kurulum/bağlantı işaretlerini oku → (2) bağlam tetikleyicisini değerlendir (aşağıdaki matrisler) → (3) tetiklenen HER kurulu/bağlı katmanı çağır → (4) manifestoya satırını yaz. "Çağırmasam da olur" diye bir durum yoktur; yalnız "tetiklenmedi (gerekçe)" veya "kurulu/bağlı değil" vardır.
+
+## 1. evidentia — klinik kanıt katmanı
+
+**Ne zaman:** konu ilaç/cihaz/hastalık/tedavi/klinik-çalışma/geri-ödeme boyutu içerdiğinde. Sağlık mevzuatında bu **≈ daima** vardır → tam-filo ilkesi gereği her klinik-boyutlu sorguda devrede. Klinik-sıfır saf idari norm (ör. bir kurumun iç işleyiş yönetmeliği) → atla + manifestoda `skipped: saf idari norm — klinik-sıfır` beyan et.
+
+**Mod × zorunluluk:**
+- **Zorunlu (◆):** DRAFT · ANALYZE · OPINE · RIA · COMPARATIVE_LAW · TBMM (ÇİFT-zorunlu tam §1-20) · EX_POST (`ex_post_metrics` bloğu zorunlu).
+- **Koşullu:** AMEND (bilimsel-temel değişikliği ise) · COMPLY (yeni klinik reform metni ise).
+
+**Nasıl çağrılır:**
+1. `/evidentia <zenginleştirilmiş sorgu>` komutu **veya** `evidence-synthesizer` alt-ajanı (ağır fan-out bağlam ekonomisi gerektiğinde).
+2. **Zenginleştirilmiş sorgu** kur (ham TR soru DEĞİL):
+   ```json
+   {
+     "main_query": "<İngilizce klinik soru>",
+     "explicit_layer_request": ["<istenen zenginleştirme modülleri>"],
+     "cureolex_legal_context": {
+       "turkish_refs": ["<mevzuat/TİTCK referansları>"],
+       "anayasa": ["Md.17", "Md.56", "Md.90/5"],
+       "treaties": ["ICESCR Md.12", "Oviedo CETS 164"]
+     },
+     "requested_sections_priority": {"MANDATORY": ["..."], "RECOMMENDED": ["..."], "OPTIONAL": ["..."]},
+     "citation_format": "Vancouver",
+     "epistemic_dual_label": true
+   }
+   ```
+3. Dönen **sidecar**'da **önce `reverse_signals`** oku (uncertainty_flags → dipnot; out_of_scope_flags → skill öner; retry_triggers → yeniden çağır; alternative_interpretations → executive summary; confidence_breakdown → çift-dürüstlük raporu).
+4. Aktarılan **her TR referansı** `mcp__mevzuat__*` / `mcp__Yarg__*` ile **çapraz-doğrula** (evidentia sidecar `mcp_verified` bayrağı ana otorite değil — cureolex kendi doğrulamasını yapar).
+5. Çıktıda evidentia bulgularını `[medical-research, §X.Y, tarih]` etiketiyle işaretle.
+
+**Kaynakça ayrımı (asla karıştırma):** 8.1 Türk+uluslararası mevzuat · 8.2 bilimsel (Vancouver) · 8.3 Türk içtihat.
+
+**Çapraz-kapı eşlemesi (G↔M-G):** G2↔M-G3 · G4↔M-G6 · G5↔M-G2+M-G5 · G6↔M-G1+M-G7 · **G7↔M-G8 (ÇİFT-zorunlu — her plugin kendi limitini raporlar, sonra birleştirilir).**
+
+**evidentia yoksa:** klinik iddialar `unverified` kalır; çıktıda "klinik kanıt katmanı (evidentia) bağlı değil — klinik dayanaklar doğrulanmamıştır" uyarısı + manifestoda `evidentia → skipped: plugin kurulu değil`. Klinik iddia **uydurulmaz**.
+
+## 2. sci-audit — güvenilirlik + dil katmanı
+
+**Ne zaman:** **her cureolex çıktısında** (tam-filo çıktı-QA ayağı). Üretilen metin son hâline geldiğinde.
+
+**Nasıl çağrılır:**
+- `/verify-citations <metin>` — atıf-adli (referans bütünlüğü; uydurma/yanlış-atıf/geri-çekilme).
+- `/check-stats <metin>` — nicel iddia tutarlılığı (özellikle RIA/DEA/BEF sayıları).
+- `/check-turkish <metin>` — Türkçe imla/yazım + halüsinasyon sinyalleri.
+- (İsteğe bağlı tam denetim: `/audit <metin>` — yedi-eksen.)
+
+**Rol sınırı (önemli):** sci-audit ekseni **bilimsel-yazım** odaklıdır. **Türk hukuk dili G3/R9'da cureolex'a aittir** (5210 Md.25 + 3 Tabaka + Yılmaz doktrini). sci-audit'i **tamamlayıcı** imla/tutarlılık/atıf-bütünlüğü katmanı olarak kullan — hukuk-dili otoritesi olarak DEĞİL. Çelişki hâlinde cureolex G3 kazanır; sci-audit bulgusu "gözden geçir" sinyali olarak not edilir.
+
+**sci-audit yoksa:** atıf-adli + imla denetimi manuel yapılır (cureolex kendi G3/G7 kapıları zaten çalışır); manifestoda `sci-audit → skipped: plugin kurulu değil`. Çıktı durmaz.
+
+## 3. Companion connector'lar — Yargı · Open Law · Ansvar (tam-filonun zorunlu üyeleri)
+
+Bu üçü claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da wire EDİLMEZ — kararlı self-host URL'leri yoktur); **bağlı oldukları her oturumda tam-filonun zorunlu üyeleridir**, manifesto satırları her çıktıda mevcuttur ve kalite kapılarına bağlıdır. `/lex-connectors` durumlarını raporlar. **Fedlex 2026-08-08'de wire edildi** — companion tablosunda durmaz; CH birincil metin `mcp__fedlex__*`. Türk Patent wire'ı 2026-08-17'de emekli edildi. G6 CELEX taşıyıcısı wire'lı `mcp__eurlex__*`'tir. *(Önek notu: connector araç önekleri yüzeye göre `mcp__<Ad>__*` veya `mcp__claude_ai_<Ad>__*` görünebilir — eşleştirmeyi server adına göre yap.)*
+
+| Companion | Araç yüzeyi | Zorunlu tetik (bağlam) | Bağlı kapı | Bağlı değilse |
+|---|---|---|---|---|
+| **Yargı** | `mcp__Yarg__search_anayasa_unified` · `search_bedesten_unified` · `search_emsal_detailed_decisions` · `get_*_markdown` | İçtihat zinciri gereken HER an: ANALYZE 7-boyut iptal-riski · DRAFT/AMEND gerekçe dayanağı · COMPLY K-2 (AYM belirlilik)/K-17 · OPINE mütalaa · TBMM genel gerekçe · EX_POST yargı-pratiği | **G5** | G5 en fazla CONDITIONAL; kullanıcıya "Yargı connector'ını bağla" önerisi; içtihat iddiası `unverified` etiketli, asla uydurma |
+| **Open Law** | `mcp__Open_Law__lookup_statute` · `legislation_toc` · `search_caselaw` · `fetch_hudoc` | Mod 7 UK **çapraz/HUDOC** (statute birincil = wire `uk-legal` `legislation_*`). **AB/CELEX bu companion'da DEĞİL** — wire'lı `eurlex` | **null (G6 değil)** | Wire fail → `ep.legislation_uk`; G6'yı düşürmez |
+| **Ansvar** | `mcp__Ansvar__search(jurisdictions=…)` · `get_provision` · `list_coverage` · `validate_citation` | Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL veya diğer 58-yargı korpusu kapsamındaki ülke satırı · yatay çerçeve/standart (GDPR/NIS2/veri güvenliği) sorguları | Mod 7 kapsam bütünlüğü | O yargı satırı `manual_required` + kapsam-boşluğu beyanı; satır tablodan SİLİNMEZ. CH birincil metin wire'lı `fedlex`'tedir |
+
+> **v3.5.0 — companion'dan wire'a terfi:** `yoktez` artık companion DEĞİL, `fleet.yaml`'de first-class wire'lıdır (`mcp__yoktez__*`, authless). Sonuç: **G7 YÖK-Tez atıf doğrulaması kullanıcının connector bağlamasına bağlı değildir** — tez no/başlık/yazar `get_yok_tez_thesis_details` ile teyit edilir, uydurma tez atfı deterministik yakalanır (hard PASS). Aynı sürümde `literatur` (DergiPark makale tam-metni), `openathens` (Tier 3 lisanslı) ve `annas-reader` (Tier 4 son çare, yalnız analiz) de wire edildi. Şelale disiplini: openathens'in erişilemez olması annas-reader'ı OTOMATİK AÇMAZ.
+
+**Sorumluluk sınırı:** Türkiye içtihadında otorite Yargı'dır; UK resmî metinde wire'lı `uk-legal` (`legislation_*` + içtihat/Hansard) + Open Law companion + `ep.legislation_uk` yedek; **AB/CELEX'te wire'lı `eurlex`**; **CH birincil metinde wire'lı `fedlex`**; Ansvar çok-yargı *tarama* katmanıdır — çatışmada ülkenin resmî portalı (health-policy/german-law/eurlex/fedlex) kazanır, Ansvar bulgusu ikincil teyit olarak not edilir.
+
+## 4. Degrade matrisi (özet)
+
+| Durum | Davranış | Manifesto satırı |
+|---|---|---|
+| evidentia + sci-audit kurulu, 3 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
+| evidentia kurulu ama klinik-boyutlu sorguda ÇAĞRILMADI | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
+| sci-audit kurulu ama çıktı denetimsiz teslim edildi | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
+| yalnız evidentia kurulu | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |
+| yalnız sci-audit kurulu | Dil-QA tam, klinik `unverified` uyarısı | `evidentia → skipped: plugin kurulu değil` |
+| companion bağlı değil | İlgili kapı CONDITIONAL / satır `manual_required`-degrade + kullanıcıya bağlama önerisi | `Yarg/Open_Law/Ansvar → skipped: companion bağlı değil ⇒ <kapı/satır etkisi>` |
+| ikisi de yok, companion'lar yok | cureolex tek başına (9 mod çalışır; G5 CONDITIONAL; G6 `eurlex`'e bağlı) | tümü `skipped` + gerekçe |
+
+**Değişmez:** hiçbir degrade durumu **uydurmaya** yol açmaz. Eksik katman = dürüst `unverified`/`skipped` beyanı, asla fabrikasyon. `skipped` yalnız (a) gerçek yokluk, (b) gerekçeli bağlam-dışılık ile meşrudur — kurulu/bağlı bir katmanın tetiklenmiş bağlamda atlanması her zaman ihlaldir. İnsan denetimi her hâlde zorunludur.
+
+## 5. Paylaşılan büyük-veri substratı (anamnesis)
+
+cureolex ve evidentia **aynı `anamnesis` Worker'ını** paylaşır ama **çalışma setleri ayrıdır** (bkz. `context-economy-contract.md` Tier 2). İzolasyon `collection="{plugin}:{kind}:{id}"` + önekli `doc_id`'dir — **`doc_scope` yoktur** (filtresiz `hybrid_query` global contamination). cureolex scratch: `cureolex:sess:<12hex>` (G0–G9 aynı sess, kanonik cache). İnsan-okunur kuyruk korunur (`mevzuat:`/`celex:`/`ecli:`/`rg:`). Ledger `.claude/anamnesis-cureolex.json` — Evidentia ledger'ına yazılmaz. `lib` varsayılan değil. İki plugin aynı ham id'ye query **atmaz**. anamnesis anahtarı yoksa bounded-chunk fallback.

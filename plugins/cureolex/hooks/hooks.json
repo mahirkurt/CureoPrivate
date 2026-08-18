@@ -1,0 +1,100 @@
+{
+  "description": "cureolex runtime enforcement — düz-yazı invaryantlarını uygulanan davranışa çevirir: (1) SessionStart preflight, fleet.lock.json'daki filoya CANLI MCP prob'u atar (24 saat cache'li) ve 'anahtar yok' (meşru degrade) ile 'sunucu 401/403 verdi' (yapılandırma arızası) hâllerini AYIRIR; ayrıca tam-filo/no-fabrication/Scope Guard konvansiyonlarını enjekte eder (fail-open). (2) SessionStart + UserPromptSubmit `/lex-*` Anamnesis sess koleksiyonunu (cureolex:sess:<12hex>, G0–G9 aynı cache) enjekte eder; startup/clear önceki sess'i forget eder, resume/compact korur. SessionEnd koleksiyonu siler. Stop unutmaz. (3) PreToolUse anamnesis guard, kapsam-dışı hybrid_query/graph_*/semantic_search/ingest'i DENY eder (collection veya önekli doc_id yoksa). Kaynak MCP'ler bloklanmaz. (4) UserPromptSubmit scope-guard, kapsam-dışı sinyal + sağlık-mevzuat bağlamı birlikte görülürse yönlendirme hatırlatır. (5) PostToolUse retrieve-don't-dump büyük hukuk-metnini distiller/anamnesis'e yönlendirir; anamnesis ingest id'leri plugin-ayrışık ledger'a yazılır. (6) Stop, reform çıktısında G0 manifesto + confidence_label + zorunlu companion/delegasyon satırlarını hatırlatır. Hepsi deterministik ve fail-open. Guard kapatma: <project>/.claude/cureolex-anamnesis-guard.off; forget stub: CUREOLEX_ANAMNESIS_FORGET_LOG.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*anamnesis.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/anamnesis_guard.py\"",
+            "timeout": 10,
+            "statusMessage": "cureolex: anamnesis koleksiyon kapsamı"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
+            "timeout": 45,
+            "statusMessage": "cureolex: hukuk MCP filosu preflight + reform konvansiyonları"
+          },
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/anamnesis_lifecycle.py\"",
+            "timeout": 25,
+            "statusMessage": "cureolex: anamnesis sess koleksiyonu"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/scope_guard.py\"",
+            "timeout": 10,
+            "statusMessage": "cureolex: Scope Guard taraması"
+          },
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/anamnesis_lifecycle.py\"",
+            "timeout": 25,
+            "statusMessage": "cureolex: anamnesis sess kapsamı"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/retrieve_dont_dump.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*anamnesis.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/anamnesis_ledger.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/anamnesis_lifecycle.py\"",
+            "timeout": 25,
+            "statusMessage": "cureolex: anamnesis sess koleksiyonunu temizle"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/env python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/stop_coverage.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

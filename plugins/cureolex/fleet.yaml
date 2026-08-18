@@ -4,6 +4,7 @@
 #   .mcp.json
 #   .codex-plugin/plugin.json  (mcpServers bloğu + version)
 #   .cursor-plugin/plugin.json (version + mcpServers yolu, dosya varsa)
+#   .cursor-plugin/mcp.json    (Cursor ${env:VAR} interpolasyonu)
 #   fleet.lock.json            (hook'ların okuduğu stdlib-türev)
 #   CONNECTORS.md              (⟨GEN⟩ connector roster)
 #   commands/lex-connectors.md (⟨GEN⟩ anahtar tablosu)
@@ -22,7 +23,7 @@
 
 version: 2
 plugin: cureolex
-plugin_version: "3.8.6"
+plugin_version: "3.8.7"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # cureolex bu sayıları G0 kapı ölçütü olarak kullandığı için açık.

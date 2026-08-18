@@ -2,15 +2,16 @@
 """Cureonics filo üreticisi — plugin-agnostik. Kaynak: <plugin>/fleet.yaml.
 
 Üretilenler (hepsi opsiyonel, fleet.yaml neyi bildiriyorsa):
-  <plugin>/.mcp.json                    Claude Code MCP wiring
+  <plugin>/.mcp.json                    Claude Code MCP wiring (${VAR})
   <plugin>/.codex-plugin/plugin.json    mcpServers bloğu + version (yerinde)
   <plugin>/.cursor-plugin/plugin.json   version + mcpServers yolu (dosya varsa)
+  <plugin>/.cursor-plugin/mcp.json      Cursor MCP wiring (${env:VAR})
   <plugin>/fleet.lock.json              hook'ların okuduğu stdlib türev
   fleet.yaml `generated_blocks` ile bildirilen ⟨GEN⟩ blokları
 
 Kullanım:
   python3 tools/fleetkit/gen_fleet.py                 tüm plugin'ler
-  python3 tools/fleetkit/gen_fleet.py lex-sanitas     tek plugin
+  python3 tools/fleetkit/gen_fleet.py cureolex     tek plugin
   python3 tools/fleetkit/gen_fleet.py --check         yazma; fark varsa exit 1
 
 NEDEN VAR: filo tanımı plugin başına 3-8 yerde elle tutuluyordu. 2026-08-06
@@ -33,11 +34,13 @@ import yaml
 REPO = Path(__file__).resolve().parent.parent.parent
 PLUGINS = REPO / "plugins"
 
-# `tier` serbest metindir: her plugin kendi taksonomisini kullanır (lex-sanitas
+# `tier` serbest metindir: her plugin kendi taksonomisini kullanır (cureolex
 # primary/comparative/doctrine…, evidentia K/K-epi/O). Sabit bir liste dayatmak
 # mevcut sözlükleri yeniden yazmak olurdu — doğrulama yalnız boş-olmama arar.
 GATES = {None, "G5", "G6", "G7"}
-SERVER_REQUIRED = {"name", "url", "auth_env"}
+TRANSPORTS = {"http", "stdio"}
+# `url` yalnız http için zorunlu; stdio `command` (+ ops. `args`) ister.
+SERVER_REQUIRED = {"name", "auth_env"}
 
 GEN_WARNING = ("ÜRETİLMİŞ DOSYA — elle düzenlemeyin. "
                "Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py")
@@ -116,8 +119,20 @@ def validate_fleet(fleet: dict) -> None:
             raise ValueError(f"{s['name']}: tier boş — ya anlamlı değer ver ya alanı sil")
         if s.get("gate") not in GATES:
             raise ValueError(f"{s['name']}: geçersiz gate {s.get('gate')!r}")
-        if not str(s["url"]).startswith("http"):
-            raise ValueError(f"{s['name']}: url http(s) ile başlamalı")
+        stype = s.get("type", "http")
+        if stype not in TRANSPORTS:
+            raise ValueError(f"{s['name']}: geçersiz type {stype!r}")
+        if stype == "http":
+            url = s.get("url")
+            if not url or not str(url).startswith("http"):
+                raise ValueError(f"{s['name']}: url http(s) ile başlamalı")
+        else:
+            if s.get("url"):
+                raise ValueError(f"{s['name']}: stdio sunucuda url olmamalı")
+            if not str(s.get("command") or "").strip():
+                raise ValueError(f"{s['name']}: stdio için command gerekli")
+            if "args" in s and not isinstance(s["args"], list):
+                raise ValueError(f"{s['name']}: args bir liste olmalı")
 
     comp = {c["name"] for c in fleet.get("companions", [])}
     if seen & comp:
@@ -128,7 +143,8 @@ def validate_fleet(fleet: dict) -> None:
 
 def build_lock(fleet: dict) -> dict:
     """Hook'ların okuduğu stdlib türev — role/tools_used/degrade taşımaz."""
-    keys = ("name", "url", "tier", "auth_env", "shard", "modes", "gate", "headers")
+    keys = ("name", "url", "type", "command", "args", "cwd", "env",
+            "tier", "auth_env", "shard", "modes", "gate", "headers")
     servers = [{k: s.get(k) for k in keys if k in s or k in ("auth_env",)}
                for s in fleet["servers"]]
     gated = sum(1 for s in servers if s.get("auth_env"))
@@ -153,15 +169,42 @@ def _squash(text) -> str:
     return " ".join(str(text).split())
 
 
-def build_mcp_servers(fleet: dict) -> dict:
-    """`.mcp.json` / codex için mcpServers bloğu."""
+def _auth_placeholder(auth_env: str, env_style: str) -> str:
+    """Claude Code `${VAR}`; Cursor plugin `${env:VAR}` (process env, no paste prompt)."""
+    if env_style == "cursor":
+        return "${env:%s}" % auth_env
+    return "${%s}" % auth_env
+
+
+def build_mcp_servers(fleet: dict, *, env_style: str = "plain") -> dict:
+    """`.mcp.json` / codex / Cursor için mcpServers bloğu.
+
+    env_style:
+      plain  — Claude Code / Codex: `Bearer ${AUTH_ENV}`
+      cursor — Cursor Plugins: `Bearer ${env:AUTH_ENV}` so the IDE interpolates
+               the process environment instead of inferring a plugin-variable
+               paste prompt (docs: cursor.com/docs/reference/plugins#variables).
+    """
     out = {}
     for s in fleet["servers"]:
-        entry = {"type": s.get("type", "http"), "url": s["url"]}
-        if s.get("auth_env"):
-            entry["headers"] = {"Authorization": "Bearer ${%s}" % s["auth_env"]}
-        elif s.get("headers"):
-            entry["headers"] = s["headers"]
+        stype = s.get("type", "http")
+        if stype == "stdio":
+            entry = {"type": "stdio", "command": s["command"]}
+            if s.get("args"):
+                entry["args"] = list(s["args"])
+            if s.get("cwd"):
+                entry["cwd"] = s["cwd"]
+            if s.get("env"):
+                entry["env"] = s["env"]
+        else:
+            entry = {"type": "http", "url": s["url"]}
+            if s.get("auth_env"):
+                entry["headers"] = {
+                    "Authorization": "Bearer %s" % _auth_placeholder(
+                        s["auth_env"], env_style)
+                }
+            elif s.get("headers"):
+                entry["headers"] = s["headers"]
         if s.get("tier"):
             entry["_tier"] = s["tier"]
         if s.get("role"):
@@ -172,16 +215,21 @@ def build_mcp_servers(fleet: dict) -> dict:
     return out
 
 
-def build_mcp_json(fleet: dict) -> dict:
+def build_mcp_json(fleet: dict, *, env_style: str = "plain") -> dict:
     c = build_lock(fleet)["counts"]
     note = fleet.get("mcp_comment", "")
+    interp = ("Cursor `${env:VAR}` process-env interpolasyonu "
+              "(plugin-variable paste formu değil). "
+              if env_style == "cursor" else "")
     comment = (f"{GEN_WARNING} — {fleet['plugin']} MCP wiring. "
                f"{c['servers']} server ({c['gated']} Bearer-gated, {c['public']} public)"
                + (f", {c['companions']} companion" if c["companions"] else "")
                + ". Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa "
                  "o katman graceful degrade eder (asla uydurma). "
+               + interp
                + (note and f"{_squash(note)} ")).strip()
-    return {"_comment": comment, "mcpServers": build_mcp_servers(fleet)}
+    return {"_comment": comment,
+            "mcpServers": build_mcp_servers(fleet, env_style=env_style)}
 
 
 def replace_gen_block(text: str, name: str, body: str, style: str = "html") -> str:
@@ -216,12 +264,16 @@ def gen_connector_roster(fleet, _cfg):
         "|---|---|:---:|---|---|",
     ]
     for s in fleet["servers"]:
-        url = s["url"].rstrip("/")
+        if s.get("type") == "stdio":
+            cmd = " ".join([s["command"], *(str(a) for a in (s.get("args") or []))])
+            endpoint = f"stdio `{cmd}`"
+        else:
+            endpoint = f"`{s['url'].rstrip('/')}`"
         if s.get("auth_env"):
             auth, env = "Bearer", f"`{s['auth_env']}`"
         else:
             auth, env = "public", "—"
-        rows.append(f"| `{s['name']}` | `{url}` | {auth} | {env} | {s.get('tier', '—')} |")
+        rows.append(f"| `{s['name']}` | {endpoint} | {auth} | {env} | {s.get('tier', '—')} |")
     for c in fleet.get("companions", []):
         rows.append(
             f"| **{c['name']}** | _(kararlı self-host URL yok)_ | OAuth | "
@@ -236,10 +288,10 @@ def server_prefixes(s, plugin=None):
     1. **Plugin'e paketli (Claude Code, KANONİK yol).** Plugin'in `.mcp.json`'ı
        yüklendiğinde önek plugin adıyla NAMESPACE'LENİR:
        `mcp__plugin_<plugin>_<server>__`. 2026-08-07 oturumunda dokuz sunucuda
-       ölçüldü (lex-sanitas/edupedia/vekayinuvis/rxpraxis/sci-audit) — kural
+       ölçüldü (cureolex/edupedia/vekayinuvis/rxpraxis/sci-audit) — kural
        dokuzunda da tuttu. Plugin kurulu olduğunda GERÇEKTE yüklenen budur.
     2. **Cursor native plugin MCP.** Cursor katalog kimliği tirelidir:
-       `plugin-<plugin>-<server>` (ölçüldü: `plugin-lex-sanitas-mevzuat`).
+       `plugin-<plugin>-<server>` (ölçüldü: `plugin-cureolex-mevzuat`).
        Ajan `tools:` allowlist'i `mcp__plugin-<plugin>-<server>__*` ister;
        yalnız alt-çizgili Claude Code biçimi varsa distiller MCP'yi çağırmaz.
     3. **Kullanıcı düzeyi `.mcp.json`** (plugin dışı, `~/.claude.json` vb.) →
@@ -280,12 +332,12 @@ def gen_agent_tools(fleet, cfg):
     def in_shard(s):
         """`shard` tek değer VEYA liste olabilir.
 
-        Bir sunucu gerçekten iki shard'a ait olabilir — turk-patent hem TR
-        çekirdeğidir (S1: TÜRKPATENT Türkiye'nin kendi sicili) hem de
-        karşılaştırmalı çalışmada IP-kesişimi katmanıdır (S2, mod matrisinde
-        COMPARATIVE_LAW'a atanmış). Tek değere zorlanınca ya S2 distiller'ı onu
-        çağıramaz (ajan `tools:` KATI allowlist'tir → IP katmanı sessizce düşer)
-        ya da `ALL` yazılıp substrat gibi gösterilir. Liste ikisini de önler.
+        Bir sunucu gerçekten iki shard'a ait olabilir — eurlex hem TR-çekirdek
+        G6 CELEX taşıyıcısıdır (S1) hem de karşılaştırmalı AB birincil metin
+        katmanıdır (S2, mod matrisinde COMPARATIVE_LAW'a atanmış). Tek değere
+        zorlanınca ya S2 distiller'ı onu çağıramaz (ajan `tools:` KATI
+        allowlist'tir → AB katmanı sessizce düşer) ya da `ALL` yazılıp substrat
+        gibi gösterilir. Liste ikisini de önler.
         """
         sh = s.get("shard")
         vals = sh if isinstance(sh, list) else [sh]
@@ -358,8 +410,11 @@ def write_all(root: Path, fleet: dict, check: bool = False) -> list:
     if cursor.is_file():
         d = json.loads(cursor.read_text(encoding="utf-8"))
         d["version"] = fleet["plugin_version"]
-        d["mcpServers"] = "./.mcp.json"
+        d["mcpServers"] = "./.cursor-plugin/mcp.json"
         _write(cursor, _json_text(d), check, changed)
+        _write(root / ".cursor-plugin" / "mcp.json",
+               _json_text(build_mcp_json(fleet, env_style="cursor")),
+               check, changed)
 
     for blk in fleet.get("generated_blocks", []):
         path = root / blk["file"]

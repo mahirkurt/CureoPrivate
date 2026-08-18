@@ -329,7 +329,7 @@ cases:
       Cursor / Claude Code).
     expect:
       - ".claude-plugin/plugin.json mcpServers './.mcp.json', hooks './hooks/hooks.json', skills/commands/agents yollarını bildirmeli — metadata-only manifest marketplace kurulumunda MCP'siz yüklenir."
-      - ".cursor-plugin/plugin.json name=cureolex + mcpServers './.mcp.json' taşımalı (Cursor native keşif)."
+      - ".cursor-plugin/plugin.json name=cureolex + mcpServers './.cursor-plugin/mcp.json' taşımalı (Cursor native keşif; `${env:VAR}` process-env interpolasyonu, plugin-variable paste formu değil)."
       - ".codex-plugin/openai.yaml ChatGPT interface stub'unu agents/ altında DEĞİL .codex-plugin/ altında tutmalı (agents/*.yaml ajan sanılır)."
       - "CONNECTORS.md yüzey matrisini yazmalı: Claude Code/Cursor auto-wire; claude.ai/ChatGPT elle connector; web'de Python hook koşmaz."
       - "Distiller tools: allowlist hem mcp__plugin_cureolex_<server>__* (Claude Code) hem mcp__plugin-cureolex-<server>__* (Cursor tireli id) taşımalı — tek biçim diğer yüzeyde sessiz yetenek kaybıdır."

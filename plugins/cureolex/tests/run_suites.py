@@ -214,8 +214,20 @@ def main(argv=None) -> int:
         cur = json.loads(curp.read_text(encoding="utf-8"))
         if cur.get("name") != "cureolex":
             issues.append(("WIRING", "cursor plugin.json name sapması"))
-        if cur.get("mcpServers") not in ("./.mcp.json", ".mcp.json"):
-            issues.append(("WIRING", "cursor plugin.json mcpServers yok"))
+        if cur.get("mcpServers") not in ("./.cursor-plugin/mcp.json",
+                                          ".cursor-plugin/mcp.json"):
+            issues.append(("WIRING",
+                           "cursor plugin.json mcpServers './.cursor-plugin/mcp.json' değil"))
+        cmcp = ROOT / ".cursor-plugin" / "mcp.json"
+        if not cmcp.is_file():
+            issues.append(("WIRING", ".cursor-plugin/mcp.json yok"))
+        else:
+            cs = json.loads(cmcp.read_text(encoding="utf-8")).get("mcpServers", {})
+            for sname in ("eurlex", "fedlex", "uk-legal"):
+                auth = (cs.get(sname) or {}).get("headers", {}).get("Authorization", "")
+                if "${env:" not in auth:
+                    issues.append(("WIRING",
+                                   f"cursor mcp.json {sname} ${{env:VAR}} interpolasyonu yok"))
     if not (ROOT / ".codex-plugin" / "openai.yaml").is_file():
         issues.append(("WIRING", ".codex-plugin/openai.yaml yok"))
     if (ROOT / "agents" / "openai.yaml").exists():

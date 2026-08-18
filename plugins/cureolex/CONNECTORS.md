@@ -17,7 +17,7 @@ yüzeye göre ayrı bağlanır.
 | Yüzey | Skill / komut / ajan | 22 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
 |---|---|---|---|---|
 | **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -p cureohub -c dev_personal -- claude` |
-| **Cursor** | marketplace / GitHub plugin | `.mcp.json` auto-wire (`plugin-cureolex-<server>`) | çalışır (`python3`) | Cursor sürecini `doppler run … -- cursor` (veya eşdeğeri) ile aç; aksi hâlde gated uçlar `auth_missing` |
+| **Cursor** | marketplace / GitHub plugin | `.cursor-plugin/mcp.json` auto-wire (`plugin-cureolex-<server>`) | çalışır (`python3`) | Süreç ortamında Doppler adları (`${env:VAR}`). `doppler run … -- cursor` veya `dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor restart. `${VAR}` plugin-variable paste formu **kullanılmaz**. |
 | **claude.ai** | plugin skills/komutlar yüklenebilir | **elle** Settings → Connectors | **koşmaz** | her gated URL için custom connector + Bearer/OAuth; G0 manifestosunu model yazar |
 | **ChatGPT** (Developer Mode) | Codex skill / `interface` | **elle** Settings → Connectors | **koşmaz** | Plus/Pro/… + Developer Mode; gated uçlarda OAuth veya Bearer; public uçlarda "No authentication" |
 
@@ -40,9 +40,9 @@ eklediği connector listesi raporlanır; canlı `ok` iddia edilmez.
 ```
 
 Cursor aynı GitHub marketplace kaynağını Claude plugin olarak da yükler. Native
-Cursor manifesti `.cursor-plugin/plugin.json` (skills / agents / commands /
-hooks / mcpServers). Codex/ChatGPT yüzeyi `.codex-plugin/plugin.json` +
-`.codex-plugin/openai.yaml`.
+Cursor manifesti `.cursor-plugin/plugin.json` + `.cursor-plugin/mcp.json`
+(`${env:VAR}` — process env; plugin-variable paste formu değil). Codex/ChatGPT
+yüzeyi `.codex-plugin/plugin.json` + `.codex-plugin/openai.yaml`.
 
 Claude Code `userConfig` alanları Settings UI'da görünür **ama** `.mcp.json`
 header'ı `${ENV}` okur. Yalnız UI'ya yapıştırılan değer header'ı **beslemez**;
@@ -97,9 +97,14 @@ ve DRAFT dosya-yapısı atıfı yapabilir; şirket sequence / otorite gönderimi
 
 Public (Bearer yok): `mevzuat-bilgisi`, `yoktez`, `literatur`.
 
-Gated Bearer: süreç ortamındaki Doppler adı. Cursor/Claude Code oturumunda
-`EURLEX_MCP_API_KEY` / `FEDLEX_MCP_API_KEY` / `UK_LEGAL_MCP_API_KEY` yoksa o üç
-kapı `auth_missing` (meşru degrade) — plugin paketi bu boşluğu dolduramaz.
+Gated Bearer: süreç ortamındaki Doppler adı. Claude Code `${VAR}` okur. Cursor
+native wire (`.cursor-plugin/mcp.json`) **`${env:VAR}`** okur — IDE bunu plugin
+variable sanıp yapıştırma formu açmasın diye. Üç kapı adı `EURLEX_MCP_API_KEY` /
+`FEDLEX_MCP_API_KEY` / `UK_LEGAL_MCP_API_KEY` (Doppler `cureohub/dev_personal`).
+Yerel `~/.dotfiles-ai/secrets/secrets.env` geride kaldıysa
+`dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor'ı yeniden başlat. Env'de
+yoksa Cursor "enter key" sorar; env varsa sormaz. Anahtar yoksa o katman
+`auth_missing` (meşru degrade) — plugin paketi bu boşluğu dolduramaz.
 
 ---
 

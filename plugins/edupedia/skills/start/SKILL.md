@@ -1,8 +1,8 @@
 ---
 name: start
 description: edupedia süitine giriş ve yönlendirme. Bağlı İKİ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme) kontrol eder, flagship carbon-edupedia skill'ini ve komutları tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
-version: 1.2.0
-last_updated: 2026-08-16
+version: 1.2.1
+last_updated: 2026-08-18
 ---
 
 # edupedia — Başlangıç ve Yönlendirme
@@ -44,15 +44,20 @@ Dört işlevsel araç kümesi (otoritatif **21 araç**):
 - **B · Kazanım** (çekirdek kaynak) — `list_learning_outcomes`, `search_learning_outcomes`, `search`
 - **C · Beceri çerçevesi** — `list_frameworks`, `get_framework` (KB2.x → etkileşim haritalama)
 - **D · Belge + medya** — `list_document_kinds`, `list_documents`, `get_document_text`, `list_textbooks`, `list_guides`, `list_reports`, `list_videos`, `get_video`
-- **Görsel yolu** — `search_figures` + `get_figure` (**Tier-2** yeteneği, §Adım 2 alt-kontrol)
+- **Görsel yolu** — `search_figures` + `get_figure` (**Tier-2a gözlem**; Tier-2b için metadata,
+  §Adım 2 alt-kontrol)
 
 Canlılık için `server_info` çağırıp korpus sürümünü (bilinen: corpus v1.4, build 2026-06-14)
-raporlayın. **`get_figure` mevcut mu** doğrulayın: varsa Tier-2 (resmî ders-kitabı görseli gömme)
-mevcuttur; yoksa yalnız Tier-1 (yazar-üretimli SVG) — her iki durumda da üretim çalışır.
+raporlayın. **`get_figure` mevcut mu** doğrulayın: varsa Tier-2a metadata/ImageContent gözlemi
+mevcuttur. Gerçek gömme (Tier-2b) yalnız yerel dosya sistemi+Python ile
+`scripts/fetch_figure.py` çalıştırılabildiğinde mümkündür (native Claude Code/Cursor);
+yoksa yalnız Tier-1 (yazar-üretimli SVG) — her durumda üretim çalışır.
 
 **Eğitim Kaynak RAG MCP (`egitim-kaynak` · `https://egitim-kaynak.cureonics.com/mcp`) — TAMAMLAYICI:**
 6 salt-okunur araç (`kb_search`, `kb_for_outcome`, `kb_get`, `kb_patterns`, `kb_sources`,
-`kb_server_info`). **Anahtarsız — secret gerekmez.**
+`kb_server_info`). **Keyed OAuth/Bearer:** Claude Code/Cursor statik
+`EGITIM_KAYNAK_MCP_API_KEY` Bearer'ı kullanabilir; OAuth authorization code ve access token
+opaque'dır, API anahtarının kendisi değildir. Anahtar/connector yoksa zenginleştirme degrade eder.
 
 > **OTORİTE SIRALAMASI (kritik):** Modülün olgusal otoritesi **`maarif-mufredat`'tadır** — orada
 > **105 MEB ders kitabı TAM METİN** (`list_textbooks` → `get_document_text`), 10.855 kazanım ve
@@ -102,7 +107,7 @@ bloke olmadığını söyleyin.
 
 | Bileşen | Ne Yapar |
 |---|---|
-| **carbon-edupedia** (flagship skill) | 8 mod, 16 kalite kapısı (yerel `validate_module.py`) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
+| **carbon-edupedia** (flagship skill) | 9 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM/EXAM), 16 kalite kapısı (yerel `validate_module.py`) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim modülü |
 | **start** (bu skill) | Oryantasyon + connector kontrolü + niyet→komut yönlendirme |
 
 ## Adım 4 — Komutları Tanıt
@@ -113,7 +118,7 @@ bloke olmadığını söyleyin.
 | `/edupedia:mufredat` | Ders+sınıf+konudan modül üretir | `<ders> <sınıf> <konu>` (örn. Fen 5 hücre) |
 | `/edupedia:soru` | Bir veya birden fazla sınav sorusundan tek HTML üretir (fotoğraf veya metin) — konu anlatır + her soruyu çözer | `<soru fotoğrafı veya metni>` |
 | `/edupedia:kazanim-bul` | Konu→kazanım keşfi + KB/etkileşim haritası (**üretim yok**) | `<konu> [sınıf] [ders]` |
-| `/edupedia:durum` | Connector sağlık + Tier-2 (get_figure) kontrolü | — |
+| `/edupedia:durum` | Connector sağlık + Tier-2a/Tier-2b (`get_figure`/yerel script) kontrolü | — |
 
 ## Adım 5 — Niyete Göre Yönlendir
 
@@ -125,7 +130,8 @@ Kullanıcının ne üzerinde çalıştığını sorun ve yönlendirin:
    "bunu anlamadım") → `/edupedia:soru` (bir veya birden fazla; tek HTML). Teslim
    yerel HTML'dir; sınav sorusu paylaşılmaz (telif).
 4. **"Bu konuya hangi kazanımlar denk geliyor?"** (yalnız keşif) → `/edupedia:kazanim-bul`.
-5. **Connector çalışıyor mu / Tier-2 var mı?** → `/edupedia:durum`.
+5. **Connector çalışıyor mu / Tier-2a gözlemi veya Tier-2b yerel çıkarımı var mı?** →
+   `/edupedia:durum`.
 6. **Kaynak metin yapıştırıldı** (MCP yok) → `carbon-edupedia` skill'ini **doğrudan** (MCP'siz)
    çağır; opsiyonel olarak ilgili kazanımla hizalama öner.
 

@@ -13,8 +13,8 @@
 
 ## 1. Amaç ve kapsam
 
-**Şablon ≠ mod.** `SKILL.md` §6'daki 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/
-EXPLAINER/ASSESSMENT/SERIES/CURRICULUM) **çıktının türünü** belirler; bu
+**Şablon ≠ mod.** `SKILL.md` §6'daki 9 mod (MODULE/QUIZ/FLASHCARDS/GAME/
+EXPLAINER/ASSESSMENT/SERIES/CURRICULUM/EXAM) **çıktının türünü** belirler; bu
 belgedeki 4 şablon ise seçilen modun **içindeki segmentlerin ritmini ve
 motivasyonel örgüsünü** belirler — ikisi ortogonaldir, birbirinin yerine
 geçmez. Sefer şablonu tipik olarak MODULE/SERIES modunda tüm-modül iskeleti

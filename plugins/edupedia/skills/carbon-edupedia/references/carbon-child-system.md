@@ -207,12 +207,24 @@ zemini `color-mix` ile temaya göre türetilir. Bilinmeyen hex'lerde önceki
 
 ## 4. Tipografi — IBM Plex + tip otoritesi
 
-**Font aileleri (Google Fonts CDN; yedek zincirleri `@carbon/type` fontFamilies ile hizalı):**
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-```
+**Font aileleri (tamamen çevrimdışı; yedek zincirleri `@carbon/type`
+`fontFamilies` ile hizalı):** Şablon resmî `@ibm/plex@6.4.1` npm
+dağıtımındaki Latin1 + Latin2 WOFF2 altkümelerini `data:font/woff2;base64`
+olarak gömer. Google Fonts, CDN, ağ isteği ve göreli font dosyası yoktur.
+
+Gömülü yüzler, şablonun gerçekten kullandığı ağırlıklarla sınırlıdır:
+- Sans normal: 400 / 500 / 600 / 700
+- Serif normal: 400 / 600; italic: 400
+- Mono normal: 400 / 600 / 700
+
+Üretim zinciri: `scripts/embed_ibm_plex_fonts.py` → inline `@font-face`
+blokları + `assets/fonts-manifest.json` (her WOFF2 için sabit SHA-256) +
+`assets/ibm-plex-OFL.txt` (SIL OFL 1.1 tam metni). `--check` ağsız olarak
+şablon/blob/manifest/lisans paritesini doğrular; yeniden üretim yalnız
+önceden indirilmiş resmî `.tgz` ile `--archive` veya açık `--fetch` seçeneğiyle
+yapılır. `@font-face src` zincirinde `local()` kullanılmaz; böylece tarayıcı
+kanıtı sistemde tesadüfen kurulu bir Plex yüzüne değil gömülü bloba dayanır.
+
 - `--font-sans: 'IBM Plex Sans',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;` — UI, gövde, başlık
 - `--font-serif: 'IBM Plex Serif',Georgia,serif;` — vurgulu anlatım/alıntı
 - `--font-mono: 'IBM Plex Mono','Menlo','Consolas',monospace;` — sayı, formül, XP

@@ -4,7 +4,7 @@ argument-hint: "<kazanım-kodu> (örn. FB.5.3.1.1) [+ opsiyonel öğrenci profil
 ---
 
 `edupedia:carbon-edupedia` skill'ini **CURRICULUM modunda** çağır. Mantığı burada tekrarlama —
-skill'in 8 modu, 16 kalite kapısı ve pedagojik davranışı olduğu gibi geçerlidir; bu komut yalnız
+skill'in 9 modu, 16 kalite kapısı ve pedagojik davranışı olduğu gibi geçerlidir; bu komut yalnız
 kazanım-kodu → modül giriş noktasını kanonikleştirir.
 
 **Hedef kazanım:** $ARGUMENTS
@@ -39,8 +39,11 @@ kazanım-kodu → modül giriş noktasını kanonikleştirir.
 
 3. **Görsel — ders kitabının KENDİ figürleri ÖNCELİKLİ.** Normatif: `curriculum-integration.md`
    **§2.1** (+ `../CONNECTORS.md §3`). Özet: `search_figures(query, subject, grade)` →
-   `get_figure(..., include_image=true)` ile **göm**; yazar-SVG (Tier-1) **yedektir**;
-   düşerse `tier2_status` **raporla** — sessizce atlama.
+   `get_figure(..., include_image=false)` ile metadata al; `include_image=true` görseli
+   modele MCP `ImageContent` olarak **gösterir** (Tier-2a), ham base64 vermez. Yerel dosya
+   sistemi+Python varsa metadata'yı `scripts/fetch_figure.py` ile gerçek binary gömmeye
+   dönüştür (Tier-2b; native Claude Code/Cursor). Yazar-SVG (Tier-1) yedektir; düşerse
+   `tier2_status` **raporla** — sessizce atlama.
 
 3.5. **KAPSAM + DOĞRULUK DENETİMİ — canlıya çıkmadan ÖNCE (ZORUNLU).** Normatif:
    `curriculum-integration.md` **§3 Adım 5.5 + §6.1**. Özet: (a) kapsam — çerçeve dışını

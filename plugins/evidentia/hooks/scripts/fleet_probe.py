@@ -28,8 +28,10 @@ kurulu olmasa da preflight çalışır.
 """
 import argparse
 import hashlib
+import hmac
 import json
 import os
+import stat
 import sys
 import time
 import urllib.error
@@ -58,6 +60,19 @@ MAX_WORKERS = 32
 # 'error' verir — sınır en büyük gerçek yanıtın üstünde olmalı.
 READ_LIMIT = 262144
 CACHE_TTL = 86400  # 24 saat — her oturumda ağ trafiği olmasın
+CACHE_SCHEMA_VERSION = 2
+CACHE_MAX_BYTES = 1024 * 1024
+CACHE_SALT_NAME = ".credential-salt"
+
+_CACHE_KEYS = {
+    "schema_version",
+    "roster",
+    "auth_presence",
+    "credential_fingerprint",
+    "ts",
+    "results",
+}
+_CACHE_IDENTITY_KEYS = _CACHE_KEYS - {"ts", "results"}
 
 # ZORUNLU: urllib'in varsayılan 'Python-urllib/x.y' User-Agent'ı Cloudflare bot
 # kuralına takılır ve TÜM cureonics.com/workers.dev uçları 403 (error 1010) döner.
@@ -125,6 +140,25 @@ def classify(http, body: str) -> str:
     return "ok" if "result" in payload else "error"
 
 
+def _redact_text(value, sensitive_values) -> str:
+    """Hassas değerleri uzunluk/prefix sızdırmayan sabit işaretle değiştirir."""
+    try:
+        text = str(value)
+    except Exception:
+        return ""
+    secrets = []
+    for sensitive in sensitive_values:
+        try:
+            secret = sensitive if isinstance(sensitive, str) else str(sensitive)
+        except Exception:
+            continue
+        if secret:
+            secrets.append(secret)
+    for secret in sorted(set(secrets), key=len, reverse=True):
+        text = text.replace(secret, "<redacted>")
+    return text
+
+
 def probe_server(server: dict, env, timeout: float = PER_ENDPOINT_TIMEOUT) -> dict:
     """Tek sunucuyu prob eder. Ağ hatası dâhil hiçbir istisna sızmaz."""
     name = server["name"]
@@ -162,7 +196,8 @@ def probe_server(server: dict, env, timeout: float = PER_ENDPOINT_TIMEOUT) -> di
         except Exception:
             body = ""
         return {"name": name, "status": classify(exc.code, body),
-                "http": exc.code, "detail": body[:120].replace("\n", " ")}
+                "http": exc.code,
+                "detail": _redact_text(body, (key,))[:120].replace("\n", " ")}
     except Exception as exc:
         return {"name": name, "status": "unreachable", "http": None,
                 "detail": type(exc).__name__}
@@ -196,51 +231,436 @@ def probe_fleet(lock: dict, env, deadline: float = TOTAL_DEADLINE) -> dict:
 def _cache_path(plugin: str = "") -> Path:
     """Cache plugin adına göre ayrışır — iki plugin birbirinin sonucunu ezmez."""
     base = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
-    return Path(base) / "cureonics-fleet" / f"{plugin or 'default'}.json"
+    label = plugin or "default"
+    if label in (".", "..") or not all(ch.isalnum() or ch in "._-" for ch in label):
+        raise ValueError("güvensiz plugin cache kimliği")
+    return Path(base) / "cureonics-fleet" / f"{label}.json"
 
 
-def roster_fingerprint(lock) -> str:
-    """Filo kimliğinin özeti: her sunucunun ADI + URL'i + kapı değişkeni.
-
-    Cache'i YALNIZ yaşa göre geçersizleştirmek 2026-08-08'de yanlış alarma yol açtı: 12:40'ta
-    `openalex` ve `pubmed-epmc` hâlâ üçüncü-taraf host'taydı ve HTTP 530 veriyordu; ~13:00'te
-    ikisi de operatör Worker'larına TAŞINDI ve sağlıklı hâle geldi. Ama cache o 530'u
-    tutuyordu, dolayısıyla SessionStart preflight'ı ARTIK VAR OLMAYAN bir URL'nin arızasını
-    24 saat boyunca "erişilemedi" diye bildirmeye devam edecekti.
-
-    Bu, plugin'in temel disiplininin aynadaki hâli: "olmayan veriyi var gösterme" ne kadar
-    yanlışsa, ÇALIŞAN bir connector'ı yok göstermek de o kadar yanlıştır — model sahte bir
-    boşluk beyan eder ve sağlam bir kaynağı atlar. Roster değişirse cache YAŞTAN BAĞIMSIZ
-    olarak geçersizdir."""
-    rows = sorted(
-        (str(s.get("name", "")), str(s.get("url", "")), str(s.get("auth_env") or ""))
-        for s in (lock or {}).get("servers", [])
-    )
-    return hashlib.sha256(json.dumps(rows, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+def _owned_by_current_user(st) -> bool:
+    geteuid = getattr(os, "geteuid", None)
+    return bool(geteuid is not None and st.st_uid == geteuid())
 
 
-def read_cache(path, ttl: int = CACHE_TTL, fingerprint: str = ""):
-    """Taze cache'i döner; bayat/bozuk/eksik VEYA roster değişmişse None."""
+def _ensure_private_cache_dir(path) -> bool:
+    """Yalnız ayrılmış 0700 dizini kabul eder; üst/ortak dizinleri chmod etmez."""
+    path = Path(path)
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        st = os.lstat(path)
+    except FileNotFoundError:
+        try:
+            os.mkdir(path, 0o700)
+            st = os.lstat(path)
+        except FileExistsError:
+            try:
+                st = os.lstat(path)
+            except Exception:
+                return False
+        except Exception:
+            return False
+    except Exception:
+        return False
+    return (
+        stat.S_ISDIR(st.st_mode)
+        and not stat.S_ISLNK(st.st_mode)
+        and _owned_by_current_user(st)
+        and stat.S_IMODE(st.st_mode) == 0o700
+    )
+
+
+def _secure_open_flags(base: int):
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    if nofollow is None:
+        return None
+    return base | nofollow | getattr(os, "O_CLOEXEC", 0)
+
+
+def _read_private_file(path, max_bytes: int, exact_bytes=None):
+    """0600, owner-owned, tek-link regular dosyayı O_NOFOLLOW ile sınırlı okur."""
+    flags = _secure_open_flags(os.O_RDONLY)
+    if flags is None:
+        return None
+    fd = None
+    try:
+        fd = os.open(Path(path), flags)
+        st = os.fstat(fd)
+        if not (
+            stat.S_ISREG(st.st_mode)
+            and _owned_by_current_user(st)
+            and stat.S_IMODE(st.st_mode) == 0o600
+            and st.st_nlink == 1
+            and st.st_size <= max_bytes
+        ):
+            return None
+        chunks = []
+        total = 0
+        while True:
+            chunk = os.read(fd, min(65536, max_bytes + 1 - total))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+            if total > max_bytes:
+                return None
+        raw = b"".join(chunks)
+        if exact_bytes is not None and len(raw) != exact_bytes:
+            return None
+        return raw
+    except Exception:
+        return None
+    finally:
+        if fd is not None:
+            try:
+                os.close(fd)
+            except Exception:
+                pass
+
+
+def _new_private_temp(root, stem):
+    flags = _secure_open_flags(os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+    if flags is None:
+        return None, None
+    for _ in range(32):
+        name = f".{stem}.{os.getpid()}.{os.urandom(12).hex()}.tmp"
+        path = Path(root) / name
+        try:
+            return path, os.open(path, flags, 0o600)
+        except FileExistsError:
+            continue
+        except Exception:
+            return None, None
+    return None, None
+
+
+def _write_all(fd, payload: bytes) -> None:
+    view = memoryview(payload)
+    while view:
+        written = os.write(fd, view)
+        if written <= 0:
+            raise OSError("cache temp write failed")
+        view = view[written:]
+
+
+def _fsync_dir(path) -> None:
+    flags = _secure_open_flags(os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    if flags is None:
+        return
+    fd = None
+    try:
+        fd = os.open(Path(path), flags)
+        os.fsync(fd)
+    except Exception:
+        pass
+    finally:
+        if fd is not None:
+            try:
+                os.close(fd)
+            except Exception:
+                pass
+
+
+def _load_or_create_salt(cache_root):
+    """Atomik oluşturulmuş 32-byte yerel HMAC salt'ını döner; güvensizde None."""
+    root = Path(cache_root)
+    if not _ensure_private_cache_dir(root):
+        return None
+    salt_path = root / CACHE_SALT_NAME
+    try:
+        os.lstat(salt_path)
+    except FileNotFoundError:
+        temp_path, fd = _new_private_temp(root, "salt")
+        if temp_path is None or fd is None:
+            return None
+        linked = False
+        try:
+            salt = os.urandom(32)
+            _write_all(fd, salt)
+            os.fsync(fd)
+            os.close(fd)
+            fd = None
+            try:
+                os.link(temp_path, salt_path, follow_symlinks=False)
+                linked = True
+            except FileExistsError:
+                pass
+            if linked:
+                _fsync_dir(root)
+        except Exception:
+            return None
+        finally:
+            if fd is not None:
+                try:
+                    os.close(fd)
+                except Exception:
+                    pass
+            try:
+                os.unlink(temp_path)
+            except Exception:
+                pass
+    except Exception:
+        return None
+    return _read_private_file(salt_path, 32, exact_bytes=32)
+
+
+def _replace_target_is_safe(path) -> bool:
+    try:
+        st = os.lstat(path)
+    except FileNotFoundError:
+        return True
+    except Exception:
+        return False
+    return stat.S_ISREG(st.st_mode) and _owned_by_current_user(st)
+
+
+def _atomic_write_private(path, payload: bytes) -> bool:
+    """Benzersiz 0600 temp + replace; symlink/özel dosya hedefini reddeder."""
+    path = Path(path)
+    root = path.parent
+    if not _ensure_private_cache_dir(root) or not _replace_target_is_safe(path):
+        return False
+    temp_path, fd = _new_private_temp(root, path.name)
+    if temp_path is None or fd is None:
+        return False
+    try:
+        _write_all(fd, payload)
+        os.fsync(fd)
+        os.close(fd)
+        fd = None
+        if not _replace_target_is_safe(path):
+            return False
+        os.replace(temp_path, path)
+        _fsync_dir(root)
+        return True
+    except Exception:
+        return False
+    finally:
+        if fd is not None:
+            try:
+                os.close(fd)
+            except Exception:
+                pass
+        try:
+            os.unlink(temp_path)
+        except FileNotFoundError:
+            pass
+        except Exception:
+            pass
+
+
+def _is_request_roster_field(name) -> bool:
+    normalized = str(name).lower().replace("-", "_")
+    return (
+        normalized in {"name", "url", "type"}
+        or "auth" in normalized
+        or "header" in normalized
+    )
+
+
+def _request_roster_rows(lock):
+    rows = []
+    for server in (lock or {}).get("servers") or []:
+        row = {
+            "name": server.get("name"),
+            "url": server.get("url"),
+            "auth_env": server.get("auth_env"),
+        }
+        for key, value in server.items():
+            if _is_request_roster_field(key):
+                row[str(key)] = value
+        encoded = json.dumps(
+            row,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        )
+        rows.append((encoded, server))
+    rows.sort(key=lambda item: item[0])
+    return rows
+
+
+def roster_fingerprint(lock, salt=None) -> str:
+    """Filo kimliğinin kararlı damgası.
+
+    Yaş tek başına yetmez: 2026-08-08'de cache, `openalex`/`pubmed-epmc` için
+    taşınmadan önceki HTTP 530'u 24 saat boyunca 'degraded' diye raporladı.
+    İstek-yüzeyi alanları değişince damga değişir → cache ölür. Cache'e yazılan
+    biçim salt'lı HMAC'tir; saltsız çağrı yalnız geriye-uyumlu karşılaştırma/test
+    yardımcısıdır ve credential içermez.
+    """
+    blob = ("[" + ",".join(row for row, _server in _request_roster_rows(lock)) + "]")
+    raw = blob.encode("utf-8")
+    if salt is not None:
+        return hmac.new(
+            bytes(salt),
+            b"cureonics-fleet/roster/v2\0" + raw,
+            hashlib.sha256,
+        ).hexdigest()
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _hmac_frame(mac, value: bytes) -> None:
+    mac.update(len(value).to_bytes(8, "big"))
+    mac.update(value)
+
+
+def cache_identity(lock, env, salt) -> dict:
+    """Roster + aynı probe env'inden presence/HMAC credential kimliği üretir."""
+    if not isinstance(salt, (bytes, bytearray)) or len(salt) != 32:
+        raise ValueError("cache salt unavailable")
+    mac = hmac.new(
+        bytes(salt),
+        b"cureonics-fleet/credentials/v2\0",
+        hashlib.sha256,
+    )
+    presence = []
+    for row, server in _request_roster_rows(lock):
+        auth_env = server.get("auth_env")
+        value = env.get(auth_env) if auth_env else None
+        present = bool(value)
+        presence.append(present)
+        _hmac_frame(mac, row.encode("utf-8"))
+        _hmac_frame(mac, str(auth_env or "").encode("utf-8"))
+        mac.update(b"\x01" if present else b"\x00")
+        if present:
+            try:
+                raw_value = value.encode("utf-8") if isinstance(value, str) else str(value).encode("utf-8")
+            except Exception:
+                raw_value = b""
+            _hmac_frame(mac, raw_value)
+    return {
+        "schema_version": CACHE_SCHEMA_VERSION,
+        "roster": roster_fingerprint(lock, salt=salt),
+        "auth_presence": presence,
+        "credential_fingerprint": mac.hexdigest(),
+    }
+
+
+def _compat_identity(roster, salt) -> dict:
+    """Eski doğrudan read/write_cache çağrıları için secretsiz şemalı kimlik."""
+    roster_raw = str(roster or "").encode("utf-8")
+    return {
+        "schema_version": CACHE_SCHEMA_VERSION,
+        "roster": hmac.new(
+            bytes(salt),
+            b"cureonics-fleet/compat-roster/v2\0" + roster_raw,
+            hashlib.sha256,
+        ).hexdigest(),
+        "auth_presence": [],
+        "credential_fingerprint": hmac.new(
+            bytes(salt),
+            b"cureonics-fleet/compat-credentials/v2\0",
+            hashlib.sha256,
+        ).hexdigest(),
+    }
+
+
+def _identity_matches(data, expected) -> bool:
+    try:
+        if set(data) != _CACHE_KEYS or set(expected) != _CACHE_IDENTITY_KEYS:
+            return False
+        if data["schema_version"] != CACHE_SCHEMA_VERSION:
+            return False
+        if data["schema_version"] != expected["schema_version"]:
+            return False
+        if data["auth_presence"] != expected["auth_presence"]:
+            return False
+        return (
+            hmac.compare_digest(str(data["roster"]), str(expected["roster"]))
+            and hmac.compare_digest(
+                str(data["credential_fingerprint"]),
+                str(expected["credential_fingerprint"]),
+            )
+        )
+    except Exception:
+        return False
+
+
+def read_cache(path, ttl: int = CACHE_TTL, roster=None, *, identity=None):
+    """Güvenli/taze/kimliği eşleşen cache'i döner; aksi durumda None.
+
+    Legacy şema/fingerprint dosyaları, symlink/özel dosyalar ve boyut sınırını
+    aşan içerik JSON ayrıştırılmadan reddedilir.
+    """
+    try:
+        path = Path(path)
+        salt = _load_or_create_salt(path.parent)
+        if salt is None:
+            return None
+        expected = identity if identity is not None else _compat_identity(roster, salt)
+        raw = _read_private_file(path, CACHE_MAX_BYTES)
+        if raw is None:
+            return None
+        data = json.loads(raw.decode("utf-8"))
+        if not isinstance(data, dict) or not _identity_matches(data, expected):
+            return None
         if time.time() - float(data["ts"]) > ttl:
             return None
-        # Fingerprint'i olmayan cache eski biçimdir → güvenme, yeniden probla.
-        if fingerprint and data.get("roster") != fingerprint:
+        if not isinstance(data["results"], dict):
             return None
         return data["results"]
     except Exception:
         return None
 
 
-def write_cache(path, results: dict, fingerprint: str = "") -> None:
+def _redact_cache_value(value, sensitive_values):
+    if isinstance(value, str):
+        return _redact_text(value, sensitive_values)
+    if isinstance(value, dict):
+        return {
+            _redact_text(key, sensitive_values): _redact_cache_value(item, sensitive_values)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact_cache_value(item, sensitive_values) for item in value]
+    if isinstance(value, tuple):
+        return [_redact_cache_value(item, sensitive_values) for item in value]
+    return value
+
+
+def write_cache(path, results: dict, roster=None, *, identity=None,
+                sensitive_values=()) -> None:
     try:
         path = Path(path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"ts": time.time(), "roster": fingerprint,
-                                    "results": results}), encoding="utf-8")
+        salt = _load_or_create_salt(path.parent)
+        if salt is None:
+            return
+        cache_id = identity if identity is not None else _compat_identity(roster, salt)
+        if set(cache_id) != _CACHE_IDENTITY_KEYS:
+            return
+        payload = {
+            "schema_version": cache_id["schema_version"],
+            "roster": cache_id["roster"],
+            "auth_presence": cache_id["auth_presence"],
+            "credential_fingerprint": cache_id["credential_fingerprint"],
+            "ts": time.time(),
+            "results": _redact_cache_value(results, sensitive_values),
+        }
+        raw = json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        if len(raw) > CACHE_MAX_BYTES:
+            return
+        _atomic_write_private(path, raw)
     except Exception:
         pass  # cache yazılamaması asla akışı bozmaz
+
+
+def _credential_values(lock, env):
+    values = []
+    for _row, server in _request_roster_rows(lock):
+        auth_env = server.get("auth_env")
+        value = env.get(auth_env) if auth_env else None
+        if not value:
+            continue
+        try:
+            text = value if isinstance(value, str) else str(value)
+        except Exception:
+            continue
+        if text:
+            values.append(text)
+    return tuple(values)
 
 
 def cached_probe(root, env, ttl: int = CACHE_TTL, fresh: bool = False) -> dict:
@@ -249,14 +669,28 @@ def cached_probe(root, env, ttl: int = CACHE_TTL, fresh: bool = False) -> dict:
         lock = load_lock(root)
         if not lock:
             return {}
-        path = _cache_path((lock or {}).get("plugin", ""))
-        fp = roster_fingerprint(lock)
-        if not fresh:
-            cached = read_cache(path, ttl, fp)
+        path = None
+        identity = None
+        try:
+            path = _cache_path((lock or {}).get("plugin", ""))
+            salt = _load_or_create_salt(path.parent)
+            if salt is not None:
+                identity = cache_identity(lock, env, salt)
+        except Exception:
+            path = None
+            identity = None
+        if not fresh and path is not None and identity is not None:
+            cached = read_cache(path, ttl, identity=identity)
             if cached is not None:
                 return cached
         results = probe_fleet(lock, env)
-        write_cache(path, results, fp)
+        if path is not None and identity is not None:
+            write_cache(
+                path,
+                results,
+                identity=identity,
+                sensitive_values=_credential_values(lock, env),
+            )
         return results
     except Exception:
         return {}

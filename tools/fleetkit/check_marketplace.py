@@ -7,12 +7,12 @@ Claude Code marketplace sözleşmesine uyup uymadığını — yani GitHub'dan
 `/plugin marketplace add mahirkurt/CureoPrivate` ile kurulduğunda connector,
 skill, agent, komut ve hook katmanlarının GERÇEKTEN yüklenip yüklenmeyeceğini.
 
-Altı denetim (hepsi deterministik, hepsi offline):
+Yedi denetim (hepsi deterministik, hepsi offline):
   [1] Katalog ↔ disk        marketplace.json plugin'leri ↔ plugins/*/ + zorunlu alanlar
   [2] Skill frontmatter     name + description var mı, name == dizin adı mı
   [3] Agent frontmatter     name + description var mı, name == dosya adı mı
   [4] Komut frontmatter     description var mı (yoksa /komut menüde boş görünür)
-  [5] Hook sözleşmesi       geçerli olay · betik mevcut · CLAUDE_PLUGIN_ROOT · timeout
+  [5] Hook sözleşmesi       platform şeması · olay · betik · host root · timeout · çıktı
   [6] Hook betiği sözdizimi her .py derleniyor mu
   [7] Manifest yolları      plugin.json / .cursor-plugin bildirilen path gerçek ve `..`'suz
 
@@ -44,9 +44,27 @@ CATALOG = REPO / ".claude-plugin" / "marketplace.json"
 # açıklayıcı bir `_comment` taşıyorsa BİLİNÇLİ ileri-uyum bahsi sayılır
 # (bilinmeyen olay zararsızca yoksayılır); taşımıyorsa yazım hatası muamelesi
 # görür — çünkü sessizce hiç çalışmayan bir hook, olmayan hooktan beterdir.
-VALID_EVENTS = {
+CLAUDE_VALID_EVENTS = {
     "PreToolUse", "PostToolUse", "Stop", "SubagentStop", "SessionStart",
     "SessionEnd", "UserPromptSubmit", "PreCompact", "Notification",
+}
+CURSOR_VALID_EVENTS = {
+    "workspaceOpen", "sessionStart", "sessionEnd", "preToolUse", "postToolUse",
+    "postToolUseFailure", "subagentStart", "subagentStop",
+    "beforeShellExecution", "afterShellExecution", "beforeMCPExecution",
+    "afterMCPExecution", "beforeReadFile", "afterFileEdit",
+    "beforeSubmitPrompt", "preCompact", "stop", "afterAgentResponse",
+    "afterAgentThought", "beforeTabFileRead", "afterTabFileEdit",
+}
+CURSOR_COMMAND_RE = re.compile(
+    r'^/usr/bin/env python3 "\$\{CURSOR_PLUGIN_ROOT\}/([^"]+)"$'
+)
+CURSOR_COMMON_FIELDS = {
+    "type", "command", "timeout", "matcher", "failClosed", "loop_limit",
+}
+CURSOR_EVENT_FIELDS = {
+    "sessionStart": {"type", "command", "timeout", "failClosed"},
+    "postToolUse": {"type", "command", "timeout", "matcher", "failClosed"},
 }
 # marketplace.json'da her plugin kaydının taşıması gereken alanlar.
 # İKİYE AYRILIR: `strict` bir BOOLEAN'dır ve meşru değeri `false`'tur — varlık
@@ -99,6 +117,163 @@ def iter_command_hooks(node):
     elif isinstance(node, list):
         for v in node:
             yield from iter_command_hooks(v)
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(REPO))
+    except ValueError:
+        return str(path)
+
+
+def _command_target(root: Path, rel: str, label: str, issues: list[str]) -> Path | None:
+    path = Path(rel)
+    if path.is_absolute() or ".." in path.parts:
+        issues.append(f"{label}: hook betiği yolu mutlak veya `..` içeriyor → {rel}")
+        return None
+    target = (root / path).resolve()
+    try:
+        target.relative_to(root.resolve())
+    except ValueError:
+        issues.append(f"{label}: hook betiği plugin kökü dışına çözülüyor → {rel}")
+        return None
+    if not target.is_file():
+        issues.append(f"{label}: hook betiği YOK → {rel}")
+        return None
+    return target
+
+
+def _check_claude_hooks(root: Path, path: Path, doc: dict) -> list[str]:
+    issues: list[str] = []
+    label = _display_path(path)
+    events = doc.get("hooks", doc)
+    if not isinstance(events, dict):
+        return [f"{label}: Claude hooks mapping değil"]
+
+    for event, body in events.items():
+        if event.startswith("_"):
+            continue
+        if event not in CLAUDE_VALID_EVENTS:
+            if "_comment" not in json.dumps(body, ensure_ascii=False):
+                issues.append(
+                    f"{label}: bilinmeyen olay '{event}' "
+                    f"(gerekçe `_comment`'i yok — yazım hatası mı?)"
+                )
+        if not isinstance(body, list):
+            issues.append(f"{label}: Claude olayı '{event}' liste değil")
+            continue
+        for group in body:
+            if not isinstance(group, dict) or not isinstance(group.get("hooks"), list):
+                issues.append(
+                    f"{label}: Claude olayı '{event}' nested `hooks` listesi taşımıyor"
+                )
+
+    for hook in iter_command_hooks(events):
+        cmd = hook["command"]
+        if not isinstance(cmd, str):
+            issues.append(f"{label}: Claude hook command metin değil")
+            continue
+        if "CLAUDE_PLUGIN_ROOT" not in cmd:
+            issues.append(
+                f"{label}: taşınabilir değil (CLAUDE_PLUGIN_ROOT yok) → {cmd[:60]}"
+            )
+        if "timeout" not in hook:
+            issues.append(f"{label}: timeout yok → {cmd[:60]}")
+        for rel in re.findall(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\"'\s]+)", cmd):
+            _command_target(root, rel, label, issues)
+    return issues
+
+
+def _check_cursor_hooks(root: Path, path: Path, doc: dict) -> list[str]:
+    issues: list[str] = []
+    label = _display_path(path)
+    if type(doc.get("version")) is not int or doc.get("version") != 1:
+        issues.append(f"{label}: Cursor hook sürümü tam olarak `version: 1` olmalı")
+
+    events = doc.get("hooks")
+    if not isinstance(events, dict):
+        return issues + [f"{label}: Cursor `hooks` mapping değil"]
+
+    for event, definitions in events.items():
+        if event not in CURSOR_VALID_EVENTS:
+            issues.append(f"{label}: bilinmeyen Cursor olayı '{event}' (camelCase gerekli)")
+        if not isinstance(definitions, list):
+            issues.append(f"{label}: Cursor olayı '{event}' liste değil")
+            continue
+
+        allowed = CURSOR_EVENT_FIELDS.get(event, CURSOR_COMMON_FIELDS)
+        for definition in definitions:
+            if not isinstance(definition, dict):
+                issues.append(f"{label}: Cursor olayı '{event}' doğrudan tanım değil")
+                continue
+            if "hooks" in definition:
+                issues.append(
+                    f"{label}: Cursor olayı '{event}' Claude-style nested `hooks` içeriyor"
+                )
+            extra = set(definition) - allowed
+            if extra:
+                issues.append(
+                    f"{label}: Cursor olayı '{event}' desteklenmeyen alan(lar) → "
+                    + ", ".join(sorted(extra))
+                )
+            if definition.get("type", "command") != "command":
+                issues.append(f"{label}: Cursor olayı '{event}' command hook olmalı")
+                continue
+            timeout = definition.get("timeout")
+            if type(timeout) is not int or timeout <= 0:
+                issues.append(f"{label}: Cursor olayı '{event}' pozitif integer timeout ister")
+            if not isinstance(definition.get("failClosed"), bool):
+                issues.append(f"{label}: Cursor olayı '{event}' boolean failClosed ister")
+            if event == "postToolUse" and not isinstance(definition.get("matcher"), str):
+                issues.append(f"{label}: Cursor postToolUse metin matcher ister")
+
+            command = definition.get("command")
+            if not isinstance(command, str):
+                issues.append(f"{label}: Cursor olayı '{event}' command metni taşımıyor")
+                continue
+            match = CURSOR_COMMAND_RE.fullmatch(command)
+            if not match:
+                issues.append(
+                    f"{label}: Cursor command `/usr/bin/env python3 "
+                    f"\"${{CURSOR_PLUGIN_ROOT}}/...\"` biçiminde olmalı → {command[:60]}"
+                )
+                continue
+            rel = match.group(1)
+            target = _command_target(root, rel, label, issues)
+            if target is None:
+                continue
+            if Path(rel).parts[:2] != ("hooks", "scripts"):
+                issues.append(f"{label}: Cursor hook betiği hooks/scripts altında değil → {rel}")
+            try:
+                script = target.read_text(encoding="utf-8")
+            except OSError as exc:
+                issues.append(f"{label}: Cursor hook betiği okunamadı → {rel}: {exc}")
+                continue
+            for claude_field in ("hookSpecificOutput", "additionalContext"):
+                if claude_field in script:
+                    issues.append(
+                        f"{label}: Cursor wrapper Claude çıktı alanı "
+                        f"`{claude_field}` içeriyor → {rel}"
+                    )
+    return issues
+
+
+def check_hook_contract(root: Path, path: Path, platform: str) -> list[str]:
+    """Bir hook dosyasını onu bildiren host'un gerçek şemasına göre doğrula."""
+    label = _display_path(path)
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"{label}: BOZUK JSON — {exc}"]
+    except OSError as exc:
+        return [f"{label}: hook dosyası okunamadı — {exc}"]
+    if not isinstance(doc, dict):
+        return [f"{label}: hook belgesi mapping değil"]
+    if platform == "claude":
+        return _check_claude_hooks(root, path, doc)
+    if platform == "cursor":
+        return _check_cursor_hooks(root, path, doc)
+    raise ValueError(f"bilinmeyen hook platformu: {platform}")
 
 
 def check_catalog(catalog):
@@ -184,27 +359,7 @@ def check_plugin(root: Path):
 
     hj = root / "hooks" / "hooks.json"
     if hj.is_file():
-        try:
-            doc = json.loads(hj.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as e:
-            return issues + [f"{hj.relative_to(REPO)}: BOZUK JSON — {e}"]
-        events = doc.get("hooks", doc)
-        for ev, body in events.items():
-            if ev.startswith("_") or ev in VALID_EVENTS:
-                continue
-            if "_comment" not in json.dumps(body, ensure_ascii=False):
-                issues.append(f"{hj.relative_to(REPO)}: bilinmeyen olay '{ev}' "
-                              f"(gerekçe `_comment`'i yok — yazım hatası mı?)")
-        for hook in iter_command_hooks(events):
-            cmd = hook["command"]
-            if "CLAUDE_PLUGIN_ROOT" not in cmd:
-                issues.append(f"{hj.relative_to(REPO)}: taşınabilir değil "
-                              f"(CLAUDE_PLUGIN_ROOT yok) → {cmd[:60]}")
-            if "timeout" not in hook:
-                issues.append(f"{hj.relative_to(REPO)}: timeout yok → {cmd[:60]}")
-            for m in re.findall(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\"'\s]+)", cmd):
-                if not (root / m).exists():
-                    issues.append(f"{hj.relative_to(REPO)}: hook betiği YOK → {m}")
+        issues.extend(check_hook_contract(root, hj, "claude"))
 
     for py in sorted(root.glob("hooks/scripts/*.py")):
         try:
@@ -239,6 +394,18 @@ def check_plugin(root: Path):
             for field in ("mcpServers", "hooks", "skills", "commands", "agents", "rules"):
                 if field in cur:
                     _declared_path_ok(root, rel, field, cur[field], issues)
+            cursor_hooks = cur.get("hooks")
+            declared = cursor_hooks if isinstance(cursor_hooks, list) else [cursor_hooks]
+            for item in declared:
+                if not isinstance(item, str):
+                    continue
+                hook_path = root / item
+                if hook_path == hj:
+                    # Geçiş uyumluluğu: Cursor-native dosyası olmayan eski plugin'lerin
+                    # Claude ile paylaştığı hooks.json bugün kırılmaz.
+                    continue
+                if hook_path.is_file():
+                    issues.extend(check_hook_contract(root, hook_path, "cursor"))
 
     return issues
 

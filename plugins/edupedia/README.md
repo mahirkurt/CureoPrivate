@@ -4,20 +4,35 @@
 etkileşimli öğrenim modülü üreticisi.**
 
 `edupedia`, flagship `carbon-edupedia` skill'ini (IBM Carbon Design System v11 · WCAG 2.1 AA ·
-8 mod · 16 kalite kapısı) **Maarif Modeli MCP** (`maarif-mufredat`) connector'ıyla paketleyen,
+9 mod · 16 kalite kapısı) **Maarif Modeli MCP** (`maarif-mufredat`) connector'ıyla paketleyen,
 kurulur-kurulmaz connector'ı devreye alan, komut-yüzeyli bir Claude plugin'idir. Modüller
 tek-dosya, bağımsız (offline çalışır), emojisiz ama ikon/piktogram/SVG zengindir; her olgusal
 iddia bir MEB kazanım koduna izlenebilir (G-CURRICULUM provenansı).
 
-## Kurulum ve Çoklu Platform Desteği
+**Güncel sürümler:** plugin `0.10.0` · `carbon-edupedia` `3.11.0` · `start` `1.2.1`.
 
-Plugin ve MCP konnektörleri tüm modern LLM ortamlarında tam uyumlulukla çalışır:
-- **Claude Code (CLI)**: `doppler run -p cureohub -c dev_personal -- claude` (otomatik `.mcp.json` enjeksiyonu ve kancalar).
-- **claude.ai (Web/Desktop)**: `python3 plugins/edupedia/scripts/build_claude_ai_skill.py` ile derlenen skill zip paketi + Custom Connectors.
-- **Cursor IDE**: Composer & Agent Mode uyumlu `.cursor-plugin/` ve MCP Settings entegrasyonu.
-- **ChatGPT / OpenAI Codex**: Developer Mode OAuth 2.1 RFC 9728 Custom Connector desteği.
-- **Google Gemini / AI Studio**: Streamable HTTP MCP ve `oauth-redirect.googleusercontent.com` desteği.
-- **VS Code / Roo Code / Cline / Windsurf / Claude Desktop**: Standart JSON MCP tanımları.
+## Kurulum ve platform destek seviyeleri
+
+Platform desteği üç ayrı düzeyde beyan edilir; bunlar birbirinin eş anlamlısı değildir:
+
+1. **Native plugin otomasyonu** — yalnız **Claude Code** ve **Cursor**: komutlar, platforma
+   özgü hook manifesti, `module-auditor`, yerel scriptler, `validate_module.py` ve
+   `fetch_figure.py`. Cursor `hooks/hooks-cursor.json` kullanır; Claude `hooks/hooks.json`
+   Cursor'a taşınmış sayılmaz.
+2. **Authenticated MCP** — `maarif-mufredat` + anahtarlı `egitim-kaynak`; yalnız host
+   Streamable HTTP MCP/Custom Connector ve OAuth veya Bearer header destekliyorsa.
+3. **Prompt uyarlaması** — `SKILL.md`/skill metni talimat olarak kullanılabilir; bu,
+   native komut/hook/alt-ajan veya Tier-2b otomasyonu sağlamaz.
+
+- **Claude Code (CLI):** native plugin otomasyonu + paketli authenticated MCP.
+- **Cursor IDE:** native Cursor plugin otomasyonu + Cursor hook manifesti + MCP Settings.
+- **claude.ai (Web/Desktop):** derlenmiş skill zip'i + Custom Connectors; slash-komut,
+  hook ve alt-ajan yoktur.
+- **ChatGPT / OpenAI Codex ve Gemini / AI Studio:** prompt uyarlaması; ürün/hesap gerçekten
+  Custom Connector destekliyorsa authenticated MCP. Native Edupedia plugin eşdeğerliği yoktur.
+- **VS Code / Roo Code / Cline / Windsurf / Claude Desktop:** prompt uyarlaması ve istemci
+  destekliyorsa MCP bağlantısı; JSON MCP kaydı tek başına komut/hook/alt-ajan/Tier-2b paritesi
+  sağlamaz.
 
 > Tüm platformlar için adım adım yapılandırma ve kopyalanabilir JSON blokları: **[KURULUM.md](./KURULUM.md)**.
 
@@ -35,11 +50,11 @@ Plugin ve MCP konnektörleri tüm modern LLM ortamlarında tam uyumlulukla çal�
 
 ## Skill'ler
 
-- **carbon-edupedia** (flagship, v3.10.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
-  modülü. 8 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM), 16 kalite
+- **carbon-edupedia** (flagship, v3.11.0) — kaynaktan/kazanımdan tek-dosya etkileşimli HTML öğrenim
+  modülü. 9 mod (MODULE/QUIZ/FLASHCARDS/GAME/EXPLAINER/ASSESSMENT/SERIES/CURRICULUM/EXAM), 16 kalite
   kapısı (G-EMOJI/G-CARBON/G-A11Y/G-INTERACT/G-SELFCONTAINED/G-CONTRAST/G-SVG/G-WELLBEING/G-VOICE/
   G-AUDIO/G-CURRICULUM/G-VERIFY/G-TOKEN/G-FLOW/G-CARBON-GRID/G-EXAM). Token otoritesi `@carbon/*` npm.
-- **start** (yönlendirici, v1.2.0) — süit girişi ve yönlendirme.
+- **start** (yönlendirici, v1.2.1) — süit girişi ve yönlendirme.
 
 ## Connector
 
@@ -54,7 +69,9 @@ Plugin ve MCP konnektörleri tüm modern LLM ortamlarında tam uyumlulukla çal�
   (kaynaklandırılmış, lisans-etiketli pasaj). **OAuth/Bearer — keyed** (2026-07-19 keyless→keyed;
   plugin-dışı Gemini/ChatGPT standalone için anahtarlandı). Claude Code'da `.mcp.json`
   `Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` (Doppler `cureohub/dev_personal`); claude.ai'da OAuth.
-  Connector display adı **"Eğitim Kaynakları"**.
+  Statik Bearer API anahtarı doğrudan çalışır; OAuth authorization code ve access token
+  **opaque** değerlerdir, API anahtarının kendisi değildir. Connector display adı
+  **"Eğitim Kaynakları"**.
 
   > **OTORİTE:** modülün olgusal dayanağı **`maarif-mufredat`**'tır — 105 MEB ders kitabı
   > **tam metin**. `egitim-kaynak` onun yerine geçmez, üstüne ekler. Çelişkide **ders kitabı
@@ -71,13 +88,17 @@ politikası (Maarif MCP): **[CONNECTORS.md](./CONNECTORS.md)** (tek doğruluk ka
 Tek-sefer disiplini ve `get_figure` yetenek-probu:
 **[shared/canonical-cache-contract.md](./shared/canonical-cache-contract.md)**.
 
-### Görüntü-dayanak (Tier-1 / Tier-2)
+### Görüntü-dayanak (Tier-1 / Tier-2a / Tier-2b)
 
 - **Tier-1 (garanti):** kazanım koduna izlenebilir olgular + yazar-üretimli tema-duyarlı SVG.
   Varsayılan ve zorunlu yol; `validate_module.py` G-CURRICULUM + G-SVG kapılarıyla denetlenir.
-- **Tier-2 (best-effort):** `get_figure(include_image=true)` → resmî ders-kitabı görselinin base64
-  gömülmesi. Yalnız yetenek-probu geçerse; herhangi bir hata/timeout/boş dönüşte **sessizce Tier-1'e
-  düşülür**, üretim asla bloke olmaz. (Introspeksiyon 2026-07-06: `get_figure` connector'da **mevcut**.)
+- **Tier-2a (gözlem):** `get_figure(include_image=false)` metadata verir;
+  `include_image=true` görseli MCP `ImageContent` olarak modele gösterir. Ham base64 metni
+  vermez ve tek başına HTML'e binary gömmez.
+- **Tier-2b (yerel çıkarım):** `scripts/fetch_figure.py`, Tier-2a metadata'sındaki
+  `pdf_url` + sayfa + `bbox` ile PDF'ten kırpıp görseli `data:` URI olarak gömer. Yalnız
+  yerel dosya sistemi ve Python bulunan hostlarda (native: Claude Code/Cursor) best-effort
+  çalışır; hata/timeout/boş dönüşte Tier-1'e düşülür ve üretim bloke olmaz.
 
 ## Kapsam
 

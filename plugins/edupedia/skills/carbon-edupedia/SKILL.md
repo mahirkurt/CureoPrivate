@@ -1,23 +1,13 @@
 ---
 name: carbon-edupedia
 description: >-
-  Kaynak metinden VEYA MEB Müfredat MCP'sinden (Türkiye Yüzyılı Maarif Modeli
-  kazanımları), DEHB-odaklı, IBM Carbon v11 ile biçimli, EMOJİSİZ ama
-  ikon/piktogram/SVG zengini, tek-dosya ETKİLEŞİMLİ öğrenim modülleri üretir —
-  oyun/quiz/yarışma/flashcard + kaynağa sadık öğretim katmanı. Müfredat MCP:
-  kazanım kodundan/ders+sınıftan modül üretir, resmî beceriyi (KB2.x) etkileşime
-  haritalar, kazanım-izlenebilir provenans damgalar. Ders-bağımsız (fen, matematik,
-  sosyal, Türkçe, tarih, fizik, kimya, biyoloji); ilkokul/ortaokul/lise. USE for:
-  etkileşimli/oyunlaştırılmış ders, interaktif öğrenim modülü, DEHB dersi, konuyu
-  oyunla öğret, quiz/yarışma/flashcard hazırla, interactive lesson, learning game,
-  "müfredata uygun ders", "MEB kazanımına göre modül", "Maarif Modeli", "konuyu
-  eğlenceli hale getir". Disambiguation: francais-coach → Fransızca React;
-  carbon-html-report → STATIK HTML; Müfredat MCP yalnız MEB. DEHB-dostu
-  etkileşimli öğrenimde USE.
+  Kaynak metinden veya MEB Türkiye Yüzyılı Maarif Modeli kazanımlarından DEHB-dostu,
+  IBM Carbon v11 tabanlı, erişilebilir tek dosyalı etkileşimli ders, quiz, oyun ve
+  flashcard üretir.
 license: MIT
 metadata:
-  version: 3.10.0
-  last_updated: 2026-08-16
+  version: 3.11.0
+  last_updated: 2026-08-18
   manifest: ./skill-manifest.yaml
 ---
 
@@ -78,24 +68,27 @@ yapılandırılabilir** (varsayılan: 12 yaş, ortaokul, DEHB tanılı).
 ## 3. Çıktı sözleşmesi (Output specification)
 
 Yetkinlik **her zaman** şunu üretir:
-1. **Tek** bir `.html` dosyası — tüm CSS/JS satır içi veya CDN import (`<head>`).
-   Harici dosya bağımlılığı yok; çevrimdışı açılabilir olmalı.
-2. **Teslim yüzeye göre** (§8 Adım 6): **Claude Code'da** `/mnt/user-data/outputs/` altına
-   açıklayıcı kebab-case adla kaydedilir (örn. `hucre-ve-organeller-fen-7-modul.html`);
-   **claude.ai'de** dosya sistemi yoktur → HTML sohbet artefaktı olarak sunulur.
+1. **Tek** bir `.html` dosyası — tüm CSS/JS/font/görsel kaynakları satır içi veya
+   `data:` URI'dır. CDN, ağ veya göreli/yerel runtime bağımlılığı yoktur; çevrimdışı açılır.
+2. **Teslim yüzeye göre** (§8 Adım 6): **Claude Code'da** `/mnt/user-data/outputs/`,
+   **Cursor'da** kullanıcının çalışma alanındaki seçilen çıktı dizini altında açıklayıcı
+   kebab-case adla kaydedilir (örn. `hucre-ve-organeller-fen-7-modul.html`);
+   **claude.ai'de** native dosya sistemi yoktur → HTML sohbet artefaktı olarak sunulur.
    Plugin yayınlamaz.
 3. Modern tarayıcıda açılır, etkileşimler (quiz/oyun/flashcard) **JavaScript ile
    gerçekten çalışır**; durum bellekte tutulur.
 4. **Emoji içermez.** Tüm görsel anlam ikon, piktogram ve SVG çizimle taşınır.
 5. **IBM Carbon v11** token sistemine ve IBM Plex tipografisine uyar.
 6. WCAG 2.1 AA: klavye erişimi, ARIA, `prefers-reduced-motion`, ≥44px hedef.
-7. **Run-manifest'i DİSKE yazar — yalnız Claude Code'da.** (claude.ai'de dosya sistemi
-   yoktur; orada HTML sohbet artefaktıdır.) HTML'in yanına, **aynı ad + `.manifest.json`** ile (aynı
+7. **Run-manifest'i DİSKE yazar — yerel plugin yüzeylerinde (Claude Code/Cursor).**
+   (claude.ai'de native dosya sistemi yoktur; orada HTML sohbet artefaktıdır.) HTML'in
+   yanına, **aynı ad + `.manifest.json`** ile (aynı
    dizin; örn. `hucre-ve-organeller-fen-7-modul.html` →
    `hucre-ve-organeller-fen-7-modul.manifest.json`; sabit `run_manifest.json` adı KULLANILMAZ).
    İçerik `../../shared/run-manifest-schema.json`'a uyar: `run_id`, `ts`, `plugin_version`,
-   `requested_scope`, `connector_call_ledger`, `canonical_artifacts`, `tier2_status`,
-   `deliverable_path`, `caveats` ve opsiyonel `quality_gates`. Kalite kapılarının OTORİTESİ
+   `requested_scope`, `connector_call_ledger`, `single_shot_enforced:true`,
+   `canonical_artifacts`, `tier2_status`, `deliverable_path`, `caveats` ve opsiyonel
+   `quality_gates`. Kalite kapılarının OTORİTESİ
    yerel `scripts/validate_module.py`'dir. `quality_gates` yazılacaksa `python
    scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisi olmalı — elle yazma,
    konsol raporundan transkribe, hiçbir kapıyı PASS'a yükseltme yok. `--json` çıktısı yalnız
@@ -155,7 +148,7 @@ hatalardır. İlgili referansı **emisyondan önce** okuyun.
 
 ## 6. Modlar (Modes)
 
-Varsayılan **MODULE**. Kullanıcı talebine göre seçin:
+Toplam **dokuz mod** vardır. Varsayılan **MODULE**. Kullanıcı talebine göre seçin:
 
 | Mod | Çıktı | Ne zaman |
 |---|---|---|
@@ -257,9 +250,11 @@ bir zenginleştirme değil:
 - **Adım 5.5 (DENETİM):** kapsam + doğruluk denetimini yap, `verification` bloğunu üret
   (§6.1). Dayanaksız iddia modülde kalmaz.
 
-Görselde **kitabın kendi figürleri önceliklidir** (Tier-2; `search_figures` →
-`get_figure`) — yazar-üretimli SVG **yedektir** (bkz. o belgede §2.1; öncelik 2026-07-17'de
-tersine çevrildi).
+Görselde **kitabın kendi figürleri önceliklidir**: `search_figures` +
+`get_figure` metadata/ImageContent ile Tier-2a gözlemi sağlar; yerel dosya sistemi+Python
+varsa `scripts/fetch_figure.py` Tier-2b binary çıkarımını yapar (native Claude Code/Cursor).
+`include_image=true` ham base64 metin vermez. Yazar-üretimli SVG **yedektir** (bkz. o
+belgede §2.1; öncelik 2026-07-17'de tersine çevrildi).
 
 MCP erişilemezse offline yola dönün ve **kullanıcıya bildirin** — üretim bloke olmaz ama
 "kitaba dayandım" **denemez**. Müfredat sinyali yoksa bu adım atlanır (serbest kaynak modu).
@@ -302,10 +297,11 @@ Plugin yayınlamaz. Siteye yükleme, `edupedia_publish` ve `/edupedia:yayinla` *
 - **claude.ai'de (dosya sistemi YOK):** HTML'i sohbet artefaktı olarak sunun.
 - **Claude Code'da:** `/mnt/user-data/outputs/` altına kebab-case adla kaydedin; **aynı ad +
   `.manifest.json`** ile run-manifest'i yan yana yazın (§3 madde 7). `present_files` ile sunun.
+- **Cursor'da:** kullanıcı çalışma alanında seçilen çıktı dizinine aynı HTML +
+  `.manifest.json` çiftini yazın; Cursor'a özgü hook manifesti
+  `hooks/hooks-cursor.json`dır.
 
-Her iki yüzeyde de kısa bir özet + "nasıl kullanılır" notu ekleyin.
-
-Her iki yüzeyde de kısa bir özet + "nasıl kullanılır" notu ekleyin.
+Tüm yüzeylerde kısa bir özet + "nasıl kullanılır" notu ekleyin.
 
 ## 9. Etkileşim deseni kataloğu (özet)
 
@@ -331,8 +327,8 @@ Tam token tablosu ve çocuk-dostu uyarlama için `references/carbon-child-system
   kod blokları). Mono font **düz metinde, etikette, eyebrow'da veya başlıkta
   asla kullanılmaz**; sayaçlarda yalnız **rakamlar** `<b>` ile sarılıp mono +
   `font-variant-numeric:tabular-nums` ile hizalanır, çevreleyen sözcükler Sans
-  kalır. CDN: Google Fonts. Letter-spacing (`--ls-label:.32px`) `@carbon/type`
-  ile birebir.
+  kalır. Ağ fontu/CDN kullanılmaz; gerekli font dosyası varsa `data:` URI olarak
+  gömülür. Letter-spacing (`--ls-label:.32px`) `@carbon/type` ile birebir.
 - **Renk:** Carbon v11 **White + Gray-100** tema token'ları CSS değişkeni olarak —
   yüzey/metin/kenar çekirdeği **artı** etkileşim-durumu katmanı
   (`--cds-layer-hover/active/selected-01`, `--cds-background-hover/active`,
@@ -493,7 +489,7 @@ asla jenerik veya tek-tip değil:
 ## 12. Kalite kapıları (Quality gates)
 
 **OTORİTE yerel `scripts/validate_module.py`'dir** (PostToolUse hook'u aynı betiği koşar).
-Plugin yayınlamaz; kapı sonuçlarını "sunucu geçti" diye beyan etmeyin.
+Plugin yayınlamaz; yalnız bu yerel validator'ın ölçtüğü sonucu beyan edin.
 
 `scripts/validate_module.py` aşağıdakileri denetler (ihlal = düzelt). İnsan-okur konsol
 raporu varsayılan moddur; **`--json` bayrağı** (v3.2.0) stdout'a yalnız geçerli JSON basar —
@@ -501,10 +497,13 @@ raporu varsayılan moddur; **`--json` bayrağı** (v3.2.0) stdout'a yalnız geç
 doğrudan gömülebilir biçimde (bkz. §3 madde 7, Adım 5-6). `status` yalnız `PASS`/`FAIL`/`WARN`/
 `SKIPPED` olur; koşturulmayan/uygulanamayan bir kapı `SKIPPED` yazılır (asla `PASS`).
 - **G-EMOJI:** Çıktıda hiçbir emoji yok (Unicode emoji aralıkları taranır).
-- **G-CARBON:** IBM Plex yüklü; çekirdek `--cds-*` token'ları tanımlı ve kullanımda.
+- **G-CARBON:** IBM Plex Sans/Serif/Mono gerçek inline `@font-face` ile yüklü;
+  çekirdek `--cds-*` token'ları tanımlı ve kullanımda.
 - **G-A11Y:** `lang`, `<title>`, odak görünürlüğü, ARIA rolleri, reduced-motion bloğu.
 - **G-INTERACT:** Her quiz sorusunda doğru cevap indeksi + açıklama mevcut.
-- **G-SELFCONTAINED:** Yerel harici dosya bağımlılığı yok (yalnız CDN/inline).
+- **G-SELFCONTAINED:** Runtime kaynakları yalnız inline/`data:`/aynı-belge fragmentidir.
+  Ağ, CDN, göreli/yerel kaynak; iframe; form/meta yönlendirmesi; CSS/SVG harici `url()` /
+  `image-set()` ve inline JS ağ/dinamik kaynak yükleyicileri FAIL verir.
 - **G-CONTRAST (öneri):** Metin/zemin kontrastı WCAG AA eşiğinde.
 - **G-SVG:** Figür SVG'leri `role="img"`+başlık/etiket taşır; ham-hex yerine token renk (uyarı).
 - **G-WELLBEING:** Cezalandırıcı/süre-baskısı dili yok; uzun modülde mola/azaltılmış hareket (uyarı).
@@ -527,14 +526,19 @@ doğrudan gömülebilir biçimde (bkz. §3 madde 7, Adım 5-6). `status` yalnız
   Kullanıcı sözleşmesi (2026-07-17): içerik **kapsam** ve **doğruluk/tutarlılık** denetiminden
   geçmeden canlıya alınmaz. **Yargıyı MODEL yapar, bu kapı YAPIYI denetler** — Python
   "bilimsel olarak doğru mu" diye karar veremez, ama "her iddianın dayanağı gösterilmiş mi"
-  diye ölçebilir. **Denetler (çevrimdışı, regex — validator'ın MCP erişimi YOKTUR):**
-  `verification` bloğu var; `frame_source` bir `document_id` + `kind` taşıyor;
+  diye ölçebilir. **Denetler (çevrimdışı, dengeli/string+yorum-duyarlı ayrıştırıcı —
+  validator'ın MCP erişimi YOKTUR):** `verification` bloğu var; `frame_source` geçerli
+  `document_id` + `kind` + pozitif sayfa/kesin locator taşıyor;
   `scope.in_frame` **true** (false → FAIL, üretilmez); `claims[]` boş değil ve **her** öğede
-  `claim`+`grounding`+`verdict` var; dayanaksız (`verdict:"general_knowledge"`) iddia → WARN,
-  çoğunluk öyleyse → FAIL. **Dört verdict (v3.6.0):** `supported` (ders kitabı) ·
+  gerçek `claim`+verdict-uygun `grounding`+izinli `verdict` var; boş/placeholder kimlik,
+  locator, license, provenance veya reason FAIL verir. Dayanaksız
+  (`verdict:"general_knowledge"`) iddia → WARN, çoğunluk öyleyse → FAIL.
+  **Altı verdict:** `supported` (ders kitabı) ·
   `supported_by_program` (öğretim programı) · `supported_by_source` (alternatif kaynak —
   ders kitabı OLMAYAN 3,4,7,8,11,12. sınıflar için, TYMM kademeli yürürlüğü) ·
-  `general_knowledge` (dayanaksız). **`supported_by_source` kuralı:** kanıtlı sayılır
+  `general_knowledge` (dayanaksız) · `unverified` (placeholder olmayan açık reason ile WARN) ·
+  `unsupported` (kaynak iddiayı desteklemiyor; daima FAIL).
+  **`supported_by_source` kuralı:** kanıtlı sayılır
   (general_knowledge cezası YOK) ama grounding'i kaynak künyesi + `license` **taşımalı**
   (izlenebilirlik — eksikse FAIL); yalnız `frame_source.kind:"program"` (kitapsız/program-çerçeveli)
   modülde **meşru** — ders-kitabı çerçevesinde kullanılırsa azınlık WARN / çoğunluk FAIL
@@ -584,7 +588,7 @@ Makine-okunur graf: `skill-manifest.yaml`.
 - `medical-research`, `psychdev` — sağlık okuryazarlığı/gelişim içeriği (uygun
   yaş düzeyinde).
 - `vekayinuvis` — tarih konuları için kaynak-temelli anlatı.
-- `lex-sanitas` — (yetişkin) mevzuat değil; uygun değil. (Yalnız uygun yaş içeriği.)
+- `cureolex` — (yetişkin) mevzuat değil; uygun değil. (Yalnız uygun yaş içeriği.)
 
 **Aşağı akış tüketiciler (`pipe_to`):**
 - `carbon-html-report` — aynı içeriğin baskıya hazır statik (çalışma kâğıdı) sürümü.
@@ -604,10 +608,11 @@ listeler (örn. `francais-coach → carbon-edupedia`,
 
 - **Statik baskı dokümanı değil** → `carbon-html-report`. Bu yetkinlik
   *etkileşimli* HTML üretir; baskıda etkileşimler kaybolur.
-- **Backend/kalıcı veri yok.** Durum bellektedir. Oturumlar arası ilerleme/skor
-  isteniyorsa artifact `window.storage` API'si **opsiyonel** olarak kullanılabilir
-  (leaderboard/streak); çekirdek modül bellekte çalışır. (`localStorage`/`sessionStorage`
-  artifact'larda KULLANILMAZ.)
+- **Backend yok; tarayıcı depolaması sıkı izin listelidir.** `localStorage` yalnız
+  tema + Leitner kutularını kalıcı tutar (`meta.id` varsa Leitner anahtarına girer).
+  XP/seri/rozet/yanıt kümeleri yalnız `sessionStorage`'dadır; sekme oturumu dışında
+  skor/ilerleme kalıcılığı yoktur. Her erişim try/catch ile degrade-safe'tir;
+  depolama engelliyse çekirdek modül bellekte çalışmayı sürdürür.
 - **Gerçek-zamanlı veri yok; tek istisna Müfredat MCP.** Çıktı tek-dosya offline
   HTML'dir ve çalışma anında canlı veri çekmez. Ancak **derleme anında** Müfredat
   MCP (Türkiye MEB / Maarif Modeli) opsiyonel **kaynak ve doğrulama katmanı** olarak

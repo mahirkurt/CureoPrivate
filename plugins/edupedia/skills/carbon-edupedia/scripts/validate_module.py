@@ -20,10 +20,11 @@ Kullanım:
 
 Kapılar:
     G-EMOJI         (FAIL) — çıktıda emoji bulunmamalı
-    G-CARBON        (FAIL) — IBM Plex yüklü; çekirdek --cds-* token'ları tanımlı/kullanımda
+    G-CARBON        (FAIL) — IBM Plex Sans/Serif/Mono inline @font-face; çekirdek
+                    --cds-* token'ları tanımlı/kullanımda
     G-A11Y          (FAIL) — lang, <title>, reduced-motion, ARIA, odak görünürlüğü
     G-INTERACT      (FAIL) — her quiz sorusunda correctIndex; (WARN) explanation
-    G-SELFCONTAINED (FAIL) — yerel/harici dosya bağımlılığı yok (yalnız https/inline)
+    G-SELFCONTAINED (FAIL) — runtime kaynakları yalnız satır içi/data URI
     G-CONTRAST      (WARN) — metin rengi token'ı; aksanın küçük metinde kullanımı uyarısı
     G-WELLBEING     (FAIL) — cezalandırıcı/süre-baskısı dili yok; (WARN) uzun modülde mola/azaltılmış hareket
     G-VOICE         (FAIL) — öğrenci yüzeyinde kaynak-meta atıf yok ("kitabın tanımı",
@@ -46,7 +47,8 @@ Kapılar:
                     izlenebilir, cevap fadeFrom ile öğrenciye bırakılmış. Yargı modelin;
                     kapı transkripsiyonun sadakatini/çözümün doğruluğunu ÖLÇEMEZ
 """
-import sys, re, argparse, json
+import sys, re, argparse, json, unicodedata
+from html.parser import HTMLParser
 
 # ---- Emoji aralıkları (yaygın bloklar) ----
 EMOJI_RE = re.compile(
@@ -154,7 +156,18 @@ def gate_emoji(html, R):
 def gate_carbon(html, R):
     """G-CARBON: IBM Plex ve çekirdek --cds-* token kullanımını doğrular (FAIL)."""
     issues=[]
-    if "IBM Plex Sans" not in html: issues.append("IBM Plex Sans yüklü değil")
+    font_faces = re.findall(r"@font-face\s*\{(.*?)\}", html, re.I | re.S)
+    inline_families = set()
+    for block in font_faces:
+        family = re.search(r"font-family\s*:\s*(['\"]?)(IBM Plex (?:Sans|Serif|Mono))\1", block, re.I)
+        if family and re.search(r"url\(\s*['\"]?data:font/woff2;base64,", block, re.I):
+            inline_families.add(family.group(2).casefold())
+    required_families = {"ibm plex sans", "ibm plex serif", "ibm plex mono"}
+    missing_families = sorted(required_families - inline_families)
+    if missing_families:
+        issues.append(
+            "inline @font-face eksik: " + ", ".join(name.title() for name in missing_families)
+        )
     core=["--cds-text-primary","--cds-background","--cds-interactive",
           "--cds-support-success","--cds-support-error"]
     missing=[t for t in core if t not in html]
@@ -165,7 +178,12 @@ def gate_carbon(html, R):
     if issues:
         R.add("G-CARBON","FAIL","; ".join(issues))
     else:
-        R.add("G-CARBON","PASS","IBM Plex + çekirdek Carbon token'ları tanımlı ve kullanımda.")
+        R.add(
+            "G-CARBON",
+            "PASS",
+            "IBM Plex Sans/Serif/Mono inline @font-face + çekirdek Carbon token'ları "
+            "tanımlı ve kullanımda.",
+        )
 
 def gate_a11y(html, R):
     """G-A11Y: lang, title, reduced-motion, aria-live, odak ve görsel rollerini denetler (FAIL)."""
@@ -218,16 +236,652 @@ def gate_interact(html, R):
         R.add("G-INTERACT","WARN",
               f"{stems} sorudan {expl} tanesinde açıklama (explanation) var; her soruya açıklama önerilir.")
 
+_RESOURCE_LINK_RELS = {
+    "stylesheet", "preload", "modulepreload", "prefetch", "preconnect",
+    "dns-prefetch", "icon", "apple-touch-icon", "manifest", "font",
+}
+_SRC_RESOURCE_TAGS = {"img", "video", "audio", "source", "track"}
+_SVG_RESOURCE_TAGS = {"image", "feimage", "use"}
+
+
+def _inline_resource(ref):
+    """Bir runtime kaynak başvurusu dosyanın içinde mi (data:/#fragment)?"""
+    value = (ref or "").strip()
+    return bool(value) and (value.casefold().startswith("data:") or value.startswith("#"))
+
+
+def _srcset_urls(value):
+    """srcset aday URL'lerini descriptor'lardan ayırır.
+
+    Data URI içindeki virgül ayraç değildir. Tarayıcı sözdiziminin tamamını yeniden
+    uygulamak yerine URL token'larını doğrulayıcının gereksindiği kadar, doğrusal
+    zamanda çıkarır.
+    """
+    urls = []
+    i = 0
+    n = len(value)
+    while i < n:
+        while i < n and (value[i].isspace() or value[i] == ","):
+            i += 1
+        if i >= n:
+            break
+        start = i
+        is_data = value[i:i + 5].casefold() == "data:"
+        if is_data:
+            while i < n and not value[i].isspace():
+                i += 1
+            token = value[start:i]
+            separated = token.endswith(",")
+            if separated:
+                token = token[:-1]
+            urls.append(token)
+            if separated:
+                continue
+        else:
+            while i < n and not value[i].isspace() and value[i] != ",":
+                i += 1
+            urls.append(value[start:i])
+            if i < n and value[i] == ",":
+                i += 1
+                continue
+        parens = 0
+        while i < n:
+            ch = value[i]
+            if ch == "(":
+                parens += 1
+            elif ch == ")" and parens:
+                parens -= 1
+            elif ch == "," and not parens:
+                i += 1
+                break
+            i += 1
+    return urls
+
+
+def _css_string(css, start):
+    """CSS quoted string'inin (çözülmemiş) içeriğini ve bitiş indeksini döndürür."""
+    quote = css[start]
+    chars = []
+    i = start + 1
+    while i < len(css):
+        ch = css[i]
+        if ch == "\\" and i + 1 < len(css):
+            chars.append(css[i + 1])
+            i += 2
+            continue
+        if ch == quote:
+            return "".join(chars), i + 1
+        chars.append(ch)
+        i += 1
+    return "".join(chars), i
+
+
+def _css_url(css, start):
+    """start konumundaki url(...) işlevinden (ref, end) çıkarır."""
+    i = start + 3
+    while i < len(css) and css[i].isspace():
+        i += 1
+    if i >= len(css) or css[i] != "(":
+        return None, start + 1
+    i += 1
+    while i < len(css) and css[i].isspace():
+        i += 1
+    if i < len(css) and css[i] in "\"'":
+        ref, i = _css_string(css, i)
+        while i < len(css) and css[i].isspace():
+            i += 1
+        return ref, i + 1 if i < len(css) and css[i] == ")" else i
+    begin = i
+    while i < len(css) and css[i] != ")":
+        if css[i] == "\\" and i + 1 < len(css):
+            i += 2
+        else:
+            i += 1
+    return css[begin:i].strip(), i + 1 if i < len(css) else i
+
+
+def _css_image_set(css, start, function_name):
+    """image-set(...) içindeki üst-seviye aday URL'leri ve bitiş indeksini döndürür."""
+    index = start + len(function_name)
+    while index < len(css) and css[index].isspace():
+        index += 1
+    if index >= len(css) or css[index] != "(":
+        return [], start + 1
+    refs = []
+    depth = 1
+    index += 1
+    while index < len(css) and depth:
+        if css.startswith("/*", index):
+            close = css.find("*/", index + 2)
+            index = len(css) if close < 0 else close + 2
+            continue
+        if css[index] in "\"'":
+            ref, stop = _css_string(css, index)
+            if depth == 1:
+                refs.append(("CSS image-set()", ref))
+            index = stop
+            continue
+        if css[index:index + 3].casefold() == "url":
+            ref, stop = _css_url(css, index)
+            if ref is not None:
+                refs.append(("CSS image-set() url()", ref))
+            index = stop
+            continue
+        if css[index] == "(":
+            depth += 1
+        elif css[index] == ")":
+            depth -= 1
+        index += 1
+    return refs, index
+
+
+def _css_resource_refs(css):
+    """CSS yorumları/prose string'leri dışındaki @import ve url(...) kaynakları."""
+    refs = []
+    i = 0
+    n = len(css)
+    while i < n:
+        if css.startswith("/*", i):
+            close = css.find("*/", i + 2)
+            i = n if close < 0 else close + 2
+            continue
+        if css[i] in "\"'":
+            _, i = _css_string(css, i)
+            continue
+        image_set_name = next(
+            (
+                name for name in ("-webkit-image-set", "image-set")
+                if css[i:i + len(name)].casefold() == name
+                and (not i or not (css[i - 1].isalnum() or css[i - 1] in "_-"))
+            ),
+            None,
+        )
+        if image_set_name:
+            found, i = _css_image_set(css, i, image_set_name)
+            refs.extend(found)
+            continue
+        if css[i:i + 7].casefold() == "@import":
+            j = i + 7
+            while j < n and css[j].isspace():
+                j += 1
+            if j < n and css[j] in "\"'":
+                ref, j = _css_string(css, j)
+                refs.append(("@import", ref))
+                i = j
+                continue
+        if css[i:i + 3].casefold() == "url":
+            before = css[i - 1] if i else ""
+            after = css[i + 3] if i + 3 < n else ""
+            if not (before and (before.isalnum() or before in "_-")) and (
+                after.isspace() or after == "("
+            ):
+                ref, i = _css_url(css, i)
+                if ref is not None:
+                    refs.append(("CSS url()", ref))
+                continue
+        i += 1
+    return refs
+
+
+_INLINE_JS_SCAN_LIMIT = 4 * 1024 * 1024
+_JS_RESOURCE_CALLS = {
+    "fetch", "XMLHttpRequest", "WebSocket", "EventSource",
+    "sendBeacon", "Worker", "SharedWorker",
+}
+_JS_RESOURCE_ATTRS = {"src", "href"}
+
+
+def _js_string_token(js, start):
+    """Bir JS string/template literalini yorumlamadan tek token olarak geçirir."""
+    quote = js[start]
+    chars = []
+    index = start + 1
+    while index < len(js):
+        ch = js[index]
+        if ch == "\\" and index + 1 < len(js):
+            chars.append(js[index + 1])
+            index += 2
+            continue
+        if ch == quote:
+            return "".join(chars), index + 1
+        chars.append(ch)
+        index += 1
+    raise ValueError("kapanmamış inline JavaScript string'i")
+
+
+def _js_regex_allowed(tokens):
+    """`/` bu konumda bölme değil regex literal başlangıcı olabilir mi?"""
+    if not tokens:
+        return True
+    kind, value = tokens[-1]
+    if kind == "punct":
+        return value in "([{=,:;!?&|+-*%^~<>"
+    return kind == "identifier" and value in {
+        "return", "case", "throw", "else", "do", "typeof", "instanceof",
+        "in", "of", "yield", "await",
+    }
+
+
+def _js_regex_end(js, start):
+    """JS regex literalini string karakterlerini kod sanmadan geçirir."""
+    index = start + 1
+    in_class = False
+    while index < len(js):
+        ch = js[index]
+        if ch == "\\" and index + 1 < len(js):
+            index += 2
+            continue
+        if ch == "[":
+            in_class = True
+        elif ch == "]":
+            in_class = False
+        elif ch == "/" and not in_class:
+            index += 1
+            while index < len(js) and js[index].isalpha():
+                index += 1
+            return index
+        elif ch in "\r\n":
+            return start + 1
+        index += 1
+    return start + 1
+
+
+def _js_tokens(js):
+    """Yorumları atıp string'leri veri token'ı olarak koruyan sınırlı JS lexer."""
+    if len(js) > _INLINE_JS_SCAN_LIMIT:
+        raise ValueError("inline JavaScript tarama sınırını aşıyor")
+    tokens = []
+
+    def scan_template(index):
+        """Template'in ham metnini atlar, yalnız ${...} kodunu yeniden lexer'a verir."""
+        index += 1
+        while index < len(js):
+            if js[index] == "\\" and index + 1 < len(js):
+                index += 2
+                continue
+            if js[index] == "`":
+                return index + 1
+            if js.startswith("${", index):
+                index = scan_code(index + 2, stop_at_brace=True)
+                continue
+            index += 1
+        raise ValueError("kapanmamış inline JavaScript template literal'i")
+
+    def scan_code(index, stop_at_brace=False):
+        brace_depth = 0
+        while index < len(js):
+            if js[index].isspace():
+                index += 1
+                continue
+            if js.startswith("//", index):
+                newline = js.find("\n", index + 2)
+                index = len(js) if newline < 0 else newline + 1
+                continue
+            if js.startswith("/*", index):
+                close = js.find("*/", index + 2)
+                if close < 0:
+                    raise ValueError("kapanmamış inline JavaScript blok yorumu")
+                index = close + 2
+                continue
+            if js[index] == "/" and _js_regex_allowed(tokens):
+                stop = _js_regex_end(js, index)
+                if stop > index + 1:
+                    index = stop
+                    continue
+            if js[index] in "\"'":
+                value, index = _js_string_token(js, index)
+                tokens.append(("string", value))
+                continue
+            if js[index] == "`":
+                index = scan_template(index)
+                continue
+            match = re.match(r"[A-Za-z_$][A-Za-z0-9_$]*", js[index:])
+            if match:
+                value = match.group(0)
+                tokens.append(("identifier", value))
+                index += len(value)
+                continue
+            if js[index] == "{":
+                brace_depth += 1
+            elif js[index] == "}":
+                if stop_at_brace and brace_depth == 0:
+                    return index + 1
+                brace_depth = max(0, brace_depth - 1)
+            tokens.append(("punct", js[index]))
+            index += 1
+        if stop_at_brace:
+            raise ValueError("kapanmamış inline JavaScript template ifadesi")
+        return index
+
+    scan_code(0)
+    return tokens
+
+
+def _js_call_arguments(tokens, open_index):
+    """Bir çağrının üst-seviye argüman token'larını döndürür."""
+    args = [[]]
+    depth = 0
+    index = open_index + 1
+    while index < len(tokens):
+        kind, value = tokens[index]
+        if kind == "punct" and value in "([{":
+            depth += 1
+        elif kind == "punct" and value in ")]}":
+            if value == ")" and depth == 0:
+                return args, index
+            depth = max(0, depth - 1)
+        elif kind == "punct" and value == "," and depth == 0:
+            args.append([])
+            index += 1
+            continue
+        args[-1].append(tokens[index])
+        index += 1
+    return args, len(tokens)
+
+
+def _js_reference_expression_is_inline(tokens):
+    """Sabit parçaları yalnız data:/#fragment olan bir kaynak ifadesini kabul eder."""
+    if (
+        len(tokens) >= 2
+        and tokens[0][0] == "string"
+        and _inline_resource(tokens[0][1])
+        and tokens[1] == ("punct", "+")
+    ):
+        # "#"+dynamicIcon biçimi her sonuçta aynı-belge fragmenti üretir.
+        return True
+    try:
+        question = tokens.index(("punct", "?"))
+    except ValueError:
+        question = -1
+    value_tokens = tokens[question + 1:] if question >= 0 else tokens
+    refs = [value for kind, value in value_tokens if kind == "string"]
+    return bool(refs) and all(_inline_resource(ref) for ref in refs)
+
+
+def _js_runtime_loaders(js):
+    """Yorum/string prose dışındaki ağ API'lerini ve dinamik kaynak atamalarını bulur."""
+    tokens = _js_tokens(js)
+    bad = []
+    index = 0
+    while index < len(tokens):
+        kind, value = tokens[index]
+        call_index = index + 1
+        while (
+            call_index < len(tokens)
+            and tokens[call_index][0] == "punct"
+            and tokens[call_index][1] in {"?", "."}
+        ):
+            call_index += 1
+        if kind == "identifier" and (
+            value in _JS_RESOURCE_CALLS or value == "import"
+        ) and call_index < len(tokens) and tokens[call_index] == ("punct", "("):
+            bad.append(f"inline JS {value}(...)")
+        if kind == "identifier" and value == "import" and index + 1 < len(tokens):
+            next_token = tokens[index + 1]
+            previous_token = tokens[index - 1] if index else None
+            if (
+                previous_token != ("punct", ".")
+                and next_token != ("punct", ".")
+                and next_token != ("punct", "(")
+                and (
+                    next_token[0] in {"identifier", "string"}
+                    or next_token == ("punct", "{")
+                    or next_token == ("punct", "*")
+                )
+            ):
+                bad.append("inline JS static import bildirimi")
+        if kind == "identifier" and value == "export" and index + 1 < len(tokens):
+            next_token = tokens[index + 1]
+            source_index = None
+            if next_token == ("punct", "*"):
+                cursor = index + 2
+                while cursor + 1 < len(tokens) and tokens[cursor] != ("punct", ";"):
+                    if (
+                        tokens[cursor] == ("identifier", "from")
+                        and tokens[cursor + 1][0] == "string"
+                    ):
+                        source_index = cursor + 1
+                        break
+                    cursor += 1
+            elif next_token == ("punct", "{"):
+                cursor = index + 2
+                depth = 1
+                while cursor < len(tokens) and depth:
+                    if tokens[cursor] == ("punct", "{"):
+                        depth += 1
+                    elif tokens[cursor] == ("punct", "}"):
+                        depth -= 1
+                    cursor += 1
+                if (
+                    cursor + 1 < len(tokens)
+                    and tokens[cursor] == ("identifier", "from")
+                    and tokens[cursor + 1][0] == "string"
+                ):
+                    source_index = cursor + 1
+            if source_index is not None:
+                bad.append("inline JS static export-from bildirimi")
+        if (
+            kind == "string"
+            and value in _JS_RESOURCE_CALLS
+            and index > 0
+            and tokens[index - 1] == ("punct", "[")
+            and index + 2 < len(tokens)
+            and tokens[index + 1] == ("punct", "]")
+        ):
+            computed_call = index + 2
+            while (
+                computed_call < len(tokens)
+                and tokens[computed_call][0] == "punct"
+                and tokens[computed_call][1] in {"?", "."}
+            ):
+                computed_call += 1
+            if (
+                computed_call < len(tokens)
+                and tokens[computed_call] == ("punct", "(")
+            ):
+                bad.append(f"inline JS computed {value}(...)")
+        if (
+            kind == "identifier"
+            and value == "setAttribute"
+            and index + 1 < len(tokens)
+            and tokens[index + 1] == ("punct", "(")
+        ):
+            args, stop = _js_call_arguments(tokens, index + 1)
+            if (
+                len(args) >= 2
+                and len(args[0]) == 1
+                and args[0][0][0] == "string"
+                and args[0][0][1].casefold() in _JS_RESOURCE_ATTRS
+                and not _js_reference_expression_is_inline(args[1])
+            ):
+                bad.append(f"inline JS setAttribute({args[0][0][1]})")
+        property_name = None
+        assignment_index = None
+        if (
+            tokens[index:index + 2] == [("punct", "."), ("identifier", "src")]
+            or tokens[index:index + 2] == [("punct", "."), ("identifier", "href")]
+        ):
+            property_name = tokens[index + 1][1]
+            assignment_index = index + 2
+        elif (
+            index + 3 < len(tokens)
+            and tokens[index] == ("punct", "[")
+            and tokens[index + 1][0] == "string"
+            and tokens[index + 1][1].casefold() in _JS_RESOURCE_ATTRS
+            and tokens[index + 2] == ("punct", "]")
+        ):
+            property_name = tokens[index + 1][1].casefold()
+            assignment_index = index + 3
+        if (
+            property_name
+            and assignment_index < len(tokens)
+            and tokens[assignment_index] == ("punct", "=")
+            and (
+                assignment_index + 1 >= len(tokens)
+                or tokens[assignment_index + 1] != ("punct", "=")
+            )
+        ):
+            stop = assignment_index + 1
+            depth = 0
+            while stop < len(tokens):
+                token = tokens[stop]
+                if token[0] == "punct" and token[1] in "([{":
+                    depth += 1
+                elif token[0] == "punct" and token[1] in ")]}":
+                    depth = max(0, depth - 1)
+                elif token[0] == "punct" and token[1] == ";" and depth == 0:
+                    break
+                stop += 1
+            if not _js_reference_expression_is_inline(tokens[assignment_index + 1:stop]):
+                bad.append(f"inline JS .{property_name} ataması")
+            index = max(index, stop)
+        index += 1
+    return bad
+
+
+class _SelfContainedParser(HTMLParser):
+    """Gerçek HTML etiketlerini tarar; yorum/prose/script içeriğini kaynak sanmaz."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.bad = []
+        self._style_depth = 0
+        self._style_chunks = []
+        self._script_depth = 0
+        self._script_chunks = []
+        self._svg_depth = 0
+
+    def _record(self, where, ref):
+        if not _inline_resource(ref):
+            shown = (ref or "<boş>").strip() or "<boş>"
+            self.bad.append(f"{where}: {shown}")
+
+    def _block(self, where, detail):
+        self.bad.append(f"{where}: {detail}")
+
+    def _tag(self, tag, attrs):
+        tag = tag.casefold()
+        values = {name.casefold(): value or "" for name, value in attrs}
+
+        if tag == "iframe":
+            self._block("iframe", "alt belge fail-closed olarak desteklenmiyor")
+        if tag == "script" and "src" in values:
+            self._record("script[src]", values["src"])
+        if tag in _SRC_RESOURCE_TAGS and "src" in values:
+            self._record(f"{tag}[src]", values["src"])
+        if tag in {"img", "source"} and "srcset" in values:
+            for ref in _srcset_urls(values["srcset"]):
+                self._record(f"{tag}[srcset]", ref)
+        if tag == "video" and "poster" in values:
+            self._record("video[poster]", values["poster"])
+        if tag == "input" and values.get("type", "").casefold() == "image" and "src" in values:
+            self._record("input[type=image][src]", values["src"])
+        if tag == "object":
+            for attr in ("data", "src"):
+                if attr in values:
+                    self._record(f"object[{attr}]", values[attr])
+        if tag == "embed" and "src" in values:
+            self._record("embed[src]", values["src"])
+        if tag in _SVG_RESOURCE_TAGS:
+            for attr in ("href", "xlink:href"):
+                if attr in values:
+                    self._record(f"svg {tag}[{attr}]", values[attr])
+        if tag == "link" and "href" in values:
+            rels = set(values.get("rel", "").casefold().split())
+            if rels & _RESOURCE_LINK_RELS or values.get("as", "").casefold() == "font":
+                self._record("link[href]", values["href"])
+        if tag == "link" and "imagesrcset" in values:
+            for ref in _srcset_urls(values["imagesrcset"]):
+                self._record("link[imagesrcset]", ref)
+        if tag == "form" and "action" in values:
+            self._record("form[action]", values["action"])
+        if tag in {"button", "input"} and "formaction" in values:
+            self._record(f"{tag}[formaction]", values["formaction"])
+        if tag == "base" and "href" in values:
+            self._block("base[href]", values["href"] or "<boş>")
+        if tag == "meta" and values.get("http-equiv", "").casefold() == "refresh":
+            self._block("meta[http-equiv=refresh]", values.get("content", "<boş>"))
+        if tag == "html" and "manifest" in values:
+            self._record("html[manifest]", values["manifest"])
+        if "background" in values:
+            self._record(f"{tag}[background]", values["background"])
+        if "ping" in values:
+            for ref in values["ping"].split():
+                self._record(f"{tag}[ping]", ref)
+        if self._svg_depth or tag == "svg":
+            for attr, value in values.items():
+                if attr == "style":
+                    continue
+                for where, ref in _css_resource_refs(value):
+                    self._record(f"svg {tag}[{attr}] {where}", ref)
+        if "style" in values:
+            for where, ref in _css_resource_refs(values["style"]):
+                self._record(f"style attribute {where}", ref)
+        for attr, value in values.items():
+            if attr.startswith("on"):
+                for issue in _js_runtime_loaders(value):
+                    self._block(f"{tag}[{attr}]", issue)
+
+    def handle_starttag(self, tag, attrs):
+        self._tag(tag, attrs)
+        folded = tag.casefold()
+        if folded == "style":
+            self._style_depth += 1
+        if folded == "script":
+            self._script_depth += 1
+        if folded == "svg":
+            self._svg_depth += 1
+
+    def handle_startendtag(self, tag, attrs):
+        self._tag(tag, attrs)
+
+    def handle_data(self, data):
+        if self._style_depth:
+            self._style_chunks.append(data)
+        if self._script_depth:
+            self._script_chunks.append(data)
+
+    def handle_endtag(self, tag):
+        folded = tag.casefold()
+        if folded == "style" and self._style_depth:
+            self._style_depth -= 1
+            if not self._style_depth:
+                css = "".join(self._style_chunks)
+                self._style_chunks = []
+                for where, ref in _css_resource_refs(css):
+                    self._record(where, ref)
+        if folded == "script" and self._script_depth:
+            self._script_depth -= 1
+            if not self._script_depth:
+                js = "".join(self._script_chunks)
+                self._script_chunks = []
+                for issue in _js_runtime_loaders(js):
+                    self._block("script", issue)
+        if folded == "svg" and self._svg_depth:
+            self._svg_depth -= 1
+
+
 def gate_selfcontained(html, R):
-    """G-SELFCONTAINED: yerel harici dosya bağımlılığı olmadığını doğrular (FAIL)."""
-    # relatif src/href (http olmayan, # olmayan, data: olmayan)
-    refs=re.findall(r'(?:src|href)\s*=\s*["\']([^"\']+)["\']', html)
-    bad=[r for r in refs if not (r.startswith("http") or r.startswith("#")
-         or r.startswith("data:") or r.startswith("//"))]
-    if bad:
-        R.add("G-SELFCONTAINED","FAIL","yerel dosya bağımlılığı: "+", ".join(bad[:5]))
+    """G-SELFCONTAINED: runtime kaynakları yalnız inline/data olmalı (FAIL)."""
+    parser = _SelfContainedParser()
+    try:
+        parser.feed(html)
+        parser.close()
+    except (TypeError, ValueError) as exc:
+        R.add("G-SELFCONTAINED", "FAIL", f"HTML kaynak taraması tamamlanamadı: {exc}")
+        return
+    if parser.bad:
+        R.add(
+            "G-SELFCONTAINED",
+            "FAIL",
+            "satır içi/data olmayan runtime bağımlılığı: " + "; ".join(parser.bad[:6]),
+        )
     else:
-        R.add("G-SELFCONTAINED","PASS","Tüm varlıklar satır içi veya CDN; harici yerel bağımlılık yok.")
+        R.add(
+            "G-SELFCONTAINED",
+            "PASS",
+            "Runtime varlıkları satır içi/data URI; yerel veya ağ bağımlılığı yok.",
+        )
 
 def gate_contrast(html, R):
     """G-CONTRAST: gövde metni text-primary, aksanın küçük metinde kullanımını uyarır (WARN)."""
@@ -537,54 +1191,544 @@ def gate_curriculum(html, R):
         R.add("G-CURRICULUM","PASS",
               f"{len(codes)} kazanım segmente izlenebilir; kaynak damgalı.")
 
-def _verify_collect(block):
-    """`verification` bloğundan sinyalleri toplar. (gate_verify'ı sade tutmak için ayrıldı.)
-
-    Döndürür: (has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
-               n_source, n_source_no_cite)
-    """
-    has_doc = bool(re.search(r'frame_source\s*:\s*\{[^}]*\bdocument_id\s*:\s*\d+', block, re.S))
-    # frame_source.kind — supported_by_source meşruiyeti buna bağlı ("program" → kitapsız sınıf)
-    fk_m = re.search(r'frame_source\s*:\s*\{[^}]*\bkind\s*:\s*["\'](\w+)["\']', block, re.S)
-    frame_kind = fk_m.group(1) if fk_m else None
-    in_frame_m = re.search(r'\bin_frame\s*:\s*(true|false)', block)
-    in_frame = (in_frame_m.group(1) == "true") if in_frame_m else None
-    # Her claim öğesi kendi `claim:` anahtarıyla başlar; dayanağı aynı öğe içinde aranır.
-    claims = re.findall(r'\bclaim\s*:\s*["\'](.*?)["\']\s*,(.*?)(?=\bclaim\s*:|\]\s*\n|\Z)',
-                        block, re.S)
-    n_claims = len(claims)
-    n_grounded = sum(1 for _, tail in claims if re.search(r'\bgrounding\s*:\s*\{', tail))
-    n_general = sum(1 for _, tail in claims
-                    if re.search(r'verdict\s*:\s*["\']general_knowledge["\']', tail))
-    # supported_by_source: alternatif kaynak (egitim-kaynak: PhET/Vikipedi) dayanağı —
-    # ders kitabı OLMAYAN (program-çerçeveli) sınıflar için dördüncü verdict.
-    src = [tail for _, tail in claims
-           if re.search(r'verdict\s*:\s*["\']supported_by_source["\']', tail)]
-    n_source = len(src)
-    # Kanıtlı olmalı: grounding'i kaynak künyesi + `license` taşımalı (izlenebilirlik).
-    n_source_no_cite = sum(1 for tail in src if not re.search(r'\blicense\s*:\s*["\']', tail))
-    return (has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
-            n_source, n_source_no_cite)
+_JSISH_SCAN_LIMIT = 4 * 1024 * 1024
+_JSISH_VALUE_LIMIT = 2 * 1024 * 1024
+_JSISH_IDENTIFIER_RE = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*")
+_VERIFY_FRAME_KINDS = {"textbook", "program"}
+_VERIFY_VERDICTS = {
+    "supported",
+    "supported_by_program",
+    "supported_by_source",
+    "general_knowledge",
+    "unsupported",
+    "unverified",
+}
 
 
-def _verify_eval(has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
-                 n_source, n_source_no_cite):
-    """Saf karar mantığı → (issues, warns)."""
-    issues = []; warns = []
-    if not has_doc:
-        issues.append("verification.frame_source bir document_id taşımıyor "
-                      "(çerçeveyi hangi belge çizdi?)")
+class _JSishError(ValueError):
+    """MODULE_DATA'nın güvenle ayrıştırılamayan sınırlı JS-ish alt-kümesi."""
+
+
+def _jsish_skip(text, index, end=None):
+    """Boşluk ve JS yorumlarını doğrusal zamanda atlar."""
+    end = len(text) if end is None else end
+    while index < end:
+        if text[index].isspace():
+            index += 1
+            continue
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2, end)
+            index = end if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", index):
+            close = text.find("*/", index + 2, end)
+            if close < 0:
+                raise _JSishError("kapanmamış blok yorumu")
+            index = close + 2
+            continue
+        break
+    return index
+
+
+def _jsish_string(text, start, end=None):
+    """JS tek/çift/backtick string'ini, kaçışları yorumlamadan güvenle geçer."""
+    end = len(text) if end is None else end
+    quote = text[start]
+    chars = []
+    index = start + 1
+    while index < end:
+        ch = text[index]
+        if ch == "\\":
+            if index + 1 >= end:
+                raise _JSishError("string sonunda kaçış")
+            escaped = text[index + 1]
+            chars.append({
+                "n": "\n", "r": "\r", "t": "\t", "b": "\b", "f": "\f", "v": "\v",
+            }.get(escaped, escaped))
+            index += 2
+            continue
+        if ch == quote:
+            return "".join(chars), index + 1
+        chars.append(ch)
+        index += 1
+    raise _JSishError("kapanmamış string")
+
+
+def _jsish_balanced_end(text, start, end=None):
+    """Nesne/dizi/parantezi string ve yorumları saymadan dengeli kapatır."""
+    end = len(text) if end is None else end
+    pairs = {"{": "}", "[": "]", "(": ")"}
+    opener = text[start]
+    if opener not in pairs:
+        raise _JSishError("dengeli değer açılış karakteri değil")
+    hard_end = min(end, start + _JSISH_VALUE_LIMIT)
+    stack = [opener]
+    index = start + 1
+    while index < hard_end:
+        index = _jsish_skip(text, index, hard_end)
+        if index >= hard_end:
+            break
+        ch = text[index]
+        if ch in "\"'`":
+            _, index = _jsish_string(text, index, hard_end)
+            continue
+        if ch in pairs:
+            stack.append(ch)
+        elif ch in "}])":
+            if not stack or pairs[stack[-1]] != ch:
+                raise _JSishError("uyumsuz kapanış karakteri")
+            stack.pop()
+            if not stack:
+                return index + 1
+        index += 1
+    if hard_end < end:
+        raise _JSishError("JS-ish değer izin verilen boyutu aşıyor")
+    raise _JSishError("dengesiz JS-ish değer")
+
+
+def _jsish_value_end(text, start, end):
+    """Bir nesne üyesi/dizi öğesinin üst-seviye virgülden önceki sonunu bulur."""
+    index = start
+    stack = []
+    pairs = {"{": "}", "[": "]", "(": ")"}
+    while index < end:
+        index = _jsish_skip(text, index, end)
+        if index >= end:
+            break
+        ch = text[index]
+        if ch in "\"'`":
+            _, index = _jsish_string(text, index, end)
+            continue
+        if ch in pairs:
+            stack.append(ch)
+        elif ch in "}])":
+            if stack and pairs[stack[-1]] == ch:
+                stack.pop()
+        elif ch == "," and not stack:
+            return index
+        index += 1
+    return index
+
+
+def _jsish_members(inner):
+    """Bir JS-ish nesne içeriğini üst-seviye anahtar → ham değer haritasına çevirir."""
+    members = {}
+    index = 0
+    end = len(inner)
+    while True:
+        index = _jsish_skip(inner, index, end)
+        while index < end and inner[index] == ",":
+            index = _jsish_skip(inner, index + 1, end)
+        if index >= end:
+            return members
+        if inner[index] in "\"'":
+            key, index = _jsish_string(inner, index, end)
+        else:
+            match = _JSISH_IDENTIFIER_RE.match(inner, index)
+            if not match:
+                raise _JSishError(f"nesne anahtarı okunamadı (indeks {index})")
+            key = match.group(0)
+            index = match.end()
+        index = _jsish_skip(inner, index, end)
+        if index >= end or inner[index] != ":":
+            raise _JSishError(f"`{key}` anahtarından sonra ':' yok")
+        start = _jsish_skip(inner, index + 1, end)
+        stop = _jsish_value_end(inner, start, end)
+        if key in members:
+            raise _JSishError(f"yinelenen `{key}` anahtarı")
+        members[key] = inner[start:stop].strip()
+        index = stop + 1 if stop < end and inner[stop] == "," else stop
+
+
+def _jsish_object(raw):
+    """Ham değer tam bir nesne ise üyelerini, değilse None döndürür."""
+    if raw is None:
+        return None
+    start = _jsish_skip(raw, 0)
+    if start >= len(raw) or raw[start] != "{":
+        return None
+    stop = _jsish_balanced_end(raw, start)
+    if _jsish_skip(raw, stop) != len(raw):
+        return None
+    return _jsish_members(raw[start + 1:stop - 1])
+
+
+def _jsish_array(raw):
+    """Ham değer tam bir dizi ise üst-seviye öğelerini, değilse None döndürür."""
+    if raw is None:
+        return None
+    start = _jsish_skip(raw, 0)
+    if start >= len(raw) or raw[start] != "[":
+        return None
+    stop = _jsish_balanced_end(raw, start)
+    if _jsish_skip(raw, stop) != len(raw):
+        return None
+    inner = raw[start + 1:stop - 1]
+    items = []
+    index = 0
+    while True:
+        index = _jsish_skip(inner, index)
+        while index < len(inner) and inner[index] == ",":
+            index = _jsish_skip(inner, index + 1)
+        if index >= len(inner):
+            return items
+        item_end = _jsish_value_end(inner, index, len(inner))
+        value = inner[index:item_end].strip()
+        if value:
+            items.append(value)
+        index = item_end + 1 if item_end < len(inner) else item_end
+
+
+def _jsish_literal(raw):
+    """String(ler) veya basit scalar değeri yan etkisiz metne çevirir; kodu reddeder."""
+    if raw is None:
+        return None
+    index = _jsish_skip(raw, 0)
+    if index >= len(raw):
+        return ""
+    if raw[index] not in "\"'`":
+        value = raw[index:].strip()
+        if re.fullmatch(r"(?:-?\d+(?:\.\d+)?|true|false|null|undefined)", value):
+            return value
+        return None
+    parts = []
+    while index < len(raw):
+        if raw[index] not in "\"'`":
+            return None
+        if raw[index] == "`" and _jsish_template_interpolates(raw, index):
+            return None
+        part, index = _jsish_string(raw, index)
+        parts.append(part)
+        index = _jsish_skip(raw, index)
+        if index >= len(raw):
+            return "".join(parts)
+        if raw[index] != "+":
+            return None
+        index = _jsish_skip(raw, index + 1)
+    return "".join(parts)
+
+
+def _jsish_template_interpolates(text, start):
+    """Backtick literalinde kaçış-dışı `${...}` ifadesi var mı?"""
+    index = start + 1
+    while index < len(text):
+        if text[index] == "\\" and index + 1 < len(text):
+            index += 2
+            continue
+        if text.startswith("${", index):
+            return True
+        if text[index] == "`":
+            return False
+        index += 1
+    return True
+
+
+def _jsish_scalar(raw):
+    """JS-ish basit değeri türünü koruyarak döndürür; kod/nesne için invalid."""
+    if raw is None:
+        return "missing", None
+    index = _jsish_skip(raw, 0)
+    if index >= len(raw):
+        return "string", ""
+    if raw[index] in "\"'`":
+        value = _jsish_literal(raw)
+        return ("string", value) if value is not None else ("invalid", None)
+    value = raw[index:].strip()
+    if re.fullmatch(r"-?\d+", value):
+        return "integer", int(value)
+    if re.fullmatch(r"-?\d+\.\d+", value):
+        return "number", float(value)
+    if value == "true":
+        return "boolean", True
+    if value == "false":
+        return "boolean", False
+    if value in {"null", "undefined"}:
+        return "null", None
+    return "invalid", None
+
+
+def _jsish_bool(raw):
+    kind, value = _jsish_scalar(raw)
+    if kind == "boolean":
+        return value
+    return None
+
+
+def _field(members, key):
+    kind, value = _jsish_scalar(members.get(key) if members is not None else None)
+    if kind == "string":
+        return value.strip()
+    if kind == "integer":
+        return str(value)
+    return ""
+
+
+def _normalized_provenance_text(value):
+    normalized = unicodedata.normalize("NFKD", value.casefold())
+    normalized = "".join(ch for ch in normalized if not unicodedata.combining(ch))
+    return normalized.replace("ı", "i")
+
+
+def _is_placeholder(value):
+    """Künye/provenans alanlarında ortak boş ve placeholder denetimi."""
+    if not isinstance(value, str) or not value.strip():
+        return True
+    normalized = _normalized_provenance_text(value.strip())
+    strict = re.search(
+        r"(?:^|[^a-z0-9])(?:tbd|unknown|todo|placeholder|replace)"
+        r"(?:$|[^a-z0-9])"
+        r"|(?:^|[^a-z0-9])n[\s/-]*a(?:$|[^a-z0-9])"
+        r"|buraya\s+yaz",
+        normalized,
+    )
+    if strict:
+        return True
+    trimmed = re.sub(r"^[^a-z0-9]+|[^a-z0-9]+$", "", normalized)
+    if re.fullmatch(r"(?:(?:kaynak|source|citation)\s*[:=-]?\s*)?ornek", trimmed):
+        return True
+    return bool(re.search(
+        r"(?:^|[^a-z0-9])ornek\s+(?:kaynak|metin|citation)(?:$|[^a-z0-9])",
+        normalized,
+    ))
+
+
+def _text_scalar(raw):
+    kind, value = _jsish_scalar(raw)
+    if kind != "string" or _is_placeholder(value):
+        return None
+    return value.strip()
+
+
+def _identity_scalar(raw):
+    """Belge/kaynak kimliği: pozitif tamsayı veya gerçek, placeholder olmayan dizgi."""
+    kind, value = _jsish_scalar(raw)
+    if kind == "integer" and value > 0:
+        return value
+    if kind == "string" and not _is_placeholder(value):
+        return value.strip()
+    return None
+
+
+_LOCATOR_HINT_RE = re.compile(
+    r"\d|sayfa|page|pages|bölüm|bolum|section|chapter|madde|paragraf|"
+    r"şekil|sekil|figure|tablo|table|başlık|baslik",
+    re.I,
+)
+
+
+def _locator_scalar(members):
+    """Pozitif sayfa veya kesin/izlenebilir yapısal locator döndürür."""
+    if not members:
+        return ""
+    if "page" in members:
+        kind, value = _jsish_scalar(members["page"])
+        if kind == "integer" and value > 0:
+            return f"page:{value}"
+    if "pages" in members:
+        kind, value = _jsish_scalar(members["pages"])
+        if kind == "integer" and value > 0:
+            return f"pages:{value}"
+        if (
+            kind == "string"
+            and not _is_placeholder(value)
+            and re.fullmatch(r"\s*\d+\s*(?:[-–]\s*\d+\s*)?", value)
+        ):
+            return f"pages:{value.strip()}"
+    if "locator" in members:
+        value = _text_scalar(members["locator"])
+        if value and _LOCATOR_HINT_RE.search(value):
+            return f"locator:{value}"
+    if "url" in members:
+        value = _text_scalar(members["url"])
+        if value and re.match(r"https?://\S+$", value, re.I):
+            return f"url:{value}"
+    return ""
+
+
+class _ScriptCollector(HTMLParser):
+    """MODULE_DATA araması için yalnız gerçek inline <script> gövdelerini toplar."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.in_script = False
+        self.current = []
+        self.scripts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.casefold() == "script":
+            self.in_script = True
+            self.current = []
+
+    def handle_data(self, data):
+        if self.in_script:
+            self.current.append(data)
+
+    def handle_endtag(self, tag):
+        if tag.casefold() == "script" and self.in_script:
+            self.scripts.append("".join(self.current))
+            self.in_script = False
+            self.current = []
+
+
+def _assignment_object(script, name):
+    """name = {...} atamasını yorum/string dışından bulur."""
+    if len(script) > _JSISH_SCAN_LIMIT:
+        raise _JSishError("script izin verilen boyutu aşıyor")
+    index = 0
+    while index < len(script):
+        index = _jsish_skip(script, index)
+        if index >= len(script):
+            break
+        if script[index] in "\"'`":
+            _, index = _jsish_string(script, index)
+            continue
+        match = _JSISH_IDENTIFIER_RE.match(script, index)
+        if not match:
+            index += 1
+            continue
+        token = match.group(0)
+        index = match.end()
+        if token != name:
+            continue
+        cursor = _jsish_skip(script, index)
+        if cursor >= len(script) or script[cursor] != "=":
+            continue
+        cursor = _jsish_skip(script, cursor + 1)
+        if cursor >= len(script) or script[cursor] != "{":
+            continue
+        stop = _jsish_balanced_end(script, cursor)
+        return script[cursor:stop]
+    return None
+
+
+def _module_members(html):
+    """MODULE_DATA nesnesini HTML yorum/prosesinden ayırarak güvenle çıkarır."""
+    parser = _ScriptCollector()
+    parser.feed(html)
+    parser.close()
+    for script in parser.scripts:
+        raw = _assignment_object(script, "MODULE_DATA")
+        if raw is not None:
+            return _jsish_object(raw)
+    return None
+
+
+def _citation_issue(module):
+    """Her modda zorunlu sourceCitation'ın boş/placeholder olmadığını denetler."""
+    meta = _jsish_object(module.get("meta")) if module else None
+    if meta is None or "sourceCitation" not in meta:
+        return "meta.sourceCitation eksik veya boş; gerçek kaynak künyesi her modda zorunlu"
+    kind, citation = _jsish_scalar(meta["sourceCitation"])
+    if kind != "string" or not citation.strip():
+        return "meta.sourceCitation metin olmalı ve boş bırakılamaz"
+    if _is_placeholder(citation):
+        return "meta.sourceCitation placeholder içeriyor; gerçek kaynak künyesi yazılmalı"
+    return None
+
+
+def _verify_collect(raw):
+    """Dengeli ayrıştırılmış verification yapısını alan alan toplar."""
+    issues = []
+    warns = []
+    verification = _jsish_object(raw)
+    if verification is None:
+        return ["verification bir nesne olmalı"], warns
+
+    frame = _jsish_object(verification.get("frame_source"))
+    frame_kind = _field(frame, "kind")
+    if frame is None:
+        issues.append("verification.frame_source boş veya nesne değil")
+    else:
+        if frame_kind not in _VERIFY_FRAME_KINDS:
+            issues.append(
+                "verification.frame_source.kind `textbook` | `program` olmalı "
+                f"(bulunan: {frame_kind or '—'})"
+            )
+        if _identity_scalar(frame.get("document_id")) is None:
+            issues.append("verification.frame_source document_id pozitif tamsayı veya "
+                          "gerçek belge kimliği olmalı")
+        if not _locator_scalar(frame):
+            issues.append("verification.frame_source pozitif sayfa veya kesin locator taşımıyor")
+
+    scope = _jsish_object(verification.get("scope"))
+    in_frame = _jsish_bool(scope.get("in_frame")) if scope else None
     if in_frame is None:
         issues.append("verification.scope.in_frame yok")
     elif not in_frame:
         issues.append("scope.in_frame:false — içerik müfredat/ders kitabı çerçevesinin "
                       "DIŞINDA; yayınlanamaz")
-    if n_claims == 0:
+
+    claim_values = _jsish_array(verification.get("claims"))
+    if not claim_values:
         issues.append("verification.claims[] boş — her olgusal iddia dayanağıyla listelenmeli")
-    elif n_grounded < n_claims:
-        issues.append(f"{n_claims} iddiadan {n_claims - n_grounded} tanesinde `grounding` yok "
-                      "(dayanaksız iddia geçemez)")
-    if n_claims and n_general:
+        return issues, warns
+
+    n_general = 0
+    n_source = 0
+    n_unverified = 0
+    for number, raw_claim in enumerate(claim_values, 1):
+        claim = _jsish_object(raw_claim)
+        prefix = f"claims[{number}]"
+        if claim is None:
+            issues.append(f"{prefix} nesne değil")
+            continue
+        claim_kind, claim_text = _jsish_scalar(claim.get("claim"))
+        if claim_kind != "string" or not claim_text.strip():
+            issues.append(f"{prefix}.claim boş veya yok")
+        verdict = _field(claim, "verdict")
+        if verdict not in _VERIFY_VERDICTS:
+            issues.append(
+                f"{prefix}.verdict bilinmiyor: {verdict or '—'} "
+                f"(izinli: {', '.join(sorted(_VERIFY_VERDICTS))})"
+            )
+            continue
+        grounding = _jsish_object(claim.get("grounding"))
+        if grounding is None or not grounding:
+            issues.append(f"{prefix}.grounding boş veya yok (dayanaksız iddia geçemez)")
+            continue
+        if verdict in {"supported", "supported_by_program"}:
+            if _identity_scalar(grounding.get("document_id")) is None:
+                issues.append(
+                    f"{prefix}.{verdict} grounding document_id pozitif tamsayı veya "
+                    "gerçek belge kimliği değil"
+                )
+            if not _locator_scalar(grounding):
+                issues.append(
+                    f"{prefix}.{verdict} grounding pozitif sayfa veya kesin locator taşımıyor"
+                )
+        elif verdict == "supported_by_source":
+            n_source += 1
+            if _identity_scalar(grounding.get("source")) is None:
+                issues.append(f"{prefix}.supported_by_source kaynak künyesi taşımıyor")
+            if not _locator_scalar(grounding):
+                issues.append(
+                    f"{prefix}.supported_by_source pozitif sayfa/kesin locator/URL taşımıyor"
+                )
+            if _text_scalar(grounding.get("license")) is None:
+                issues.append(f"{prefix}.supported_by_source `license` taşımıyor")
+            if (
+                "provenance" in grounding
+                and _text_scalar(grounding.get("provenance")) is None
+            ):
+                issues.append(
+                    f"{prefix}.supported_by_source `provenance` placeholder/boş olamaz"
+                )
+        elif verdict == "general_knowledge":
+            n_general += 1
+        elif verdict == "unsupported":
+            reason = _text_scalar(grounding.get("reason")) or _text_scalar(claim.get("reason"))
+            issues.append(
+                f"{prefix}.unsupported — kaynak iddiayı desteklemiyor"
+                + (f" ({reason})" if reason else "; açık reason da eksik/placeholder")
+            )
+        elif verdict == "unverified":
+            n_unverified += 1
+            reason = _text_scalar(grounding.get("reason")) or _text_scalar(claim.get("reason"))
+            if not reason:
+                issues.append(f"{prefix}.unverified gerçek, placeholder olmayan reason taşımıyor")
+
+    n_claims = len(claim_values)
+    if n_general:
         ratio = n_general / n_claims
         msg = (f"{n_general}/{n_claims} iddia `general_knowledge` — "
                "ders kitabına/programa/kaynağa dayanmıyor")
@@ -592,12 +1736,11 @@ def _verify_eval(has_doc, frame_kind, in_frame, n_claims, n_grounded, n_general,
             issues.append(msg + "; çoğunluk dayanaksız")
         else:
             warns.append(msg + "; kaynağını bul ya da çıkar")
-    # supported_by_source (v3.6.0): (Q1) kaynak künyesi + lisans zorunlu; görünür atıf
-    # kapıyla dayatılmaz (yazar sorumlu). (Q2) yalnız program-çerçeveli modülde meşru.
-    if n_source_no_cite:
-        issues.append(f"{n_source_no_cite} `supported_by_source` iddiası grounding'inde "
-                      "`license` taşımıyor — alternatif kaynak izlenebilir değil "
-                      "(kaynak künyesi + lisans zorunlu)")
+    if n_unverified:
+        warns.append(
+            f"{n_unverified}/{n_claims} iddia unverified; açık gerekçe kayıtlı "
+            "ama kaynak doğrulaması tamamlanmamış"
+        )
     if n_source and frame_kind != "program":
         ratio = n_source / n_claims
         msg = (f"{n_source}/{n_claims} iddia `supported_by_source` ama çerçeve `program` değil "
@@ -626,18 +1769,37 @@ def gate_verify(html, R):
     hiçbiri çevrimdışı ölçülemez (validator'ın MCP erişimi yok, G-CURRICULUM gibi salt-metin).
     Doğruluk yargısı modelin ve insan denetimine tabidir.
     """
-    is_curr_mode = bool(re.search(r'\bmode\s*:\s*["\']CURRICULUM["\']', html))
-    has_curr_block = bool(re.search(r'\bcurriculum\s*:\s*\{', html))
+    try:
+        module = _module_members(html)
+    except _JSishError as exc:
+        R.add("G-VERIFY", "FAIL", f"MODULE_DATA güvenle ayrıştırılamadı: {exc}")
+        return
+    if module is None:
+        R.add("G-VERIFY", "FAIL",
+              "MODULE_DATA bulunamadı; meta.sourceCitation ve provenans doğrulanamadı")
+        return
+    citation_issue = _citation_issue(module)
+    if citation_issue:
+        R.add("G-VERIFY", "FAIL", citation_issue)
+        return
+
+    meta = _jsish_object(module.get("meta")) or {}
+    mode = _field(module, "mode") or _field(meta, "mode")
+    is_curr_mode = mode == "CURRICULUM"
+    has_curr_block = "curriculum" in module
     if not is_curr_mode and not has_curr_block:
         R.add("G-VERIFY", "PASS", "Müfredat-temelli modül değil (uygulanmaz).", applicable=False)
         return
-    block_m = re.search(r'verification\s*:\s*\{(.*?)\n\s*\}\s*,?\s*\n', html, re.S)
-    if not block_m:
+    if "verification" not in module:
         R.add("G-VERIFY", "FAIL",
               "Müfredat-temelli modül ama `verification` bloğu yok; kapsam + doğruluk "
               "denetiminin kaydı zorunlu (references/curriculum-integration.md §6.1).")
         return
-    issues, warns = _verify_eval(*_verify_collect(block_m.group(1)))
+    try:
+        issues, warns = _verify_collect(module["verification"])
+    except _JSishError as exc:
+        R.add("G-VERIFY", "FAIL", f"verification güvenle ayrıştırılamadı: {exc}")
+        return
     if issues:
         R.add("G-VERIFY", "FAIL", "; ".join(issues))
     elif warns:

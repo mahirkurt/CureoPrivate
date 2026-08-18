@@ -7,7 +7,7 @@ protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/
 
 skill:
   name: start
-  version: 1.2.0
+  version: 1.2.1
   title: edupedia — Başlangıç ve Yönlendirme
   description: >-
     edupedia süitine giriş: bağlı İKİ MCP connector'ını (maarif-mufredat müfredat/kazanım,
@@ -79,8 +79,9 @@ runtime:
         transport: 'streamable-http (MCP)'
         tools: 6
         when: >-
-          Adım 2 connector kontrolü ve konu/kavram içerik zenginleştirme (124 kategori, PhET 175 sim).
-          Bağlı değilse zenginleştirme atlanır; üretim bloke olmaz.
+          Keyed OAuth/Bearer bağlantısında Adım 2 connector kontrolü ve konu/kavram içerik
+          zenginleştirme (124 kategori, PhET 175 sim). Bağlı değilse zenginleştirme
+          atlanır; üretim bloke olmaz.
 
 constraints:
   out_of_scope:

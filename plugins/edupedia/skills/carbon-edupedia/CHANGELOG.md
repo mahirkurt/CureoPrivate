@@ -2,6 +2,30 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.11.0] — 2026-08-18
+
+### Güvenlik ve sözleşme
+
+- `fetch_figure.py`: HTTPS + MEB host allowlist, her redirect hop doğrulaması, private/loopback reddi, 32 MiB tavan, PDF magic, atomik `0600` yazım.
+- `validate_module.py`: boş/placeholder `verification` FAIL; gerçek `G-SELFCONTAINED` (remote font/script/style/media FAIL; dış navigasyon serbest).
+- `run-manifest-schema.json` v2: `soru`/`EXAM`, 16 kapı, zorunlu `single_shot_enforced`/`deliverable_path`.
+- Cursor `hooks-cursor.json` + stdout adaptörleri; Claude `hooks.json` ayrı kaldı. `module-auditor` otomatik dispatch iddiası kaldırıldı.
+- Fleet probe cache: roster + auth varlığı + yerel salt HMAC credential fingerprint; cache'e secret yazılmaz; vendor kopyaları pariteli.
+- Claude.ai packager: description ≤200 karakter, açık path haritası, ZIP traversal/tür/bağlantı kapıları.
+
+### Runtime
+
+- IBM Plex WOFF2 Latin1+Latin2 yüzleri OFL + hash manifestiyle tek-dosya HTML'e gömüldü; çalışma zamanı ağ isteği yok.
+- 320/360 px taşma, adım/özet odak aktarımı, `aria-live` gürültüsü, quiz yanlış→tekrar odağı, timer cleanup, objectives görünümü.
+- Kalıcılık izin listesi: tema + Leitner `localStorage`; XP/streak/badge/yanıtlar session-only. `meta.id` Leitner anahtarına girer.
+- Playwright tarayıcı süiti: klavye, 200% metin, offline ağ, font yükleme, mobil bounding-box, storage hata senaryoları.
+
+### Dokümantasyon
+
+- Canlı sözleşme 9 mod (MODULE · QUIZ · FLASHCARDS · GAME · EXPLAINER · ASSESSMENT · SERIES · CURRICULUM · EXAM) + 16 kapı.
+- Platformlar üç düzey: native plugin otomasyonu (Claude Code/Cursor), authenticated MCP, prompt uyarlaması. ChatGPT/Gemini/VS Code ailesinde komut/hook/alt-ajan/Tier-2b paritesi iddia edilmez.
+- `egitim-kaynak` keyed; Tier-2a MCP gözlemi, Tier-2b yerel `fetch_figure.py`. Plugin `0.10.0`, start `1.2.1`.
+
 ## [3.10.0] — 2026-08-16
 
 ### Eklendi — EXAM çoklu soru (`topics[]` + `exams[]`)

@@ -7,7 +7,7 @@ protocol_reference: 'https://github.com/anthropics/skill-manifest-protocol/blob/
 
 skill:
   name: carbon-edupedia
-  version: 3.10.0
+  version: 3.11.0
   title: Carbon Edupedia — DEHB-Odaklı Etkileşimli Öğrenim Modülü Üreticisi (IBM Carbon v11, WCAG 2.1 AA, Müfredat MCP)
   description: >-
     Kaynak metinden VEYA MEB Müfredat MCP'sinden (Türkiye Yüzyılı Maarif Modeli
@@ -18,7 +18,7 @@ skill:
     beceriyi (Kavramsal Beceriler KB2.x) etkileşim desenine haritalar, kazanım-izlenebilir
     provenans damgalar (G-CURRICULUM). Ders-bağımsız (fen, matematik, sosyal
     bilgiler, Türkçe, tarih, fizik, kimya, biyoloji); ortaokul/ilkokul/lise.
-    8 mod, 16 kalite kapısı (v3.10.0 — yerel validator otoritesi; G-EXAM çoklu soru; G-VOICE öğrenci yüzeyi nihai dil), 5 ek
+    9 mod, 16 kalite kapısı (v3.11.0 — yerel validator otoritesi; EXAM çoklu soru; G-VOICE öğrenci yüzeyi nihai dil), 5 ek
     segment tipi (hook, worked, selfExplain, sim, conceptMap); token katmanı
     @carbon/* npm otoritesiyle doğrulanır (G-TOKEN + sync aracı), Figma Carbon
     v11 kütüphaneleri opsiyonel görsel QA. Disambiguation: francais-coach → Fransızca React;
@@ -154,7 +154,8 @@ outputs:
     description: >-
       Tek-dosya, bağımsız, ETKİLEŞİMLİ HTML öğrenim modülü. /mnt/user-data/outputs/
       altına kebab-case adla kaydedilir. Harici yerel dosya yok (IBM Plex + Carbon
-      ikon sprite satır içi / CDN). JS ile çalışan quiz/oyun/flashcard; durum bellekte.
+      ikon sprite tamamen satır içi; CDN/ağ isteği yok). JS ile çalışan
+      quiz/oyun/flashcard; durum bellekte.
     mime_type: text/html
   - id: validation_report
     description: >-
@@ -331,8 +332,8 @@ verification:
 # Build
 # -----------------------------------------------------------------------------
 build:
-  version: 3.10.0
-  release_date: '2026-08-16'
+  version: 3.11.0
+  release_date: '2026-08-18'
   smp_compliance: '1.0'
   canonical_authorities:
     - '@carbon/themes@11.75.0 (white + g100 token''ları — programatik çıkarım)'

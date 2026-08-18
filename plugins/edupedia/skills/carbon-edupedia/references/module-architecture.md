@@ -17,7 +17,7 @@
 
 ```
 modul.html
-├── <head>: IBM Plex CDN, satır-içi Carbon CSS (:root token'ları), reduced-motion
+├── <head>: SHA-256 manifestli inline IBM Plex WOFF2, satır-içi Carbon CSS, reduced-motion
 ├── <body>
 │   ├── SVG icon sprite (gizli, currentColor)
 │   ├── Üst çubuk: modül başlığı + ilerleme rayı + XP sayacı + rozet kasası
@@ -37,6 +37,7 @@ kaldığı, ne kazandığım hep görünür.
 ```js
 const MODULE_DATA = {
   meta: {
+    id: "fen7-hucre-organeller",          // opsiyonel kararlı kimlik; varsa Leitner anahtarına girer
     title: "Hücre ve Organeller",        // modül başlığı (TR)
     subject: "Fen Bilimleri",            // ders
     gradeLevel: "7. Sınıf",              // sınıf düzeyi
@@ -155,6 +156,8 @@ const MODULE_DATA = {
 ```
 
 **Şema notları:**
+- `meta.id` opsiyoneldir; varsa Leitner kalıcı anahtarı hem bu kimliği hem başlık
+  hashini içerir. Yoksa geriye uyum için yalnız başlık hashinden türetilir.
 - `meta.sourceCitation` **zorunlu** (kaynak izlenebilirliği). Kaynak yoksa
   SKILL.md §7'ye göre işaretle.
 - `mcq` sorularında `sourceRef` doğrulanabilirlik kancası (validate_module.py).

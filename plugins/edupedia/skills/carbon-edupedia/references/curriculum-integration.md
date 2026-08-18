@@ -142,7 +142,7 @@ Araçlar dört işlevsel kümeye ayrılır. **Çoğu modül için 3–6 çağrı
 | Katman | Tanım | Durum | Davranış |
 |---|---|---|---|
 | **Tier-2a** | `get_figure(..., include_image=false)` → **metadata**: `caption`, `page_no`, `bbox`, `pdf_url` | **ÖNCELİKLİ** (MCP bağlıyken) | `search_figures(query, subject, grade)` ile ara. `page_no` **en ucuz sayfa bulucudur** (§3 Adım 3). `include_image=true` ayrıca görseli **modelin GÖRMESİNİ** sağlar → yazar-SVG orijinale bakılarak çizilir. |
-| **Tier-2b** | `pdf_url` + `page_no` + `bbox` → PDF'ten yeniden çıkarma → base64 JPEG | **Best-effort, YALNIZ Claude Code** | `scripts/fetch_figure.py` (`figures` bloğu + `@@FIG:<key>@@`). Öğrenci o görseli kitabında görüyor. Hata → yer tutucu yerinde kalır, `tier2_status` **raporlanır — sessizce atlanmaz**. claude.ai'de kullanılamaz. |
+| **Tier-2b** | `pdf_url` + `page_no` + `bbox` → PDF'ten yeniden çıkarma → base64 JPEG | **Best-effort, yerel dosya sistemi + Python** | `scripts/fetch_figure.py` (`figures` bloğu + `@@FIG:<key>@@`). Native yol Claude Code/Cursor'dadır; diğer hostlarda ancak script açıkça yerelde çalıştırılabiliyorsa mümkündür. Öğrenci o görseli kitabında görüyor. Hata → yer tutucu yerinde kalır, `tier2_status` **raporlanır — sessizce atlanmaz**. claude.ai'de native yol yoktur. |
 | **Tier-1** | Kazanım koduna/program metnine izlenebilir olgular + **yazar-üretimli tema-duyarlı SVG** (token-renkli, `role="img"`+başlık, WCAG 2.1 AA) | **Garanti — yedek** | Uygun resmî figür **yoksa**, MCP bağlı değilse, veya Tier-2 düşerse. `validate_module.py` G-SVG + G-CURRICULUM ile denetlenir. MCP'nin görsel çekememesi **başarısızlık değildir**: Tier-1 tek başına tam işlevseldir (`svg-authoring.md` doktrini) — üretim asla bloke olmaz. |
 
 **Yetenek-probu (kanonik akış):**
@@ -150,7 +150,7 @@ Araçlar dört işlevsel kümeye ayrılır. **Çoğu modül için 3–6 çağrı
 2. **Ara:** `search_figures(query=<konu>, subject=<slug>, grade=<sınıf>)` → aday `figure_id`'ler.
    Sonuçları **hedef ders+sınıfın kitabına** göre ele: `document_id` Adım 3'te açtığın kitapsa
    o figür birinci sınıf dayanaktır. Her sonuç `page_no` taşır → sayfa bulucu olarak da kullan.
-3. **Göm (Tier-2b, yalnız Claude Code):** `get_figure(figure_id, include_image=false)`'ın
+3. **Göm (Tier-2b, yerel dosya sistemi + Python):** `get_figure(figure_id, include_image=false)`'ın
    verdiği `pdf_url` + `page_no` + `bbox` ile bir `figures` girdisi yaz ve görselin yerine
    `@@FIG:<key>@@` koy; sonra `python3 scripts/fetch_figure.py <html> --in-place` çalıştır
    (`tier2_status: embedded`; kaynak damgasına `pdf_url` + sayfa ekle). Hata → yer tutucu

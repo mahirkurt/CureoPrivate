@@ -106,9 +106,10 @@ ekran okuyucuya açık; renk dışı durum (ikon+metin).
 > sonuna atar). Tüm kartlar öğrenilince segment biter. Her kart ustalığa sayılır.
 
 > **✓ Motorda uygulandı (v3.0.0 — Task 15, çapraz-oturum aralıklı tekrar / Leitner kutu
-> sistemi).** Açık bir modül id'si olmadığından, motor `D.meta.title`'dan kararlı bir kısa
-> hash türetir (FNV-1a benzeri, `hashStr`) ve kart durumunu
-> `localStorage["edupedia:"+hash+":leitner"]` altında `{box:{<segId>#<kartIdx>: 1..5}, due:[...]}`
+> sistemi).** `meta.id` varsa motor bunu başlık hashine ekler; yoksa geriye uyum için
+> `D.meta.title`'dan kararlı kısa hash türetir (`hashStr`). Kart durumu
+> `localStorage["edupedia:"+MODULE_STORE_ID+":leitner"]` altında
+> `{box:{<segId>#<kartIdx>: 1..5}, due:[...]}`
 > şeklinde saklar. Segment her açıldığında kartlar **kutu numarasına göre önceliklenir**
 > (düşük kutu = az bilinen/hiç görülmemiş → önce gösterilir); «Biliyorum» kutuyu bir üste
 > taşır (üst sınır 5), «Tekrar et» kutuyu 1'e sıfırlar (ceza dili yok — yalnız nötr sıfırlama);
@@ -118,8 +119,10 @@ ekran okuyucuya açık; renk dışı durum (ikon+metin).
 > kota dolu, `file://` engeli) `lsGet`/`lsSet` güvenli sarmalayıcıları try/catch ile sessizce
 > `null`/no-op döner; bu durumda tüm kutular varsayılan `1` sayılır ve sıralama no-op'tur
 > (eşit anahtarlarda orijinal indeks kırılımı sırayı korur) — segment **birebir eski
-> in-session davranışına** düşer, hiçbir kart kaybolmaz/çökme olmaz. IndexedDB benzeri
-> tarayıcı-içi veritabanı API'leri motora **hiç dahil edilmez** (yalnız `localStorage`).
+> in-session davranışına** düşer, hiçbir kart kaybolmaz/çökme olmaz. Kalıcı depolama
+> izin listesi yalnız **tema + Leitner**'dır; XP/seri/rozet/yanıt kümeleri
+> `sessionStorage` ile sekme oturumuna sınırlandırılır. Tüm sarmalayıcılar try/catch
+> ile degrade-safe'tir.
 
 ## 4. `match` — Eşleştirme
 **Pedagoji:** İlişkilendirme, OTR (İlke 2), ikili kodlama (görsel eşleştirme, İlke 7).

@@ -25,7 +25,7 @@
           "en az bir etkileşim (quiz/flashcard/oyun)",
           "Carbon v11 --cds-* token tabanı"
         ],
-        "validation": "11/11 FAIL kapısı geçer, 0 uyarı",
+        "validation": "16 kapıdan uygulananlar geçer, 0 uyarı",
         "must_not_contain": [
           "emoji",
           "harici CDN/script (G-SELFCONTAINED)",

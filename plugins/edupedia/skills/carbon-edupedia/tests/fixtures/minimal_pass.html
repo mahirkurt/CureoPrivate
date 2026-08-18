@@ -16,10 +16,11 @@
   - Yeni modül: yalnız MODULE_DATA nesnesini değiştirin. MOTORU değiştirmeyin.
   ============================================================================
 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Minimal gate fixture: gerçek şablondaki hash-doğrulamalı bloblar yerine küçük inline WOFF2 işareti. */
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;src:url("data:font/woff2;base64,d09GMgABAAAA") format("woff2")}
+@font-face{font-family:'IBM Plex Serif';font-style:normal;font-weight:400;src:url("data:font/woff2;base64,d09GMgABAAAA") format("woff2")}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;src:url("data:font/woff2;base64,d09GMgABAAAA") format("woff2")}
 /* ===== IBM Carbon v11 — WHITE teması (varsayılan) ===== */
 :root,[data-theme="white"]{
   /* yüzeyler (@carbon/themes white) */
@@ -640,7 +641,7 @@ const MODULE_DATA = {
     title:"Maddenin Hâlleri ve Su Döngüsü",
     subject:"Fen Bilimleri", gradeLevel:"5. Sınıf", mode:"MODULE",
     accent:"#009d9a", estimatedMinutes:16, coverPictogram:"pic-microscope",
-    sourceCitation:"ÖRNEK — gerçek modülde kaynağı buraya yazın (ders kitabı/kazanım)"
+    sourceCitation:"carbon-edupedia sentetik test fikstürü — dış kaynak kullanılmadı"
   },
   learner:{ name:"", showTimer:false, breakReminderMin:20 },  // breakReminderMin: 0 = kapalı; nazik mola hatırlatıcı
   objectives:[

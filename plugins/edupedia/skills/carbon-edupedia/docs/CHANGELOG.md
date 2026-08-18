@@ -2,6 +2,23 @@
 
 Bu proje [Semantik Sürümleme](https://semver.org/lang/tr/) kullanır.
 
+## [3.11.0] — 2026-08-18
+
+### Güvenlik ve sözleşme
+
+`fetch_figure` SSRF sertleştirmesi, gerçek G-SELFCONTAINED/G-VERIFY, run-manifest v2,
+Cursor hook ayrımı, fleet HMAC cache, Claude.ai 200 karakter + ZIP kapıları.
+
+### Runtime
+
+Offline IBM Plex gömme (OFL + hash manifest), mobil/odak/timer/storage izin listesi,
+Playwright süiti. Çalışma zamanı ağ isteği yok.
+
+### Dokümantasyon
+
+9 mod (EXAM dahil) + 16 kapı; native / authenticated MCP / prompt uyarlaması matrisi;
+keyed `egitim-kaynak`; Tier-2a gözlem vs Tier-2b yerel çıkarım. Plugin `0.10.0`, start `1.2.1`.
+
 ## [3.10.0] — 2026-08-16
 
 ### Eklendi — EXAM çoklu soru (`topics[]` + `exams[]`)

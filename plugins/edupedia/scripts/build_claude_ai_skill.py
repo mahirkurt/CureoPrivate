@@ -13,7 +13,11 @@ ZIP YAPISI (spec — yanlışı sessizce reddedilir):
     carbon-edupedia-claude-ai.zip
     └── carbon-edupedia/          ← klasör KÖKTE olmalı
         ├── SKILL.md
+        ├── skill-manifest.yaml
+        ├── CHANGELOG.md
         ├── references/*.md
+        ├── scripts/*.py
+        ├── evals/{README.md,evals.json}
         ├── plugin-context/*      ← VENDOR: plugin kökündeki normatif belgeler
         └── assets/*
 SKILL.md'yi zip köküne koymak GEÇERSİZDİR.
@@ -27,13 +31,17 @@ vendor'lanır ve bağlantılar derinlik-duyarlı olarak yeniden yazılır.
 
 `commands/*.md` VENDOR'LANMAZ: claude.ai'da komut diye bir şey yok. O bağlantılar, taşıdıkları
 tek anlam olan komut ADINA indirgenir (`../commands/modul.md` → `/edupedia:modul`).
+Repo-kökü `docs/superpowers/specs/*.md` yolları da runtime bağımlılığı değil geliştirme
+provenansıdır; paket metninde kararlı kayıt kimliğine indirgenir, dosya olarak vendor'lanmaz.
 
 KAPI: paket kurulduktan sonra ZIP'İN İÇİNDEN doğrulanır — paketlenmiş her .md'deki `../`
-ile kaçan her .md/.json bağlantısı zip üyesi olmak ZORUNDA. Değilse build DURUR. Bu kapı
-niyeti değil ARTEFAKTI ölçer: yeni bir paket-dışı referans eklenirse sessizce sızamaz.
+ile kaçan veya göreli hedef gösteren her metin bağlantısı zip üyesi olmak ZORUNDA.
+Mutlak/traversal/yinelenen üye adları ve düzenli dosya olmayan üyeler de reddedilir.
+Bu kapı niyeti değil ARTEFAKTI ölçer: yeni bir paket-dışı referans sessizce sızamaz.
 
-DIŞLANANLAR: tests/ docs/ evals/ __pycache__ .pytest_cache — geliştirme yükü (~670KB).
-(docs/ dışlanır ama denetlenebilirlik kanıtı olan MCP introspeksiyon çıktısı vendor'lanır.)
+PAKET HARİTASI AÇIKTIR: yalnız SKILL/manifest/CHANGELOG, runtime references/assets/scripts,
+minimal eval sözleşmesi ve VENDOR girer. tests/ ile yinelenen docs/CHANGELOG.md girmez;
+denetlenebilirlik kanıtı olan MCP introspeksiyon çıktısı ayrıca vendor'lanır.
 
 `scripts/` DAHİL EDİLİR: claude.ai kod-çalıştırma açıkken script koşturabilir, yani
 `validate_module.py` kalite kapısı olarak işe yarar. Koşmazsa üretim yine çalışır;
@@ -41,11 +49,14 @@ kapıları "PASS" diye beyan etmeyin.
 """
 from __future__ import annotations
 
+import os
 import posixpath
 import re
+import stat
 import sys
+import tempfile
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 PLUGIN = Path(__file__).resolve().parent.parent
 SKILL_SRC = PLUGIN / "skills" / "carbon-edupedia"
@@ -56,10 +67,23 @@ OUT_ZIP = OUT_DIR / f"{SKILL_NAME}-claude-ai.zip"
 # claude.ai spec limitleri (ölçülür, varsayılmaz)
 MAX_ZIP_BYTES = 30 * 1024 * 1024
 MAX_NAME = 64
-MAX_DESC = 1024
+MAX_DESC = 200
 
-EXCLUDE_DIRS = {"tests", "docs", "evals", "__pycache__", ".pytest_cache"}
-EXCLUDE_SUFFIX = {".pyc", ".pyo"}
+# Claude.ai için gerekli runtime ağacı. Yeni bir üst-düzey dosya kendiliğinden pakete girmez.
+PACKAGE_FILES = (
+    "SKILL.md",
+    "skill-manifest.yaml",
+    "CHANGELOG.md",
+    "evals/README.md",
+    "evals/evals.json",
+)
+PACKAGE_TREES: dict[str, frozenset[str]] = {
+    "references": frozenset({".md"}),
+    "assets": frozenset({".html", ".json"}),
+    "scripts": frozenset({".py"}),
+}
+GENERATED_DIRS = frozenset({"__pycache__", ".pytest_cache"})
+ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 # Paket-dışı normatif belgeler → zip içinde bu dizine taşınır.
 VENDOR_DIR = "plugin-context"
@@ -76,23 +100,100 @@ CMD_RE = re.compile(r"(?:\.{1,2}/)+commands/([a-z][a-z0-9-]*)\.md")
 VENDOR_RE = re.compile(
     r"(?:\.{1,2}/)+(?:[A-Za-z0-9_.-]+/)*(" + "|".join(re.escape(b) for b in VENDOR) + r")"
 )
-# Kapı: `../` ile paket kökünden kaçan .md/.json bağlantıları
-ESCAPE_RE = re.compile(r"(?<![\w-])((?:\.\./)+[A-Za-z0-9_./-]*\.(?:md|json))")
+# Paket yüzeyinde yinelenen docs changelog yerine kökteki kanonik kopya kullanılır.
+DOC_CHANGELOG_RE = re.compile(r"(?<![A-Za-z0-9_.-])(?:\./)?docs/CHANGELOG\.md")
+# Repo-kökü tasarım kayıtları runtime girdisi değildir; pakette yol değil kimlik kalır.
+DEV_SPEC_RE = re.compile(r"docs/superpowers/specs/([A-Za-z0-9_.-]+)\.md")
 
-# Rewrite + kapı bu uzantılara uygulanır. YAML dâhil: skill-manifest.yaml'ın `read_when`
-# metinleri de modelin okuduğu navigasyondur ve o da `../../CONNECTORS.md` diyordu.
-TEXT_SUFFIX = {".md", ".yaml"}
+# Rewrite + kapı, pakete alınan bütün metin türlerinde uygulanır.
+TEXT_SUFFIX = frozenset({".md", ".yaml", ".yml", ".json", ".py", ".html", ".sh", ".txt"})
+TEXT_EXTENSIONS_RE = r"(?:md|yaml|yml|json|py|html|sh|txt)"
+MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]\n]*\]\(([^)\n]+)\)")
+FENCED_CODE_RE = re.compile(r"```.*?```", re.S)
+INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+RELATIVE_REF_RE = re.compile(
+    r"(?<![A-Za-z0-9_:/.-])("
+    r"(?:(?:\.{1,2}/)+|(?:references|assets|scripts|evals|plugin-context|docs)/)"
+    r"[A-Za-z0-9_.@%+/-]+\."
+    + TEXT_EXTENSIONS_RE
+    + r"(?:#[A-Za-z0-9_.:%+/-]+)?"
+    r")"
+)
+ROOT_RELATIVE_PREFIXES = tuple(f"{name}/" for name in (*PACKAGE_TREES, "evals", VENDOR_DIR, "docs"))
+
+
+class PackageError(ValueError):
+    """Paket sözleşmesi ihlal edildiğinde kullanıcıya gösterilecek hata."""
+
+
+def _path_issue(name: str) -> str | None:
+    """ZIP üye yolunun taşınabilir ve kök-içi olup olmadığını açıkla."""
+    if not name:
+        return "boş üye adı"
+    if "\x00" in name:
+        return "NUL içeren üye adı"
+    if "\\" in name:
+        return "ters eğik çizgi içeren üye adı"
+    if name.startswith("/") or PurePosixPath(name).is_absolute() or re.match(r"^[A-Za-z]:", name):
+        return "mutlak üye yolu"
+    parts = name.split("/")
+    if any(part == ".." for part in parts):
+        return "`..` traversal"
+    if any(part in {"", "."} for part in parts):
+        return "boş veya `.` yol bileşeni"
+    if posixpath.normpath(name) != name:
+        return "normalize olmayan üye yolu"
+    return None
+
+
+def _require_regular(path: Path, label: str) -> None:
+    """Symlink/FIFO/socket/device dâhil düzenli olmayan kaynakları reddet."""
+    try:
+        mode = path.lstat().st_mode
+    except OSError as exc:
+        raise PackageError(f"{label} okunamadı: {path} ({exc})") from exc
+    if not stat.S_ISREG(mode):
+        raise PackageError(f"{label} düzenli dosya değil: {path}")
 
 
 def _iter_files(root: Path):
-    for p in sorted(root.rglob("*")):
-        if not p.is_file():
-            continue
-        if any(part in EXCLUDE_DIRS for part in p.relative_to(root).parts):
-            continue
-        if p.suffix in EXCLUDE_SUFFIX:
-            continue
-        yield p
+    """Açık Claude.ai paket haritasındaki kaynak dosyalarını deterministik sırayla ver."""
+    for rel in PACKAGE_FILES:
+        issue = _path_issue(rel)
+        if issue:
+            raise PackageError(f"paket haritasında güvensiz yol `{rel}`: {issue}")
+        path = root / rel
+        _require_regular(path, "zorunlu paket kaynağı")
+        yield path
+
+    for dirname, suffixes in PACKAGE_TREES.items():
+        tree = root / dirname
+        try:
+            tree_mode = tree.lstat().st_mode
+        except OSError as exc:
+            raise PackageError(f"zorunlu paket dizini okunamadı: {tree} ({exc})") from exc
+        if not stat.S_ISDIR(tree_mode):
+            raise PackageError(f"zorunlu paket dizini gerçek dizin değil: {tree}")
+
+        for path in sorted(tree.rglob("*")):
+            rel_parts = path.relative_to(root).parts
+            if any(part in GENERATED_DIRS for part in rel_parts):
+                continue
+            try:
+                mode = path.lstat().st_mode
+            except OSError as exc:
+                raise PackageError(f"paket kaynağı okunamadı: {path} ({exc})") from exc
+            if stat.S_ISDIR(mode):
+                continue
+            if not stat.S_ISREG(mode):
+                raise PackageError(f"paket kaynağı düzenli dosya değil: {path}")
+            if path.suffix.lower() not in suffixes:
+                allowed = ", ".join(sorted(suffixes))
+                raise PackageError(
+                    f"açık paket haritası `{path.relative_to(root)}` uzantısını kabul etmiyor "
+                    f"(izinli: {allowed})"
+                )
+            yield path
 
 
 def _rewrite(text: str, pkg_rel: str) -> str:
@@ -102,8 +203,47 @@ def _rewrite(text: str, pkg_rel: str) -> str:
     def _vendor_sub(m: re.Match[str]) -> str:
         return posixpath.relpath(f"{VENDOR_DIR}/{m.group(1)}", here or ".")
 
+    def _changelog_sub(_: re.Match[str]) -> str:
+        return posixpath.relpath("CHANGELOG.md", here or ".")
+
+    def _dev_spec_sub(match: re.Match[str]) -> str:
+        return f"geliştirme-tasarım-kaydı:{match.group(1)}"
+
     text = CMD_RE.sub(lambda m: f"/edupedia:{m.group(1)}", text)
-    return VENDOR_RE.sub(_vendor_sub, text)
+    text = VENDOR_RE.sub(_vendor_sub, text)
+    text = DOC_CHANGELOG_RE.sub(_changelog_sub, text)
+    return DEV_SPEC_RE.sub(_dev_spec_sub, text)
+
+
+def _description_value(frontmatter: str) -> str | None:
+    """Description YAML skalerini, özellikle `>-` katlamasını semantik olarak oku."""
+    match = re.search(
+        r"^description:\s*(?:(?P<style>[>|])-?\s*\n"
+        r"(?P<block>(?:[ \t]+.*(?:\n|$))+)|(?P<plain>[^\n]+))",
+        frontmatter,
+        re.M,
+    )
+    if not match:
+        return None
+    plain = match.group("plain")
+    if plain is not None:
+        return plain.strip().strip("\"'")
+
+    lines = [line.strip() for line in (match.group("block") or "").splitlines()]
+    if match.group("style") == "|":
+        return "\n".join(lines).strip()
+
+    paragraphs: list[str] = []
+    current: list[str] = []
+    for line in lines:
+        if line:
+            current.append(line)
+        elif current:
+            paragraphs.append(" ".join(current))
+            current = []
+    if current:
+        paragraphs.append(" ".join(current))
+    return "\n".join(paragraphs).strip()
 
 
 def _check_frontmatter(skill_md: Path) -> list[str]:
@@ -127,12 +267,10 @@ def _check_frontmatter(skill_md: Path) -> list[str]:
         if "anthropic" in name.lower() or "claude" in name.lower():
             hatalar.append(f"name '{name}' rezerve kelime içeriyor (anthropic/claude)")
 
-    # description: düz ya da katlanmış (>-) blok olabilir
-    dm = re.search(r"^description:\s*(?:>-?\s*\n((?:[ \t]+.*\n?)+)|(.+))", fm, re.M)
-    if not dm:
+    desc = _description_value(fm)
+    if desc is None:
         hatalar.append("frontmatter'da `description` yok (zorunlu — tetikleme SADECE buradan)")
     else:
-        desc = (dm.group(1) or dm.group(2) or "").strip()
         if not desc:
             hatalar.append("description boş")
         if len(desc) > MAX_DESC:
@@ -142,32 +280,169 @@ def _check_frontmatter(skill_md: Path) -> list[str]:
     return hatalar
 
 
+def _markdown_target(raw: str) -> str:
+    """Markdown hedefinden opsiyonel başlığı ayır."""
+    target = raw.strip()
+    if target.startswith("<") and ">" in target:
+        return target[1 : target.index(">")]
+    return target.split(maxsplit=1)[0]
+
+
+def _relative_references(text: str, suffix: str, body_name: str) -> set[str]:
+    """Paket metnindeki göreli dosya navigasyonlarını çıkar."""
+    refs: set[str] = set()
+    if suffix == ".md":
+        prose = FENCED_CODE_RE.sub("", text)
+        prose = INLINE_CODE_RE.sub("", prose)
+        refs.update(_markdown_target(raw) for raw in MARKDOWN_LINK_RE.findall(prose))
+        # CHANGELOG tarihsel geliştirme yolları taşır; yalnız gerçek Markdown linkleri navigasyondur.
+        if body_name == "CHANGELOG.md":
+            return refs
+    refs.update(RELATIVE_REF_RE.findall(text))
+    return refs
+
+
+def _resolve_reference(body_name: str, raw: str) -> tuple[str | None, str | None]:
+    """Bir metin bağlantısını skill-köküne göre çöz; (hedef, hata) döndür."""
+    ref = raw.strip().strip("<>")
+    if not ref or ref.startswith("#"):
+        return None, None
+    if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", ref) or ref.startswith("//"):
+        return None, None
+    ref = ref.split("#", 1)[0].split("?", 1)[0]
+    if not ref:
+        return None, None
+    issue = _path_issue(ref)
+    if issue and not ref.startswith(("./", "../")):
+        return None, issue
+
+    if ref.startswith(ROOT_RELATIVE_PREFIXES):
+        target = posixpath.normpath(ref)
+    else:
+        target = posixpath.normpath(posixpath.join(posixpath.dirname(body_name), ref))
+    if target == ".." or target.startswith("../") or target.startswith("/"):
+        return None, "paket kökünün dışına çıkıyor"
+    target_issue = _path_issue(target)
+    if target_issue:
+        return None, target_issue
+    return target, None
+
+
 def _gate_links(zip_path: Path) -> list[str]:
-    """ZIP'İN İÇİNDEN ölç: kaçan her bağlantı gerçekten pakette mi?"""
+    """ZIP güvenliğini ve bütün göreli metin bağlantılarını artefaktın içinden ölç."""
     ihlaller: list[str] = []
-    with zipfile.ZipFile(zip_path) as z:
-        uyeler = set(z.namelist())
-        for ad in sorted(uyeler):
-            if not any(ad.endswith(s) for s in TEXT_SUFFIX):
+    with zipfile.ZipFile(zip_path) as archive:
+        infos = archive.infolist()
+        counts: dict[str, int] = {}
+        unsafe: set[str] = set()
+        prefix = f"{SKILL_NAME}/"
+
+        for info in infos:
+            name = info.filename
+            counts[name] = counts.get(name, 0) + 1
+            issue = _path_issue(name)
+            if issue:
+                ihlaller.append(f"ZIP üyesi `{name}` güvensiz: {issue}")
+                unsafe.add(name)
+            if not name.startswith(prefix):
+                ihlaller.append(f"ZIP üyesi `{name}` `{prefix}` kökü altında değil")
+                unsafe.add(name)
+
+            mode = (info.external_attr >> 16) & 0xFFFF
+            file_type = stat.S_IFMT(mode)
+            if info.is_dir() or file_type not in {0, stat.S_IFREG}:
+                ihlaller.append(f"ZIP üyesi `{name}` düzenli dosya değil")
+                unsafe.add(name)
+
+        for name, count in counts.items():
+            if count > 1:
+                ihlaller.append(f"ZIP üyesi `{name}` {count} kez yineleniyor")
+                unsafe.add(name)
+
+        members = set(counts)
+        for info in infos:
+            name = info.filename
+            if name in unsafe or counts[name] > 1:
                 continue
-            metin = z.read(ad).decode("utf-8")
-            govde = posixpath.relpath(ad, SKILL_NAME)  # SKILL.md, references/x.md, …
-            here = posixpath.dirname(govde)
-            for link in ESCAPE_RE.findall(metin):
-                hedef = posixpath.normpath(posixpath.join(here, link))
-                if hedef.startswith(".."):
-                    ihlaller.append(f"{govde}: `{link}` → paket KÖKÜNÜN dışına çıkıyor")
-                elif f"{SKILL_NAME}/{hedef}" not in uyeler:
-                    ihlaller.append(f"{govde}: `{link}` → `{hedef}` zip'te YOK")
+            suffix = PurePosixPath(name).suffix.lower()
+            if suffix not in TEXT_SUFFIX:
+                continue
+            try:
+                text = archive.open(info).read().decode("utf-8")
+            except UnicodeDecodeError:
+                ihlaller.append(f"ZIP üyesi `{name}` {suffix} olmasına rağmen UTF-8 değil")
+                continue
+
+            body_name = name[len(prefix) :]
+            for ref in sorted(_relative_references(text, suffix, body_name)):
+                target, error = _resolve_reference(body_name, ref)
+                if error:
+                    ihlaller.append(f"{body_name}: `{ref}` → {error}")
+                elif target is not None and f"{prefix}{target}" not in members:
+                    ihlaller.append(f"{body_name}: `{ref}` → `{target}` zip'te YOK")
     return ihlaller
 
 
+def _add_content(
+    content: dict[str, bytes],
+    casefolded: dict[str, str],
+    rel: str,
+    data: bytes,
+) -> None:
+    """Güvenli ve benzersiz bir paket üyesi ekle."""
+    issue = _path_issue(rel)
+    if issue:
+        raise PackageError(f"güvensiz paket yolu `{rel}`: {issue}")
+    if rel in content:
+        raise PackageError(f"yinelenen paket üyesi: {rel}")
+    folded = rel.casefold()
+    if folded in casefolded:
+        raise PackageError(f"büyük/küçük harf çakışmalı paket üyeleri: {casefolded[folded]} / {rel}")
+    content[rel] = data
+    casefolded[folded] = rel
+
+
+def _read_package_source(path: Path, rel: str) -> bytes:
+    """Düzenli kaynak dosyasını oku; metin yollarını paket yüzeyine yeniden yaz."""
+    _require_regular(path, "paket kaynağı")
+    if path.suffix.lower() in TEXT_SUFFIX:
+        return _rewrite(path.read_text(encoding="utf-8"), rel).encode("utf-8")
+    return path.read_bytes()
+
+
+def _collect_content() -> dict[str, bytes]:
+    """Açık include haritası + vendor kaynaklarından zip gövdesini kur."""
+    content: dict[str, bytes] = {}
+    casefolded: dict[str, str] = {}
+    for path in _iter_files(SKILL_SRC):
+        rel = path.relative_to(SKILL_SRC).as_posix()
+        _add_content(content, casefolded, rel, _read_package_source(path, rel))
+    for name, path in sorted(VENDOR.items()):
+        rel = f"{VENDOR_DIR}/{name}"
+        _add_content(content, casefolded, rel, _read_package_source(path, rel))
+    return content
+
+
+def _write_zip(zip_path: Path, content: dict[str, bytes]) -> None:
+    """Sabit sıra, zaman damgası ve Unix regular-file modu ile zip yaz."""
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for rel, data in sorted(content.items()):
+            info = zipfile.ZipInfo(f"{SKILL_NAME}/{rel}", date_time=ZIP_TIMESTAMP)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = (stat.S_IFREG | 0o644) << 16
+            archive.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+
+
 def main() -> int:
-    if not (SKILL_SRC / "SKILL.md").is_file():
-        print(f"HATA: {SKILL_SRC}/SKILL.md yok", file=sys.stderr)
+    skill_md = SKILL_SRC / "SKILL.md"
+    try:
+        _require_regular(skill_md, "SKILL.md")
+    except PackageError as exc:
+        print(f"HATA: {exc}", file=sys.stderr)
         return 1
 
-    hatalar = _check_frontmatter(SKILL_SRC / "SKILL.md")
+    hatalar = _check_frontmatter(skill_md)
     if hatalar:
         print("✘ claude.ai frontmatter spec ihlali:", file=sys.stderr)
         for h in hatalar:
@@ -175,83 +450,70 @@ def main() -> int:
         return 1
     print("✔ frontmatter: name + description claude.ai spec'ine uygun")
 
-    eksik = [f"{ad} ({yol})" for ad, yol in VENDOR.items() if not yol.is_file()]
-    if eksik:
-        print("✘ vendor kaynağı yok:", file=sys.stderr)
-        for e in eksik:
-            print(f"    - {e}", file=sys.stderr)
+    try:
+        content = _collect_content()
+    except (OSError, UnicodeError, PackageError) as exc:
+        print(f"✘ paket kaynağı reddedildi: {exc}", file=sys.stderr)
         return 1
 
-    # Paket içeriğini kur: zip yolu → bayt
-    icerik: dict[str, bytes] = {}
-    for p in _iter_files(SKILL_SRC):
-        rel = p.relative_to(SKILL_SRC).as_posix()
-        if p.suffix in TEXT_SUFFIX:
-            icerik[rel] = _rewrite(p.read_text(encoding="utf-8"), rel).encode("utf-8")
-        else:
-            icerik[rel] = p.read_bytes()
-    for ad, yol in VENDOR.items():
-        rel = f"{VENDOR_DIR}/{ad}"
-        if yol.suffix in TEXT_SUFFIX:
-            icerik[rel] = _rewrite(yol.read_text(encoding="utf-8"), rel).encode("utf-8")
-        else:
-            icerik[rel] = yol.read_bytes()
-
-    atlanan = sum(
-        1
-        for p in SKILL_SRC.rglob("*")
-        if p.is_file()
-        and (
-            any(part in EXCLUDE_DIRS for part in p.relative_to(SKILL_SRC).parts)
-            or p.suffix in EXCLUDE_SUFFIX
+    temp_zip: Path | None = None
+    try:
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        descriptor, temp_name = tempfile.mkstemp(
+            prefix=f".{OUT_ZIP.name}.",
+            suffix=".tmp",
+            dir=OUT_DIR,
         )
-    )
+        os.close(descriptor)
+        temp_zip = Path(temp_name)
+        _write_zip(temp_zip, content)
 
-    OUT_DIR.mkdir(exist_ok=True)
-    if OUT_ZIP.exists():
-        OUT_ZIP.unlink()
-    with zipfile.ZipFile(OUT_ZIP, "w", zipfile.ZIP_DEFLATED) as z:
-        for rel, veri in sorted(icerik.items()):
-            z.writestr(f"{SKILL_NAME}/{rel}", veri)  # ← klasör KÖKTE
+        size = temp_zip.stat().st_size
+        if size > MAX_ZIP_BYTES:
+            print(
+                f"✘ zip {size / 1024 / 1024:.1f} MB > "
+                f"{MAX_ZIP_BYTES / 1024 / 1024:.0f} MB limiti",
+                file=sys.stderr,
+            )
+            return 1
 
-    boyut = OUT_ZIP.stat().st_size
-    if boyut > MAX_ZIP_BYTES:
-        print(f"✘ zip {boyut/1e6:.1f} MB > 30 MB limiti", file=sys.stderr)
-        return 1
+        violations = _gate_links(temp_zip)
+        if violations:
+            print(
+                f"✘ ZIP GÜVENLİK/BAĞLANTI KAPISI — {len(violations)} ihlal:",
+                file=sys.stderr,
+            )
+            for violation in violations:
+                print(f"    - {violation}", file=sys.stderr)
+            print(
+                "\n  Çözüm: runtime bağımlılığını açık paket haritasına/VENDOR'a ekleyin;\n"
+                "  Claude Code'a özgü yüzeyse dosya bağlantısı yerine yalnız adını yazın.",
+                file=sys.stderr,
+            )
+            return 1
 
-    # Yapıyı ZIP'İN KENDİSİNDEN doğrula — niyetten değil.
-    with zipfile.ZipFile(OUT_ZIP) as z:
-        adlar = z.namelist()
-    kok = f"{SKILL_NAME}/SKILL.md"
-    if kok not in adlar:
-        print(f"✘ zip'te {kok} yok — klasör-kök yapısı bozuk", file=sys.stderr)
-        return 1
-    if "SKILL.md" in adlar:
-        print("✘ SKILL.md zip KÖKÜNDE — spec klasör-kök ister", file=sys.stderr)
-        return 1
-    sizinti = [a for a in adlar if any(f"/{d}/" in f"/{a}" for d in EXCLUDE_DIRS)]
-    if sizinti:
-        print(f"✘ dışlanan dizin zip'e sızdı: {sizinti[:3]}", file=sys.stderr)
-        return 1
+        with zipfile.ZipFile(temp_zip) as archive:
+            names = archive.namelist()
+        root_skill = f"{SKILL_NAME}/SKILL.md"
+        if root_skill not in names or "SKILL.md" in names:
+            print(f"✘ zip klasör-kök yapısı bozuk: {root_skill}", file=sys.stderr)
+            return 1
 
-    kirik = _gate_links(OUT_ZIP)
-    if kirik:
-        print(f"✘ KIRIK BAĞLANTI KAPISI — {len(kirik)} paket-dışı referans:", file=sys.stderr)
-        for k in kirik:
-            print(f"    - {k}", file=sys.stderr)
-        print(
-            "\n  Çözüm: normatif bir belgeyse VENDOR'a ekleyin; Claude Code'a özgü bir\n"
-            "  yüzeyse (komut/hook/ajan) kaynakta dosya bağlantısı yerine ADINI yazın.",
-            file=sys.stderr,
-        )
+        temp_zip.replace(OUT_ZIP)
+        temp_zip = None
+    except (OSError, zipfile.BadZipFile, PackageError) as exc:
+        print(f"✘ zip üretilemedi: {exc}", file=sys.stderr)
         return 1
+    finally:
+        if temp_zip is not None:
+            temp_zip.unlink(missing_ok=True)
 
-    vendor_uye = sum(1 for a in adlar if f"/{VENDOR_DIR}/" in a)
-    print(f"✔ yapı    : {kok} (klasör kökte)")
+    vendor_uye = sum(1 for name in names if f"/{VENDOR_DIR}/" in name)
+    print(f"✔ yapı    : {root_skill} (klasör kökte)")
     print(f"✔ vendor  : {vendor_uye} normatif belge → {VENDOR_DIR}/ (bağlantılar yeniden yazıldı)")
-    print("✔ bağlantı: paket-dışı kırık referans yok (zip'ten ölçüldü)")
-    print(f"✔ içerik  : {len(adlar)} dosya | {atlanan} geliştirme dosyası dışlandı")
-    print(f"✔ boyut   : {boyut/1024:.0f} KB  (limit 30 MB — %{boyut/MAX_ZIP_BYTES*100:.1f})")
+    print("✔ güvenlik: yol/üye türü/yineleme ve göreli bağlantılar zip'ten doğrulandı")
+    print(f"✔ içerik  : {len(names)} dosya | açık runtime + eval + vendor haritası")
+    print(f"✔ boyut   : {size / 1024:.0f} KB  (limit 30 MB — %{size / MAX_ZIP_BYTES * 100:.1f})")
     print(f"\n→ {OUT_ZIP}")
     print("  Yükleme: claude.ai → Settings → Customize → Skills → Upload")
     print("  UNUTMA: connector'lar AYRI eklenir (Settings → Customize → Connectors).")

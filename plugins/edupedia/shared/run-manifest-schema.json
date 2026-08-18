@@ -1,17 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cureonics.com/edupedia/run-manifest-schema.json",
-  "title": "edupedia Run Manifest",
-  "description": "edupedia (carbon-edupedia + Maarif MCP) her modül üretim koşumu için üretilen kayıt. Kanonik artefakt önbelleğini, Maarif MCP connector call ledger'ını (çift-sorgu denetim kanıtı), Tier-2 görüntü-dayanak durumunu ve 16 kalite kapısını içerir (carbon-edupedia 3.0.0 — G-FLOW + G-CARBON-GRID; 2026-07-17 içerik sözleşmesi — G-VERIFY: kapsam + doğruluk dayanağı). Dosya adı sözleşmesi (normatif tanım: canonical-cache-contract.md §1): üretilen HTML ile aynı dizine, aynı ad + '.manifest.json' uzantısıyla yazılır (ör. modul.html -> modul.manifest.json) — sabit 'run_manifest.json' adı KULLANILMAZ. Normatif: CONNECTORS.md + canonical-cache-contract.md.",
+  "$id": "https://cureonics.com/edupedia/run-manifest-schema-v2.json",
+  "x-schema-version": "2.0.0",
+  "x-revised": "2026-08-17",
+  "title": "edupedia Run Manifest v2",
+  "description": "edupedia koşum kaydı: istek kapsamı, tek-sefer connector defteri, kanonik artefaktlar, Tier-2 durumu, yerel validator'ın 16 kapısı ve güvenli göreli HTML teslim yolu. Manifest, HTML ile aynı dizinde aynı ad + '.manifest.json' uzantısıyla tutulur. Normatif: canonical-cache-contract.md + validate_module.py.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "run_id",
     "ts",
     "plugin_version",
     "requested_scope",
     "connector_call_ledger",
+    "single_shot_enforced",
     "canonical_artifacts",
-    "tier2_status"
+    "tier2_status",
+    "deliverable_path"
   ],
   "properties": {
     "run_id": {
@@ -21,20 +26,30 @@
     },
     "ts": {
       "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
       "format": "date-time"
     },
     "plugin_version": {
       "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
       "description": "plugin.json version (ör. 0.1.0)"
     },
     "requested_scope": {
       "type": "object",
       "description": "Kullanıcı girdisi kapsamı.",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "mode"
+      ],
       "properties": {
         "command": {
           "enum": [
             "modul",
             "mufredat",
+            "soru",
             "kazanim-bul",
             "durum",
             "direct-skill"
@@ -49,33 +64,68 @@
             "EXPLAINER",
             "ASSESSMENT",
             "SERIES",
-            "CURRICULUM"
+            "CURRICULUM",
+            "EXAM"
           ]
         },
         "outcome_codes": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
           }
         },
         "subject_slug": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "grade": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "topic": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "command": {
+                "const": "soru"
+              }
+            },
+            "required": [
+              "command"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "EXAM"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          }
+        }
+      ]
     },
     "connector_call_ledger": {
       "type": "array",
       "description": "Her Maarif MCP çağrısı — çift-sorgu yasağı denetimi (canonical-cache-contract.md §6).",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
           "tool",
+          "args_summary",
           "cache"
         ],
         "properties": {
@@ -105,7 +155,9 @@
             ]
           },
           "args_summary": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
           },
           "cache": {
             "enum": [
@@ -118,23 +170,69 @@
     },
     "single_shot_enforced": {
       "type": "boolean",
-      "description": "true ⇔ hiçbir (tool, scope) çifti iki kez cache:miss değil (aynı get_subject / list_learning_outcomes tek çağrı). false → A7 düşer, G-CURRICULUM raporunda uyarı."
+      "const": true,
+      "description": "Her (tool, scope) çifti en fazla bir kez cache:miss olabilir; teslim manifestinde değer zorunlu olarak true'dur."
     },
     "canonical_artifacts": {
       "type": "object",
       "description": "Kanonik artefakt önbelleği — tek-sefer çıkarım kanıtı.",
+      "additionalProperties": false,
       "properties": {
         "subject_registry": {
-          "$ref": "#/definitions/artifact"
+          "allOf": [
+            {
+              "$ref": "#/definitions/artifact"
+            },
+            {
+              "properties": {
+                "scope_hash": {
+                  "pattern": "^subject_registry:[0-9a-f]{12}$"
+                }
+              }
+            }
+          ]
         },
         "outcomes_extract": {
-          "$ref": "#/definitions/artifact"
+          "allOf": [
+            {
+              "$ref": "#/definitions/artifact"
+            },
+            {
+              "properties": {
+                "scope_hash": {
+                  "pattern": "^outcomes_extract:[0-9a-f]{12}$"
+                }
+              }
+            }
+          ]
         },
         "framework_map": {
-          "$ref": "#/definitions/artifact"
+          "allOf": [
+            {
+              "$ref": "#/definitions/artifact"
+            },
+            {
+              "properties": {
+                "scope_hash": {
+                  "pattern": "^framework_map:[0-9a-f]{12}$"
+                }
+              }
+            }
+          ]
         },
         "figure_probe": {
-          "$ref": "#/definitions/artifact"
+          "allOf": [
+            {
+              "$ref": "#/definitions/artifact"
+            },
+            {
+              "properties": {
+                "scope_hash": {
+                  "pattern": "^figure_probe:[0-9a-f]{12}$"
+                }
+              }
+            }
+          ]
         }
       }
     },
@@ -148,11 +246,32 @@
     },
     "tier2_note": {
       "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
       "description": "Serbest metin: ör. 'tier2_degraded: 413_payload_too_large' veya 'tier2_unavailable: tool_absent'."
     },
     "quality_gates": {
       "type": "object",
-      "description": "scripts/validate_module.py 16 kapısı (koşullu G-CURRICULUM + G-VERIFY + G-FLOW + G-EXAM dahil; v3.8.0 G-VOICE: öğrenci yüzeyi nihai dil). Yayın sırasında kapılar SUNUCUDA ölçülür; bu alan yalnız yerel ön-kontrol kaydıdır ve sunucu tarafından yok sayılır.",
+      "description": "scripts/validate_module.py --json çıktısının birebir yerel doğrulama kaydı. Alan yazılırsa 16 kapının tamamı bulunmalıdır.",
+      "additionalProperties": false,
+      "required": [
+        "G-EMOJI",
+        "G-CARBON",
+        "G-A11Y",
+        "G-INTERACT",
+        "G-SELFCONTAINED",
+        "G-CONTRAST",
+        "G-SVG",
+        "G-WELLBEING",
+        "G-VOICE",
+        "G-AUDIO",
+        "G-CURRICULUM",
+        "G-VERIFY",
+        "G-TOKEN",
+        "G-FLOW",
+        "G-CARBON-GRID",
+        "G-EXAM"
+      ],
       "properties": {
         "G-EMOJI": {
           "$ref": "#/definitions/gate"
@@ -178,6 +297,9 @@
         "G-WELLBEING": {
           "$ref": "#/definitions/gate"
         },
+        "G-VOICE": {
+          "$ref": "#/definitions/gate"
+        },
         "G-AUDIO": {
           "$ref": "#/definitions/gate"
         },
@@ -195,23 +317,57 @@
         },
         "G-CARBON-GRID": {
           "$ref": "#/definitions/gate"
+        },
+        "G-EXAM": {
+          "$ref": "#/definitions/gate"
         }
       }
     },
     "deliverable_path": {
       "type": "string",
-      "description": "Üretilen tek-dosya HTML modülünün yolu."
+      "pattern": "^(?!.*[\\u0000-\\u001F])(?!/)(?![A-Za-z][A-Za-z0-9+.-]*:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//).+\\.html$",
+      "description": "Üretilen tek-dosya HTML modülünün güvenli göreli yolu; mutlak yol, URI, ters eğik çizgi ve '..' geçişi yasaktır."
     },
     "caveats": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
       }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "İstemciye özgü, çekirdek sözleşmeyi değiştirmeyen açık uzantı alanı.",
+      "additionalProperties": true
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tier2_status": {
+            "enum": [
+              "unavailable",
+              "degraded"
+            ]
+          }
+        },
+        "required": [
+          "tier2_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "tier2_note"
+        ]
+      }
+    }
+  ],
   "definitions": {
     "artifact": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "scope_hash",
         "status"
@@ -219,6 +375,7 @@
       "properties": {
         "scope_hash": {
           "type": "string",
+          "pattern": "^(?:subject_registry|outcomes_extract|framework_map|figure_probe):[0-9a-f]{12}$",
           "description": "<artifact_type>:<sha256(scope)[:12]>"
         },
         "status": {
@@ -228,12 +385,34 @@
           ]
         },
         "caveat": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "degraded"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "caveat"
+            ]
+          }
+        }
+      ]
     },
     "gate": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "status"
       ],
@@ -247,7 +426,9 @@
           ]
         },
         "detail": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         }
       }
     }

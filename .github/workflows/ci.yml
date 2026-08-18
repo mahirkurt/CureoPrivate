@@ -78,12 +78,12 @@ jobs:
           checks = [
             ('check_marketplace.py', 'plugins/edupedia/skills/start/SKILL.md',
              lambda s: s.replace('name: start', 'name: bozuk', 1), 'skill adı ≠ dizin'),
-            ('check_drift.py', 'plugins/lex-sanitas/skills/lex-sanitas/source_registry.yaml',
+            ('check_drift.py', 'plugins/cureolex/skills/cureolex/source_registry.yaml',
              lambda s: s + '\n_mut:\n  - access: { mcp_server: olmayan_sunucu }\n', 'ölü sunucu kimliği'),
             # 2026-08-07 K-4 sınıfı: tırnaksız düz skalar içinde ": " → YAML
             # frontmatter'ın TAMAMI düşer, komut keşfedilemez hâle gelir.
             # Regex tabanlı eski ayrıştırıcı bunu kaçırıyordu.
-            ('check_marketplace.py', 'plugins/lex-sanitas/commands/lex-draft.md',
+            ('check_marketplace.py', 'plugins/cureolex/commands/lex-draft.md',
              lambda s: s.replace('description: ', 'description: Mod X: bozuk ', 1),
              'geçersiz YAML frontmatter'),
           ]

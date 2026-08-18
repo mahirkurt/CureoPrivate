@@ -133,7 +133,7 @@ katmanını netleştirir (skill `references/svg-authoring.md` ile tutarlı).
 |---|---|---|---|
 | **Tier-1** | Kazanım koduna / program metnine izlenebilir olgular + **yazar-üretimli tema-duyarlı SVG** (token-renkli, WCAG 2.1 AA, `role="img"` + başlık/etiket) | **Garanti** | Varsayılan ve zorunlu yol. `validate_module.py` **G-CURRICULUM** + **G-SVG** kapılarıyla denetlenir. MCP'nin görsel çekememesi skill sözleşmesinde **başarısızlık değildir** — Tier-1 tek başına tam işlevseldir. |
 | **Tier-2a** (dayanak) | `get_figure(..., include_image=false)` → **metadata**: `caption`, `page_no`, `bbox`, `pdf_url`, kazanım-bağı | **Her zaman kullanılabilir** | Atıf/dayanak güçlendirmesi. Ayrıca `include_image=true` ile görseli **modelin GÖRMESİ** sağlanır; model o orijinale bakarak Tier-1 yazar-SVG'yi çok daha sadık çizer. |
-| **Tier-2b** (gerçek gömme) | `pdf_url` + `page_no` + `bbox` → **PDF'ten yeniden çıkarma** → base64 JPEG | **Best-effort, YALNIZ Claude Code** | `scripts/fetch_figure.py` yapar (bkz. §3.2). Model `figures` bloğu + `@@FIG:<key>@@` yer tutucusu yazar, script doldurur. Hata/erişilemezlikte yer tutucu **yerinde kalır** ve rapora düşer → Tier-1. claude.ai'de dosya sistemi/bash olmadığı için **kullanılamaz** — orada Tier-2a + Tier-1 geçerlidir. |
+| **Tier-2b** (gerçek gömme) | `pdf_url` + `page_no` + `bbox` → **PDF'ten yeniden çıkarma** → base64 JPEG | **Best-effort, yerel dosya sistemi + Python** | `scripts/fetch_figure.py` yapar (bkz. §3.2). Native yol Claude Code/Cursor'dadır; başka bir hostta ancak script açıkça yerelde çalıştırılabiliyorsa mümkündür. Model `figures` bloğu + `@@FIG:<key>@@` yer tutucusu yazar, script doldurur. Hata/erişilemezlikte yer tutucu **yerinde kalır** ve rapora düşer → Tier-1. claude.ai'de native dosya sistemi yolu olmadığı için **kullanılamaz** — orada Tier-2a + Tier-1 geçerlidir. |
 
 ### 3.1 Yetenek-probu (capability probe) — kanonik akış
 
@@ -153,7 +153,7 @@ runtime probu uygulanır (connector kaldırılabilir / kısıtlanabilir):
    üretilemeyeceği için **modelin gömmesi yapısal olarak imkânsızdır**.
    > Bu belge uzun süre "base64'ü çek ve göm" diyerek modelden imkânsız bir şey istedi. Vaat
    > 2026-07-31'de ölçülüp düzeltildi; gerçek gömme yolu §3.2'dir.
-4. **Gerçek gömme (Tier-2b, yalnız Claude Code):** metadata'daki `pdf_url` + `page_no` + `bbox`
+4. **Gerçek gömme (Tier-2b, yerel dosya sistemi + Python):** metadata'daki `pdf_url` + `page_no` + `bbox`
    figürü **birebir** yeniden çıkarmaya yeter (doğrulandı: MCP'nin gösterdiği görselin aynısı).
    `scripts/fetch_figure.py` bunu yapar (§3.2). Başarılıysa `tier2_status: embedded`, aksi
    halde `tier2_status: degraded` + Tier-1.
@@ -161,7 +161,7 @@ runtime probu uygulanır (connector kaldırılabilir / kısıtlanabilir):
 `tier2_status ∈ {unavailable, degraded, embedded}` her koşu için `run_manifest`'e yazılır
 (bkz. `shared/run-manifest-schema.json`).
 
-### 3.2 `scripts/fetch_figure.py` — Tier-2b gömme aracı (Claude Code)
+### 3.2 `scripts/fetch_figure.py` — Tier-2b yerel gömme aracı
 
 Model `MODULE_DATA`'ya motorun **görmezden geldiği** bir `figures` bloğu yazar (`curriculum` /
 `exam` bloklarıyla aynı desen) ve görselin geleceği yere `@@FIG:<key>@@` yer tutucusunu koyar:
@@ -281,7 +281,7 @@ lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİ
 | **Connector adı** | `egitim-kaynak` (`.mcp.json` iç anahtarı; claude.ai/Gemini/ChatGPT'da görünen display adı **"Eğitim Kaynakları"** = `serverInfo.name`) |
 | **Endpoint** | `https://egitim-kaynak.cureonics.com/mcp` |
 | **Transport** | `http` (streamable-HTTP MCP, stateless) |
-| **Auth** | **OAuth 2.1 + Bearer — keyed (2026-07-19).** Önceden kasıtlı anahtarsızdı (2026-07-17→2026-07-19; `titck-cache-mcp` emsali) ama **plugin-dışı Gemini/ChatGPT standalone kullanım** için anahtarlandı. Sunucuda `MCP_API_KEY` set + `MCP_ALLOW_NO_AUTH=0` (Pi env); OAuth access_token = `MCP_API_KEY`, ayrı `AUTH_HMAC_SECRET` yok (Python/FastMCP filo kuralı). Redirect allowlist claude.ai/claude.com/grok/chatgpt + `oauth-redirect.googleusercontent.com` (Gemini); ChatGPT RFC 9728 (401 `resource_metadata` + PRM path-insertion) kodda hazır. **Plugin bağlanışı:** `.mcp.json` `Authorization: Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` (Doppler `cureohub/dev_personal`); claude.ai/Gemini/ChatGPT'da OAuth akışıyla anahtar formuna girilir. Anahtar çözülmezse connector 401 (SessionStart preflight hook her iki bearer-anahtarını da kontrol edip uyarır). Geri alma: sunucu env'de `MCP_API_KEY` boşalt + `MCP_ALLOW_NO_AUTH=1` + restart → public mod. |
+| **Auth** | **OAuth 2.1 + Bearer — keyed (2026-07-19).** Statik bağlantıda `.mcp.json`, `Authorization: Bearer ${EGITIM_KAYNAK_MCP_API_KEY}` kullanır (Doppler `cureohub/dev_personal`); anahtar çözülmezse connector 401 ve SessionStart preflight uyarır. OAuth connector akışında kullanıcı yetkilendirme formuna anahtarı girer; authorization code ve access token **opaque** değerlerdir, `MCP_API_KEY`/statik Bearer anahtarının kendisi değildir. Redirect/CORS/PRM desteği ilgili hostun OAuth connector akışına hizmet eder. Connector public-by-default değildir. |
 | **Node** | Pi :8312 (systemd `egitim-kaynak-mcp`); CureoHub `mcp-servers/egitim-kaynak-mcp/`. |
 | **Faz** | **Faz 1 (canlı 2026-07-17):** BM25/FTS5 (Türkçe İ/I, ı/i ve diakritik harf katlamalı arama) **+ vektör yedeği** (`@cf/baai/bge-m3`, Cloudflare Workers AI; korpus kapsaması 1.0). Kaynaklar: **124 doğrulanmış müfredat kategorisi** (tüm fen, matematik, sosyal/tarih, coğrafya, Türkçe/edebiyat, felsefe, astronomi, bilişim dalları) + **PhET** (175 Türkçe simülasyon, CC BY-NC 4.0). **Faz 2 (kazanım hizalaması) bilinçli olarak KAPALI** → `kb_for_outcome` dürüstçe `alignment_not_built` döner. Canlı sayımlar: >6.380 belge / >33.045 chunk / 2 kaynak (`kb_server_info` ile doğrula — bu tablo değil, sunucu otoritedir). |
 | **Getirme** | **BM25 önce, vektör YEDEK — RRF füzyonu YOK** (2026-07-17'de kaldırıldı: ölçüm hibridi 3/8, saf BM25'i 6/8 verdi; RRF *uzlaşmayı* ödüllendirdiği için gürültülü vektör tarafı doğru cevabı boğuyordu). Vektör yalnız BM25 metin kanıtı bulamayınca konuşur. **`retrieval` adını iki AYRI alan taşır:** `kb_server_info`'daki *sunucu modudur* (`bm25+vector-fallback` / `fts5-bm25`); `kb_search` sonucundaki *o sorguda izlenen yoldur* (`fts5-bm25` / `vector-fallback`). Karıştırmayın. |

@@ -1,5 +1,14 @@
 # tests/test_gates.py
-import sys, os, re
+import base64
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 import validate_module as vm
 
@@ -166,9 +175,11 @@ def test_adaptive_difficulty_gwellbeing_pass():
     assert status_of(rows, "G-WELLBEING") == "PASS"
 
 def test_engine_has_perf_window_and_tier_helpers():
-    # state.perf yuvarlanan pencere + tier/uyarlama yardımcı fonksiyonları motor kaynağında var.
+    # state.perf oturumluk depodan güvenle geri yüklenen yuvarlanan pencere +
+    # tier/uyarlama yardımcı fonksiyonları motor kaynağında var.
     src = open("assets/module-template.html", encoding="utf-8").read()
-    assert "perf:[]" in src.replace(" ", "")
+    assert "perf:savedSession.perf" in src.replace(" ", "")
+    assert 'perf:Array.isArray(obj.perf)?obj.perf.filter(x=>typeofx==="boolean").slice(-5):[]' in src.replace(" ", "")
     for fn in ("function itemTier(", "function perfPush(", "function perfTrailingRun(",
                "function perfMissSignal(", "function perfChallengeSignal(",
                "function tierAdaptSwap(", "function hasTierAhead("):
@@ -739,6 +750,7 @@ def test_numberline_w_padx_share_one_constant_source():
 # Kapı DOĞRULUĞU kanıtlamaz; bunu iddia eden bir test yazmak kapıya fazla güven yükler.
 
 _VERIF_OK = '''
+  meta: { sourceCitation: "MEB Fen Bilimleri 5, s. 115" },
   mode: "CURRICULUM",
   curriculum: { outcomes: [{ code: "FB.5.3.1.1", text: "...", mappedTo: ["s1"] }] },
   verification: {
@@ -756,14 +768,27 @@ def _mod(body):
 
 
 def test_gverify_skips_for_non_curriculum_module():
-    rows = run_gate(vm.gate_verify, _mod('mode: "FREEFORM", segments: [{id:"s1"}]'))
+    rows = run_gate(
+        vm.gate_verify,
+        _mod(
+            'meta: { sourceCitation: "Kullanıcının sağladığı ders notu" }, '
+            'mode: "FREEFORM", segments: [{id:"s1"}]'
+        ),
+    )
     assert status_of(rows, "G-VERIFY") in (None, "PASS")
 
 
 def test_gverify_fails_when_verification_block_missing():
     """CURRICULUM modunda denetim kaydı yoksa yayınlanamaz."""
-    rows = run_gate(vm.gate_verify, _mod('mode: "CURRICULUM", curriculum: { outcomes: [] },'))
+    rows = run_gate(
+        vm.gate_verify,
+        _mod(
+            'meta: { sourceCitation: "MEB Fen Bilimleri 5" }, '
+            'mode: "CURRICULUM", curriculum: { outcomes: [] },'
+        ),
+    )
     assert status_of(rows, "G-VERIFY") == "FAIL"
+    assert "verification" in next(message for gate, _, message in rows if gate == "G-VERIFY")
 
 
 def test_gverify_passes_on_wellformed_block():
@@ -820,6 +845,7 @@ def test_gverify_fails_when_frame_source_has_no_document():
 # supported_by_source → azınlık WARN / çoğunluk FAIL (omurga `supported` olmalı).
 
 _VERIF_PROGRAM = '''
+  meta: { sourceCitation: "MEB Biyoloji 11 öğretim programı + PhET Fotosentez" },
   mode: "CURRICULUM",
   curriculum: { outcomes: [{ code: "BIY.11.1.3", text: "...", mappedTo: ["s1"] }] },
   verification: {
@@ -863,6 +889,7 @@ def test_gverify_fails_supported_by_source_majority_under_textbook_frame():
 def test_gverify_warns_supported_by_source_minority_under_textbook_frame():
     """Ders kitabi cercevesinde azinlik supported_by_source → WARN (bloklamaz, isaretler)."""
     body = '''
+  meta: { sourceCitation: "MEB Fen Bilimleri 5, s. 115 + PhET" },
   mode: "CURRICULUM",
   curriculum: { outcomes: [{ code: "FB.5.3.1.1", text: "...", mappedTo: ["s1"] }] },
   verification: {
@@ -1245,3 +1272,677 @@ def test_gvoice_allows_phet_attribution():
     html = _mod('segments: [{ type: "teach", id: "t1", body: ["<p>Simülasyon: PhET Fotosentez (CC BY-NC 4.0, Colorado Üniversitesi).</p>"] }]')
     rows = run_gate(vm.gate_voice, html)
     assert status_of(rows, "G-VOICE") == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# G-SELFCONTAINED — yalnız inline/data runtime kaynakları
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans">',
+        '<style>@import "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans";</style>',
+        '<style>@font-face{src:url("https://fonts.gstatic.com/plex.woff2") format("woff2")}</style>',
+        '<img src="https://example.org/diagram.png" alt="">',
+        '<img src="data:image/png;base64,AA==" srcset="https://example.org/diagram@2x.png 2x" alt="">',
+        '<script src="https://example.org/app.js"></script>',
+        '<img src="//cdn.example.org/diagram.png" alt="">',
+        '<img src="./assets/diagram.png" alt="">',
+        '<svg><image href="https://example.org/diagram.svg"></image></svg>',
+        '<object data="/assets/activity.svg"></object>',
+        '<input type="image" src="icons/submit.png" alt="Gönder">',
+    ],
+)
+def test_gselfcontained_rejects_runtime_dependencies(html):
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<iframe src="https://example.org/embed"></iframe>',
+        '<iframe srcdoc="<p>inline ama desteklenmeyen alt belge</p>"></iframe>',
+        '<link rel="preload" as="image" imagesrcset="https://example.org/a.png 1x">',
+        '<form action="https://example.org/submit"></form>',
+        '<button form="f" formaction="/submit">Gönder</button>',
+        '<base href="https://example.org/assets/">',
+        '<meta http-equiv="refresh" content="0; url=https://example.org/next">',
+        '<html manifest="/offline.appcache"></html>',
+        '<body background="images/paper.png"></body>',
+        '<a href="#ok" ping="https://example.org/audit">Git</a>',
+    ],
+)
+def test_gselfcontained_rejects_expanded_html_dependency_matrix(html):
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    "attr",
+    [
+        'fill="url(https://example.org/fill.svg#paint)"',
+        'stroke="url(//example.org/stroke.svg#paint)"',
+        'filter="url(./filters.svg#blur)"',
+        'clip-path="url(/clips.svg#clip)"',
+        'mask="url(https://example.org/masks.svg#m)"',
+        'marker-start="url(https://example.org/markers.svg#start)"',
+        'marker-mid="url(https://example.org/markers.svg#mid)"',
+        'marker-end="url(https://example.org/markers.svg#end)"',
+    ],
+)
+def test_gselfcontained_rejects_external_svg_paint_server_urls(attr):
+    rows = run_gate(vm.gate_selfcontained, f"<svg><path {attr}/></svg>")
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+def test_gselfcontained_allows_internal_svg_paint_server_fragments():
+    html = """
+    <svg>
+      <defs>
+        <linearGradient id="paint"><stop offset="0"/></linearGradient>
+        <filter id="blur"><feGaussianBlur stdDeviation="1"/></filter>
+      </defs>
+      <path fill="url(#paint)" filter="url(#blur)" marker-end="url(#arrow)"/>
+    </svg>
+    """
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "PASS"
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<style>.hero{background-image:image-set("https://example.org/a.png" 1x)}</style>',
+        '<style>.hero{background-image:-webkit-image-set("./a.png" 1x)}</style>',
+        '<div style="background-image:image-set(\'//example.org/a.png\' 1x)"></div>',
+    ],
+)
+def test_gselfcontained_rejects_css_image_set_dependencies(html):
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    "script",
+    [
+        'fetch("https://example.org/data.json")',
+        'const xhr = new XMLHttpRequest(); xhr.open("GET", "/data.json")',
+        'new WebSocket("wss://example.org/socket")',
+        'new EventSource("/events")',
+        'navigator.sendBeacon("/audit", "done")',
+        'new Worker("./worker.js")',
+        'new SharedWorker("./shared-worker.js")',
+        'import("./lesson.js")',
+        'const img = document.createElement("img"); img.src = "/image.png"',
+        'node.href = "https://example.org/theme.css"',
+        'node.setAttribute("src", "./runtime.js")',
+        'node.setAttribute("href", "//example.org/runtime.css")',
+        'node.setAttribute("aria-label", fetch("/runtime.json"))',
+        'const message = `${fetch("/runtime.json")}`',
+        'globalThis["fetch"]("/runtime.json")',
+        'fetch?.("/runtime.json")',
+    ],
+)
+def test_gselfcontained_rejects_inline_js_runtime_loaders(script):
+    rows = run_gate(vm.gate_selfcontained, f"<script>{script};</script>")
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    "module_code",
+    [
+        'import "./lesson.js";',
+        'import lesson from "https://example.org/lesson.js";',
+        'import { lesson as current } from "./lesson.js";',
+        'import "lesson-package";',
+        'export { lesson } from "./lesson.js";',
+        'export * from "lesson-package";',
+        'export * as lesson from "//example.org/lesson.js";',
+    ],
+)
+def test_gselfcontained_rejects_static_esm_dependencies(module_code):
+    rows = run_gate(vm.gate_selfcontained, f'<script type="module">{module_code}</script>')
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+def test_gselfcontained_rejects_event_handler_runtime_loader():
+    rows = run_gate(
+        vm.gate_selfcontained,
+        '<button onclick="fetch(\'/answer.json\')">Yanıt</button>',
+    )
+    assert status_of(rows, "G-SELFCONTAINED") == "FAIL"
+
+
+def test_gselfcontained_allows_data_font_and_image():
+    html = """
+    <style>
+      @font-face {
+        font-family: "Inline Plex";
+        src: url(data:font/woff2;base64,d09GMgABAAAA) format("woff2");
+      }
+    </style>
+    <img src="data:image/svg+xml;base64,PHN2Zy8+" alt="Gömülü şekil">
+    """
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "PASS"
+
+
+def test_gselfcontained_allows_external_navigation_and_non_resource_links():
+    html = """
+    <a href="https://example.org/reference">Kaynak sayfası</a>
+    <a href="mailto:teacher@example.org">E-posta</a>
+    <a href="tel:+901234567890">Telefon</a>
+    <a href="#ozet">Özete git</a>
+    """
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "PASS"
+
+
+def test_gselfcontained_ignores_comments_and_prose_examples():
+    html = """
+    <!-- Örnek, gerçek kaynak değil: <img src="https://example.org/comment.png"> -->
+    <style>/* url("https://example.org/comment.woff2") yalnız açıklama */</style>
+    <p>Dokümantasyonda src="images/example.png" yazımı anlatılıyor.</p>
+    """
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "PASS"
+
+
+def test_gselfcontained_ignores_javascript_comments_and_string_prose():
+    html = """
+    <script>
+      // fetch("https://example.org/not-a-call")
+      // import "./not-a-module.js"; export * from "./not-a-reexport.js";
+      /* new Worker("./not-a-worker.js"); node.src = "/not-an-assignment"; */
+      const prose = "XMLHttpRequest WebSocket EventSource sendBeacon import('./not.js')";
+      const example = "node.setAttribute('src', './not-runtime.js')";
+      const moduleExample = "import x from './not-a-module.js'; export * from './not.js';";
+    </script>
+    """
+    rows = run_gate(vm.gate_selfcontained, html)
+    assert status_of(rows, "G-SELFCONTAINED") == "PASS"
+
+
+def test_gselfcontained_pass_message_does_not_accept_cdn():
+    rows = run_gate(
+        vm.gate_selfcontained,
+        '<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="">',
+    )
+    assert status_of(rows, "G-SELFCONTAINED") == "PASS"
+    message = next(message for gate, _, message in rows if gate == "G-SELFCONTAINED")
+    assert "cdn" not in message.casefold()
+
+
+# ---------------------------------------------------------------------------
+# G-VERIFY — kaynak künyesi + JS-ish dengeli provenans ayrıştırması
+# ---------------------------------------------------------------------------
+
+_ALL_MODES = (
+    "MODULE",
+    "QUIZ",
+    "FLASHCARDS",
+    "GAME",
+    "EXPLAINER",
+    "ASSESSMENT",
+    "SERIES",
+    "CURRICULUM",
+    "EXAM",
+)
+
+
+@pytest.mark.parametrize("mode", _ALL_MODES)
+def test_gverify_rejects_missing_source_citation_in_every_mode(mode):
+    html = _mod(f'meta: {{ mode: "{mode}" }}, segments: []')
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+    assert "sourceCitation" in next(message for gate, _, message in rows if gate == "G-VERIFY")
+
+
+@pytest.mark.parametrize(
+    "citation",
+    [
+        "",
+        "   ",
+        "ÖRNEK",
+        "todo: kaynak",
+        "buraya yaz",
+        "REPLACE_ME",
+        "Placeholder",
+        "TBD",
+        "unknown",
+        "N/A",
+        "N-A",
+        "örnek kaynak",
+        "örnek metin",
+        "örnek citation",
+    ],
+)
+def test_gverify_rejects_empty_or_placeholder_source_citation(citation):
+    html = _mod(
+        f'meta: {{ mode: "MODULE", sourceCitation: "{citation}" }}, segments: []'
+    )
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+@pytest.mark.parametrize("raw", ["false", "null"])
+def test_gverify_rejects_nonstring_source_citation(raw):
+    html = _mod(f'meta: {{ mode: "MODULE", sourceCitation: {raw} }}, segments: []')
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_allows_legitimate_ornek_source_title():
+    html = _mod(
+        'meta: { mode: "MODULE", sourceCitation: "MEB Örnek Sorular 2025" }, segments: []'
+    )
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") != "FAIL"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        'meta: { mode: "MODULE", sourceCitation: `MEB ${edition} Fen 5` }, segments: []',
+        _VERIF_OK.replace('pages: "112-120"', 'locator: `Sayfa ${page}`'),
+        _VERIF_OK.replace("page: 115", 'locator: `Sayfa ${page}`'),
+    ],
+)
+def test_gverify_rejects_interpolated_template_provenance(body):
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_allows_interpolation_free_backtick_provenance():
+    body = _VERIF_OK.replace(
+        'sourceCitation: "MEB Fen Bilimleri 5, s. 115"',
+        "sourceCitation: `MEB Örnek Sorular 2025, sayfa 115`",
+    ).replace('pages: "112-120"', "locator: `Sayfa 112-120`").replace(
+        "page: 115", "locator: `Sayfa 115, paragraf 2`"
+    )
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "PASS"
+
+
+def test_gverify_fails_on_empty_verification_object():
+    html = _mod(
+        'meta: { sourceCitation: "MEB Fen Bilimleri 5" }, '
+        'mode: "CURRICULUM", curriculum: { outcomes: [] }, verification: {}'
+    )
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_on_whitespace_claim():
+    html = _mod(_VERIF_OK.replace('"Hucre zari secici gecirgendir"', '"   "'))
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_on_empty_grounding_object():
+    html = _mod(
+        _VERIF_OK.replace("grounding: { document_id: 197, page: 115 }", "grounding: {}")
+    )
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_on_unknown_verdict():
+    html = _mod(_VERIF_OK.replace('verdict: "supported"', 'verdict: "looks_right"'))
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_on_unknown_frame_source_kind():
+    html = _mod(_VERIF_OK.replace('kind: "textbook"', 'kind: "memory"'))
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_fails_when_supported_claim_has_no_locator():
+    html = _mod(
+        _VERIF_OK.replace(
+            "grounding: { document_id: 197, page: 115 }",
+            "grounding: { document_id: 197 }",
+        )
+    )
+    rows = run_gate(vm.gate_verify, html)
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("document_id: 197, pages: \"112-120\"", "document_id: false, pages: \"112-120\""),
+        ("document_id: 197, pages: \"112-120\"", "document_id: null, pages: \"112-120\""),
+        ("document_id: 197, pages: \"112-120\"", "document_id: 197, locator: \"unknown\""),
+        ("document_id: 197, page: 115", "document_id: false, page: 115"),
+        ("document_id: 197, page: 115", "document_id: 197, page: false"),
+        ("document_id: 197, page: 115", "document_id: 197, page: 0"),
+        ("document_id: 197, page: 115", "document_id: 197, locator: \"N/A\""),
+    ],
+)
+def test_gverify_rejects_invalid_document_identity_or_locator_types(old, new):
+    rows = run_gate(vm.gate_verify, _mod(_VERIF_OK.replace(old, new)))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ('source: "PhET Fotosentez"', "source: false"),
+        ('source: "PhET Fotosentez"', 'source: "unknown"'),
+        ('license: "CC BY-NC 4.0"', "license: null"),
+        ('license: "CC BY-NC 4.0"', 'license: "TBD"'),
+        ('license: "CC BY-NC 4.0"', 'license: "CC BY-NC 4.0", provenance: "unknown"'),
+        ('url: "https://phet.colorado.edu/x"', 'locator: "N-A"'),
+    ],
+)
+def test_gverify_rejects_invalid_source_identity_license_or_locator(old, new):
+    rows = run_gate(vm.gate_verify, _mod(_VERIF_PROGRAM.replace(old, new)))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_accepts_positive_integer_and_precise_string_provenance():
+    body = _VERIF_OK.replace(
+        'frame_source: { kind: "textbook", document_id: 197, pages: "112-120" }',
+        'frame_source: { kind: "textbook", document_id: "MEB-FEN-5", '
+        'locator: "Bölüm 3, sayfa 112-120" }',
+    ).replace(
+        "grounding: { document_id: 197, page: 115 }",
+        'grounding: { document_id: 197, locator: "Sayfa 115, paragraf 2" }',
+    )
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "PASS"
+
+
+def test_gverify_accepts_supported_and_reasoned_unverified_claims():
+    body = _VERIF_OK.replace(
+        """{ claim: "Hucre zari secici gecirgendir",
+        grounding: { document_id: 197, page: 115 }, verdict: "supported" }""",
+        """{ claim: "Hucre zari secici gecirgendir",
+        grounding: { document_id: 197, page: 115 }, verdict: "supported" },
+      { claim: "Ek örneğin kaynağı doğrulanamadı",
+        grounding: { reason: "İlgili kaynak sayfasına erişilemedi" },
+        verdict: "unverified" }""",
+    )
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "WARN"
+
+
+def test_gverify_fails_on_placeholder_unverified_reason():
+    body = _VERIF_OK.replace(
+        """grounding: { document_id: 197, page: 115 }, verdict: "supported" }""",
+        """grounding: { reason: "unknown" }, verdict: "unverified" }""",
+    )
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+def test_gverify_unsupported_verdict_is_fail():
+    body = _VERIF_OK.replace(
+        """grounding: { document_id: 197, page: 115 }, verdict: "supported" }""",
+        """grounding: { reason: "Kaynak iddiayı çürütüyor" }, verdict: "unsupported" }""",
+    )
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "FAIL"
+
+
+@pytest.mark.parametrize(
+    ("verdict", "expected_status", "expected_exit"),
+    [
+        ("unsupported", "FAIL", 1),
+        ("unverified", "WARN", 0),
+    ],
+)
+def test_gverify_cli_exit_matches_verdict_policy(tmp_path, verdict, expected_status, expected_exit):
+    skill_root = Path(__file__).parents[1]
+    html = (skill_root / "assets" / "module-template.html").read_text(encoding="utf-8")
+    html = html.replace('subject:"Fen Bilimleri", gradeLevel:"5. Sınıf", mode:"MODULE",',
+                        'subject:"Fen Bilimleri", gradeLevel:"5. Sınıf", mode:"CURRICULUM",')
+    verification = f'''
+  curriculum:{{outcomes:[{{code:"FB.5.3.1.1",text:"Hücreyi açıklar",mappedTo:["t1"]}}]}},
+  verification:{{
+    frame_source:{{kind:"textbook",document_id:197,page:115}},
+    scope:{{in_frame:true}},
+    claims:[{{claim:"İddia",grounding:{{reason:"Kaynak doğrulaması tamamlanamadı"}},
+             verdict:"{verdict}"}}]
+  }},
+'''
+    html = html.replace("  learner:{", verification + "  learner:{", 1)
+    module_path = tmp_path / f"{verdict}.html"
+    module_path.write_text(html, encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_module.py", "--json", str(module_path)],
+        cwd=skill_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    payload = json.loads(result.stdout)
+    assert payload["G-VERIFY"]["status"] == expected_status
+    assert result.returncode == expected_exit, result.stdout
+
+
+def test_gverify_balanced_extractor_ignores_strings_and_comments():
+    body = _VERIF_OK.replace(
+        'claim: "Hucre zari secici gecirgendir",',
+        '''claim: "Metindeki } ve claim: sahte metin ayrıştırmayı bozmamalı",
+        /* } ], claim: "yorum içi sahte iddia" */''',
+    )
+    rows = run_gate(vm.gate_verify, _mod(body))
+    assert status_of(rows, "G-VERIFY") == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# Runtime hardening — çevrimdışı IBM Plex, depolama, odak ve zamanlayıcılar
+# ---------------------------------------------------------------------------
+
+SKILL_ROOT = Path(__file__).parents[1]
+TEMPLATE_PATH = SKILL_ROOT / "assets" / "module-template.html"
+FONT_MANIFEST_PATH = SKILL_ROOT / "assets" / "fonts-manifest.json"
+FONT_LICENSE_PATH = SKILL_ROOT / "assets" / "ibm-plex-OFL.txt"
+FONT_HELPER_PATH = SKILL_ROOT / "scripts" / "embed_ibm_plex_fonts.py"
+
+
+def _template_source():
+    return TEMPLATE_PATH.read_text(encoding="utf-8")
+
+
+def _carbon_shell(font_css):
+    return f"""
+    <style>
+      {font_css}
+      :root {{
+        --cds-text-primary:#161616; --cds-background:#ffffff;
+        --cds-interactive:#0f62fe; --cds-support-success:#24a148;
+        --cds-support-error:#da1e28;
+        --font-sans:'IBM Plex Sans',sans-serif;
+        --font-serif:'IBM Plex Serif',serif;
+        --font-mono:'IBM Plex Mono',monospace;
+      }}
+      body {{ color:var(--cds-text-primary); font-family:var(--font-sans); }}
+    </style>
+    """
+
+
+def _dummy_inline_face(family):
+    return (
+        "@font-face{"
+        f"font-family:'{family}';font-style:normal;font-weight:400;"
+        'src:url("data:font/woff2;base64,d09GMgABAAAA") format("woff2");'
+        "}"
+    )
+
+
+def test_gcarbon_rejects_family_names_without_embedded_font_faces():
+    rows = run_gate(vm.gate_carbon, _carbon_shell(""))
+    assert status_of(rows, "G-CARBON") == "FAIL"
+    assert "@font-face" in next(message for gate, _, message in rows if gate == "G-CARBON")
+
+
+def test_gcarbon_accepts_inline_registered_plex_families():
+    css = "".join(
+        _dummy_inline_face(family)
+        for family in ("IBM Plex Sans", "IBM Plex Serif", "IBM Plex Mono")
+    )
+    rows = run_gate(vm.gate_carbon, _carbon_shell(css))
+    assert status_of(rows, "G-CARBON") == "PASS"
+
+
+def test_gcarbon_rejects_remote_only_plex_faces():
+    css = "".join(
+        "@font-face{"
+        f"font-family:'{family}';font-style:normal;font-weight:400;"
+        f'src:url("https://fonts.example/{family.replace(" ", "-")}.woff2") format("woff2");'
+        "}"
+        for family in ("IBM Plex Sans", "IBM Plex Serif", "IBM Plex Mono")
+    )
+    rows = run_gate(vm.gate_carbon, _carbon_shell(css))
+    assert status_of(rows, "G-CARBON") == "FAIL"
+
+
+def test_template_font_manifest_matches_every_embedded_blob():
+    assert FONT_MANIFEST_PATH.exists(), "assets/fonts-manifest.json henüz üretilmedi"
+    assert FONT_LICENSE_PATH.exists(), "IBM Plex OFL lisans metni eksik"
+
+    source = _template_source()
+    manifest = json.loads(FONT_MANIFEST_PATH.read_text(encoding="utf-8"))
+    blocks = re.findall(
+        r"/\*\s*font-id:\s*([a-z0-9-]+)\s*\*/\s*@font-face\s*\{(.*?)\}",
+        source,
+        flags=re.S | re.I,
+    )
+    assert blocks, "Şablonda kimlikli inline @font-face bloğu yok"
+
+    embedded = {}
+    for font_id, body in blocks:
+        match = re.search(
+            r'url\(["\']data:font/woff2;base64,([A-Za-z0-9+/=]+)["\']\)',
+            body,
+        )
+        assert match, f"{font_id}: data:font/woff2 blobu yok"
+        blob = base64.b64decode(match.group(1), validate=True)
+        assert blob[:4] == b"wOF2", f"{font_id}: WOFF2 magic geçersiz"
+        embedded[font_id] = blob
+
+    entries = manifest["fonts"]
+    assert {entry["id"] for entry in entries} == set(embedded)
+    assert len(entries) == len(embedded) == 20
+    for entry in entries:
+        blob = embedded[entry["id"]]
+        assert entry["bytes"] == len(blob)
+        assert entry["sha256"] == hashlib.sha256(blob).hexdigest()
+
+    expected_faces = {
+        ("IBM Plex Sans", "normal", 400),
+        ("IBM Plex Sans", "normal", 500),
+        ("IBM Plex Sans", "normal", 600),
+        ("IBM Plex Sans", "normal", 700),
+        ("IBM Plex Serif", "normal", 400),
+        ("IBM Plex Serif", "normal", 600),
+        ("IBM Plex Serif", "italic", 400),
+        ("IBM Plex Mono", "normal", 400),
+        ("IBM Plex Mono", "normal", 600),
+        ("IBM Plex Mono", "normal", 700),
+    }
+    assert {
+        (entry["family"], entry["style"], entry["weight"]) for entry in entries
+    } == expected_faces
+    assert {entry["subset"] for entry in entries} == {"Latin1", "Latin2"}
+    assert manifest["source"]["package"] == "@ibm/plex"
+    assert manifest["source"]["version"] == "6.4.1"
+    assert "fonts-manifest.json" in source and "ibm-plex-OFL.txt" in source
+    license_text = FONT_LICENSE_PATH.read_text(encoding="utf-8")
+    assert "SIL OPEN FONT LICENSE Version 1.1" in license_text
+    assert "Reserved Font Name \"Plex\"" in license_text
+
+
+def test_font_embed_helper_check_mode_is_deterministic():
+    assert FONT_HELPER_PATH.exists(), "font gömme yardımcısı henüz yok"
+    result = subprocess.run(
+        [sys.executable, str(FONT_HELPER_PATH), "--check"],
+        cwd=SKILL_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_runtime_persistence_uses_local_allowlist_and_session_state():
+    source = _template_source()
+    assert "sessionStorage" in source
+    assert "THEME_STORE_KEY" in source
+    assert "LEITNER_STORE_KEY" in source
+    assert "SESSION_STORE_KEY" in source
+    assert "function persistSession(" in source
+    assert "ssGet(SESSION_STORE_KEY)" in source
+    assert "answers:Array.from(state.awarded)" in source.replace(" ", "")
+    assert "lsSet(THEME_STORE_KEY" in source
+    assert "lsSet(LEITNER_STORE_KEY" in source
+    assert "lsSet(SESSION_STORE_KEY" not in source
+
+    local_calls = re.findall(r"(?<!function )lsSet\(\s*([A-Z_]+)", source)
+    assert set(local_calls) == {"THEME_STORE_KEY", "LEITNER_STORE_KEY"}
+    local_reads = re.findall(r"(?<!function )lsGet\(\s*([A-Z_]+)", source)
+    assert set(local_reads) == {"THEME_STORE_KEY", "LEITNER_STORE_KEY"}
+    session_calls = re.findall(r"(?<!function )ssSet\(\s*([A-Z_]+)", source)
+    session_reads = re.findall(r"(?<!function )ssGet\(\s*([A-Z_]+)", source)
+    assert set(session_calls) == {"SESSION_STORE_KEY"}
+    assert set(session_reads) == {"SESSION_STORE_KEY"}
+    assert source.count("localStorage.getItem(") == 1
+    assert source.count("localStorage.setItem(") == 1
+    assert re.search(r"try\s*\{[^{}]*localStorage\.getItem", source)
+    assert re.search(r"try\s*\{[^{}]*sessionStorage\.getItem", source)
+
+
+def test_leitner_storage_key_prefers_explicit_meta_id():
+    source = _template_source()
+    assert re.search(r"D\.meta\s*&&\s*D\.meta\.id", source)
+    assert "MODULE_STORE_ID" in source
+    assert re.search(
+        r'LEITNER_STORE_KEY\s*=\s*"edupedia:"\s*\+\s*MODULE_STORE_ID\s*\+\s*":leitner"',
+        source,
+    )
+
+
+def test_runtime_timers_are_symmetric_and_lifecycle_cleaned():
+    source = _template_source()
+    assert source.count("setInterval(") == source.count("clearInterval(")
+    assert source.count("setTimeout(") == source.count("clearTimeout(")
+    assert "function clearSectionTimers(" in source
+    assert "function teardownRuntime(" in source
+    assert 'addEventListener("pagehide", teardownRuntime' in source
+    assert re.search(r"function render\(\)\s*\{\s*clearSectionTimers\(\)", source)
+    assert "sectionInterval(" in source
+
+
+def test_runtime_focus_handoff_and_retry_contract_is_explicit():
+    source = _template_source()
+    assert 'data-stage-heading="true"' in source
+    assert "function focusStageHeading(" in source
+    assert re.search(r"\(fn\|\|renderTeach\)\(stage,s\);\s*focusStageHeading\(stage\)", source)
+    assert "focusFirstUsableOption(stage)" in source
+    assert "focusActionButton(" in source
+
+
+def test_objectives_have_visible_intro_and_summary_paths():
+    source = _template_source()
+    assert "function objectivesBlock(" in source
+    assert "function mountObjectives(" in source
+    assert re.search(r"state\.idx===0[^;]+mountObjectives\(stage\)", source)
+    summary_start = source.index("function renderSummary(stage)")
+    summary_end = source.index("\n  /* ---- flashcards", summary_start)
+    assert "objectivesBlock(" in source[summary_start:summary_end]
+
+
+def test_template_limits_live_regions_to_essential_feedback():
+    source = _template_source()
+    assert source.count('aria-live="polite"') <= 10
+    stage_tag = re.search(r'<main class="stage"[^>]*>', source).group(0)
+    assert "aria-live" not in stage_tag
+    assert 'id="wellbeing" role="status" aria-live="polite"' in source

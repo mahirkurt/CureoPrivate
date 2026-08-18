@@ -24,7 +24,7 @@ Koşu başına bir kez çekilir, içerik-adresli anahtarla önbelleğe alınır:
 | **`subject_registry`** | `list_subjects` + `get_subject(slug)` | Kazanım çekme, program metni, figür arama | 2 çağrı (ilk keşif) |
 | **`outcomes_extract`** | `list_learning_outcomes(distinct_codes:true)` / `search_learning_outcomes` | Segment kurgusu, beceri haritalama, `curriculum` bloğu, G-CURRICULUM | 1 çağrı (hedef kazanım kümesi) |
 | **`framework_map`** | `get_framework("beceriler/kavramsal-beceriler")` | KB2.x → etkileşim deseni haritalama (skill §4) | 1 çağrı (yalnız resmî beceri modülde gösterilecekse) |
-| **`figure_probe`** *(opsiyonel, Tier-2)* | `search_figures` + `get_figure(include_image=false→true)` | Görsel dayanağı / gömme (CONNECTORS.md §3) | 1–2 çağrı, yalnız yetenek-probu ile |
+| **`figure_probe`** *(opsiyonel, Tier-2)* | `search_figures` + `get_figure(include_image=false→true)` | Tier-2a metadata/ImageContent gözlemi; Tier-2b için yerel script girdisi (CONNECTORS.md §3) | 1–2 çağrı, yalnız yetenek-probu ile |
 
 Her artefakt koşumun run-manifest dosyasının `canonical_artifacts{}` bloğuna kaydedilir ve
 içerik-adresli anahtarla işaretlenir. **Dosya adı sözleşmesi (normatif, tek tanım yeri):** run
@@ -67,8 +67,9 @@ kapsam (farklı ders/sınıf/konu) farklı hash → yeni çıkarım (meşru).
 - Oturumda **birden çok modül** üretiliyorsa ders slug'ı ve sınıf listesi değişmez → aynı
   `subject_registry` yeniden kullanılır (koşu-içi; koşular arası paylaşım yapılmaz, §5).
 
-**İhlal = bağlam/token israfı.** İkinci özdeş çağrı `connector_call_ledger`'da yakalanır ve
-`single_shot_enforced: false` bayrağı düşer.
+**İhlal = bağlam/token israfı ve geçersiz manifest.** İkinci özdeş çağrı
+`connector_call_ledger`'da yakalanır; teslim manifesti zorunlu
+`single_shot_enforced:true` değişmezini sağlayamaz ve şema kapısından geçmez.
 
 ---
 
@@ -85,11 +86,16 @@ probe:
        search_figures(query, subject[, grade istemci-tarafı filtre]) -> aday figure_id('ler)
        get_figure(figure_id, include_image=false) -> Tier-1 zenginleştirme
          (title, page_no, caption, pdf_url, kazanım-bağı). figure_probe artefaktına yaz.
-  3. opportunistic-true (gömme):
+  3. opportunistic-true (görsel doğrulama):
        get_figure(figure_id, include_image=true) DENE:
-         başarı -> base64 göm; tier2_status = "embedded"; sourceCitation'a pdf_url+page ekle.
-         hata/413/timeout/boş -> tier2_status = "degraded"; log "tier2_degraded: <sınıf>";
-                                  SESSİZCE Tier-1'de kal (modül BLOKE OLMAZ).
+         başarı -> MCP ImageContent model tarafından görülür; ham base64 metin olarak DÖNMEZ.
+         hata/413/timeout/boş -> görsel doğrulama yok; Tier-1'de kal.
+  4. gerçek gömme (programatik):
+       scripts/fetch_figure.py metadata'daki pdf_url + page_no + bbox ile PDF'den kırpar,
+       JPEG'i data: URI olarak HTML'e gömer.
+         başarı -> tier2_status = "embedded"; sourceCitation'a pdf_url+page ekle.
+         hata -> tier2_status = "degraded"; tier2_note yaz; SESSİZCE Tier-1'de kal
+                 (modül BLOKE OLMAZ).
 ```
 
 `tier2_status ∈ {unavailable, degraded, embedded}` → `run_manifest.tier2_status`.
@@ -129,20 +135,18 @@ Her Maarif MCP çağrısı (araç, argüman-özeti, önbellek isabet/iska) `run_
 ```
 
 `single_shot_enforced = true` ⇔ hiçbir `(tool, scope)` çifti `cache:"miss"` olarak **iki kez**
-görünmez (ikinci özdeş çağrı `cache:"hit"` olmalı). `false` ise A7 kabul kriteri düşer.
+görünmez (ikinci özdeş çağrı `cache:"hit"` olmalı). `false` şemada reddedilir; koşu
+düzeltilmeden teslim edilmez.
 
 ---
 
 ## 7. Minimal Koşu Manifesti
 
 Şema: `./run-manifest-schema.json`. Zorunlu alanlar: `run_id`, `ts`, `plugin_version`,
-`requested_scope`, `connector_call_ledger[]`, `canonical_artifacts{}`, `tier2_status`.
+`requested_scope`, `connector_call_ledger[]`, `single_shot_enforced:true`,
+`canonical_artifacts{}`, `tier2_status`, güvenli göreli `.html` `deliverable_path`.
 
 > **`quality_gates{}` zorunlu DEĞİLDİR.** Kalite kapılarının OTORİTESİ yerel
 > `scripts/validate_module.py`'dir. Manifestteki `quality_gates` alanı — varsa — o
 > betiğin `--json` çıktısının birebir kopyası olmalıdır; elle yazılmaz. Alanın yokluğu
 > teslimi engellemez.
-
-**Sürüm notu (1.1.0):** `quality_gates{}` zorunlu-alan listesinden çıkarıldı ve yukarıdaki
-otorite notu eklendi — sunucu tarafı ölçüme geçişten (bkz. `run-manifest-schema.json`
-`required[]`) sonra istemcinin beyanına zorunluluk atfeden bir çelişki giderildi.

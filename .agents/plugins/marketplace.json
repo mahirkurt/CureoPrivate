@@ -89,10 +89,10 @@
       "category": "Scientific Integrity"
     },
     {
-      "name": "lex-sanitas",
+      "name": "cureolex",
       "source": {
         "source": "local",
-        "path": "./plugins/lex-sanitas"
+        "path": "./plugins/cureolex"
       },
       "policy": {
         "installation": "AVAILABLE",

@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "cureolex",
-  "plugin_version": "3.8.4",
+  "plugin_version": "3.8.6",
   "counts": {
     "servers": 22,
     "gated": 19,
@@ -291,9 +291,9 @@
       "modes": [
         "ALL"
       ],
-      "manifest_row": "Open Law (companion — UK birincil metin; AB yarısı wire'landı)",
+      "manifest_row": "Open Law (companion — UK çapraz/HUDOC; statute wire=uk-legal legislation_*)",
       "gate": null,
-      "degrade": "Bağlı değilse UK birincil metni PROGRAMATİK yedeğe düşer: ep.legislation_uk (references/15 §3) — arama /{tur}?title={q}, belge /{tur}/{yil}/{no}/data.akn (Akoma Ntoso; data.xml CLML'dir, AKN DEĞİL); sonuç mcp_verified=false. AB/CELEX tarafı bu companion'a ARTIK BAĞLI DEĞİLDİR — wire'lı `eurlex` sunucusu taşır, o da düşerse ep.eurlex_sparql. Ne companion ne uç erişilebilirse UK satırı 'manual_required' (legislation.gov.uk deep-link) — asla uydurma."
+      "degrade": "UK statute birincil yolu wire'lı uk-legal legislation_*'tir. Open Law bağlı değilse / origin fail → ep.legislation_uk (references/15 §3) — arama /{tur}?title={q}, belge /{tur}/{yil}/{no}/data.akn (Akoma Ntoso; data.xml CLML'dir, AKN DEĞİL); sonuç mcp_verified=false. AB/CELEX bu companion'a ARTIK BAĞLI DEĞİLDİR — wire'lı `eurlex` taşır, o da düşerse ep.eurlex_sparql. Ne wire ne yedek erişilebilirse UK satırı 'manual_required' (legislation.gov.uk deep-link) — asla uydurma."
     },
     {
       "name": "Ansvar",

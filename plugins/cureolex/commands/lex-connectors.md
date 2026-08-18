@@ -44,7 +44,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
 
 5. **Kapı etkisini göster.** Eksik katmanın maliyetini açıkça yaz:
    - `Yargı bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat zinciri doğrulanamaz)`
-   - `Open Law bağlı değil ⇒ UK birincil metin ep.legislation_uk'ye degrade; G6'yı düşürmez (G6 = wire'lı eurlex)`
+   - `Open Law bağlı değil ⇒ UK çapraz yok; statute wire uk-legal legislation_* / ep.legislation_uk; G6'yı düşürmez (G6 = wire'lı eurlex)`
    - `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL tarama satırları manual_required`
    - `eurlex erişilemiyor ⇒ G6 CONDITIONAL (CELEX yedeği ep.eurlex_sparql; german-law get_eu_basis CELEX üretmez)`
    - `fedlex erişilemiyor ⇒ Mod 7 CH birincil-metin satırı ep.fedlex_sparql + Ansvar çerçeve-taramasına degrade`

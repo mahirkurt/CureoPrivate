@@ -57,3 +57,19 @@ Büyük-veri satırı (Tier 2) kullanıma göre değişir:
 - Anahtar yoksa: `anamnesis → skipped: anahtar yok (bounded-chunk fallback)`
 
 Not: `empty` ve `skipped` **başarısızlık değil**, kapsamın dürüst kanıtıdır — mühim olan hiçbir server'ın sessizce atlanmamasıdır.
+
+## Conscious excludes (bir kez — sessiz omit yasak)
+
+Canlı yüzeyde var ama Cureolex `tools_used`'a **bilerek** almaz (`fleet.yaml` `conscious_excludes`):
+
+| Exclude | Ne | Coverage davranışı |
+|---|---|---|
+| german premium | case_law / prep / history / diff / recent | upgradeRequired + resmi portal link — BGH uydurma yok; premium artefakt yok (2026-08-18) |
+| ChatGPT `search`/`fetch` | alias yüzeyler | Native `rg_*` / `sb_*` / `semantic_search` |
+| ÜTS | wire yok | Cihaz → eudamed; TİTCK ilaç |
+| fedlex peripheral | `fedlex_get_recent_publications` / `termdat_get_concept` | AS izleme + Termdat kavram — RIA omurgası değil |
+| detsis/yok peripheral | coğrafya/foto/browse | `skipped: mod için N/A` |
+
+> **Not (2026-08-18 / 3.8.6):** UHRI (`uhri_search`/`uhri_fetch_document`) ve uk-legal `legislation_*` **tools_used**'ta — conscious exclude DEĞİL. Fedlex Vernehmlassung üçlüsü Mod 6 RIA'da SR get sonrası; TR DRAFT usulü değil.
+
+Bu tablo dışında `tools_used` satırı **atlanamaz** — empty/degraded beyanlı süpürülür.

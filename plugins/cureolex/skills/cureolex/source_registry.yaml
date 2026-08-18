@@ -211,7 +211,7 @@ international_guidance:
       url: "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=IV-4&chapter=4&clang=_en"
       mcp_server: intl-treaty
     verification: open_primary_source
-    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-4). mcp_verified:false. UHRI portalı tools_used dışı."
+    note: "Katılım/çekince: treaty_status / treaty_reservations (MTDSG IV-4). mcp_verified:false. UHRI: uhri_search→uhri_fetch_document (Md.90 sonrası)."
   - id: un.cedaw
     name: "CEDAW — Kadınlara Karşı Her Türlü Ayrımcılığın Önlenmesi (MTDSG IV-8)"
     use: "Anayasa Md. 90/5 + sağlık/eşitlik kesişimi"
@@ -253,12 +253,13 @@ international_guidance:
     verification: open_primary_source
     note: "coe_treaty_signatories; mcp_verified:false; live_coe:false. Taraf statüsü anlık görüntüden okunur (as_of damgalı); uydurulmaz."
   - id: ohchr.uhri
-    name: "OHCHR UHRI — UN insan hakları tavsiyeleri (insan portalı)"
-    use: "UN tavsiyesi gerektiğinde coverage deep-link. Sorgu API yok; 109 MB dump Worker'a GET edilmez."
+    name: "OHCHR UHRI — UN insan hakları tavsiyeleri (sağlık-hakları indexer)"
+    use: "UN tavsiye/gözlem; uhri_search → uhri_fetch_document. mcp_verified:false; boş ≠ yokluk."
     access:
       url: "https://uhri.ohchr.org/"
+      mcp_server: intl-treaty
     verification: open_primary_source
-    note: "uhri_search / uhri_fetch_document tools_used DIŞIDIR (manual_required). treaty_status/treaty_reservations UN katılım/çekince kaynağıdır."
+    note: "2026-08-18: HP uhri-indexer (health FTS); dump Worker'a GET edilmez. tools_used'ta."
   - id: who.guidance
     name: "WHO operasyonel rehberleri"
     access: { url: "https://www.who.int/" }
@@ -317,7 +318,7 @@ comparative_jurisdiction:
   - id: cmp.ch
     name: "İsviçre — Fedlex (Classified Compilation RS/SR)"
     access: { url: "https://www.fedlex.admin.ch/", mcp_server: fedlex }
-    wrapped: "WIRE'LI — mcp__fedlex__* (fedlex_get_law_by_sr params.sr_number, fedlex_search_laws keywords)"
+    wrapped: "WIRE'LI — mcp__fedlex__* (fedlex_get_law_by_sr params.sr_number, fedlex_search_laws keywords; RIA: open/search/get_consultation)"
     verification: fedlex_mcp
     note: >
       v3.8.0 (2026-08-08) — Fedlex Swiss companion'dan WIRE'A terfi etti
@@ -326,10 +327,12 @@ comparative_jurisdiction:
       ÇAĞRI SÖZLEŞMESİ: her araç `{"params":{…}}` ister — düz alan = Field required
       (çağrı hatası, yokluk kanıtı değil). search_laws → params.keywords
       (params.query YOK); get_law_by_sr → params.sr_number (örn. "812.21" → HMG /
-      eli/cc/2001/422, ölçülmüş). tools_used = 7 yük-taşıyan araç (upstream 12;
-      fantom ekleme). Kanun metni uydurma. Yedek: ep.fedlex_sparql
-      (`a jolux:ConsolidationAbstract` + DISTINCT; yoksa BBl taslağı).
-      Ansvar CH satırı yalnız çerçeve-teyit.
+      eli/cc/2001/422, ölçülmüş). tools_used = 7 SR/birincil + 3 Vernehmlassung
+      (2026-08-18 RIA); conscious exclude: recent_publications + termdat_get_concept.
+      RIA semantik sıra: SR get SONRA open/search/get_consultation — CH ön-parlamento
+      manzarası; TR yönetmelik DRAFT/5210 görüş ikamesi değil. Kanun metni uydurma.
+      Yedek: ep.fedlex_sparql (`a jolux:ConsolidationAbstract` + DISTINCT; yoksa BBl
+      taslağı). Ansvar CH satırı yalnız çerçeve-teyit.
   - id: cmp.de
     name: "Almanya — federal mevzuat (german-law-mcp, FTS5 statü korpusu)"
     access: { url: "https://german-law.cureonics.com/mcp", mcp_server: german-law }
@@ -351,10 +354,11 @@ comparative_jurisdiction:
     verification: open_primary_source
     note: >
       WIRE'LI (uk-law.cureonics.com, OAuth kapısı :8318; upstream 0.6.0
-      127.0.0.1:8322 via loopback_entry). Tercih: içtihat + parlamento.
-      `legislation_*` tools_used DIŞIDIR (ölçülen upstream HTTP istemci kırığı;
-      WAF teşhisi doğrulanmadı). UK statute TEXT → ep.legislation_uk `/data.akn`
-      veya Open Law companion — başarısız legislation_* yokluk kanıtı değildir.
+      127.0.0.1:8322 via loopback_entry + legislation_http_fix). Tercih:
+      `legislation_*` (statute) + içtihat + parlamento. Kök neden (2026-08-18):
+      curl_cffi Chrome impersonation → HTTP 437; httpx loopback fix. Origin
+      403/404/WAF → dürüst isError; yedek ep.legislation_uk `/data.akn` veya
+      Open Law — başarısız çağrı yokluk kanıtı değildir.
   - id: cmp.br
     name: "Brezilya — ANVISA mevzuatı / Diário Oficial (v2.5 yeni)"
     access: { url: "https://www.gov.br/anvisa/" }
@@ -377,8 +381,14 @@ comparative_jurisdiction:
 mcp_server:
   - id: mcp.mevzuat
     name: "Mevzuat MCP"
-    role: "Türk mevzuat metni doğrulama (DRAFT/ANALYZE)"
+    role: >-
+      Türk mevzuat metni doğrulama (DRAFT/ANALYZE). HP production 0.15.1+
+      (mevzuat.cureonics.com): bedesten NUMARA/`phrase`/`search_within`/tam gerekçe.
+      Semantik sıra: list_mevzuat_types → list_mevzuat_by_type/search →
+      get_mevzuat_detail → yapısal graf → search_within → content →
+      get_mevzuat_gerekce → resolve_resmi_gazete → list_kurumlar.
     verification: mevzuat_mcp
+    note: "Conscious excludes / tam tools_used: fleet.yaml + coverage-manifest.md."
   - id: mcp.yargi
     name: "Hukuki Veritabanları / Yargı MCP"
     role: "AYM/Danıştay/Yargıtay içtihat doğrulama (G5)"
@@ -427,10 +437,10 @@ mcp_server:
     access: { url: "https://mevzuat.surucu.dev/mcp", mcp_server: mevzuat-bilgisi }
     verification: mevzuat_bilgisi_mcp
     note: >
-      YEDEK, EŞDEĞER DEĞİL. Primer (mevzuat-mcp 0.15.0, yerel paket) first-party
-      bedesten taşır: kanun/mevzuat NUMARASI lookup, `phrase` (Solr),
-      `search_within_mevzuat`, `get_mevzuat_gerekce` tam metin. HP production
-      henüz 0.15.0'a kesilmedi — canlı uç 0.14.x ise bu üçü o uçta yoktur.
+      YEDEK, EŞDEĞER DEĞİL. Primer (mevzuat-mcp 0.15.1+, HP production
+      mevzuat.cureonics.com) first-party bedesten taşır: kanun/mevzuat NUMARASI
+      lookup, `phrase` (Solr), `search_within_mevzuat`, `get_mevzuat_gerekce`
+      tam metin (bedesten `gerekceId` yoksa locator-only dürüst).
       Farklılıklar zorunlu olarak beyan edilir:
       (a) yapısal graf (`madde_tree`/`madde_diff`/`timeline`/`relations`) yalnız
       primerdedir; ikincil bağımsız ikinci oydur (çatışmada primer);
@@ -460,9 +470,9 @@ mcp_server:
       (lex-sanitas-mcp.cureonics.workers.dev) 2026-08-07 probe'unda **HTTP 404**
       döndü — ÖLÜ; yeni uç aynı probe'da 401 (auth kapısı, canlı) döndü.
       SINIRLAR (rescope'ta bu araçlar KALDIRILDI, artık burada aranmaz):
-      AB CELLAR/EUR-Lex → wire'lı `eurlex` (G6); UK statute TEXT → Open Law
-      companion + `ep.legislation_uk` (/data.akn) — wire'lı `uk-legal` yalnız
-      içtihat/Hansard/bills (`legislation_*` tools_used dışı, kırık istemci);
+      AB CELLAR/EUR-Lex → wire'lı `eurlex` (G6); UK statute TEXT → wire'lı
+      `uk-legal` `legislation_*` (loopback httpx fix 2026-08-18) + Open Law
+      companion + `ep.legislation_uk` (/data.akn yedek);
       Almanya → `german-law` (wire'lı); İsviçre Fedlex → wire'lı `fedlex`;
       CH/FR/IT/NL/SE/DK/FI/AT/PL tarama → `Ansvar` companion; Türkiye →
       `mevzuat`/`titck`; EuroVoc + data.europa.eu → SARMALANMADI (web-birincil);
@@ -492,28 +502,30 @@ mcp_server:
   - id: mcp.uk_legal
     name: "UK Legal MCP (OAuth kapısı + pinli upstream)"
     role: >
-      Birleşik Krallık içtihat (Find Case Law), Hansard, bills, divisions,
-      komisyon delilleri, OSCOLA. Wire'lı tools_used yalnız ölçülerek çalışan
-      araçlar; legislation_* DIŞARIDA.
+      Birleşik Krallık mevzuat (`legislation_*`) + içtihat (Find Case Law),
+      Hansard, bills, divisions, komisyon delilleri, OSCOLA.
     access: { url: "https://uk-law.cureonics.com/mcp", mcp_server: uk-legal }
     verification: open_primary_source
     note: >
       Kapı :8318 → upstream uk-legal-mcp==0.6.0 @ 127.0.0.1:8322
-      (loopback_entry; 0.0.0.0 yasak). UK statute TEXT bu kayıttan gelmez —
-      ep.legislation_uk `/data.akn` veya Open Law. legislation_* kırık
-      (upstream istemci; WAF teşhisi doğrulanmadı); isError dürüst + honesty scrub.
+      (loopback_entry + legislation_http_fix; 0.0.0.0 yasak). 2026-08-18:
+      curl_cffi Chrome impersonation → 437; httpx fix. Medicines Act 1968
+      dumanı. Origin fail → ep.legislation_uk `/data.akn` veya Open Law;
+      honesty scrub kalan WAF metninde.
 
   - id: mcp.intl_treaty
     name: "International Treaty MCP (Cloudflare Worker connector)"
     role: >
       UN MTDSG katılım/çekince (treaty_status / treaty_reservations, chapter IV)
       + CoE anlık görüntü (coe_treaty_signatories; coe.int canlı 403) + UHRI
-      manual_required. Anayasa Md.90/5. Her çıktı mcp_verified:false.
+      HP indexer (uhri_search / uhri_fetch_document). Anayasa Md.90/5.
+      Her çıktı mcp_verified:false.
     access: { url: "https://intl-treaty-mcp.cureonics.workers.dev/mcp", mcp_server: intl-treaty }
     verification: open_primary_source
     note: >
-      UHRI dump (~109 MB) Worker'a GET edilmez; UHRI tools_used dışı (insan
-      portalı / coverage deep-link). Yakalanmamış CETS → manual_required
+      UHRI dump (~109 MB) Worker'a GET edilmez; HP uhri-indexer (health FTS)
+      tools_used'ta (2026-08-18). COMPARATIVE/Md.90/ICESCR: treaty+coe+info
+      SONRASI uhri_* zorunlu. Yakalanmamış CETS → manual_required
       (imzacı listesi uydurulmaz). live_coe:false beyanlı degrade (skip değil).
       Taraf/çekince yalnız treaty_status / treaty_reservations / coe_treaty_signatories.
 

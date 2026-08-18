@@ -22,7 +22,7 @@
 
 version: 2
 plugin: cureolex
-plugin_version: "3.8.4"
+plugin_version: "3.8.6"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # cureolex bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -50,22 +50,22 @@ servers:
     shard: S1
     modes: [ALL]
     gate: null
-    tools_used: [search_mevzuat, get_mevzuat_madde_tree, get_mevzuat_madde_diff,
+    tools_used: [search_mevzuat, search_kanun, list_mevzuat_types, list_mevzuat_by_type,
+                 get_mevzuat_detail, get_mevzuat_madde_tree, get_mevzuat_madde_diff,
                  get_mevzuat_timeline, get_mevzuat_relations, get_mevzuat_gerekce,
                  get_anayasa, get_onceki_metinler, search_mulga_mevzuat,
                  search_mevzuat_fihristi, build_mevzuat_semantic_context,
                  resolve_resmi_gazete, get_mevzuat_text, download_mevzuat_document,
-                 get_mevzuat_content, search_within_mevzuat]
+                 get_mevzuat_content, search_within_mevzuat, list_kurumlar]
     role: >-
-      PRİMER TR mevzuat — in-house HP self-host (paket v0.15.0 yerel; HP
-      production cutover yok). Yapısal yasama-grafı: get_mevzuat_madde_tree/madde_diff
-      (as_of tarihli) + get_mevzuat_timeline + ilga_zinciri/get_mevzuat_relations
-      (NLP dayanak/atıf kenarları) + get_mevzuat_gerekce (TBMM locator + bedesten
-      TAM METİN) + get_mevzuat_content (madde drill-down) + search_within_mevzuat
-      (EK/GEÇİCİ madde içi) + semantik-bağlam recall-boost. Kanun/mevzuat NUMARASI
-      lookup birinci sınıftır (search_mevzuat mevzuat_no veya yalnız-rakam query;
-      phrase= bedesten Solr). Canlı uç 0.14.x ise phrase/search_within/tam gerekçe
-      o uçta yoktur. Tüm modların TR-mevzuat omurgası.
+      PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover
+      2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz):
+      list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun →
+      get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/
+      relations → search_within_mevzuat → get_mevzuat_gerekce →
+      resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum
+      adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup,
+      phrase, search_within, gerekçe tam metin). Tüm modların TR-mevzuat omurgası.
     degrade: >-
       Anahtar yoksa TR-mevzuat omurgası düşer; mevzuat-bilgisi ikincil korpusuna
       degrade + manifestoda 'skipped: anahtar yok'. Üst-norm zinciri kurulamazsa
@@ -82,15 +82,15 @@ servers:
                  search_within_mevzuat, get_mevzuat_gerekce, get_mevzuat_madde_tree]
     role: >-
       İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — her sorguda
-      çalıştırılır. Primer v0.15+ (yerel paket; HP cutover yok) kanun/mevzuat
-      NUMARASI lookup, search_within_mevzuat ve bedesten gerekçe tam metnini kendisi
-      taşır; bu server bağımsız ikinci oy + Playwright-yüzey çaprazıdır. Çatışmada
-      primer kazanır, sonuç manifestoya girer.
+      çalıştırılır. Primer v0.15.1+ (HP production) kanun/mevzuat NUMARASI lookup,
+      search_within_mevzuat ve bedesten gerekçe tam metnini kendisi taşır; bu
+      server bağımsız ikinci oy + Playwright-yüzey çaprazıdır. Çatışmada primer
+      kazanır, sonuç manifestoya girer.
     degrade: >-
       Erişilemezse bağımsız ikinci oy ve Playwright-yüzey çapraz-kontrolü düşer;
-      manifestoda 'degraded' — primer tek başına sentezi taşır (0.15.0 yerel
-      pakette numara/`phrase`/`search_within`/tam gerekçe primerde kalır; HP
-      production henüz kesilmedi), çapraz-doğrulama notu düşülür.
+      manifestoda 'degraded' — primer tek başına sentezi taşır (0.15.1+ production
+      uçta numara/`phrase`/`search_within`/tam gerekçe primerde kalır),
+      çapraz-doğrulama notu düşülür.
 
   - name: resmi-gazete
     url: https://resmi-gazete-mcp.cureonics.workers.dev/mcp
@@ -104,12 +104,14 @@ servers:
     modes: [ALL]
     gate: null
     tools_used: [rg_search, rg_get_item, rg_resolve_date, rg_get_issue_toc,
-                 rg_list_recent, rg_ocr_submit, rg_ocr_result]
+                 rg_list_recent, rg_get_pdf, rg_info, rg_ocr_submit, rg_ocr_result]
     role: >-
-      T.C. Resmî Gazete resmi yayın metni + tarih/sayı çözümleme
-      (rg_search/rg_get_item/rg_resolve_date + OCR). Yürürlük tarihi, RG
-      sayı/mükerrer teyidi (Mevzuat resolve_resmi_gazete tamamlayıcısı).
-      DRAFT/AMEND yürürlük hükmü + EX_POST kronoloji.
+      T.C. Resmî Gazete resmi yayın metni + tarih/sayı çözümleme.
+      Semantik sıra: rg_info (bir kez) → rg_resolve_date|rg_list_recent →
+      rg_search → rg_get_issue_toc → rg_get_item → rg_get_pdf (atıf nüshası) →
+      büyük PDF'de rg_ocr_submit→rg_ocr_result. Yürürlük/RG sayı/mükerrer teyidi
+      (Mevzuat resolve_resmi_gazete tamamlayıcısı). DRAFT/AMEND yürürlük +
+      EX_POST kronoloji. ChatGPT search/fetch alias'ları tools_used dışı.
     degrade: >-
       Erişilemezse yürürlük tarihi/RG sayısı yalnız mevzuat resolve_resmi_gazete'ye
       dayanır; teyit edilemeyen RG referansı 'mcp_verified:false' etiketlenir,
@@ -208,14 +210,16 @@ servers:
     shard: S1
     modes: [ALL]
     gate: null
-    tools_used: [sb_search, sb_get_document, sb_list_kilavuzlar,
-                 sb_list_kurul_kararlari, sb_resolve_genelge, sb_list_belgeler,
-                 sb_list_kategoriler, sb_server_info]
+    tools_used: [sb_server_info, sb_list_birimler, sb_list_kategoriler,
+                 sb_list_belgeler, sb_list_kilavuzlar, sb_list_kurul_kararlari,
+                 sb_list_taslaklar, sb_search, sb_resolve_genelge, sb_get_document]
     role: >-
       T.C. Sağlık Bakanlığı ikincil mevzuat / soft-law (genelge·yönerge·rehber·
-      kurul kararı·SKS) — Resmî Gazete/mevzuat.gov.tr'de OLMAYAN idari norm
-      katmanı (10 sb_* aracı + ChatGPT search/fetch). Tebliğ/genelge düzeyi reformda mevcut-durum.
-      Taslak/YSŞ → manual_required.
+      kurul kararı·SKS) — Resmî Gazete/mevzuat.gov.tr'de OLMAYAN idari norm.
+      Semantik sıra: sb_server_info → sb_list_birimler → sb_list_kategoriler →
+      sb_list_belgeler|kilavuzlar|kurul_kararlari → sb_search/sb_resolve_genelge →
+      sb_get_document; sb_list_taslaklar her zaman çağrılır ama sonuç
+      manual_required (uydurma yok). ChatGPT search/fetch tools_used dışı.
     degrade: >-
       Erişilemezse idari norm katmanı (genelge/yönerge/rehber) görünmez olur;
       manifestoda 'skipped: anahtar yok'. Bu katmanın yokluğu ilgili normun
@@ -228,15 +232,21 @@ servers:
     shard: S1
     modes: [ALL]
     gate: null
-    tools_used: [detsis_resolve_birim, detsis_search_birim, detsis_get_kunye,
-                 detsis_list_alt_birimler, detsis_walk_alt_birimler,
+    tools_used: [detsis_server_info, detsis_resolve_birim, detsis_search_birim,
+                 detsis_list_milestones, detsis_get_kunye,
+                 detsis_list_alt_birimler, detsis_get_alt_birim_sayisi,
+                 detsis_walk_alt_birimler, detsis_list_kategorik_birimler,
                  detsis_get_hizmetler, detsis_get_belgeler, detsis_get_mevzuatlar,
-                 detsis_get_degisiklikler, detsis_get_islem_kunye]
+                 detsis_get_degisiklikler, detsis_get_degisiklik_kategorileri,
+                 detsis_get_islem_kunye]
     role: >-
-      DETSİS devlet-teşkilatı registry — kurumsal atıf doğruluğu
-      (Bakanlık/Genel Müdürlük/Kurum resmî ad + DETSİS no + hiyerarşi). DRAFT
-      metninde 'görev/yetki' hükümleri ve gerekçede kurum adlandırması için.
-      Yokluk kesin kanıt değil (caveat).
+      DETSİS devlet-teşkilatı registry — kurumsal atıf doğruluğu.
+      Semantik sıra: resolve/search → get_kunye → list_alt/get_alt_birim_sayisi
+      → (gerekirse walk) → hizmetler/belgeler/mevzuatlar → degisiklikler;
+      kapatılan birim → degisiklikler.birimTarihceId → get_islem_kunye (id
+      uydurulmaz). milestones/kategorik/server_info kapsam beyanı. Yokluk kesin
+      kanıt değil. detsis_get_gecmis_birim / list_iller_ilceler / list_taxonomies
+      reform omurgasında N/A → conscious exclude (coverage'da gerekçeli skip).
     degrade: >-
       Erişilemezse kurum adları mevzuat metninden alınır ve 'mcp_verified:false'
       etiketlenir; resmî ad/DETSİS no teyidi yapılamaz.
@@ -254,18 +264,21 @@ servers:
     modes: [ALL]
     gate: null
     tools_used: [semantic_search, legal_distill_start, legal_distill_result,
-                 federal_register_search, ecfr_get, japan_elaws_fetch,
-                 australia_legislation_fetch, canada_justicelaws_fetch,
-                 spain_boe_fetch, mexico_dof_nota, china_law_detail,
-                 ireland_eisb_fetch]
+                 govinfo_search, congress_search, federal_register_search,
+                 ecfr_get, ecfr_versions, japan_elaws_search, japan_elaws_fetch,
+                 australia_legislation_search, australia_legislation_fetch,
+                 canada_justicelaws_fetch, spain_boe_fetch, mexico_dof_nota,
+                 china_law_recent, china_law_detail, ireland_eisb_fetch]
     role: >-
       YABANCI ÜLKE sağlık mevzuatı resmî-metin portalları: US (eCFR T21/FedReg/
       GovInfo/Congress), CA JusticeLaws, JP e-LAWS, AU FRL, ES BOE, IE eISB,
-      CN NPC, MX DOF. Mod 7 COMPARATIVE_LAW birincil kaynağı. DOĞAL-DİL GİRİŞ
-      KAPISI: semantic_search (çok-dilli Workers AI planner + bge-m3 rerank;
-      aranabilir US/JP/AU/CN fan-out, ID-only ES/MX/CA/IE excluded→fetch;
-      mcp_verified:false keşif katmanı, fetch=doğrulama). Sınırlar: DE→german-law;
-      UK+EU→Open Law; TR→mevzuat/titck; CH/FR/IT/NL/SE + 58-yargı→Ansvar.
+      CN NPC, MX DOF. Semantik sıra: semantic_search (keşif) →
+      govinfo/congress/federal_register/japan_elaws_search/australia_legislation_search/
+      china_law_recent (ID keşfi) → ilgili *_fetch/ecfr_get/ecfr_versions (doğrulama)
+      → legal_distill_start/result (çok-yargı sunucu-tarafı distil). ID-only
+      ES/MX/CA/IE → doğrudan fetch. ChatGPT search/fetch tools_used dışı.
+      Sınırlar: DE→german-law; UK+EU→uk-legal/eurlex/Open Law; TR→mevzuat/titck;
+      CH/FR/IT/NL/SE + 58-yargı→Ansvar.
     degrade: >-
       Erişilemezse Mod 7'nin yabancı birincil-metin katmanı düşer; ilgili ülke
       satırları 'manual_required' (resmî portal deep-link) + kapsam boşluğu beyanı.
@@ -280,11 +293,10 @@ servers:
     shard: S2
     modes: [ALL]
     gate: G6
-    tools_used: [search_legislation, get_provision, get_eu_basis,
-                 get_provision_eu_basis, validate_eu_compliance,
-                 get_german_implementations, search_eu_implementations,
-                 parse_citation, format_citation, validate_citation,
-                 check_currency]
+    tools_used: [search_legislation, get_provision, parse_citation,
+                 format_citation, validate_citation, check_currency,
+                 get_eu_basis, get_provision_eu_basis, validate_eu_compliance,
+                 get_german_implementations, search_eu_implementations]
     smoke:
       - tool: get_eu_basis
         args: {citation: "§ 21 AMG"}
@@ -294,24 +306,16 @@ servers:
         args: {law: "AMG", article: "21"}
     role: >-
       Almanya hukuku + AB müktesebatı köprüsü; Mod 7'de DE emsali.
-      ÖLÇÜLEN FREE-TIER HARİTASI (2026-08-08, araçlar tek tek çağrıldı — önceki
-      "8 işlevsel / 11 kapalı" kaydı YANLIŞTI): AB ailesinin BEŞİ DE GERÇEK VERİ
-      döndürür — get_eu_basis ("§ 21 AMG" → EG 1394/2007 + EG 1901/2006, güven
-      0.95), get_provision_eu_basis, search_eu_implementations /
-      get_german_implementations (EU 2016/679 → 58 uygulama / 14 kanun),
-      validate_eu_compliance (status "mapped", 99 eşleşme). YALNIZ BEŞ araç
-      dürüstçe kapalıdır — search_case_law + get_preparatory_works
-      (`upgradeRequired:true`), get_provision_history + diff_provision +
-      get_recent_changes (`premium:false`); uydurma YOK, o yüzden güvenilir.
-      ⚠️ ŞEMA (2026-08-17 düzeltildi): AB araçları free korpusta çalışır; şema
-      artık "Requires professional tier" yalanını taşımaz. Case-law / prep /
-      history araçları dürüst degrade zarfı beyan eder.
-      ⚠️ ÇÖZÜCÜ (2026-08-17): `get_provision` / `validate_citation` /
-      `check_currency` günlük kısaltmayı (`AMG`, `BDSG`) `statutes.amtabk`/
-      `jurabk` üzerinden çözer (`amg_1976`, `bdsg_2018`); çözülemeyen
-      kısaltma `{found:false, reason}` döner — çıplak null YOK. Hâlâ en
-      güvenli id biçimi önceki search/get_eu_basis sonucunun `id` alanıdır
-      (`amg_1976:21`). Korpus tarihi `data_age` 2026-02-14.
+      SEMANTİK SIRA (atlanamaz): search_legislation → parse/validate_citation →
+      get_provision (id=jurabk:n veya çözülmüş AMG/BDSG) → check_currency →
+      ANCAK ONDAN SONRA get_eu_basis / get_provision_eu_basis /
+      search_eu_implementations / get_german_implementations /
+      validate_eu_compliance. Çözücü yoksa EU ailesi çağrılmaz (kör CELEX yok).
+      ÖLÇÜLEN FREE-TIER: AB ailesinin BEŞİ çalışır. BİLEREK DIŞARI (premium/
+      upgradeRequired): search_case_law, get_preparatory_works,
+      get_provision_history, diff_provision, get_recent_changes — uydurma YOK.
+      ⚠️ get_eu_basis CELEX ÜRETMEZ (G6 taşıyıcısı eurlex). Korpus data_age
+      2026-02-14.
     degrade: >-
       Erişilemezse DE emsali ve AB↔DE uygulama haritası kaybolur → G6 CONDITIONAL.
       CELEX doğrulaması için İKAME DEĞİLDİR: G6'nın taşıyıcısı artık wire'lı
@@ -330,17 +334,16 @@ servers:
     shard: S2
     modes: [ALL]
     gate: G6
-    tools_used: [ich_list_guidelines, ich_get_guideline, ich_search,
-                 ich_guideline_history, ich_server_info]
+    tools_used: [ich_server_info, ich_list_guidelines, ich_search,
+                 ich_get_guideline, ich_guideline_history]
     role: >-
-      ICH Q/S/E/M harmonizasyon rehberleri — norm-düzeyi benchmark
-      (ich_list_guidelines/ich_get_guideline/ich_search/ich_guideline_history;
-      ich_server_info korpus+allowlist). İlaç ruhsat/kalite/GVP
-      reformunda uluslararası harmonizasyon referansı (DRAFT/AMEND/COMPARATIVE).
-      M4 (CTD) ve M8 (eCTD) spesifikasyon yüzeyi IN (modül, granularity,
-      bölgesel M1 vs ICH M2–M5, spesifikasyon sürümü, Q&A). COMPARATIVE ve
-      DRAFT dosya-yapısı hukuki/regülatuar atıfı yapabilir; şirket sequence
-      doldurma / "0001 gönderildi" iddiası yok (ops → pharmaintel).
+      ICH Q/S/E/M harmonizasyon rehberleri — norm-düzeyi benchmark.
+      Semantik sıra: ich_server_info → ich_list_guidelines(category) →
+      ich_search → ich_get_guideline → ich_guideline_history.
+      Dosya-yapısı / CTD / eCTD reformunda M4 ve M8 ZORUNLU ateş (modül,
+      granularity, bölgesel M1 vs ICH M2–M5, spesifikasyon sürümü, Q&A).
+      COMPARATIVE ve DRAFT hukuki/regülatuar atıfı; şirket sequence /
+      "0001 gönderildi" iddiası yok (ops → pharmaintel).
     degrade: >-
       Erişilemezse ICH referansları 'manual_required' (ich.org deep-link);
       G6'nın harmonizasyon ayağı doğrulanamaz → CONDITIONAL.
@@ -359,10 +362,11 @@ servers:
     modes: [ALL]
     gate: G6
     tools_used: [treaty_status, treaty_reservations, coe_treaty_signatories,
-                 intl_treaty_info]
-    # UHRI (uhri_search / uhri_fetch_document) tools_used DIŞIDIR: kamuya açık
-    # sorgu API yok; 109 MB dump Worker'a GET edilmez; portal deep-link
-    # coverage'da insan yüzeyi olarak yazılabilir.
+                 intl_treaty_info, uhri_search, uhri_fetch_document]
+    # UHRI (2026-08-18): Family-B HP uhri-indexer canlı — sağlık-hakları FTS
+    # (CESCR/health/SDG3/CEDAW·CRC·CRPD); Worker dump GET etmez. Canlı duman:
+    # uhri_search(topic="right to health", country="Türkiye") → E/C.12/TUR/CO/1
+    # vb. gerçek satırlar (mcp_verified:false; boş ≠ yokluk).
     smoke:
       tool: intl_treaty_info
       args: {}
@@ -374,15 +378,18 @@ servers:
       coe_treaty_signatories (Oviedo CETS 164, MEDICRIME CETS 211 — 9 CETS
       anlık görüntü, snapshot_age_days, mcp_verified:false, live_coe:false);
       intl_treaty_info bir kez (kapsam manifestosu: live_coe:false beyanlı
-      degrade, sessiz atlama DEĞİL). Onay/çekince UYDURULMAZ. UHRI tools_used
-      dışı (insan portalı).
+      degrade, sessiz atlama DEĞİL). COMPARATIVE / Md.90/5 / ICESCR dosyalarında
+      treaty+coe+info SONRASI uhri_search (sağlık konusu + ülke) →
+      uhri_fetch_document(id) ZORUNLU (yerine geçmez; atlanırsa G0 FAIL). Boş
+      sonuç yokluk kanıtı değildir. Onay/çekince UYDURULMAZ.
     degrade: >-
       UN MTDSG erişilemezse Md.90/5 UNTC ayağı 'manual_required' (treaties.un.org
       deep-link) — onay tarihi icat edilmez. CoE yapısal veri anlık görüntüdür
       (coe.int TLS parmak-izi 403; relay_inert:true; live_coe:false); yakalanmamış
       CETS → manual_required (imzacı listesi uydurulmaz). live_coe:false
       kapsam satırında 'degraded: snapshot' olarak YAZILIR, skip-without-reason
-      DEĞİLDİR. G2 ve G6 CONDITIONAL.
+      DEĞİLDİR. UHRI indexer erişilemezse uhri_* → manual_required (portal
+      deep-link); tavsiye metni uydurulmaz. G2 ve G6 CONDITIONAL.
 
   - name: eudamed
     url: https://eudamed-mcp.cureonics.workers.dev/mcp
@@ -402,23 +409,13 @@ servers:
                  eudamed_get_manufacturer_portfolio, eudamed_get_actor,
                  eudamed_application_info]
     role: >-
-      EUDAMED AB tıbbi cihaz DB (MDR/IVDR) — TR tarafı ÜTS wire edilmediği için
-      cihaz rejiminin TEK canlı kayıt kaynağı. Cihaz reformunda AB benchmark.
-      2026-08-07 CANLI ÖLÇÜM — çalışan zincir: eudamed_get_actor(name+country)
-      → SRN → eudamed_get_manufacturer_portfolio(srn, legislation) → cihaz
-      portföyü (Roche Diagnostics DE-MF-000006260 → 14 IVDR kaydı); ayrıca
-      eudamed_search_devices → uuid → eudamed_get_device. `get_actor` adına
-      rağmen TAM BİR ARAMADIR (name/country/srn ile sayfalanır) — SRN elde
-      olmadan da aktör bulunur.
-      İKİ ÖLÇÜLMÜŞ SINIRLAMA: (1) eudamed_get_basic_udi ARAMADAN ZİNCİRLENEMEZ —
-      arama satırındaki `basic_udi_data_ulid` ile çağrı 404 döner; geçerli uuid
-      yalnız EUDAMED web arayüzü URL'inden gelir, dolayısıyla bu araç ancak
-      kullanıcı uuid verirse çalışır, aksi hâlde 'manual_required'.
-      (2) get_manufacturer_portfolio `page_size`'ı YOK SAYAR (1 istendi, 20
-      döndü) — büyük portföyde bağlam-ekonomisi sözleşmesi gereği çıktı
-      çağrıldıktan SONRA kırpılır, çağrı sınırlanarak değil.
-      eudamed_application_info erişilebilirlik/olgunluk beyanıdır. Zorunlu olgunluk
-      _caveat (veri tabanı kademeli dolum — yokluk kanıt değildir).
+      EUDAMED AB tıbbi cihaz DB (MDR/IVDR) — TR ÜTS wire EDİLMEMİŞTİR; cihaz
+      sorusunda TİTCK DEĞİL, bu sunucu (+ AB benchmark). Semantik sıra:
+      eudamed_application_info → eudamed_search_devices | eudamed_get_actor →
+      eudamed_get_device | eudamed_get_manufacturer_portfolio; basic_udi yalnız
+      kullanıcı uuid'si ile (arama ULID 404 → manual_required). İlaç/ATMP
+      dosyasında empty beyanlı tarama; cihaz dosyasında atlama G0 FAIL.
+      Olgunluk _caveat zorunlu (yokluk kanıt değildir).
     degrade: >-
       Erişilemezse AB cihaz kayıt yapısı benchmark'ı düşer; ilgili satır
       'manual_required' (EUDAMED portal deep-link).
@@ -434,12 +431,18 @@ servers:
     shard: S2
     modes: [ALL]
     gate: null
-    tools_used: [search_dataflows, search_indicators, query_data,
-                 get_data_structure, get_popular_datasets]
+    tools_used: [search_dataflows, list_dataflows, get_categories,
+                 list_categories_detailed, search_indicators, get_popular_datasets,
+                 get_data_structure, query_data, get_dataflow_url]
     role: >-
-      OECD ekonomik/istatistik verisi (SDMX). Mod 6 RIA/DEA nicel girdi (sağlık
-      harcaması, ilaç fiyat endeksi, karşılaştırmalı gösterge) + Better Regulation
-      benchmark. 9 salt-okunur araç; authless upstream.
+      OECD ekonomik/istatistik verisi (SDMX) — 9 salt-okunur araç, hepsi
+      tools_used. Semantik sıra (RIA/DEA/EX_POST): get_categories|
+      list_categories_detailed → search_dataflows|list_dataflows(category=GOV|HEA)
+      → get_popular_datasets → search_indicators → get_data_structure →
+      query_data → get_dataflow_url (atıf linki).
+      RIA ZORUNLU: GOV_REG alias (Better Regulation / RIA / ex-post endeksleri;
+      DSD_GOV_REG@DF_GOV_REG_2025) + HEA sağlık harcaması/ilaç fiyatı.
+      Authless upstream.
     degrade: >-
       Erişilemezse DEA/BEF nicel girdileri kaynaksız kalır; sayısal iddia
       üretilmez — 'veri boşluğu' olarak beyan edilir, tahmin YAZILMAZ.
@@ -452,13 +455,16 @@ servers:
     shard: S3
     modes: [ALL]
     gate: G5
-    tools_used: [yok_search, yok_get_profile, yok_get_publications,
-                 yok_get_supervised_theses, yok_search_academics]
+    tools_used: [yok_search, yok_search_academics, yok_get_profile,
+                 yok_get_full_profile, yok_get_publications, yok_get_projects,
+                 yok_get_supervised_theses, yok_get_collaborators]
     role: >-
-      YÖK Akademik — hukuk/tıp DOKTRİN sinyali (Mod ANALYZE/gerekçe akademik
-      dayanak). Reform gerekçesinde uzman görüşü/literatür bağlamı. Salt-okuma
-      scraping. METADATA katmanıdır — tam metin için literatur (DergiPark) ve
-      yoktez (YÖK Tez).
+      YÖK Akademik — hukuk/tıp DOKTRİN sinyali (ANALYZE/gerekçe akademik
+      dayanak). Semantik sıra: yok_search|yok_search_academics →
+      yok_get_profile|yok_get_full_profile → yok_get_publications/projects/
+      supervised_theses/collaborators. METADATA katmanı — tam metin literatur
+      (DergiPark) + yoktez. yok_get_photo / yok_browse / list_* taxonomy
+      reform omurgasında N/A → conscious exclude.
     degrade: >-
       Erişilemezse doktrin sinyali literatur + yoktez'e daralır; akademisyen
       profili/yayın listesi teyidi yapılamaz.
@@ -553,29 +559,21 @@ servers:
     shard: [S1, S2]
     modes: [ALL]
     gate: G6
-    tools_used: [eurlex_lookup_celex, eurlex_search_documents, eurlex_get_document,
-                 eurlex_get_cases, eurlex_get_relations, eurlex_browse_subjects,
-                 eurlex_query_sparql]
+    tools_used: [eurlex_browse_subjects, eurlex_search_documents,
+                 eurlex_lookup_celex, eurlex_get_document, eurlex_get_relations,
+                 eurlex_get_cases, eurlex_query_sparql]
     # Argümansız bilgi aracı yok → otomatik allowlist bu sunucuya hiç dokunmazdı.
     # Beyan edilen duman çağrısı deterministik ve küçüktür (tek CELEX çözümlemesi).
     smoke:
       tool: eurlex_lookup_celex
       args: { identifier: "32001L0083" }
     role: >-
-      EUR-Lex / CELLAR — G6 CELEX kapısının WIRE'LI taşıyıcısı (2026-08-08'de
-      `Open Law` companion'ının AB yarısı buraya taşındı; companion artık yalnız
-      UK taşır). HP self-host: upstream `@cyanheads/eur-lex-mcp-server` (Apache-2.0,
-      sürüm PİNLİ 0.9.8) 127.0.0.1:8316'da ANAHTARSIZ koşar, önünde tek-kiracılı
-      OAuth 2.1 kapısı (:8315) durur — fork YOK, upstream npm ile yükseltilir.
-      7 araç: lookup_celex (varlık/tür/tarih doğrulaması — G6'nın ta kendisi),
-      search_documents, get_document, get_cases (CJEU), get_relations (CELLAR
-      ilişki grafı), browse_subjects (EuroVoc), query_sparql (ham SPARQL).
-      Upstream CELLAR SPARQL + EUR-Lex REST'e anahtarsız erişir; yukarı akışa
-      hiçbir kimlik bilgisi gönderilmez.
-      DOĞRULAMA (2026-08-08, iki BAĞIMSIZ yol aynı sonucu verdi): ham CELLAR
-      SPARQL sorgusu ve bu sunucunun `eurlex_lookup_celex`'i CELEX 32001L0083 için
-      aynı cellar URI'sini (6af3ed69-c00a-4629-9deb-a7003a30a52d), aynı türü (DIR)
-      ve aynı tarihi (2001-11-06) döndürdü.
+      EUR-Lex / CELLAR — G6 CELEX kapısının WIRE'LI taşıyıcısı. Semantik sıra:
+      eurlex_browse_subjects (EuroVoc) → eurlex_search_documents →
+      eurlex_lookup_celex (G6 varlık/tür/tarih) → eurlex_get_document →
+      eurlex_get_relations → eurlex_get_cases (içtihat) → eurlex_query_sparql
+      (çok-hop yedek). Upstream pinli 0.9.8 loopback; Authorization upstream'e
+      gitmez. DOĞRULAMA: CELEX 32001L0083 → cellar 6af3ed69-… DIR 2001-11-06.
     degrade: >-
       Anahtar yoksa/erişilemezse G6 CELEX doğrulaması PROGRAMATİK yedeğe düşer:
       CELLAR SPARQL (ep.eurlex_sparql, references/15 §1) — aynı veri, MCP'siz;
@@ -591,13 +589,16 @@ servers:
     shard: S2
     modes: [COMPARATIVE_LAW, RIA, DRAFT]
     gate: null
-    tools_used: [fedlex_get_law_by_sr, fedlex_search_laws, fedlex_get_law_history,
+    tools_used: [fedlex_search_laws, fedlex_get_law_by_sr, fedlex_get_law_history,
                  fedlex_get_upcoming_changes, fedlex_search_treaties,
-                 fedlex_search_gazette, termdat_lookup_term]
+                 fedlex_search_gazette, termdat_lookup_term,
+                 fedlex_get_open_consultations, fedlex_search_consultations,
+                 fedlex_get_consultation]
     # ⚠️ ARGÜMAN SÖZLEŞMESİ (istemci çağrı sözleşmesi — FR-22):
     #   TÜM araçlar argümanları `params` içine SARAR (FastMCP/pydantic).
     #   ✅ fedlex_get_law_by_sr  → {"params":{"sr_number":"812.21"}}
     #   ✅ fedlex_search_laws    → {"params":{"keywords":"Heilmittel"}}  (# query YOK)
+    #   ✅ fedlex_get_open_consultations → {"params":{"limit":20}}  (RIA paydaş/alternatif)
     #   ❌ {"sr_number":"812.21"} veya {"params":{"query":"…"}} → Field required
     #      / validation error = ÇAĞRI HATASI, "kayıt yok" DEĞİL.
     # Duman bu biçimi her koşumda doğrular. Kanun METNİ uydurma — yalnız
@@ -610,20 +611,25 @@ servers:
       WIRE'LI karşılığı (2026-08-08). HP self-host: upstream `fedlex-mcp`
       (MIT, PyPI, sürüm PİNLİ 2.0.1) 127.0.0.1:8321'de ANAHTARSIZ koşar,
       önünde tek-kiracılı OAuth 2.1 kapısı (:8317 → fedlex.cureonics.com).
-      Upstream 12 araç ilan eder; `tools_used` yalnız Mod 7 yük-taşıyan 7'si
-      (fantom beyan yok).
+      Upstream 12 araç; `tools_used` = 7 SR/birincil + 3 Vernehmlassung
+      (danışma) — fantom beyan yok. `fedlex_get_recent_publications` +
+      `termdat_get_concept` hâlâ conscious exclude.
       İSTEMCİ ÇAĞRI SÖZLEŞMESİ: her tools/call argümanı `params` sarmalayıcısında.
-      SEARCH BEFORE GET — `fedlex_search_laws({"params":{"keywords":"…"}})`
-      (`query` alanı YOKTUR) → isabetteki SR ile
+      SEMANTİK SIRA: (1) SEARCH BEFORE GET —
+      `fedlex_search_laws({"params":{"keywords":"…"}})` (`query` YOK) →
       `fedlex_get_law_by_sr({"params":{"sr_number":"…"}})` (noktalı SR, örn.
-      812.21). Aynı `params` kuralı law_history / upcoming_changes /
-      search_treaties / search_gazette / termdat_lookup_term için de geçerli.
-      Identifier = SR; konsolide ELI `eli/cc/…` (eli/fga = BBl/taslak — birincil
-      metin diye sunma). Kapı Authorization'ı upstream'e iletmez; upstream
-      düşükse 502 + açık hata (sessiz boş sonuç yok).
-      DOĞRULAMA (2026-08-08; 2026-08-17 yeniden): SR 812.21 → HMG (Heilmittelgesetz),
-      `eli/cc/2001/422`, "✅ In Kraft", yürürlük 2002-01-01 — ham Fedlex SPARQL
-      ile aynı ELI (üçüncü bağımsız teyit). Metin icat etme.
+      812.21) → history / upcoming / treaties / gazette / termdat_lookup_term;
+      (2) **RIA (Mod 6) paydaş/alternatif bölümünde**, SR get'ten SONRA CH
+      danışma manzarası:
+      `fedlex_get_open_consultations` → `fedlex_search_consultations` →
+      `fedlex_get_consultation({params:{event_id}})` (eventId açık listeden;
+      uydurma yok). Vernehmlassung = İsviçre ön-parlamento usulü — TR
+      yönetmelik DRAFT/5210 görüş sürecinin ikamesi DEĞİLDİR; mukayese/RIA
+      benchmark olarak aktarılır. Identifier = SR; konsolide ELI `eli/cc/…`
+      (eli/fga = BBl/taslak — birincil metin diye sunma). Kapı Authorization'ı
+      upstream'e iletmez; upstream düşükse 502 + açık hata.
+      DOĞRULAMA (2026-08-08; 2026-08-17 yeniden): SR 812.21 → HMG,
+      `eli/cc/2001/422`, "✅ In Kraft", yürürlük 2002-01-01. Metin icat etme.
     degrade: >-
       Erişilemezse CH birincil metni programatik yedeğe düşer (ep.fedlex_sparql,
       references/15 §3b) — orada `a jolux:ConsolidationAbstract` filtresi ve
@@ -637,43 +643,35 @@ servers:
     shard: S2
     modes: [COMPARATIVE_LAW, ANALYZE, OPINE]
     gate: null
-    # BEYAN YALNIZ ÖLÇÜLEREK ÇALIŞTIĞI DOĞRULANAN ARAÇLARI İÇERİR.
-    # `legislation_*` araçları BİLEREK DIŞARIDA — working olarak reklam edilmez.
-    # Tercih sırası: case law → Hansard → bills → divisions → OSCOLA.
-    tools_used: [case_law_search, judgment_get_index, judgment_get_paragraph,
+    # Tercih: legislation_* (statute) + case law → Hansard → bills → OSCOLA.
+    # legislation_* 2026-08-18 loopback httpx fix sonrası canlı doğrulandı
+    # (Medicines Act 1968 / ukpga/1968/67).
+    tools_used: [legislation_search, legislation_get_toc, legislation_get_section,
+                 case_law_search, judgment_get_index, judgment_get_paragraph,
                  case_law_grep_judgment, parliament_search_hansard,
                  bills_search_bills, votes_search_divisions,
                  committees_search_evidence, citations_parse, citations_format_oscola]
     smoke:
-      tool: case_law_search
-      args: { query: "medicines act" }
+      tool: legislation_search
+      args: { query: "Medicines Act 1968", limit: 3 }
     role: >-
       Birleşik Krallık hukuku — `Open Law` companion'ının UK yarısının WIRE'LI
       karşılığı, ama KAPSAMI FARKLI ve DAHA GENİŞ. HP self-host: upstream
       `uk-legal-mcp` (MIT, PyPI, sürüm PİNLİ 0.6.0) 127.0.0.1:8322'de koşar,
-      önünde OAuth 2.1 kapısı (:8318). Canlı yüzey 35 araç. GETİRDİĞİ YENİ
-      YETENEK: İngiliz İÇTİHADI (Find Case Law), Hansard/parlamento tutanağı,
-      bills, divisions, komisyon delilleri, OSCOLA atıf biçimlendirme —
-      companion'da bunların hiçbiri yoktu.
-      ⚠️ ÖLÇÜLEN SINIRLAMA — MEVZUAT METNİ BU SUNUCUDAN GELMEZ: `legislation_*`
-      araçları (search/get_toc/get_section) 2026-08-08'de HEM fly.dev örneğinde
-      HEM kendi HP dağıtımımızda başarısız oldu; upstream hatayı "AWS WAF is
-      blocking the XML endpoint" diye açıklıyor. Bu TEŞHİS DOĞRULANAMADI: aynı
-      URL'ler (`/search?title=…` ve `/ukpga/1968/67/data.xml|.akn`) hem
-      Lenovo'dan hem HP'den düz curl ile HTTP 200 döndü — yani blok köken-IP
-      değil, upstream'in KENDİ HTTP istemcisi kaynaklı (7 sn zaman aşımı /
-      parmak izi). "HP residential IP çözer" hipotezi ÖLÇÜMLE ÇÜRÜTÜLDÜ.
-      UK MEVZUAT METNİ için programatik yol kullanılır: ep.legislation_uk
-      (references/15 §3, `/data.akn`) — ölçülü çalışıyor.
-      Arıza DÜRÜSTTÜR (`isError:true` + açık gerekçe), sessiz
-      yanlış-negatif deseni DEĞİLDİR — bu yüzden sunucu güvenilir sayılır.
+      önünde OAuth 2.1 kapısı (:8318). Canlı yüzey 35 araç. İngiliz İÇTİHADI
+      (Find Case Law), Hansard, bills, divisions, komisyon delilleri, OSCOLA —
+      ve UK MEVZUAT METNİ: `legislation_search` → `legislation_get_toc` →
+      `legislation_get_section` (CLML `/data.xml`). Kök neden (2026-08-18):
+      pinli paketin `curl_cffi impersonate=chrome` istemcisi HTTP 437 veriyordu;
+      loopback `legislation_http_fix` httpx + browser-like UA ile değiştirir
+      (fork yok). DOĞRULAMA: Medicines Act 1968 → ukpga/1968/67; s.1 Ministers
+      metni. Origin 403/404/WAF → dürüst `isError` — metin uydurma yok.
+      Yedek: ep.legislation_uk `/data.akn` veya Open Law companion.
     degrade: >-
-      Erişilemezse İngiliz içtihadı/parlamento katmanı düşer ve ilgili satır
-      'manual_required' (caselaw.nationalarchives.gov.uk / hansard deep-link).
-      UK MEVZUAT METNİ zaten bu sunucuya BAĞLI DEĞİLDİR — ep.legislation_uk
-      taşır; o da düşerse 'manual_required' (legislation.gov.uk deep-link).
-      `legislation_*` araçları upstream'de düzelirse tools_used'a EKLENMEDEN
-      ÖNCE check_tools --call ile doğrulanmalıdır.
+      Erişilemezse İngiliz içtihadı/parlamento/mevzuat satırı 'manual_required'
+      (caselaw.nationalarchives.gov.uk / hansard / legislation.gov.uk deep-link).
+      `legislation_*` origin-başarısızsa ep.legislation_uk `/data.akn` veya
+      Open Law; yokluk kanıtı değildir.
 
   # ── Substrat (her shard'a girer) ───────────────────────────────────────────
   - name: anamnesis
@@ -715,27 +713,27 @@ companions:
   - name: Open Law
     tool_prefixes: ["mcp__Open_Law__", "mcp__claude_ai_Open_Law__"]
     modes: [ALL]
-    manifest_row: "Open Law (companion — UK birincil metin; AB yarısı wire'landı)"
-    # 2026-08-08 — İKİ DÜZELTME:
+    manifest_row: "Open Law (companion — UK çapraz/HUDOC; statute wire=uk-legal legislation_*)"
+    # 2026-08-08 — İKİ DÜZELTME (+ 3.8.6 UK wire):
     # (1) KAPSAM DARALDI. Bu companion UK+AB taşıyordu; AB yarısı artık WIRE'LI
     #     `eurlex` sunucusudur (HP self-host, G6'yı taşır). Companion'a kalan
-    #     UK'dir; G6 artık ona BAĞLI DEĞİLDİR → gate: null.
+    #     UK çapraz + HUDOC; G6 artık ona BAĞLI DEĞİLDİR → gate: null.
     # (2) ESKİ DEGRADE METNİ ÖLÇÜMLE ÇÜRÜTÜLDÜ. "german-law get_eu_basis →
     #     WebFetch" diyordu; oysa german-law'ın EU araçları ALMANYA-ÇAPALIDIR
     #     ("§ 21 AMG" → "EG 1394/2007"), CELEX kimliği ÜRETMEZ, keyfi bir CELEX'i
     #     doğrulayamaz. Gerçek yedek CELLAR SPARQL'dir ve zaten canlıydı.
-    #     (v3.8.0'da bu metnin güncellendiği bildirilmişti; düzenleme SESSİZCE
-    #     UYGULANMAMIŞTI — arama dizgisi ayrıştırılmış YAML'dan yazıldığı için
-    #     `>-` bloğunun ham metniyle eşleşmedi. v3.8.0'da doğrulanarak düzeltildi.)
+    # (3) 2026-08-18: UK statute BİRİNCİL yüzeyi wire'lı `uk-legal`
+    #     `legislation_search`→`_get_toc`→`_get_section` (httpx fix). Open Law =
+    #     çapraz/yedek + HUDOC — "UK statute yalnız Open Law" YASAK.
     gate: null
     degrade: >-
-      Bağlı değilse UK birincil metni PROGRAMATİK yedeğe düşer:
-      ep.legislation_uk (references/15 §3) — arama /{tur}?title={q}, belge
-      /{tur}/{yil}/{no}/data.akn (Akoma Ntoso; data.xml CLML'dir, AKN DEĞİL);
-      sonuç mcp_verified=false. AB/CELEX tarafı bu companion'a ARTIK BAĞLI
-      DEĞİLDİR — wire'lı `eurlex` sunucusu taşır, o da düşerse ep.eurlex_sparql.
-      Ne companion ne uç erişilebilirse UK satırı 'manual_required'
-      (legislation.gov.uk deep-link) — asla uydurma.
+      UK statute birincil yolu wire'lı uk-legal legislation_*'tir. Open Law
+      bağlı değilse / origin fail → ep.legislation_uk (references/15 §3) —
+      arama /{tur}?title={q}, belge /{tur}/{yil}/{no}/data.akn (Akoma Ntoso;
+      data.xml CLML'dir, AKN DEĞİL); sonuç mcp_verified=false. AB/CELEX bu
+      companion'a ARTIK BAĞLI DEĞİLDİR — wire'lı `eurlex` taşır, o da düşerse
+      ep.eurlex_sparql. Ne wire ne yedek erişilebilirse UK satırı
+      'manual_required' (legislation.gov.uk deep-link) — asla uydurma.
 
   - name: Ansvar
     tool_prefixes: ["mcp__Ansvar__", "mcp__claude_ai_Ansvar__"]
@@ -826,3 +824,58 @@ mcp_comment: >-
   (retrieve-don't-dump).   Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır —
   wire edilemez. Fedlex 2026-08-08'de wire edildi.
   G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONSCIOUS EXCLUDES — live surface exists but Cureolex bilerek tools_used'a
+# almaz (sessiz omit YASAK; coverage'da gerekçeli skip / portal deep-link).
+# ─────────────────────────────────────────────────────────────────────────────
+conscious_excludes:
+  # uhri exclude KALDIRILDI (2026-08-18): HP uhri-indexer canlı; uhri_search +
+  # uhri_fetch_document tools_used'ta (sağlık-hakları FTS; dump Worker'a GET edilmez).
+  # uk_legislation_star KALDIRILDI (2026-08-18): loopback httpx fix sonrası
+  # legislation_* tools_used'a alındı (Medicines Act 1968 dumanı).
+  - id: german_premium
+    server: german-law
+    tools: [search_case_law, get_preparatory_works, get_provision_history,
+            diff_provision, get_recent_changes]
+    reason: >-
+      Ölçülen free-tier (2026-08-18): Ansvar premium ~2.15GB artefaktı Release’te
+      yok; Doppler’da indirme anahtarı yok; HP DB 300MB tier=free. Araçlar
+      upgradeRequired+portal_links ile dürüst degrade (rechtsprechung /
+      dip.bundestag / gesetze-im-internet). BGH/BVerfG içtihadı veya madde
+      tarihçesi UYDURULMAZ. Premium gerçekten ingest edilmeden tools_used’a alınmaz.
+  - id: chatgpt_aliases
+    servers: [resmi-gazete, saglikbakanligi, health-policy, tbmm, mevzuat]
+    tools: [search, fetch]
+    reason: >-
+      ChatGPT Developer Mode alias'ları; Claude/Cursor native yüzeyde rg_*/sb_*/
+      semantic_search birincildir. tools_used'a eklenmez (fantom çift yüzey).
+  - id: uts_not_wired
+    server: null
+    tools: []
+    reason: >-
+      ÜTS TR cihaz kaydı filoya wire edilmedi. Cihaz → eudamed (AB); TİTCK
+      ilaç indeksidir, cihaz aracı fantomdu (kaldırıldı).
+  - id: fedlex_peripheral
+    server: fedlex
+    tools: [fedlex_get_recent_publications, termdat_get_concept]
+    reason: >-
+      AS (Amtliche Sammlung) yayın izleme + Termdat kavram get — reform/RIA
+      omurgası değil. Vernehmlassung üçlüsü (`fedlex_get_open_consultations` /
+      `fedlex_search_consultations` / `fedlex_get_consultation`) 2026-08-18'de
+      Mod 6 RIA tools_used'a alındı (SR get sonrası paydaş/alternatif).
+  - id: detsis_peripheral
+    server: detsis
+    tools: [detsis_get_gecmis_birim, detsis_list_iller_ilceler,
+            detsis_list_taxonomies]
+    reason: >-
+      empty_surface / coğrafya/taksonomi — reform kurum-atıf omurgası değil;
+      gerekirse coverage'da skipped: mod için N/A.
+  - id: yok_peripheral
+    server: yok-akademik
+    tools: [yok_get_photo, yok_browse, yok_list_universities, yok_list_fields,
+            yok_list_project_types, yok_fetch_profile, yok_get_courses,
+            yok_get_profile_section]
+    reason: >-
+      Foto/browse/taxonomy — doktrin künye omurgası değil (search→profile→
+      publications zinciri tools_used'ta).

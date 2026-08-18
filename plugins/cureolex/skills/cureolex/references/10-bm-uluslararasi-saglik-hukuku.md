@@ -541,7 +541,7 @@ ANAYASA
 - `treaty_status` + `treaty_reservations` — ICESCR (IV-3 / Md. 12 + AAAQ), ICCPR, CEDAW, CRC, CRPD + dosyanın adlandırdığı chapter-IV alias.
 - `coe_treaty_signatories` — Oviedo CETS 164 ve MEDICRIME CETS 211 (9 CETS anlık görüntü; `snapshot_age_days`; `mcp_verified:false`). `live_coe:false` = coverage'da `degraded: snapshot`.
 - `intl_treaty_info` — dosya başına bir kez.
-- UHRI `tools_used` **dışıdır** (sorgu API yok). UN tavsiyesi gerekirse coverage'a `https://uhri.ohchr.org/` deep-link.
+- UHRI `uhri_search` / `uhri_fetch_document` **tools_used** (HP sağlık-hakları indexer, 2026-08-18). COMPARATIVE / Md.90/5 / ICESCR: treaty+coe+info **SONRASI zorunlu** (yerine geçmez). Dump Worker'a GET edilmez; boş ≠ yokluk.
 - Andlaşma↔kanun çatışması → gerekçede Anayasa md. 90/5 cümlesi; onay/çekince **uydurulmaz**.
 
 Her DRAFT çıktısının **Bölüm 2 (Hukuki Çerçeve)** bölümünde, Anayasa Md. 90/5 atıfı + ilgili temel hak andlaşması maddesi (MCP-doğrulanmış) **zorunlu** olarak yer alır.

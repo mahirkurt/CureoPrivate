@@ -13,9 +13,9 @@ Talep: **$ARGUMENTS**
 ## Yürütme
 
 1. **Scope Guard (§6).**
-2. **Tam-filo (G0).** `legal-distiller` ile Mod 6 server-listesi. Load-bearing: **oecd** (nicel gösterge) + health-policy + german-law + eudamed + titck + mevzuat.
-3. **Klinik ◆ → evidentia:** ICER (§14.c), BIA (§14.d), MEA (§14.e), SGK (§14.f) — zenginleştirilmiş sorgu.
-4. **RIA 8-adım:** hedefleri netleştir (Md.26) → etkilenen aktörler → yurtiçi benchmark (`list_mevzuat_by_type`) → uluslararası benchmark (AB + üye devletler + US eCFR/FedReg via health-policy + HTA dörtlüsü + OECD.Stat) → içtihat+doktrin → maliyet-fayda → risk senaryoları → çıktı.
+2. **Tam-filo (G0).** `legal-distiller` (S1) + `comparative-law-researcher` (S2). Load-bearing: **oecd** (**GOV_REG** + HEA) + health-policy + german-law (resolve→EU) + eudamed + titck + mevzuat (`list_mevzuat_by_type`) + **fedlex** (SR get → RIA paydaş/alternatifte Vernehmlassung: `fedlex_get_open_consultations` / `fedlex_search_consultations` / `fedlex_get_consultation`; `params` sarmalayıcı; TR DRAFT usulü değil).
+3. **Klinik ◆ → evidentia:** ICER/BIA/MEA/SGK.
+4. **RIA 8-adım:** hedefler → aktörler (detsis) → yurtiçi `list_mevzuat_types`→`list_mevzuat_by_type` → uluslararası + **OECD GOV_REG zorunlu** + **CH danışma manzarası (SR sonrası)** → içtihat+doktrin → maliyet-fayda → risk → çıktı.
 5. **Template:** [`templates/dea-template.md`](../skills/cureolex/templates/dea-template.md) + [`templates/bef-template.md`](../skills/cureolex/templates/bef-template.md) + [`templates/karsilastirma-uluslararasi.md`](../skills/cureolex/templates/karsilastirma-uluslararasi.md).
 6. **Kapılar G0-G7**, `evidence_ledger`, no-fabrication.
 7. **sci-audit'e delege et** (nicel iddialar → `/check-stats`).

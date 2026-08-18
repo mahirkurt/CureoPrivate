@@ -52,7 +52,7 @@ düzenlemenin anayasal dayanağı}}
 Md. 25, CEDAW, ICCPR) ve `coe_treaty_signatories` (Oviedo 164, MEDICRIME 211;
 snapshot + snapshot_age_days + mcp_verified:false). intl_treaty_info bir kez.
 live_coe:false = beyanlı degrade. Andlaşma↔kanun çatışması → md. 90/5 cümlesi;
-onay uydurulmaz. UHRI tools_used dışı. Bkz. references/10}}
+onay uydurulmaz. Md.90 sonrası uhri_search→uhri_fetch_document. Bkz. references/10}}
 
 4. AB Müktesebatı Uyumu (Varsa)
 {{İlgili AB regülasyonları/direktifleri (CELEX referansları) ile 

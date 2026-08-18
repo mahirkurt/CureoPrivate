@@ -223,7 +223,7 @@ cases:
     rationale: "SKILL.md §5.4.quinquies precedence (alt-ajan → server-side legal_distill_* → doğrudan degrade) + degraded:true etiketleme kuralı; tasarım spec §6/§3."
 
   - id: ROUTE-016
-    title: "COMPARATIVE_LAW / Md.90/5 — intl-treaty ateş listesi"
+    title: "COMPARATIVE_LAW / Md.90/5 — intl-treaty + UHRI ateş listesi"
     given: "Klinik araştırma ve sahte ilaç rejimini Anayasa Md.90/5 + ICESCR Md.12 + Oviedo + MEDICRIME çerçevesinde karşılaştırmalı analiz et."
     expect:
       mode: COMPARATIVE_LAW
@@ -233,5 +233,64 @@ cases:
       - "Mod COMPARATIVE_LAW olmalı."
       - "Ateş: treaty_status + treaty_reservations (ICESCR IV-3, ICCPR, CEDAW, CRC, CRPD) ve coe_treaty_signatories (Oviedo 164, MEDICRIME 211)."
       - "intl_treaty_info bir kez; live_coe:false beyanlı degrade (skip-without-reason DEĞİL)."
-      - "UHRI çağrılmaz (tools_used dışı)."
-    rationale: "SKILL §3 Md.90/5 ateş listesi; 00-mod-pipelines Mod 7; fleet.yaml intl-treaty shard [S1,S2]."
+      - "uhri_search → uhri_fetch_document treaty+coe+info SONRASI zorunlu (yerine geçmez; atlanırsa FAIL)."
+    rationale: "SKILL §3 Md.90/5 + UHRI HP indexer; 00-mod-pipelines Mod 7; fleet.yaml intl-treaty."
+
+  - id: ROUTE-017
+    title: "ANALYZE-before-DRAFT + german resolve→EU + ich M4/M8 + eudamed cihaz"
+    given: >-
+      'Hücresel tedavi ürünlerinin hangi hukuki düzeyde düzenlenmesi gerektiği
+      belirsiz; CTD dosya yapısı ve AB cihaz eşiği de net değil — yönetmelik
+      taslağı ve etki analizi istiyoruz.'
+    expect:
+      mode: DRAFT
+      routed_to: cureolex
+      medical_research: mandatory
+      gates: { G0: PASS, G6: PASS }
+    assertions:
+      - "Önce ANALYZE landscape (veya eşdeğer distillate); kör DRAFT yok."
+      - "german-law get_provision/validate önce, get_eu_basis sonra."
+      - "ich M4 ve M8 dosya-yapısı atıfı için ateşlenir."
+      - "Cihaz eşiği eudamed ile; TİTCK cihaz DB diye kullanılmaz."
+      - "RIA ayağı varsa oecd GOV_REG zorunlu."
+    rationale: "v3.8.6 semantic order; 00-mod-pipelines Mod 1 önkoşul + Mod 6/7."
+
+  - id: ROUTE-018
+    title: "RIA — list_mevzuat_by_type + OECD GOV_REG + fedlex Vernehmlassung"
+    given: "Biyobenzer geri-ödeme reformu için DEA/BEF çıkar."
+    expect:
+      mode: RIA
+      routed_to: cureolex
+      medical_research: mandatory
+    assertions:
+      - "yurtiçi benchmark list_mevzuat_types → list_mevzuat_by_type."
+      - "oecd: categories/dataflows → get_data_structure/query_data ile GOV_REG alias."
+      - "HEA sağlık harcaması/fiyat göstergesi ayrı ateşlenir."
+      - "fedlex RIA: SR search/get sonrası fedlex_get_open_consultations + fedlex_search_consultations + fedlex_get_consultation (params); TR DRAFT/5210 görüş usulü diye sunulmaz."
+    rationale: "fleet.yaml oecd 9 + fedlex Vernehmlassung RIA; lex-ria GOV_REG + CH danışma."
+
+  - id: ROUTE-019
+    title: "COMPARATIVE UK statute — legislation_* zorunlu; Open Law yalnız çapraz"
+    given: "Medicines Act 1968 ve UK ruhsat rejimi ile TR 1262 SK karşılaştırması."
+    expect:
+      mode: COMPARATIVE_LAW
+      routed_to: cureolex
+      gates: { G0: PASS }
+    assertions:
+      - "uk-legal: legislation_search → legislation_get_toc → legislation_get_section ateşlenir."
+      - "Open Law statute-tek yol olarak kullanılmaz; wire fail → ep.legislation_uk yedek."
+      - "comparative-law-researcher 'legislation_* yok' veya 'UK yalnız Open Law' demez."
+    rationale: "2026-08-18 httpx fix; conscious exclude uk_legislation_star kaldırıldı."
+
+  - id: ROUTE-020
+    title: "DRAFT/TBMM — primer phrase + search_within + gerekçe gövdesi"
+    given: "Yeni ATMP yönetmeliği genel gerekçesi; bedesten gerekçe ve belge-içi tarama gerekli."
+    expect:
+      mode: DRAFT
+      routed_to: cureolex
+    assertions:
+      - "search_mevzuat phrase ve/veya mevzuat_no kullanılır."
+      - "search_within_mevzuat belge-içi tarama için çağrılır."
+      - "get_mevzuat_gerekce primer bedesten gövdesi; 'use secondary for gerekçe body' FAIL."
+      - "TBMM bağlamında sira_no locator önce, gövde sonra."
+    rationale: "mevzuat HP 0.15.1+; SKILL 0.14 caveat kaldırıldı — pipeline CALL etmeli."

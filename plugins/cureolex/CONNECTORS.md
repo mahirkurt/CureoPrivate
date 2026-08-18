@@ -111,7 +111,7 @@ Connectors** üzerinden bağlanır. Bağlıyken tetiklenen bağlamda atlanamazla
 | Companion | Kapı / rol | Yoksa |
 |---|---|---|
 | **Yargı** | G5 içtihat zinciri | G5 en fazla CONDITIONAL |
-| **Open Law** | UK birincil metin + HUDOC | UK metni `ep.legislation_uk`; **G6'yı düşürmez** (G6 = wire'lı `eurlex`) |
+| **Open Law** | UK çapraz/HUDOC (statute birincil = wire `uk-legal` `legislation_*`) | Wire fail → `ep.legislation_uk`; **G6'yı düşürmez** (G6 = wire'lı `eurlex`) |
 | **Ansvar** | Mod 7, 58-yargı tarama | ilgili yargı satırı `manual_required` |
 
 ---

@@ -48,7 +48,7 @@ Her kontrolün ihlal hâlinde mevzuata getireceği risk derecesi:
 1. Taslağın **üst norm zincirini** belirleyin: Anayasa → Kanun → KHK/CBK → Yönetmelik → Tebliğ.
 2. Taslağın her ana hükmünü üst normun ilgili maddesi/maddeleri ile **bire-bir eşleştirme** tablosu çıkarın.
 3. Mevzuat MCP üzerinden üst normun **güncel** sürümünü teyit edin (yürürlükteki sürüm).
-4. Anayasa Md. 90/5 uyarınca **uluslararası antlaşma** ayağını `mcp__intl-treaty__*` ile denetleyin: `treaty_status` + `treaty_reservations` (ICESCR IV-3, ICCPR, CEDAW, CRC, CRPD + adlandırılan andlaşma) ve `coe_treaty_signatories` (Oviedo CETS 164, MEDICRIME CETS 211 — snapshot + `snapshot_age_days` + `mcp_verified:false`); `intl_treaty_info` bir kez. `live_coe:false` = beyanlı degrade. Onay/çekince **uydurulmaz**. Andlaşma↔kanun çatışması → md. 90/5 cümlesi. UHRI tools_used dışı.
+4. Anayasa Md. 90/5 uyarınca **uluslararası antlaşma** ayağını `mcp__intl-treaty__*` ile denetleyin: `treaty_status` + `treaty_reservations` (ICESCR IV-3, ICCPR, CEDAW, CRC, CRPD + adlandırılan andlaşma) ve `coe_treaty_signatories` (Oviedo CETS 164, MEDICRIME CETS 211 — snapshot + `snapshot_age_days` + `mcp_verified:false`); `intl_treaty_info` bir kez; ardından **`uhri_search`→`uhri_fetch_document`** (sağlık-hakları; treaty yerine geçmez). `live_coe:false` = beyanlı degrade. Onay/çekince **uydurulmaz**. Andlaşma↔kanun çatışması → md. 90/5 cümlesi.
 
 **PASS:**
 - Her hüküm üst normun ilgili maddesine atfedilebilir.

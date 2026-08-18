@@ -13,9 +13,9 @@ Talep: **$ARGUMENTS**
 ## Yürütme
 
 1. **Scope Guard (§6).** Reform-dışıysa (bireysel dava/promosyon) → yönlendir, dur.
-2. **Tam-filo (G0, zorunlu).** `references/00-mod-pipelines.md` Mod 1 server-listesini `legal-distiller` alt-ajanına tek görevde ver; wire'lı 22 MCP + bağlı companion **tamamı** süpürülsün, kompakt `retrieval_distillate` + `coverage` dönsün.
+2. **Tam-filo (G0, zorunlu).** Belirsiz manzara varsa önce kısa ANALYZE landscape distillate. Sonra `references/00-mod-pipelines.md` Mod 1 listesini `legal-distiller` + `comparative-law-researcher` shard'larına ver; **tools_used semantik sırası eksiksiz** (kalıcı alt küme yok).
 3. **Klinik boyut varsa → evidentia'ya delege et** (§5; zenginleştirilmiş sorgu, `epistemic_dual_label:true`).
-4. **DRAFT 11-adım pipeline'ı** uygula (`references/00-mod-pipelines.md` → Mod 1): üst-norm zinciri → **Md.90/5:** `treaty_status`/`treaty_reservations` + `coe_treaty_signatories`(164/211) + `intl_treaty_info` → yatay semantik tarama → mülga taraması → AB/uluslararası benchmark → içtihat+doktrin → Md.15 iskelet → Md.4+10-22+25 yazım → yan belgeler → kaynakça → R9 15-nokta dil QC.
+4. **DRAFT pipeline** (`00-mod-pipelines` Mod 1): üst-norm + **Md.90/5** → semantik tarama → mülga → AB/uluslararası (german **resolve→EU**; ich **M4/M8** dosya-yapısıysa; cihaz→eudamed) → içtihat+doktrin → Md.15 iskelet → yazım → yan belgeler → kaynakça → R9 QC.
 5. **Template:** [`templates/yonetmelik-taslagi.md`](../skills/cureolex/templates/yonetmelik-taslagi.md) veya [`templates/teblig-taslagi.md`](../skills/cureolex/templates/teblig-taslagi.md). Gerekçe: [`templates/genel-gerekce.md`](../skills/cureolex/templates/genel-gerekce.md) + [`templates/madde-gerekce.md`](../skills/cureolex/templates/madde-gerekce.md).
 6. **Kapılar G0-G7.** `evidence_ledger` tut; her atıf MCP-doğrulanmış (no-fabrication).
 7. **sci-audit'e delege et** (§5 — `/verify-citations` + `/check-turkish`).

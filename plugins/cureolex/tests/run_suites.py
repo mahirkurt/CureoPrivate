@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""cureolex davranış süiti koşucusu — 7 YAML süiti · 85 vaka · AĞ ERİŞİMİ YOK.
+"""cureolex davranış süiti koşucusu — 7 YAML süiti · 98 vaka · AĞ ERİŞİMİ YOK.
 
 NE YAPAR (deterministik, offline):
   [1] ŞEMA        her süit `suite`+`cases`; her vaka `id`/`given`/`expect`;

@@ -2,7 +2,7 @@
 
 Bu dosya, Mevzuat MCP'nin tool'larının mod bazlı **somut kullanım örüntülerini** içerir.
 
-**0.15.0 (yerel paket; HP production henüz kesilmedi).** Primer first-party bedesten: `search_mevzuat` boş query + `mevzuat_no` / yalnız-rakam NUMARA lookup + `phrase` (Solr); `search_within_mevzuat` belge-içi AND/OR/NOT (EK/GEÇİCİ ağacı); `get_mevzuat_gerekce` TBMM locator **ve** bedesten `getGerekceContent` tam metin. Playwright clone yok. Canlı `mevzuat.cureonics.com` hâlâ 0.14.x ise phrase / `search_within` / tam gerekçe o uçta **yoktur** — tool listesinde yoksa uydurma; ikincil `mevzuat-bilgisi` (wire'lıysa) veya `manual_required`.
+**0.15.1+ (HP production `mevzuat.cureonics.com`, 2026-08 cutover).** Primer first-party bedesten: `search_mevzuat` boş query + `mevzuat_no` / yalnız-rakam NUMARA lookup + `phrase` (Solr); `search_within_mevzuat` belge-içi AND/OR/NOT (EK/GEÇİCİ ağacı; `mevzuat_tur` INTEGER); `get_mevzuat_gerekce` TBMM locator **ve** bedesten `getGerekceContent` tam metin (`gerekceId` yoksa locator-only dürüst). Playwright clone yok. Tool listesinde yoksa uydurma; ikincil `mevzuat-bilgisi` (wire'lıysa) veya `manual_required`.
 
 ## 1. Mevzuat MCP Tool Envanteri (Yeniden)
 
@@ -257,12 +257,12 @@ list_mevzuat_by_type(<yönetmelik>)
 ## 3. Sık Karşılaşılan Sorunlar ve Çözümler
 
 ### 3.1. `search_mevzuat` 0 sonuç veriyor
-- Kanun/mevzuat **numarası** biliyorsanız `mevzuat_no` veya yalnız-rakam `query` deneyin (0.15.0; canlı 0.14.x uçta yoksa kelime araması veya ikincil)
+- Kanun/mevzuat **numarası** biliyorsanız `mevzuat_no` veya yalnız-rakam `query` deneyin (0.15+)
 - Daha geniş anahtar kelime deneyin
-- `phrase=` ile tam ifade (bedesten Solr; canlı 0.14.x uçta yoksa atla)
+- `phrase=` ile tam ifade (bedesten Solr)
 - Eş anlamlı terim deneyin (örn. "ilaç" yerine "müstahzar", "tıbbi ürün")
 - `search_mulga_mevzuat` deneyin (kaldırılmış olabilir)
-- Belge içi tarama: `search_within_mevzuat` (canlı 0.14.x uçta yoksa `get_mevzuat_content` / madde_tree)
+- Belge içi tarama: `search_within_mevzuat` (`mevzuat_tur` INTEGER; yoksa `get_mevzuat_content` / madde_tree)
 
 ### 3.2. `get_mevzuat_content` çok uzun metin
 - İlgili maddeleri sentaktik olarak izole edin (Madde N başlığı + sonraki Madde'ye kadar)

@@ -146,8 +146,44 @@ cases:
     assertions:
       - "COMPARATIVE/DRAFT coverage treaty_status ve coe_treaty_signatories listeler (ICESCR + Oviedo 164 / MEDICRIME 211)."
       - "intl_treaty_info dosya başına bir kez çağrılır (live_coe:false beyanlı degrade)."
-      - "UHRI tools_used dışı — coverage'da ancak UN tavsiyesi gerekirse portal deep-link."
+      - "uhri_search → uhri_fetch_document treaty+coe+info SONRASI ateşlenir (yerine geçmez; atlanırsa G0 FAIL)."
       - "intl-treaty satırı sessiz skip olamaz; live_coe:false = degraded: snapshot."
     rationale: >-
-      SKILL §3 Anayasa Md. 90/5 ateş listesi + fleet.yaml intl-treaty role.
-      Snapshot recapture 0.2.8 as_of 2026-08-17; coe.int canlı 403 durur.
+      SKILL §3 Anayasa Md. 90/5 ateş listesi + fleet.yaml intl-treaty role
+      (UHRI HP indexer 2026-08-18). Snapshot recapture; coe.int canlı 403 durur.
+
+  - id: FLEET-011
+    title: "v3.8.6 — semantik sıra + canlı yetenek absorb (atlanamaz)"
+    given: >-
+      ATMP yönetmeliği DRAFT + RIA: belirsiz manzara; DE/AB/ICH CTD + OECD
+      Better Regulation + UK Medicines Act + cihaz eşiği sorusu da var.
+    expect:
+      mode: DRAFT
+      full_fleet: true
+      gates: { G0: PASS, G6: PASS }
+    assertions:
+      - "Belirsiz manzarada önce ANALYZE landscape distillate; kör DRAFT yok."
+      - "legal-distiller yalnız S1+S3 (+eurlex); S2 health-policy/german/oecd/eudamed/uk-legal/fedlex comparative-law-researcher'da — S1 S2'yi örtmez."
+      - "german: search/get_provision/validate ÖNCE; get_eu_basis ailesi SONRA — çözücüsüz EU yok; premium case_law çağrılmaz."
+      - "ich: dosya-yapısı/CTD ise ich_get_guideline M4 ve M8 ateşlenir."
+      - "RIA/DEA: oecd GOV_REG (get_data_structure/query_data) + HEA; list_mevzuat_by_type yurtiçi; fedlex Vernehmlassung SR get sonrası."
+      - "UK statute: legislation_search→_get_toc→_get_section; Open Law yalnız çapraz/yedek."
+      - "Primer: phrase/search_within_mevzuat/get_mevzuat_gerekce çağrılır; gerekçe gövdesi ikincile devredilmez."
+      - "Cihaz benchmark eudamed; TİTCK/ÜTS cihaz diye sunulmaz."
+      - "Distiller tools_used'tan kalıcı alt küme bırakmaz — empty/degraded beyanlı tam süpürme."
+      - "Conscious excludes (german premium, ChatGPT search/fetch, ÜTS, fedlex peripheral) coverage'da gerekçeli; UHRI ve legislation_* tools_used — sessiz omit yok."
+    rationale: >-
+      v3.8.6 second pass: absorb legislation_*/UHRI/fedlex consults/mevzuat 0.15.1
+      into ordered sweeps; remove 3.8.5-era stale skips.
+
+  - id: FLEET-012
+    title: "TBMM sira_no → mevzuat gerekçe gövdesi sırası"
+    given: "Kanun teklifi genel gerekçesi yazılıyor; hem tbmm hem mevzuat wire'lı."
+    expect:
+      mode: TBMM_KANUN_TEKLIFI
+      gates: { G0: PASS, G8: PASS }
+    assertions:
+      - "Önce tbmm_get_kanun_teklifi(sira_no) / tbmm_search_kanun locator."
+      - "Gerekçe gövdesi get_mevzuat_gerekce (bedesten) — TBMM locator gövde sayılmaz; ikincile gövde devretme yok."
+      - "Md.90/5 treaty→coe→info→uhri_* ateşi gerekçe üst-normunda."
+    rationale: "User semantic order: TBMM sira_no before mevzuat gerekçe body; UHRI after treaties."

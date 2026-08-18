@@ -121,9 +121,9 @@ endpoints:
     # NOT: data.xml Akoma Ntoso DEĞİLDİR (CLML'dir); AKN isteniyorsa data.akn.
     query_pattern: "https://www.legislation.gov.uk/{type}/{year}/{number}/data.akn"
     fallback: >
-      Open Law companion bağlı değilse UK birincil metni BURADAN çekilir
-      (mcp_verified=false + confidence_label.mcp_unavailability). Ne uç ne
-      companion erişilebilirse UK satırı 'manual_required' — asla uydurma.
+      Wire uk-legal legislation_* origin-fail veya Open Law çapraz yoksa UK
+      statute BURADAN çekilir (mcp_verified=false + confidence_label.mcp_unavailability).
+      Ne wire ne yedek erişilebilirse UK satırı 'manual_required' — asla uydurma.
 
   - id: ep.legislation_nz
     registry_id: cmp.nz

@@ -114,7 +114,7 @@ cases:
       - "Çıktı DURMAZ: Türk mevzuatı yükünü `mcp__mevzuat-bilgisi__*` devralır (SKILL.md §3 DEVRALMA KURALI)."
       - "Manifestoda İKİ satır zorunlu: 'mevzuat → degraded: <teşhis>' VE 'mevzuat-bilgisi → hit N (fallback devraldı)'. Tek satır yazmak G0 FAIL."
       - "Yedekten gelen her atıf `source: mevzuat_bilgisi_mcp (fallback)` + birincil-doğrulama açığı notu taşımalı; birincil ayağa kalkınca çapraz-doğrulanmalı."
-      - "Yedek EŞDEĞER SAYILMAMALI: yapısal graf ve resolve_resmi_gazete yalnız primerdedir; ikincil search_mevzuat AND/OR/NOT desteklemez (`+terim1 +terim2`). Primer 0.15.0 (yerel) numara lookup / phrase / search_within / tam gerekçe taşır — canlı HP 0.14.x ise o üçü production uçta yoktur."
+      - "Yedek EŞDEĞER SAYILMAMALI: yapısal graf ve resolve_resmi_gazete yalnız primerdedir; ikincil search_mevzuat AND/OR/NOT desteklemez (`+terim1 +terim2`). Primer 0.15.1+ (HP production) numara lookup / phrase / search_within / tam gerekçe taşır."
       - "`resolve_resmi_gazete` KARŞILIĞI YEDEKTE YOKTUR — RG çapa çözümlemesi gerekiyorsa `manual_required`; yedekle kapatıldığı İMA EDİLMEMELİ."
       - "İkisi de düşükse Türk mevzuatı iddiası ÜRETİLMEMELİ (no-fabrication)."
     rationale: >-
@@ -208,7 +208,7 @@ cases:
       ya da wire'lı `eurlex`/`fedlex` erişilemiyor.
     expect:
       - "G6 CELEX doğrulaması Open Law skip'inde DÜŞMEZ — wire'lı eurlex_lookup_celex hard PASS. eurlex de erişilemezse ep.eurlex_sparql + G6 CONDITIONAL."
-      - "UK birincil metni ep.legislation_uk'ten `/data.akn` (Akoma Ntoso) ile çekilmeli — `/data.xml` CLML'dir, AKN değildir. uk-legal legislation_* tools_used dışıdır."
+      - "UK birincil metni tercihen uk-legal legislation_* (CLML); yedek ep.legislation_uk `/data.akn` (Akoma Ntoso — `/data.xml` CLML'dir, AKN değildir)."
       - "CH birincil metni wire'lı mcp__fedlex__*'tedir; o da düşerse ep.fedlex_sparql. Ansvar ÇERÇEVE taraması ikame SAYILMAZ (kategori hatası)."
       - "german-law get_eu_basis CELEX doğrulamasının ikamesi DEĞİLDİR — Almanya-çapalıdır, CELEX kimliği üretmez."
       - "Hiçbiri erişilemezse ilgili satır 'manual_required' (portal deep-link) — uydurma CELEX/SR ASLA."
@@ -362,13 +362,57 @@ cases:
       COMPARATIVE_LAW, DRAFT/AMEND gerekçe (üst-norm), COMPLY (K-1) veya
       TBMM teklifi koşumunda Anayasa Md.90/5 ayağı denetleniyor.
     expect:
-      - "fleet.yaml intl-treaty shard [S1, S2]; tools_used = treaty_status, treaty_reservations, coe_treaty_signatories, intl_treaty_info."
-      - "UHRI (uhri_search / uhri_fetch_document) tools_used DIŞIDIR — sorgu API yok; 109 MB dump Worker'a GET edilmez."
-      - "COMPARATIVE / Md.90/5 ateş listesi treaty_status ve coe_treaty_signatories içerir (ICESCR IV-3 + Oviedo 164 / MEDICRIME 211)."
+      - "fleet.yaml intl-treaty shard [S1, S2]; tools_used = treaty_status, treaty_reservations, coe_treaty_signatories, intl_treaty_info, uhri_search, uhri_fetch_document."
+      - "UHRI (uhri_search / uhri_fetch_document) tools_used'tadır — HP sağlık-hakları indexer; dump Worker'a GET edilmez."
+      - "COMPARATIVE / Md.90/5 / ICESCR ateş: treaty_status + treaty_reservations → coe_treaty_signatories → intl_treaty_info → uhri_search → uhri_fetch_document (UHRI treaty/coe yerine geçmez; atlanırsa G0 FAIL)."
       - "live_coe:false kapsam satırında 'degraded: snapshot' beyanlı degrade'dir; sessiz skip = G0 FAIL."
       - "Onay/çekince uydurulmaz; andlaşma↔kanun çatışması gerekçede Anayasa md. 90/5 cümlesi taşır."
     rationale: >-
-      intl-treaty 0.2.8: UN MTDSG canlı; CoE 9 CETS snapshot (as_of 2026-08-17,
-      HP Playwright); UHRI manual_required. tools_used zaten dört aracı
-      taşıyordu — boşluk pipeline/distiller ateşindeydi. FR-27 TBMM'ye ait;
-      bu vaka Md.90/5 taşıyıcısıdır.
+      intl-treaty 0.2.8+: UN MTDSG canlı; CoE 9 CETS snapshot; UHRI HP indexer
+      (2026-08-18) tools_used. FR-27 TBMM'ye ait; bu vaka Md.90/5 taşıyıcısıdır.
+
+  - id: FR-29-conscious-excludes-ve-tam-tools-used
+    given: >-
+      fleet.yaml tools_used ve conscious_excludes denetimi; distiller prompt'u
+      token için kalıcı araç düşürmüyor mu.
+    expect:
+      - "conscious_excludes bloğu german premium, ChatGPT search/fetch, ÜTS, fedlex peripheral (recent_publications + termdat_get_concept), detsis/yok peripheral listeler — UHRI ve uk legislation_* exclude DEĞİL (tools_used)."
+      - "fedlex tools_used Vernehmlassung üçlüsünü içerir: fedlex_get_open_consultations, fedlex_search_consultations, fedlex_get_consultation (RIA; SR get sonrası)."
+      - "uk-legal tools_used legislation_search, legislation_get_toc, legislation_get_section içerir."
+      - "mevzuat tools_used list_mevzuat_types/by_type/get_mevzuat_detail/search_kanun/search_within_mevzuat/get_mevzuat_gerekce/list_kurumlar içerir; phrase = search_mevzuat parametresi."
+      - "oecd tools_used 9 araçtır (list_dataflows, get_categories, list_categories_detailed, get_dataflow_url dahil)."
+      - "health-policy tools_used govinfo_search/congress_search/japan_elaws_search/australia_legislation_search/china_law_recent/ecfr_versions içerir; search/fetch ChatGPT alias tools_used dışı."
+      - "saglikbakanligi sb_list_birimler + sb_list_taslaklar tools_used'ta."
+      - "legal-distiller gövdesi S2 sunucularını çağırma yasağı taşır; comparative-law-researcher german resolve→EU, uk legislation_*, uhri_* ve oecd GOV_REG sırasını yazar."
+      - "coverage-manifest.md conscious excludes tablosu fleet.yaml ile uyumlu (UHRI satırı yok)."
+    rationale: >-
+      v3.8.6: beş canlı yetenek (legislation_*, UHRI, fedlex consults, mevzuat
+      0.15.1 phrase/search_within/gerekçe, free-tier german EU) sıraya alındı;
+      conscious_excludes tek yerde; distiller izolasyonu araç kalıcı düşürmez.
+
+  - id: FR-30-fedlex-ria-vernehmlassung
+    given: >-
+      Mod 6 RIA (DEA/BEF) koşumunda İsviçre mukayese/paydaş ayağı denetleniyor;
+      fedlex.cureonics.com canlı yüzeyinde Vernehmlassung araçları var.
+    expect:
+      - "fleet.yaml fedlex tools_used fedlex_get_open_consultations, fedlex_search_consultations, fedlex_get_consultation içerir."
+      - "Semantik sıra: fedlex_search_laws → fedlex_get_law_by_sr → (RIA paydaş/alternatif) open → search → get_consultation; event_id listeden, uydurulmaz."
+      - "Argümanlar params sarmalayıcısında (FR-22); Vernehmlassung TR 5210/DRAFT görüş usulü diye sunulmaz."
+      - "conscious_excludes fedlex_peripheral yalnız recent_publications + termdat_get_concept; danışma üçlüsü exclude DEĞİL."
+      - "lex-ria.md ve comparative-law-researcher fedlex Vernehmlassung sırasını yazar."
+    rationale: >-
+      2026-08-18: bilinçli dışlama kaldırıldı; canlı tools/list + open-consultations
+      dumanı tools_used'ı doğruladı.
+
+  - id: FR-31-uk-legislation-star-ve-mevzuat-015
+    given: >-
+      COMPARATIVE UK Medicines Act satırı + TBMM/DRAFT gerekçe gövdesi;
+      mevzuat.cureonics.com 0.15.1+ ve uk-legal legislation_* canlı.
+    expect:
+      - "UK statute: legislation_search → legislation_get_toc → legislation_get_section; Open Law yalnız çapraz/yedek — 'UK statute yalnız Open Law' FAIL."
+      - "Primer mevzuat: search_mevzuat phrase ve/veya mevzuat_no + search_within_mevzuat + get_mevzuat_gerekce (bedesten) çağrılır; gerekçe gövdesi ikincile devredilmez."
+      - "TBMM sira_no locator önce; gövde get_mevzuat_gerekce."
+      - "german free-tier EU araçları (get_eu_basis ailesi) atlanmaz; premium case_law çağrılmaz."
+    rationale: >-
+      v3.8.6 absorb: httpx legislation fix + HP mevzuat 0.15.1 + UHRI indexer;
+      3.8.5 sonrası stale skip'leri (Open Law-only UK, secondary gerekçe) FAIL.

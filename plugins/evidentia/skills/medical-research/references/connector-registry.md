@@ -2,7 +2,7 @@
 
 **Replaces:** `connector-api.md` (v7.1).
 **Loaded:** ALWAYS, before any `tool_search` / connector call (Adım 0).
-**Order of fire:** `execution-map.md` (MUST/SHOULD/MAY/OUT + `SKIP-REASON`) binds *when* each of the 19 bundled servers and 9 companions runs. This file is the verified tool table; the playbook is the sequence. Silent skip is a Completeness Gate failure.
+**Order of fire:** `execution-map.md` (MUST/SHOULD/MAY/OUT + `SKIP-REASON`) binds *when* each of the 20 bundled servers and 13 companions runs. This file is the verified tool table; the playbook is the sequence. Silent skip is a Completeness Gate failure.
 **Status:** Every tool name and parameter below was **verified by live MCP probe on 9 June 2026.** Where a connector was probed and behaved differently from prior documentation, the verified behavior is authoritative.
 
 ---
@@ -57,15 +57,20 @@ P2 (retrieval/dedup), and P4 (full-text enrichment when abstract is insufficient
 | **OpenAlex (bundled)** | `openalex.cureonics.com/mcp` (Tier-K gated — **CureoHub HP self-host since 2026-08-17**, 5 tools; old Worker undeployed) | `openalex_resolve_name` (names→IDs FIRST), `openalex_search_entities`, `openalex_analyze_trends` (group_by), `openalex_get_citation_graph`, `openalex_describe_fields` | **KOL mapping + citation network + institution/author (ORCID/ROR) disambiguation** (§8); native promotion from REST-fallback. Chain: OpenAlex → S2 → EPMC → NPI → YÖK Akademik |
 | **Semantic Scholar (bundled)** | `semanticscholar.cureonics.com/mcp` (Tier-K gated — **CureoHub HP self-host since 2026-08-17**, 4 tools; old pipeworx gateway undeployed) | `search_papers`, `get_paper`, `get_paper_citations`, `get_author` | S2 citation graph / influential citations — **secondary** (Consensus already synthesizes S2). Bearer `${SEMANTICSCHOLAR_MCP_API_KEY}`. Guard still allowlists these four names as defence-in-depth. |
 | **Clinical Trials v2** | `4cc36ce0…` (primary) · `bio-research:c-trials` | `search_trials`, `get_trial_details`, `search_by_sponsor`, `search_investigators`, `analyze_endpoints`, `search_by_eligibility` | NIH/NLM CT.gov v2; sponsor pipeline + endpoint comparison |
-| **bioRxiv / medRxiv** | `4e673875…` · `bio-research:biorxiv` | `search_preprints`, `get_preprint`, `search_published_preprints`, `search_by_funder` | ⚠️ Preprint = non-peer-reviewed flag mandatory |
+| **bioRxiv / medRxiv** | `bio-research:biorxiv` · Hub stdio · Claude Directory | `search_preprints`, `get_preprint`, `search_published_preprints` | ⚠️ Preprint = non-peer-reviewed flag mandatory. HCLS empty-body bug → Hub stdio |
+| **Scite** | Claude Directory companion | Session schema (smart citations / evidence sentences) | P1.9 SHOULD + P3 SR-aid; cross-validate (DEĞİŞMEZ 4) |
+| **Elicit** | `elicit.com/api/mcp` (OAuth) | `search_papers`, `search_trials`, `list_reports`, `get_report` | SR-aid; OAuth companion |
+| **SNOMED CT Terminology** | Claude Directory companion | Session schema (SNOMED search/validate/expand) | P4 coding MAY; ICD-11 primary = openfda/med-terminologies |
+| **BioRender** | Claude Directory / OAuth | Session schema (figure library/generation) | P7 visual ONLY — never evidence |
 | **YÖK Tez** | `b2d46b46…` | `search_yok_tez_detailed`, `get_yok_tez_document_markdown`, `get_yok_tez_thesis_details`, `search_yok_tez_by_anabilim_dali` | Türkçe + İngilizce terim; tez tam metni sayfa-sayfa Markdown |
 
 **Full-text rung (P4, part of the core — not enrichment-gated):**
 
 | Connector | Server | Verified primary tools | Notes |
 |---|---|---|---|
-| **openathens** (self-host) | `openathens.cureonics.com/mcp` (Bearer `${OPENATHENS_MCP_API_KEY}`) | `oa_resolve`, `oa_fetch_fulltext` (text/ingest), **`oa_fetch_pdf(doi\|url)`** (provider-neutral original PDF → short-lived opaque resource link + SHA-256/provenance), **`oa_verify_access`**, `oa_session_status`, `oa_list_databases`, `oa_batch_submit`/`oa_batch_result`, `search`/`fetch` — **11 tools measured 2026-08-14** | Full-text cascade **Tier 3 — LICENSED institutional** (primary paywall gate, legal-first, ahead of annas); Millet Kütüphanesi/OpenAthens SAML. Use text delivery by default; request the original PDF only when needed. `pdf_unavailable` is an honest HTML-only result, never a fabricated PDF. Resource links are short-lived: consume promptly, do not cache as permanent sources. |
-| **annas-reader** (bundled, gated) | `annas.cureonics.com/mcp` — **9 tools measured 2026-08-14** | Reader path: `article_search`/`read_article`, `book_search`/`get_document_info`/`search_in_document`/`read_document`. Original-file path: **`download_document(id=DOI\|32-hex MD5)`** → PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS as a short-lived opaque resource link + format/size/SHA-256. Old `article_download`/`book_download` names do not exist | Full-text cascade **Tier 5 — LAST RESORT** (after the licensed band: OpenAthens Tier 3 + Wiley Tier 4). Consume links promptly; retain DOI/MD5 + checksum provenance; long-file analysis → anamnesis bounded query. ⚠️ Copyright: analysis only, no verbatim bulk reproduction |
+| **marmara-ebsco** (self-host) | `ebsco.cureonics.com/mcp` (Bearer `${MARMARA_EBSCO_MCP_API_KEY}`) | `ebsco_server_info`, `ebsco_list_databases`, `ebsco_search`, `ebsco_get(record_id, prefer, collection?, doc_id?)` — **4 tools** | Full-text cascade **Tier 3 — LICENSED FIRST** (Marmara VETİS → EBSCOhost; before OpenAthens). Search then get; pass Evidentia `collection`/`doc_id` when ingesting. Miss/manual_required → SKIP-REASON then Tier 4 (never silent skip). Deploy is operator gate. |
+| **openathens** (self-host) | `openathens.cureonics.com/mcp` (Bearer `${OPENATHENS_MCP_API_KEY}`) | `oa_resolve`, `oa_fetch_fulltext` (text/ingest; collection?), **`oa_fetch_pdf(doi\|url)`**, **`oa_verify_access`**, `oa_session_status`, `oa_list_databases`, `oa_batch_submit`/`oa_batch_result`, `search`/`fetch` — **11 tools measured 2026-08-14** | Full-text cascade **Tier 4 — LICENSED SECOND** (after Marmara EBSCO; ahead of annas); Millet Kütüphanesi/OpenAthens SAML. Resource links short-lived. |
+| **annas-reader** (bundled, gated) | `annas.cureonics.com/mcp` — **9 tools measured 2026-08-14** | Reader path + **`download_document(id=DOI\|32-hex MD5)`** | Full-text cascade **Tier 6 — LAST RESORT** (after licensed band: EBSCO Tier 3 + OpenAthens Tier 4 + Wiley Tier 5). Copyright: analysis only |
 | **Unpaywall** (via `pubmed-epmc` bundled tool) | `pubmed.cureonics.com/mcp` (CureoHub HP self-host) | `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA resolution) | Legal-OA full-text alternative to the annas gray-area rung; see §2.1 PubMed-EPMC row above |
 
 **RAG substrate (retrieve-don't-dump, part of the core — not enrichment-gated):**
@@ -88,7 +93,7 @@ degrades the drug-intelligence/mechanism module only — the bibliographic core 
 | **ChEMBL** | `bio-research:chembl` | `drug_search`, `compound_search`, `get_mechanism`, `get_admet` (QED/Lipinski/Veber/hERG), `get_bioactivity`, `target_search` (gene→UniProt) | Native — replaces Python ChEMBL in extended-api |
 | **Synapse** | `bio-research:synapse` | `authenticate` → multi-omics portals | OAuth-gated; conditional (0.5.J). Graceful skip if unauth |
 | **OpenTargets** | `bio-research:ot` | (not surfaced as of probe) | ⚠️ Offline at last check — load conditionally; fallback ChEMBL `target_search` + EPMC |
-| **Wiley** | `bio-research:wiley` | `authenticate` → publisher full-text | OAuth-gated; full-text cascade tier 4 |
+| **Wiley** | `bio-research:wiley` | `authenticate` → publisher full-text | OAuth-gated; full-text cascade tier 5 |
 
 ### 2.3 Regulatory + epidemiology + Türkiye + IP — OPTIONAL (enrichment-module-gated)
 

@@ -30,7 +30,7 @@ PRISMA-ScR checklist selection, §2).
 
 ### SKILL.md  — [ALWAYS]
 - Sections: Adım 0 (Mandatory Loading), Adım 0.1 (Project Settings), Adım 0.4 (Semantic Scope Scan — routes to PHASE files + optional MODULES, MANDATORY, runs before 0.5), Adım 0.5 (Optional Enrichment Classifier — NON-mandatory), PRISMA Pipeline Phases P0–P7, Adım 2 (Generosity Principle), Adım 3 (Output Contract), Adım 5 (Nihai Sunum Sözleşmesi), Completeness Gate, Reference Files Progressive Disclosure, Version History, SMP v1.0 Manifest
-- Pipeline table: **P0** Protocol (`prisma-protocol.md`) → **P1** Search Strategy (`search-strategy.md`) → **P2** Retrieval & Deduplication (`execution-map.md` — ordered MUST/SHOULD/MAY/OUT playbook for all 19 bundled servers + 9 companions; `SKIP-REASON` binds Completeness Gate) → **P3** Screening (`screening.md`, human-approval) → **P4** Data Extraction (`data-extraction.md`) → **P5** Risk of Bias (`risk-of-bias.md`, human-approval) → **P6** GRADE (`evidence-grading.md`) → **P7** PRISMA Reporting (`prisma-reporting.md`). Every review runs this core spine; P0–P7 is never skipped.
+- Pipeline table: **P0** Protocol (`prisma-protocol.md`) → **P1** Search Strategy (`search-strategy.md`) → **P2** Retrieval & Deduplication (`execution-map.md` — ordered MUST/SHOULD/MAY/OUT playbook for all 20 bundled servers + 13 companions; `SKIP-REASON` binds Completeness Gate) → **P3** Screening (`screening.md`, human-approval) → **P4** Data Extraction (`data-extraction.md`) → **P5** Risk of Bias (`risk-of-bias.md`, human-approval) → **P6** GRADE (`evidence-grading.md`) → **P7** PRISMA Reporting (`prisma-reporting.md`). Every review runs this core spine; P0–P7 is never skipped.
 - Optional enrichment modules (Adım 0.5, NON-mandatory, context-triggered — de-skew invariant: default path loads none): oncology, hematology, regulatory, HTA, medical-affairs/KOL, immunology, neurology, rare-disease, drug-intelligence, Türkiye-market, regulatory-intelligence/epidemiology.
 - Concepts: skill protocol, PRISMA 2020/PRISMA-ScR pipeline, optional-module signal detection, native-MCP-first principle, always-load files, output contract, Cömertlik Garantisi, clean-copy doctrine, two-output model, tool loading via ToolSearch, human-approval checkpoints (P3/P5), de-skew invariant
 - Synonyms: akış protokolü, araştırma sırası, kural seti, beceri yönergesi, methodology, protocol, PRISMA hattı
@@ -169,16 +169,16 @@ PRISMA-ScR checklist selection, §2).
 - Cross-links: regulatory-science-layer.md (TİTCK ruhsat module); regulatory-intelligence.md (TR multi-jurisdiction cross-ref module); hta-layer.md (TR HTA/SGK decisions module); oncology-layer.md (TR onco off-label TİTCK module); medaffairs-ops-layer.md (TR KOL via YÖK Akademik module); drug-intelligence-layer.md (TR drug intelligence module)
 
 ### fulltext-retrieval.md  — [axis: full-text/KOL cross-cutting]
-- Sections: §1 When to retrieve full text, §2 The Cascade — legal-first 6-tier (Tier 1 EuropePMC PMC OA, Tier 2 Paper Search download, Tier 3 OpenAthens/Millet Kütüphanesi licensed institutional, Tier 4 Wiley OAuth-gated, Tier 5 annas-mcp shadow-library LAST RESORT, Tier 6 pubmed-epmc Unpaywall legal-OA sweep), §3 Copyright Gate (MANDATORY), §4 Methodology Grounding (annas book layer), §5 Output integration, §6 Known limitations
-- Concepts: open access, PMC full-text, EPMC copyright_status, OpenAthens / Millet Kütüphanesi licensed institutional access, paywalled article retrieval, Anna's Archive, Wiley publisher full text, methodology books, Unpaywall, DOAJ, copyright gate, verbatim prohibition, CC-BY license
-- Synonyms: tam metin, açık erişim, full text, article download, PDF erişim, makale indirme, copyright, telif hakkı
+- Sections: §1 When to retrieve full text, §2 The Cascade — legal-first 7-tier (Tier 1 EuropePMC PMC OA, Tier 2 Paper Search download, Tier 3 Marmara EBSCO licensed FIRST, Tier 4 OpenAthens/Millet licensed SECOND, Tier 5 Wiley OAuth-gated, Tier 6 annas-mcp shadow-library LAST RESORT, Tier 7 pubmed-epmc Unpaywall legal-OA sweep), §3 Copyright Gate (MANDATORY), §4 Methodology Grounding (annas book layer), §5 Output integration, §6 Known limitations
+- Concepts: open access, PMC full-text, EPMC copyright_status, Marmara EBSCO / VETİS, OpenAthens / Millet Kütüphanesi licensed institutional access, paywalled article retrieval, Anna's Archive, Wiley publisher full text, methodology books, Unpaywall, DOAJ, copyright gate, verbatim prohibition, CC-BY license, SKIP-REASON before cascade fallthrough
+- Synonyms: tam metin, açık erişim, full text, article download, PDF erişim, makale indirme, copyright, telif hakkı, EBSCO, Marmara VETİS
 - Cross-links: connector-registry.md §3.5–3.6 (annas-mcp + EPMC copyright gate); extended-api.md §5 (Unpaywall/DOAJ); medaffairs-ops-layer.md (KOL publication retrieval); output-templates.md (§10 açık erişim); evidence-grading.md §5 (full-text numerical extraction)
 
 ### Process/tooling (not question-routed, listed for coverage completeness)
 - benchmark-suite.md — deterministic integrity gates (check_integrity.py), regression queries (benchmark-queries.json), pass criteria (release gate)
 - benchmark-protocol.md — integrity gate definitions, regression procedure, what each query guards, provenance & honesty
 - composition-runbook.md — downstream handoffs (pipe_to), scope guard (what medical-research does NOT do), sidecar as the contract
-- execution-map.md — ordered P0–P7 tool playbook (MUST/SHOULD/MAY/OUT) for all 19 bundled servers + 9 companions; skip-reason template; Completeness Gate contract
+- execution-map.md — ordered P0–P7 tool playbook (MUST/SHOULD/MAY/OUT) for all 20 bundled servers + 13 companions; skip-reason template; Completeness Gate contract
 - v8-wiring-patch.md — global find/replace patch (ALL reference files), extended-api.md rewrite to native-first, evidence-grading.md update, output-templates.md update, specialty layer wiring inserts, infrastructure files, files NOT needing change
 - skill-manifest.yaml — SMP v1.0 manifest (runtime.mcp_servers, composition, verification gates, constraints)
 
@@ -253,11 +253,11 @@ PRISMA-ScR checklist selection, §2).
 - **Case series / single-arm / small-n** → rare-disease-layer.md#§2 (evidence specifics small-n) · evidence-grading.md#§3 (pragmatic track) · evidence-grading.md#§4 (specialty checklist)
 - **Preprint / bioRxiv / medRxiv** → evidence-grading.md#§1 (Tier 6 preprint) · connector-registry.md#§2.1 (academic literature core)
 - **GRADE / certainty / RoB / downgrading** → evidence-grading.md#§2 (GRADE per outcome) · evidence-grading.md#§4 (specialty checklists) · output-templates.md#§7 (Tier 0 synthesis)
-- **Full text / PMC / open access / OpenAthens / Millet Kütüphanesi / licensed / copyright** → fulltext-retrieval.md (all, legal-first: OpenAthens Tier 3 licensed → Wiley Tier 4 → annas Tier 5) · connector-registry.md#§2.1 (openathens + annas-mcp + EPMC copyright gate) · extended-api.md#§5 (Unpaywall/DOAJ)
+- **Full text / PMC / open access / Marmara EBSCO / OpenAthens / Millet Kütüphanesi / licensed / copyright** → fulltext-retrieval.md (all, legal-first: EBSCO Tier 3 → OpenAthens Tier 4 → Wiley Tier 5 → annas Tier 6) · connector-registry.md#§2.1 (marmara-ebsco + openathens + annas-mcp + EPMC copyright gate) · extended-api.md#§5 (Unpaywall/DOAJ)
 
 ### Full-Text / KOL / Pipeline
 
-- **Full-text retrieval / PMC / OpenAthens / annas-mcp / Wiley / paywalled** → fulltext-retrieval.md (all, legal-first: OpenAthens Tier 3 licensed → Wiley Tier 4 → annas Tier 5) · extended-api.md#§5 (Unpaywall) · connector-registry.md#§2.1 (full-text rung)
+- **Full-text retrieval / PMC / EBSCO / OpenAthens / annas-mcp / Wiley / paywalled** → fulltext-retrieval.md (all, legal-first: EBSCO Tier 3 → OpenAthens Tier 4 → Wiley Tier 5 → annas Tier 6) · extended-api.md#§5 (Unpaywall) · connector-registry.md#§2.1 (full-text rung)
 - **KOL / Key Opinion Leader / kilit kanaat önderi / author network** → medaffairs-ops-layer.md#§3 (KOL identification wiring §8) · output-templates.md#§8 (KOL Haritası) · extended-api.md#§2 (OpenAlex) · extended-api.md#§4 (Semantic Scholar) · turkiye-layer.md (TR KOL via YÖK Akademik)
 - **Pipeline snapshot / AdisInsight / drug development / Phase 1–3 clinical** → drug-intelligence-layer.md (all) · drug-intelligence-layer.md#§6 (pipeline_payload sidecar) · connector-registry.md#§3.1 (AdisInsight real schema) · output-templates.md#§19 (drug intelligence snapshot)
 - **Competitive set / pipeline landscape (structured only)** → drug-intelligence-layer.md#§3.2 (competitor set, AdisInsight/CT.gov) · output-templates.md#§20 (cross-layer notes). (OSINT/web competitive intelligence removed v1.4.0 → out of scope; external `pharmaintel`.)

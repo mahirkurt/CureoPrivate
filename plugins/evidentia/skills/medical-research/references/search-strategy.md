@@ -4,9 +4,10 @@
 per-database search strategy P2 retrieval executes. Feeds P3 (`screening.md`, dedupe/
 flow counts) and P7 (`prisma-reporting.md` item 7 — reproducible search string).
 
-**Fire order (binding):** `execution-map.md` P1 — OpenAlex → pubmed-epmc (MeSH+search+EPMC)
-→ Semantic Scholar → Clinical Trials companion → bioRxiv/medRxiv → Consensus/Paper Search
-→ YÖK Tez. This file is the DSL; the playbook is which connector fires when. No silent skip.
+**Fire order (binding):** `execution-map.md` P1 — OpenAlex → pubmed-epmc → Semantic Scholar
+→ PubMed companion → Clinical Trials → bioRxiv → Consensus → Paper Search → Elicit (MAY)
+→ Scite → AdisInsight (MAY 0.5.I) → YÖK Tez. This file is the DSL; the playbook is which
+connector fires when. No silent skip.
 
 **Authority basis:** PRISMA 2020 item 7 · Cochrane Handbook ch. 4 (search methods) ·
 PubMed Clinical Queries filters · Cochrane HSSS · PRISMA-S extension.

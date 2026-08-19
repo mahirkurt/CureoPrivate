@@ -3,8 +3,8 @@
 > **Sürüm:** plugin **2.7.2** · flagship skill `medical-research` **9.0.2** · connector canlı
 > re-probe **2026-08-14** (`CONNECTORS.md` §9) · belge güncellemesi **2026-08-18**.
 > **Bu sürümün headline'ı:** P0–P7 **ordered tool playbook** (`execution-map.md`) —
-> 19 bundled sunucu MUST/SHOULD/MAY/OUT + `SKIP-REASON`; sessiz atlama yok. Tam-metin
-> kademesi **legal-first 6-katman** (OpenAthens Tier 3 lisanslı → Wiley → annas Tier 5 son çare).
+> 20 bundled sunucu MUST/SHOULD/MAY/OUT + `SKIP-REASON`; sessiz atlama yok. Tam-metin
+> kademesi **legal-first 7-katman** (Marmara EBSCO Tier 3 → OpenAthens Tier 4 → Wiley Tier 5 → annas Tier 6 son çare).
 > **Amaç:** evidentia'nın herhangi bir tıbbi/klinik literatür sorusunu nasıl alıp, hangi
 > aşamalardan geçirip, **PRISMA 2020 / PRISMA-ScR P0–P7 hattı** üzerinden doğrulanmış kanıt
 > sentezine dönüştürdüğünü uçtan uca tarif etmek.
@@ -153,7 +153,8 @@ SUT/mevzuat metni bu plugin'de yok → `cureolex`. + α-katman **TİTCK** (kanon
 - **evidentia-kb** — `kb_search` semantik-recall takviyesi (opsiyonel, graceful-degrade).
 
 **HP self-host (Python + Playwright + FastMCP):**
-- **openathens** — tam-metin **Tier 3 (lisanslı kurumsal, birincil paywall kapısı)**; **CANLI**
+- **marmara-ebsco** — tam-metin **Tier 3 (lisanslı BİRİNCİ, VETİS EBSCOhost)**; deploy kapısı
+- **openathens** — tam-metin **Tier 4 (lisanslı İKİNCİ, Millet Kütüphanesi)**; **CANLI**
   `openathens.cureonics.com/mcp` (`openathens-mcp`, 2026-07-03; hardened OAuth 2.1 + Bearer,
   `OPENATHENS_MCP_API_KEY`). Cumhurbaşkanlığı Millet Kütüphanesi üzerinden gerçek OpenAthens
   SP-initiated SAML federasyonu → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/Springer/JSTOR/
@@ -320,10 +321,11 @@ China, Japan, Germany, Brazil, Korea]: EPMC AFF:"{ülke}"` (coğrafi genişlik �
 Türkiye-pazarı** (TR bağlamı/modülü aktifken) — TİTCK + YÖK Tez + EPMC AFF:"Turkey".
 **E. Kılavuzlar & HTA/Epidemiyoloji** — native-API'siz kaynak = belgelenmiş boşluk (web-scrape
 yok); ICD-11 openfda ile, ABD sürveyansı PopHIVE ile. **Tam-metin** (özet yetersizse) —
-**legal-first 6-katman** (§3.7): EPMC `get_copyright_status`/`get_full_text_article` (Tier 1) →
-Paper Search (Tier 2) → **OpenAthens/Millet Kütüphanesi** (Tier 3, lisanslı — birincil paywall
-kapısı; metin için `oa_fetch_fulltext`, sağlayıcı PDF'si için `oa_fetch_pdf`) → Wiley (Tier 4) →
-**annas** (Tier 5, SON ÇARE; okuma veya `download_document`) → pubmed-epmc Unpaywall (Tier 6 süpürme).
+**legal-first 7-katman** (§3.7): EPMC `get_copyright_status`/`get_full_text_article` (Tier 1) →
+Paper Search (Tier 2) → **Marmara EBSCO** (Tier 3, lisanslı birinci; `ebsco_search`→`ebsco_get`) →
+**OpenAthens/Millet Kütüphanesi** (Tier 4, lisanslı ikinci; metin için `oa_fetch_fulltext`,
+sağlayıcı PDF'si için `oa_fetch_pdf`) → Wiley (Tier 5) → **annas** (Tier 6, SON ÇARE; okuma
+veya `download_document`) → pubmed-epmc Unpaywall (Tier 7 süpürme).
 
 ### Adım 2 — Cömertlik İlkesi (UNCAPPED — tüm fazlarda)
 Çağrı sayısı/derinlik sınırlanmaz; varsayılan = **maksimum derinlik**, P0'dan P7'ye kadar tüm
@@ -407,7 +409,7 @@ eder; yoksa ledger `forget_document`. `forget_by_prefix` API değildir. Stop-hoo
 |---|---|
 | `/evidentia` | Uçtan uca P0→P7 koşumu (herhangi bir tıbbi araştırma sorusu; kanonik artefaktları üretir). |
 | `/evidentia-protocol` | P0–P1: soru-tipi sınıflama, PICO/PECO + uygunluk kriterleri, veritabanı-başına MeSH/Emtree arama stratejisi. |
-| `/evidentia-fulltext` | Legal-first tam-metin kademesi (§3.7): EPMC→Paper Search→**OpenAthens** (Tier 3, lisanslı)→Wiley→**annas** (Tier 5, son çare)→Unpaywall. |
+| `/evidentia-fulltext` | Legal-first tam-metin kademesi (§3.7): EPMC→Paper Search→**Marmara EBSCO** (Tier 3)→**OpenAthens** (Tier 4)→Wiley→**annas** (Tier 6)→Unpaywall. |
 | `/evidentia-synthesize` | P4+P6: `evidence-synthesizer` alt-ajanını çağırır (anamnesis RAG/GraphRAG, ağır fan-out izolasyonu). |
 | `/evidentia-appraise` | P5–P6: verilen çalışma setine tasarıma-göre RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST uygular, sonuç-bazlı GRADE + SoF üretir. |
 | `/evidentia-kol` | KOL haritası — **opsiyonel zenginleştirme modülü**; yalnız KOL/uzman-ağı bağlamlı sorularda (OpenAlex → S2 → EPMC → NPI → YÖK Akademik). |
@@ -516,6 +518,6 @@ PASSED` beklenir) + `rag_quality.py` (G-RAG) + `scripts/g_probe.py`/`scripts/g_b
 `skills/medical-research/references/connector-registry.md` (§2.6 Extended Tier-K + §8 Probe Log) ·
 `skills/medical-research/references/output-templates.md` (①–⑧ iskelet + sidecar) ·
 `skills/medical-research/references/prisma-reporting.md` (PRISMA akış + SoF) ·
-`skills/medical-research/references/fulltext-retrieval.md` (legal-first 6-katman tam-metin kademesi) ·
+`skills/medical-research/references/fulltext-retrieval.md` (legal-first 7-katman tam-metin kademesi) ·
 `shared/canonical-cache-contract.md` (tek-sefer) · `evals/check_integrity.py` (kapılar). Çakışmada bu
 otoriter dosyalar üstündür.*

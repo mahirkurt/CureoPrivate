@@ -1,7 +1,7 @@
-# medical-research v9.0.2 — Deliverable Index
+# medical-research v9.0.3 — Deliverable Index
 
-**v9.0.2 (Aug 2026) — Ordered PRISMA tool playbook.** `references/execution-map.md` binds
-MUST/SHOULD/MAY/OUT + `SKIP-REASON` for all **19 bundled servers + 9 companions**. Completeness
+**v9.0.3 (Aug 2026) — Marmara EBSCO first licensed full-text.** `references/execution-map.md` binds
+MUST/SHOULD/MAY/OUT + `SKIP-REASON` for all **20 bundled servers + 13 companions**. Completeness
 Gate requires skip reasons. **who-gho / globocan / ema** are native (IHME/GBD still gap).
 Anamnesis exclusive-run (`collection=evidentia:run:<id>` + `evrun:`) hybrid is P4/P6 MUST after
 ingest. New gate **G-PLAYBOOK**. Plugin version stays **2.7.2**.
@@ -68,7 +68,7 @@ the skill, install the `evidentia` plugin (or copy into your saved skill repo) �
 | `references/drug-intelligence-layer.md` | Real AdisInsight schema (`search_drugs`/`get_drug` HyDE/`generate_chart`); v7.1 fictional schema removed | ✅ current |
 | `references/turkiye-layer.md` | TİTCK 15+ native tools + TÜRKPATENT + YÖK (native TR sources, no web scraping; SUT/mevzuat → cureolex) | ✅ current |
 | `references/regulatory-intelligence.md` | Native openFDA + WHO ICD-11 (via openfda Worker); no-API burden/guideline sources = documented gap | ✅ current |
-| `references/fulltext-retrieval.md` | Full-text cascade (legal-first 6-tier): EPMC PMC OA → Paper Search → OpenAthens/Millet Kütüphanesi (Tier 3 licensed) → Wiley (Tier 4) → annas-mcp (Tier 5 last resort) → pubmed-epmc Unpaywall (Tier 6) | ✅ current |
+| `references/fulltext-retrieval.md` | Full-text cascade (legal-first 7-tier): EPMC PMC OA → Paper Search → Marmara EBSCO (Tier 3) → OpenAthens/Millet (Tier 4) → Wiley (Tier 5) → annas-mcp (Tier 6 last resort) → pubmed-epmc Unpaywall (Tier 7) | ✅ current |
 | `references/report-presentation.md` | v8.1 clean-copy doctrine; `<!-- VIZ -->`/`<!-- OPS -->` isolation; finalization gate G1–G7 | ✅ current |
 | `references/{oncology,hematology,regulatory-science,hta,medaffairs-ops,immunology,neurology,rare-disease}-layer.md` | 8 specialty layers — clinical content + verified connector wiring | ✅ current |
 | `references/v8-wiring-patch.md` | find→replace wiring spec — **applied in v8.2** (retained as provenance) | ✅ applied |

@@ -16,8 +16,11 @@ known_connected:
   - clinicaltrials  # ClinicalTrials v2 (directory)
   - consensus       # Consensus (directory)
   - scholar-gateway # Scholar Gateway (directory)
-  - biorxiv         # bioRxiv / medRxiv (directory)
+  - biorxiv         # bioRxiv / medRxiv (directory or Hub stdio biorxiv-mcp)
+  - scite           # Scite (directory — smart citations)
+  - snomed          # SNOMED CT Terminology (directory — validate/expand)
   - elicit          # Elicit (OAuth, secondary)
+  # - biorender     # BioRender (OAuth; P7 visuals only — not evidence)
   - npi             # NPI Registry (directory; yalnız ABD-KOL sinyalinde çağrılır)
   # - adisinsight   # AdisInsight (OAuth; yalnız 0.5.I ilaç-zekası sinyalinde)
 

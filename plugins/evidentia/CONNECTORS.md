@@ -11,7 +11,7 @@
 >
 > **PRISMA araç sırası (bağlayıcı):**
 > [skills/medical-research/references/execution-map.md](./skills/medical-research/references/execution-map.md)
-> — 19 bundled sunucu + 9 companion için MUST/SHOULD/MAY/OUT + `SKIP-REASON`.
+> — 20 bundled sunucu + 13 companion için MUST/SHOULD/MAY/OUT + `SKIP-REASON`.
 > Bu dosya envanterdir; playbook sıradır. Sessiz atlama Completeness Gate ihlalidir.
 
 ---
@@ -48,16 +48,25 @@ probe'lanmaları önlenir (`docs/evidentia.local.md.example`).
 | **ClinicalTrials v2** | claude.ai: **Directory'den etkinleştir** | none / HCLS | `search_trials`, `get_trial_details`, `search_by_sponsor`, `analyze_endpoints` | K* (çekirdek §1.1) |
 | **Consensus** | claude.ai: **Directory** (`bio-research:consensus`) | API / OAuth | `search` (kullanım-mesajı **birebir** reprodüksiyon; ≤3/batch; filtre yalnız kullanıcı isterse) | A (çekirdek §1.1) |
 | **Scholar Gateway** | claude.ai: **Directory / workspace** | API | `semanticSearch` | A (çekirdek §1.1) |
-| **bioRxiv / medRxiv** | claude.ai: **Directory'den etkinleştir** | none / HCLS | `search_preprints` (preprint flag zorunlu) | K (çekirdek §1.1) |
+| **bioRxiv / medRxiv** | claude.ai: **Directory'den etkinleştir** · Claude Code: Hub stdio `biorxiv-mcp` (rxpraxis) | none / HCLS | `search_preprints` (preprint flag zorunlu) | K (çekirdek §1.1) |
+| **Scite** | claude.ai: **Directory'den etkinleştir** | API / OAuth | Oturum schema'sı — smart citations / evidence sentences (P1.9 SHOULD) | A (çekirdek §1.1) |
 | **Elicit** | claude.ai: **Settings → Connectors → OAuth** (`elicit.com/api/mcp`); §9 "WIRE secondary" | OAuth | `search_papers`, `search_trials`, `list_reports`, `get_report` | secondary (OAuth) |
 | **AdisInsight** | claude.ai: **Settings → Connectors → OAuth** (Springer) | OAuth (API) | `search_drugs`, `get_drug`(HyDE), `generate_chart` — yalnız 0.5.I sinyali | A (opsiyonel §1.2) |
+| **SNOMED CT Terminology** | claude.ai: **Directory'den etkinleştir** | HCLS / API | SNOMED search / validate / expand (P4 coding MAY) | K* (terminology) |
+| **BioRender** | claude.ai: **Directory / OAuth** | OAuth | Figure library / template / generation — **P7 görsel ONLY** | visual (kanıt değil) |
 | **NPI Registry** | claude.ai: **Directory'den etkinleştir** | none / HCLS | `npi_search`, `npi_lookup`, `npi_validate` — yalnız ABD-KOL sinyali | K* (opsiyonel §1.3) |
 
-> **Kural:** Bu satırlar `.mcp.json`'a **eklenmez** (G-BUNDLE kapısı bunu bekler — directory
-> connector `.mcp.json`'da yoksa uyumsuzluk DEĞİLDİR). Tabloda "çekirdek §1.1" işaretli olanlar her
-> taramada beklenir; "opsiyonel" olanlar yalnız Adım 0.5 sinyaliyle çağrılır. **Yüzey ayrımı §6'da
-> normatiftir**; Tier-K/Tier-O statik-URL connector'ları (who-gho, openfda, anamnesis, med-terminologies…)
-> bunların AKSİNE `.mcp.json`'da bildirilir ve Claude Code'da otomatik bağlanır.
+> **Claude vs self-host (Evidentia):** Bundled `pubmed-epmc`, `openalex`, `semantic-scholar`,
+> `marmara-ebsco`, `openathens` filoda **birincil** — Bearer/OAuth ile Claude Code'da otomatik.
+> Directory companion'lar (PubMed HCLS, Clinical Trials, bioRxiv, Consensus, Elicit, Scite,
+> AdisInsight, SNOMED, BioRender, Paper Search, YÖK Tez, Wiley, Literatür) hesap düzeyinde
+> bağlanır; yüklü değilse `SKIP-REASON companion_unloaded` + fleet degrade (execution-map).
+> bioRxiv: HCLS boş-gövde bug'ında Hub stdio `mcp-servers/biorxiv-mcp` tercih edilir.
+>
+> **Kural:** Bu satırlar `.mcp.json`'a **eklenmez** (G-BUNDLE kapısı bunu bekler). Yüklü değilse
+> `SKIP-REASON companion_unloaded`. **Yüzey ayrımı §6'da normatiftir**; Tier-K/Tier-O statik-URL
+> connector'ları (who-gho, openfda, anamnesis, med-terminologies, marmara-ebsco…) `.mcp.json`'da
+> bildirilir ve Claude Code'da otomatik bağlanır.
 
 ### 1.1 Bibliyografik Çekirdek (her-zaman-açık getirim seti)
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
@@ -67,15 +76,20 @@ probe'lanmaları önlenir (`docs/evidentia.local.md.example`).
 | Consensus | 🟢 | API | search (kullanım mesajı birebir reprodüksiyon; ≤3/batch) | resmi | A |
 | Scholar Gateway | 🟢 | API | semanticSearch | operatör/resmi | A |
 | Paper Search | 🟢 | API | search · read_pubmed_paper · download_* (tam-metin tier 2) | topluluk | A |
-| bioRxiv / medRxiv | 🟢 | none | search_preprints (preprint flag zorunlu) | Anthropic HCLS | K |
+| bioRxiv / medRxiv | 🟢 | none | search_preprints (preprint flag zorunlu) | Anthropic HCLS / Hub stdio | K |
+| Scite | 🟢 | API | smart citations / evidence sentences (schema oturumdan) | resmi | A |
+| Elicit | 🟢 | OAuth | search_papers · list_reports (SR-aid; cross-validate) | resmi | A |
+| BioRender | 🟡 | OAuth | figure templates / generation (P7 only — not evidence) | resmi | visual |
+| SNOMED CT Terminology | 🟢 | HCLS | SNOMED search/validate/expand (companion; ICD-11 primary elsewhere) | Anthropic HCLS | K* |
 | YÖK Tez | 🟢 | none | search_yok_tez_detailed · get_yok_tez_document_markdown (+2) | operatör | A |
 
 **Tam-metin rung'u (P4, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
 |---|---|---|---|---|---|
-| **openathens** (self-host, `https://openathens.cureonics.com/mcp`) | 🟢 | OAuth/Bearer | 11 araç, ölçüm 2026-08-14: `oa_resolve` · `oa_fetch_fulltext`(metin/ingest) · **`oa_fetch_pdf(doi\|url)`** (provider-nötr orijinal PDF → kısa-ömürlü opaque resource link + SHA-256/provenance) · `oa_verify_access` · `oa_list_databases` · `oa_session_status` · `oa_batch_submit`/`oa_batch_result` · `search`/`fetch`. **Tam-metin Tier 3: LİSANSLI kurumsal**, annas'ın önünde. Metin/RAG için fulltext, orijinal dosya için PDF aracı; `pdf_unavailable` dürüst HTML-only degrade'dir. Link derhal tüketilir, kalıcı kaynak diye cache'lenmez | operatör self-host | O |
-| annas-reader | 🟡 | Bearer | 9 araç, ölçüm 2026-08-14: reader akışı `article_search`/`read_article` + `book_search`/`get_document_info`/`search_in_document`/`read_document`; orijinal dosya **`download_document(id=DOI\|32-hex MD5)`** → PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü resource link + SHA-256. Eski `article_download`/`book_download` adları yoktur. (**Tier 5 SON ÇARE**, lisanslı band'dan sonra; yalnız analiz) | operatör self-host | O |
-| Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü; Tier 6 son legal-OA süpürmesi) | topluluk (cyanheads) | K |
+| **marmara-ebsco** (self-host, `https://ebsco.cureonics.com/mcp`) | 🟡 | OAuth/Bearer | 4 araç: `ebsco_server_info` · `ebsco_list_databases` · `ebsco_search` · `ebsco_get(record_id, prefer, collection?, doc_id?)`. **Tam-metin Tier 3: LİSANSLI BİRİNCİ deneme** (Marmara VETİS→EBSCOhost; OpenAthens'in önünde). Miss → SKIP-REASON + Tier 4. Kod hazır; HP deploy/tunnel operatör kapısı | operatör self-host | O |
+| **openathens** (self-host, `https://openathens.cureonics.com/mcp`) | 🟢 | OAuth/Bearer | 11 araç, ölçüm 2026-08-14: `oa_resolve` · `oa_fetch_fulltext`(metin/ingest; collection?) · **`oa_fetch_pdf(doi\|url)`** · `oa_verify_access` · `oa_list_databases` · `oa_session_status` · `oa_batch_submit`/`oa_batch_result` · `search`/`fetch`. **Tam-metin Tier 4: LİSANSLI İKİNCİ deneme**, annas'ın önünde | operatör self-host | O |
+| annas-reader | 🟡 | Bearer | 9 araç, ölçüm 2026-08-14: reader + **`download_document(id=DOI\|32-hex MD5)`**. (**Tier 6 SON ÇARE**, lisanslı band'dan sonra; yalnız analiz) | operatör self-host | O |
+| Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü; Tier 7 son legal-OA süpürmesi) | topluluk (cyanheads) | K |
 
 **RAG substratı (retrieve-don't-dump, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
@@ -109,7 +123,7 @@ Yokluğu yalnız ilaç-zekası/mekanizma modülünü bozar — bibliyografik çe
 | ChEMBL | 🟢 | none | drug_search · get_mechanism · get_admet · target_search | bio-research | A |
 | Synapse | 🟡 | OAuth | authenticate → multi-omics (0.5.J) | bio-research | A (conditional) |
 | OpenTargets | 🔴 | — | (offline son probe'da) → ChEMBL target_search fallback | bio-research | A (offline) |
-| Wiley | 🟡 | OAuth | authenticate → publisher tam-metin (tier 4). **Companion** — statik `.mcp.json` URL'si yok; claude.ai / Cursor Settings → Connectors. Operatör sırrı fleet.yaml'da tutulmaz; bağlanmamışsa graceful skip. | bio-research | A (conditional) |
+| Wiley | 🟡 | OAuth | authenticate → publisher tam-metin (tier 5). **Companion** — statik `.mcp.json` URL'si yok; claude.ai / Cursor Settings → Connectors. Operatör sırrı fleet.yaml'da tutulmaz; bağlanmamışsa graceful skip. | bio-research | A (conditional) |
 
 ### 1.3 Regülatuar + Epidemiyoloji + Türkiye + IP — OPSİYONEL (zenginleştirme-modülü-kapılı)
 **Yalnız Adım 0.5 Regulatory (0.5.C), HTA (0.5.D), Epidemiyoloji (0.5.K) veya Türkiye pazarı
@@ -140,7 +154,7 @@ bağlı olduğu modülü/rung'u bozar.
 |---|---|---|
 | **TİTCK** (kapılı) | `https://titck.cureonics.com/mcp` | **Kanonik** Türkiye ilaç indeksi — 66 araç, v0.5.8. ⚠️ Önbellek Worker'ı 2026-07-31'de emekli edildi → bu bir "yedek basamak" DEĞİL, bundle'daki TEK TİTCK; doğrudan çağrılır |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
-| **Annas Reader** | `https://annas.cureonics.com/mcp` | **Tam-metin geri-çağırma** (HP self-host Docker, Bearer/OAuth-gated; 9 araç, 2026-08-14) — **full-text cascade Tier 5 (SON ÇARE)**, lisanslı band getiremeyince. Reader akışı bounded metin verir; `download_document(id=DOI|MD5)` orijinal PDF/EPUB ve desteklenen diğer formatları kısa-ömürlü opaque resource link + checksum/provenance ile teslim eder. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
+| **Annas Reader** | `https://annas.cureonics.com/mcp` | **Tam-metin geri-çağırma** (HP self-host Docker, Bearer/OAuth-gated; 9 araç, 2026-08-14) — **full-text cascade Tier 6 (SON ÇARE)**, lisanslı band (Marmara EBSCO + OpenAthens + Wiley) getiremeyince. Reader akışı bounded metin verir; `download_document(id=DOI|MD5)` orijinal PDF/EPUB ve desteklenen diğer formatları kısa-ömürlü opaque resource link + checksum/provenance ile teslim eder. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 
 ### 1.5 Genişletme Katmanı (mcp-scout canlı-doğrulanmış · Tier-K · §6)
 **Karışık katman — dikkat:** `openalex` / `pubmed-epmc` / `semantic-scholar` **bibliyografik
@@ -197,7 +211,7 @@ dedup)** → **P4 (tam-metin zenginleştirme)**. P1/P2/P4 çekirdek merdivenleri
 
 | İhtiyaç | Merdiven |
 |---|---|
-| Bibliyografik arama (MeSH/Emtree + serbest metin) | PubMed/EPMC `search_articles` → `pubmed-epmc` (`pubmed_search_articles`/`pubmed_europepmc_search`) → Scholar Gateway `semanticSearch` → Consensus `search` → Paper Search / bioRxiv-medRxiv / YÖK Tez |
+| Bibliyografik arama (MeSH/Emtree + serbest metin) | `openalex` → `pubmed-epmc` → `semantic-scholar` → PubMed companion → Clinical Trials companion → bioRxiv companion → Consensus → Paper Search → Elicit companion → Scite companion → AdisInsight (0.5.I) → YÖK Tez |
 | KOL / atıf-ağı / kurum-yazar | `openalex` (`openalex_resolve_name`→`search_entities`/`get_citation_graph`) → `semantic-scholar` → EPMC → NPI (US, **opsiyonel**) → YÖK Akademik (TR, **opsiyonel**) |
 
 ### P2 — Getirim & dedup (çekirdek, her-zaman-açık)
@@ -211,7 +225,7 @@ dedup)** → **P4 (tam-metin zenginleştirme)**. P1/P2/P4 çekirdek merdivenleri
 
 | İhtiyaç | Merdiven |
 |---|---|
-| Tam-metin (legal-first) | EPMC `get_copyright_status` → EPMC `get_full_text_article` (PMC OA, Tier 1) → Paper Search `read_pubmed_paper` (Tier 2) → **OpenAthens/Millet Kütüphanesi** `oa_resolve` + metin için `oa_fetch_fulltext`, orijinal PDF için `oa_fetch_pdf` (**Tier 3 LİSANSLI**) → Wiley (Tier 4) → **Annas Reader** reader akışı veya `download_document` (**Tier 5 SON ÇARE**) → **pubmed-epmc** `pubmed_fetch_fulltext` (Tier 6 legal-OA) → anamnesis ingest/bounded query. Dosya araçlarının resource link'i kısa ömürlüdür; derhal tüketilir, DOI/MD5 + SHA-256/provenance saklanır |
+| Tam-metin (legal-first) | EPMC `get_copyright_status` → EPMC `get_full_text_article` (PMC OA, Tier 1) → Paper Search `read_pubmed_paper` (Tier 2) → **Marmara EBSCO** `ebsco_search` + `ebsco_get` (**Tier 3 LİSANSLI BİRİNCİ**) → **OpenAthens/Millet** `oa_verify_access`/`oa_resolve` + `oa_fetch_fulltext`/`oa_fetch_pdf` (**Tier 4 LİSANSLI İKİNCİ**) → Wiley (Tier 5) → **Annas Reader** (**Tier 6 SON ÇARE**) → **pubmed-epmc** `pubmed_fetch_fulltext` (Tier 7 legal-OA) → anamnesis ingest/bounded query (`collection=evidentia:run:<id>`). EBSCO miss → SKIP-REASON, sessiz atlama yok |
 
 ### Opsiyonel modül merdivenleri (yalnız Adım 0.5 sinyaliyle)
 
@@ -219,7 +233,7 @@ dedup)** → **P4 (tam-metin zenginleştirme)**. P1/P2/P4 çekirdek merdivenleri
 |---|---|
 | ICD/condition kodlama | `openfda` `icd11_search` (WHO ICD-11 MMS, ICD-11 birincil) → `nih-clinicaltables` (ICD-10/9) → bulunamazsa boşluk |
 | İlaç normalizasyonu (INN↔RxCUI) | `nlm-rxnorm` → `med-terminologies` (RxNorm) → DailyMed REST |
-| Terminoloji çapraz-yürüyüş (SNOMED/MeSH/LOINC/ATC) | `med-terminologies` (SNOMED/MeSH/LOINC/RxNorm/ATC) + ICD-11 için `openfda` `icd11_search` → `nih-clinicaltables` |
+| Terminoloji çapraz-yürüyüş (SNOMED/MeSH/LOINC/ATC) | ICD-11: `openfda` `icd11_search` → `med-terminologies` · MeSH/ATC: `med-terminologies` · SNOMED validate/expand: SNOMED CT Terminology companion (MAY) → `med-terminologies` (Snowstorm creds varsa) → TİTCK SNOMED ids (TR ilaç) |
 | Mekanizma / hedef | ChEMBL `get_mechanism`/`target_search` → `iuphar-gtopdb` → OpenTargets (offline) → EPMC |
 | TR ruhsat/fiyat/biyobenzer | **TİTCK** (`titck.cureonics.com`, kapılı — bundle'daki tek TİTCK, doğrudan) → bulunamazsa boşluk. SUT/mevzuat metni bu plugin'de yok → `cureolex` |
 | Epidemiyoloji/yük | **ABD:** `PopHIVE` (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — precomputed, birebir aktar) + ICD-11 kodlama (`openfda`). **Global/ülke yük (Türkiye dahil):** `who-gho` (`who_gho_search_indicators`→`who_gho_query` `country="TUR"`/`"GLOBAL"`/region — WHO GHO OData, native) + EPMC `AFF:"Turkey"` + TİTCK + YÖK Tez. **Kanser insidans/mortalite (global/ülke):** `globocan` (`gco_resolve_population`→`gco_query` — IARC GLOBOCAN 2022, native; MODELLENMİŞ TAHMİN → `ui`+caveat). **IHME/GBD:** native-API YOK (hesap+ToS+satır-limiti) → hâlâ erişilemez boşluk (uydurma yok). PopHIVE'ı ABD-dışına genelleme; who-gho/globocan caveat'larını taşı. |

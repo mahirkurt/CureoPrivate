@@ -3,7 +3,7 @@
 **Genel-amaçlı PRISMA tıbbi literatür inceleme aracı** — bir Claude Code / claude.ai
 marketplace plugin'i. Tüm tıp alanlarını ve her soru tipini (tedavi/tanı/prognoz/etiyoloji/
 önleme) kapsayan uçtan uca **PRISMA 2020 / PRISMA-ScR sistematik/kapsam derlemesi** motoru.
-`medical-research` v9.0.2 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
+`medical-research` v9.0.3 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
 connector'ları, opsiyonel bağlam-tetiklemeli zenginleştirme modüllerini ve `mcp-scout` ile
 canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette toplar.
 
@@ -11,7 +11,7 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
 
 ## Ne sağlar
 
-- **Flagship skill:** `medical-research` v9.0.2 — omurga **P0–P7 PRISMA hattı**, soru
+- **Flagship skill:** `medical-research` v9.0.3 — omurga **P0–P7 PRISMA hattı**, soru
   konusundan bağımsız her derlemede aynı sekiz fazı çalıştırır:
   - **P0 Protokol** — PICO/PECO/PCC çerçeveleme, derleme tipi (sistematik/kapsam), uygunluk
     kriterleri, protokol ön-kaydı.
@@ -63,13 +63,13 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
   + `evrun:<run_id>:`) çalışma setine yazılır; scoped `hybrid_query` / `semantic_search` ile
   sınırlı dilim çekilir. Kapsamsız hybrid/graph → guard DENY. Koşu bitince hook
   `forget_collection` (yedek: ledger `forget_document`).
-- **Bundled connector roster** (`.mcp.json`) — **19 server** (10 Bearer-gated, 9 public) +
-  9 companion (`.mcp.json`'a girmez; Wiley dahil OAuth/hesap düzeyi). Tek doğruluk kaynağı
+- **Bundled connector roster** (`.mcp.json`) — **20 server** (11 Bearer-gated, 9 public) +
+  13 companion (`.mcp.json`'a girmez; Wiley + Claude Directory OAuth dahil). Tek doğruluk kaynağı
   [`fleet.yaml`](./fleet.yaml) → [`CONNECTORS.md`](./CONNECTORS.md).
 - **Self-host yüzeyi** — CF Worker (`self-host/`: anamnesis · drugddx · openfda ·
   evidentia-kb · who-gho · globocan · ema) + CureoHub HP akademik üçlü
   (`openalex.cureonics.com` · `pubmed.cureonics.com` · `semanticscholar.cureonics.com`) +
-  openathens HP (`openathens.cureonics.com`, tam-metin Tier 3 lisanslı).
+  marmara-ebsco HP (`ebsco.cureonics.com`, Tier 3) + openathens HP (`openathens.cureonics.com`, Tier 4).
 
 ---
 
@@ -219,9 +219,9 @@ bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py`.
 ---
 
 *AS IS; no warranty. Internal-use grant. **Plugin v2.7.2 / flagship skill `medical-research`
-v9.0.2** — v9.0.2 ordered tool playbook (`execution-map.md`) binds MUST/SHOULD/MAY/OUT +
-`SKIP-REASON` for all 19 bundled servers. v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
+v9.0.3** — v9.0.3 Marmara EBSCO-first cascade + v9.0.2 ordered tool playbook (`execution-map.md`) binds MUST/SHOULD/MAY/OUT +
+`SKIP-REASON` for all 20 bundled servers. v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
 PRISMA-ScR P0–P7 hattına** yeniden yazıldı; eski eksenler silinmedi, **opsiyonel, bağlam-tetiklemeli
 zenginleştirme modülleri**ne dönüştü (Adım 0.5, de-skew invariant). Native-MCP-first, temiz-kopya,
 retrieve-don't-dump, no-fabrication, cömertlik ve tek-sefer/kanonik-önbellek doktrinleri ADR-05-safe
-korunur. Bundled roster: 19 server + 9 companion.*
+korunur. Bundled roster: 20 server + 13 companion.*

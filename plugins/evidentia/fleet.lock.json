@@ -1,12 +1,12 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "evidentia",
-  "plugin_version": "2.7.2",
+  "plugin_version": "2.7.4",
   "counts": {
-    "servers": 19,
-    "gated": 10,
+    "servers": 20,
+    "gated": 11,
     "public": 9,
-    "companions": 9,
+    "companions": 13,
     "delegations": 0
   },
   "servers": [
@@ -87,6 +87,12 @@
       "url": "https://yok-akademik.cureonics.com/mcp",
       "tier": "O",
       "auth_env": "YOK_AKADEMIK_MCP_API_KEY"
+    },
+    {
+      "name": "marmara-ebsco",
+      "url": "https://ebsco.cureonics.com/mcp",
+      "tier": "O",
+      "auth_env": "MARMARA_EBSCO_MCP_API_KEY"
     },
     {
       "name": "openathens",
@@ -193,7 +199,7 @@
         "mcp__claude_ai_Literatur__"
       ],
       "manifest_row": "Literatür/DergiPark (companion — TR tam-metin)",
-      "degrade": "TR tam-metin openathens/annas şelalesine degrade eder."
+      "degrade": "TR tam-metin marmara-ebsco → openathens → annas şelalesine degrade eder."
     },
     {
       "name": "Wiley",
@@ -201,8 +207,43 @@
         "mcp__claude_ai_Wiley__",
         "mcp__wiley__"
       ],
-      "manifest_row": "Wiley (companion — OAuth-gated publisher full-text, cascade Tier 4)",
-      "degrade": "Tier 4 atlanır; OpenAthens (Tier 3) veya annas (Tier 5) yürür. Statik .mcp.json URL'si ve operatör sırrı YOK — claude.ai / Cursor Settings → Connectors ile bağlanır; bağlanmamışsa graceful skip + not (kimlik icat edilmez)."
+      "manifest_row": "Wiley (companion — OAuth-gated publisher full-text, cascade Tier 5)",
+      "degrade": "Tier 5 atlanır; Marmara EBSCO (Tier 3) / OpenAthens (Tier 4) miss sonrası annas (Tier 6) yürür. Statik .mcp.json URL'si ve operatör sırrı YOK — claude.ai / Cursor Settings → Connectors ile bağlanır; bağlanmamışsa graceful skip + not (kimlik icat edilmez)."
+    },
+    {
+      "name": "bioRxiv",
+      "tool_prefixes": [
+        "mcp__claude_ai_bioRxiv__",
+        "mcp__claude_ai_BioRxiv__",
+        "mcp__plugin-rxpraxis-biorxiv__"
+      ],
+      "manifest_row": "bioRxiv/medRxiv (companion — preprint discovery; preprint flag zorunlu)",
+      "degrade": "Preprint basamağı atlanır → SKIP-REASON companion_unloaded. Claude HCLS hcls.mcp.claude.com/biorxiv/mcp search_preprints boş gövde ile düşebilir; Claude Code/Cursor'da tercih: CureoHub stdio biorxiv-mcp (rxpraxis fleet — mcp-servers/biorxiv-mcp). Peer-reviewed kanıt PubMed/EPMC/S2 ile devam eder."
+    },
+    {
+      "name": "Scite",
+      "tool_prefixes": [
+        "mcp__claude_ai_Scite__"
+      ],
+      "manifest_row": "Scite (companion — smart citations / evidence sentences; P1 discovery + P3 SR-aid)",
+      "degrade": "Atıf-temelli iddia desteği düşer; birincil kaynak (PubMed/EPMC, tam-metin, Consensus) ile çapraz-doğrula (DEĞİŞMEZ 4). Araç adları oturum schema'sından okunur."
+    },
+    {
+      "name": "BioRender",
+      "tool_prefixes": [
+        "mcp__claude_ai_BioRender__"
+      ],
+      "manifest_row": "BioRender (companion — figure library / template search / generation; NOT literature evidence)",
+      "degrade": "P7 görsel katmanı metin-only kalır. Kanıt iddiası için ASLA kullanılmaz — yalnız PRISMA/SoF diyagramları veya rapor görselleri (MAY, P7)."
+    },
+    {
+      "name": "SNOMED CT Terminology",
+      "tool_prefixes": [
+        "mcp__claude_ai_SNOMED_CT_Terminology__",
+        "mcp__claude_ai_Snomed_Ct_Terminology__"
+      ],
+      "manifest_row": "SNOMED CT Terminology (companion — Claude Directory SNOMED search/validate/expand)",
+      "degrade": "SNOMED doğrulama atlanır. Evidentia birincil kodlama: openfda/med-terminologies ICD-11 + MeSH/ATC; bundled med-terminologies SNOMED yalnız lisanslı Snowstorm yapılandırmasıyla. TR ilaç SNOMED → TİTCK get_drug."
     }
   ],
   "delegations": []

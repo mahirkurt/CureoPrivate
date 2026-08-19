@@ -9,7 +9,7 @@
 
 version: 2
 plugin: evidentia
-plugin_version: "2.7.2"
+plugin_version: "2.7.4"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # COMPANION'LAR — operatör çalışma alanına bağlı, .mcp.json'a GİRMEYEN connector'lar.
@@ -56,15 +56,52 @@ companions:
   - name: Literatür
     tool_prefixes: ["mcp__literatur__", "mcp__claude_ai_Literatur__"]
     manifest_row: "Literatür/DergiPark (companion — TR tam-metin)"
-    degrade: "TR tam-metin openathens/annas şelalesine degrade eder."
+    degrade: "TR tam-metin marmara-ebsco → openathens → annas şelalesine degrade eder."
 
   - name: Wiley
     tool_prefixes: ["mcp__claude_ai_Wiley__", "mcp__wiley__"]
-    manifest_row: "Wiley (companion — OAuth-gated publisher full-text, cascade Tier 4)"
+    manifest_row: "Wiley (companion — OAuth-gated publisher full-text, cascade Tier 5)"
     degrade: >-
-      Tier 4 atlanır; OpenAthens (Tier 3) veya annas (Tier 5) yürür. Statik
-      .mcp.json URL'si ve operatör sırrı YOK — claude.ai / Cursor Settings →
-      Connectors ile bağlanır; bağlanmamışsa graceful skip + not (kimlik icat edilmez).
+      Tier 5 atlanır; Marmara EBSCO (Tier 3) / OpenAthens (Tier 4) miss sonrası
+      annas (Tier 6) yürür. Statik .mcp.json URL'si ve operatör sırrı YOK —
+      claude.ai / Cursor Settings → Connectors ile bağlanır; bağlanmamışsa
+      graceful skip + not (kimlik icat edilmez).
+
+  - name: bioRxiv
+    tool_prefixes:
+      - mcp__claude_ai_bioRxiv__
+      - mcp__claude_ai_BioRxiv__
+      - mcp__plugin-rxpraxis-biorxiv__
+    manifest_row: "bioRxiv/medRxiv (companion — preprint discovery; preprint flag zorunlu)"
+    degrade: >-
+      Preprint basamağı atlanır → SKIP-REASON companion_unloaded. Claude HCLS
+      hcls.mcp.claude.com/biorxiv/mcp search_preprints boş gövde ile düşebilir;
+      Claude Code/Cursor'da tercih: CureoHub stdio biorxiv-mcp (rxpraxis fleet —
+      mcp-servers/biorxiv-mcp). Peer-reviewed kanıt PubMed/EPMC/S2 ile devam eder.
+
+  - name: Scite
+    tool_prefixes: ["mcp__claude_ai_Scite__"]
+    manifest_row: "Scite (companion — smart citations / evidence sentences; P1 discovery + P3 SR-aid)"
+    degrade: >-
+      Atıf-temelli iddia desteği düşer; birincil kaynak (PubMed/EPMC, tam-metin,
+      Consensus) ile çapraz-doğrula (DEĞİŞMEZ 4). Araç adları oturum schema'sından okunur.
+
+  - name: BioRender
+    tool_prefixes: ["mcp__claude_ai_BioRender__"]
+    manifest_row: "BioRender (companion — figure library / template search / generation; NOT literature evidence)"
+    degrade: >-
+      P7 görsel katmanı metin-only kalır. Kanıt iddiası için ASLA kullanılmaz —
+      yalnız PRISMA/SoF diyagramları veya rapor görselleri (MAY, P7).
+
+  - name: SNOMED CT Terminology
+    tool_prefixes:
+      - mcp__claude_ai_SNOMED_CT_Terminology__
+      - mcp__claude_ai_Snomed_Ct_Terminology__
+    manifest_row: "SNOMED CT Terminology (companion — Claude Directory SNOMED search/validate/expand)"
+    degrade: >-
+      SNOMED doğrulama atlanır. Evidentia birincil kodlama: openfda/med-terminologies
+      ICD-11 + MeSH/ATC; bundled med-terminologies SNOMED yalnız lisanslı Snowstorm
+      yapılandırmasıyla. TR ilaç SNOMED → TİTCK get_drug.
 
 servers:
   - name: med-terminologies
@@ -319,29 +356,44 @@ servers:
       yok_get_supervised_theses · yok_get_projects · yok_list_universities/yok_list_fields
       (taksonomi). Kimlik = 16-hex authorId; akış yok_search → authorId → yok_get_*
 
+  - name: marmara-ebsco
+    url: https://ebsco.cureonics.com/mcp
+    tier: O
+    auth_env: MARMARA_EBSCO_MCP_API_KEY
+    role: >-
+      Tam-metin cascade Tier 3 — LİSANSLI kurumsal BİRİNCİ deneme (Marmara VETİS →
+      EBSCOhost; OpenAthens Tier 4 ve annas Tier 6'nın ÖNÜNDE). 4 araç:
+      ebsco_server_info · ebsco_list_databases · ebsco_search(query, full_text_only?) ·
+      ebsco_get(record_id, prefer=pdf|html, collection?, doc_id?). Akış: DOI/başlık ile
+      ebsco_search → isabet + tam-metin linki varsa ebsco_get. collection/doc_id
+      anamnesis'e pass-through (Evidentia: collection=evidentia:run:<id>,
+      doc_id=evrun:<id>:<DOI|record>); yoksa marmara:fetch:<sha1-8> mint. Miss /
+      manual_required / session_invalid / no_fulltext_link → SKIP-REASON yaz + Tier 4
+      OpenAthens'e düş (sessiz atlama YOK). Key ${MARMARA_EBSCO_MCP_API_KEY} Doppler
+      (cureohub/dev_personal); klinik kardeş MARMARA_CLINICAL_* ayrı kalır.
+    extra:
+      _trust: >-
+        operator self-host (HP systemd category server — aynı VETİS storage_state;
+        hardened OAuth 2.1 + Bearer; AUTH_HMAC_SECRET ayrı)
+      _probe: >-
+        Kod+unit hazır (port 8222, hedef ebsco.cureonics.com); HP deploy/tunnel/DNS
+        Canlı (2026-08-19): HP systemd marmara-ebsco :8222, tunnel ebsco.cureonics.com; public+local tools/list (4 araç); ebsco_search smoke 10 kayıt.
+
   - name: openathens
     url: https://openathens.cureonics.com/mcp
     tier: O
     auth_env: OPENATHENS_MCP_API_KEY
     role: >-
-      Tam-metin cascade Tier 3 — LİSANSLI kurumsal (legal-öncelikli, annas Tier 5'in
-      ÖNÜNDE). 11 araç (ölçüm 2026-08-14): oa_resolve · oa_fetch_fulltext(ingest) ·
-      oa_fetch_pdf(doi|url) (sağlayıcı-nötr orijinal PDF; kısa-ömürlü opaque
-      resource_link + filename/MIME/size/SHA-256/acquired_via; HTML-only sonuçta
-      `pdf_unavailable`, sahte PDF yok; 100 MiB tavanı) ·
-      oa_verify_access (DOI erişilebilir mi — getirmeden ÖNCE sor, boşa Tier-3 çağrısı
-      harcama) · oa_session_status · oa_list_databases · oa_server_info ·
-      oa_batch_submit/oa_batch_result · search/fetch (deep-research sözleşmesi). Millet
-      Kütüphanesi/OpenAthens SAML →
-      ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: getirme Xvfb
-      altında headed kalıcı-profilli Chromium ile sürer (gerçek parmak-izi + cf_clearance) →
-      anti-bot'lu yayıncılarda (Wiley/Elsevier/OUP/Sage/T&F) non-interactive Cloudflare
-      challenge kendiliğinden temizlenir ve TAM METİN gelir; yalnız interactive
-      reCAPTCHA/Turnstile çözülemezse `challenge_required` zarfı döner (host + operatör
-      noVNC ipucu; manual_required'dan AYRI, gövdesiz — uydurma yok) → kullanıcıya 'operatör
-      noVNC gerekiyor' bildir + Tier 4/5'e degrade et (sessiz atlama YOK). Oturum
-      sıcaklığı/bekleyen challenge: oa_session_status
-      (validated/session_age_s/pending_challenge). Bağlı değilse cascade Tier 4/5'e düşer.
+      Tam-metin cascade Tier 4 — LİSANSLI kurumsal İKİNCİ deneme (Marmara EBSCO Tier 3
+      miss sonrası; annas Tier 6'nın ÖNÜNDE). 11 araç (ölçüm 2026-08-14): oa_resolve ·
+      oa_fetch_fulltext(ingest; collection?/doc_id?) · oa_fetch_pdf(doi|url) (sağlayıcı-nötr
+      orijinal PDF; kısa-ömürlü opaque resource_link + filename/MIME/size/SHA-256/
+      acquired_via; HTML-only → `pdf_unavailable`) · oa_verify_access (DOI erişilebilir mi —
+      getirmeden ÖNCE sor) · oa_session_status · oa_list_databases · oa_server_info ·
+      oa_batch_submit/oa_batch_result · search/fetch. Millet Kütüphanesi/OpenAthens SAML →
+      ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: Xvfb headed
+      profil; interactive challenge → `challenge_required` → Tier 5/6'ya degrade (sessiz
+      atlama YOK). Bağlı değilse cascade Tier 5/6'ya düşer.
       Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok
     extra:
       _trust: >-
@@ -362,10 +414,10 @@ servers:
     tier: O
     auth_env: ANNAS_MCP_API_KEY
     role: >-
-      Tam-metin geri-çağırma (full-text cascade Tier 5 — SON ÇARE, lisanslı band [OpenAthens
-      Tier 3 + Wiley Tier 4] getiremeyince). 9 araç (ölçüm 2026-08-14): efemer okuma
-      için article_search/read_article ve book_search/get_document_info/
-      search_in_document/read_document; orijinal dosya için
+      Tam-metin geri-çağırma (full-text cascade Tier 6 — SON ÇARE, lisanslı band
+      [Marmara EBSCO Tier 3 + OpenAthens Tier 4 + Wiley Tier 5] getiremeyince). 9 araç
+      (ölçüm 2026-08-14): efemer okuma için article_search/read_article ve
+      book_search/get_document_info/search_in_document/read_document; orijinal dosya için
       `download_document(id=<DOI|32-hex MD5>)`. PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS
       kısa-ömürlü opaque resource_link + format/size/SHA-256 olarak teslim edilir; link kalıcı
       kaynak diye cache'lenmez, DOI gövdesi Crossref/içerik-kimliği kapısından geçer. Uzun

@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { __testing } from "../src/server.js";
 
 const { baseOf, normalizePaperId, apiUrl, shapePaper, shapeAuthor, upstreamError,
-  RETRY_ON, BACKOFF_MS, PAPER_FIELDS, DEFAULT_BASE } = __testing;
+  RETRY_ON, BACKOFF_MS, PAPER_FIELDS, DEFAULT_BASE, CAVEAT,
+  SearchPapersOutput, GetPaperOutput } = __testing;
 
 // Test titles are ASCII on purpose — the workerd pool sends them in an HTTP header.
 
@@ -90,6 +91,9 @@ describe("shapePaper - provenance without invention", () => {
     const many = { authors: Array.from({ length: 400 }, (_, i) => ({ authorId: `a${i}`, name: `A${i}` })) };
     expect((shapePaper(many).authors as any[]).length).toBe(25);
   });
+  it("normalises a string author row into {authorId,name} so the output schema stays an array of objects", () => {
+    expect(shapePaper({ authors: ["Guyatt GH"] }).authors).toEqual([{ authorId: null, name: "Guyatt GH" }]);
+  });
 });
 
 describe("shapeAuthor - KOL fields", () => {
@@ -127,5 +131,37 @@ describe("throttle handling - a 429 must never read as 'no such literature'", ()
     const msg = upstreamError("get_paper", { status: 400, body: { error: "bad field" } });
     expect(msg).toContain("400");
     expect(msg).not.toContain("THROTTLE");
+  });
+});
+
+describe("search_papers output schema - Cursor -32602 regression (2026-08-17)", () => {
+  const paper = shapePaper({
+    paperId: "8da686b7", title: "GRADE", year: 2008, venue: "BMJ",
+    authors: [{ authorId: "a1", name: "Guyatt GH" }],
+  });
+
+  it("accepts the shaped Worker payload (authors as array of objects; query+returned present)", () => {
+    expect(() => SearchPapersOutput.parse({
+      query: "GRADE", total: 1, offset: 0, returned: 1, papers: [paper], caveat: CAVEAT,
+    })).not.toThrow();
+  });
+
+  it("REJECTS authors typed as a bare object (the pipeworx schema bug)", () => {
+    const bad = { ...paper, authors: { name: "Guyatt GH" } };
+    expect(() => SearchPapersOutput.parse({
+      query: "GRADE", total: 1, offset: 0, returned: 1, papers: [bad], caveat: CAVEAT,
+    })).toThrow();
+  });
+
+  it("REJECTS a payload missing the fields this Worker always emits (query, returned)", () => {
+    expect(() => SearchPapersOutput.parse({
+      total: 1, offset: 0, papers: [paper], caveat: CAVEAT,
+    })).toThrow();
+  });
+
+  it("accepts get_paper found:false without a paper object", () => {
+    expect(() => GetPaperOutput.parse({
+      paper_id: "DOI:10.1/x", found: false, gap: "no record", caveat: CAVEAT,
+    })).not.toThrow();
   });
 });

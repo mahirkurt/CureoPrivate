@@ -81,7 +81,9 @@ def main():
     )
     lines.append(
         "BAĞLAM EKONOMİSİ: ham gövde >6KB → `tarih-tarama-distilleri` (Tier 1); tek belge >30KB → "
-        "`anamnesis` ingest, doc_id ön-eki ZORUNLU `histmed:`. Ham tam-metin dökümü yok."
+        "`anamnesis` ingest: collection=`histmed:run:<12hex>` + doc_id `hmrun:<12hex>:<kanonik>` "
+        "(ön-ek `histmed:run:` / `hmrun:`). Kapsamsız hybrid_query/graph DENY; atıf `doc_id::idx`. "
+        "Ham tam-metin dökümü yok."
     )
     lines.append(
         "ÇIKTI: her substantif yanıt G0 kapsam manifestosu taşır (25 server + 3 companion + "

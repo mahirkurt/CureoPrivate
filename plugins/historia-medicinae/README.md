@@ -11,7 +11,7 @@ Türkiye bu kapsamın **bir bölgesi**dir, dışında değil — ancak Osmanlıc
 
 ## Neden var
 
-Ekosistemde `evidentia` çağdaş klinik kanıt, `vekayinuvis` Osmanlı–Türk arşivi, `lex-sanitas`
+Ekosistemde `evidentia` çağdaş klinik kanıt, `vekayinuvis` Osmanlı–Türk arşivi, `cureolex`
 yürürlükteki TR sağlık normu için var. **Küresel tıp tarihi** hiçbirinin kapsamında değildi.
 
 Bu plugin'i diğer bir "araştırma asistanı"ndan ayıran şey, alanın kendi metodoloji
@@ -88,7 +88,7 @@ sorgularla incelenir.
 | **Terminoloji/epi** | med-terminologies · who-gho · globocan |
 | **Türkiye kolu** | yoktez · literatur · yok-akademik |
 | **Web (üçüncül)** | exa · tavily |
-| **Substrat** | anamnesis (RAG/GraphRAG, `histmed:` ön-eki) |
+| **Substrat** | anamnesis (RAG/GraphRAG, collection=`histmed:run:<12hex>`, `hmrun:` önek) |
 
 Tek gerçek kaynak `fleet.yaml`; `.mcp.json` ve `fleet.lock.json` **üretilmiş** dosyalardır:
 
@@ -137,7 +137,7 @@ Bu plugin'in belgelenmiş yetenek iddiaları **canlı ölçümle** doğrulanmı�
 | Yön | Hedef |
 |---|---|
 | **Teslim** | `carbon-html-report` (rapor) · `carbon-quarto-scientific` (istatistik/tablo) · `dataviz` · `artifact-diagramming` |
-| **Delegasyon** | `vekayinuvis` (Osmanlıca paleografi) · `evidentia` (çağdaş klinik) · `sci-audit` (çıktı QA) · `lex-sanitas` (yürürlükteki TR norm) |
+| **Delegasyon** | `vekayinuvis` (Osmanlıca paleografi) · `evidentia` (çağdaş klinik) · `sci-audit` (çıktı QA) · `cureolex` (yürürlükteki TR norm) |
 
 Sözleşmeler: [`shared/composition-contract.md`](shared/composition-contract.md) ·
 [`shared/coverage-manifest.md`](shared/coverage-manifest.md) ·

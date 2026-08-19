@@ -94,7 +94,7 @@ Kullanıcının ne üzerinde çalıştığını sorun. Yaygın iş akışlarına
 **Ayrım rehberi (scope guard):**
 - Bireysel SGK/dava → bu süit değil, `onko-erisim`.
 - MLR/promosyon denetimi → `promo-censor`.
-- Mevzuat reformu/taslak → `lex-sanitas`.
+- Mevzuat reformu/taslak → `cureolex`.
 - Hastane/IV ürün → kapsam dışı (CONNECTORS.md §scope).
 
 Kullanıcının yanıtını bekleyin ve uygun skill/komuta yönlendirin. Tam tarama için her zaman

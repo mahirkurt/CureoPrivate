@@ -15,8 +15,9 @@ designation, REMS, RMP, withdrawal, label change, post-marketing, supplementary 
 ## 1. Agency pathways & milestones (Tier 1 / primary)
 - **FDA:** approval type (full vs accelerated), AdComm/ODAC vote, CRL, REMS — via **native openFDA**
   (`drug/drugsfda`, `drug/label`, `drug/enforcement`). *(Federal Register has no native API → documented gap; the legacy Regulatory MCP was removed v8.5 D-α.)*
-- **EMA:** CHMP opinion, conditional/exceptional, PRIME — EMA has **no native MCP/API → documented gap**
-  (EPAR/CHMP not web-scraped, v1.4.0); cross-check with AdisInsight `history_events`.
+- **EMA:** CHMP opinion, conditional/exceptional, PRIME — **native `ema`**
+  (`ema_search_medicines` / `ema_get_medicine` / `ema_filter`); EPAR URL ingest to anamnesis.
+  Snapshot `generated_at` + caveat; absent ≠ non-existence. Cross-check AdisInsight `history_events`.
 - **TİTCK (TR, native):** ruhsat status, Madde-23 başvuru (`search_regulation_article23`),
   authorization cancellations (`find_authorization_cancellations_for_drug`), withdrawal trend.
 - **EUR-Lex** (reg MCP `eurlex_expert_search`) for EU legal basis.
@@ -34,5 +35,5 @@ AdisInsight flags (`is_orphan_drug`/`is_btt`/`is_prime`) cross-validated against
 ## 4. Output → enrichment appendix
 Feeds the enrichment appendix's Ruhsat & Etiket note (milestone timeline FDA/EMA/TİTCK) and the
 regulatory_table sidecar — never the core SR sections. Latency note: regulatory MCP is slow —
-call singly, retry, skippable. Handoff: deep TR regulatory reform → `lex-sanitas`; promotional
+call singly, retry, skippable. Handoff: deep TR regulatory reform → `cureolex`; promotional
 compliance → `promo-censor`.

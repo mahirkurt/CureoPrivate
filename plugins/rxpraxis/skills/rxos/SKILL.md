@@ -32,7 +32,7 @@ fırsat taraması", "Türkiye ürün geliştirme", "generic feasibility", "gap a
 pazar boyutu", "fiyat tavanı", "Reliance target", "RxOpportunityScanner", "rxpraxis-scan".
 
 **Ayrım (scope guard):** bireysel SGK/dava → onko-erisim; MLR/promosyon → promo-censor;
-mevzuat reformu → lex-sanitas; saf klinik kanıt → rxpraxis:medical-research; global pipeline
+mevzuat reformu → cureolex; saf klinik kanıt → rxpraxis:medical-research; global pipeline
 → rxpraxis:pharmaintel. Hastane/IV ürünler **kapsam dışıdır**.
 
 ---
@@ -240,7 +240,7 @@ caveat etiketleri CONNECTORS.md §6'dadır. Her fallback `run_manifest.caveats[]
 ## 9. Composability — Pipe Compatibility
 **Upstream:** rxpraxis:pharmaintel (cross-country) · rxpraxis:medical-research (landscape) ·
 medsearch (KOL/market entry).
-**Downstream:** rxpraxis:pharmaintel (Türkiye Ürün Geliştirme onayı) · lex-sanitas (regülatuar
+**Downstream:** rxpraxis:pharmaintel (Türkiye Ürün Geliştirme onayı) · cureolex (regülatuar
 matris → mevzuat boşluk) · carbon-html-report / carbon-pptx (render).
 
 ## 10. Referans Dosyalar

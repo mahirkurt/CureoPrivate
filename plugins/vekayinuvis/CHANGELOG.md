@@ -1,5 +1,14 @@
 # Changelog — Vekayinüvis Plugin
 
+## 3.4.13 — 2026-08-17
+
+- Anamnesis paylaşılan collection sözleşmesi: her ingest
+  `collection=vekayinuvis:run:<12hex>` + `doc_id=vkrun:<12hex>:<kanonik>` ister.
+  Phantom `doc_scope` kaldırıldı; kapsamsız `hybrid_query` / `graph_*` DENY,
+  scoped ALLOW. Atıf `doc_id::idx`. Ledger `.claude/anamnesis-vekayinuvis.json`.
+  Stop'ta silinmez; SessionEnd + sonraki `/vekayinuvis` + startup yalnız kendi
+  collection'ını `forget_collection` ile temizler.
+
 ## 3.4.12 — 2026-08-14
 
 - OpenAthens `oa_fetch_pdf(doi|url)` ile hesaba açık sağlayıcılardan provider-nötr

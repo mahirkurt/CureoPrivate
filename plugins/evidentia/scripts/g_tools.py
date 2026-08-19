@@ -86,7 +86,6 @@ SMOKE: dict = {
     # Regression for the 2026-08-07 false negative: the English exonym must resolve to code 792.
     "globocan": ("gco_resolve_population", {"query": "Turkey"}, "792"),
     "ema": ("ema_get_medicine", {"identifier": "Hemlibra"}, "emicizumab"),
-    "mevzuat-bilgisi": ("search_mevzuat", {"phrase": "ilac", "page_size": 20}, "total"),
     "titck": ("get_atc_hierarchy", {"code": "B01AA03"}, "arfarin"),
     "yok-akademik": ("yok_list_fields", {}, None),
     "openathens": ("oa_server_info", {}, "mcp_verified"),
@@ -198,7 +197,7 @@ class Conn:
 
 
 # ---------------------------------------------------------------- HTTP surface --
-# The seven self-host Workers must satisfy an HTTP contract that `initialize` cannot see.
+# The self-host Workers in SELF_HOST must satisfy an HTTP contract that `initialize` cannot see.
 # Measured 2026-08-07: `OPTIONS /mcp` with `Origin: https://claude.ai` returned a bare 401 with
 # no Access-Control-* headers on all three GATED Workers — a preflight is credential-free by
 # specification, so a bearer gate in front of it makes the Worker un-addable from any browser
@@ -212,10 +211,10 @@ SELF_HOST = {
     "globocan": "https://globocan-mcp.cureonics.workers.dev",
     "openfda": "https://openfda-mcp.cureonics.workers.dev",
     "who-gho": "https://who-gho-mcp.cureonics.workers.dev",
-    # Added 2026-08-08 with the §6.3P self-host migration off caseyjhand.com.
-    "pubmed-epmc": "https://pubmed-mcp.cureonics.workers.dev",
-    "openalex": "https://openalex-mcp.cureonics.workers.dev",
-    "semantic-scholar": "https://semanticscholar-mcp.cureonics.workers.dev",
+    # Academic trio: CureoHub HP self-host (2026-08-17; Workers undeployed).
+    "pubmed-epmc": "https://pubmed.cureonics.com",
+    "openalex": "https://openalex.cureonics.com",
+    "semantic-scholar": "https://semanticscholar.cureonics.com",
 }
 
 
@@ -363,7 +362,7 @@ def main():
     ap = argparse.ArgumentParser(description="G-TOOLS live tool-surface contract gate")
     ap.add_argument("--smoke", action="store_true", help="also run one read-only call per server")
     ap.add_argument("--surface", action="store_true",
-                    help="also check the 7 self-host Workers' HTTP/CORS/RFC-9728 contract")
+                    help="also check the self-host Workers' HTTP/CORS/RFC-9728 contract (len(SELF_HOST))")
     ap.add_argument("--update", action="store_true", help="rewrite fleet.tools.json from live")
     ap.add_argument("--only", metavar="NAME",
                     help="with --update: refresh ONLY this server, leaving every other baseline "

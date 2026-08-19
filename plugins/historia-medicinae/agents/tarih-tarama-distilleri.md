@@ -51,7 +51,8 @@ değiştiriyorsun.
    Çözülemeyen kaynak `gaps`'e yazılır — tahmin edilmez. Pre-DOI monograflar için bibliyografik
    künye yeterlidir.
 4. **Ham gövde döndürme.** Tam metin, manifest JSON, zabıt bloğu ana pencereye gitmez.
-   Tek belge > ~30 KB ise `anamnesis` ingest öner (`histmed:` ön-ekiyle) ve doc_id'yi zarfa yaz.
+   Tek belge > ~30 KB ise `anamnesis` ingest öner (`collection=histmed:run:<12hex>` +
+   `doc_id=hmrun:<12hex>:<kanonik>`) ve doc_id'yi zarfa yaz.
    `oa_fetch_pdf`/`download_document` kısa-ömürlü `resource_link` döndürürse linki derhal
    tüket; zarfa linki değil DOI/MD5 + format + SHA-256 + edinim provenance'ını koy.
 5. **Ölçülmüş tuzaklar** — bunları bilerek çalış:
@@ -82,7 +83,8 @@ tarih_distillate:
       status: hit N | empty | degraded: <gerekçe> | skipped: <gerekçe>
       queried: <sorgu metni>
   ingest_suggested:
-    - doc_id: histmed:<...>
+    - doc_id: hmrun:<12hex>:<kanonik>
+      collection: histmed:run:<12hex>
       reason: <neden büyük>
   gaps:
     - <aranıp bulunamayan / erişilemeyen + gerekçe + erişim yol haritası>

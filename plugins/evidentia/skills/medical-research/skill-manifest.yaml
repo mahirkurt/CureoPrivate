@@ -12,7 +12,7 @@ protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-or
 # --- Skill identity ---------------------------------------------------------
 skill:
   name: medical-research
-  version: "9.0.1"
+  version: "9.0.2"
   title: "General Medical Literature-Review Engine (PRISMA)"
   description: >
     General-purpose medical literature review engine. Runs an end-to-end PRISMA 2020 /
@@ -127,7 +127,7 @@ composition:
     - skill: saglik-sigorta
       rationale: "Insurance/access handoff (TR)."
       intermediate_format: "text/markdown"
-    - skill: lex-sanitas
+    - skill: cureolex
       rationale: "Health-law / regulatory-reform handoff."
       intermediate_format: "text/markdown"
     - skill: lex-mercator
@@ -187,13 +187,10 @@ runtime:
     - name: openfda                   # openfda-mcp.cureonics.workers.dev (self-host Tier-O). D-α FIX (2026-06-28 probe): replaces legacy "Regulatory MCP 922d7cdc". openFDA (FAERS/label/drugsfda/enforcement/device, api.fda.gov keyless) + WHO ICD-11 MMS (server-side OAuth). Latency-prone → call singly + 1 retry + skippable.
       status: wired
       tier: O
-      tools: [openfda_search, icd11_search]   # who_gho_query/health_canada_dpd/federal_register_search/eurlex_expert_search REMOVED — not bundled in the openfda Worker → no native API → documented gap (CONNECTORS.md §1.3 / connector-registry.md §2.3 / regulatory-intelligence.md §3-4). ICD-11 reroute target for the broken med-terminologies.icd11_search (D6).
-    - name: TİTCK                     # 1a49b1bb — Türkiye Dörtlüsü structural
+      tools: [openfda_search, icd11_search]   # who_gho_query now lives on who-gho (not this Worker). health_canada_dpd/federal_register_search/eurlex_expert_search still not bundled → documented gap. D6 retired 2026-08-17; med-terminologies.icd11_search is live.
+    - name: TİTCK                     # 1a49b1bb — Türkiye native structural
       status: wired
       tools: [search_drugs, get_drug, get_atc_class_summary, find_off_label_uses_for_drug, find_biosimilar_group, find_reference_prices_for_drug, compare_drug_to_alternatives, find_equivalent_products_by_substance, search_regulation_article23, find_authorization_cancellations_for_drug, get_price_history, get_withdrawal_trend, get_atc_hierarchy, search_off_label_uses, find_shared_substance_peers]
-    - name: Mevzuat                   # fbf16a1a — SUT/yönetmelik/fiyat kararnamesi
-      status: wired
-      tools: [search_mevzuat, get_mevzuat_text, get_mevzuat_content, get_anayasa, get_mevzuat_madde_tree, get_mevzuat_madde_diff]
     - name: Türk Patent               # ded65854 — Turkey IP
       status: wired
       tools: [search_patents, search_trademarks, search_designs, get_patent_details]
@@ -206,23 +203,21 @@ runtime:
     - name: annas-mcp                 # full-text cascade tier 5 — LAST RESORT (verified), after the licensed band (OpenAthens Tier 3 + Wiley Tier 4); copyright discipline
       status: wired
       tools: [article_search, book_search, get_document_info, search_in_document, read_document, read_article, download_document]
-    # --- α-layer additions (UP-005): already connected in operator workspace, high-trust ---
-    - name: TİTCK Cache               # titck.cureonics.com/mcp — fast cache/fallback for Türkiye Dörtlüsü
-      status: fallback
+    # --- α-layer: TİTCK canonical is the TİTCK row above (cache Worker retired 2026-07-31) ---
     - name: YÖK Akademik              # yok-akademik.cureonics.com — Turkish KOL identification (DISTINCT from YokTez)
       status: wired
     - name: PDF Viewer                # in-conversation full-text PDF review
       status: conditional
     # --- Tier-K keyless academic expansion (probe-verified 2026-06-27; bundled in ../../.mcp.json) ---
-    - name: OpenAlex                  # openalex.caseyjhand.com — native promotion from rest_fallback; KOL/citation-network/institution disambiguation (§8)
+    - name: OpenAlex                  # openalex.cureonics.com — CureoHub HP; KOL/citation-network/institution disambiguation (§8)
       status: wired
       tier: K
       tools: [openalex_resolve_name, openalex_search_entities, openalex_analyze_trends, openalex_get_citation_graph, openalex_describe_fields]
-    - name: PubMed-EPMC              # pubmed.caseyjhand.com — Europe PMC breadth + Unpaywall legal-OA full-text (complements account-level PubMed)
+    - name: PubMed-EPMC              # pubmed.cureonics.com — Europe PMC breadth + Unpaywall legal-OA full-text (complements account-level PubMed)
       status: wired
       tier: K
       tools: [pubmed_search_articles, pubmed_fetch_articles, pubmed_fetch_fulltext, pubmed_europepmc_search, pubmed_lookup_mesh, pubmed_format_citations, pubmed_find_related, pubmed_convert_ids, pubmed_lookup_citation, pubmed_spell_check]
-    - name: Semantic Scholar         # gateway.pipeworx.io/semanticscholar — secondary citation graph (Consensus+Scholar Gateway already synthesize S2); SEMANTIC_SCHOLAR_API_KEY in Doppler
+    - name: Semantic Scholar         # semanticscholar.cureonics.com — CureoHub HP; secondary citation graph; SEMANTICSCHOLAR_MCP_API_KEY
       status: wired
       tier: K
       tools: [search_papers, get_paper, get_paper_citations, get_author]
@@ -232,16 +227,43 @@ runtime:
       tier: O
       tools: [normalize_drug, interaction_label]   # normalize_drug → RxCUI; interaction_label → DailyMed SPL interaction-section pointer. Cross-validate with DailyMed/licensed source; never present label text as a computed pairwise verdict (CONNECTORS.md §5).
     # --- Tier-K-epi: US public-health surveillance (probe-verified 2026-06-28) ---
-    - name: PopHIVE                   # mcp.pophive.org — Yale PopHIVE harmonized US surveillance (DOI 10.5281/zenodo.17345935). US-ONLY aggregate; relay precomputed evidence, never re-derive. Global/TR burden = documented gap.
+    - name: PopHIVE                   # mcp.pophive.org — Yale PopHIVE harmonized US surveillance (DOI 10.5281/zenodo.17345935). US-ONLY aggregate; relay precomputed evidence, never re-derive. Global/TR burden → who-gho + globocan (cancer); IHME still gap.
       status: wired
       tier: K
       scope: us-only
       tools: [get_current_status, get_trend, get_map, get_coverage, compare, get_data]   # ED-visits/hospitalizations/wastewater/lab/search-trends + childhood vaccination coverage. Feeds §1.P/§21 (axis 0.5.K).
-    # --- Secondary cross-check mirror (primacy = primary Mevzuat fbf16a1a) ---
-    - name: Mevzuat Bilgisi           # mevzuat.surucu.dev — secondary TR-legislation cross-check; adds law-NUMBER lookup + bedesten.adalet.gov.tr second source (primary Mevzuat's keyword search lacks both). Subject to one-fetch cache; invoked only on primary-Mevzuat miss or when a law-number/gerekçe lookup is needed.
-      status: conditional
-      tier: secondary
-      tools: [search_kanun, search_mevzuat]   # law-number/title lookup + bedesten cross-check. Primacy stays with the primary Mevzuat connector (Türkiye Dörtlüsü).
+    - name: who-gho                   # who-gho-mcp.cureonics.workers.dev — WHO GHO OData; keyless; global/TUR burden
+      status: wired
+      tier: K
+      tools: [who_gho_search_indicators, who_gho_query, who_gho_dimensions]
+    - name: globocan                  # globocan-mcp.cureonics.workers.dev — IARC GLOBOCAN 2022; keyless; cancer incidence/mortality + ui
+      status: wired
+      tier: K
+      tools: [gco_list_cancers, gco_resolve_population, gco_query]
+    - name: ema                       # ema-mcp.cureonics.workers.dev — EMA Medicines/EPAR baked corpus; keyless
+      status: wired
+      tier: O
+      tools: [ema_search_medicines, ema_get_medicine, ema_filter, ema_stats]
+    - name: anamnesis                 # anamnesis-mcp.cureonics.workers.dev — exclusive-run RAG; collection=evidentia:run:<id> + evrun:
+      status: wired
+      tier: O
+      tools: [ingest_document, semantic_search, hybrid_query, upsert_triples, graph_neighbors, subgraph, list_docs, corpus_stats, forget_document, forget_collection]
+    - name: med-terminologies         # medical.sidneybissoli.com — ATC / ICD-10→11 / ICD-11 text (D6 ALLOW)
+      status: wired
+      tier: K
+      tools: [atc_classify, map_icd10_to_icd11, icd11_search]
+    - name: nih-clinicaltables        # gateway.pipeworx.io/clinicaltables — drugs / icd10cm code→desc / conditions
+      status: wired
+      tier: K
+      tools: [drugs, icd10cm, conditions]
+    - name: nlm-rxnorm                # gateway.pipeworx.io/rxnorm — rxnorm_search / rxnorm_get_properties only (D1/D2 broken)
+      status: wired
+      tier: K
+      tools: [rxnorm_search, rxnorm_get_properties]
+    - name: iuphar-gtopdb             # gateway.pipeworx.io/guidetopharmacology — target/ligand
+      status: wired
+      tier: K
+      tools: [search_targets, search_ligands, target_interactions, ligand_interactions]
     # --- Elicit — operator-connected academic SR/extraction (OAuth-gated; live MCP probe 2026-06-28 → 401 OAuth-required) ---
     - name: Elicit                    # elicit.com/api/mcp — systematic-review / structured-extraction layer; SECONDARY to Consensus. OAuth 2.1-gated (scope elicit.mcp) → connected via claude.ai Settings, NOT a static .mcp.json URL (like Wiley/Synapse). The static elk_live_ key is Elicit's REST-API key (Doppler ELICIT_API_KEY), NOT the MCP token.
       status: conditional
@@ -303,7 +325,7 @@ x_evidentia_self_host_2026_06_25:
 
 # --- Verification gates (executable — evals/check_integrity.py) --------------
 verification:
-  gate_count: 16
+  gate_count: 17
   gates:
     - id: G-REF
       description: "Reference integrity — every references/*.md cited by SKILL.md exists on disk"
@@ -372,6 +394,10 @@ verification:
       description: "Every sub-agent that drives the MCP fleet has those servers in its `tools:` allowlist, and none grants the removed web tier (WebSearch). Added after the 2026-08-07 audit found evidence-synthesizer provisioned with ZERO MCP tools but WITH WebSearch — inverse to its contract"
       command: "python3 evals/check_integrity.py --agents"
       blocking: true
+    - id: G-PLAYBOOK
+      description: "execution-map.md names every fleet.lock.json server, P0–P7, SKIP-REASON, and MUST/SHOULD/MAY/OUT duty codes"
+      command: "python3 evals/check_integrity.py --playbook"
+      blocking: true
 
 # --- References -------------------------------------------------------------
 references:
@@ -383,14 +409,15 @@ references:
 
 # --- Build ------------------------------------------------------------------
 build:
-  version: "9.0.1"
-  release_date: "2026-08-14"
-  release_name: "Licensed PDF and Document Delivery"
+  version: "9.0.2"
+  release_date: "2026-08-18"
+  release_name: "Ordered PRISMA tool playbook"
   compatibility:
-    backward_compatible_with: ["8.5", "8.4", "8.3", "8.2", "8.1", "8.0"]
+    backward_compatible_with: ["9.0.1", "9.0.0", "8.5", "8.4", "8.3", "8.2", "8.1", "8.0"]
     breaking_changes:
       - "v9.0.0: mandatory 10-axis domain matrix replaced by a fixed PRISMA 2020 / PRISMA-ScR pipeline (P0-P7); Adım 0.5 changed from a MANDATORY axis loader into an OPTIONAL, context-triggered enrichment classifier — default review path loads NO domain layer"
     additive_changes:
+      - "v9.0.2: ordered P0-P7 tool playbook (execution-map.md MUST/SHOULD/MAY/OUT + SKIP-REASON) covering all 19 bundled servers + 9 companions; Completeness Gate requires skip reasons; who-gho/globocan/ema native (IHME still gap); Anamnesis exclusive-run hybrid is P4/P6 MUST after ingest; G-PLAYBOOK gate"
       - "v9.0.1: OpenAthens Tier 3 adds provider-neutral oa_fetch_pdf(doi|url); Anna Tier 5 adds download_document(DOI|MD5) for PDF/EPUB and supported formats; both return short-lived opaque resource links with checksum/provenance and route long documents through anamnesis"
       # v9.0.0 — PRISMA Pipeline Rewrite & De-Skew
       - "v9.0.0: end-to-end PRISMA 2020/PRISMA-ScR pipeline P0-P7 (protocol/PICO -> search-strategy -> retrieval+dedup -> screening -> data-extraction -> risk-of-bias -> GRADE -> PRISMA-reporting), each phase pointing at its own reference file; new always-load prisma-reporting.md (PRISMA flow diagram + SoF table + checklist)"

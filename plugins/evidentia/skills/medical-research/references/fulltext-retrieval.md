@@ -1,9 +1,11 @@
-# Full-Text Retrieval Cascade (v9.0.1)
+# Full-Text Retrieval Cascade (v9.0.2)
 
-**Loaded:** ALWAYS (Adım 0). Feeds **P4 Data Extraction** (`data-extraction.md`): full text is
-retrieved here, then extracted into the `evidence_table` — never dumped raw into context.
-**Purpose:** open the full text needed for extraction/appraisal when the abstract is
-insufficient, along a **legal-first, copyright-gated** ladder. No web scraping (v1.4.0).
+**Loaded:** P4 (and P2 when abstract is insufficient). Feeds **P4 Data Extraction**
+(`data-extraction.md`): full text is retrieved here, then extracted into the `evidence_table`
+— never dumped raw into context. **Playbook:** `execution-map.md` P4 T1–T6 (MUST* cascade;
+stop at first success; later tiers `already_canonical`). After ingest: Anamnesis exclusive-run
+`collection=evidentia:run:<id>` + `evrun:` dual-write; scoped `hybrid_query` MUST if corpus
+non-empty. Do not invent `doc_scope`.
 
 ## Legal-first positioning (read this first)
 
@@ -90,9 +92,9 @@ openathens: oa_session_status()                           # session warmth: vali
   `%PDF-`, refuses HTML masquerading as PDF (`pdf_unavailable`) and caps delivery at 100 MiB.
   Its opaque `resource_link` is short-lived: consume it immediately, never cache it as a permanent
   source, and retain DOI + SHA-256 + `acquired_via` as provenance. Long (≳1–2 pages) →
-  anamnesis `ingest_document(doc_id=<DOI>, source="openathens:<db>")`
-  → manifest, then `semantic_search`/`hybrid_query` for query-bounded, provenance-stamped slices
-  (`evidence_index`). Short → reasoned short quote. **Raw verbatim is never dumped to context.**
+  anamnesis `ingest_document(collection=evidentia:run:<run_id>, doc_id=evrun:<run_id>:<DOI>, source="openathens:<db>")`
+  → manifest, then `hybrid_query(collection=aynı)` or `semantic_search(query, queries[], collection=aynı / doc_id=önekli)`
+  (`evidence_index`; unscoped hybrid/graph DENY). Short → reasoned short quote. **Raw verbatim is never dumped to context.**
   anamnesis unreachable → summary (not verbatim) + "full text landed on HP" note.
 - **Defensive pacing (account protection — MANDATORY for lists):** batch via
   `oa_batch_submit(refs[])` → `oa_batch_result(job_id)`; sequential (concurrency = 1), jittered
@@ -211,7 +213,4 @@ the anamnesis `doc_id::idx` provenance where ingested.
 
 ---
 
-*v9.0.1 — OpenAthens provider-neutral original-PDF delivery (`oa_fetch_pdf`) and Anna's
-original-file delivery (`download_document`) added without changing the legal-first order. Both
-use short-lived opaque resource links; checksum/provenance retention and anamnesis bounded analysis
-are mandatory. The old `article_download`/`book_download` names remain invalid.*
+*v9.0.2 — cascade order bound by `execution-map.md` P4; Anamnesis exclusive-run ingest+hybrid after successful full-text. v9.0.1 added OpenAthens `oa_fetch_pdf` and Anna `download_document` (short-lived opaque links).*

@@ -1,22 +1,24 @@
 /**
  * rag.ts — Vector store (Cloudflare Vectorize) + chunk/doc text store (D1) for anamnesis-mcp.
  *
- * Design: Vectorize holds ONLY {id, values(1024-d), metadata:{doc_id, idx}} — lean, so we never
- * hit Vectorize's per-vector metadata size ceiling. The chunk TEXT lives in D1 (`chunks`). A
- * search returns chunk ids+scores from Vectorize, then we hydrate text from D1 by id. This is
- * the mechanism that keeps large corpora OUT of the model context: the book/article text sits in
- * D1+Vectorize, and only the top-k query-relevant chunks (bounded) are ever surfaced.
+ * Design: Vectorize holds ONLY {id, values(1024-d), metadata:{collection, doc_id, idx}} — lean,
+ * so we never hit Vectorize's per-vector metadata size ceiling. The chunk TEXT lives in D1
+ * (`chunks`). A search returns chunk ids+scores from Vectorize, then we hydrate text from D1
+ * by id and POST-FILTER by collection/doc_ids (Vectorize metadata indexes may be absent on
+ * an older deploy; D1 is the isolation source of truth).
  *
- * VERIFIED Cloudflare API (2026-06):
- *   env.VECTORIZE.upsert([{ id, values, metadata }])              -> mutation
- *   env.VECTORIZE.query(vector, { topK, returnMetadata })        -> { matches:[{id,score,metadata}] }
- *   env.DB.prepare(sql).bind(...).run() / .all() / .first()      -> D1
- * Vectorize V2 `returnMetadata` accepts the string "all" (V1 accepted boolean true); we pass
- * "all" and tolerate either at runtime. Query result is normalized to `.matches`.
+ * Collection contract: "{plugin}:{kind}:{id}"; missing write collection → `_legacy`.
+ * Re-ingest forgets the doc_id first so stale tail chunks/vectors cannot survive a shorter body.
  */
 
 import { embedTexts, embedOne } from "./embed.js";
 import { semanticChunk, type ChunkOpts } from "./chunk.js";
+import {
+  LEGACY_COLLECTION,
+  isScratchCollection,
+  resolveScopedCollection,
+  resolveWriteCollection,
+} from "./collection.js";
 
 // ---- minimal binding shapes (kept local so typecheck is stub-robust) -------
 export interface VectorizeBinding {
@@ -43,6 +45,10 @@ export interface RagEnv {
   DB: D1Like;
 }
 
+async function tryAlter(env: RagEnv, sql: string): Promise<void> {
+  try { await env.DB.prepare(sql).run(); } catch { /* column already exists */ }
+}
+
 // ---- schema --------------------------------------------------------------
 export async function ensureSchema(env: RagEnv): Promise<void> {
   const stmts = [
@@ -65,6 +71,31 @@ export async function ensureSchema(env: RagEnv): Promise<void> {
     `CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(id UNINDEXED, doc_id UNINDEXED, text)`,
   ];
   for (const s of stmts) await env.DB.prepare(s).run();
+
+  // Additive collection / TTL / offset columns. ALTER is idempotent via tryAlter.
+  await tryAlter(env, `ALTER TABLE docs ADD COLUMN collection TEXT`);
+  await tryAlter(env, `ALTER TABLE docs ADD COLUMN expires_at INTEGER`);
+  await tryAlter(env, `ALTER TABLE chunks ADD COLUMN collection TEXT`);
+  await tryAlter(env, `ALTER TABLE chunks ADD COLUMN char_start INTEGER`);
+  await tryAlter(env, `ALTER TABLE chunks ADD COLUMN char_end INTEGER`);
+  await tryAlter(env, `ALTER TABLE nodes ADD COLUMN collection TEXT`);
+  await tryAlter(env, `ALTER TABLE edges ADD COLUMN collection TEXT`);
+
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_docs_collection ON docs(collection)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_chunks_collection ON chunks(collection)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_nodes_collection ON nodes(collection)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_edges_collection ON edges(collection)`).run();
+
+  // Existing rows (pre-namespace) land in `_legacy`. Never invent another bucket name.
+  await env.DB.prepare(`UPDATE docs SET collection = ? WHERE collection IS NULL OR collection = ''`)
+    .bind(LEGACY_COLLECTION).run();
+  await env.DB.prepare(`UPDATE chunks SET collection = ? WHERE collection IS NULL OR collection = ''`)
+    .bind(LEGACY_COLLECTION).run();
+  await env.DB.prepare(`UPDATE nodes SET collection = ? WHERE collection IS NULL OR collection = ''`)
+    .bind(LEGACY_COLLECTION).run();
+  await env.DB.prepare(`UPDATE edges SET collection = ? WHERE collection IS NULL OR collection = ''`)
+    .bind(LEGACY_COLLECTION).run();
+
   // One-time backfill: if a pre-existing deployment has chunks but the FTS index is empty
   // (table just created), mirror chunk text into FTS so lexical search covers legacy data.
   try {
@@ -80,63 +111,110 @@ function chunkId(docId: string, idx: number): string {
   return `${docId}::${idx}`;
 }
 
+function locateOffsets(text: string, chunkText: string, from: number): { start: number; end: number } {
+  const i = text.indexOf(chunkText, from);
+  if (i >= 0) return { start: i, end: i + chunkText.length };
+  return { start: from, end: from + chunkText.length };
+}
+
+function uniqueDocIds(docId?: string, docIds?: string[]): string[] | undefined {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of [docId, ...(docIds ?? [])]) {
+    const s = (raw ?? "").trim();
+    if (!s || seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out.length ? out : undefined;
+}
+
+function nowMs(): number { return Date.now(); }
+
 export interface IngestResult {
   doc_id: string;
+  collection: string;
   n_chunks: number;
   truncated: boolean;
   window_count: number;
-  manifest: Array<{ idx: number; token_est: number; preview: string }>;
+  expires_at?: number | null;
+  manifest: Array<{ idx: number; token_est: number; preview: string; char_start?: number; char_end?: number }>;
 }
 
 /**
- * Ingest a document: semantic-chunk -> embed -> upsert to Vectorize + store text in D1.
- * Returns a MANIFEST (idx + token estimate + 160-char preview) — NOT the full text. This is
- * the contract that keeps raw corpus text out of the model context window.
+ * Ingest a document: forget prior same-id rows → semantic-chunk → embed → Vectorize + D1.
+ * Returns a MANIFEST (idx + token estimate + 160-char preview) — NOT the full text.
  */
 export async function ingestDocument(
   env: RagEnv,
-  args: { text: string; doc_id: string; title?: string; source?: string; chunkOpts?: ChunkOpts },
+  args: {
+    text: string;
+    doc_id: string;
+    collection?: string;
+    title?: string;
+    source?: string;
+    ttl_hours?: number;
+    chunkOpts?: ChunkOpts;
+  },
 ): Promise<IngestResult> {
   await ensureSchema(env);
+  const collection = resolveWriteCollection(args.collection);
+  // Re-ingest MUST forget first — INSERT OR REPLACE by chunk id leaves a stale tail
+  // when the new body produces fewer chunks (idx 5..N would survive).
+  await forgetDocument(env, args.doc_id);
+
   const embed = (texts: string[]) => embedTexts(env, texts);
   const { chunks, truncated, windowCount } = await semanticChunk(args.text, embed, args.chunkOpts ?? {});
-  const now = Date.now();
+  const now = nowMs();
+  let expiresAt: number | null = null;
+  if (typeof args.ttl_hours === "number" && args.ttl_hours > 0 && isScratchCollection(collection)) {
+    expiresAt = now + Math.round(args.ttl_hours * 3600 * 1000);
+  }
 
-  // Vectorize upsert (lean metadata)
-  if (chunks.length) {
+  let cursor = 0;
+  const located = chunks.map((c) => {
+    const off = locateOffsets(args.text, c.text, cursor);
+    cursor = off.end;
+    return { ...c, char_start: off.start, char_end: off.end };
+  });
+
+  if (located.length) {
     await env.VECTORIZE.upsert(
-      chunks.map((c) => ({
+      located.map((c) => ({
         id: chunkId(args.doc_id, c.idx),
         values: c.vector as number[],
-        metadata: { doc_id: args.doc_id, idx: c.idx },
+        metadata: { collection, doc_id: args.doc_id, idx: c.idx },
       })),
     );
   }
 
-  // D1 text store. Re-ingest: clear this doc's stale FTS rows first (chunks uses INSERT OR
-  // REPLACE by id, but chunks_fts is a separate table that must be cleared by doc_id).
-  await env.DB.prepare(`DELETE FROM chunks_fts WHERE doc_id = ?`).bind(args.doc_id).run();
-  for (const c of chunks) {
+  for (const c of located) {
     const cid = chunkId(args.doc_id, c.idx);
     await env.DB.prepare(
-      `INSERT OR REPLACE INTO chunks (id, doc_id, idx, text, token_est, source, title, created_at)
-       VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT OR REPLACE INTO chunks
+         (id, doc_id, idx, text, token_est, source, title, created_at, collection, char_start, char_end)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
     ).bind(cid, args.doc_id, c.idx, c.text, c.tokenEst,
-           args.source ?? null, args.title ?? null, now).run();
-    // mirror into the FTS5 lexical index (BM25 half of hybrid retrieval)
+           args.source ?? null, args.title ?? null, now, collection, c.char_start, c.char_end).run();
     await env.DB.prepare(`INSERT INTO chunks_fts (id, doc_id, text) VALUES (?,?,?)`)
       .bind(cid, args.doc_id, c.text).run();
   }
   await env.DB.prepare(
-    `INSERT OR REPLACE INTO docs (id, title, source, n_chunks, created_at) VALUES (?,?,?,?,?)`,
-  ).bind(args.doc_id, args.title ?? null, args.source ?? null, chunks.length, now).run();
+    `INSERT OR REPLACE INTO docs (id, title, source, n_chunks, created_at, collection, expires_at)
+     VALUES (?,?,?,?,?,?,?)`,
+  ).bind(args.doc_id, args.title ?? null, args.source ?? null, located.length, now, collection, expiresAt).run();
 
   return {
     doc_id: args.doc_id,
-    n_chunks: chunks.length,
+    collection,
+    n_chunks: located.length,
     truncated,
     window_count: windowCount,
-    manifest: chunks.map((c) => ({ idx: c.idx, token_est: c.tokenEst, preview: c.text.slice(0, 160) })),
+    expires_at: expiresAt,
+    manifest: located.map((c) => ({
+      idx: c.idx, token_est: c.tokenEst, preview: c.text.slice(0, 160),
+      char_start: c.char_start, char_end: c.char_end,
+    })),
   };
 }
 
@@ -147,6 +225,9 @@ export interface RetrievedChunk {
   text: string;
   title?: string | null;
   source?: string | null;
+  collection?: string;
+  char_start?: number | null;
+  char_end?: number | null;
   /** Retrieval provenance: which arm(s) surfaced this chunk + final stage (rerank/rrf). §12.3. */
   retrieval?: string;
 }
@@ -169,13 +250,37 @@ function buildFtsMatch(query: string): string | null {
   return tokens.map((t) => `"${t.replace(/"/g, '""')}"`).join(" OR ");
 }
 
-async function lexicalSearch(env: RagEnv, query: string, n: number, docId?: string): Promise<string[]> {
+async function lexicalSearch(
+  env: RagEnv,
+  query: string,
+  n: number,
+  scope: { collection?: string; docIds?: string[] },
+): Promise<string[]> {
   const match = buildFtsMatch(query);
   if (match === null) return [];
-  const sql = docId
-    ? `SELECT id FROM chunks_fts WHERE chunks_fts MATCH ? AND doc_id = ? ORDER BY rank LIMIT ?`
-    : `SELECT id FROM chunks_fts WHERE chunks_fts MATCH ? ORDER BY rank LIMIT ?`;
-  const binds: unknown[] = docId ? [match, docId, n] : [match, n];
+  const clauses = [`chunks_fts MATCH ?`];
+  const binds: unknown[] = [match];
+  // Isolation happens on the chunks table (FTS has no collection column — migrate-safe).
+  if (scope.collection) {
+    clauses.push(`c.collection = ?`);
+    binds.push(scope.collection);
+  }
+  if (scope.docIds?.length === 1) {
+    clauses.push(`c.doc_id = ?`);
+    binds.push(scope.docIds[0]);
+  } else if (scope.docIds && scope.docIds.length > 1) {
+    clauses.push(`c.doc_id IN (${scope.docIds.map(() => "?").join(",")})`);
+    binds.push(...scope.docIds);
+  }
+  clauses.push(`(d.expires_at IS NULL OR d.expires_at > ?)`);
+  binds.push(nowMs());
+  binds.push(n);
+  const sql =
+    `SELECT f.id AS id FROM chunks_fts f
+     INNER JOIN chunks c ON c.id = f.id
+     INNER JOIN docs d ON d.id = c.doc_id
+     WHERE ${clauses.join(" AND ")}
+     ORDER BY rank LIMIT ?`;
   const rows = await env.DB.prepare(sql).bind(...binds).all();
   return ((rows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
 }
@@ -205,9 +310,19 @@ async function rerankCandidates(env: RagEnv, query: string, texts: string[]): Pr
 
 /** §8 monitoring pillar — emit one structured retrieval telemetry line to CF Workers logs.
  *  This is an HTTP Worker (not stdio MCP), so console.log is the log stream, not the protocol
- *  (§2.3.2 only constrains stdio). Lets the operator watch recall/precision health over time. */
+ *  (§2.3.2 only constrains stdio). Lets the operator watch recall/precision health over time.
+ *  Never logs secret values or full chunk text. */
 function logRetrieval(t: Record<string, unknown>): void {
   try { console.log(JSON.stringify({ evt: "anamnesis.retrieval", ...t })); } catch { /* never throw */ }
+}
+
+function vectorFilter(collection?: string, docIds?: string[]): Record<string, unknown> | undefined {
+  // Vectorize equality filter. Multi-id `$in` is not relied on — D1 post-filter is the
+  // isolation guarantee. A single doc_id can ride the metadata index when present.
+  const filter: Record<string, unknown> = {};
+  if (collection) filter["collection"] = collection;
+  if (docIds?.length === 1) filter["doc_id"] = docIds[0];
+  return Object.keys(filter).length ? filter : undefined;
 }
 
 /**
@@ -218,57 +333,75 @@ function logRetrieval(t: Record<string, unknown>): void {
  *     → cross-encoder rerank (bge-reranker) against the PRIMARY query
  *     → top-k.
  *
- * `queries[]` (optional) carries the orchestrator's decomposed sub-aspects/synonyms — this is the
- * query-transformation front that maximises RECALL ("miss no detail in the literature"); rerank
- * then restores precision. Each stage degrades gracefully: no FTS → vector-only; reranker error →
- * RRF order; no queries[] → single-query (prior behaviour). Optional `doc_id` scopes all arms.
+ * Scope: `collection` and/or `doc_id` / `doc_ids[]`. Unscoped (neither) is kept for
+ * compat and CAN hit `_legacy` plus every tenant — Evidentia guard must still DENY it.
+ * Isolation is enforced at D1 hydrate even if Vectorize metadata indexes are missing.
  */
 export async function semanticSearch(
   env: RagEnv,
-  args: { query: string; k?: number; doc_id?: string; rerank?: boolean; queries?: string[] },
+  args: {
+    query: string;
+    k?: number;
+    doc_id?: string;
+    doc_ids?: string[];
+    collection?: string;
+    rerank?: boolean;
+    queries?: string[];
+  },
 ): Promise<RetrievedChunk[]> {
   await ensureSchema(env);
   const k = Math.min(Math.max(args.k ?? 8, 1), 50);
-  // Larger candidate pool than k → maximise RECALL ("miss no detail") before rerank tightens precision.
   const pool = Math.min(Math.max(k * 5, 30), 80);
+  const collection = resolveScopedCollection(args.collection);
+  const docIds = uniqueDocIds(args.doc_id, args.doc_ids);
 
-  // --- query set: PRIMARY + caller-decomposed sub-queries/synonyms (§4.1.1 query transformation).
-  //     The orchestrator (Claude) decomposes the complex question; the Worker fuses across all of
-  //     them — recall-maximising, no Worker-side LLM call (§12.5: let the strong model decompose). ---
   const primary = args.query;
   const queries = [...new Set([primary, ...((args.queries ?? []).map((q) => (q || "").trim()))].filter(Boolean))].slice(0, 8);
 
-  const lists: string[][] = [];      // every ranked id-list (each query × each arm) for RRF
+  const lists: string[][] = [];
   const vSet = new Set<string>(), lSet = new Set<string>();
+  const vFilter = vectorFilter(collection, docIds);
   for (const q of queries) {
-    // vector arm
     const qv = await embedOne(env, q);
     const vOpts: Record<string, unknown> = { topK: pool, returnMetadata: "all" };
-    if (args.doc_id) vOpts["filter"] = { doc_id: args.doc_id };
+    if (vFilter) vOpts["filter"] = vFilter;
     const vIds = normalizeMatches(await env.VECTORIZE.query(qv, vOpts)).map((m) => m.id);
     if (vIds.length) { lists.push(vIds); vIds.forEach((id) => vSet.add(id)); }
-    // lexical arm (BM25) — best-effort
     let lIds: string[] = [];
-    try { lIds = await lexicalSearch(env, q, pool, args.doc_id); } catch { lIds = []; }
+    try { lIds = await lexicalSearch(env, q, pool, { collection, docIds }); } catch { lIds = []; }
     if (lIds.length) { lists.push(lIds); lIds.forEach((id) => lSet.add(id)); }
   }
-  if (!lists.length) { logRetrieval({ queries: queries.length, v: 0, l: 0, hits: 0, mode: "empty" }); return []; }
+  if (!lists.length) {
+    logRetrieval({ queries: queries.length, v: 0, l: 0, hits: 0, mode: "empty", collection: collection ?? null });
+    return [];
+  }
 
-  // --- RRF fusion across ALL queries × arms ---
   const fused = rrfFuse(lists).slice(0, pool);
-
-  // --- hydrate candidate texts from D1 ---
   const candIds = fused.map((f) => f.id);
   const ph = candIds.map(() => "?").join(",");
   const rows = await env.DB.prepare(
-    `SELECT id, doc_id, idx, text, title, source FROM chunks WHERE id IN (${ph})`,
+    `SELECT c.id, c.doc_id, c.idx, c.text, c.title, c.source, c.collection,
+            c.char_start, c.char_end, d.expires_at
+       FROM chunks c
+       LEFT JOIN docs d ON d.id = c.doc_id
+      WHERE c.id IN (${ph})`,
   ).bind(...candIds).all();
   const byId = new Map<string, Record<string, unknown>>();
-  for (const row of (rows.results ?? []) as Array<Record<string, unknown>>) byId.set(String(row["id"]), row);
+  const now = nowMs();
+  const docSet = docIds ? new Set(docIds) : null;
+  for (const row of (rows.results ?? []) as Array<Record<string, unknown>>) {
+    const exp = row["expires_at"];
+    if (exp != null && Number(exp) > 0 && Number(exp) <= now) continue;
+    if (collection && String(row["collection"] ?? LEGACY_COLLECTION) !== collection) continue;
+    if (docSet && !docSet.has(String(row["doc_id"]))) continue;
+    byId.set(String(row["id"]), row);
+  }
   const cands = fused.filter((f) => byId.has(f.id));
-  if (!cands.length) { logRetrieval({ queries: queries.length, v: vSet.size, l: lSet.size, hits: 0, mode: "no-hydrate" }); return []; }
+  if (!cands.length) {
+    logRetrieval({ queries: queries.length, v: vSet.size, l: lSet.size, hits: 0, mode: "no-hydrate", collection: collection ?? null });
+    return [];
+  }
 
-  // --- cross-encoder rerank against the PRIMARY query (best-effort; floor = RRF order) ---
   let order: Array<{ id: string; score: number }> = cands;
   let reranked = false;
   if (args.rerank !== false && cands.length > 1) {
@@ -276,7 +409,6 @@ export async function semanticSearch(
     if (rr) { order = rr.map((r) => ({ id: cands[r.idx].id, score: r.score })).filter((x) => x.id); reranked = true; }
   }
 
-  // --- assemble top-k with retrieval provenance ---
   const out: RetrievedChunk[] = [];
   for (const c of order.slice(0, k)) {
     const row = byId.get(c.id);
@@ -289,21 +421,60 @@ export async function semanticSearch(
       text: String(row["text"]),
       title: (row["title"] as string) ?? null,
       source: (row["source"] as string) ?? null,
+      collection: String(row["collection"] ?? collection ?? LEGACY_COLLECTION),
+      char_start: row["char_start"] == null ? null : Number(row["char_start"]),
+      char_end: row["char_end"] == null ? null : Number(row["char_end"]),
       retrieval: `${arm}→${reranked ? "rerank" : "rrf"}`,
     });
   }
-  // §8 monitoring pillar — lightweight retrieval telemetry to CF Workers logs (HTTP Worker; not stdio).
-  logRetrieval({ queries: queries.length, v: vSet.size, l: lSet.size, fused: fused.length, hits: out.length, reranked, mode: "hybrid" });
+  logRetrieval({
+    queries: queries.length, v: vSet.size, l: lSet.size, fused: fused.length,
+    hits: out.length, reranked, mode: "hybrid", collection: collection ?? null,
+  });
   return out;
 }
 
-export async function corpusStats(env: RagEnv): Promise<Record<string, number>> {
+export async function listDocs(
+  env: RagEnv,
+  collection: string,
+): Promise<{ collection: string; docs: Array<Record<string, unknown>> }> {
   await ensureSchema(env);
-  const d = await env.DB.prepare(`SELECT COUNT(*) AS n FROM docs`).first<{ n: number }>();
-  const c = await env.DB.prepare(`SELECT COUNT(*) AS n FROM chunks`).first<{ n: number }>();
-  const nodes = await env.DB.prepare(`SELECT COUNT(*) AS n FROM nodes`).first<{ n: number }>();
-  const edges = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges`).first<{ n: number }>();
+  const scoped = resolveScopedCollection(collection);
+  if (!scoped) throw new Error("list_docs requires collection");
+  const now = nowMs();
+  const rows = await env.DB.prepare(
+    `SELECT id, title, source, n_chunks, created_at, collection, expires_at
+       FROM docs WHERE collection = ?
+         AND (expires_at IS NULL OR expires_at > ?)
+       ORDER BY created_at DESC`,
+  ).bind(scoped, now).all();
+  return { collection: scoped, docs: (rows.results ?? []) as Array<Record<string, unknown>> };
+}
+
+export async function corpusStats(
+  env: RagEnv,
+  collection?: string,
+): Promise<Record<string, unknown>> {
+  await ensureSchema(env);
+  const scoped = resolveScopedCollection(collection);
+  if (!scoped) {
+    const d = await env.DB.prepare(`SELECT COUNT(*) AS n FROM docs`).first<{ n: number }>();
+    const c = await env.DB.prepare(`SELECT COUNT(*) AS n FROM chunks`).first<{ n: number }>();
+    const nodes = await env.DB.prepare(`SELECT COUNT(*) AS n FROM nodes`).first<{ n: number }>();
+    const edges = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges`).first<{ n: number }>();
+    return {
+      scope: "global",
+      note: "Global observation only — not a working set. Pass collection for a tenant count.",
+      docs: Number(d?.n ?? 0), chunks: Number(c?.n ?? 0),
+      nodes: Number(nodes?.n ?? 0), edges: Number(edges?.n ?? 0),
+    };
+  }
+  const d = await env.DB.prepare(`SELECT COUNT(*) AS n FROM docs WHERE collection = ?`).bind(scoped).first<{ n: number }>();
+  const c = await env.DB.prepare(`SELECT COUNT(*) AS n FROM chunks WHERE collection = ?`).bind(scoped).first<{ n: number }>();
+  const nodes = await env.DB.prepare(`SELECT COUNT(*) AS n FROM nodes WHERE collection = ?`).bind(scoped).first<{ n: number }>();
+  const edges = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges WHERE collection = ?`).bind(scoped).first<{ n: number }>();
   return {
+    scope: "collection", collection: scoped,
     docs: Number(d?.n ?? 0), chunks: Number(c?.n ?? 0),
     nodes: Number(nodes?.n ?? 0), edges: Number(edges?.n ?? 0),
   };
@@ -315,58 +486,27 @@ export interface ForgetResult {
   deleted: { chunks: number; vectors: number; edges: number; nodes_removed: number; nodes_updated: number };
 }
 
-/**
- * Forget (hard-delete) a document by doc_id. The clean deletion path the index previously
- * lacked: `ingest_document` only overwrote same-doc_id chunks, leaving stale vectors/graph behind.
- *
- * Deletes, by doc_id:
- *   - Vectorize vectors (by chunk id `${doc_id}::${idx}`, via deleteByIds)
- *   - D1 `chunks` rows  + the `docs` manifest row
- *   - D1 graph `edges` sourced from this doc (edges.doc_id = doc_id)
- *   - D1 graph `nodes` provenance: removes doc_id from the node's doc_ids list; a node that
- *     loses its LAST contributing doc is deleted (orphan), otherwise its doc_ids is updated.
- *     (A node co-cited by another surviving doc is preserved — only its provenance shrinks.)
- *
- * Idempotent: forgetting an unknown doc_id returns existed:false with all-zero counts (no error).
- */
-export async function forgetDocument(env: RagEnv, docId: string): Promise<ForgetResult> {
-  await ensureSchema(env);
-
-  // 1) chunk ids for this doc (drive both Vectorize delete + count)
-  const chunkRows = await env.DB.prepare(`SELECT id FROM chunks WHERE doc_id = ?`).bind(docId).all();
-  const chunkIds = ((chunkRows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
-  const docRow = await env.DB.prepare(`SELECT id FROM docs WHERE id = ?`).bind(docId).first<{ id: string }>();
-  const existed = chunkIds.length > 0 || !!docRow;
-
-  // 2) Vectorize: delete the doc's vectors (bounded batches; CF cap is generous but be safe)
-  let vectors = 0;
-  if (chunkIds.length && typeof env.VECTORIZE.deleteByIds === "function") {
-    for (let i = 0; i < chunkIds.length; i += 1000) {
-      await env.VECTORIZE.deleteByIds!(chunkIds.slice(i, i + 1000));
-    }
-    vectors = chunkIds.length;
+async function deleteVectors(env: RagEnv, chunkIds: string[]): Promise<number> {
+  if (!chunkIds.length || typeof env.VECTORIZE.deleteByIds !== "function") return 0;
+  for (let i = 0; i < chunkIds.length; i += 1000) {
+    await env.VECTORIZE.deleteByIds!(chunkIds.slice(i, i + 1000));
   }
+  return chunkIds.length;
+}
 
-  // 3) D1 chunk text + FTS lexical index + manifest
-  await env.DB.prepare(`DELETE FROM chunks WHERE doc_id = ?`).bind(docId).run();
-  await env.DB.prepare(`DELETE FROM chunks_fts WHERE doc_id = ?`).bind(docId).run();
-  await env.DB.prepare(`DELETE FROM docs WHERE id = ?`).bind(docId).run();
-
-  // 4) graph edges sourced from this doc
-  const edgeCount = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges WHERE doc_id = ?`).bind(docId).first<{ n: number }>();
-  const edges = Number(edgeCount?.n ?? 0);
-  await env.DB.prepare(`DELETE FROM edges WHERE doc_id = ?`).bind(docId).run();
-
-  // 5) graph nodes: shrink provenance; orphan -> delete. LIKE pre-filters, JSON parse confirms
-  //    (so a substring false-match never causes a wrong delete).
+async function shrinkNodesForDoc(env: RagEnv, docId: string, collection?: string): Promise<{ removed: number; updated: number }> {
   let nodes_removed = 0, nodes_updated = 0;
-  const needle = `%${JSON.stringify(docId)}%`; // matches the JSON-quoted doc id inside doc_ids
-  const nodeRows = await env.DB.prepare(`SELECT id, doc_ids FROM nodes WHERE doc_ids LIKE ?`).bind(needle).all();
-  const now = Date.now();
+  const needle = `%${JSON.stringify(docId)}%`;
+  const sql = collection
+    ? `SELECT id, doc_ids FROM nodes WHERE collection = ? AND doc_ids LIKE ?`
+    : `SELECT id, doc_ids FROM nodes WHERE doc_ids LIKE ?`;
+  const binds = collection ? [collection, needle] : [needle];
+  const nodeRows = await env.DB.prepare(sql).bind(...binds).all();
+  const now = nowMs();
   for (const r of (nodeRows.results ?? []) as Array<{ id: string; doc_ids: string }>) {
     let docIds: string[] = [];
     try { docIds = JSON.parse(r.doc_ids || "[]"); } catch { docIds = []; }
-    if (!docIds.includes(docId)) continue; // LIKE false-positive — skip
+    if (!docIds.includes(docId)) continue;
     const remaining = docIds.filter((d) => d !== docId);
     if (remaining.length === 0) {
       await env.DB.prepare(`DELETE FROM nodes WHERE id = ?`).bind(r.id).run();
@@ -377,11 +517,88 @@ export async function forgetDocument(env: RagEnv, docId: string): Promise<Forget
       nodes_updated++;
     }
   }
-
-  return { doc_id: docId, existed, deleted: { chunks: chunkIds.length, vectors, edges, nodes_removed, nodes_updated } };
+  return { removed: nodes_removed, updated: nodes_updated };
 }
+
+/**
+ * Forget (hard-delete) a document by doc_id. Stays the per-document API;
+ * `forget_by_prefix` is NOT a real tool — use `forget_collection` for a working set.
+ */
+export async function forgetDocument(env: RagEnv, docId: string): Promise<ForgetResult> {
+  await ensureSchema(env);
+
+  const chunkRows = await env.DB.prepare(`SELECT id FROM chunks WHERE doc_id = ?`).bind(docId).all();
+  const chunkIds = ((chunkRows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
+  const docRow = await env.DB.prepare(`SELECT id, collection FROM docs WHERE id = ?`).bind(docId)
+    .first<{ id: string; collection?: string }>();
+  const existed = chunkIds.length > 0 || !!docRow;
+  const collection = (docRow?.collection as string | undefined) || undefined;
+
+  const vectors = await deleteVectors(env, chunkIds);
+
+  await env.DB.prepare(`DELETE FROM chunks WHERE doc_id = ?`).bind(docId).run();
+  await env.DB.prepare(`DELETE FROM chunks_fts WHERE doc_id = ?`).bind(docId).run();
+  await env.DB.prepare(`DELETE FROM docs WHERE id = ?`).bind(docId).run();
+
+  const edgeCount = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges WHERE doc_id = ?`).bind(docId).first<{ n: number }>();
+  const edges = Number(edgeCount?.n ?? 0);
+  await env.DB.prepare(`DELETE FROM edges WHERE doc_id = ?`).bind(docId).run();
+
+  const nodes = await shrinkNodesForDoc(env, docId, collection);
+
+  return { doc_id: docId, existed, deleted: { chunks: chunkIds.length, vectors, edges, nodes_removed: nodes.removed, nodes_updated: nodes.updated } };
+}
+
+export interface ForgetCollectionResult {
+  collection: string;
+  existed: boolean;
+  deleted: { docs: number; chunks: number; vectors: number; edges: number; nodes: number };
+}
+
+/**
+ * Idempotent collection wipe. SQL + Vectorize deleteByIds for THIS collection only.
+ * Never deletes another collection. Empty/unknown collection → existed:false, zeros.
+ */
+export async function forgetCollection(env: RagEnv, collectionRaw: string): Promise<ForgetCollectionResult> {
+  await ensureSchema(env);
+  const collection = resolveScopedCollection(collectionRaw);
+  if (!collection) throw new Error("forget_collection requires collection");
+
+  const chunkRows = await env.DB.prepare(`SELECT id FROM chunks WHERE collection = ?`).bind(collection).all();
+  const chunkIds = ((chunkRows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
+  const docCount = await env.DB.prepare(`SELECT COUNT(*) AS n FROM docs WHERE collection = ?`).bind(collection).first<{ n: number }>();
+  const edgeCount = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges WHERE collection = ?`).bind(collection).first<{ n: number }>();
+  const nodeCount = await env.DB.prepare(`SELECT COUNT(*) AS n FROM nodes WHERE collection = ?`).bind(collection).first<{ n: number }>();
+  const docs = Number(docCount?.n ?? 0);
+  const edges = Number(edgeCount?.n ?? 0);
+  const nodes = Number(nodeCount?.n ?? 0);
+  const existed = chunkIds.length > 0 || docs > 0 || edges > 0 || nodes > 0;
+
+  const vectors = await deleteVectors(env, chunkIds);
+
+  // FTS has no collection column — delete by the chunk ids we already listed, then
+  // also by doc_ids of this collection (covers a missed FTS row).
+  const docRows = await env.DB.prepare(`SELECT id FROM docs WHERE collection = ?`).bind(collection).all();
+  const docIds = ((docRows.results ?? []) as Array<{ id: string }>).map((r) => r.id);
+  for (const did of docIds) {
+    await env.DB.prepare(`DELETE FROM chunks_fts WHERE doc_id = ?`).bind(did).run();
+  }
+  await env.DB.prepare(`DELETE FROM chunks WHERE collection = ?`).bind(collection).run();
+  await env.DB.prepare(`DELETE FROM docs WHERE collection = ?`).bind(collection).run();
+  await env.DB.prepare(`DELETE FROM edges WHERE collection = ?`).bind(collection).run();
+  await env.DB.prepare(`DELETE FROM nodes WHERE collection = ?`).bind(collection).run();
+
+  return {
+    collection,
+    existed,
+    deleted: { docs, chunks: chunkIds.length, vectors, edges, nodes },
+  };
+}
+
+export const SYNTHESIZE_GUIDANCE =
+  "Synthesize ONLY from these chunks; cite doc_id::idx. Do not use unlisted documents.";
 
 // Pure helpers surfaced for test/rag.test.ts. Added 2026-08-07: anamnesis carried helper suites
 // for chunk.ts and graph.ts but NONE for rag.ts, leaving the hybrid-retrieval ranking (rrfFuse)
 // and the FTS5 injection guard (buildFtsMatch) unpinned.
-export const __testing = { chunkId, normalizeMatches, rrfFuse, buildFtsMatch };
+export const __testing = { chunkId, normalizeMatches, rrfFuse, buildFtsMatch, locateOffsets, uniqueDocIds, vectorFilter };

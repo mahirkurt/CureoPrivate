@@ -150,7 +150,7 @@ zenginleşir.
 
 Dosya linkleri kalıcı kaynak değildir: derhal tüketilir, DOI/MD5 + checksum/provenance
 saklanır; uzun dosya anamnesis'e ingest edilerek bounded sorgulanır.
-| `anamnesis` *(substrat)* | http | `https://anamnesis-mcp.cureonics.workers.dev/mcp` | **Büyük-veri RAG/GraphRAG substratı** (bir kaynak DEĞİL, bağlam-ekonomisi altyapısı) — büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin, İА maddesi) ingest → bounded query; kişi↔görev↔belge / olay↔tarih↔kaynak grafiği. Detayların atlanmadan, pencere taşmadan kapsanmasını sağlar | CF Worker, `/mcp` Bearer (`${ANAMNESIS_MCP_API_KEY}`) |
+| `anamnesis` *(substrat)* | http | `https://anamnesis-mcp.cureonics.workers.dev/mcp` | **Büyük-veri RAG/GraphRAG substratı** — collection=`vekayinuvis:run:<12hex>` + doc_id=`vkrun:<12hex>:<kanonik>` (devarsiv:/yoktez:/doi:/iiif:). `doc_scope` yoktur; kapsamsız hybrid_query/graph DENY. Atıf `doc_id::idx`. Ingest → bounded query; kişi↔görev↔belge / olay↔tarih↔kaynak grafiği aynı collection içinde. | CF Worker, `/mcp` Bearer (`${ANAMNESIS_MCP_API_KEY}`) |
 
 > **TAM-FİLO + bağlam ekonomisi (bkz. `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md`).** Bağlama uygun
 > tüm server'lar **her sorguda** çalışır ve **G0 kapsam manifestosu**yla (`${CLAUDE_PLUGIN_ROOT}/shared/coverage-manifest.md`)

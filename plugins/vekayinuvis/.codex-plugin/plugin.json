@@ -1,6 +1,6 @@
 {
   "name": "vekayinuvis",
-  "version": "3.4.12",
+  "version": "3.4.13",
   "userConfig": {
     "smithery_api_key": {
       "type": "string",
@@ -253,7 +253,7 @@
         "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "substrate",
-      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük tam-metin (belge transkripsiyonu, tez PDF, DergiPark tam-metin makale, İА maddesi, IIIF within-manifest bloğu) ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(doc_id=<kanonik id: fon/kutu/gömlek · tez-no · DOI · İА-madde>) ile BİR KEZ indekslenir → semantic_search/hybrid_query(queries[]) ile sınırlı, provenance-damgalı, graph-temelli dilim çekilir. Aynı doc_id iki kez ingest edilmez (kanonik cache). upsert_triples/graph_neighbors/subgraph = kişi↔görev↔belge / olay↔tarih↔kaynak ilişki grafiği (prosopografi/kronoloji). shared/context-economy-contract.md Tier 2. Anahtar yoksa → bounded-chunk fetch'e degrade (ottoman within-manifest + yoktez sayfa-bazlı), asla ham tam-metin dökümü."
+      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Tenancy collection=`vekayinuvis:run:<12hex>` (kind ∈ {run,sess,lib}; lib varsayılan değil). Her ingest collection + doc_id=`vkrun:<12hex>:<kanonik>` (devarsiv:/yoktez:/doi:/iiif:) ister; doc_scope YOKTUR. Kapsamsız hybrid_query/graph DENY; scoped ALLOW. Atıf `doc_id::idx`. Büyük tam-metin ana bağlamda AKIL YÜRÜTÜLMEZ; bir kez indekslenir → hybrid_query(collection=…, doc_ids[]?, queries[]) ile sınırlı, provenance-damgalı dilim çekilir. upsert_triples/graph_neighbors/subgraph aynı collection içinde kişi↔görev↔belge / olay↔tarih↔kaynak grafiği. forget_collection SessionEnd + sonraki /vekayinuvis + startup leftover (Stop'ta silinmez). shared/context-economy-contract.md Tier 2. Anahtar yoksa → bounded-chunk fetch'e degrade (ottoman within-manifest + yoktez sayfa-bazlı), asla ham tam-metin dökümü."
     },
     "resmigazete": {
       "type": "http",

@@ -71,11 +71,17 @@ check("anahtar yoksa AĞA ÇIKILMAZ → auth_missing",
 
 with tempfile.TemporaryDirectory() as _d:
     _c = os.path.join(_d, "fleet_probe.json")
-    with open(_c, "w", encoding="utf-8") as fh:
-        json.dump({"ts": time.time(), "results": {"a": {"status": "ok"}}}, fh)
+    # Cache sertleştirildi (salt + kimlik eşleştirme): elle yazılan LEGACY şema
+    # artık kasten reddedilir. Fixture bu yüzden modülün kendi write_cache'ini
+    # kullanır — hem gerçek gidiş-dönüşü sınar hem şema evrilince bayatlamaz.
+    fleet_probe.write_cache(_c, {"a": {"status": "ok"}})
     check("taze cache okunur", fleet_probe.read_cache(_c, ttl=86400) == {"a": {"status": "ok"}})
+    # Bayatlık testi TTL'i sınamalı, şema reddini değil: geçerli cache yazılır,
+    # yalnız zaman damgası geriye alınır (kimlik alanları korunur).
+    _blob = json.loads(open(_c, encoding="utf-8").read())
+    _blob["ts"] = time.time() - 90000
     with open(_c, "w", encoding="utf-8") as fh:
-        json.dump({"ts": time.time() - 90000, "results": {}}, fh)
+        json.dump(_blob, fh)
     check("bayat cache → None (yeniden prob)", fleet_probe.read_cache(_c, ttl=86400) is None)
     with open(_c, "w", encoding="utf-8") as fh:
         fh.write("bu json değil {{{")

@@ -57,26 +57,32 @@ npm run typecheck     # tsc --noEmit → 0 hata
 ```bash
 # Vectorize index — bge-m3 = 1024 boyut, cosine
 npx wrangler vectorize create anamnesis-index --dimensions=1024 --metric=cosine
+# v1.2.0 metadata indexes (collection + doc_id filter). D1 post-filter isolation
+# çalışır indexesız da; canlı filter için HP'de bir kez oluştur:
+npx wrangler vectorize create-metadata-index anamnesis-index --property-name=collection --type=string
+npx wrangler vectorize create-metadata-index anamnesis-index --property-name=doc_id --type=string
 
 # D1 graph database — dönen database_id'yi wrangler.jsonc'taki REPLACE_WITH_D1_DATABASE_ID'e yapıştır
 npx wrangler d1 create anamnesis-graph
+# Mevcut canlı DB için bir kez (ensureSchema de ALTER eder):
+npx wrangler d1 execute anamnesis-graph --remote --file=migrations/0001_collection.sql
 ```
-> Şema (docs/chunks/nodes/edges tabloları) ilk araç çağrısında `ensureSchema()` ile
-> otomatik kurulur — ayrı migration SQL gerekmez. (İsteğe bağlı: `wrangler d1 execute
-> anamnesis-graph --command "..."` ile önceden de kurulabilir.)
+> Şema (docs/chunks/nodes/edges + collection sütunları) ilk araç çağrısında `ensureSchema()`
+> ile otomatik kurulur/taşınır; mevcut satırlar `_legacy` olur.
 
 **S3. Testler (DoD kapısı 2).**
 ```bash
 npm test   # auth (6 invariant) + router + semantik-chunking sınır tespiti + graph helper
 ```
-> Not: `chunk.test.ts` sahte deterministik embedder ile **tam offline** çalışır; D1 graph
-> SQL + Vectorize + AI entegrasyonu deploy-sonrası smoke ile doğrulanır (Workers AI/Vectorize
-> miniflare'de emüle edilmez). İsteğe bağlı: miniflare D1 ile bir entegrasyon testi eklenebilir.
+> Not: `chunk.test.ts` sahte deterministik embedder ile **tam offline** çalışır.
+> P3 collection eval (`test/collection.eval.ts`) miniflare D1 + mock Vectorize/AI kullanır;
+> canlı korpusa dokunmaz.
 
 **S4–S6. Worker iskeleti (hazır).** `src/index.ts` (router + `Anamnesis` DO), `src/server.ts`
-(7 araç), `src/embed.ts` (bge-m3 + defansif yanıt normalizasyonu), `src/chunk.ts` (semantik
-chunking), `src/rag.ts` (Vectorize + D1 metin deposu), `src/graph.ts` (D1 bilgi grafiği),
-`src/auth.ts` (OAuth).
+(10 araç, v1.2.0 collection API), `src/embed.ts` (bge-m3 + defansif yanıt normalizasyonu),
+`src/chunk.ts` (semantik chunking), `src/rag.ts` (Vectorize + D1 metin deposu),
+`src/graph.ts` (D1 bilgi grafiği; nodeKey/edgeId collection içerir), `src/collection.ts`,
+`src/auth.ts` (OAuth). In-Worker LLM çıkarımı ve sahte GraphRAG community **yoktur**.
 
 **S7. Secret'ları yükle (invariant 6 — koda yazma).**
 ```bash

@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 20 server (10 Bearer-gated, 10 public), 8 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 19 server (10 Bearer-gated, 9 public), 9 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "med-terminologies": {
       "type": "http",
@@ -15,7 +15,12 @@
       "_tier": "K",
       "_role": "NIH Clinical Tables: ICD-10/9, RxTerms, LOINC, NPI, condition lookup — openfda icd11_search latency'sine hızlı keyless ikinci yol",
       "_trust": "community (io.github.pipeworx-io) · NIH upstream (otoriter veri) — least-privilege",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
+      "includeTools": [
+        "drugs",
+        "icd10cm",
+        "conditions"
+      ]
     },
     "nlm-rxnorm": {
       "type": "http",
@@ -23,7 +28,11 @@
       "_tier": "K",
       "_role": "RxNorm/RxNav normalizasyonu — TİTCK Türkçe INN ↔ ABD RxCUI köprüsü (cross-country MIDAS/AdisInsight eşlemeleri)",
       "_trust": "community (io.github.pipeworx-io) · NLM RxNav upstream — least-privilege",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
+      "includeTools": [
+        "rxnorm_search",
+        "rxnorm_get_properties"
+      ]
     },
     "iuphar-gtopdb": {
       "type": "http",
@@ -31,40 +40,46 @@
       "_tier": "K",
       "_role": "GtoPdb hedef/ligand farmakolojisi — ChEMBL get_mechanism tamamlayıcısı (OpenTargets offline iken ikinci kaynak)",
       "_trust": "community (io.github.pipeworx-io) · IUPHAR/BPS upstream — least-privilege",
-      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0"
+      "_probe": "2026-06-25 HTTP 200 · serverInfo pipeworx-gateway v0.1.0",
+      "includeTools": [
+        "search_targets",
+        "search_ligands",
+        "target_interactions",
+        "ligand_interactions"
+      ]
     },
     "openalex": {
       "type": "http",
-      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "url": "https://openalex.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${OPENALEX_MCP_API_KEY}"
       },
       "_tier": "K",
       "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph",
-      "_trust": "operatör self-host (Cloudflare Worker; upstream OpenAlex CC0/authless). 2026-08-08'e dek üçüncü-taraf bireysel-operatör host'taydı — §6.3P riski gerçekleşince taşındı. Keyless: server-side sır YOK.",
-      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `openalex.caseyjhand.com` aynı gün HTTP 530 (origin down) verdi — belgelenen tedarik-zinciri riski gerçekleşti. Yeni: operatör Worker'ı, 5 araç birebir replika, 62 test, canlı initialize 200. 2026-08-08 YENİDEN KAPILANDI: operatör OPENALEX_API_KEY verdi → bütçe sınırı kalktı (liste/group/trends/citation-graph/describe_fields hepsi canlı ✓, describe_fields 206 alan = emekli connector'ın bildirdiği sayı), ama artık credential tutuyor → keyless gerekçesi düştü, MCP_ALLOW_NO_AUTH=0. ⚠️ ÖLÇÜLEN SINIR: OpenAlex isteği KAYNAK-IP başına günlük bütçeyle ölçüyor; Worker paylaşılan egress'ten çıktığı için liste/group çağrıları \"Insufficient budget\" 429'u alabilir (tek-varlık GET çalışır). Aynı dakikada aynı istek residential IP'den 200 döndü. Çözüm: `OPENALEX_API_KEY` secret'ı (sonra MCP_ALLOW_NO_AUTH=0 ile yeniden kapıla) VEYA HP residential relay; hata mesajı bu çözümü adıyla söyler, sessizce \"veri yok\" demez."
+      "_trust": "operatör self-host (HP systemd :8324 → openalex.cureonics.com; SQLite read-through cache). Cloudflare Worker DO free-tier 1101 yüzünden 2026-08-17'de Hub'a taşındı. Upstream OpenAlex CC0; connector Bearer = OPENALEX_MCP_API_KEY; opsiyonel OPENALEX_API_KEY günlük bütçeyi anahtara taşır. KAPILI.",
+      "_probe": "2026-08-17 HP v1.0.0 — openalex_resolve_name(\"University of Oxford\")→total=1; 5 tools; cache.sqlite; Worker URL emekli."
     },
     "pubmed-epmc": {
       "type": "http",
-      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "url": "https://pubmed.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${PUBMED_MCP_API_KEY}"
       },
       "_tier": "K",
       "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh",
-      "_trust": "operatör self-host (Cloudflare Worker; upstream NCBI E-utilities + Europe PMC + Unpaywall, hepsi authless). 2026-08-08'e dek üçüncü-taraf bireysel-operatör host'taydı. Keyless: server-side sır YOK.",
-      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI (§6.3P kalıcı sertleştirmesi). Eski üçüncü-taraf host `pubmed.caseyjhand.com` aynı gün HTTP 530 verdi. Yeni: operatör Worker'ı, 11 araç birebir replika, 63 test; 11/11 CANLI DOĞRULANDI — search/fetch/convert/mesh/related/citations/ spell/ecitmatch/EPMC-search/EPMC-fetch/fulltext. Uçtan uca: BMJ 2008;336:924 → PMID 18436948 (ecitmatch), PMC13240037 OA tam metin 60.801 karakter, Unpaywall OA konumu. NCBI kaynak-IP başına 3 req/s kısıtlar (paylaşılan Worker egress'i) → sınırlı backoff eklendi; kalıcı çözüm uygulandı: operatör PUBMED_API_KEY verdi (2026-08-08) → NCBI 429'ları kalktı; Worker credential tuttuğu için YENİDEN KAPILANDI (MCP_ALLOW_NO_AUTH=0, Bearer PUBMED_MCP_API_KEY)."
+      "_trust": "operatör self-host (HP systemd :8325 → pubmed.cureonics.com; SQLite read-through cache). Cloudflare Worker DO free-tier 1101 yüzünden 2026-08-17'de Hub'a taşındı. Upstream NCBI + Europe PMC + Unpaywall; connector Bearer = PUBMED_MCP_API_KEY; opsiyonel PUBMED_API_KEY NCBI 429 bütçesini anahtara taşır. KAPILI.",
+      "_probe": "2026-08-17 HP v1.0.0 — pubmed_search_articles(\"GRADE guidelines\")→total≥1, authors=string[]; 11 tools; cache.sqlite; Worker URL emekli."
     },
     "semantic-scholar": {
       "type": "http",
-      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "url": "https://semanticscholar.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${SEMANTICSCHOLAR_MCP_API_KEY}"
       },
       "_tier": "K",
-      "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (gateway çağırana keyless; key doğrudan-S2/rate-limit içindir)",
-      "_trust": "operatör self-host (Cloudflare Worker; upstream Semantic Scholar Graph API, operatör anahtarlı). 2026-08-08'e dek pipeworx gateway'indeydi — §6.3P'nin son üçüncü-taraf akademik halkası. KAPILI: Worker credential tuttuğu için keyless gerekçesi yok.",
-      "_probe": "2026-08-08 SELF-HOST'A TAŞINDI — §6.3P akademik yüzeyi TAMAMEN kapandı. Engel ölçümle beklenmişti: anahtarsız S2 `paper/search` residential IP'den 4/4 kez 429 veriyordu, gateway ise 200 — yani anahtarsız taşıma çalışan bir yolu bozardı. Operatör SEMANTIC_SCHOLAR_API_KEY verince koşul karşılandı. 4 araç (search_papers · get_paper · get_paper_citations · get_author), 48 test, 4/4 CANLI: GRADE 2008 DOI→paperId çözüldü, atıf kenarları ve Guyatt yazar araması döndü, hostile id (`10.1/x?fields=all`) reddedildi. YAPISAL KAZANIM: gateway ~35 araç sunuyordu, whitelist yalnız 4'tü — kalan ~31 jenerik aracı guard_tool_call.py runtime'da reddetmek zorundaydı; bu Worker YALNIZ 4'ünü uyguluyor, yani en-az-yetki artık doğru ateşlemesi gereken bir hook değil, sunucunun şekli. S2 anahtarlıyken bile ~1 req/s kısıtlıyor (ölçüm: 200/429/200) → sınırlı backoff; kalıcı 429 dürüstçe \"THROTTLE, boş sonuç değil\" der ve yedek connector adını verir."
+      "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (upstream Graph API); connector Bearer = SEMANTICSCHOLAR_MCP_API_KEY",
+      "_trust": "operatör self-host (HP systemd :8323 → semanticscholar.cureonics.com; SQLite read-through cache). Eski Cloudflare Worker DO free-tier 1101 yüzünden 2026-08-17'de Hub'a taşındı. KAPILI.",
+      "_probe": "2026-08-17 HP v1.0.0 — search_papers(\"GRADE guidelines\")→returned≥1, authors=list[dict]; cache.sqlite yazıldı; Worker URL emekli."
     },
     "pophive": {
       "type": "http",
@@ -101,15 +116,6 @@
       "_scope": "eu-regulatory",
       "_trust": "operator self-host (Cloudflare Worker) — AÇIK/keyless (MCP_ALLOW_NO_AUTH=1): BAKED public dataset (EMA Medicines/EPAR XLSX, build_corpus.mjs), runtime upstream çağrısı YOK, server-side sır YOK → confused-deputy yok. Değer EMA-otoriter; nokta-zaman snapshot → generated_at damgası + caveat; snapshot'ta yoksa yokluk-kanıtı değil (uydurma yok)",
       "_probe": "2026-07-05 CANLI (Version ff226c89) — baked corpus 2712 ilaç (2321 beşeri/391 vet, 1863 authorised), generated_at 05/07/2026; E2E: ema_get_medicine Keytruda→Authorised/L01FF02/opinion 2015-05-20, ema_filter(L01,authorised,orphan)→5 onkoloji, ema_stats total 2712"
-    },
-    "mevzuat-bilgisi": {
-      "type": "http",
-      "url": "https://mevzuat.surucu.dev/mcp",
-      "_tier": "secondary",
-      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol: kanun-NUMARASI lookup + bedesten (primer Mevzuat keyword-aramasında yok). Tek-sefer cache'e tabi; yalnız primer-Mevzuat-miss VEYA numara/gerekçe lookup'ında çağrılır. Whitelist: search_kanun, search_mevzuat. ⚠️ D7 (ölçüm 2026-08-07): `search_mevzuat` `page_size` varsayılanı 25, bedesten upstream'i 20 ile sınırlı → varsayılan çağrı DAİMA hata döndürür ve bunu isError OLMADAN düz metin verir (sessiz başarısızlık); DAİMA `page_size: 20` geç (guard_tool_call.py bunu zorlar). `search_kanun` zorunlu argümanı `aranacak_ifade`'dir (`phrase` değil)",
-      "_secondary": true,
-      "_trust": "topluluk (surucu.dev) — primer Mevzuat'a ÇAPRAZ-KONTROL aynası; primacy primer Mevzuat'tadır",
-      "_probe": "2026-06-28 HTTP 200 · search_kanun('ilaç')→67 (kanun-NUMARASI lookup + bedesten.adalet.gov.tr ikinci kaynak)"
     },
     "titck": {
       "type": "http",
@@ -160,7 +166,7 @@
         "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "O",
-      "_role": "RAG/GraphRAG retrieval substratı (8 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + corpus_stats + forget_document (doc_id ile temiz silme, orphan-node, idempotent). **ÇOK-SORGULU HİBRİT GETİRİM (v1.6.0, tam §4.1.1): semantic_search/hybrid_query = `queries[]` ayrıştırma → her sorgu için vektör (bge-m3) ∥ BM25 (FTS5) → RRF füzyon (tüm sorgu×arm) → cross-encoder rerank (bge-reranker) → top-k; her aşama graceful-degrade.** Karmaşık çok-yönlü soruda recall-maks (detay atlamama): soruyu alt-yönlere/eşanlamlılara böl→`queries[]` ile geç; kavramsal+tam-terminoloji (ilaç/gen/kod). §8 retrieval telemetri CF-log'da. Bağlam-penceresi koruması (evidence_index). Vectorize 1024-d cosine + D1 graph + FTS5; Worker ver 984a9b59",
+      "_role": "RAG/GraphRAG retrieval substratı (10 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + list_docs + corpus_stats + forget_document + forget_collection. collection={plugin}:{run|sess|lib}:{id} (Evidentia scratch: evidentia:run:<12hex>); eksik collection → `_legacy`. hybrid_query kapsamsız → MCP error. **ÇOK-SORGULU HİBRİT GETİRİM (v1.6.0, tam §4.1.1): semantic_search/hybrid_query = `queries[]` ayrıştırma → her sorgu için vektör (bge-m3) ∥ BM25 (FTS5) → RRF füzyon (tüm sorgu×arm) → cross-encoder rerank (bge-reranker) → top-k; her aşama graceful-degrade.** Karmaşık çok-yönlü soruda recall-maks (detay atlamama): soruyu alt-yönlere/eşanlamlılara böl→`queries[]` ile geç; kavramsal+tam- terminoloji (ilaç/gen/kod). §8 retrieval telemetri CF-log'da. Bağlam-penceresi koruması (evidence_index). Vectorize 1024-d cosine + D1 graph + FTS5; Worker 1.2.0",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
       "_probe": "2026-06-25 HTTP 401 SECURED (Bearer kapısı aktif) · authenticated initialize 200 · RAG+GraphRAG E2E doğrulandı (ingest_document→semantic_search hits=1 score 0.66 + upsert_triples→graph_neighbors)"
     },
@@ -179,7 +185,7 @@
         "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}"
       },
       "_tier": "O",
-      "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan: `med-terminologies` icd11'i WHO creds yokluğundan ÇALIŞMIYOR. RegulatoryMCP/Lex-Sanitas roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Lex-Sanitas connector'ından).",
+      "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan VEYA `med-terminologies.icd11_search` (D6 2026-08-17 emekli — canlı 3B10.0). RegulatoryMCP/Cureolex roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Cureolex connector'ından).",
       "_trust": "operator self-host (Cloudflare Worker — hardened OAuth 2.1 S256 + Bearer; 6-invariant auth)",
       "_probe": "2026-06-28 RE-GATED Bearer (icd11_search WHO ICD-11 server-side OAuth cred → confused-deputy önlemi; açık değil) · authenticated initialize 200 · canlı openfda_search doğrulandı (FAERS reaction count + drug/label) · endpoint allowlist (SSRF-safe)"
     },

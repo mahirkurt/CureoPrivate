@@ -87,17 +87,22 @@ def main():
         msg = (
             "[evidentia] retrieve-don't-dump: '{base}' ~{kb} KB tam-metin/büyük çıktı döndürdü. "
             "Bunu HAM olarak işleme (bağlam-penceresi taşması → eksik/tutarsız değerlendirme). "
-            "anamnesis.ingest_document(doc_id=<DOI>) ile BİR KEZ indeksle → "
-            "semantic_search / hybrid_query(queries=[...]) ile sınırlı, provenance-damgalı, "
-            "graph-temelli dilim çek (evidence_index; CONNECTORS.md §3). Aynı doc_id iki kez ingest edilmez."
+            "anamnesis.ingest_document(collection=evidentia:run:<run_id>, "
+            "doc_id=evrun:<run_id>:<DOI>) ile BİR KEZ indeksle (dual-write) → "
+            "hybrid_query(collection=aynı) veya semantic_search(collection=aynı / "
+            "doc_id=önekli) ile sınırlı, provenance-damgalı dilim çek "
+            "(evidence_index; CONNECTORS.md §3). Kapsamsız hybrid/graph DENY. "
+            "Aynı doc_id iki kez ingest edilmez."
         ).format(base=base, kb=kb)
     else:
         msg = (
             "[evidentia] retrieve-don't-dump: '{base}' ~{kb} KB döndürdü — tam-metin aracı değil, "
             "yani bu ÇOK GENİŞ bir sorgu sonucu. Ham dökümü akıl yürütme girdisi yapma. "
             "Önce sorguyu DARALT (daha dar `search`/filtre, daha küçük `limit`, `count` toplaması, "
-            "gerekli alanları seç); yine de büyükse anamnesis.ingest_document ile BİR KEZ indeksle → "
-            "hybrid_query(queries=[...]) ile sınırlı dilim çek (evidence_index; CONNECTORS.md §3). "
+            "gerekli alanları seç); yine de büyükse anamnesis.ingest_document("
+            "collection=evidentia:run:<run_id>, doc_id=evrun:<run_id>:<id>) ile BİR KEZ "
+            "indeksle → hybrid_query(collection=aynı) / semantic_search(doc_id=önekli) "
+            "ile sınırlı dilim çek (evidence_index; CONNECTORS.md §3; kapsamsız hybrid DENY). "
             "Not: openfda `drug/label` tek kayıtta ~100 KB'dır — `limit=1` + dar `search` kullan."
         ).format(base=base, kb=kb)
     sys.stdout.write(json.dumps({"systemMessage": msg}))

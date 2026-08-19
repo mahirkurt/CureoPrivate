@@ -1,7 +1,7 @@
 {
   "_comment": "plugin.json'dan tasinan ev-konvansiyonu metadata. Claude Code semasinda TANINMAYAN ust-duzey alanlar (claude plugin validate --strict bunlari reddediyordu). Runtime'da hicbir script plugin.json'i okumuyor; tum bilgi burada BIREBIR korunuyor. Geri almak icin bu alanlari plugin.json'a geri tasiyin.",
   "mcp": {
-    "note": "v1.2.2: rxpraxis connector TANIMLARINI ./.mcp.json içinde paketler — 6 çekirdek (titck, mevzuat, midas, pubmed, clinical-trials, biorxiv); kurulumda Claude Code bunları otomatik kaydeder. titck/mevzuat/midas bearer ister (${TITCK_MCP_API_KEY} / ${MEVZUAT_MCP_API_KEY} / ${MIDAS_MCP_SHARED_SECRET}); pubmed/clinical-trials/biorxiv anahtarsızdır. 2026-08-02: ayrı `titck-cache` connector'ı KALDIRILDI — önündeki Cloudflare Worker emekli edildi, titck.cureonics.com artık doğrudan kapılı sunucudur (tek kayıt, 66 araç). Auth gerektiren connector'lar (Türk Patent, YÖK Tez, ThoughtSpot, AdisInsight, Consensus, Exa) BUNDLE EDİLMEZ — kullanıcının Claude.ai/Claude Code bağlantıları üzerinden tüketilir (eksikse tarama-zamanı degrade mod). Tam connector envanteri (13), skill-eşlemesi, fallback zincirleri (§6), devre-kesici (§9) ve provenance için ./CONNECTORS.md tek doğruluk kaynağıdır.",
+    "note": "v1.2.2: rxpraxis connector TANIMLARINI ./.mcp.json içinde paketler — 6 çekirdek (titck, mevzuat, midas, pubmed, clinical-trials, biorxiv); kurulumda Claude Code bunları otomatik kaydeder. titck/mevzuat/midas bearer ister (${TITCK_MCP_API_KEY} / ${MEVZUAT_MCP_API_KEY} / ${MIDAS_MCP_SHARED_SECRET}); pubmed/clinical-trials anahtarsız HTTP; biorxiv yerel Hub stdio (`CureoHub/mcp-servers/biorxiv-mcp`, Anthropic HCLS değil). 2026-08-02: ayrı `titck-cache` connector'ı KALDIRILDI — önündeki Cloudflare Worker emekli edildi, titck.cureonics.com artık doğrudan kapılı sunucudur (tek kayıt, 66 araç). Auth gerektiren connector'lar (Türk Patent, YÖK Tez, ThoughtSpot, AdisInsight, Consensus, Exa) BUNDLE EDİLMEZ — kullanıcının Claude.ai/Claude Code bağlantıları üzerinden tüketilir (eksikse tarama-zamanı degrade mod). Tam connector envanteri (13), skill-eşlemesi, fallback zincirleri (§6), devre-kesici (§9) ve provenance için ./CONNECTORS.md tek doğruluk kaynağıdır.",
     "bundled_servers": "./.mcp.json",
     "connector_contract": "./CONNECTORS.md",
     "tool_manifest": "./shared/tool-manifest.json"
@@ -25,7 +25,7 @@
     "composes_with_external": [
       "carbon-html-report",
       "carbon-pptx",
-      "lex-sanitas",
+      "cureolex",
       "lex-mercator",
       "onko-erisim",
       "rxos"

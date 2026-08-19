@@ -1,5 +1,5 @@
 ---
-description: Connector preflight + roster tazeleme + canlı G-PROBE. Bağlı connector'ları yüzey-bilinçli raporlar (claude.ai vs Claude Code), .mcp.json roster'ını CONNECTORS.md ile çapraz-doğrular (G-BUNDLE), Tier-K/Tier-O URL'lerinde canlı initialize handshake çalıştırır, mcp-scout ile roster bakımı önerir.
+description: Connector preflight + roster tazeleme + canlı G-PROBE. 19 bundled sunucu + 9 companion'ı PRISMA faz sırasıyla (execution-map) yürür; claude.ai vs Claude Code yüzeyini ayırır; G-BUNDLE/G-IDENTITY/G-PROBE çalıştırır.
 argument-hint: "[opsiyonel: yenile | probe | grup-adı]"
 allowed-tools: Bash(python:*), Bash(curl:*)
 ---
@@ -8,62 +8,81 @@ allowed-tools: Bash(python:*), Bash(curl:*)
 
 İstek kipi (opsiyonel): **$ARGUMENTS** — boşsa tam preflight raporu.
 
-## 1. Yüzey-Bilinçli Bağlanırlık Raporu
+Normatif sıra: [`execution-map.md`](../skills/medical-research/references/execution-map.md)
+(MUST/SHOULD/MAY/OUT). Envanter: [`CONNECTORS.md`](../CONNECTORS.md). Filo SSOT: `fleet.yaml`
+→ **19 server** (10 gated / 9 public) + **9 companion**. Mevzuat yok.
 
-[`CONNECTORS.md`](../CONNECTORS.md) §1'deki katmanlamaya göre raporla: **§1.1 Bibliyografik Çekirdek**
-(her PRISMA taramasında her-zaman-açık) bağlı mı; **§1.2–§1.6 opsiyonel zenginleştirme modülleri**
-(alan/ilaç/regülatuar/HTA/KOL/Türkiye) hangileri bağlı, hangileri manuel ekleme gerektiriyor.
-**Kritik yüzey ayrımı (CONNECTORS.md §6):**
-- **Claude Code** → `.mcp.json` roster'ı otomatik bağlar.
-- **claude.ai web** → Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom
-  connector**; Tier-A OAuth Advanced settings. "Otomatik bağlı" varsayma.
+## 1. Yüzey-Bilinçli Bağlanırlık (faz sırasıyla yürü)
 
-Her grup için durum: ✅ bağlı / ⚠️ manuel-gerekli / 🔴 eksik → fallback merdiveni (§2).
+**Claude Code** → `.mcp.json` otomatik bağlar. **claude.ai** → Settings → Connectors.
+Directory/OAuth companion'lar `.mcp.json`'da YOKTUR.
 
-## 2. G-BUNDLE — Roster ↔ SSOT Tutarlılığı
+Her satır: ✅ bağlı / ⚠️ manuel-gerekli / 🔴 eksik → fallback (`execution-map` degrade) /
+`SKIP-REASON` kodu.
 
-`.mcp.json` bundled roster ile `CONNECTORS.md` envanterini çapraz-doğrula (her bundled URL
-CONNECTORS.md'de belgeli mi; her Tier-K/O girdisi roster'da mı):
+### 1.1 Bundled 19 (`.mcp.json`) — playbook home phase
+
+| # | Server | Phase / duty | Beklenen |
+|---|---|---|---|
+| 1 | `openalex` | P1.1 MUST | gated `OPENALEX_MCP_API_KEY` |
+| 2 | `pubmed-epmc` | P1.2 MUST | gated `PUBMED_MCP_API_KEY` |
+| 3 | `semantic-scholar` | P1.3 MUST | gated `SEMANTICSCHOLAR_MCP_API_KEY` |
+| 4 | `evidentia-kb` | P0 SHOULD | gated; unreachable = map-only |
+| 5 | `openathens` | P4.T3 MUST try | gated; challenge_required → T4/T5 |
+| 6 | `annas-reader` | P4.T5 MUST* | gated; last resort after licensed band |
+| 7 | `anamnesis` | P4+P6 MUST* | gated; exclusive `evidentia:run:<id>` |
+| 8 | `openfda` | P7 MAY 0.5.C/K | gated; serial + 1 retry |
+| 9 | `ema` | P7 MAY 0.5.C | keyless |
+| 10 | `titck` | P2/P7 MAY TR | gated; canonical (no cache Worker) |
+| 11 | `yok-akademik` | P7 KOL MAY | gated; `yok_search(term=)` |
+| 12 | `pophive` | P7 MAY 0.5.K | keyless; **US-only** |
+| 13 | `who-gho` | P7 MAY 0.5.K | keyless; global/TR |
+| 14 | `globocan` | P7 MAY 0.5.K | keyless; cancer + `ui` |
+| 15 | `drugddx` | P4 MAY 0.5.I | keyless; not a pairwise engine |
+| 16 | `med-terminologies` | P4 MAY coding | keyless; D6 `icd11_search` ALLOW |
+| 17 | `nih-clinicaltables` | P4 MAY | pipeworx `includeTools` |
+| 18 | `nlm-rxnorm` | P4 MAY | D1/D2 never call |
+| 19 | `iuphar-gtopdb` | P4 MAY 0.5.I | pipeworx `includeTools` |
+
+### 1.2 Companions (9 — hesap düzeyi; Cursor yüklemeyebilir)
+
+PubMed · Paper Search · Clinical Trials · AdisInsight · Elicit · Consensus · YÖK Tez ·
+Literatür · Wiley. Unloaded = `SKIP-REASON companion_unloaded` (icat kimlik yok).
+
+Directory-only (filo companion DEĞİL): bioRxiv/medRxiv, Scholar Gateway, ChEMBL, NPI,
+Türk Patent, Synapse, OpenTargets.
+
+## 2. G-BUNDLE — Roster ↔ SSOT
+
 ```bash
 python ${CLAUDE_PLUGIN_ROOT}/scripts/g_bundle.py
 ```
-Tutarsızlık → düzeltilecek delta'yı raporla.
 
-## 2b. G-IDENTITY — Self-host Worker Kimlik Tutarlılığı
+## 2b. G-IDENTITY — Self-host Worker adı
 
-Her self-host Worker'ın kendini DÖRT yerde birden aynı adla tanıtması gerekir (`auth.ts` REALM,
-başlık yorumu, `package.json` name, `wrangler.jsonc` name):
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/g_identity.py
 ```
-REALM kozmetik DEĞİLDİR: RFC 9728 `resource_name`'i, OAuth `client_id`'sini, 401 `WWW-Authenticate`
-realm'ini ve kullanıcının connector eklerken okuduğu **onay sayfasının başlığını** besler. 2026-08-07
-denetimi üç Worker'ın (`ema`/`globocan`/`who-gho`) canlıda kendini `openfda-mcp` diye tanıttığını
-buldu — `auth.ts` kopyalanırken REALM yerelleştirilmemişti. Her Worker'ın kendi testleri bunu
-göremez (hepsi kendi yanlış sabitini doğrular); yalnız bu ÇAPRAZ karşılaştırma görür.
 
-## 3. G-PROBE — Canlı initialize Handshake
+## 3. G-PROBE — Canlı initialize
 
-`probe`/`yenile` istendiğinde (veya periyodik) Tier-K + Tier-O remote URL'lerinde canlı MCP
-`initialize` çalıştır (no-fabrication: durum **canlı** doğrulanır, hatırlanmaz):
+`probe`/`yenile` istendiğinde:
+
 ```bash
 python ${CLAUDE_PLUGIN_ROOT}/scripts/g_probe.py
 ```
-Beklenen (**2026-06-28 canlı re-probe**, `connector-registry.md §8` Probe Log): med-terminologies
-(200; ⚠️ `icd11_search` AUTH-kırık → ICD-11 = `openfda`), nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb
-(200, pipeworx-gateway; ⚠️ nlm-rxnorm `interactions`=404 / `related`=400, nih `icd10cm` isim→0),
-**drugddx (200, CANLI, Tier-O)**, **openfda (Bearer; openFDA + WHO ICD-11)**, **PopHIVE (200, ABD epi;
-US-only)**, **Mevzuat Bilgisi (200, ikincil)**. Bir URL 4xx/5xx → raporla. **Yalnız §2.6 whitelist
-araçları** çağrılır (pipeworx jenerikleri DEĞİL — G-WHITELIST); hasta-etkili çıktı otoriter kaynakla
-çapraz-doğrulanır (G-XVAL). Elicit: OAuth-gated (claude.ai-bağlı) → tools/list canlı OAuth probe bekliyor.
 
-## 4. Roster Bakımı (mcp-scout devri)
+Beklenen (connector-registry §8; D6 2026-08-17 emekli): med-terminologies 200 (`icd11_search`
+CANLI) · nih/rxnorm/gtopdb 200 (D1 interactions=404, D2 related=400, D3 icd10cm isim→0) ·
+drugddx 200 · openfda Bearer · PopHIVE 200 US-only · who-gho / globocan / ema keyless.
+**Yalnız §2.6 whitelist.** Elicit: OAuth, tools/list canlı probe.
 
-Yeni kaynak/connector keşfi veya bir bundled connector'ın kalıcı düşmesi → **`mcp-scout`** ile
-yeniden keşif/yargı; verified sonuç `.mcp.json` + `CONNECTORS.md`'ye **birlikte** işlenir
-(G-BUNDLE tekrar). Tier-K topluluk-yayıncı eklemelerinde least-privilege/sandbox-first notu korunur.
+## 4. Roster bakımı
 
-## 5. Güven Hatırlatması
+Kalıcı düşüş / yeni kaynak → mcp-scout yargısı; sonuç `.mcp.json` + `CONNECTORS.md` +
+`execution-map.md` birlikte.
 
-Tier-K genişletme (×4) topluluk-yayıncıdır; hasta-etkili çıktı otoriter kaynakla çapraz-doğrulanır
-(CONNECTORS.md §5). Doğrulanamayan canlılık/güvenlik **dürüstçe** raporlanır.
+## 5. Güven
+
+Tier-K topluluk-yayıncı; hasta-etkili çıktı otoriter kaynakla çapraz-doğrulanır
+(CONNECTORS.md §5). Pipeworx jenerikleri çağrılmaz (guard allowlist).

@@ -269,7 +269,7 @@ Zip kökü zaten `socius-vigil/` olduğu için doğrudan `skills/socius-vigil/` 
     },
     "pubmed-epmc": {
       "type": "http",
-      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "url": "https://pubmed.cureonics.com/mcp",
       "headers": { "Authorization": "Bearer ${PUBMED_MCP_API_KEY}" },
       "_tier": "health",
       "_role": "AE klinik plausibility — bir yorum sinyalinin bilinen advers reaksiyon profiliyle uyumu. Bağlı değilse §10 sinyalleri klinik doğrulama olmadan, yalnız Admiralty+ACH ile raporlanır."

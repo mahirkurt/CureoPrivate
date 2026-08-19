@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { __testing, RERANK_MODEL } from "../src/rag.js";
 import { cosine } from "../src/embed.js";
 
-const { chunkId, normalizeMatches, rrfFuse, buildFtsMatch } = __testing;
+const { chunkId, normalizeMatches, rrfFuse, buildFtsMatch, uniqueDocIds, vectorFilter } = __testing;
 
 // Added 2026-08-07. anamnesis carried helper suites for chunk.ts and graph.ts but NONE for
 // rag.ts or embed.ts, so hybrid-retrieval ranking and the FTS5 injection guard were unpinned.
@@ -158,5 +158,20 @@ describe("cosine similarity", () => {
 describe("rerank model", () => {
   it("is the bge cross-encoder the pipeline was tuned against", () => {
     expect(RERANK_MODEL).toBe("@cf/baai/bge-reranker-base");
+  });
+});
+
+describe("collection scope helpers", () => {
+  it("merges doc_id and doc_ids[] without duplicates", () => {
+    expect(uniqueDocIds("a", ["a", "b"])).toEqual(["a", "b"]);
+    expect(uniqueDocIds(undefined, [])).toBeUndefined();
+  });
+
+  it("builds a Vectorize equality filter for collection and a single doc_id", () => {
+    expect(vectorFilter("evidentia:run:aabbccddeeff", ["doc-1"]))
+      .toEqual({ collection: "evidentia:run:aabbccddeeff", doc_id: "doc-1" });
+    expect(vectorFilter("evidentia:run:aabbccddeeff", ["a", "b"]))
+      .toEqual({ collection: "evidentia:run:aabbccddeeff" });
+    expect(vectorFilter(undefined, undefined)).toBeUndefined();
   });
 });

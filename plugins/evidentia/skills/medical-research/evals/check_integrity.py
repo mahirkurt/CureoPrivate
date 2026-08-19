@@ -22,6 +22,8 @@ Implements the executable gates declared in skill-manifest.yaml `verification:`:
                 full-plugin-mount CI where the root MUST resolve                        (modifier)
   --agents      G-AGENT    sub-agent `tools:` allowlists cover the MCP fleet and
                            exclude the removed web tier                            (blocking)
+  --playbook    G-PLAYBOOK execution-map.md names every fleet server, P0–P7, and
+                           the SKIP-REASON / MUST/SHOULD/MAY/OUT duty codes        (blocking)
   (no flag)     run all gates
 
 Stdlib only (no PyYAML dependency) — the manifest is parsed with lightweight,
@@ -219,7 +221,7 @@ def gate_connectors() -> bool:
 
     server_norm = {norm(n) for n in server_names}
     rest_fallback = {"openalex", "pubchem", "semanticscholargraph", "dailymed",
-                     "unpaywall", "doaj", "jstage", "drugbank", "globocan"}
+                     "unpaywall", "doaj", "jstage", "drugbank"}
 
     if not CONNECTOR_REGISTRY.exists():
         _warn("connector-registry.md absent — G-CONN limited to manifest self-check")
@@ -244,7 +246,7 @@ def gate_connectors() -> bool:
 
     # Unresolved here are advisory (registry contains prose tokens too) — report, don't hard-fail
     # unless a KNOWN core connector is absent from the manifest.
-    core = ["PubMed", "Clinical Trials", "TİTCK", "Mevzuat", "openfda", "AdisInsight", "ChEMBL"]   # v8.5 D-α: Regulatory MCP → openfda
+    core = ["PubMed", "Clinical Trials", "TİTCK", "openfda", "AdisInsight", "ChEMBL"]   # v8.5 D-α: Regulatory MCP → openfda; Mevzuat unplugged 2026-08-17
     core_missing = [c for c in core if norm(c) not in server_norm]
     _ok(f"{len(server_names)} runtime.mcp_servers entries parsed")
     if core_missing:
@@ -472,7 +474,8 @@ def gate_whitelist() -> bool:
 
 
 PHASE_FILES = {
-    "P0": "prisma-protocol.md", "P1": "search-strategy.md", "P3": "screening.md",
+    "P0": "prisma-protocol.md", "P1": "search-strategy.md",
+    "P2": "execution-map.md", "P3": "screening.md",
     "P4": "data-extraction.md", "P5": "risk-of-bias.md", "P7": "prisma-reporting.md",
 }
 DOMAIN_LAYERS = [
@@ -601,7 +604,7 @@ def gate_agents() -> bool:
 
     Why this gate exists (2026-08-07). `agents/evidence-synthesizer.md` shipped with
     `tools: Read, Bash, Glob, Grep, WebFetch, WebSearch` — not one MCP entry. Because `tools:`
-    is an ALLOWLIST, the plugin's flagship isolation agent could not reach any of the 20
+    is an ALLOWLIST, the plugin's flagship isolation agent could not reach any of the 19
     evidence connectors its own body instructs it to drive, while it COULD reach `WebSearch`,
     the tier the skill removed in v1.4.0 and forbids in eight places. Provisioned exactly
     inverse to its contract, a run would either come back empty or fall back to web search —
@@ -647,6 +650,45 @@ def gate_agents() -> bool:
     return ok
 
 
+def gate_playbook() -> bool:
+    """G-PLAYBOOK: execution-map.md is the ordered P0–P7 tool playbook covering the fleet."""
+    print("G-PLAYBOOK  execution-map covers the fleet with ordered duties")
+    em = REFS_DIR / "execution-map.md"
+    lock = SKILL_DIR.parent.parent / "fleet.lock.json"
+    if not em.exists():
+        _fail("references/execution-map.md missing")
+        return False
+    text = em.read_text(encoding="utf-8", errors="replace")
+    ok = True
+    if "SKIP-REASON" not in text:
+        _fail("execution-map.md has no SKIP-REASON template")
+        ok = False
+    else:
+        _ok("SKIP-REASON template present")
+    for duty in ("MUST", "SHOULD", "MAY", "OUT"):
+        if duty not in text:
+            _fail(f"duty code {duty} missing from execution-map.md")
+            ok = False
+        else:
+            _ok(f"duty {duty} present")
+    for ph in ["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]:
+        if ph not in text:
+            _fail(f"phase {ph} missing from execution-map.md")
+            ok = False
+    if lock.exists():
+        data = json.loads(lock.read_text(encoding="utf-8"))
+        fleet = [s["name"] for s in data["servers"]]
+        missing = [s for s in fleet if s not in text]
+        if missing:
+            _fail("playbook omits fleet server(s): " + ", ".join(missing))
+            ok = False
+        else:
+            _ok(f"all {len(fleet)} fleet servers named in execution-map.md")
+    else:
+        _warn("fleet.lock.json absent — fleet coverage not checked")
+    return ok
+
+
 GATES = {
     "refs": ("G-REF", gate_refs, True),
     "always-load": ("G-ALWAYS", gate_always_load, True),
@@ -661,6 +703,7 @@ GATES = {
     "phases": ("G-PHASES", gate_phases, True),
     "deskew": ("G-DESKEW", gate_deskew, True),
     "agents": ("G-AGENT", gate_agents, True),
+    "playbook": ("G-PLAYBOOK", gate_playbook, True),
 }
 
 

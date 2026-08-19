@@ -17,7 +17,7 @@ akıl yürütüleceğini** değiştirir.
 |---|---|---|---|
 | **Tier 0 — doğrudan** | MCP aracı ana bağlamda | Getirim küçük (< ~6 KB), tek server, tek sonuç | Ham sonuç |
 | **Tier 1 — distiller** | `agents/tarih-tarama-distilleri.md` | Çok-server fan-out; ham gövde > 6 KB; kaynak matrisi taraması | Tek `retrieval_distillate` zarfı + `coverage` bloğu |
-| **Tier 2 — RAG substratı** | `anamnesis` MCP | Tek belge > ~30 KB (monograf, tez PDF, manifest-içi blok, zabıt serisi) | `ingest_document` → sınırlı `hybrid_query` dilimleri |
+| **Tier 2 — RAG substratı** | `anamnesis` MCP | Tek belge > ~30 KB (monograf, tez PDF, manifest-içi blok, zabıt serisi) | `ingest_document(collection=histmed:run:…)` → `hybrid_query(collection=…)` dilimleri |
 
 **Kural:** büyük bir belge **kör getirilmez**. Önce yapısal navigasyon (manifest canvas listesi,
 madde ağacı, içindekiler, MeSH/anahtar kelime konumu) → hedef parça → gerekirse Tier 2.
@@ -50,18 +50,18 @@ Sharding yalnız *nerede akıl yürütüldüğünü* değiştirir. Bir shard'ın
 Her getirilen artefakt **kanonik bir kimlikle** anılır ve **aynı koşumda ikinci kez
 getirilmez**:
 
-| Artefakt | Kanonik doc_id |
+| Artefakt | Kanonik sonek (`doc_id = hmrun:<12hex>:<sonek>`) |
 |---|---|
-| Makale | `histmed:doi/<doi>` veya `histmed:pmid/<pmid>` |
-| IIIF belgesi | `histmed:<kaynak>/<id>` (ör. `histmed:wellcome/b3135631x`) |
-| Monograf (tam-metin) | `histmed:openathens/<doi-veya-yazar-yıl>` veya `histmed:annas/<md5>`; dosya linki değil DOI/MD5 + SHA-256 provenance cache'lenir |
-| Arşiv belgesi | `histmed:devarsiv/<arşiv>/<fon>/<kutu>-<gömlek>` |
-| Zabıt | `histmed:hansard/<tarih>/<debate-id>` · `histmed:tbmm/<dönem>/<birleşim>` |
-| Tez | `histmed:yoktez/<tez-no>` |
+| Makale | `doi/<doi>` veya `pmid/<pmid>` |
+| IIIF belgesi | `<kaynak>/<id>` (ör. `wellcome/b3135631x`) |
+| Monograf (tam-metin) | `openathens/<doi-veya-yazar-yıl>` veya `annas/<md5>`; dosya linki değil DOI/MD5 + SHA-256 provenance |
+| Arşiv belgesi | `devarsiv/<arşiv>/<fon>/<kutu>-<gömlek>` |
+| Zabıt | `hansard/<tarih>/<debate-id>` · `tbmm/<dönem>/<birleşim>` |
+| Tez | `yoktez/<tez-no>` |
 
-**`histmed:` ön-eki zorunludur.** `anamnesis` substratı evidentia ve lex-sanitas ile
-paylaşılır; ön-ek olmadan doc_id ad-uzayları çakışır ve bir plugin'in ingest ettiği belge
-diğerinin sorgusuna sızar.
+**Her ingest `collection=histmed:run:<12hex>` + önekli `doc_id` ister.** Tenancy collection'dadır;
+eski çıplak `histmed:doi/…` (koşu-id'siz) `_legacy` torbasına düşer ve diğer plugin sorgularına sızar.
+`doc_scope` **yoktur**. Cevap yalnız dönen chunk'lardan; atıf `doc_id::idx`.
 
 ---
 
@@ -90,10 +90,11 @@ diğerinin sorgusuna sızar.
 ## §6 anamnesis çağrı disiplini
 
 ```
-ingest_document(doc_id="histmed:…", …)   # BİR KEZ; aynı doc_id tekrar ingest EDİLMEZ
-hybrid_query(queries=[…])                 # sınırlı, provenance damgalı dilim
-upsert_triples(…)                         # hekim↔kurum↔yayın↔olay grafiği
-graph_neighbors / subgraph                # PROSOPOGRAPHIA + CONCEPTUS aktarım zinciri
+ingest_document(collection="histmed:run:<12hex>", doc_id="hmrun:<12hex>:doi/<doi>", …)
+hybrid_query(collection="histmed:run:<12hex>", queries=[…])   # kapsamsız = DENY / MCP error
+upsert_triples(collection="histmed:run:<12hex>", …)
+graph_neighbors / subgraph  # collection zorunlu
+# atıf: doc_id::idx
 ```
 
 **Anahtar yoksa:** sınırlı-parça getirime düşülür (manifest-içi arama + sayfa-bazlı okuma).
@@ -105,7 +106,7 @@ graph_neighbors / subgraph                # PROSOPOGRAPHIA + CONCEPTUS aktarım 
 
 1. **Detay atlanmaz, yeri değişir.** Distiller'a giden bir bulgu kaybolmaz; zarfta döner.
 2. **Kör getirme yok.** Büyük belge önce yapısal olarak navige edilir.
-3. **Bir-kez-getir.** Kanonik doc_id ile önbellek; `histmed:` ön-eki zorunlu.
+3. **Bir-kez-getir.** Kanonik doc_id ile önbellek; `collection=histmed:run:` + `hmrun:` öneki zorunlu.
 4. **Sessiz atlama yok.** Her shard `coverage` satırı üretir; eksik satır G0 FAIL.
 5. **Ham döküm yok.** Ne ana bağlama, ne çıktıya. Getirilen tam metin **analiz içindir**;
    telif kapısı (annas-reader Tier 4) gövde kopyalamayı yasaklar.

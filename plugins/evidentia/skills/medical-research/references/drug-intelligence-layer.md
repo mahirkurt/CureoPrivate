@@ -99,7 +99,7 @@ Deal/conference depth on the public MCP is thinner than the curated web product 
 | `history_events` PMIDs | EPMC `get_article_metadata` | title/authors/journal match |
 | trial NCTs | CT.gov `get_trial_details` | phase + sponsor + dates |
 | FDA approval/CRL | regulatory MCP `openfda_search(endpoint="drug/drugsfda")` + DailyMed | approval/letter date |
-| EMA CHMP/registration | EMA has no native API in this build → not retrievable; report as a gap (VERİ YOK), do NOT fabricate | — |
+| EMA CHMP/registration | **native `ema`** (`ema_search_medicines` / `ema_get_medicine` / `ema_filter`) | MA status + CHMP dates + EPAR URL |
 | Türkiye status | **TİTCK `search_drugs`** (native) | ruhsat + reimbursement |
 | AE profile | regulatory MCP `openfda_search(endpoint="drug/event", count=...)` | FAERS PT frequencies (NOT incidence) |
 | Mechanism/target | ChEMBL `get_mechanism` / `target_search` | action_type + UniProt |
@@ -112,7 +112,7 @@ Deal/conference depth on the public MCP is thinner than the curated web product 
 
 1. **Direct:** `search_drugs(drug_name=…)` / `(mechanism=…)` / `(targets=…)`.
 2. **Reformulate:** brand↔INN; mechanism parent class; `search_drug_companies` by indication.
-3. **Synthesize from primaries:** CT.gov `search_by_sponsor` + DailyMed + openFDA FAERS + `pharmaintel` skill. (EMA has no native API in this build → EPAR not retrievable; report as a gap, do NOT fabricate.)
+3. **Synthesize from primaries:** CT.gov `search_by_sponsor` + DailyMed + openFDA FAERS + **`ema`** + `pharmaintel` skill.
 4. **Document gap:** "AdisInsight returned no curated pipeline data; reconstructed from CT.gov + DailyMed + FAERS — EMA/EPAR and deals/conference dimensions not recovered (VERİ YOK), not fabricated."
 
 ---

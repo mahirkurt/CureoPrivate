@@ -24,7 +24,7 @@ sunucu kimliğine yapılan her atıf sürüklenmedir.
 
 Kullanım:
   python3 tools/fleetkit/check_drift.py --all
-  python3 tools/fleetkit/check_drift.py lex-sanitas edupedia
+  python3 tools/fleetkit/check_drift.py cureolex edupedia
 Çıkış: 0 temiz · 1 sürüklenme.
 """
 import argparse
@@ -64,6 +64,7 @@ _LIST_TAIL = re.compile(r"\s+—\s+.*", re.S)  # 'Ad · Ad — açıklama' → a
 SCAN_SUFFIXES = {".md", ".yaml", ".yml", ".py", ".json"}
 SKIP_DIRS = {"__pycache__", ".git", "node_modules"}
 SKIP_FILES = {"fleet.lock.json", ".mcp.json", "fleet.yaml"}
+# Cursor native MCP wiring is generated (same roster as .mcp.json); skip prose scan.
 SKIP_PREFIXES = ("test_",)
 
 
@@ -105,6 +106,7 @@ def scan_prose(root: Path, expected: int, companions: int, extra=()):
                for p in sorted(root.rglob("*"))
                if p.is_file() and p.suffix in SCAN_SUFFIXES
                and p.name not in SKIP_FILES and not SKIP_DIRS & set(p.parts)
+               and not (p.name == "mcp.json" and p.parent.name == ".cursor-plugin")
                and not p.name.startswith(SKIP_PREFIXES)
                and _readable(p)]
     out_extra = list(extra)
@@ -179,7 +181,8 @@ def scan_server_ids(root: Path, fleet: dict):
     for path in sorted(root.rglob("*")):
         if (not path.is_file() or path.suffix not in SCAN_SUFFIXES
                 or path.name in SKIP_FILES or SKIP_DIRS & set(path.parts)
-                or path.name.startswith(SKIP_PREFIXES)):
+                or path.name.startswith(SKIP_PREFIXES)
+                or (path.name == "mcp.json" and path.parent.name == ".cursor-plugin")):
             continue
         try:
             lines = path.read_text(encoding="utf-8").splitlines()

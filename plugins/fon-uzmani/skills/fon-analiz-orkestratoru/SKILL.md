@@ -33,7 +33,7 @@ changelog:
 ## Ne Zaman Çağrılır
 TEFAS'ta listelenmiş yatırım/emeklilik fonu analiz, tarama, karşılaştırma, portföy inşası
 veya izleme gerektiğinde. **Scope guard:** tekil hisse/tahvil → `bist-analyst`; mevzuat
-reformu → `lex-sanitas`; bireysel vergi/SGK → kapsam dışı; gün-içi/scalping → kapsam dışı
+reformu → `cureolex`; bireysel vergi/SGK → kapsam dışı; gün-içi/scalping → kapsam dışı
 (veri EOD); kişiselleştirilmiş "şu kadar al" → karar-destek diline çevrilir.
 
 ## 0. Scope Politikası
@@ -165,4 +165,4 @@ fon-mcp'den), socius-vigil (kurucu/PYŞ itibar sinyali).
   + `../regulasyon-uyum/scripts/rapor_lint.py`.
 
 ## Kapsam Dışı
-Tekil hisse/tahvil analizi (→ bist-analyst); mevzuat reformu (→ lex-sanitas); bireysel vergi/SGK; gün-içi/scalping (veri EOD); kişiselleştirilmiş kesin al/sat tutarı/emri.
+Tekil hisse/tahvil analizi (→ bist-analyst); mevzuat reformu (→ cureolex); bireysel vergi/SGK; gün-içi/scalping (veri EOD); kişiselleştirilmiş kesin al/sat tutarı/emri.

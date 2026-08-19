@@ -176,7 +176,7 @@ Kullanıcının ne üzerinde çalıştığını sorun. Yaygın iş akışları:
 5. **"Bir tarihin takvim karşılığı / kronogram çözümü?"** → `/vekayinuvis:kronoloji`.
 6. **"Tam bir akademik tarih raporu?"** → `/vekayinuvis:rapor`.
 7. **"Bir kanunun tarihî gerekçe bölümü?"** → `/vekayinuvis:kanun-gerekce`
-   (sağlık alanında `medical-history.md` otomatik yüklenir; `lex-sanitas` ile
+   (sağlık alanında `medical-history.md` otomatik yüklenir; `cureolex` ile
    composable).
 8. **"Bu belgenin tüm sayfalarını satın almak istiyorum."** → `/vekayinuvis:satinalma`
    (karar matrisi + metin-onay kapısı; ödeme daima insan/noVNC).
@@ -187,7 +187,7 @@ Kullanıcının ne üzerinde çalıştığını sorun. Yaygın iş akışları:
    >5 sayfa veya çok-motorlu (`both`) tam belgede devreye girer).
 
 **Ayrım rehberi (scope guard):**
-- Mevzuat reformu/taslak yazımı → `lex-sanitas` (vekayinuvis yalnız tarihî
+- Mevzuat reformu/taslak yazımı → `cureolex` (vekayinuvis yalnız tarihî
   gerekçe bölümünü besler).
 - Modern tıp literatürü / pipeline → `medical-research` / `pharmaintel`.
 - Basılı/sunum çıktısı → `carbon-html-report` (A4 baskı/sunum-hazır) veya bilimsel

@@ -37,18 +37,20 @@ değer asla üretilmez (bkz. §4).
    (EPMC OA → Paper Search → OpenAthens/Millet Kütüphanesi [Tier 3 lisanslı] → Wiley [Tier 4]
    → annas-mcp [Tier 5 son çare] → pubmed-epmc Unpaywall [Tier 6]).
 2. **Ingest** — edinilen tam metin (veya operatörün sağladığı PDF metni)
-   `anamnesis: ingest_document(text=..., doc_id="<PMID|DOI>", source="<Tier adı>",
-   title=...)` ile semantik-parçalanıp indekslenir. Bu adım metnin **ham hâlde
-   bağlama dökülmesini** engeller — dönen MANIFEST yalnız parça sayısı + önizleme.
-3. **Retrieve** — çıkarım alanı başına hedefli sorguyla dilim çekilir:
-   `anamnesis: semantic_search(query="<sonuç ölçütü / alan>", doc_id="<PMID|DOI>",
-   k=5–8)` tek-belge hassas arama için; çok-yönlü/karma çıkarımlarda
-   `anamnesis: hybrid_query(query="<birincil sonuç>", queries=["<alt-yönler>"],
-   seed_entities=["<ilaç/gen>"])` daha geniş bağlam + graf genişletmesi için.
+   `anamnesis: ingest_document(text=..., collection="evidentia:run:<run_id>",
+   doc_id="evrun:<run_id>:<PMID|DOI>", source="<Tier adı>", title=...)` ile semantik-parçalanıp
+   **bu koşunun** çalışma setine yazılır (dual-write: collection + önek). Dönen MANIFEST yalnız
+   parça sayısı + önizleme (ham metin bağlama dökülmez).
+3. **Retrieve** — flagship: `hybrid_query(collection="evidentia:run:<run_id>", query=…, queries=[…])`.
+   Tek belge daraltması: `semantic_search(…, collection=aynı, doc_id="evrun:<run_id>:<PMID|DOI>")`
+   veya `doc_ids[]`. Kapsamsız hybrid/graph/global search çağrılmaz (PreToolUse DENY;
+   NSCLC↔emicizumab sızıntı sınıfı). `upsert_triples` collection veya her triple.`doc_id` önekli.
 4. Her dönen parça `{doc_id, idx, score}` provenance taşır — çıkarılan her sayısal
    değer bu parça kimliğine **iğnelenir** (aşağıdaki sidecar `source_chunk` alanı).
 5. Copyright kapısı (`fulltext-retrieval.md` §3) burada da geçerlidir: sayı/olgu
    çıkarımı serbest, geniş **verbatim** blok asla kopyalanmaz.
+6. **Temizlik** — P7 / abort / oturum kapanışı: hook `forget_collection` tercih eder; yoksa
+   ledger `forget_document`. Küresel wipe yok; Stop-hook forget yok.
 
 ---
 

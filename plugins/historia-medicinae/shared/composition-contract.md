@@ -26,7 +26,7 @@ degradenin ne olduğunu bağlar.
 | **`vekayinuvis`** | Osmanlıca **el yazması** paleografi/HTR · BOA/BCA fon-kutu-gömlek düzeyinde kapsamlı süpürme · belge satın-alma + 300 DPI arşiv okuma · ebced/kronogram çözümü · Hicrî-Rumî çeviri gerektiren derin arşiv işi | Osmanlıca el yazması **transkripsiyonu YAPILMAZ**; katalog künyesi düzeyinde kalınır, kullanıcıya vekayinuvis kurulum önerisi verilir. Metin **asla uydurulmaz** |
 | **`evidentia`** | Soru tarihten **çağdaş kanıta** kaydığında — "bu tarihsel tedavi bugün etkili mi", "paleopatolojik bulgunun modern karşılığı", retrospektif tanının klinik geçerliliği | Çağdaş klinik iddia **UNVERIFIED** bırakılır; PRISMA/GRADE düzeyinde kanıt üretilmez ve bu çıktıda beyan edilir |
 | **`sci-audit`** | **Her RELATIO çıktısı** — atıf-adli (A ekseni), iddia temellendirme (B), Türkçe bilimsel dil (G) | Bağımsız QA uygulanmaz; çıktıda "bağımsız atıf ve dil denetimi yapılmadı" olarak **açıkça beyan edilir** |
-| **`lex-sanitas`** | Tarihsel bir normun **yürürlükteki** hâli sorulduğunda (1219 s.K.'nın bugünkü metni, AYM/Danıştay içtihadı) | Çağdaş norm durumu verilmez; tarihsel katmanla sınırlı kalınır |
+| **`cureolex`** | Tarihsel bir normun **yürürlükteki** hâli sorulduğunda (1219 s.K.'nın bugünkü metni, AYM/Danıştay içtihadı) | Çağdaş norm durumu verilmez; tarihsel katmanla sınırlı kalınır |
 | **Distiller alt-ajanları** | Ham MCP gövdesi > 6 KB (bkz. context-economy-contract §1) | Ana bağlamda sınırlı-parça getirime düşülür |
 
 **Rol sınırı (önemli).** `sci-audit` genel bilimsel-metin denetçisidir; **tıp tarihi çeviriyazı,
@@ -50,17 +50,20 @@ tamamlayıcıdır, üstün değildir; çakışmada bu plugin'in disiplin kuralı
 
 ## §4 Paylaşılan anamnesis substratı
 
-`anamnesis` üç plugin tarafından paylaşılır (evidentia · lex-sanitas · historia-medicinae).
-Ad-uzayı ayrımı **zorunludur**:
+`anamnesis` paylaşılan RAG/GraphRAG substratı. Tenancy **collection** ile ayrılır
+(`{plugin}:{kind}:{id}`; kind ∈ {run, sess, lib} — **lib varsayılan değildir**).
+`doc_scope` **yoktur**. Kapsamsız `hybrid_query` / `graph_*` DENY (veya Worker MCP error).
 
-| Plugin | doc_id ön-eki |
-|---|---|
-| evidentia | `pmid:` · `doi:` · `nct:` |
-| lex-sanitas | `mevzuat:` · `rg:` · `tbmm:` |
-| **historia-medicinae** | **`histmed:`** |
+| Plugin | collection | doc_id |
+|---|---|---|
+| **evidentia** | `evidentia:run:<12hex>` **scratch** | `evrun:<12hex>:<PMID\|DOI>` — koşu bitince forget; kalıcı kütüphane değil |
+| cureolex | `cureolex:sess:<session>` | insan-okunur `mevzuat:` / `celex:` / `ecli:` / `rg:` soneki |
+| **historia-medicinae** | **`histmed:run:<12hex>`** | **`hmrun:<12hex>:<kanonik>`** (kanonik: `doi/…` · `pmid/…` · `wellcome/…` · `devarsiv/…`) |
 
-Ön-eksiz ingest yasaktır: bir plugin'in belgesi diğerinin `hybrid_query` sonucuna sızar ve
-provenans bozulur.
+Ön-eksiz / collectionsuz ingest yasaktır: bir plugin'in belgesi diğerinin sorgusuna sızar.
+Cevap yalnız dönen chunk'lardan; atıf **`doc_id::idx`**. `corpus_stats` küresel gözlemdir,
+bu koşunun çalışma seti değildir. Stop'ta silinmez; SessionEnd / startup yalnız kendi
+collection'ını `forget_collection` ile temizler.
 
 ---
 

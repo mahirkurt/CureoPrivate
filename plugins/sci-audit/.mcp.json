@@ -1,21 +1,37 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — sci-audit MCP wiring. 4 server (0 Bearer-gated, 4 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — sci-audit MCP wiring. 4 server (3 Bearer-gated, 1 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "pubmed": {
       "type": "http",
-      "url": "https://pubmed.mcp.claude.com/mcp"
+      "url": "https://pubmed.mcp.claude.com/mcp",
+      "_trust": "Anthropic resmî PubMed MCP (keyless). sci-audit eksen A/B için hesap-seviyesi PubMed; pubmed-epmc (EPMC + Unpaywall tam metin) bunu tamamlar."
     },
     "pubmed-epmc": {
       "type": "http",
-      "url": "https://pubmed.caseyjhand.com/mcp"
+      "url": "https://pubmed.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${PUBMED_MCP_API_KEY}"
+      },
+      "_trust": "operatör self-host (HP systemd; Evidentia ile aynı uç). Eski Worker DO kotası 1101 verdi (2026-08-17); Hub SQLite cache + 11 araç. KAPILI.",
+      "_probe": "2026-08-17 Hub SSOT URL; pubmed_search_articles authors=string[]."
     },
     "openalex": {
       "type": "http",
-      "url": "https://openalex.caseyjhand.com/mcp"
+      "url": "https://openalex.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OPENALEX_MCP_API_KEY}"
+      },
+      "_trust": "operatör self-host (HP systemd; Evidentia ile aynı uç). Eski Worker DO kotası 1101 verdi (2026-08-17); Hub SQLite cache + 5 araç. KAPILI.",
+      "_probe": "2026-08-17 Hub SSOT URL; openalex_resolve_name Oxford → total=1."
     },
     "semantic-scholar": {
       "type": "http",
-      "url": "https://gateway.pipeworx.io/semanticscholar/mcp"
+      "url": "https://semanticscholar.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SEMANTICSCHOLAR_MCP_API_KEY}"
+      },
+      "_trust": "operatör self-host (HP systemd; Evidentia ile aynı uç). Eski Worker DO kotası 1101 verdi (2026-08-17); Hub SQLite cache + 4 araç. KAPILI.",
+      "_probe": "2026-08-17 Hub SSOT URL; search_papers authors=array of objects."
     }
   }
 }

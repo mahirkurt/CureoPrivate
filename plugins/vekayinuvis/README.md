@@ -21,7 +21,7 @@ sepet/arşiv/OCR akış-skill'i** sunar. Her mod bir slash-komut girişine sahip
 
 | Bileşen | Yol | Açıklama |
 |---------|-----|----------|
-| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.4.12) + 9 referans dosyası |
+| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.4.13) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
 | Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,olay,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 11 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü; `olay`=EVENT_RECONSTRUCTION v3.1'de eklendi, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
 | Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async OCR zinciri (bkz. **Yeni Akışlar**) |
@@ -77,7 +77,8 @@ katman tanımlarıyla birebir):
 - **Destekleyici** (2, `detsis` yeni v3.0): `yok-akademik` (modern
   akademisyen/ekol haritası), `detsis` (kurumsal prosopografi,
   Cumhuriyet-sınırlı).
-- **Substrat** (1): `anamnesis` (RAG/GraphRAG bağlam ekonomisi).
+- **Substrat** (1): `anamnesis` (RAG/GraphRAG; collection=`vekayinuvis:run:<12hex>`,
+  doc_id=`vkrun:<12hex>:<kanonik>`; kapsamsız hybrid DENY).
 
 (3+6+2+3+2+1 = 17. Tam liste, rol açıklamaları ve auth modeli için
 **CONNECTORS.md § 1-3**.)
@@ -153,7 +154,9 @@ skill'i (mod değil — `skills/vekayinuvis/SKILL.md`'in 9 modundan bağımsız,
    sayfa VE tek motor → sync `devarsiv_ocr_archive_pages`; >5 sayfa VEYA
    çok-motorlu (`both`) tam belge → async `devarsiv_ocr_submit` →
    `devarsiv_ocr_result` poll → `done`'da tek-sefer tam metin →
-   `anamnesis.ingest_document` → sonraki sorgular `hybrid_query`. `stale`
+   `anamnesis.ingest_document(collection=vekayinuvis:run:<12hex>,
+   doc_id=vkrun:<12hex>:devarsiv:<code>)` → sonraki sorgular
+   `hybrid_query(collection=…)`. `stale`
    durumunda aynı parametrelerle resubmit edilir (yerel PDF; maliyet
    tekrarlanmaz).
 
@@ -231,10 +234,10 @@ güncellenmelidir.
 
 ## Composability
 
-- **Upstream**: `medical-research` (tıp tarihi modern literatür), `lex-sanitas`
+- **Upstream**: `medical-research` (tıp tarihi modern literatür), `cureolex`
   (mevzuat tarih bölümü kapsamı), `lex-mercator`, `psychdev`.
 - **Downstream**: `carbon-html-report` (A4 print/sunum-hazır PDF),
-  `carbon-quarto-scientific` (Quarto/R bilimsel format), `lex-sanitas` (kanun
+  `carbon-quarto-scientific` (Quarto/R bilimsel format), `cureolex` (kanun
   gerekçesi tarihî bölümü geri beslemesi).
 
 ## Doğrulama
@@ -246,5 +249,5 @@ python3 ./plugins/vekayinuvis/scripts/vekayinuvis_doctor.py --topic preflight --
 
 ## Sürüm
 
-- Plugin paketi: `v3.4.12`
-- Flagship skill: `v3.4.12` (bkz. `CHANGELOG.md`)
+- Plugin paketi: `v3.4.13`
+- Flagship skill: `v3.4.13` (bkz. `CHANGELOG.md`)

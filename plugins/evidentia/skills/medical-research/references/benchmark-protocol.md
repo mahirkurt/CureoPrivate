@@ -18,7 +18,7 @@ For each query in `evals/benchmark-queries.json`:
 4. A miss = the classifier or wiring drifted → fix before release.
 
 ## 3. What each query guards
-- Q1/Q5 — TR access (TİTCK + Mevzuat structural, not Exa scraping).
+- Q1/Q5 — TR access (TİTCK structural, not Exa scraping).
 - Q2/Q9 — AdisInsight REAL schema + regulatory history.
 - Q3 — full-text cascade + copyright gate.
 - Q4/Q9 — epidemiology axis 0.5.K (WHO GHO + ICD-11).

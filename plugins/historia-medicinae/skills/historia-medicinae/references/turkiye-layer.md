@@ -19,7 +19,7 @@ aparatı ve dört Türkiye-özgü Quellenkritik filtresi.
 |---|---|
 | Osmanlı–Türk kurumsal kronoloji, mevzuat korpusu, şahsiyet külliyatı, arşiv reçeteleri | **`vekayinuvis`** (kurulu ise çağrılır) |
 | Osmanlıca **el yazması** paleografi/HTR, ebced, BOA derin süpürme, belge satın-alma | **`vekayinuvis`** (delegasyon) |
-| 1219/1593'ün **yürürlükteki** hâli, AYM/Danıştay içtihadı | **`lex-sanitas`** |
+| 1219/1593'ün **yürürlükteki** hâli, AYM/Danıştay içtihadı | **`cureolex`** |
 | Türkiye'nin **küresel karşılaştırmadaki yeri**, TR akademik literatürün taranması, TR yasama kaydının tarihsel okunması | **burada** |
 
 ---

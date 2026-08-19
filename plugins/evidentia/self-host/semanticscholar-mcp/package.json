@@ -1,6 +1,6 @@
 {
   "name": "semanticscholar-mcp",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Keyless Cloudflare Worker MCP \u2014 typed WHO Global Health Observatory (GHO) OData access for the evidentia plugin: global/country disease-burden, mortality, risk-factor and coverage indicators. Tools who_gho_search_indicators / who_gho_query / who_gho_dimensions. Authless public GHO OData upstream (ghoapi.azureedge.net); closes evidentia's global-burden gap (PopHIVE is US-only).",
   "type": "module",

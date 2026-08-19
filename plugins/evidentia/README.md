@@ -3,7 +3,7 @@
 **Genel-amaçlı PRISMA tıbbi literatür inceleme aracı** — bir Claude Code / claude.ai
 marketplace plugin'i. Tüm tıp alanlarını ve her soru tipini (tedavi/tanı/prognoz/etiyoloji/
 önleme) kapsayan uçtan uca **PRISMA 2020 / PRISMA-ScR sistematik/kapsam derlemesi** motoru.
-`medical-research` v9.0.1 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
+`medical-research` v9.0.2 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
 connector'ları, opsiyonel bağlam-tetiklemeli zenginleştirme modüllerini ve `mcp-scout` ile
 canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette toplar.
 
@@ -11,7 +11,7 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
 
 ## Ne sağlar
 
-- **Flagship skill:** `medical-research` v9.0.1 — omurga **P0–P7 PRISMA hattı**, soru
+- **Flagship skill:** `medical-research` v9.0.2 — omurga **P0–P7 PRISMA hattı**, soru
   konusundan bağımsız her derlemede aynı sekiz fazı çalıştırır:
   - **P0 Protokol** — PICO/PECO/PCC çerçeveleme, derleme tipi (sistematik/kapsam), uygunluk
     kriterleri, protokol ön-kaydı.
@@ -50,7 +50,7 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
   retrieve-don't-dump.
 - **Opsiyonel, bağlam-tetiklemeli zenginleştirme modülleri** (Adım 0.5) — hiçbiri varsayılan
   yolda zorunlu **değildir**, **hiçbiri silinmedi**: terapötik-alan katmanları (Onko/Heme/İmmün/
-  Nöro/Nadir), Regülatuar/HTA/MedAffairs/Drug-Intelligence, Türkiye-pazarı (TİTCK/Mevzuat/
+  Nöro/Nadir), Regülatuar/HTA/MedAffairs/Drug-Intelligence, Türkiye-pazarı (TİTCK/
   TÜRKPATENT), Epidemiyoloji (openfda ICD-11 + PopHIVE ABD). Sinyal yoksa çekirdek bibliyografik
   PRISMA hattı tek başına koşar — bu **de-skew** değişmezi `G-DESKEW`/`G-PHASES` kapılarıyla
   denetlenir.
@@ -59,17 +59,17 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
   PDF/EPUB ve desteklenen diğer formatları sunar. Her ikisi de kısa-ömürlü opaque
   `resource_link` + SHA-256/provenance döndürür; link derhal tüketilir.
 - **RAG/GraphRAG substratı:** **anamnesis** self-host Worker — semantik chunking (bge-m3 1024-d) +
-  Vectorize + D1 bilgi grafiği. Tam-metin/büyük araç çıktılarını **bağlama dökmeden** indeksler;
-  `hybrid_query` ile context-window'a sığan, provenance-damgalı kanıt paketi sunar
-  (**`evidence_index`** kanonik artefaktı — context-window taşma koruması).
-- **Bundled connector roster** (`.mcp.json`) — 16 server (bibliyografik çekirdek + opsiyonel
-  curated-intelligence/regülatuar/α-katman/self-host); tek doğruluk kaynağı
-  [`CONNECTORS.md`](./CONNECTORS.md).
-- **Dört self-host bileşeni** — sertleştirilmiş OAuth 2.1 Cloudflare Worker'ları (`self-host/`):
-  [`drugddx-mcp`](./self-host/drugddx-mcp/BUILD-BRIEF.md) (klinik DDI boşluğu) ·
-  [`anamnesis-mcp`](./self-host/anamnesis-mcp/BUILD-BRIEF.md) (RAG/GraphRAG substratı) ·
-  [`openfda-mcp`](./self-host/openfda-mcp/) (FDA openFDA + WHO ICD-11; deploy talimatı §3.3) ·
-  [`evidentia-kb-mcp`](./self-host/evidentia-kb-mcp/) (KB semantik-kapsam takviyesi, opsiyonel; §3.4).
+  Vectorize + D1. Tam-metin **bağlama dökülmeden** dual-write (`collection=evidentia:run:<run_id>`
+  + `evrun:<run_id>:`) çalışma setine yazılır; scoped `hybrid_query` / `semantic_search` ile
+  sınırlı dilim çekilir. Kapsamsız hybrid/graph → guard DENY. Koşu bitince hook
+  `forget_collection` (yedek: ledger `forget_document`).
+- **Bundled connector roster** (`.mcp.json`) — **19 server** (10 Bearer-gated, 9 public) +
+  9 companion (`.mcp.json`'a girmez; Wiley dahil OAuth/hesap düzeyi). Tek doğruluk kaynağı
+  [`fleet.yaml`](./fleet.yaml) → [`CONNECTORS.md`](./CONNECTORS.md).
+- **Self-host yüzeyi** — CF Worker (`self-host/`: anamnesis · drugddx · openfda ·
+  evidentia-kb · who-gho · globocan · ema) + CureoHub HP akademik üçlü
+  (`openalex.cureonics.com` · `pubmed.cureonics.com` · `semanticscholar.cureonics.com`) +
+  openathens HP (`openathens.cureonics.com`, tam-metin Tier 3 lisanslı).
 
 ---
 
@@ -114,7 +114,7 @@ sinyali tetiklendiğinde devreye girer.
 |---|---|---|
 | **Tier-K** keyless remote-ready | Clinical Trials, NPI, bioRxiv + **genişletme:** med-terminologies, NIH Clinical Tables, NLM RxNorm, IUPHAR GtoPdb, **OpenAlex** (KOL/atıf-ağı), **PubMed-EPMC** (Europe PMC + Unpaywall yasal-OA), **Semantic Scholar** | ✅ |
 | **Tier-O** operatör Worker'ları | TİTCK (kanonik, kapılı), YÖK Akademik, **Annas Reader** (tam-metin), **openfda** (FDA/WHO ICD-11), **evidentia-kb** (KB takviyesi, opsiyonel) | ✅ |
-| **Tier-A** auth-gerekli | PubMed/EPMC, Consensus, AdisInsight, TİTCK, Mevzuat, Türk Patent, … | env / Settings |
+| **Tier-A** auth-gerekli | PubMed/EPMC, Consensus, AdisInsight, TİTCK, Türk Patent, … | env / Settings |
 | **Tier-R** REST fallback | PubChem, DailyMed, DOAJ, J-STAGE, … | (native MCP değil — bundle dışı; OpenAlex/Unpaywall/S2 artık native Tier-K) |
 
 Tam envanter, fallback merdivenleri ve probe kanıtı: [`CONNECTORS.md`](./CONNECTORS.md).
@@ -131,7 +131,7 @@ Tam envanter, fallback merdivenleri ve probe kanıtı: [`CONNECTORS.md`](./CONNE
   yönlendirilmiştir.
 - **Self-host Worker'lar** sertleştirilmiş OAuth 2.1 değişmezlerini korur (redirect-origin
   allowlist, PKCE S256-only, HMAC+TTL kod, escHtml, constant-time, secret store). Detay: BUILD-BRIEF.md
-  her `self-host/<worker>/` altında. Tüm dört Worker `auth.ts` birebir aynı 6 invariant paylaşır.
+  her `self-host/<worker>/` altında. Self-host Worker `auth.ts` aynı 6 invariant paylaşır.
   openfda WHO ICD-11 erişimi sunucu-tarafı OAuth ile (`ICD11_CLIENT_ID`/`SECRET` secrets) — istemci
   kimlik bilgisi açığa çıkmaz.
 - **anamnesis RAG dürüstlüğü:** varlık/ilişki çıkarımı orchestrator (Claude) tarafından yapılır
@@ -180,9 +180,9 @@ Koşum:
 python tests/run_suites.py       # CI'ın koştuğu 5 çevrimdışı kapı (ağ yok, secret yok)
 python scripts/g_probe.py        # .mcp.json URL'lerinde canlı initialize
 python scripts/g_tools.py --smoke --surface  # canlı tools/list sözleşmesi + sunucu başına 1
-                                 # salt-okunur çağrı + 7 self-host Worker'ın HTTP sözleşmesi
+                                 # salt-okunur çağrı + 10 self-host Worker'ın HTTP sözleşmesi
                                  # (CORS preflight 204 · RFC 9728 PRM ×2 · AS · health · 401 biçimi)
-python scripts/g_identity.py     # 7 self-host Worker kimlik tutarlılığı
+python scripts/g_identity.py     # 10 self-host Worker kimlik tutarlılığı
 python scripts/g_bundle.py       # .mcp.json ↔ CONNECTORS.md tutarlılık
 python skills/medical-research/evals/check_integrity.py        # yapısal: G-REF/G-CONN/G-ALWAYS/G-VERSION/G-COVERAGE/G-PROBE/G-XVAL/G-WHITELIST/G-SIZE/G-DESC/G-PHASES/G-DESKEW/G-AGENT
 python skills/medical-research/evals/rag_quality.py            # G-RAG: çıktı faithfulness (§7.2.1) — yapısal taban; --judge ile LLM-judge (EVIDENTIA_JUDGE_KEY)
@@ -192,18 +192,20 @@ python skills/medical-research/evals/rag_quality.py            # G-RAG: çıktı
 
 ## Hook mimarisi (runtime enforcement)
 
-Skill'in prose olarak anlattığı üç değişmezi **çalışma anında** uygulayan üç deterministik komut
-hook'u (`hooks/hooks.json`). Hepsi **fail-open** (hook hatası asla araç çağrısını kırmaz) ve MCP
+Skill'in prose olarak anlattığı değişmezleri **çalışma anında** uygulayan deterministik komut
+hook'ları (`hooks/hooks.json`). Hepsi **fail-open** (hook hatası asla araç çağrısını kırmaz) ve MCP
 araçlarına özeldir.
 
 | Hook | Olay | Ne yapar |
 |---|---|---|
-| **`guard_tool_call.py`** | `PreToolUse` (`mcp__.*`) | **En-az-yetki + kırık-araç guard.** Dört pipeworx gateway'inde (semantic-scholar/nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb) 30 pipeworx-generic aracı ve **D1** `rxnorm_interactions` (404) · **D2/D4** `rxnorm_related` (400) · **D6** `med-terminologies.icd11_search` (AUTH) araçlarını **DENY** eder, çalışan alternatife yönlendirir. Server-aware (openfda `icd11_search` + §2.6 whitelist dokunulmaz). |
-| **`retrieve_dont_dump.py`** | `PostToolUse` (`mcp__.*`) | Büyük tam-metin çıktısında (openathens/EPMC/annas/Unpaywall · >6 KB) **retrieve-don't-dump** hatırlatır: ham işleme, anamnesis `ingest_document` → `semantic_search`/`hybrid_query` ile sınırlı dilim çek (advisory, bloklamaz). |
-| **`session_preflight.py`** | `SessionStart` | Gated self-host connector key(ler)i (`OPENATHENS`/`ANAMNESIS`/`OPENFDA`/`EVIDENTIA_KB`/`ANNAS`/`YOK_AKADEMIK`_MCP_API_KEY) ortamda eksikse `doppler run` hatırlatır; **hepsi mevcutsa sessiz** (gürültüsüz). |
+| **`guard_tool_call.py`** | `PreToolUse` (`mcp__.*`) | **En-az-yetki + kırık-araç + Anamnesis münhasır set.** Pipeworx gateway'lerinde §2.6 **allowlist dışı** her araç + **D1/D2** DENY. Anamnesis: `collection=evidentia:run:<run_id>` (ve/veya `evrun:` önek) scoped hybrid/search/graph **ALLOW**; kapsamsız hybrid/graph/global search **DENY**. D6 (`med-terminologies.icd11_search`) 2026-08-17 emekli. |
+| **`retrieve_dont_dump.py`** | `PostToolUse` (`mcp__.*`) | Büyük tam-metin çıktısında **retrieve-don't-dump** hatırlatır: ham işleme, dual-write `ingest_document` → scoped `hybrid_query` / `semantic_search`. |
+| **`anamnesis_ledger.py`** | `PostToolUse` (`mcp__.*anamnesis.*`) | Başarılı `ingest_document` id'sini koşu defterine yazar; `forget_document` / `forget_collection` id'sini düşürür. |
+| **`session_preflight.py`** | `SessionStart` | Gated self-host connector key(ler)i ortamda eksikse `doppler run` hatırlatır; **hepsi mevcutsa sessiz**. |
+| **`anamnesis_lifecycle.py`** | `SessionStart` / `UserPromptSubmit` / `SessionEnd` | startup: önceki koşunun `forget_collection` (yedek: ledger `forget_document`; stub'lanabilir) + yeni `run_id` / collection. `/evidentia` yeni koşu açar. Compact/resume aynı collection. **Stop'ta silmez** (P3/P5 insan-onay). |
 
 **Devre dışı bırak:** `<proje>/.claude/evidentia-guard.off` dosyası oluştur → guard tümüyle
-bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py` (21 deny/allow/edge senaryosu).
+bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py`.
 ⚠️ Hook'lar oturum başında yüklenir → değişiklikten sonra Claude Code'u yeniden başlat (`claude`).
 
 ---
@@ -217,8 +219,9 @@ bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py` (21 deny/allow/e
 ---
 
 *AS IS; no warranty. Internal-use grant. **Plugin v2.7.2 / flagship skill `medical-research`
-v9.0.1** — v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
+v9.0.2** — v9.0.2 ordered tool playbook (`execution-map.md`) binds MUST/SHOULD/MAY/OUT +
+`SKIP-REASON` for all 19 bundled servers. v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
 PRISMA-ScR P0–P7 hattına** yeniden yazıldı; eski eksenler silinmedi, **opsiyonel, bağlam-tetiklemeli
 zenginleştirme modülleri**ne dönüştü (Adım 0.5, de-skew invariant). Native-MCP-first, temiz-kopya,
 retrieve-don't-dump, no-fabrication, cömertlik ve tek-sefer/kanonik-önbellek doktrinleri ADR-05-safe
-korunur. Bundled roster: 16 server.*
+korunur. Bundled roster: 19 server + 9 companion.*

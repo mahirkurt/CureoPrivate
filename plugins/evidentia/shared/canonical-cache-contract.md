@@ -21,7 +21,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 | `regulatory_snapshot` | İlk openfda (self-host) çağrısı (openFDA/ICD-11) | epidemiyoloji, güvenlik, kodlama adımları |
 | `terminology_map` | İlk `med-terminologies`/`nlm-rxnorm`/`nih-clinicaltables` | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar taraması | KOL haritası, ağ analizi |
-| `evidence_index` | İlk anamnesis `ingest_document` — Tier 3 openathens `oa_fetch_fulltext` veya tüketilmiş `oa_fetch_pdf` dosyası · Tier 4 Wiley · Tier 5 annas reader veya tüketilmiş `download_document` dosyası · yüklenen PDF; tam-metin/büyük çıktı indekslemesi. Kısa-ömürlü resource link değil DOI/MD5 + SHA-256/provenance saklanır | sentez, tam-metin, `hybrid_query` çeken tüm adımlar — **ham metin değil, indeks** |
+| `evidence_index` | İlk anamnesis `ingest_document` — dual-write `collection=evidentia:run:<run_id>` + `doc_id=evrun:<run_id>:<DOI>` (Tier 3 openathens `oa_fetch_fulltext` veya tüketilmiş `oa_fetch_pdf` dosyası · Tier 4 Wiley · Tier 5 annas reader veya tüketilmiş `download_document` dosyası · yüklenen PDF). Kısa-ömürlü resource link değil DOI/MD5 + SHA-256/provenance saklanır. Koşu bitince `forget_collection` — kalıcı kütüphane değil | sentez, tam-metin, scoped `hybrid_query(collection=…)` / önekli `semantic_search` — **ham metin değil, indeks** |
 
 ---
 
@@ -40,35 +40,27 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 - **PopHIVE (Tier-K-epi, US-only · v8.5).** Bir hastalık×yer dilimi **bir kez** çekilir →
   `regulatory_snapshot`'a yazılır; precomputed kanıt **BİREBİR** taşınır (PopHIVE sayıları
   yeniden-türetilMEZ). YALNIZCA ABD — global/Türkiye yük için bu artefakta yazma (belgelenmiş boşluk).
-- **anamnesis `evidence_index` (self-host, deploy sonrası) — retrieve-don't-dump.** Tam-metin
-  makale/kitap veya büyük araç çıktısı **asla ham olarak bağlama dökülmez**; bir `doc_id`
-  (DOI vb.) **bir kez** `ingest_document` ile indekslenir (semantik chunk + bge-m3 embed +
-  D1 grafiği). Sonraki sorgular `semantic_search`/`hybrid_query` ile indeksten **sınırlı,
-  provenance-damgalı** dilim çeker — aynı `doc_id` iki kez ingest edilmez. Bu, context-window
-  taşması nedeniyle eksik/tutarsız değerlendirmeyi önleyen çekirdek kuraldır. Varlık/ilişki
-  **çıkarımı orchestrator (Claude) tarafından** yapılır → `upsert_triples` (LLM-in-the-loop
-  GraphRAG); Worker yalnız depolar+gezer.
-- **anamnesis korpusu OTURUM-İÇİ doldurulur — boş-korpus guard'ı (D9).** anamnesis kalıcı bir
-  korpus DEĞİLDİR; her oturumda `ingest_document` ile doldurulur. `semantic_search`/`hybrid_query`
-  çağırmadan ÖNCE **zorunlu `corpus_stats` kontrolü**: `docs == 0` ise önce ilgili tam-metni
-  `ingest_document` ile indeksle. Boş korpusta 0 hit dönmesi **bir hata değildir** (RAG substratı
-  çalışıyor, içerik yok) → 0 hit'i "kanıt yok" diye raporlama; önce ingest et veya RAG adımını
-  atlandı olarak işaretle. (Vectorize indeksleme ~saniye gecikmeli; ingest'ten hemen sonraki
-  `semantic_search` geçici 0 dönebilir → kısa bekle/yeniden dene.)
-- **Temizlik — `forget_document(doc_id)` (v1.4.1).** Bayat/yanlış/test belgesini temizlemek için
-  `ingest_document` ile boş-üzerine-yazma YETMEZ (stale vektör/graph kalır). `forget_document` doc_id ile
-  Vectorize vektörlerini + D1 chunks/manifest/edges'i siler, node-provenance'ını küçültür (son doc'unu
-  kaybeden orphan node silinir). Idempotent (bilinmeyen doc_id → existed:false), destructive. Oturum
-  sonu/yeniden-ingest öncesi korpus hijyeni için kullan.
+- **anamnesis `evidence_index` (self-host) — retrieve-don't-dump + münhasır scratch.** Tam-metin
+  makale/kitap veya büyük araç çıktısı **asla ham olarak bağlama dökülmez**. Dual-write: bir
+  belge **bir kez** `ingest_document(collection=evidentia:run:<run_id>, doc_id=evrun:<run_id>:<PMID|DOI>)`
+  ile yazılır. Flagship: `hybrid_query(collection=aynı, queries[])`. `semantic_search` collection
+  ve/veya önekli `doc_id` / `doc_ids[]` ile de ALLOW. Kapsamsız hybrid/graph/global search
+  PreToolUse DENY (canlı unscoped `semantic_search` compat için durur). Aynı önekli `doc_id` iki
+  kez ingest edilmez. Varlık/ilişki çıkarımı orchestrator'dadır → `upsert_triples` (collection
+  veya her triple.`doc_id` önekli); Worker yalnız depolar. `nodeKey`/`edgeId` collection içerir.
+- **anamnesis korpusu KOŞU-İÇİ doldurulur — boş-set guard'ı (D9).** anamnesis kalıcı bir kütüphane
+  DEĞİLDİR. `corpus_stats` **küresel gözlemdir**; `docs > 0` bu koşunun çalışma seti demek DEĞİLDİR.
+  Çalışma seti = `list_docs(collection=evidentia:run:<run_id>)` / ledger. Öneksiz + koleksiyonsuz
+  `semantic_search` PreToolUse'da DENY edilir. 0 hit (doğru collection ile) "kanıt yok" değil
+  → ingest et veya RAG adımını atlandı işaretle.
+- **Temizlik — `forget_collection` tercih, ledger `forget_document` yedek.** SessionEnd ve yeni
+  `/evidentia` kancası bu koşunun koleksiyonunu siler (idempotent). Stop-hook forget YOK.
+  Öneksiz / başka koşunun id'si veya koleksiyonu guard'da DENY. Küresel wipe yok.
+  `forget_by_prefix` API değildir.
 - **RECALL — çok-sorgulu ayrıştırma (v1.6.0, "hiçbir detayı atlamama" kuralı).** Karmaşık/çok-yönlü bir
-  soruda `semantic_search`/`hybrid_query` TEK sorguyla çağırılMAZ. Soruyu ayrı **alt-yönlere + eşanlamlı/
-  terminoloji varyantlarına** ayır ve hepsini `queries:[...]` ile geçir (PRIMARY `query` rerank hedefi).
-  Worker her sorgu için vektör∥BM25 koşar, **tümünü RRF ile füzyonlar**, sonra PRIMARY'ye karşı rerank eder
-  → her facet'in kanıtı yüzeye çıkar (maksimum recall), rerank precision'ı korur. Örn. "molekül X — etkinlik
-  + toksisite + TR geri-ödeme + pipeline" → `queries:["X efficacy trial","X toxicity/AE management","X SGK SUT
-  reimbursement Türkiye","X pipeline development phase"]`. Tek-aspektli dar sorgu literatürün diğer yönlerini
-  KAÇIRIR — çok-yönlü sorularda çok-sorgu ZORUNLUdur. (Adım 1.2'deki Specific/Broad/Lateral varyantları bu
-  `queries[]`'i besler.)
+  soruda TEK `query` ile çağırılMAZ. Soruyu ayrı **alt-yönlere + eşanlamlı/terminoloji varyantlarına**
+  ayır ve hepsini `queries:[...]` ile `hybrid_query(collection=evidentia:run:<run_id>)` veya
+  scoped `semantic_search`'e geçir. Yalnız bu chunk'lardan sentezle; `doc_id::idx` cite.
 
 ---
 

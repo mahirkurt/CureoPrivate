@@ -4,12 +4,12 @@
 data. NOT mandatory; the core PRISMA pipeline (P0–P7) runs without it. Output → enrichment
 appendix. TR retrieval is context-triggered: a TR-specific question (Türkiye, TR, SGK, SUT,
 TİTCK, geri ödeme, ruhsat, eczane, yerli, biyobenzer) OR an explicit user request pulls in this
-layer's "Türkiye Dörtlüsü" (TİTCK + Mevzuat + YÖK Tez + EuropePMC AFF:Turkey) — it is not run by
-default on every query.
+layer's Türkiye native set (TİTCK + YÖK Tez + EuropePMC AFF:Turkey) — it is not run by
+default on every query. SUT/legislation text is **out of scope** (no mevzuat MCP here → `cureolex`).
 
 **Purpose:** Replace the v7.1 Türkiye Dörtlüsü's `Exa site:titck.gov.tr` web-scraping with **native, structured MCP queries.** This is the single largest capability upgrade in v8.0 and directly serves TR pharma / oncology / regulatory / market-access work and the `onko-erisim` / `saglik-sigorta` / `pharmaintel` / `rxos` skill compositions.
 
-**Primary connectors:** TİTCK (`1a49b1bb…`), Türk Mevzuat (`fbf16a1a…`), YÖK Tez (`b2d46b46…`), TÜRKPATENT (`ded65854…`), EuropePMC `AFF:"Turkey"`.
+**Primary connectors:** TİTCK (`1a49b1bb…`), YÖK Tez (`b2d46b46…`), TÜRKPATENT (`ded65854…`), EuropePMC `AFF:"Turkey"`.
 
 ---
 
@@ -18,12 +18,11 @@ default on every query.
 | # | Source | Native tool | Replaces (v7.1) |
 |---|---|---|---|
 | 1 | **TİTCK** drug master | `search_drugs`, `get_drug`, `get_atc_class_summary`, `find_*` | `Exa site:titck.gov.tr` |
-| 2 | **Mevzuat** (SUT, yönetmelik) | `search_mevzuat`, `get_mevzuat_text` | `Exa site:sgk.gov.tr OR resmigazete.gov.tr` |
-| 3 | **YÖK Tez** | `search_yok_tez_detailed`, `get_yok_tez_document_markdown` | (retained) |
-| 4 | **EuropePMC** Turkish affiliation | `search_articles("(konu) AND AFF:\"Turkey\"")` | (retained) |
-| 5 | **TÜRKPATENT** | `search_patents`, `search_trademarks` | `Exa` patent scraping |
+| 2 | **YÖK Tez** | `search_yok_tez_detailed`, `get_yok_tez_document_markdown` | (retained) |
+| 3 | **EuropePMC** Turkish affiliation | `search_articles("(konu) AND AFF:\"Turkey\"")` | (retained) |
+| 4 | **TÜRKPATENT** | `search_patents`, `search_trademarks` | `Exa` patent scraping |
 
-There is **no web fallback** (Exa/Tavily removed v1.4.0): TOD/THD congress books or kanser.gov.tr pages without an API are a **documented gap (VERİ YOK)** — an operator-supplied PDF may be ingested into anamnesis. Native TİTCK + Mevzuat cover the structured TR data.
+There is **no web fallback** (Exa/Tavily removed v1.4.0): TOD/THD congress books or kanser.gov.tr pages without an API are a **documented gap (VERİ YOK)** — an operator-supplied PDF may be ingested into anamnesis. Native TİTCK covers structured TR drug/price/reimbursement data. SUT/legislation text is a documented gap in this plugin (`cureolex`).
 
 ---
 
@@ -67,17 +66,9 @@ TİTCK: get_drug(record_id="<barcode>")   # full master record
 
 ---
 
-## 3. Mevzuat — Native Legislation (SUT, yönetmelik, kararname)
+## 3. SUT / legislation — documented gap (no mevzuat MCP)
 
-```
-Mevzuat: search_mevzuat(query="Sağlık Uygulama Tebliği <konu>", tur=<type code>, page_size=10)
-   # ⚠️ aranacak_yer="baslik" REQUIRES a tur code (anti-scraping); else auto-downgrades to "tumu"
-Mevzuat: get_mevzuat_text(...) / get_mevzuat_content(...)   # full text / HTML-parsed article
-Mevzuat: get_mevzuat_madde_tree(...) / get_mevzuat_madde_diff(...)  # article tree / change history
-Mevzuat: get_anayasa(...)   # Constitution articles (e.g., Md. 17/56 for onko-erisim)
-```
-
-Use for: SUT (Sağlık Uygulama Tebliği) coverage rules, Beşeri Tıbbi Ürünler Ruhsatlandırma Yönetmeliği, fiyat kararnameleri (Resmî Gazete), Madde-22/23 framework. Replaces `Exa site:sgk.gov.tr/resmigazete.gov.tr` scraping with authoritative full-text.
+Evidentia does **not** wire a mevzuat connector. Do **not** call `search_mevzuat` / `search_kanun` / `get_mevzuat_*`. For SUT coverage rules, yönetmelik, fiyat kararnamesi, or Anayasa Md. 17/56 text, hand off to **`cureolex`**. TİTCK `reimbursement_status` remains the native TR access signal in this plugin.
 
 ---
 
@@ -103,7 +94,7 @@ Populate the sidecar `turkey_access_summary` from native sources:
   "price_try": {"retail":0,"pharmacy":0,"depot":0,"firm":0,"source_country":"...","source_price_eur":0,"valid_from":"..."},
   "biosimilar_landscape": [{"brand":"...","holder":"...","is_likely_originator":false}],
   "off_label_oncology": ["<TİTCK off-label rows>"],
-  "sut_rule": "<Mevzuat SUT reference>",
+  "sut_rule": "<documented gap — no mevzuat MCP; hand off to cureolex if needed>",
   "essential_drug_list": {"adult":1,"child":0,"newborn":0},
   "import_pathway": "<Madde-23 / şahsi kullanım if applicable>"
 }
@@ -113,18 +104,17 @@ Populate the sidecar `turkey_access_summary` from native sources:
 
 ## 6. Composition
 
-- **onko-erisim** — TİTCK reimbursement + off-label + Mevzuat SUT + `get_anayasa` (Md.17/56) → SGK ödeme reddi petition / ihtiyati tedbir (HMK 389).
+- **onko-erisim** — TİTCK reimbursement + off-label → SGK ödeme reddi petition / ihtiyati tedbir (HMK 389). SUT/Anayasa text → `cureolex`.
 - **saglik-sigorta** — TİTCK price + reference status + reimbursement → özel sağlık sigortası tıbbi gereklilik / fark ücreti analysis.
 - **rxos / pharmaintel** — `get_atc_class_summary` + `compare_drug_to_alternatives` + `find_biosimilar_group` + TÜRKPATENT → jenerik/biyobenzer fizibilite, fiyat tavanı, eşdeğer grup.
-- **pharmapatent** — TÜRKPATENT + Mevzuat (SMK 6769) → TR patent landscape, FTO, biyobenzer entry.
+- **pharmapatent** — TÜRKPATENT → TR patent landscape, FTO, biyobenzer entry. SMK 6769 text → `cureolex`.
 
 ---
 
-## 7. Türkiye Dörtlüsü (context-triggered — TR-specific question OR user-requested, v8.0)
+## 7. Türkiye native set (context-triggered — TR-specific question OR user-requested, v8.0)
 1. **TİTCK `search_drugs`** (native) — INN + brand.
-2. **Mevzuat `search_mevzuat`** (native) — SUT/yönetmelik when clinical/reimbursement context.
-3. **YÖK Tez `search_yok_tez_detailed`** — Türkçe + İngilizce.
-4. **EuropePMC `AFF:"Turkey"`** — Turkish-authored studies.
+2. **YÖK Tez `search_yok_tez_detailed`** — Türkçe + İngilizce.
+3. **EuropePMC `AFF:"Turkey"`** — Turkish-authored studies.
 Not run by default on every query — only when this layer is loaded (TR context detected or
 explicitly requested). Output → enrichment appendix. Null-reporting: if all return empty, emit a
 **Türkiye Veri Boşluğu** block (do not silently omit).

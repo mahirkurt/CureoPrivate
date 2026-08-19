@@ -7,7 +7,7 @@ this module was named test_*.py but exposed no pytest-visible test, so a repo-wi
 `pytest` reported "no tests ran" and EXITED 0: a false green over 21 real assertions.
 
 Covers the three enforcement hooks with deny/allow/edge cases so the guard logic (least-privilege
-whitelist, D1/D2/D6 broken-tool avoidance, retrieve-don't-dump threshold, credential preflight)
+whitelist, D1/D2 broken-tool avoidance, retrieve-don't-dump threshold, credential preflight)
 is regression-locked alongside the skill-level integrity gates.
 
 The preflight cases derive their key list from fleet.lock.json rather than hardcoding it.
@@ -60,25 +60,16 @@ CASES_GUARD = [
     ("mcp__claude_ai_iuphar-gtopdb__polymarket_edges", "DENY"),
     ("mcp__claude_ai_nlm-rxnorm__rxnorm_interactions", "DENY"),      # D1
     ("mcp__nlm-rxnorm__rxnorm_related", "DENY"),                     # D2/D4
-    ("mcp__claude_ai_med-terminologies__icd11_search", "DENY"),      # D6
-    ("mcp__claude_ai_openfda__icd11_search", "ALLOW"),               # working icd11
+    ("mcp__claude_ai_med-terminologies__icd11_search", "ALLOW"),     # D6 retired — live ICD-11
+    ("mcp__claude_ai_openfda__icd11_search", "ALLOW"),               # operator-owned icd11
+    ("mcp__nlm-rxnorm__rxnorm_approximate", "DENY"),                 # allowlist: not §2.6
+    ("mcp__nih-clinicaltables__npi_lookup", "DENY"),                 # allowlist: dump surface
     ("mcp__claude_ai_nih-clinicaltables__drugs", "ALLOW"),
     ("mcp__claude_ai_nlm-rxnorm__rxnorm_search", "ALLOW"),
     ("mcp__claude_ai_semantic-scholar__search_papers", "ALLOW"),
-    ("mcp__claude_ai_anamnesis__forget_document", "ALLOW"),          # not 'forget'
+    ("mcp__claude_ai_anamnesis__forget_document", "DENY"),           # unscoped wipe
     ("mcp__claude_ai_PubMed__search_articles", "ALLOW"),
     ("Read", "ALLOW"),
-    # D7 — argument-level guard. `search_mevzuat` without an explicit page_size (or with >20)
-    # is a call that CANNOT succeed: the server default of 25 exceeds the bedesten cap of 20 and
-    # the upstream returns the error as plain text with no isError, so the model would read a
-    # failure as data. Measured 2026-08-07: page_size=20 → 938 results; bare call → error string.
-    ("mcp__mevzuat-bilgisi__search_mevzuat", "DENY", {"phrase": "ilaç"}),
-    ("mcp__mevzuat-bilgisi__search_mevzuat", "DENY", {"phrase": "ilaç", "page_size": 25}),
-    ("mcp__mevzuat-bilgisi__search_mevzuat", "ALLOW", {"phrase": "ilaç", "page_size": 20}),
-    ("mcp__mevzuat-bilgisi__search_mevzuat", "ALLOW", {"phrase": "ilaç", "page_size": 5}),
-    # Sibling tools go through the mevzuat.gov.tr path, accept 25, and must NOT be caught.
-    ("mcp__mevzuat-bilgisi__search_khk", "ALLOW", {"mevzuat_adi": "ilaç"}),
-    ("mcp__mevzuat-bilgisi__search_tuzuk", "ALLOW", {"mevzuat_adi": "ilaç", "page_size": 25}),
 ]
 
 # retrieve-don't-dump scenarios: (tool_name, result_chars, expected_decision, message_substring, label).
@@ -108,6 +99,301 @@ CASES_RDD = [
 ]
 
 
+ANAM_RUN = "aabbccddeeff"
+ANAM_PREFIX = f"evrun:{ANAM_RUN}:"
+
+
+def _anam_env(docs=None):
+    tmp = tempfile.mkdtemp()
+    ledger = os.path.join(tmp, "ledger.json")
+    log = os.path.join(tmp, "forget.jsonl")
+    payload = {
+        "run_id": ANAM_RUN,
+        "prefix": ANAM_PREFIX,
+        "doc_ids": list(docs or []),
+        "pending_forget": [],
+        "status": "active",
+    }
+    with open(ledger, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh)
+    env = {
+        "EVIDENTIA_ANAMNESIS_LEDGER": ledger,
+        "EVIDENTIA_ANAMNESIS_FORGET_LOG": log,
+        "EVIDENTIA_ANAMNESIS_NO_NETWORK": "1",
+        "CLAUDE_PROJECT_DIR": tmp,
+    }
+    return env, ledger, log
+
+
+def _read_json(path):
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def _anamnesis_cases():
+    """Exclusive-run isolate + cleanup. Never hits live Anamnesis (forget stub)."""
+    fails = 0
+    env, ledger, log = _anam_env()
+    scoped = ANAM_PREFIX + "10.1234/emicizumab"
+    nsclc = "10.9999/nsclc-chunk"
+
+    def g(tool, inp=None, e=None):
+        payload = {"tool_name": tool}
+        if inp is not None:
+            payload["tool_input"] = inp
+        _, j = run("guard_tool_call.py", payload, e or env)
+        return decision(j), j
+
+    cases = [
+        ("mcp__claude_ai_anamnesis__ingest_document", None, "DENY",
+         "ingest missing doc_id"),
+        ("mcp__claude_ai_anamnesis__ingest_document", {"doc_id": nsclc}, "DENY",
+         "ingest unprefixed DOI"),
+        ("mcp__user-anamnesis__ingest_document", {"doc_id": scoped}, "ALLOW",
+         "ingest prefixed"),
+        ("mcp__anamnesis__semantic_search", {"query": "emicizumab"}, "DENY",
+         "search without doc_id (shared-corpus leak)"),
+        ("mcp__anamnesis__semantic_search",
+         {"query": "emicizumab", "doc_id": nsclc}, "DENY",
+         "search other-run / unprefixed id"),
+        ("mcp__anamnesis__semantic_search",
+         {"query": "emicizumab", "doc_id": scoped, "queries": ["efficacy"]},
+         "ALLOW", "search scoped"),
+        ("mcp__anamnesis__hybrid_query", {"query": "emicizumab"}, "DENY",
+         "hybrid_query is unscoped"),
+        ("mcp__anamnesis__hybrid_query",
+         {"query": "emicizumab", "collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "hybrid_query scoped to this run"),
+        ("mcp__anamnesis__hybrid_query",
+         {"query": "emicizumab", "collection": "evidentia:run:ffffffffffff"},
+         "DENY", "hybrid_query other-run collection"),
+        ("mcp__anamnesis__graph_neighbors", {"entity": "emicizumab"}, "DENY",
+         "graph_neighbors is unscoped"),
+        ("mcp__anamnesis__graph_neighbors",
+         {"entity": "emicizumab", "collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "graph_neighbors scoped"),
+        ("mcp__anamnesis__subgraph", {"entities": ["emicizumab"]}, "DENY",
+         "subgraph is unscoped"),
+        ("mcp__anamnesis__subgraph",
+         {"entities": ["emicizumab"], "collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "subgraph scoped"),
+        ("mcp__anamnesis__semantic_search",
+         {"query": "emicizumab", "collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "search by collection only"),
+        ("mcp__anamnesis__semantic_search",
+         {"query": "emicizumab", "doc_ids": [scoped]},
+         "ALLOW", "search by prefixed doc_ids[]"),
+        ("mcp__anamnesis__list_docs",
+         {"collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "list_docs this run"),
+        ("mcp__anamnesis__list_docs",
+         {"collection": "evidentia:run:ffffffffffff"},
+         "DENY", "list_docs other collection"),
+        ("mcp__anamnesis__forget_collection",
+         {"collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "forget_collection this run"),
+        ("mcp__anamnesis__forget_collection",
+         {"collection": "evidentia:run:ffffffffffff"},
+         "DENY", "forget_collection foreign"),
+        ("mcp__anamnesis__ingest_document",
+         {"doc_id": nsclc, "collection": f"evidentia:run:{ANAM_RUN}"},
+         "ALLOW", "ingest collection-scoped even if doc_id unprefixed"),
+        ("mcp__anamnesis__corpus_stats", {}, "ALLOW", "corpus_stats observe-only"),
+        ("mcp__anamnesis__forget_document", {"doc_id": nsclc}, "DENY",
+         "forget foreign id"),
+        ("mcp__anamnesis__forget_document", {"doc_id": scoped}, "ALLOW",
+         "forget own prefixed id"),
+        ("mcp__anamnesis__upsert_triples",
+         {"triples": [{"subject": "a", "predicate": "treats", "object": "b"}]},
+         "DENY", "triples missing doc_id"),
+        ("mcp__anamnesis__upsert_triples",
+         {"triples": [{"subject": "a", "predicate": "treats", "object": "b",
+                       "doc_id": scoped}]},
+         "ALLOW", "triples prefixed"),
+        ("mcp__claude_ai_PubMed__search_articles", None, "ALLOW",
+         "non-anamnesis unchanged"),
+    ]
+    for tool, inp, want, label in cases:
+        got, j = g(tool, inp)
+        if got != want:
+            fails += 1
+            print(f"FAIL anam-guard {label}: {got} != {want}")
+        elif want == "DENY":
+            reason = ((j or {}).get("hookSpecificOutput") or {}).get(
+                "permissionDecisionReason", "")
+            if "anamnesis" not in reason.lower() and "münhasır" not in reason:
+                fails += 1
+                print(f"FAIL anam-guard {label}: deny reason missing münhasır")
+
+    # disable-flag still bypasses the exclusive deny (same file as G-WHITELIST)
+    off = tempfile.mkdtemp()
+    os.makedirs(os.path.join(off, ".claude"))
+    open(os.path.join(off, ".claude", "evidentia-guard.off"), "w").close()
+    got, _ = g("mcp__anamnesis__hybrid_query", {"query": "x"},
+               {**env, "CLAUDE_PROJECT_DIR": off})
+    if got != "ALLOW":
+        fails += 1
+        print("FAIL anam-guard disable-flag still denies hybrid_query")
+
+    # PostToolUse ledger records prefixed ingest, ignores NSCLC id
+    env2, ledger2, _ = _anam_env()
+    _, j = run("anamnesis_ledger.py", {
+        "tool_name": "mcp__plugin-evidentia-anamnesis__ingest_document",
+        "tool_input": {"doc_id": scoped, "text": "body"},
+        "tool_result": json.dumps({"doc_id": scoped, "chunks": 3}),
+    }, env2)
+    stored = _read_json(ledger2).get("doc_ids") or []
+    if scoped not in stored:
+        fails += 1
+        print("FAIL anam-ledger ingest not recorded")
+    if decision(j) != "MSG":
+        fails += 1
+        print("FAIL anam-ledger ingest should inject prefix context")
+
+    _, _ = run("anamnesis_ledger.py", {
+        "tool_name": "mcp__anamnesis__ingest_document",
+        "tool_input": {"doc_id": nsclc, "text": "nsclc"},
+        "tool_result": "{}",
+    }, env2)
+    if nsclc in (_read_json(ledger2).get("doc_ids") or []):
+        fails += 1
+        print("FAIL anam-ledger recorded unprefixed foreign id")
+
+    _, _ = run("anamnesis_ledger.py", {
+        "tool_name": "mcp__anamnesis__forget_document",
+        "tool_input": {"doc_id": scoped},
+        "tool_result": json.dumps({"existed": True}),
+    }, env2)
+    if scoped in (_read_json(ledger2).get("doc_ids") or []):
+        fails += 1
+        print("FAIL anam-ledger forget did not drop id")
+
+    # SessionStart startup forgets leftover, mints a NEW run (not the old id)
+    env3, ledger3, log3 = _anam_env(docs=[scoped])
+    _, j = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "SessionStart",
+        "source": "startup",
+    }, env3)
+    after = _read_json(ledger3)
+    if after.get("run_id") == ANAM_RUN:
+        fails += 1
+        print("FAIL anam-lifecycle startup did not mint a new run_id")
+    if scoped in (after.get("doc_ids") or []):
+        fails += 1
+        print("FAIL anam-lifecycle startup left previous docs in the new run")
+    if not os.path.isfile(log3) or scoped not in open(log3, encoding="utf-8").read():
+        fails += 1
+        print("FAIL anam-lifecycle startup did not stub-forget leftover docs")
+    ctx = ((j or {}).get("hookSpecificOutput") or {}).get("additionalContext", "")
+    if after.get("prefix", "") not in ctx:
+        fails += 1
+        print("FAIL anam-lifecycle startup context missing new prefix")
+
+    # resume keeps the run and does NOT forget
+    env4, ledger4, log4 = _anam_env(docs=[scoped])
+    _, _ = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "SessionStart",
+        "source": "resume",
+    }, env4)
+    if _read_json(ledger4).get("run_id") != ANAM_RUN:
+        fails += 1
+        print("FAIL anam-lifecycle resume rotated the run")
+    if os.path.isfile(log4) and open(log4, encoding="utf-8").read().strip():
+        fails += 1
+        print("FAIL anam-lifecycle resume forgot docs")
+
+    # compact keeps (human-approval checkpoint must not wipe)
+    env5, ledger5, log5 = _anam_env(docs=[scoped])
+    _, _ = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "SessionStart",
+        "source": "compact",
+    }, env5)
+    if _read_json(ledger5).get("run_id") != ANAM_RUN or scoped not in (
+            _read_json(ledger5).get("doc_ids") or []):
+        fails += 1
+        print("FAIL anam-lifecycle compact wiped the working set")
+
+    # SessionEnd forgets only prefixed ids; leftover unprefixed in file ignored
+    env6, ledger6, log6 = _anam_env(docs=[scoped])
+    poisoned = _read_json(ledger6)
+    poisoned["doc_ids"] = [scoped, nsclc]
+    with open(ledger6, "w", encoding="utf-8") as fh:
+        json.dump(poisoned, fh)
+    _, _ = run("anamnesis_lifecycle.py", {"hook_event_name": "SessionEnd"}, env6)
+    if os.path.isfile(log6):
+        logged = open(log6, encoding="utf-8").read()
+    else:
+        logged = ""
+    if scoped not in logged:
+        fails += 1
+        print("FAIL anam-lifecycle SessionEnd did not forget own id")
+    if nsclc in logged:
+        fails += 1
+        print("FAIL anam-lifecycle SessionEnd forgot an unprefixed foreign id")
+    end_led = _read_json(ledger6)
+    if end_led.get("doc_ids"):
+        fails += 1
+        print("FAIL anam-lifecycle SessionEnd left doc_ids")
+
+    # empty SessionEnd is idempotent (no stub lines required)
+    env7, _, log7 = _anam_env(docs=[])
+    rc, _ = run("anamnesis_lifecycle.py", {"hook_event_name": "SessionEnd"}, env7)
+    if rc != 0:
+        fails += 1
+        print("FAIL anam-lifecycle empty SessionEnd non-zero")
+    if os.path.isfile(log7) and open(log7, encoding="utf-8").read().strip():
+        fails += 1
+        print("FAIL anam-lifecycle empty SessionEnd wrote forget calls")
+
+    # /evidentia remints; /evidentia-fulltext does not; approval prompt does not
+    env8, ledger8, log8 = _anam_env(docs=[scoped])
+    _, _ = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "/evidentia-fulltext 10.1234/x",
+    }, env8)
+    if _read_json(ledger8).get("run_id") != ANAM_RUN:
+        fails += 1
+        print("FAIL anam-lifecycle fulltext reminted")
+
+    _, _ = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "P3 taramasını onaylıyorum, devam",
+    }, env8)
+    if _read_json(ledger8).get("run_id") != ANAM_RUN:
+        fails += 1
+        print("FAIL anam-lifecycle approval reminted")
+
+    _, j = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "/evidentia emicizumab hemophilia A",
+    }, env8)
+    after8 = _read_json(ledger8)
+    if after8.get("run_id") == ANAM_RUN:
+        fails += 1
+        print("FAIL anam-lifecycle /evidentia did not remint")
+    if scoped not in open(log8, encoding="utf-8").read():
+        fails += 1
+        print("FAIL anam-lifecycle /evidentia did not forget previous docs")
+    if after8.get("prefix", "") not in (
+            (j or {}).get("hookSpecificOutput") or {}).get("additionalContext", ""):
+        fails += 1
+        print("FAIL anam-lifecycle /evidentia context missing new prefix")
+
+    env9, ledger9, log9 = _anam_env(docs=[scoped])
+    _, _ = run("anamnesis_lifecycle.py", {
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "please run /evidentia-synthesize for GRADE",
+    }, env9)
+    if _read_json(ledger9).get("run_id") == ANAM_RUN:
+        fails += 1
+        print("FAIL anam-lifecycle /evidentia-synthesize did not remint")
+    if scoped not in open(log9, encoding="utf-8").read():
+        fails += 1
+        print("FAIL anam-lifecycle synthesize did not forget previous docs")
+
+    return fails
+
+
 def main():
     fails = 0
 
@@ -132,6 +418,8 @@ def main():
     if decision(j) != "ALLOW":
         fails += 1
         print("FAIL guard disable-flag")
+
+    fails += _anamnesis_cases()
 
     # malformed → fail-open
     p = subprocess.run([sys.executable, os.path.join(HERE, "guard_tool_call.py")],
@@ -227,7 +515,9 @@ def main():
     # which is the same stale-count drift this audit found in the connector docs.
     #   3 = guard disable-flag + guard fail-open + preflight all-present-silent
     #   5 = fleet_probe cache: reuse-on-same + 3 roster mutations + legacy-format
-    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 5 + 2 * len(gated)
+    #  51 = anamnesis exclusive-run isolate + cleanup (guard/ledger/lifecycle; live MCP yok)
+    #      27 table-driven guard + 24 ledger/lifecycle (dual-write collection + prefix)
+    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 5 + 2 * len(gated) + 51
     if fails:
         print(f"\n{fails}/{total} FAILED")
         return 1

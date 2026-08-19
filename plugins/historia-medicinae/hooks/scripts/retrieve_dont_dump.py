@@ -48,9 +48,12 @@ def main():
     if size >= TIER2:
         notes.append(
             f"Bu getirim ~{size // 1024} KB. TIER-2: ana bağlamda akıl yürütme; "
-            "`anamnesis:ingest_document` ile kanonik doc_id altında indeksle "
-            "(ön-ek ZORUNLU: `histmed:`) → `hybrid_query` ile sınırlı dilim çek. "
-            "Ham gövde ne bağlama ne çıktıya kopyalanır."
+            "`anamnesis.ingest_document(collection=histmed:run:<12hex>, "
+            "doc_id=hmrun:<12hex>:<kanonik>)` ile indeksle "
+            "(ön-ek ZORUNLU: `histmed:run:` / `hmrun:`) → "
+            "`hybrid_query(collection=histmed:run:<12hex>)` ile sınırlı dilim çek. "
+            "Cevap yalnız bu chunk'lardan; atıf `doc_id::idx`. Ham gövde ne bağlama "
+            "ne çıktıya kopyalanır."
         )
     elif size >= TIER1:
         notes.append(

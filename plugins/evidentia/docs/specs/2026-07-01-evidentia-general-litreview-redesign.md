@@ -38,7 +38,7 @@ evidentia şu an "çok-kaynaklı **istihbarat** + Türkiye-**pazarı** araştır
 
 ### 3.1. Kimlik ve sınır
 - **Kimlik:** genel-amaçlı PRISMA-temelli tıbbi literatür inceleme aracı. Varsayılan koşum = saf genel sistematik/kapsam derleme; hiçbir domain modülü zorunlu değil.
-- **CureoSuite sınırı pekişir** (`CONNECTORS.md §7` korunur): ticari strateji → `pharmaintel`; MLR → `promo-censor`; bireysel geri-ödeme → `onko-erisim`; patent/FTO → `pharmapatent`; hukuk → `lex-sanitas`/`ius-salutis`. Opsiyonel TR/regülatuar/drug modülleri **kanıt-bağlamı zenginleştirmesi** içindir; ticari istihbarat değildir.
+- **CureoSuite sınırı pekişir** (`CONNECTORS.md §7` korunur): ticari strateji → `pharmaintel`; MLR → `promo-censor`; bireysel geri-ödeme → `onko-erisim`; patent/FTO → `pharmapatent`; hukuk → `cureolex`/`ius-salutis`. Opsiyonel TR/regülatuar/drug modülleri **kanıt-bağlamı zenginleştirmesi** içindir; ticari istihbarat değildir.
 
 ### 3.2. Çekirdek protokol: 10-eksen koşumu → PRISMA yaşam döngüsü
 

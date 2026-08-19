@@ -274,5 +274,39 @@ class TestHooks(unittest.TestCase):
         self.assertTrue(out.get("continue"))
 
 
+class TestFleetIdentity(unittest.TestCase):
+    """Bibliographic trio must share Evidentia's CureoHub HP self-host URLs (2026-08-17)."""
+
+    def test_lock_points_at_cureonics_hub_not_third_party(self):
+        lock_path = os.path.join(PLUGIN_ROOT, "fleet.lock.json")
+        with open(lock_path, encoding="utf-8") as fh:
+            lock = json.load(fh)
+        blob = json.dumps(lock)
+        self.assertNotIn("caseyjhand.com", blob)
+        self.assertNotIn("pipeworx.io", blob)
+        self.assertNotIn("workers.dev", blob)
+        by_name = {s["name"]: s for s in lock["servers"]}
+        self.assertEqual(by_name["pubmed"]["url"], "https://pubmed.mcp.claude.com/mcp")
+        self.assertIsNone(by_name["pubmed"]["auth_env"])
+        self.assertEqual(
+            by_name["pubmed-epmc"]["url"],
+            "https://pubmed.cureonics.com/mcp",
+        )
+        self.assertEqual(by_name["pubmed-epmc"]["auth_env"], "PUBMED_MCP_API_KEY")
+        self.assertEqual(
+            by_name["openalex"]["url"],
+            "https://openalex.cureonics.com/mcp",
+        )
+        self.assertEqual(by_name["openalex"]["auth_env"], "OPENALEX_MCP_API_KEY")
+        self.assertEqual(
+            by_name["semantic-scholar"]["url"],
+            "https://semanticscholar.cureonics.com/mcp",
+        )
+        self.assertEqual(
+            by_name["semantic-scholar"]["auth_env"],
+            "SEMANTICSCHOLAR_MCP_API_KEY",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

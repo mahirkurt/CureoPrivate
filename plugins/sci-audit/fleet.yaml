@@ -3,27 +3,59 @@
 # Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
 #   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
 #
-# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
-# Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
+# Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py sci-audit`
+# Denetim:          `python3 tools/fleetkit/check_drift.py sci-audit` (ağ gerektirmez)
 # Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
 
 version: 2
 plugin: sci-audit
 plugin_version: "0.2.4"
 
+# 2026-08-17 — bibliyografik üçlü (OpenAlex / PubMed-EPMC / Semantic Scholar)
+# Evidentia self-host Worker URL'leriyle AYNI uca bakmak ZORUNLUDUR. İzolasyon
+# kasıtlı değildir: eski üçüncü-taraf host'lar (`*.caseyjhand.com`, pipeworx
+# S2 gateway) tedarik-zinciri + şema arızası üretti (caseyjhand 530; pipeworx
+# `search_papers` outputSchema `authors`'ı object yazıp gerçek diziyi
+# reddetti → Cursor MCP -32602). Cursor aynı sunucu adını plugin'ler arasında
+# tek yüklediği için sci-audit'in bayat URL'si Evidentia Worker'ının yerine
+# geçiyordu. pubmed.mcp.claude.com Anthropic'in resmî PubMed connector'ıdır;
+# o uç burada kalır.
+
 servers:
   - name: pubmed
     url: https://pubmed.mcp.claude.com/mcp
     auth_env: null
+    extra:
+      _trust: >-
+        Anthropic resmî PubMed MCP (keyless). sci-audit eksen A/B için hesap-seviyesi
+        PubMed; pubmed-epmc (EPMC + Unpaywall tam metin) bunu tamamlar.
 
   - name: pubmed-epmc
-    url: https://pubmed.caseyjhand.com/mcp
-    auth_env: null
+    url: https://pubmed.cureonics.com/mcp
+    auth_env: PUBMED_MCP_API_KEY
+    extra:
+      _trust: >-
+        operatör self-host (HP systemd; Evidentia ile aynı uç). Eski Worker DO kotası
+        1101 verdi (2026-08-17); Hub SQLite cache + 11 araç. KAPILI.
+      _probe: >-
+        2026-08-17 Hub SSOT URL; pubmed_search_articles authors=string[].
 
   - name: openalex
-    url: https://openalex.caseyjhand.com/mcp
-    auth_env: null
+    url: https://openalex.cureonics.com/mcp
+    auth_env: OPENALEX_MCP_API_KEY
+    extra:
+      _trust: >-
+        operatör self-host (HP systemd; Evidentia ile aynı uç). Eski Worker DO kotası
+        1101 verdi (2026-08-17); Hub SQLite cache + 5 araç. KAPILI.
+      _probe: >-
+        2026-08-17 Hub SSOT URL; openalex_resolve_name Oxford → total=1.
 
   - name: semantic-scholar
-    url: https://gateway.pipeworx.io/semanticscholar/mcp
-    auth_env: null
+    url: https://semanticscholar.cureonics.com/mcp
+    auth_env: SEMANTICSCHOLAR_MCP_API_KEY
+    extra:
+      _trust: >-
+        operatör self-host (HP systemd; Evidentia ile aynı uç). Eski Worker DO kotası
+        1101 verdi (2026-08-17); Hub SQLite cache + 4 araç. KAPILI.
+      _probe: >-
+        2026-08-17 Hub SSOT URL; search_papers authors=array of objects.

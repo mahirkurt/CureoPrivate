@@ -13,22 +13,28 @@ Kullanıcı sorusu: **$ARGUMENTS**
 
 ## Yürütme — PRISMA yaşam döngüsü (P0–P7)
 
+Normatif sıra: [`skills/medical-research/references/execution-map.md`](../skills/medical-research/references/execution-map.md)
+(MUST/SHOULD/MAY/OUT + `SKIP-REASON`; 19 bundled + 9 companion; sessiz atlama yok).
+
 1. **P0 Protokol** (`references/prisma-protocol.md`) — soru-tipini sınıfla; PICO/PECO + uygunluk
-   kriterleri; derleme tipi (sistematik/kapsam/hızlı).
-2. **P1 Arama stratejisi** (`references/search-strategy.md`) — kavram→MeSH/Emtree; veritabanı-başına
-   sorgu; raporlanabilir arama dizesi.
-3. **P2 Getirim + dedup** — bibliyografik çekirdek connector'larında (CONNECTORS.md §1.1) kapsamlı
-   arama → tekilleştirilmiş kayıt seti + kaynak-bazlı sayılar.
+   kriterleri; derleme tipi. **SHOULD** `evidentia-kb.kb_search` (booster; kapı değil).
+2. **P1 Arama stratejisi** (`references/search-strategy.md`) — kavram→MeSH/Emtree; **sıra bağlayıcı:**
+   OpenAlex → pubmed-epmc (MeSH+search+EPMC) → Semantic Scholar → CT.gov companion → bioRxiv →
+   Consensus/Paper Search → YÖK Tez.
+3. **P2 Getirim + dedup** — P1 `databases[]` satırlarını 1:1 çalıştır → tekilleştirilmiş set +
+   kaynak-bazlı sayılar. TR/ilaç zenginleştirmesi yalnız Adım 0.5.
 4. **P3 Tarama** (`references/screening.md`) — başlık/özet → tam-metin; dahil/hariç + gerekçe.
-   **İnsan-onay kapısı bağlayıcı.**
-5. **P4 Çıkarım** (`references/data-extraction.md`) — tam-metin (`/evidentia-fulltext`) → anamnesis
-   RAG → kanıt tablosu (retrieve-don't-dump).
+   **İnsan-onay kapısı bağlayıcı.** Elicit MAY (SR-aid).
+5. **P4 Çıkarım** (`references/data-extraction.md`) — legal-first cascade (`/evidentia-fulltext`)
+   → anamnesis **münhasır** set (`collection=evidentia:run:<run_id>` + `evrun:<run_id>:<PMID|DOI>`)
+   → scoped `hybrid_query` (unscoped DENY).
 6. **P5 Yanlılık riski** (`references/risk-of-bias.md`) — tasarıma göre RoB2 / ROBINS-I / QUADAS-2 /
-   Newcastle-Ottawa / PROBAST / AMSTAR-2. **İnsan-onay kapısı bağlayıcı.**
-7. **P6 Sentez + GRADE** (`references/evidence-grading.md`) — sonuç-bazlı GRADE kesinlik + SoF.
-8. **P7 Raporlama** (`references/prisma-reporting.md`) — PRISMA 2020 / PRISMA-ScR akış diyagramı
-   (gerçek sayılar) + kontrol listesi + çalışma-özellikleri + RoB özeti + Summary-of-Findings;
-   temiz-kopya (VIZ/OPS yorum izolasyonu; araç-sızıntısı yok).
+   NOS / PROBAST / AMSTAR-2. Korpus doluysa methods `hybrid_query`. **İnsan-onay bağlayıcı.**
+7. **P6 Sentez + GRADE** (`references/evidence-grading.md`) — sonuç-bazlı GRADE + SoF; korpusta
+   scoped hybrid.
+8. **P7 Raporlama** (`references/prisma-reporting.md`) — PRISMA akış (gerçek sayılar) + SoF;
+   zenginleştirme ekleri yalnız 0.5 (ema / openfda / who-gho / globocan / PopHIVE / TİTCK /
+   yok-akademik). Temiz-kopya; skip log `<!-- OPS -->`.
 
 ## Opsiyonel zenginleştirme (bağlam-tetiklemeli)
 
@@ -44,6 +50,10 @@ zorunlu değildir; çekirdek PRISMA hattı her koşulda çalışır.**
   kaynak olmadan klinik karar olarak sunulmaz (CONNECTORS.md §5). DDI substance-overlap ayrımı.
 - **No-fabrication** — bulunamayan veri "VERİ BULUNAMADI" + denenen sorgular; PRISMA akış sayıları
   connector toplam-sayı vermiyorsa sınırı dürüstçe not edilir; sessiz atlama yok.
+- **Anamnesis münhasır + temizlik** — bu `/evidentia` koşusu başka koşunun (veya başka plugin'in)
+  Anamnesis korpusunu okumaz. Dual-write: `collection=evidentia:run:<run_id>` + `evrun:<run_id>:`.
+  Flagship `hybrid_query(collection=…)`. Koşu bitince hook `forget_collection` tercih eder —
+  küresel wipe yok; Stop-hook forget yok.
 
 ## Ağır koşum
 

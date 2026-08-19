@@ -28,5 +28,5 @@
   "agents": "./agents/",
   "commands": "./commands/",
   "hooks": "./hooks/hooks-cursor.json",
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.cursor-plugin/mcp.json"
 }

@@ -91,10 +91,11 @@ appendix (§1) — never as a standalone numbered core section:
 - **US surveillance (v8.5)** — `PopHIVE` (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare`):
   US disease activity (ED/hospitalization/wastewater/lab) + childhood vaccination coverage. **Relay
   the precomputed evidence verbatim — never re-derive the numbers. US-ONLY.**
-- **Global / Türkiye burden** — **no native API → documented gap (VERİ YOK)**, never web-scraped or
-  fabricated. TR substitutes: TİTCK + EPMC `AFF:"Turkey"` + YÖK Tez.
-- **Coding** — ICD-11 via **`openfda:icd11_search`** for the condition code(s) (never
-  `med-terminologies.icd11_search`).
+- **Global / Türkiye burden** — **`who-gho`** (`who_gho_query`, `country=TUR|GLOBAL`) and, if cancer,
+  **`globocan`** (`gco_query` + `ui` + caveat). IHME/GBD still **no native API → documented gap**.
+  TR literature substitutes: TİTCK + EPMC `AFF:"Turkey"` + YÖK Tez.
+- **Coding** — ICD-11 via **`med-terminologies.icd11_search`** (D6 ALLOW) and/or
+  **`openfda:icd11_search`**. ICD-10→11: `map_icd10_to_icd11`.
 - **Denominator role** — explicitly connect the epidemiologic denominator to HTA budget-impact
   (§F) and rare-disease prevalence (`rare-disease-layer.md`) when those axes co-fire.
 - **Gap note** — Turkish incidence/registry-coverage availability feeds ⑦ Kısıtlılıklar.

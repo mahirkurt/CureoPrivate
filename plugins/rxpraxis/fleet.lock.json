@@ -37,7 +37,14 @@
     },
     {
       "name": "biorxiv",
-      "url": "https://hcls.mcp.claude.com/biorxiv/mcp",
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${workspaceFolder:CureoHub}/mcp-servers/biorxiv-mcp",
+        "run",
+        "biorxiv-mcp"
+      ],
       "auth_env": null
     }
   ],

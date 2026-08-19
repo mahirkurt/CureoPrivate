@@ -18,6 +18,10 @@
   "ai": { "binding": "AI" },
 
   // Vectorize — chunk vector store. index_name MUST match the created index (1024-d cosine).
+  // Metadata indexes (required for collection/doc_id filter; create on HP BEFORE relying on
+  // live Vectorize filters — D1 post-filter is the isolation source of truth either way):
+  //   npx wrangler vectorize create-metadata-index anamnesis-index --property-name=collection --type=string
+  //   npx wrangler vectorize create-metadata-index anamnesis-index --property-name=doc_id --type=string
   "vectorize": [
     { "binding": "VECTORIZE", "index_name": "anamnesis-index" }
   ],
@@ -27,7 +31,8 @@
     { "binding": "DB", "database_name": "anamnesis-graph", "database_id": "64c547b8-934d-42ef-aee1-01e83f512d0f" }
   ],
 
-  // Durable Object backing the McpAgent session (sqlite-backed DO).
+  // Legacy DO binding kept for migration history. /mcp is stateless (createMcpHandler);
+  // class exported as empty shell so a stray wake cannot hit free-tier SQL write cap.
   "durable_objects": {
     "bindings": [
       { "name": "MCP_OBJECT", "class_name": "Anamnesis" }

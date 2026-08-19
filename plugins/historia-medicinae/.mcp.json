@@ -3,7 +3,7 @@
   "mcpServers": {
     "openalex": {
       "type": "http",
-      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "url": "https://openalex.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${OPENALEX_MCP_API_KEY}"
       },
@@ -12,7 +12,7 @@
     },
     "pubmed-epmc": {
       "type": "http",
-      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "url": "https://pubmed.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${PUBMED_MCP_API_KEY}"
       },
@@ -21,7 +21,7 @@
     },
     "semantic-scholar": {
       "type": "http",
-      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "url": "https://semanticscholar.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${SEMANTICSCHOLAR_MCP_API_KEY}"
       },
@@ -197,7 +197,7 @@
         "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "substrate",
-      "_role": "Bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük tam-metin (monograf, tez PDF, IIIF manifest-içi blok, Hansard zabıt serisi) ana pencerede akıl yürütülmez: kanonik doc_id ile BİR KEZ ingest edilir → sınırlı, provenance damgalı dilim çekilir. `upsert_triples` hekim↔kurum↔yayın↔olay grafiği kurar (PROSOPOGRAPHIA ve CONCEPTUS'un aktarım-zinciri analizi)."
+      "_role": "Bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Tenancy collection=`histmed:run:<12hex>` (plugin id histmed; kind ∈ {run,sess,lib}; lib varsayılan değil). Her ingest collection + doc_id=`hmrun:<12hex>:<kanonik>` (doi/pmid/wellcome/devarsiv/yoktez) ister; doc_scope YOKTUR. Kapsamsız hybrid_query/graph DENY; scoped ALLOW. Atıf `doc_id::idx`. Büyük tam-metin (monograf, tez PDF, IIIF manifest-içi blok, Hansard zabıt serisi) ana pencerede akıl yürütülmez: bir kez ingest → hybrid_query(collection=…) dilimi. `upsert_triples` aynı collection içinde hekim↔kurum↔yayın↔olay grafiği (PROSOPOGRAPHIA / CONCEPTUS). forget_collection SessionEnd + sonraki /historia-medicinae + startup leftover (Stop'ta silinmez). Evidentia scratch `evrun:` / `evidentia:run:` ile çakışmaz."
     }
   }
 }

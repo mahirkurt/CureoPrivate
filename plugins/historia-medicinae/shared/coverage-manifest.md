@@ -31,8 +31,9 @@ gerektirmez.
   yazmak meşru değildir (G0 FAIL). `skipped: … bağlı değil` yalnız gerçek yoklukta doğrudur.
 - **devlet-arsivleri özel:** anahtar bağlı olsa bile upstream oturum düşükse
   `degraded: session_required (HP noVNC re-login)` yazılır — bu **skip değil degrade**'dir.
-- **anamnesis substrat satırı** her manifestoda mevcuttur; doc_id ön-eki **`histmed:`** olmalıdır
-  (evidentia'nın `pmid:`/`doi:` ve lex-sanitas'ın `mevzuat:` ad-uzaylarıyla çakışmaz).
+- **anamnesis substrat satırı** her manifestoda mevcuttur; collection **`histmed:run:<12hex>`**,
+  doc_id **`hmrun:<12hex>:<kanonik>`** olmalıdır (evidentia scratch `evrun:` / `evidentia:run:`
+  ile çakışmaz). `corpus_stats` çalışma seti değildir.
 
 ## IIIF özel kuralı — ölçülmüş yetenek, iddia edilen yetenek değil
 
@@ -87,7 +88,8 @@ Web (üçüncül)
   exa               → hit 2   (Wellcome dijital sergi sayfası — yalnız yönlendirme, iddia taşımaz)
   tavily            → skipped: anahtar yok
 Substrat
-  anamnesis         → ingest 2 belge (histmed:openathens/arnold-1993, histmed:wellcome/b21294831)
+  anamnesis         → ingest 2 belge (collection=histmed:run:<id>;
+                      hmrun:<id>:openathens/arnold-1993, hmrun:<id>:wellcome/b21294831)
                       · 9 bounded query
 Companion
   PubMed            → skipped: claude.ai companion bağlı değil (wire'lı pubmed-epmc taşıdı)

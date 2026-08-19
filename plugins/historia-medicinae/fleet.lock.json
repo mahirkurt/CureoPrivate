@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "historia-medicinae",
-  "plugin_version": "0.1.2",
+  "plugin_version": "0.1.3",
   "counts": {
     "servers": 25,
     "gated": 16,
@@ -12,7 +12,7 @@
   "servers": [
     {
       "name": "openalex",
-      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "url": "https://openalex.cureonics.com/mcp",
       "tier": "academic-core",
       "auth_env": "OPENALEX_MCP_API_KEY",
       "shard": "S1",
@@ -22,7 +22,7 @@
     },
     {
       "name": "pubmed-epmc",
-      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "url": "https://pubmed.cureonics.com/mcp",
       "tier": "academic-core",
       "auth_env": "PUBMED_MCP_API_KEY",
       "shard": "S1",
@@ -32,7 +32,7 @@
     },
     {
       "name": "semantic-scholar",
-      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "url": "https://semanticscholar.cureonics.com/mcp",
       "tier": "academic-core",
       "auth_env": "SEMANTICSCHOLAR_MCP_API_KEY",
       "shard": "S1",

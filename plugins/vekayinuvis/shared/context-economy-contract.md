@@ -12,7 +12,7 @@
 |---|---|---|---|
 | **Tier 0 — Ana pencere** (kıt) | Talep · mod planı · G0 manifesto · `arsiv_distillate` zarfları · evidence_ledger · nihai metin | En değerli; korunur | Ham getirim **girmez**. Yalnız ≤~20 bulguluk zarflar + kanonik atıflar (fon/kutu/gömlek, tez-no, DOI). |
 | **Tier 1 — Distiller alt-ajanı** (izole) | `arsiv-tarama-distilleri` (+ istenirse paralel shard'lar) | Kendi bağlam penceresi | Ham MCP çıktısını KENDİ penceresinde tüketir; ana pencereye yalnız kompakt `arsiv_distillate` + `coverage` döner. |
-| **Tier 2 — RAG substratı** (sınırsız, harici) | `anamnesis` (Vectorize RAG + D1 GraphRAG) | Pencere-dışı; kalıcı | Büyük tam-metin buraya **ingest** edilir; ana pencere yalnız sınırlı, provenance-damgalı **dilim** çeker. |
+| **Tier 2 — RAG substratı** (sınırsız, harici) | `anamnesis` (Vectorize RAG + D1 GraphRAG) | Pencere-dışı; **koşu scratch** (`vekayinuvis:run:<12hex>`, lib değil) | Büyük tam-metin buraya **ingest** edilir; ana pencere yalnız sınırlı, provenance-damgalı **dilim** çeker (`doc_id::idx`). |
 
 **Akış:** MCP ham çıktı → Tier 1 (distiller) VEYA Tier 2 (anamnesis) → ana pencereye yalnız damıtılmış sonuç. Ham veri hiçbir zaman Tier 0'ı geçmez. Böylece **tüm araçlar her koşumda çalışır** (detay atlanmaz) ama pencere taşmaz.
 
@@ -59,21 +59,33 @@ provenance tutar. Tüketilen uzun dosya Tier 2 anamnesis'e ingest edilir.
 
 ## 6. anamnesis çağrı disiplini (evidence_index)
 
+Tenancy **collection** iledir. `doc_scope` **yoktur**. Kapsamsız `hybrid_query` / `graph_*` DENY.
+
 ```
 # Büyük belge/tam-metin geldi (> eşik):
-anamnesis.ingest_document(doc_id="yoktez:0123456", text=<tez tam-metni>, metadata={anabilim, yil, ilgili_belge})
-anamnesis.ingest_document(doc_id="devarsiv:2/DH.İ.UM/22-19", text=<transkripsiyon/özet>, metadata={fon, kutu, gomlek, tarih_H})
+anamnesis.ingest_document(
+  collection="vekayinuvis:run:<12hex>",
+  doc_id="vkrun:<12hex>:yoktez:0123456",
+  text=<tez tam-metni>, metadata={anabilim, yil, ilgili_belge})
+anamnesis.ingest_document(
+  collection="vekayinuvis:run:<12hex>",
+  doc_id="vkrun:<12hex>:devarsiv:2/DH.İ.UM/22-19",
+  text=<transkripsiyon/özet>, metadata={fon, kutu, gomlek, tarih_H})
 # Sınırlı, çok-sorgulu getirim (ana pencereye yalnız bunlar gelir):
-anamnesis.hybrid_query(doc_scope="yoktez:0123456", queries=["veba tahaffuzhane tedbir", "İzmir liman karantina", "tarih"])
-# İlişki grafiği (prosopografi/kronoloji):
-anamnesis.upsert_triples(triples=[["Mustafa Behçet","görev","Hekimbaşı"], ["olay:31 Mart","tarih","H-1327"]])
-anamnesis.graph_neighbors(node="kişi:Mustafa Behçet", rel="görev")
+anamnesis.hybrid_query(
+  collection="vekayinuvis:run:<12hex>",
+  doc_ids=["vkrun:<12hex>:yoktez:0123456"],
+  queries=["veba tahaffuzhane tedbir", "İzmir liman karantina", "tarih"])
+# İlişki grafiği (prosopografi/kronoloji) — aynı collection:
+anamnesis.upsert_triples(collection="vekayinuvis:run:<12hex>", triples=[…])
+anamnesis.graph_neighbors(collection="vekayinuvis:run:<12hex>", node="kişi:Mustafa Behçet", rel="görev")
+# Atıf: doc_id::idx  (ör. vkrun:aabbccddeeff:yoktez:0123456::3)
 ```
 
-Aynı `doc_id` iki kez ingest edilmez (kanonik cache §3). Getirim daima provenance-damgalı (doc_id + fon/kutu/gömlek/sayfa) döner → `evidence_ledger` `E###` kaydına bağlanır → atıf disiplinine (fon/kutu/gömlek + çift-tarih) beslenir.
+Aynı `doc_id` iki kez ingest edilmez (kanonik cache §3). Getirim daima provenance-damgalı (doc_id + fon/kutu/gömlek/sayfa) döner → `evidence_ledger` `E###` kaydına bağlanır. `corpus_stats` küresel gözlemdir. Stop'ta silinmez; SessionEnd / startup yalnız bu collection'ı `forget_collection` ile temizler (ledger: `.claude/anamnesis-vekayinuvis.json`).
 
 **Devarsiv async-OCR + arşiv-sayfa disiplini** (`skills/toplu-okuma`, `skills/arsiv-oku`):
-Async OCR sonucu: `ocr_result(include_text=true)` TEK SEFER okunur → anamnesis `ingest_document(doc_id='devarsiv:<code>')` → ham metin ana pencereden düşürülür; izleyen erişim `hybrid_query`. `get_archive_page` görüntüleri ana pencerede sayfa-sayfa tüketilir (distiller'a gönderilmez — görü ana asistanda).
+Async OCR sonucu: `ocr_result(include_text=true)` TEK SEFER okunur → anamnesis `ingest_document(collection=vekayinuvis:run:…, doc_id='vkrun:<id>:devarsiv:<code>')` → ham metin ana pencereden düşürülür; izleyen erişim `hybrid_query(collection=…)`. `get_archive_page` görüntüleri ana pencerede sayfa-sayfa tüketilir (distiller'a gönderilmez — görü ana asistanda).
 
 ## 7. Özet — beş değişmez
 

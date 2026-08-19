@@ -14,7 +14,7 @@ aşağıdaki eşiği aşan işleri üstlenir.
 
 ## K4 — Sync/async karar kuralı
 
-≤5 sayfa VE tek motor → `devarsiv_ocr_archive_pages` (sync). >5 sayfa VEYA `both` tam belge → `devarsiv_ocr_submit` → `devarsiv_ocr_result(include_text=false)` ile poll → `done`'da **tek sefer** `include_text=true` → anamnesis `ingest_document(doc_id="devarsiv:<code>", …)` → sonraki sorgular `hybrid_query`. `stale` → aynı parametrelerle resubmit (arşiv PDF yerel; maliyet tekrarlanmaz).
+≤5 sayfa VE tek motor → `devarsiv_ocr_archive_pages` (sync). >5 sayfa VEYA `both` tam belge → `devarsiv_ocr_submit` → `devarsiv_ocr_result(include_text=false)` ile poll → `done`'da **tek sefer** `include_text=true` → anamnesis `ingest_document(collection=vekayinuvis:run:<12hex>, doc_id="vkrun:<12hex>:devarsiv:<code>", …)` → sonraki sorgular `hybrid_query(collection=…)`. `stale` → aynı parametrelerle resubmit (arşiv PDF yerel; maliyet tekrarlanmaz).
 
 ## Akış
 
@@ -31,12 +31,14 @@ aşağıdaki eşiği aşan işleri üstlenir.
    `error`/`stale`) ve sayfa ilerlemesi.
 3. **`done` → TEK SEFER tam metin.** İş bittiğinde `devarsiv_ocr_result(job_id,
    include_text=true)` **yalnız bir kez** çağrılır; dönen tam metin hemen
-   `anamnesis.ingest_document(doc_id="devarsiv:<code>", text=<tam metin>,
+   `anamnesis.ingest_document(collection="vekayinuvis:run:<12hex>",
+   doc_id="vkrun:<12hex>:devarsiv:<code>", text=<tam metin>,
    metadata={arsiv, sayfa, engine})` ile indekslenir.
 4. **Ham metni pencereden düşür.** Ingest tamamlandıktan sonra ham OCR metni ana
-   pencerede tutulmaz; izleyen erişim `anamnesis.hybrid_query(doc_scope=
-   "devarsiv:<code>", queries=[...])` ile sınırlı, provenance-damgalı dilim çeker
-   (bkz. `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` §6).
+   pencerede tutulmaz; izleyen erişim `anamnesis.hybrid_query(collection=
+   "vekayinuvis:run:<12hex>", doc_ids=["vkrun:<12hex>:devarsiv:<code>"],
+   queries=[...])` ile sınırlı, provenance-damgalı dilim çeker
+   (atıf `doc_id::idx`; bkz. `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` §6).
 5. **`stale` davranışı.** Durum `stale` dönerse iş süresi dolmuş veya sonuç
    temizlenmiştir; **aynı parametrelerle resubmit** edilir (adım 1'e dön) — arşiv
    PDF'i yerelde durduğu için bu tekrar maliyet doğurmaz, yalnız OCR işi yeniden

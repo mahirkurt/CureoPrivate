@@ -30,15 +30,15 @@ PRISMA-ScR checklist selection, §2).
 
 ### SKILL.md  — [ALWAYS]
 - Sections: Adım 0 (Mandatory Loading), Adım 0.1 (Project Settings), Adım 0.4 (Semantic Scope Scan — routes to PHASE files + optional MODULES, MANDATORY, runs before 0.5), Adım 0.5 (Optional Enrichment Classifier — NON-mandatory), PRISMA Pipeline Phases P0–P7, Adım 2 (Generosity Principle), Adım 3 (Output Contract), Adım 5 (Nihai Sunum Sözleşmesi), Completeness Gate, Reference Files Progressive Disclosure, Version History, SMP v1.0 Manifest
-- Pipeline table: **P0** Protocol & PICO/PECO/PCC (`prisma-protocol.md`) → **P1** Search Strategy (`search-strategy.md`) → **P2** Retrieval & Deduplication (native-first ladder, no dedicated phase file — routes via `extended-api.md`/`fulltext-retrieval.md`) → **P3** Screening (`screening.md`, human-approval checkpoint) → **P4** Data Extraction (`data-extraction.md`) → **P5** Risk of Bias (`risk-of-bias.md`, human-approval checkpoint) → **P6** GRADE Certainty (no dedicated phase file — routes via `evidence-grading.md`, an [ALWAYS] file) → **P7** PRISMA Reporting (`prisma-reporting.md`). Every review runs this core spine; P0–P7 is never skipped.
+- Pipeline table: **P0** Protocol (`prisma-protocol.md`) → **P1** Search Strategy (`search-strategy.md`) → **P2** Retrieval & Deduplication (`execution-map.md` — ordered MUST/SHOULD/MAY/OUT playbook for all 19 bundled servers + 9 companions; `SKIP-REASON` binds Completeness Gate) → **P3** Screening (`screening.md`, human-approval) → **P4** Data Extraction (`data-extraction.md`) → **P5** Risk of Bias (`risk-of-bias.md`, human-approval) → **P6** GRADE (`evidence-grading.md`) → **P7** PRISMA Reporting (`prisma-reporting.md`). Every review runs this core spine; P0–P7 is never skipped.
 - Optional enrichment modules (Adım 0.5, NON-mandatory, context-triggered — de-skew invariant: default path loads none): oncology, hematology, regulatory, HTA, medical-affairs/KOL, immunology, neurology, rare-disease, drug-intelligence, Türkiye-market, regulatory-intelligence/epidemiology.
 - Concepts: skill protocol, PRISMA 2020/PRISMA-ScR pipeline, optional-module signal detection, native-MCP-first principle, always-load files, output contract, Cömertlik Garantisi, clean-copy doctrine, two-output model, tool loading via ToolSearch, human-approval checkpoints (P3/P5), de-skew invariant
 - Synonyms: akış protokolü, araştırma sırası, kural seti, beceri yönergesi, methodology, protocol, PRISMA hattı
-- Cross-links: P0–P7 phase files (prisma-protocol.md, search-strategy.md, screening.md, data-extraction.md, risk-of-bias.md, prisma-reporting.md), evidence-grading.md (P6 GRADE, [ALWAYS]), connector-registry.md (tool resolution), output-templates.md (report structure), report-presentation.md (clean-copy doctrine), all optional enrichment modules
+- Cross-links: P0–P7 phase files (prisma-protocol.md, search-strategy.md, execution-map.md, screening.md, data-extraction.md, risk-of-bias.md, prisma-reporting.md), evidence-grading.md (P6 GRADE, [ALWAYS]), connector-registry.md (tool resolution), output-templates.md (report structure), report-presentation.md (clean-copy doctrine), all optional enrichment modules
 
 ### connector-registry.md  — [ALWAYS]
 - Sections: §0 Native-First Resolution Principle, §1 Tool Loading via ToolSearch, §2 Verified Connector Table (§2.1 Academic literature core, §2.2 Curated intelligence + mechanism, §2.3 Regulatory + epidemiology + Türkiye + IP, §2.4 Output / compose / visualize, §2.5 α-layer operator-connected high-trust), §3 Per-Connector Usage Notes (§3.1 AdisInsight schema, §3.2 TİTCK structural Turkey data, §3.3 Regulatory MCP native openFDA, §3.4 web research REMOVED v1.4.0, §3.5 annas-mcp full-text, §3.6 EPMC copyright gate), §4 Web Retrieval REMOVED v1.4.0, §5 Zero-Result Recovery Protocol, §6 Known Limitations & Workarounds, §6.3P third-party academic-MCP trust posture, §7 Domain Registry
-- Concepts: tool selection, connector routing, native-first ladder, rate limits, fallback chains, α-layer (operator-connected: TİTCK-cache, YÖK Akademik, PDF Viewer), verified connector table, quota budgeting, zero-result recovery, documented gap (no web tier)
+- Concepts: tool selection, connector routing, native-first ladder, rate limits, fallback chains, α-layer (operator-connected: TİTCK canonical gated, YÖK Akademik, PDF Viewer), verified connector table, quota budgeting, zero-result recovery, documented gap (no web tier), ordered playbook (`execution-map.md`)
 - Synonyms: araç seçimi, bağlayıcı yönlendirme, connector seçimi, API yönlendirme, tool routing
 - Cross-links: every axis depends on this for tool resolution; turkiye-layer.md (§3.2 TİTCK); fulltext-retrieval.md (§3.5 annas-mcp); regulatory-intelligence.md (§3.3 openFDA); extended-api.md (§2.1 OpenAlex/S2)
 
@@ -140,7 +140,7 @@ PRISMA-ScR checklist selection, §2).
 
 ### data-extraction.md  — [PHASE P4]
 - Sections: §1 Çıkarım şablonu (çalışma-tipine göre), §2 Tam-metin akışı (anamnesis RAG), §3 Sonuç-bazlı toplama, §4 İnsan-onay + doğrulama, §5 evidence_table sidecar
-- Concepts: data extraction, evidence table, effect size, 95% CI, study characteristics, full-text retrieval, retrieve-don't-dump, anamnesis ingest, per-outcome aggregation
+- Concepts: data extraction, evidence table, effect size, 95% CI, study characteristics, full-text retrieval, retrieve-don't-dump, anamnesis ingest, exclusive run-scoped working set, forget_collection cleanup, per-outcome aggregation
 - Synonyms: veri çıkarımı, kanıt tablosu, ekstraksiyon, data charting, extraction form
 - Cross-links: screening.md (included studies); fulltext-retrieval.md (cascade); evidence-grading.md (GRADE input); risk-of-bias.md (per-study RoB); prisma-reporting.md (evidence table)
 
@@ -163,9 +163,9 @@ PRISMA-ScR checklist selection, §2).
 - Cross-links: regulatory-science-layer.md (agency pathways module); hta-layer.md (epidemiology denominator for cost models module); turkiye-layer.md (TR regulatory cross-ref module); rare-disease-layer.md (epidemiology for rare diseases module); output-templates.md (§21 epidemiology block)
 
 ### turkiye-layer.md  — [OPTIONAL MODULE: Türkiye-market]
-- Sections: §1 The v8.0 Türkiye Stack (replaces Dörtlüsü web-scraping), §2 TİTCK — Structured Drug Queries (§2.1 Core lookup chain, §2.2 Specialized TİTCK tools, §2.3 Data caveats), §3 Mevzuat — Native Legislation (SUT, yönetmelik, kararname), §4 TÜRKPATENT — Turkey IP (jenerik/biyobenzer), §5 Türkiye Output Block (turkey_access_summary sidecar), §6 Composition, §7 Türkiye Dörtlüsü (context-triggered — TR-specific question OR user-requested)
-- Concepts: TİTCK drug registry, SGK (Sosyal Güvenlik Kurumu), SUT (Sağlık Uygulama Tebliği), reimbursement list, Mevzuat legislation, TÜRKPATENT (patent/generic/biosimilar), YÖK Akademik (TR KOL), Türkiye Dörtlüsü (TİTCK+Mevzuat+TÜRKPATENT+YÖK), fiyat (drug price), geri ödeme (reimbursement), ruhsat TR, AFF:"Turkey" literature
-- Synonyms: Türkiye, TR, Türkiye ilaç, SGK geri ödeme, SUT listesi, Sağlık Bakanlığı, Türk mevzuatı, TİTCK, Turkish reimbursement, Turkish market access
+- Sections: §1 The v8.0 Türkiye Stack (replaces Dörtlüsü web-scraping), §2 TİTCK — Structured Drug Queries (§2.1 Core lookup chain, §2.2 Specialized TİTCK tools, §2.3 Data caveats), §3 SUT/legislation gap (no mevzuat MCP — hand off to cureolex), §4 TÜRKPATENT — Turkey IP (jenerik/biyobenzer), §5 Türkiye Output Block (turkey_access_summary sidecar), §6 Composition, §7 Türkiye native set (context-triggered — TR-specific question OR user-requested)
+- Concepts: TİTCK drug registry, SGK (Sosyal Güvenlik Kurumu), SUT (Sağlık Uygulama Tebliği — documented gap), reimbursement list, TÜRKPATENT (patent/generic/biosimilar), YÖK Akademik (TR KOL), Türkiye native (TİTCK+TÜRKPATENT+YÖK), fiyat (drug price), geri ödeme (reimbursement), ruhsat TR, AFF:"Turkey" literature
+- Synonyms: Türkiye, TR, Türkiye ilaç, SGK geri ödeme, SUT listesi, Sağlık Bakanlığı, TİTCK, Turkish reimbursement, Turkish market access
 - Cross-links: regulatory-science-layer.md (TİTCK ruhsat module); regulatory-intelligence.md (TR multi-jurisdiction cross-ref module); hta-layer.md (TR HTA/SGK decisions module); oncology-layer.md (TR onco off-label TİTCK module); medaffairs-ops-layer.md (TR KOL via YÖK Akademik module); drug-intelligence-layer.md (TR drug intelligence module)
 
 ### fulltext-retrieval.md  — [axis: full-text/KOL cross-cutting]
@@ -178,7 +178,7 @@ PRISMA-ScR checklist selection, §2).
 - benchmark-suite.md — deterministic integrity gates (check_integrity.py), regression queries (benchmark-queries.json), pass criteria (release gate)
 - benchmark-protocol.md — integrity gate definitions, regression procedure, what each query guards, provenance & honesty
 - composition-runbook.md — downstream handoffs (pipe_to), scope guard (what medical-research does NOT do), sidecar as the contract
-- execution-map.md — order of operations (Adım 1), latency & quota budgeting, call-count expectations (no upper cap)
+- execution-map.md — ordered P0–P7 tool playbook (MUST/SHOULD/MAY/OUT) for all 19 bundled servers + 9 companions; skip-reason template; Completeness Gate contract
 - v8-wiring-patch.md — global find/replace patch (ALL reference files), extended-api.md rewrite to native-first, evidence-grading.md update, output-templates.md update, specialty layer wiring inserts, infrastructure files, files NOT needing change
 - skill-manifest.yaml — SMP v1.0 manifest (runtime.mcp_servers, composition, verification gates, constraints)
 
@@ -242,7 +242,7 @@ PRISMA-ScR checklist selection, §2).
 - **Cost-effectiveness / ICER / QALY / budget impact** → hta-layer.md#§2 (economic model appraisal) · regulatory-intelligence.md#§3 (epidemiology denominator) · evidence-grading.md#§2–§3 (GRADE/NMA appraisal)
 - **NICE / CADTH / PBAC / IQWiG / HAS / HTA body** → hta-layer.md#§1 (HTA bodies) · hta-layer.md#§2 (body-specific model requirements)
 - **MAIC / NMA / indirect comparison** → hta-layer.md#§2 (economic model) · evidence-grading.md#§3 (pragmatic appraisal track) · evidence-grading.md#§4 (specialty checklists)
-- **Reimbursement listing / payer decision / access / geri ödeme** → hta-layer.md (all) · turkiye-layer.md#§3 (SUT/Mevzuat) · turkiye-layer.md#§5 (turkey_access_summary sidecar)
+- **Reimbursement listing / payer decision / access / geri ödeme** → hta-layer.md (all) · turkiye-layer.md#§2 (TİTCK reimbursement) · turkiye-layer.md#§3 (SUT gap → cureolex) · turkiye-layer.md#§5 (turkey_access_summary sidecar)
 - **Value dossier / submission / dosya** → hta-layer.md#§2 (economic appraisal) · regulatory-science-layer.md#§4 (output §1.I)
 
 ### Evidence Type
@@ -267,14 +267,15 @@ PRISMA-ScR checklist selection, §2).
 - **PubMed / MEDLINE / EuropePMC / EPMC / Unpaywall / açık-erişim tam-metin** → connector-registry.md#§2.1 (academic literature core + bundled `pubmed-epmc`: `pubmed_europepmc_search`/`pubmed_fetch_fulltext` Unpaywall legal-OA) · output-templates.md#§1 (Küresel Literatür) · evidence-grading.md#§1 (Tier 2 primary sources)
 - **ClinicalTrials.gov / CT.gov / NCT** → connector-registry.md#§2.1 · output-templates.md#§2 (Klinik Pipeline) · drug-intelligence-layer.md#§3.5 (trial intelligence)
 - **AdisInsight / search_drugs / get_drug / HyDE / generate_chart** → drug-intelligence-layer.md#§1–§3 (real schema) · connector-registry.md#§3.1 (AdisInsight corrected schema)
-- **TİTCK / TİTCK-cache / barcode lookup** → turkiye-layer.md#§2 (TİTCK structured queries) · connector-registry.md#§2.5 (α-layer) · connector-registry.md#§3.2 (TİTCK structural Turkey data)
+- **TİTCK / barcode lookup** → turkiye-layer.md#§2 (TİTCK structured queries) · connector-registry.md#§2.5 (α-layer) · connector-registry.md#§3.2 (TİTCK structural Turkey data)
 - **openFDA / FDA drug / FAERS / enforcement** → regulatory-intelligence.md#§1 (native openFDA) · connector-registry.md#§3.3 (regulatory MCP)
-- **Mevzuat / SUT / kararname / kanun** → turkiye-layer.md#§3 (Mevzuat native legislation) · regulatory-intelligence.md#§4 (multi-jurisdiction)
-- **web research / gap-fill / no-API source (EMA, guideline PDF, GLOBOCAN)** → NONE — web tier (Exa/Tavily) removed v1.4.0; report as documented gap (connector-registry.md#§0 tier 3, #§5 zero-result recovery), never web-scraped/fabricated
+- **SUT / kararname / kanun** → turkiye-layer.md#§3 (documented gap — hand off to cureolex) · regulatory-intelligence.md#§4 (multi-jurisdiction)
+- **web research / gap-fill / no-API source (guideline PDF, IHME/GBD)** → NONE — web tier removed v1.4.0; EMA=`ema`, GLOBOCAN=`globocan`, WHO GHO=`who-gho` are native (execution-map.md P7); remaining no-API → documented gap (connector-registry.md#§0 tier 3), never web-scraped/fabricated
 - **YÖK Akademik / Turkish academics / TR KOL** → turkiye-layer.md (TR KOL) · medaffairs-ops-layer.md#§3 (KOL wiring §8) · connector-registry.md#§2.5 (α-layer)
-- **OpenAlex / Semantic Scholar / citation graph / atıf-ağı / kurum-yazar disambiguasyon** → connector-registry.md#§2.1 (native Tier-K bundled: `openalex_*`, `search_papers`/`get_paper_citations`) · extended-api.md#§2–§4 (REST fallback) · medaffairs-ops-layer.md#§3 (KOL via OpenAlex) · output-templates.md#§8 (KOL Haritası)
+- **OpenAlex / Semantic Scholar / citation graph / atıf-ağı / kurum-yazar disambiguasyon** → connector-registry.md#§2.1 (native Tier-K: `openalex_*`, `search_papers`/`get_paper_citations`) · execution-map.md P1 · medaffairs-ops-layer.md#§3 (KOL via OpenAlex) · output-templates.md#§8 (KOL Haritası)
+- **Anamnesis / hybrid_query / exclusive run collection** → connector-registry.md#§2.1 (RAG substrate) · data-extraction.md#§2 · execution-map.md P4 · fulltext-retrieval.md
 - **ChEMBL / PubChem / chemical structure** → extended-api.md#§3 (PubChem PUG-REST) · drug-intelligence-layer.md#§4 (cross-reference)
-- **WHO GHO / ICD-11 / GLOBOCAN / disease burden** → ICD-11 via `openfda` `icd11_search` (connector-registry.md#§3.3) · hta-layer.md#§3 (epidemiology denominator) · output-templates.md (epidemiology enrichment appendix). (WHO GHO/GLOBOCAN native-API not bundled → documented gap.)
+- **WHO GHO / ICD-11 / GLOBOCAN / disease burden** → ICD-11 via `openfda`/`med-terminologies.icd11_search` · **who-gho** (`who_gho_query`) · **globocan** (`gco_query`) · PopHIVE US-only · hta-layer.md#§3 · output-templates.md (epidemiology appendix). IHME/GBD still documented gap. Order: execution-map.md P7.
 
 ### Output / Presentation
 

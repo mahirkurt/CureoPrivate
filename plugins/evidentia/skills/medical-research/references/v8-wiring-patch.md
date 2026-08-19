@@ -1,5 +1,9 @@
 # v8.0 Wiring Patch — Existing Reference Files
 
+> **Historical (v8.0).** Live doctrine is `execution-map.md` v9.0.2 + `CONNECTORS.md`.
+> EMA / GLOBOCAN / WHO-GHO are **native**. Mevzuat is **unwired** (hand off to `cureolex`).
+> Do not apply this patch as current connector wiring.
+
 **Purpose:** The 8 specialty layers + `extended-api.md` / `evidence-grading.md` /
 `output-templates.md` / `execution-map.md` / `composition-runbook.md` /
 `benchmark-*.md` contain **sound clinical/operational content that is retained.** Only their

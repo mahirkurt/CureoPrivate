@@ -13,9 +13,9 @@ MAIC, NMA, indirect comparison, willingness-to-pay, threshold, managed entry, ri
 ## 1. HTA bodies (Tier 1)
 NICE (TA/HST), CADTH/CDA-AMC, PBAC, IQWiG/G-BA (AMNOG added-benefit), HAS, TLV, ZIN. No native
 MCP/API → **documented gap (VERİ YOK)** — these HTA PDFs are not web-scraped (web tier removed v1.4.0);
-an operator-supplied PDF may be ingested into anamnesis. **TR:** SGK SUT (Mevzuat native) +
-TİTCK reference price (`find_reference_prices_for_drug`, `get_price_history`) — TR access is
-price-/SUT-determined.
+an operator-supplied PDF may be ingested into anamnesis. **TR:** TİTCK reimbursement_status +
+reference price (`find_reference_prices_for_drug`, `get_price_history`). SUT text is a documented
+gap in this plugin (hand off to `cureolex`).
 
 ## 2. Economic-model appraisal
 - Model type (Markov/partitioned-survival/DES), time horizon, discount rate, perspective.

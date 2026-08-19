@@ -17,12 +17,12 @@
 
 version: 2
 plugin: historia-medicinae
-plugin_version: "0.1.2"
+plugin_version: "0.1.3"
 
 servers:
   # ── A. Akademik çekirdek — HER substantif sorguda ateşlenir ────────────────
   - name: openalex
-    url: https://openalex-mcp.cureonics.workers.dev/mcp
+    url: https://openalex.cureonics.com/mcp
     tier: academic-core
     auth_env: OPENALEX_MCP_API_KEY
     shard: S1
@@ -44,7 +44,7 @@ servers:
       atıf-grafı temelli ekol haritası ÜRETİLMEZ, manifestoda beyan edilir.
 
   - name: pubmed-epmc
-    url: https://pubmed-mcp.cureonics.workers.dev/mcp
+    url: https://pubmed.cureonics.com/mcp
     tier: academic-core
     auth_env: PUBMED_MCP_API_KEY
     shard: S1
@@ -68,7 +68,7 @@ servers:
       ve bu KAPSAM KAYBI olarak manifestoda beyan edilir (sessizce geçilmez).
 
   - name: semantic-scholar
-    url: https://semanticscholar-mcp.cureonics.workers.dev/mcp
+    url: https://semanticscholar.cureonics.com/mcp
     tier: academic-core
     auth_env: SEMANTICSCHOLAR_MCP_API_KEY
     shard: S1
@@ -458,12 +458,22 @@ servers:
       - graph_neighbors
       - subgraph
       - corpus_stats
+      - forget_document
+      - forget_collection
+      - list_docs
     role: >-
-      Bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük tam-metin (monograf,
-      tez PDF, IIIF manifest-içi blok, Hansard zabıt serisi) ana pencerede akıl
-      yürütülmez: kanonik doc_id ile BİR KEZ ingest edilir → sınırlı, provenance
-      damgalı dilim çekilir. `upsert_triples` hekim↔kurum↔yayın↔olay grafiği kurar
-      (PROSOPOGRAPHIA ve CONCEPTUS'un aktarım-zinciri analizi).
+      Bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Tenancy
+      collection=`histmed:run:<12hex>` (plugin id histmed; kind ∈ {run,sess,lib};
+      lib varsayılan değil). Her ingest collection +
+      doc_id=`hmrun:<12hex>:<kanonik>` (doi/pmid/wellcome/devarsiv/yoktez) ister;
+      doc_scope YOKTUR. Kapsamsız hybrid_query/graph DENY; scoped ALLOW. Atıf
+      `doc_id::idx`. Büyük tam-metin (monograf, tez PDF, IIIF manifest-içi blok,
+      Hansard zabıt serisi) ana pencerede akıl yürütülmez: bir kez ingest →
+      hybrid_query(collection=…) dilimi. `upsert_triples` aynı collection içinde
+      hekim↔kurum↔yayın↔olay grafiği (PROSOPOGRAPHIA / CONCEPTUS).
+      forget_collection SessionEnd + sonraki /historia-medicinae + startup
+      leftover (Stop'ta silinmez). Evidentia scratch `evrun:` / `evidentia:run:`
+      ile çakışmaz.
     degrade: >-
       Anahtar yoksa sınırlı-parça getirime düşer (manifest-içi arama + sayfa-bazlı
       okuma); ASLA ham tam-metin dökümü yapılmaz.

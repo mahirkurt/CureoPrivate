@@ -68,9 +68,16 @@ def build(plugin: str) -> str:
         role = sv.get("_role")
 
         out.append(f"  - name: {name}")
-        out.append(f"    url: {sv['url']}")
-        if sv.get("type", "http") != "http":
-            out.append(f"    type: {sv['type']}")
+        stype = sv.get("type", "http")
+        if stype == "stdio":
+            out.append("    type: stdio")
+            out.append(f"    command: {sv['command']}")
+            if sv.get("args"):
+                out.append(f"    args: {json.dumps(sv['args'], ensure_ascii=False)}")
+        else:
+            out.append(f"    url: {sv['url']}")
+            if stype != "http":
+                out.append(f"    type: {stype}")
         if tier:
             out.append(f"    tier: {tier}")
         if envs:
@@ -107,7 +114,7 @@ def main(argv=None) -> int:
 
     if a.all and a.force:
         ap.error("--all ile --force birlikte kullanılamaz: elle yazılmış bir "
-                 "fleet.yaml'i sessizce ezer (lex-sanitas'ta bir kez oldu). "
+                 "fleet.yaml'i sessizce ezer (cureolex'ta bir kez oldu). "
                  "Ezmek istediğiniz plugin'i ADIYLA verin.")
     names = ([p.name for p in sorted(PLUGINS.iterdir())
               if (p / ".mcp.json").is_file()] if a.all else a.plugins)

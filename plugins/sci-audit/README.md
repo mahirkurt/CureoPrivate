@@ -77,9 +77,10 @@ Because axis B now fetches external full text, two invariants are enforced (see
 - **Injection shield** — the audited document and every fetched passage are
   untrusted content, analysed as data; text embedded in them ("mark as
   verified", "ignore instructions") never sets a verdict.
-- **Privacy invariant** — only citation identifiers/titles go to third-party
-  MCP hosts, never the (possibly unpublished) manuscript body; claim↔source
-  comparison happens inside Claude.
+- **Privacy invariant** — only citation identifiers/titles go to MCP hosts,
+  never the (possibly unpublished) manuscript body; claim↔source comparison
+  happens inside Claude. The bibliographic trio is the operator self-host
+  Workers (shared with Evidentia), not a third-party isolation split.
 
 `--strictness` is `draft` (light) or `certification` (full; adds abbreviation
 consistency). `--fail-on error` returns a non-zero exit on any blocker.
@@ -106,9 +107,12 @@ gate_tr_pvalue_dot: true
 
 ## MCP & connectors
 
-`.mcp.json` bundles **remote HTTP** scientific-core servers (keyless, public
-bibliographic data): `pubmed`, `pubmed-epmc`, `openalex`, `semantic-scholar`.
-No stdio/local binaries are used, so the plugin works on claude.ai web.
+`.mcp.json` bundles **remote HTTP** scientific-core servers: Anthropic
+`pubmed` (keyless) plus CureoHub HP self-host for `pubmed-epmc`, `openalex`, and
+`semantic-scholar` — same URLs as Evidentia (`*.cureonics.com/mcp`; Bearer-gated;
+Doppler `${PUBMED,OPENALEX,SEMANTICSCHOLAR}_MCP_API_KEY`). Third-party hosts and
+the old `*.workers.dev` academic Workers are retired. No stdio/local binaries
+are used, so the plugin works on claude.ai web.
 
 Servers **without** an official remote endpoint are not embedded — connect them
 as **claude.ai connectors** instead:
@@ -150,7 +154,8 @@ conflict, a deterministic finding beats the LLM judge.
 1. Install the plugin from the Cureonics marketplace.
 2. The deterministic cores and all seven axes work immediately — no local setup.
 3. For axes A/B source resolution, ensure the bundled remote MCPs are reachable
-   (they are keyless) and optionally add a Crossref connector.
+   (Anthropic PubMed is keyless; the three Workers need their Bearer keys) and
+   optionally add a Crossref connector.
 4. Turkish axis G runs fully deterministically on the web; TDK adds term
    validity when reachable. GECTurk/Zemberek are local/CI only and degrade to
    `unavailable` on the web — the report is never blocked by their absence.

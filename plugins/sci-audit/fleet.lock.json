@@ -4,8 +4,8 @@
   "plugin_version": "0.2.4",
   "counts": {
     "servers": 4,
-    "gated": 0,
-    "public": 4,
+    "gated": 3,
+    "public": 1,
     "companions": 0,
     "delegations": 0
   },
@@ -17,18 +17,18 @@
     },
     {
       "name": "pubmed-epmc",
-      "url": "https://pubmed.caseyjhand.com/mcp",
-      "auth_env": null
+      "url": "https://pubmed.cureonics.com/mcp",
+      "auth_env": "PUBMED_MCP_API_KEY"
     },
     {
       "name": "openalex",
-      "url": "https://openalex.caseyjhand.com/mcp",
-      "auth_env": null
+      "url": "https://openalex.cureonics.com/mcp",
+      "auth_env": "OPENALEX_MCP_API_KEY"
     },
     {
       "name": "semantic-scholar",
-      "url": "https://gateway.pipeworx.io/semanticscholar/mcp",
-      "auth_env": null
+      "url": "https://semanticscholar.cureonics.com/mcp",
+      "auth_env": "SEMANTICSCHOLAR_MCP_API_KEY"
     }
   ],
   "companions": [],

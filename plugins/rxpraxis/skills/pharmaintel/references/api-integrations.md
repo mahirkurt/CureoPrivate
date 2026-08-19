@@ -249,8 +249,8 @@ GET https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid
 
 ## §9. bioRxiv / medRxiv (MCP available)
 
-**MCP:** bioRxiv MCP (preferred)
-**Base URL:** `https://api.biorxiv.org/`
+**MCP:** bioRxiv MCP (preferred) — Hub stdio `CureoHub/mcp-servers/biorxiv-mcp`, not Anthropic HCLS
+**Base URL:** `https://api.biorxiv.org/` (details host fallback: `https://api.medrxiv.org/`)
 
 MCP provides `search_preprints`, `get_preprint`, `get_categories`, `search_by_funder`, `search_published_preprints`, `get_content_statistics`, `get_usage_statistics`.
 

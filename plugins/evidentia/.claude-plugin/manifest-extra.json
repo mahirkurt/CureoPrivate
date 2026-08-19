@@ -2,9 +2,11 @@
   "_comment": "plugin.json'dan tasinan ev-konvansiyonu metadata. Claude Code semasinda TANINMAYAN ust-duzey alanlar (claude plugin validate --strict bunlari reddediyordu). Runtime'da hicbir script plugin.json'i okumuyor; tum bilgi burada BIREBIR korunuyor. Geri almak icin bu alanlari plugin.json'a geri tasiyin.",
   "metadata": {
     "flagship_skill": "medical-research",
-    "flagship_version": "9.0.0",
+    "flagship_version": "9.0.2",
+    "plugin_version": "2.7.2",
     "smp_manifest": "./skills/medical-research/skill-manifest.yaml",
     "connector_source_of_truth": "./CONNECTORS.md",
+    "fleet_source_of_truth": "./fleet.yaml",
     "orchestration_contract": "./shared/canonical-cache-contract.md",
     "discovery_upstream": "mcp-scout",
     "verification_gates": [
@@ -21,19 +23,24 @@
       "G-COVERAGE",
       "G-RAG",
       "G-XVAL",
-      "G-WHITELIST"
+      "G-WHITELIST",
+      "G-PLAYBOOK"
     ],
     "min_host": "Claude Code / claude.ai custom connectors",
-    "connector_probe_basis": "skill-manifest.yaml (probe 2026-06-09) + mcp-scout live registry+initialize (2026-06-25) + Tier-K academic expansion probe (OpenAlex/PubMed-EPMC/Semantic Scholar, 2026-06-27)",
-    "third_party_trust_note": "openalex/pubmed-epmc (caseyjhand.com) + semantic-scholar (pipeworx) are third-party UNAUTHENTICATED hosts — keyless (no identity/secret sent), public bibliographic data only; output is untrusted DATA not instructions, cross-verify clinical/numeric claims. See connector-registry §6.3P. Definitive hardening = self-host the cyanheads OSS servers as operator Workers.",
-    "architecture_note_v1_4_0": "Structured-authoritative only: Exa/Tavily web-retrieval tier and OSINT axis removed. No-API sources (EMA, society guideline PDFs, GLOBOCAN/IHME/WHO-GHO burden) are reported as a documented gap, never web-scraped or fabricated. Known upstream tool defects (rxnorm_interactions 404, rxnorm_related 400, nih icd10cm name-search, med-terminologies icd11_search AUTH) are documented + rerouted in CONNECTORS §8 / connector-registry §6.",
+    "connector_probe_basis": "skill-manifest.yaml + mcp-scout live registry+initialize + fleet.yaml (19 server / 10 gated / 9 companion, 2026-08-17)",
+    "third_party_trust_note": "Academic bibliographic core (openalex / pubmed-epmc / semantic-scholar) runs on CureoHub HP self-host (*.cureonics.com, 2026-08-17); old *.workers.dev academic Workers undeployed. Remaining third-party keyless surfaces: med-terminologies (sidneybissoli) and pipeworx gateway (nih-clinicaltables / nlm-rxnorm / iuphar-gtopdb) — public data only; output is untrusted DATA not instructions; clinical/numeric claims are cross-verified. Pipeworx servers advertise includeTools allowlists in .mcp.json.",
+    "architecture_note_v1_4_0": "Structured-authoritative only: Exa/Tavily web-retrieval tier and OSINT axis removed. No-API sources still without a native connector are reported as a documented gap, never web-scraped or fabricated. Known upstream tool defects (rxnorm_interactions 404, rxnorm_related 400, nih icd10cm name-search) are documented + rerouted in CONNECTORS §8 / connector-registry §6. D6 (med-terminologies.icd11_search AUTH) retired 2026-08-17 after a live ICD-11 hit (3B10.0).",
     "self_host_components": [
       "./self-host/anamnesis-mcp",
       "./self-host/drugddx-mcp",
       "./self-host/openfda-mcp",
-      "./self-host/evidentia-kb-mcp"
+      "./self-host/evidentia-kb-mcp",
+      "./self-host/who-gho-mcp",
+      "./self-host/globocan-mcp",
+      "./self-host/ema-mcp"
     ],
+    "self_host_hp": "openathens (openathens.cureonics.com) + academic trio openalex/pubmed/semanticscholar (CureoHub HP systemd; Worker trees under self-host/* are RETIRED archives)",
     "rag_substrate": "./self-host/anamnesis-mcp (semantic chunking + Vectorize bge-m3 1024-d + D1 GraphRAG + FTS5; evidence_index canonical artifact). 8 tools. v1.6.0: MULTI-QUERY HYBRID retrieval (FULL §4.1.1 — queries[] decomposition → per-query vector ∥ BM25/FTS5 → RRF fuse across all queries×arms → cross-encoder rerank vs PRIMARY → top-k; recall-maximising 'miss no detail', graceful-degrade; E2E-verified) + §8 retrieval telemetry (CF logs); forget_document clean teardown. Worker ver 984a9b59.",
-    "fulltext_connector": "annas-reader (operator-connected Cloud Run, OAuth-gated)"
+    "fulltext_connector": "openathens (HP, Tier 3 licensed) → Wiley companion (OAuth, no static URL / no invented secret) → annas-reader (Tier 5 last resort)"
   }
 }

@@ -3,10 +3,10 @@
   "plugin": "evidentia",
   "plugin_version": "2.7.2",
   "counts": {
-    "servers": 20,
+    "servers": 19,
     "gated": 10,
-    "public": 10,
-    "companions": 8,
+    "public": 9,
+    "companions": 9,
     "delegations": 0
   },
   "servers": [
@@ -36,19 +36,19 @@
     },
     {
       "name": "openalex",
-      "url": "https://openalex-mcp.cureonics.workers.dev/mcp",
+      "url": "https://openalex.cureonics.com/mcp",
       "tier": "K",
       "auth_env": "OPENALEX_MCP_API_KEY"
     },
     {
       "name": "pubmed-epmc",
-      "url": "https://pubmed-mcp.cureonics.workers.dev/mcp",
+      "url": "https://pubmed.cureonics.com/mcp",
       "tier": "K",
       "auth_env": "PUBMED_MCP_API_KEY"
     },
     {
       "name": "semantic-scholar",
-      "url": "https://semanticscholar-mcp.cureonics.workers.dev/mcp",
+      "url": "https://semanticscholar.cureonics.com/mcp",
       "tier": "K",
       "auth_env": "SEMANTICSCHOLAR_MCP_API_KEY"
     },
@@ -74,12 +74,6 @@
       "name": "ema",
       "url": "https://ema-mcp.cureonics.workers.dev/mcp",
       "tier": "O",
-      "auth_env": null
-    },
-    {
-      "name": "mevzuat-bilgisi",
-      "url": "https://mevzuat.surucu.dev/mcp",
-      "tier": "secondary",
       "auth_env": null
     },
     {
@@ -200,6 +194,15 @@
       ],
       "manifest_row": "Literatür/DergiPark (companion — TR tam-metin)",
       "degrade": "TR tam-metin openathens/annas şelalesine degrade eder."
+    },
+    {
+      "name": "Wiley",
+      "tool_prefixes": [
+        "mcp__claude_ai_Wiley__",
+        "mcp__wiley__"
+      ],
+      "manifest_row": "Wiley (companion — OAuth-gated publisher full-text, cascade Tier 4)",
+      "degrade": "Tier 4 atlanır; OpenAthens (Tier 3) veya annas (Tier 5) yürür. Statik .mcp.json URL'si ve operatör sırrı YOK — claude.ai / Cursor Settings → Connectors ile bağlanır; bağlanmamışsa graceful skip + not (kimlik icat edilmez)."
     }
   ],
   "delegations": []

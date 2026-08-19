@@ -33,5 +33,16 @@ servers:
     auth_env: null
 
   - name: biorxiv
-    url: https://hcls.mcp.claude.com/biorxiv/mcp
+    type: stdio
+    command: uv
+    args:
+      - --directory
+      - "${workspaceFolder:CureoHub}/mcp-servers/biorxiv-mcp"
+      - run
+      - biorxiv-mcp
     auth_env: null
+    role: >-
+      Local Hub stdio — CureoHub/mcp-servers/biorxiv-mcp (`uv run biorxiv-mcp`).
+      Drop-in for Anthropic HCLS hcls.mcp.claude.com/biorxiv/mcp, which crashes
+      search_preprints on api.biorxiv.org/details HTTP 200 + empty body.
+      Optional keyword `query` via Europe PMC SRC:PPR.

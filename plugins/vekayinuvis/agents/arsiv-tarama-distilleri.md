@@ -61,9 +61,10 @@ ACADEMIC_REPORT kaynak-temeli).
      resource link'i derhal tüket; distillate'a linki değil DOI/MD5 + format + SHA-256/
      provenance'ı koy. Getirilen tam-metin > eşik → adım 3. Telif: birebir toplu çoğaltma yok.
 3. **Büyük tam-metin → anamnesis (Tier 2):** bir tez/belge-transkripsiyonu/DergiPark tam-metin
-   > ~6-30KB ise ana pencerene ALMA — `anamnesis.ingest_document(doc_id=<kanonik: yoktez:tez-no /
-   devarsiv:arsiv/fon/kutu-gömlek / doi:… / iiif:…>, text=<gövde>)` ile indeksle →
-   `anamnesis.hybrid_query(doc_scope=<doc_id>, queries=[<hedef kişi/olay/tarih/kavram>])` ile yalnız
+   > ~6-30KB ise ana pencerene ALMA — `anamnesis.ingest_document(collection=vekayinuvis:run:<12hex>,
+   doc_id=vkrun:<12hex>:<kanonik: yoktez:tez-no / devarsiv:arsiv/fon/kutu-gömlek / doi:… / iiif:…>,
+   text=<gövde>)` ile indeksle →
+   `anamnesis.hybrid_query(collection=vekayinuvis:run:<12hex>, doc_ids=[…], queries=[<hedef kişi/olay/tarih/kavram>])` ile yalnız
    ilgili dilimleri çek (provenance-damgalı). Aynı doc_id iki kez ingest edilmez (kanonik cache).
    Prosopografi/kronoloji için `anamnesis.upsert_triples` ile kişi↔görev↔belge / olay↔tarih↔kaynak
    grafiğini kur. anamnesis anahtarı yoksa → bounded-chunk fallback (within-manifest + tez sayfa).

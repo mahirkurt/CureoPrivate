@@ -50,4 +50,4 @@ Offer to package any deliverable via `carbon-html-report` (A4 brand book),
 `carbon-pptx` (deck) or `docx`; this ecosystem defers all HTML/print/deck
 rendering to those skills. For any regulated-sector brand (pharma, health,
 finance, legal), route promotional-claim review to `promo-censor` /
-`lex-sanitas`.
+`cureolex`.

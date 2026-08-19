@@ -10,7 +10,8 @@
 - **Bağlı/kurulu katman atlanamaz:** bir connector bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL). `skipped: … bağlı değil` yalnız gerçek yoklukta doğrudur.
 - **devlet-arsivleri özel:** anahtar bağlı olsa bile upstream oturum düşükse `degraded: session_required (HP noVNC re-login)` yazılır — bu **skip değil degrade**'dir; resmî katalog atlanmış sayılmaz, dürüstçe raporlanır ve ottoman/yoktez ile ikame edilir.
 - **yok-akademik destekleyicidir:** modern akademisyen/ekol bağlamı yoksa `skipped: mod için N/A` meşrudur; bağlam varken bağlıyken atlanması G0 ihlalidir.
-- **anamnesis substrat satırı** her manifestoda mevcuttur; kullanımına göre `ingest N belge · M bounded query` / `skipped: gerekmedi (küçük getirim)` / `skipped: anahtar yok (bounded-chunk fallback)`.
+- **anamnesis substrat satırı** her manifestoda mevcuttur; collection **`vekayinuvis:run:<12hex>`**,
+  doc_id **`vkrun:<12hex>:<kanonik>`**. `corpus_stats` çalışma seti değildir.
 - Manifesto, `arsiv-tarama-distilleri`'nin döndürdüğü `coverage` bloğundan türetilir; alt-ajan çağrılmadıysa doğrudan araç çağrılarından derlenir.
 
 ## Örnek
@@ -39,7 +40,7 @@ Destekleyici
   yok-akademik         → skipped: mod için N/A (modern akademisyen prosopografisi kapsamda değil)
   detsis               → skipped: mod için N/A (kurumsal prosopografi kapsamda değil; ayrıca Cumhuriyet-sınırlı)
 Büyük-veri substratı (Tier 2)
-  anamnesis            → ingest 2 belge (yoktez:<tez-no>, devarsiv:2/DH.İ.UM/22-19) · 7 bounded query
+  anamnesis            → ingest 2 belge (collection=vekayinuvis:run:<id>; vkrun:<id>:yoktez:<tez-no>, vkrun:<id>:devarsiv:2/DH.İ.UM/22-19) · 7 bounded query
 ```
 
 Büyük-veri satırı (Tier 2) kullanıma göre değişir:

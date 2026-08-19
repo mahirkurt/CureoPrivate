@@ -53,13 +53,16 @@ besler. **Copyright kapısı her adımda bağlayıcıdır** (G-COPYRIGHT).
    anamnesis'e ingest edilir (Adım 9).
 8. **Unpaywall** (Tier 6 — son legal-OA süpürmesi) — yasal açık-erişim PDF lokasyonu (pubmed-epmc
    Unpaywall entegrasyonu; yalnız legal-OA, verbatim toplu reprodüksiyon yok).
-9. **anamnesis ingest (uzun metin → indeks, ham metin DEĞİL).** Getirilen tam metin **kısa**
-   değilse (≳1-2 sayfa) bağlama dökme: anamnesis `ingest_document(text=…, doc_id=<DOI>,
-   source=…)` → **manifest** döner. Sonra `semantic_search` / **`hybrid_query`** ile sorguya
-   sınırlı, provenance-damgalı (`doc_id::idx`) dilim çek. Bir `doc_id` **bir kez** ingest edilir
-   (`evidence_index` kanonik artefaktı, `../shared/canonical-cache-contract.md`). Bu adım
-   context-window taşmasını önler; anamnesis deploy edilmemişse (BUILD-BRIEF) bu adım atlanır ve
-   metin **özetlenerek** (verbatim değil) işlenir.
+9. **anamnesis ingest (uzun metin → indeks, ham metin DEĞİL; münhasır set).** Getirilen tam metin
+   **kısa** değilse (≳1-2 sayfa) bağlama dökme: `ingest_document(text=…,
+   collection=evidentia:run:<run_id>, doc_id=evrun:<run_id>:<DOI>, source=…)` → **manifest**.
+   Sonra `hybrid_query(collection=aynı)` veya `semantic_search(…, collection=aynı / doc_id=önekli)`
+   ile sınırlı, provenance-damgalı (`doc_id::idx`) dilim çek. Kapsamsız hybrid DENY.
+   `list_docs(collection=aynı)` çalışma setini doğrular (`corpus_stats` değildir). Bir önekli
+   `doc_id` **bir kez** ingest edilir. Koşu bitince hook forget eder. Anamnesis
+   deploy edilmemişse bu adım atlanır (`SKIP-REASON unreachable`) ve metin **özetlenerek**
+   (verbatim değil) işlenir. Kademe atlanırsa `SKIP-REASON` yaz (already_canonical / copyright_gate
+   / challenge_required / companion_unloaded) — sessiz atlama yok.
 
 ## Copyright disiplini (bağlayıcı)
 

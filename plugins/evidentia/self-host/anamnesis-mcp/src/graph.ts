@@ -7,17 +7,13 @@
  * "LLM-in-the-loop GraphRAG" pattern; it avoids shipping a weak in-Worker extractor and being
  * dishonest about graph quality.
  *
- * What ships in v1: local (entity-centric) graph — upsert, 1..n-hop neighbor expansion, and
- * induced subgraph over an entity set. This is enough to ground cross-document, multi-hop
- * synthesis and keep answers CONSISTENT (the same relations are retrieved every time).
- *
- * DEFERRED (documented in BUILD-BRIEF, NOT faked here): Microsoft-GraphRAG global search —
- * Leiden community detection + hierarchical community summaries — belongs in a batch Cloud Run
- * indexer, not a request-scoped Worker. `community_summary`/`global_query` are roadmap, not a
- * weak approximation masquerading as the real thing.
+ * Collection isolation: nodeKey / edgeId INCLUDE the collection, so emicizumab in coll A
+ * is a different node from emicizumab in coll B. Forget-collection drops that collection's
+ * edges and nodes. No in-Worker community detection (BUILD-BRIEF).
  */
 
 import type { D1Like } from "./rag.js";
+import { LEGACY_COLLECTION, resolveWriteCollection, requireCollection } from "./collection.js";
 
 export interface GraphEnv { DB: D1Like; }
 
@@ -29,15 +25,17 @@ export interface Triple {
   object_type?: string;
   doc_id?: string;
   evidence?: string; // chunk id (e.g. "doc::3") or a SHORT pointer — never bulk text
+  collection?: string;
 }
 
-/** Normalize an entity surface form to a stable node key. */
-export function nodeKey(label: string): string {
-  return label.trim().toLowerCase().replace(/\s+/g, " ").slice(0, 200);
+/** Normalize an entity surface form to a stable node key. Collection is part of the identity. */
+export function nodeKey(collection: string, label: string): string {
+  const norm = label.trim().toLowerCase().replace(/\s+/g, " ").slice(0, 200);
+  return `${collection}::${norm}`;
 }
 
-async function edgeId(subject: string, predicate: string, object: string): Promise<string> {
-  const msg = `${subject}|${predicate}|${object}`.toLowerCase();
+async function edgeId(collection: string, subject: string, predicate: string, object: string): Promise<string> {
+  const msg = `${collection}|${subject}|${predicate}|${object}`.toLowerCase();
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
   const bytes = new Uint8Array(digest);
   let hex = "";
@@ -45,79 +43,91 @@ async function edgeId(subject: string, predicate: string, object: string): Promi
   return hex;
 }
 
-async function upsertNode(env: GraphEnv, label: string, type: string | undefined, docId?: string): Promise<string> {
-  const id = nodeKey(label);
+async function upsertNode(
+  env: GraphEnv, collection: string, label: string, type: string | undefined, docId?: string,
+): Promise<string> {
+  const id = nodeKey(collection, label);
   const now = Date.now();
   const existing = await env.DB.prepare(`SELECT doc_ids FROM nodes WHERE id = ?`).bind(id).first<{ doc_ids: string }>();
   let docIds: string[] = [];
   if (existing?.doc_ids) { try { docIds = JSON.parse(existing.doc_ids); } catch { docIds = []; } }
   if (docId && !docIds.includes(docId)) docIds.push(docId);
   await env.DB.prepare(
-    `INSERT INTO nodes (id, label, type, doc_ids, updated_at) VALUES (?,?,?,?,?)
+    `INSERT INTO nodes (id, label, type, doc_ids, updated_at, collection) VALUES (?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET label=excluded.label,
-        type=COALESCE(excluded.type, nodes.type), doc_ids=excluded.doc_ids, updated_at=excluded.updated_at`,
-  ).bind(id, label.trim(), type ?? null, JSON.stringify(docIds), now).run();
+        type=COALESCE(excluded.type, nodes.type), doc_ids=excluded.doc_ids,
+        updated_at=excluded.updated_at, collection=excluded.collection`,
+  ).bind(id, label.trim(), type ?? null, JSON.stringify(docIds), now, collection).run();
   return id;
 }
 
-export interface UpsertResult { nodes: number; edges: number; }
+export interface UpsertResult { nodes: number; edges: number; collection: string; }
 
-export async function upsertTriples(env: GraphEnv, triples: Triple[]): Promise<UpsertResult> {
+export async function upsertTriples(
+  env: GraphEnv, triples: Triple[], collectionRaw?: string,
+): Promise<UpsertResult> {
+  const defaultColl = resolveWriteCollection(collectionRaw);
   const nodeIds = new Set<string>();
   let edgeCount = 0;
   for (const t of triples) {
     if (!t.subject || !t.predicate || !t.object) continue;
-    const sId = await upsertNode(env, t.subject, t.subject_type, t.doc_id);
-    const oId = await upsertNode(env, t.object, t.object_type, t.doc_id);
+    const collection = t.collection ? resolveWriteCollection(t.collection) : defaultColl;
+    const sId = await upsertNode(env, collection, t.subject, t.subject_type, t.doc_id);
+    const oId = await upsertNode(env, collection, t.object, t.object_type, t.doc_id);
     nodeIds.add(sId); nodeIds.add(oId);
-    const eId = await edgeId(sId, t.predicate, oId);
+    const eId = await edgeId(collection, sId, t.predicate, oId);
     const now = Date.now();
     await env.DB.prepare(
-      `INSERT INTO edges (id, subject, predicate, object, doc_id, evidence, weight, updated_at)
-       VALUES (?,?,?,?,?,?,1,?)
+      `INSERT INTO edges (id, subject, predicate, object, doc_id, evidence, weight, updated_at, collection)
+       VALUES (?,?,?,?,?,?,1,?,?)
        ON CONFLICT(id) DO UPDATE SET weight = edges.weight + 1,
          doc_id = COALESCE(excluded.doc_id, edges.doc_id),
-         evidence = COALESCE(excluded.evidence, edges.evidence), updated_at = excluded.updated_at`,
-    ).bind(eId, sId, t.predicate, oId, t.doc_id ?? null, t.evidence ?? null, now).run();
+         evidence = COALESCE(excluded.evidence, edges.evidence),
+         updated_at = excluded.updated_at, collection = excluded.collection`,
+    ).bind(eId, sId, t.predicate, oId, t.doc_id ?? null, t.evidence ?? null, now, collection).run();
     edgeCount++;
   }
-  return { nodes: nodeIds.size, edges: edgeCount };
+  return { nodes: nodeIds.size, edges: edgeCount, collection: defaultColl };
 }
 
 export interface GraphEdge {
   subject: string; predicate: string; object: string;
   doc_id?: string | null; evidence?: string | null; weight: number;
+  collection?: string | null;
 }
 
-async function edgesTouching(env: GraphEnv, ids: string[]): Promise<GraphEdge[]> {
+async function edgesTouching(env: GraphEnv, ids: string[], collection: string): Promise<GraphEdge[]> {
   if (!ids.length) return [];
   const ph = ids.map(() => "?").join(",");
   const rows = await env.DB.prepare(
-    `SELECT subject, predicate, object, doc_id, evidence, weight FROM edges
-     WHERE subject IN (${ph}) OR object IN (${ph})
+    `SELECT subject, predicate, object, doc_id, evidence, weight, collection FROM edges
+     WHERE collection = ? AND (subject IN (${ph}) OR object IN (${ph}))
      ORDER BY weight DESC LIMIT 500`,
-  ).bind(...ids, ...ids).all();
+  ).bind(collection, ...ids, ...ids).all();
   return ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => ({
     subject: String(r["subject"]), predicate: String(r["predicate"]), object: String(r["object"]),
     doc_id: (r["doc_id"] as string) ?? null, evidence: (r["evidence"] as string) ?? null,
     weight: Number(r["weight"] ?? 1),
+    collection: (r["collection"] as string) ?? collection,
   }));
 }
 
-/** N-hop neighbour expansion from one entity (BFS over the undirected edge set). */
+/** N-hop neighbour expansion from one entity (BFS over the undirected edge set). Collection-scoped. */
 export async function neighbors(
-  env: GraphEnv, entity: string, hops = 1, limit = 100,
-): Promise<{ center: string; found: boolean; edges: GraphEdge[]; entities: string[] }> {
-  const start = nodeKey(entity);
-  const node = await env.DB.prepare(`SELECT id FROM nodes WHERE id = ?`).bind(start).first<{ id: string }>();
-  if (!node) return { center: start, found: false, edges: [], entities: [] };
+  env: GraphEnv, entity: string, hops = 1, limit = 100, collectionRaw?: string,
+): Promise<{ center: string; found: boolean; collection: string; edges: GraphEdge[]; entities: string[] }> {
+  const collection = requireCollection(collectionRaw, "graph_neighbors");
+  const start = nodeKey(collection, entity);
+  const node = await env.DB.prepare(`SELECT id FROM nodes WHERE id = ? AND collection = ?`)
+    .bind(start, collection).first<{ id: string }>();
+  if (!node) return { center: start, found: false, collection, edges: [], entities: [] };
 
   const visited = new Set<string>([start]);
   let frontier = [start];
   const allEdges: GraphEdge[] = [];
   const h = Math.min(Math.max(hops, 1), 3);
   for (let d = 0; d < h && frontier.length; d++) {
-    const es = await edgesTouching(env, frontier);
+    const es = await edgesTouching(env, frontier, collection);
     const next: string[] = [];
     for (const e of es) {
       allEdges.push(e);
@@ -129,23 +139,44 @@ export async function neighbors(
     frontier = next;
     if (allEdges.length >= limit) break;
   }
-  // de-dupe edges
   const seen = new Set<string>();
   const edges = allEdges.filter((e) => {
     const k = `${e.subject}|${e.predicate}|${e.object}`;
     if (seen.has(k)) return false; seen.add(k); return true;
   }).slice(0, limit);
-  return { center: start, found: true, edges, entities: [...visited] };
+  return { center: start, found: true, collection, edges, entities: [...visited] };
 }
 
-/** Induced subgraph: edges whose BOTH endpoints fall in the given entity set. */
-export async function subgraph(env: GraphEnv, entities: string[], limit = 200): Promise<{ edges: GraphEdge[]; entities: string[] }> {
-  const keys = entities.map(nodeKey);
-  if (keys.length < 1) return { edges: [], entities: [] };
-  const es = await edgesTouching(env, keys);
+/** Induced subgraph: edges whose BOTH endpoints fall in the given entity set. Collection-scoped. */
+export async function subgraph(
+  env: GraphEnv, entities: string[], limit = 200, collectionRaw?: string,
+): Promise<{ collection: string; edges: GraphEdge[]; entities: string[] }> {
+  const collection = requireCollection(collectionRaw, "subgraph");
+  const keys = entities.map((e) => nodeKey(collection, e));
+  if (keys.length < 1) return { collection, edges: [], entities: [] };
+  const es = await edgesTouching(env, keys, collection);
   const keySet = new Set(keys);
   const edges = es.filter((e) => keySet.has(e.subject) && keySet.has(e.object)).slice(0, limit);
-  return { edges, entities: keys };
+  return { collection, edges, entities: keys };
 }
 
-export const __testing = { nodeKey, edgeId };
+/** Edges sourced from a set of documents, ranked by weight (doc-scoped graph context). */
+export async function edgesByDocs(
+  env: GraphEnv, docIds: string[], limit: number, collection: string,
+): Promise<GraphEdge[]> {
+  const ids = [...new Set(docIds)].filter(Boolean);
+  if (!ids.length) return [];
+  const ph = ids.map(() => "?").join(",");
+  const rows = await env.DB.prepare(
+    `SELECT subject, predicate, object, doc_id, evidence, weight, collection FROM edges
+     WHERE collection = ? AND doc_id IN (${ph}) ORDER BY weight DESC LIMIT ?`,
+  ).bind(collection, ...ids, limit).all();
+  return ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    subject: String(r["subject"]), predicate: String(r["predicate"]), object: String(r["object"]),
+    doc_id: (r["doc_id"] as string) ?? null, evidence: (r["evidence"] as string) ?? null,
+    weight: Number(r["weight"] ?? 1),
+    collection: (r["collection"] as string) ?? collection,
+  }));
+}
+
+export const __testing = { nodeKey, edgeId, LEGACY_COLLECTION };

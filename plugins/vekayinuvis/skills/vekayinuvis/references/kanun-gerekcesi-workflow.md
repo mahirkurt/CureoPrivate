@@ -8,7 +8,7 @@
 >
 > Bu dosya beş bölümden oluşur: (1) girdi spektrumu, (2) beş-katmanlı
 > zincir mantığı, (3) paralel-çağrı seti, (4) TBMM-uyumlu çıktı şablonu,
-> (5) `lex-sanitas` ile composable akış + ek kalite kapıları (G7-G8).
+> (5) `cureolex` ile composable akış + ek kalite kapıları (G7-G8).
 
 ---
 
@@ -275,7 +275,7 @@ fondlarına yönlendirme. Hangi belgelerin fiilî tetkiki gereklidir.
 
 ---
 
-## 5. lex-sanitas ile Composable Akış ve G7-G8 Kalite Kapıları
+## 5. cureolex ile Composable Akış ve G7-G8 Kalite Kapıları
 
 ### 5.1 Composable Zincir
 
@@ -288,7 +288,7 @@ fondlarına yönlendirme. Hangi belgelerin fiilî tetkiki gereklidir.
    - Sentez
    - Kaynakça
    ↓
-[lex-sanitas] kanun teklifi madde madde drafting
+[cureolex] kanun teklifi madde madde drafting
    - Madde 1, 2, 3... + her madde için ayrı gerekçe
    - Geçici maddeler
    - Yürürlük ve yürütme maddeleri
@@ -345,7 +345,7 @@ Mahir Bey'in **1219 sayılı Kanun reform teklifi** için tipik komut:
 > L1'den L5'e tam zincir; L2'de 1861 Tabâbet-i Belediye Nizamnâmesi, L3'te
 > 1871 İdâre-i Umûmiye-i Tıbbıye + Karantina Nizamnâmeleri, 1888 Memleket
 > Etibbâsı Nizamnâmesi; L4'te 14 Nisan 1928 müzakere zaptı derinlemesine;
-> 1908 sonrası dönem için [T-doğrulanmamış] etiketi ile boşluk; lex-sanitas
+> 1908 sonrası dönem için [T-doğrulanmamış] etiketi ile boşluk; cureolex
 > için drafting altyapısı olarak kullanılabilir taslak."*
 
 Bu komutta skill paralel olarak şu çağrıları yapar:
@@ -375,7 +375,7 @@ Bu komutta skill paralel olarak şu çağrıları yapar:
 9. `search_semantic("Ottoman medical regulation Tanzimat modernization comparative")`
    → uluslararası karşılaştırmalı literatür
 
-Çıktı, doğrudan lex-sanitas'a beslenecek beş-katmanlı bir markdown
+Çıktı, doğrudan cureolex'a beslenecek beş-katmanlı bir markdown
 taslağıdır; **L3 (II. Meşrutiyet) katmanı için açık [T-boşluk] beyanı**
 zorunlu olarak yer alır. G7 (G7.e dahil) ve G8 kapılarından geçtikten
 sonra TBMM Sağlık, Aile, Çalışma ve Sosyal İşler Komisyonu'na

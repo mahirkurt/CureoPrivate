@@ -2,14 +2,16 @@
   "_comment": "evidentia MCP tool-surface contract — the COMMITTED expectation that `python3 scripts/g_tools.py` checks against live. Regenerate deliberately with `--update` (under `doppler run`, so gated connectors are included) and review the diff: a vanished tool is a capability the skill may still be documenting.",
   "servers": {
     "anamnesis": {
-      "version": "1.1.0",
-      "tool_count": 8,
+      "version": "1.2.0",
+      "tool_count": 10,
       "tools": [
         "corpus_stats",
+        "forget_collection",
         "forget_document",
         "graph_neighbors",
         "hybrid_query",
         "ingest_document",
+        "list_docs",
         "semantic_search",
         "subgraph",
         "upsert_triples"
@@ -142,38 +144,6 @@
         "terminology_diff",
         "terminology_versions",
         "validate_codes"
-      ]
-    },
-    "mevzuat-bilgisi": {
-      "version": "3.2.4",
-      "tool_count": 26,
-      "tools": [
-        "get_cbbaskankarar_content",
-        "get_cbgenelge_content",
-        "get_mevzuat_content",
-        "get_mevzuat_gerekce",
-        "get_mevzuat_madde_tree",
-        "get_teblig_content",
-        "search_cbbaskankarar",
-        "search_cbgenelge",
-        "search_cbk",
-        "search_cbyonetmelik",
-        "search_kanun",
-        "search_khk",
-        "search_kurum_yonetmelik",
-        "search_mevzuat",
-        "search_teblig",
-        "search_tuzuk",
-        "search_within_cbbaskankarar",
-        "search_within_cbgenelge",
-        "search_within_cbk",
-        "search_within_cbyonetmelik",
-        "search_within_kanun",
-        "search_within_khk",
-        "search_within_kurum_yonetmelik",
-        "search_within_mevzuat",
-        "search_within_teblig",
-        "search_within_tuzuk"
       ]
     },
     "nih-clinicaltables": {

@@ -12,14 +12,14 @@
 
 ### A. Akademik çekirdek (6) — HER substantif sorguda ateşlenir
 
-| Server | Anahtar | Rol |
-|---|---|---|
-| `openalex` | `OPENALEX_MCP_API_KEY` | **Taşıyıcı graf.** Tıp tarihi literatürünün büyük kısmı beşeri bilimler dergilerindedir ve PubMed'de görünmez. Topic'ler: T12324 · T12990 · T14475 · T12778 |
-| `pubmed-epmc` | `PUBMED_MCP_API_KEY` | **Dönem kilidi.** MeSH `K01.400` tarih ağacı + `Historical Article` yayın tipi |
-| `semantic-scholar` | `SEMANTICSCHOLAR_MCP_API_KEY` | Bağımsız ikinci indeks (çapraz doğrulama) |
-| `paper-search` | — (Smithery userConfig) | **Monograf katmanı** — Google Scholar + CrossRef |
-| `consensus` | — (OAuth) | Tartışmalı tarihyazımı iddialarında sentez |
-| `scholar-gateway` | — (OAuth) | Pasaj-düzeyi atıf doğrulaması |
+| Server | URL | Anahtar | Rol |
+|---|---|---|---|
+| `openalex` | `https://openalex.cureonics.com/mcp` | `OPENALEX_MCP_API_KEY` | **Taşıyıcı graf.** Tıp tarihi literatürünün büyük kısmı beşeri bilimler dergilerindedir ve PubMed'de görünmez. Topic'ler: T12324 · T12990 · T14475 · T12778 |
+| `pubmed-epmc` | `https://pubmed.cureonics.com/mcp` | `PUBMED_MCP_API_KEY` | **Dönem kilidi.** MeSH `K01.400` tarih ağacı + `Historical Article` yayın tipi |
+| `semantic-scholar` | `https://semanticscholar.cureonics.com/mcp` | `SEMANTICSCHOLAR_MCP_API_KEY` | Bağımsız ikinci indeks (çapraz doğrulama) |
+| `paper-search` | — | — (Smithery userConfig) | **Monograf katmanı** — Google Scholar + CrossRef |
+| `consensus` | — | — (OAuth) | Tartışmalı tarihyazımı iddialarında sentez |
+| `scholar-gateway` | — | — (OAuth) | Pasaj-düzeyi atıf doğrulaması |
 
 ### B. Birincil kaynak (2)
 
@@ -36,8 +36,8 @@
 | 4 (son çare) | `annas-reader` | `ANNAS_MCP_API_KEY` | 9 araç (2026-08-14): bounded reader akışı; orijinal PDF/EPUB/etc. `download_document(id=DOI\|MD5)` |
 
 Her iki dosya aracı kısa-ömürlü opaque `resource_link` + checksum/provenance döndürür.
-Link derhal tüketilir, kalıcı URL diye saklanmaz; uzun belge `histmed:` doc_id ile
-anamnesis'e ingest edilir. Anna's yalnız lisanslı bant başarısız olduktan sonra ve analiz
+Link derhal tüketilir, kalıcı URL diye saklanmaz; uzun belge `hmrun:<12hex>:<kanonik>`
+doc_id + `collection=histmed:run:<12hex>` ile anamnesis'e ingest edilir. Anna's yalnız lisanslı bant başarısız olduktan sonra ve analiz
 amacıyla kullanılır.
 
 ### D. Tarihsel yasama (6)
@@ -70,7 +70,8 @@ iddia taşıyamaz.
 
 ### H. Substrat (1)
 
-`anamnesis` (`ANAMNESIS_MCP_API_KEY`) — doc_id ön-eki **`histmed:`** zorunlu.
+`anamnesis` (`ANAMNESIS_MCP_API_KEY`) — collection **`histmed:run:<12hex>`**,
+doc_id **`hmrun:<12hex>:<kanonik>`** zorunlu (`doc_scope` yok; kapsamsız hybrid DENY).
 
 ---
 

@@ -57,7 +57,7 @@ kategori tarama, çoklu-fon karşılaştırma, portföy inşası (öneri) ve sü
 | "portföy kur / fon tahsisi" | /fon-portfoy → Mod 4 |
 | "fonlarımı izle / ne değişti" | /fon-izle → Mod 5 |
 
-**Scope dışı:** Tekil hisse/tahvil analizi → `bist-analyst`. Mevzuat reformu → `lex-sanitas`.
+**Scope dışı:** Tekil hisse/tahvil analizi → `bist-analyst`. Mevzuat reformu → `cureolex`.
 Bireysel vergi/SGK → kapsam dışı. Kişiselleştirilmiş "şu kadar al" → karar-destek diline
 çevir (regulasyon-uyum). Gün-içi/scalping → kapsam dışı (veri EOD).
 

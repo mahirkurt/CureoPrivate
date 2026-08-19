@@ -1,4 +1,10 @@
-# medical-research v8.5 — Deliverable Index
+# medical-research v9.0.2 — Deliverable Index
+
+**v9.0.2 (Aug 2026) — Ordered PRISMA tool playbook.** `references/execution-map.md` binds
+MUST/SHOULD/MAY/OUT + `SKIP-REASON` for all **19 bundled servers + 9 companions**. Completeness
+Gate requires skip reasons. **who-gho / globocan / ema** are native (IHME/GBD still gap).
+Anamnesis exclusive-run (`collection=evidentia:run:<id>` + `evrun:`) hybrid is P4/P6 MUST after
+ingest. New gate **G-PLAYBOOK**. Plugin version stays **2.7.2**.
 
 **v8.5.0 (Jun 2026) — Extended-Tier Promotion & Epidemiology Wiring.** The Extended Tier-K connectors
 (`med-terminologies`, `nih-clinicaltables`, `nlm-rxnorm`, `iuphar-gtopdb`) are promoted to **first-class**
@@ -60,7 +66,7 @@ the skill, install the `evidentia` plugin (or copy into your saved skill repo) �
 | `references/connector-registry.md` | Verified tool table (replaces `connector-api.md`); native-first ladder; per-connector notes; §6.3P third-party trust | ✅ current |
 | `references/knowledge-map.md` | **v8.3** semantic coverage index (drives Adım 0.4); always-load | ✅ current |
 | `references/drug-intelligence-layer.md` | Real AdisInsight schema (`search_drugs`/`get_drug` HyDE/`generate_chart`); v7.1 fictional schema removed | ✅ current |
-| `references/turkiye-layer.md` | TİTCK 15+ native tools + Mevzuat + TÜRKPATENT + YÖK (native TR sources, no web scraping) | ✅ current |
+| `references/turkiye-layer.md` | TİTCK 15+ native tools + TÜRKPATENT + YÖK (native TR sources, no web scraping; SUT/mevzuat → cureolex) | ✅ current |
 | `references/regulatory-intelligence.md` | Native openFDA + WHO ICD-11 (via openfda Worker); no-API burden/guideline sources = documented gap | ✅ current |
 | `references/fulltext-retrieval.md` | Full-text cascade (legal-first 6-tier): EPMC PMC OA → Paper Search → OpenAthens/Millet Kütüphanesi (Tier 3 licensed) → Wiley (Tier 4) → annas-mcp (Tier 5 last resort) → pubmed-epmc Unpaywall (Tier 6) | ✅ current |
 | `references/report-presentation.md` | v8.1 clean-copy doctrine; `<!-- VIZ -->`/`<!-- OPS -->` isolation; finalization gate G1–G7 | ✅ current |

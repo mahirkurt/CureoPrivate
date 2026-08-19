@@ -353,9 +353,9 @@ task/polling mantığı yerine devarsiv'in **kendi sync/async kuralı** uygulan�
     ↓ done'da TEK SEFER
     devarsiv_ocr_result(job_id, include_text=true)
     ↓
-    anamnesis ingest_document(doc_id="devarsiv:<code>", …)
+    anamnesis ingest_document(collection=vekayinuvis:run:<12hex>, doc_id="vkrun:<12hex>:devarsiv:<code>", …)
     ↓
-    sonraki sorgular anamnesis hybrid_query (bağlam ekonomisi)
+    sonraki sorgular anamnesis hybrid_query(collection=…) (bağlam ekonomisi; atıf doc_id::idx)
 ```
 
 `stale` dönerse **aynı parametrelerle resubmit** (arşiv PDF yerel; maliyet

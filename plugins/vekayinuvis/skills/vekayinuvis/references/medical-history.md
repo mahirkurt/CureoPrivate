@@ -984,4 +984,4 @@ temel `vekayinuvis` komutu şu olabilir:
 > sayılı Kanun (RG S.863, 14.4.1928); 1908 sonrası dönem için
 > [T-doğrulanmamış] etiketiyle açık boşluk; L5'te Türkiye AB üyesi
 > olmadığı için yumuşak baskı niteliğinde 2005/36 ve 2013/55
-> direktifleri; çıktıyı lex-sanitas'a drafting altyapısı olarak ver."*
+> direktifleri; çıktıyı cureolex'a drafting altyapısı olarak ver."*

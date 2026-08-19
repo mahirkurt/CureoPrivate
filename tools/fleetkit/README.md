@@ -11,7 +11,7 @@ Her plugin'in MCP filosu **tek bir `plugins/<ad>/fleet.yaml`** dosyasında tanı
 | Plugin · server | Kök neden |
 |---|---|
 | `edupedia · maarif-mufredat` | Plugin'in OTORİTE kaynağı (105 MEB ders kitabı); preflight onu *"authless"* ilan ettiği için arızayı bildiremiyordu |
-| `evidentia · titck-cache` | 2026-08-02 TİTCK kapılanması bu plugin'de kaçırıldı (`rxpraxis` düzeltilmiş, `lex-sanitas` + `evidentia` atlanmış) |
+| `evidentia · titck-cache` | 2026-08-02 TİTCK kapılanması bu plugin'de kaçırıldı (`rxpraxis` düzeltilmiş, `cureolex` + `evidentia` atlanmış) |
 | `vekayinuvis · tavily` | `TAVILY_API_KEY` Doppler'da vardı, wire'a hiç girmemişti |
 
 **2. Sapmış codex blokları (2).** `brand-ecosystem-core`'un `.codex-plugin` bloğu 7 gerçek server'ın **hiçbirini** taşımıyordu; buna karşılık var olmayan `exa`/`figma`/`godaddy`'yi ilan ediyordu. `evidentia`'nın `openathens` rol metni 11 gün eskiydi.
@@ -35,13 +35,13 @@ Hiçbiri bir teste takılmıyordu, çünkü hiçbiri türetilmiyordu.
 
 ### `check_tools.py` neden ayrı bir kapı
 
-`audit_plugins.py` her uca yalnız `initialize` gönderir. 200 dönen sunucu "sağlıklı" sayılır — ama **sağlık ≠ işlevsellik**. 2026-08-07 ölçümünde dokuz plugin'in tamamı `initialize` düzeyinde temizken `lex-sanitas` üç FANTOM araç beyan ediyordu: `titck.search_medical_devices` (TİTCK'in 66 aracının hiçbiri cihaz aracı değil — kategori hatası), `eudamed_search_actors` ve `eudamed_probe` (canlı yüzeyde yok). Beyan `.mcp.json`'daki `_role` alanına aktığı için bu, modelin gördüğü canlı wiring'de duruyordu.
+`audit_plugins.py` her uca yalnız `initialize` gönderir. 200 dönen sunucu "sağlıklı" sayılır — ama **sağlık ≠ işlevsellik**. 2026-08-07 ölçümünde dokuz plugin'in tamamı `initialize` düzeyinde temizken `cureolex` üç FANTOM araç beyan ediyordu: `titck.search_medical_devices` (TİTCK'in 66 aracının hiçbiri cihaz aracı değil — kategori hatası), `eudamed_search_actors` ve `eudamed_probe` (canlı yüzeyde yok). Beyan `.mcp.json`'daki `_role` alanına aktığı için bu, modelin gördüğü canlı wiring'de duruyordu.
 
 ```bash
 # envanter karşılaştırması
-doppler run -- python3 tools/fleetkit/check_tools.py lex-sanitas
+doppler run -- python3 tools/fleetkit/check_tools.py cureolex
 # + argümansız salt-okunur araçları GERÇEKTEN çağır
-doppler run -- python3 tools/fleetkit/check_tools.py lex-sanitas --call
+doppler run -- python3 tools/fleetkit/check_tools.py cureolex --call
 ```
 
 `--call` katı bir allowlist kullanır (yalnız envanter/kimlik uçları) — yazan, indiren veya ücret doğuran hiçbir araç çağrılmaz.
@@ -96,6 +96,8 @@ servers:
     url: https://mevzuat.cureonics.com/mcp
     tier: primary              # serbest metin — her plugin kendi taksonomisini kullanır
     auth_env: MEVZUAT_MCP_API_KEY   # null ⇒ public (anahtarsız 200 BEKLENİR)
+                                    # Claude/Codex: Bearer ${VAR}
+                                    # Cursor:        Bearer ${env:VAR}  (.cursor-plugin/mcp.json)
     role: >-                   # ops. — .mcp.json _role notu
       …
     shard: S1                  # ops. — alt-ajan araç kısıtı için
@@ -104,14 +106,24 @@ servers:
     extra:                     # ops. — ek _* alanları .mcp.json'a aynen geçer
       _probe: "…"
 
+  - name: biorxiv              # Hub-local paket — HTTP url YOK
+    type: stdio                # varsayılan `http`; `stdio` için command zorunlu
+    command: uv
+    args:
+      - --directory
+      - "${workspaceFolder:CureoHub}/mcp-servers/biorxiv-mcp"
+      - run
+      - biorxiv-mcp
+    auth_env: null             # stdio da auth_env ister (null = anahtarsız)
+
 companions: []                 # ops. — wire EDİLEMEZ dış connector'lar
 delegations: []                # ops. — zorunlu plugin delegasyonları
 generated_blocks: []           # ops. — ⟨GEN⟩ hedefleri (dosya + üretici + config)
 mcp_comment: >-                # ops. — .mcp.json _comment'ine eklenir
 ```
 
-`tier` **serbest metindir**: `lex-sanitas` `primary`/`comparative`/`doctrine`, `evidentia` `K`/`K-epi`/`O` kullanır. Sabit bir liste dayatmak mevcut sözlükleri yeniden yazmak olurdu.
+`tier` **serbest metindir**: `cureolex` `primary`/`comparative`/`doctrine`, `evidentia` `K`/`K-epi`/`O` kullanır. Sabit bir liste dayatmak mevcut sözlükleri yeniden yazmak olurdu.
 
 ## Uyarı
 
-`bootstrap_fleet.py --all --force` **reddedilir** — elle yazılmış bir `fleet.yaml`'i sessizce ezer (`lex-sanitas`'ta bir kez oldu; `companions`/`delegations`/`generated_blocks` kayboldu). Ezmek istediğiniz plugin'i **adıyla** verin.
+`bootstrap_fleet.py --all --force` **reddedilir** — elle yazılmış bir `fleet.yaml`'i sessizce ezer (`cureolex`'ta bir kez oldu; `companions`/`delegations`/`generated_blocks` kayboldu). Ezmek istediğiniz plugin'i **adıyla** verin.

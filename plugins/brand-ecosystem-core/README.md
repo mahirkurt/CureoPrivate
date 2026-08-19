@@ -82,7 +82,7 @@ chosen entries into a plugin `.mcp.json` or connect them in Claude.ai.
 This ecosystem produces strategy and specification text. It defers all
 HTML/print/deck rendering to `carbon-html-report` (A4 brand book), `carbon-pptx`
 (deck) and `docx`. For any regulated-sector brand (pharma, health, finance,
-legal), route promotional-claim review to `promo-censor` / `lex-sanitas`.
+legal), route promotional-claim review to `promo-censor` / `cureolex`.
 
 ## Manifests (SMP dual-compatibility)
 

@@ -258,7 +258,7 @@ ile birlikte kullanın — yalnız SKILL.md'de tek-satırlık not farkı bekleni
   (garanti değişmedi; playbook silindi, kaynak CureoHub git geçmişinde).
 - **v1.2 — carbon-pptx / carbon-html-report otomatik devri:** Aşama 6 raporunun
   `composes_with_external` üzerinden otomatik sunum/HTML rapor üretimine bağlanması.
-- **v1.3 — lex-sanitas regülatuar-reform köprüsü:** TR_REGULATORY_FLOW çıktısının mevzuat-reform
+- **v1.3 — cureolex regülatuar-reform köprüsü:** TR_REGULATORY_FLOW çıktısının mevzuat-reform
   analizine devri.
 
 ---

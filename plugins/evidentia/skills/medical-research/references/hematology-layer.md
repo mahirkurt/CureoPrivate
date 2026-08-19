@@ -29,7 +29,7 @@ WHO-HAEM5, ICC-2022, ELN-2022, IPSS-M, IMWG, Lugano, IWCLL.
 - Pivotal RCTs (Tier 2): NEJM/Lancet Haematol/Blood/JCO/Leukemia. **ASH/EHA** abstracts = Tier-6 context.
 - AdisInsight (`search_drugs`/`get_drug`) for bispecific/CAR-T/ADC pipeline + regulatory history
   (e.g., glofitamab/Columvi STARGLO + ODAC + FDA CRL). CT.gov for active trials by sponsor.
-- **TR access (§5):** TİTCK biosimilar/reference group + reimbursement; SUT heme protocols (Mevzuat).
+- **TR access (§5):** TİTCK biosimilar/reference group + reimbursement. SUT heme protocols are a documented gap (hand off to `cureolex`).
 
 ## 4. Appraisal checklist (heme-specific)
 - Transplant-eligibility stratification (consolidation context).

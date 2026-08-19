@@ -294,6 +294,8 @@ def audit(plugin_dir, only=None, do_call=False):
 
     def run(t):
         n, url, env, declared, smoke_spec = t
+        if not url:
+            return n, declared, None, "stdio — HTTP tools/list yok", None
         key = os.environ.get(env) if env else None
         if env and not key:
             return n, declared, None, f"${env} ortamda yok", None
@@ -350,6 +352,6 @@ def audit(plugin_dir, only=None, do_call=False):
 if __name__ == "__main__":
     flags = {a for a in sys.argv[1:] if a.startswith("-")}
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    plugin = args[0] if args else "lex-sanitas"
+    plugin = args[0] if args else "cureolex"
     only = set(args[1:]) or None
     sys.exit(audit(ROOT / "plugins" / plugin, only, do_call="--call" in flags))

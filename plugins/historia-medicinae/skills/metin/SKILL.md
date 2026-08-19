@@ -34,7 +34,8 @@ view ../historia-medicinae/references/source-typology.md
    (Hipokrat `tlg0627`, Galen `tlg0057`).
 5. **Oku ve alıntıla** — terim üçlüsü (özgün + çeviriyazı + açıklama); hastalık tarifleri
    **modern etikete çevrilmez** (dört kapı kuralı).
-6. **Büyük metin** → `anamnesis` ingest (`histmed:` ön-eki) → sınırlı sorgu. Ham döküm yok.
+6. **Büyük metin** → `anamnesis` ingest (`collection=histmed:run:<12hex>` +
+   `doc_id=hmrun:<12hex>:<kanonik>`) → `hybrid_query(collection=…)`. Ham döküm yok.
 
 ## Osmanlıca / Arap harfli el yazması
 

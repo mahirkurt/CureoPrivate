@@ -14,14 +14,19 @@ bağlamına girince devreye girer ve çıktı SR raporuna **işaretli ek (KOL ek
 
 ## Kademe
 
-1. **Yayın tabanı (OpenAlex REST).** Alan/molekül için en üretken/etkili yazarlar; kurum,
-   atıf, son-yazarlık sinyalleri. (`extended-api.md` OpenAlex; kanonik `kol_graph` artefaktı.)
-2. **Semantic Scholar Graph.** Yazar disambiguasyonu + atıf/h-index + ortak-yazar kenarları.
-3. **EuropePMC.** Yazar-bağlı yayın doğrulama (native `search`); klinik-çalışma yazarlığı.
-4. **ABD PI doğrulama (NPI).** ABD klinisyen-KOL'ler için `npi_search`/`npi_lookup`/`npi_validate`
-   — uzmanlık + lokasyon teyidi (sahip olmak ruhsat/aktiflik **garanti etmez** — not düş).
-5. **Türk akademisyen katmanı (YÖK Akademik).** TR KOL'ler için `yok-akademik` — **YÖK Tez'den
-   FARKLI**: h-index, ortak-yazar ağı, yayın, danışmanlık tezleri, kurum. (Tier-O Worker.)
+Sıra bağlayıcı (`execution-map.md` P7 KOL). Native MCP first — OpenAlex **REST değil**.
+
+1. **OpenAlex (bundled).** `openalex_resolve_name` → `openalex_search_entities` /
+   `openalex_get_citation_graph` — üretken/etkili yazarlar, ORCID/ROR, atıf. Kanonik `kol_graph`.
+2. **Semantic Scholar (bundled).** `get_author` / `get_paper_citations` — disambiguasyon +
+   influential citations.
+3. **pubmed-epmc / EuropePMC.** Yazar-bağlı yayın + klinik-çalışma yazarlığı.
+4. **ABD PI (NPI companion, directory).** US klinisyen-KOL: `npi_search`/`npi_lookup`/`npi_validate`.
+   Unloaded → `SKIP-REASON companion_unloaded`.
+5. **YÖK Akademik (bundled).** `yok_search(term=…)` ⚠️ `query` DEĞİL → `authorId` → `yok_get_*`.
+   YÖK Tez'den FARKLI.
+
+Unreachable MUST/SHOULD → `SKIP-REASON`; kimlik icat edilmez.
 
 ## Çıktı (KOL eki)
 
@@ -34,7 +39,8 @@ bağlamına girince devreye girer ve çıktı SR raporuna **işaretli ek (KOL ek
 
 - **Kimlik çapraz-doğrulama:** OpenAlex/S2 yazar-ID disambiguasyonu olmadan tek-isim eşleşmesi
   sunulMAZ (eş-isim riski).
-- **Native-first:** EPMC/YÖK Akademik native; OpenAlex/S2 REST. Tek-sefer (`kol_graph` paylaşılır).
+- **Native-first:** OpenAlex/S2 bundled MCP; EPMC/YÖK Akademik native. REST yalnız MCP yoksa
+  (`extended-api.md`). Tek-sefer (`kol_graph` paylaşılır).
 - **Kapsam sınırı:** KOL kimliklendirme yapısal akademik kaynaklardan (OpenAlex/S2/EPMC/NPI/YÖK) yapılır;
   OSINT/web rekabet sinyali kapsam dışı → `pharmaintel`. Erişilebilirlik/etki bağlamı klinik
   KOL-sıralamasının temeli değildir.

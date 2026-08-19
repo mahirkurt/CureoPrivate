@@ -6,34 +6,44 @@
  *   GET  /.well-known/oauth-*      -> OAuth discovery metadata (RFC 9728 / RFC 8414)
  *   *    /oauth/*                  -> OAuth authorize/token/register surface
  *   POST /mcp   (Streamable HTTP)  -> Bearer-gated MCP  (requireBearer)
- *   GET  /sse   (legacy SSE)       -> Bearer-gated MCP  (requireBearer)
+ *   /sse (retired)                 -> 410 + hint (DO SQL write-cap avoidance)
  *
  * Bindings (wrangler.jsonc): AI (Workers AI), VECTORIZE (Vectorize index, 1024-d cosine),
- * DB (D1), MCP_OBJECT (Durable Object -> Anamnesis). Tools are registered in init() so they
- * close over this.env (the canonical Cloudflare McpAgent pattern when tools need bindings).
+ * DB (D1), MCP_OBJECT (legacy empty DO shell — /mcp is stateless). Tools close over env
+ * via createMcpHandler(buildServer(env)).
  */
 
-import { McpAgent } from "agents/mcp";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerTools, type AnamEnv } from "./server.js";
+import { DurableObject } from "cloudflare:workers";
+import { createMcpHandler } from "agents/mcp";
+import { buildServer, type AnamEnv } from "./server.js";
 import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
-// serverInfo.version is fed from package.json so `initialize` can distinguish deployments.
-// Until 2026-08-08 every Worker advertised a hardcoded "1.0.0" that never moved, so the
-// handshake could not tell one deploy from another — the audit had to read wrangler output
-// instead. Bump package.json on a behaviour change and the wire reflects it.
-import pkg from "../package.json";
 
 export interface Env extends AuthEnv, AnamEnv {
   MCP_OBJECT: DurableObjectNamespace;
 }
 
-export class Anamnesis extends McpAgent<Env> {
-  server = new McpServer({ name: "anamnesis-mcp", version: pkg.version });
+/**
+ * Legacy SQLite DO class — exported so wrangler migrations stay valid.
+ * It is NOT on the /mcp hot path. Empty shell so a stray wake cannot
+ * run McpAgent._ensureSchema against the free-tier SQL write cap.
+ * Vectorize + D1 remain the durable stores for RAG/graph data.
+ */
+export class Anamnesis extends DurableObject<Env> {}
 
-  async init(): Promise<void> {
-    // tools need bindings (AI/VECTORIZE/DB) -> register here where this.env is available
-    registerTools(this.server, this.env as unknown as AnamEnv);
-  }
+// CORS for browser connectors (preflight() already covers OPTIONS; add headers on responses).
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET,POST,OPTIONS",
+  "access-control-allow-headers": "authorization,content-type,mcp-session-id,mcp-protocol-version,last-event-id",
+  "access-control-expose-headers": "mcp-session-id,www-authenticate",
+  "access-control-max-age": "86400",
+};
+
+function withCors(res: Response): Response {
+  if (res.status === 101) return res;
+  const h = new Headers(res.headers);
+  for (const [k, v] of Object.entries(CORS)) h.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 }
 
 export default {
@@ -50,21 +60,37 @@ export default {
     if (pf) return pf;
 
     if (p === "/health") {
-      return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
+      return withCors(new Response("ok", { status: 200, headers: { "content-type": "text/plain" } }));
     }
 
     if (p.startsWith("/.well-known/oauth") || p.startsWith("/oauth/")) {
-      return handleOAuth(req, env);
+      return withCors(await handleOAuth(req, env));
     }
 
-    if (p === "/mcp" || p === "/sse") {
+    // Prefix-match /sse so leftover clients are bearer-gated (then 410), not DO-routed.
+    if (p === "/mcp" || p.startsWith("/sse")) {
       const denied = requireBearer(req, env);   // 401 without a valid Bearer (unless MCP_ALLOW_NO_AUTH=1)
-      if (denied) return denied;
-      return p === "/sse"
-        ? Anamnesis.serveSSE("/sse").fetch(req, env, ctx)
-        : Anamnesis.serve("/mcp").fetch(req, env, ctx);
+      if (denied) return withCors(denied);
+      if (p.startsWith("/sse")) {
+        return withCors(
+          new Response(
+            JSON.stringify({
+              error: "sse_retired",
+              hint: "Use POST /mcp (Streamable HTTP, stateless). Durable Object SSE hit the free-tier SQL write cap.",
+            }),
+            { status: 410, headers: { "content-type": "application/json" } },
+          ),
+        );
+      }
+      // Stateless Streamable HTTP: fresh McpServer + WorkerTransport per request.
+      // sessionIdGenerator unset → no MCP session SQL; Vectorize/D1 remain durable.
+      const handler = createMcpHandler(buildServer(env), {
+        sessionIdGenerator: undefined,
+        enableJsonResponse: true,
+      });
+      return withCors(await handler(req, env, ctx));
     }
 
-    return new Response("not found", { status: 404, headers: { "content-type": "text/plain" } });
+    return withCors(new Response("not found", { status: 404, headers: { "content-type": "text/plain" } }));
   },
 };

@@ -23,6 +23,8 @@ description: >
 
 `medsearch` orchestrates **scientific/clinical evidence**: what does the hakemli literatür söylüyor. `pharmaintel` orchestrates **commercial, regulatory, pipeline, and catalyst intelligence**: who owns the asset, where does it stand regulatorily, what is the pipeline, what are the deal terms, when is the next readout, what does the competitive landscape look like. The two are complementary — in a typical deep-dive the pharmaintel layer establishes *the question's commercial/regulatory frame*, while medsearch answers *the scientific evidence base underneath it*.
 
+**Boundary with ICH MCP (M4/M8).** `ich-guidelines-mcp` is the **normative M4 (CTD) / M8 (eCTD) specification** surface (modules, granularity, regional Module 1 vs ICH Modules 2–5, specification versions, Q&A). pharmaintel remains **implementation / dossier-ops** (feasibility, agency status, what a sponsor actually filed). It does **not** claim ICH MCP will refuse M4/M8 format questions — those go to ICH MCP. pharmaintel does not duplicate a full eCTD XML/sequence validation engine.
+
 This skill is **claude.ai-native** and strictly **free-tier**: it does NOT depend on Bloomberg, Citeline, Cortellis, Evaluate Pharma Premium, IQVIA MIDAS, Patsnap, Refinitiv, FactSet, AlphaSense, STAT Plus, or any paid enterprise platform. Those are catalogued as "inaccessible (subscription)" in `references/sources-catalog.md` for explicit acknowledgement of limitations.
 
 ---

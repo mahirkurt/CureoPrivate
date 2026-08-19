@@ -275,4 +275,4 @@ yayınları). DergiPark'ta her birinin akademik incelemeleri bulunur.
 - 7 Şubat 1921 sayı 1 ile başlayan TC'nin resmî yasama yayını.
 - Erişim: <https://www.resmigazete.gov.tr> (tam dijital arşiv).
 - **vekayinuvis için**: Mevzuat MCP (`Mevzuat`) ve TİTCK MCP composable
-  olarak `lex-sanitas` ile çalışır.
+  olarak `cureolex` ile çalışır.

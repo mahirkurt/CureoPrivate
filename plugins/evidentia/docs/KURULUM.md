@@ -8,7 +8,7 @@
 > yaşar (aşağıda §Anahtar değerlerini alma).
 
 
-> **Güncel:** 2026-08-14 · evidentia plugin **v2.7.2** / flagship skill `medical-research` **v9.0.1**
+> **Güncel:** 2026-08-18 · evidentia plugin **v2.7.2** / flagship skill `medical-research` **v9.0.2**
 > · CureoPrivate `plugins/evidentia`
 > · **ChatGPT custom-connector uyumu** (orijinal **4 CF self-host Worker**, 2026-06-30 canlı doğrulandı; bkz. Kurulum yolu **C**)
 > · **openathens (HP self-host) full-text Tier-3**: 11 araç; metin + sağlayıcı-nötr orijinal PDF
@@ -40,9 +40,9 @@
 | **nih-clinicaltables** | `gateway.pipeworx.io/clinicaltables/mcp` | ❌ | — | Üçüncü-taraf keyless |
 | **nlm-rxnorm** | pipeworx gateway | ❌ | — | Üçüncü-taraf keyless |
 | **iuphar-gtopdb** | pipeworx gateway | ❌ | — | Üçüncü-taraf keyless |
-| **openalex** | caseyjhand.com | ❌ | — | Üçüncü-taraf kimliksiz keyless (yalnız kamusal bibliyografik veri) |
-| **pubmed-epmc** | caseyjhand.com | ❌ | — | Üçüncü-taraf kimliksiz keyless |
-| **semantic-scholar** | pipeworx gateway | ⚠️ ops. | `SEMANTIC_SCHOLAR_API_KEY` | Keyless çalışır; opsiyonel S2 anahtarı yalnız rate-limit yükseltir (sunucu tarafı) |
+| **openalex** | `openalex.cureonics.com/mcp` | ✅ | `OPENALEX_MCP_API_KEY` | CureoHub HP self-host `:8324` (Worker undeploy 2026-08-17) |
+| **pubmed-epmc** | `pubmed.cureonics.com/mcp` | ✅ | `PUBMED_MCP_API_KEY` | CureoHub HP self-host `:8325` (Worker undeploy 2026-08-17) |
+| **semantic-scholar** | `semanticscholar.cureonics.com/mcp` | ✅ | `SEMANTICSCHOLAR_MCP_API_KEY` | CureoHub HP self-host `:8323` (Worker undeploy 2026-08-17) |
 | **annas-reader** | `annas.cureonics.com/mcp` | ✅ | `ANNAS_MCP_API_KEY` | Operatör-bağlı HP self-host (Docker); static-Bearer veya OAuth. 9 araç: Tier-5 son çare okuma + `download_document(id=<DOI\|MD5>)`; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque link + SHA-256, yalnız analiz. |
 | **yok-akademik** | `yok-akademik.cureonics.com/mcp` | ✅ | `YOK_AKADEMIK_MCP_API_KEY` | Operatör-bağlı HP self-host; OAuth 2.1 + Bearer |
 | **openathens** (self-host) | `openathens.cureonics.com/mcp` | ✅ | `OPENATHENS_MCP_API_KEY` | Operatör-bağlı HP self-host (systemd); OAuth 2.1 + Bearer. 11 araç: tam-metin **Tier 3 LİSANSLI**; `oa_fetch_fulltext` + sağlayıcı-nötr `oa_fetch_pdf(doi\|url)` (kısa-ömürlü opaque link + PDF doğrulama/SHA-256; 100 MiB tavanı). annas'ın önünde, legal-öncelikli. |

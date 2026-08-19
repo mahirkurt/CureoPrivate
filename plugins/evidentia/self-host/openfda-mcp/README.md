@@ -7,7 +7,7 @@ the FDA **openFDA** API (`api.fda.gov`, keyless public REST).
 
 evidentia's medical-evidence regulatory needs are **openFDA + ICD-11**. ICD-11 is already served
 keyless by the `med-terminologies` connector (`icd11_search`). The broad comparative-legal
-connector (Lex-Sanitas) carried ~40 legislation tools that are noise for clinical evidence, so it
+connector (Cureolex) carried ~40 legislation tools that are noise for clinical evidence, so it
 was dropped from the roster. This Worker re-expresses **only** the openFDA surface as the typed
 tool `openfda_search` — the exact tool name `medical-research` already calls — so no skill change
 is needed.

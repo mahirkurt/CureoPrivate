@@ -50,4 +50,4 @@ Tarihsel mortalite serileri için `kaynak-elestirisi` skill'i zorunlu.
 G0 manifestosu · yasa künyeleri tam (numara, tarih, yayın kaydı) · müzakere alıntıları
 konuşmacı + tarih + sütun/sayfa ile · niyet/uygulama ayrımı görünür.
 
-⚠️ Yürürlükteki TR normu sorulursa → `lex-sanitas` delegasyonu.
+⚠️ Yürürlükteki TR normu sorulursa → `cureolex` delegasyonu.

@@ -14,7 +14,7 @@ beyanının dışına çıkarsa bulgu üretir; beyanına uyuyorsa (401 dâhil, �
 kapılı MCP uçları 401'i BEKLENEN olarak bildirir) temizdir.
 
 `on_failure: degrade_and_label` sözleşmesi gereği bu koşucunun bulgusu
-lex-sanitas ÇIKTISINI durdurmaz — bakım sinyalidir. Bu yüzden varsayılan çıkış
+cureolex ÇIKTISINI durdurmaz — bakım sinyalidir. Bu yüzden varsayılan çıkış
 kodu 0'dır; CI'da sertleştirmek için `--strict`.
 """
 import ssl
@@ -28,7 +28,7 @@ from urllib.parse import urljoin
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-SPEC = (ROOT / "plugins" / "lex-sanitas" / "skills" / "lex-sanitas"
+SPEC = (ROOT / "plugins" / "cureolex" / "skills" / "cureolex"
         / "programmatic_source_healthcheck.yaml")
 
 
@@ -50,7 +50,7 @@ def probe(ep, defaults):
     method = ep.get("method", "GET").upper()
     expect = ep.get("expected_status") or [200]
     timeout = ep.get("timeout_seconds", defaults.get("timeout_seconds", 15))
-    ua = defaults.get("user_agent", "lex-sanitas-healthcheck/1.0")
+    ua = defaults.get("user_agent", "cureolex-healthcheck/1.0")
     # Sözleşme POST diyen uçlar MCP'dir; boş gövde yerine geçerli bir JSON-RPC
     # zarfı gider — aksi hâlde sağlıklı sunucu 400 döner ve sahte bulgu olur.
     data = None

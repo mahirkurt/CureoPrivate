@@ -7,4 +7,11 @@ argument-hint: <araştırma sorusu>
 
 Soru: **$ARGUMENTS**
 
-`medical-research` **P0** (`references/prisma-protocol.md`) ve **P1** (`references/search-strategy.md`) fazlarını yürüt; `protocol` + `search_strategy` artefaktlarını üret. İnsan-onayına sun.
+`medical-research` **P0** (`references/prisma-protocol.md`) ve **P1** (`references/search-strategy.md`)
+fazlarını yürüt; `protocol` + `search_strategy` artefaktlarını üret. İnsan-onayına sun.
+
+**P1 sıra bağlayıcı** (`references/execution-map.md`): `openalex_resolve_name` →
+`pubmed_lookup_mesh` + `pubmed_search_articles` + `pubmed_europepmc_search` →
+`semantic-scholar.search_papers` → Clinical Trials `search_trials` (companion) →
+bioRxiv `search_preprints` → Consensus/Paper Search → YÖK Tez. Atlanan MUST/SHOULD
+rung = `SKIP-REASON` (sessiz atlama yok). `evidentia-kb.kb_search` P0 booster (SHOULD).

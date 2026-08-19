@@ -1,18 +1,43 @@
 # Changelog — historia-medicinae
 
+## 0.1.3 — 2026-08-17
+
+- Anamnesis paylaşılan collection sözleşmesi: plugin id **`histmed`**. Her ingest
+  `collection=histmed:run:<12hex>` + `doc_id=hmrun:<12hex>:<kanonik>` ister
+  (eski çıplak `histmed:` / `pmid:` / `doi:` koşu-id'siz ingest `_legacy`).
+  `doc_scope` yoktur; kapsamsız `hybrid_query` / `graph_*` DENY, scoped ALLOW.
+  Atıf `doc_id::idx`. Ledger `.claude/anamnesis-histmed.json`. Stop'ta silinmez;
+  SessionEnd + sonraki `/historia-medicinae` + startup yalnız kendi collection'ını
+  temizler. `composition-contract.md` Evidentia satırı `evrun:` / `evidentia:run:`
+  scratch; kendi satırı `histmed:run:`.
+- **Stop kapıları yanlış-pozitif onarımı — iki ayrı kusur.** Canlı oturumda gözlendi:
+  depo-bakımı turları G0 kapsam manifestosu istiyordu.
+  (a) *Tur sızıntısı* — `transcript_text()` 400 satır geriye yürüyor, alakasız tur önceki
+  tıp tarihi turlarından alan sinyali miras alıyordu. Sınır eklendi; **ama araç sonuçları
+  transkriptte `role:"user"` taşır** (ölçüldü: 43 `user/tool_result`'a karşı 2 `user/text`),
+  bu yüzden sınır yalnız `type:"text"` bloğu olan user mesajıdır — role'e bakan naif sürüm
+  araç çağrılı turlarda metni hiç toplamaz ve kapıyı KÖRLEŞTİRİRDİ.
+  (b) *Meta-tur* — `MORBUS`/`tıp tarihi` kelimelerini YAZMAK, o konuda araştırma yapmakla
+  aynı sayılıyordu; dokümantasyon ve hook öz-kodu turları kapıyı tetikliyordu. Artık
+  `turn_called_mcp()` gerçek connector çağrısı arar: çağrı yoksa raporlanacak kapsam da
+  yoktur, kapı susar (vekayinüvis'in meta-tur baskılayıcısıyla aynı ilke).
+  Yedi regresyon testi; fixture'lar gerçek transkript şekline (tool_use + tool_result)
+  hizalandı — eski kurgular bu hataların ikisini de gizliyordu. Gerçek transkriptle
+  doğrulandı: onarılmış kapılar sessiz, eski kopya ateşliyor.
+
 ## 0.1.2 — 2026-08-14
 
 - OpenAthens `oa_fetch_pdf(doi|url)` ile hesap kapsamındaki sağlayıcılardan provider-nötr
   orijinal PDF; Anna's Reader `download_document(id=DOI|MD5)` ile PDF/EPUB ve desteklenen
   diğer formatlar pluginin S3 tam-metin shard'ına eklendi.
 - Her iki teslim yolu kısa-ömürlü opaque resource link + SHA-256/provenance olarak ele alınır;
-  link derhal tüketilir, uzun dosya `histmed:` ad alanıyla anamnesis'e ingest edilir.
+  link derhal tüketilir, uzun dosya `histmed:run:` / `hmrun:` ad alanıyla anamnesis'e ingest edilir.
 - Yasal-öncelikli OpenAthens → Anna's sırası ve Anna's için yalnız-analiz telif kapısı korunur.
 
 ## 0.1.1 — 2026-08-12
 
 - `displayName` "Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü" → **"Historia
-  Medicinae"**. Katalogdaki diğer dokuz plugin kısa ad kullanıyor (Vekayinüvis, Lex Sanitas,
+  Medicinae"**. Katalogdaki diğer dokuz plugin kısa ad kullanıyor (Vekayinüvis, Cureolex,
   Evidentia…); uzun ad marketplace listesinde tek istisnaydı. Uzun tanım `description`
   alanında kalıyor — kaybolan bilgi yok.
 - Sürüm yükseltildi ki kurulu kopya (`installed_plugins.json`, sha'ya sabitlenmiş) tazelensin.

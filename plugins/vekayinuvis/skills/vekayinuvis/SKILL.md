@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
-description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, lex-sanitas composable. When in doubt USE."
-version: 3.4.12
-last_updated: 2026-08-14
+description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, cureolex composable. When in doubt USE."
+version: 3.4.13
+last_updated: 2026-08-17
 changelog:
+  - "3.4.13 (2026-08-17): ANAMNESIS COLLECTION SÖZLEŞMESİ. Her ingest `collection=vekayinuvis:run:<12hex>` + `doc_id=vkrun:<12hex>:<kanonik>` (devarsiv:/yoktez:/doi:/iiif:). Phantom `doc_scope` kaldırıldı; kapsamsız hybrid_query/graph DENY, scoped ALLOW. Atıf `doc_id::idx`. Ledger `.claude/anamnesis-vekayinuvis.json`. Stop'ta silinmez; SessionEnd + `/vekayinuvis` + startup yalnız kendi collection'ını forget eder."
   - "3.4.12 (2026-08-14): TAM-METİN DOSYA TESLİMİ. OpenAthens'in provider-nötr `oa_fetch_pdf(doi|url)` aracı ile hesaba açık sağlayıcılardan orijinal PDF; Anna's Reader'ın `download_document(id=DOI|MD5)` aracı ile PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS teslimi wire edildi. Her ikisi de kısa-ömürlü opaque resource_link + SHA-256/provenance döndürür; link derhal tüketilir ve kalıcı URL diye cache'lenmez. Legal-first openathens→annas sırası ve yalnız-analiz telif kapısı korunur."
   - "3.3.0 (2026-07-19): DEVARSIV SEPET/SATIN-ALMA KATMANI + FİLİGRAN BASTIRMA (canlı MCP main'e deploy edildi). Beş MCP düzeltmesi plugin doktrinine wire edildi: (1) `devarsiv_add_to_cart` **`hash` artık OPSİYONEL** — verilmezse sunucu çözer (yerel store → canlı hedefli arama; **asla uydurulmaz**, no-fabrication korunur); `get_belge`/`ocr_belge` hâlâ hash ister (değişmedi). (2) Belge zaten satın-alınmışsa `add_to_cart` `no_selectable_pages` yerine **`already_purchased`+`next_steps`** (list_purchased→t/hash · ocr_belge_pages · rebuild_archive) döner — satın-alma akışı Faz 1'de zaten access=purchased'ı yakalar; bu ikinci güvenlik ağı. (3) Sepet yanıtı **sanitize** (cart.controls/__VIEWSTATE/ASPX artıkları atılır; şema {status,item_id,requested_pages,available_pages,cart:{count,items,toplam_tutar}}; <20 KB — eski 1.54 MB'a karşı). (4) `rebuild_archive` ZIP görüntü toplama sağlamlaştırıldı (jpg/jpeg/png/tif, recursive/case-insensitive) + 'Tümünü İndir' tıklaması id→metin fallback ile dayanıklı; `satinalma` Faz 3 SSH build-archive script'inden `devarsiv_rebuild_archive` aracına geçirildi. (5) `devarsiv_ocr_belge` önizleme taramasındaki '…görüntülenmiştir' filigranını **Katman-0'da bastırır** (luminance-band; global varsayılan kapalı, preview yolunda per-call açık — temiz arşiv OCR'ı etkilenmez); satın-alınmışsa `purchased_hint` temiz sayfalara yönlendirir. §3.1.b tablo (ocr_belge+add_to_cart satırları), katalog §1 tablo + §8.1 akış, satinalma Faz 2/3, session_start (2a/2c). Regresyon: NFS.d. arşiv akışı canlı doğrulandı (rebuild 0 hata, 25-sayfa PDF'ler). Mod sayısı (9) + araç grubu (7) korundu."
   - "3.2.0 (2026-07-19): DEVLET ARŞİVLERİ KAPSAMLI SÜPÜRME + STORE ENTEGRASYONU (22→27 araç, 7. grup 'süpürme'). Canlı MCP'nin dört yeni aracı doktrine wire edildi: (a) `devarsiv_deep_search` [_RW] — kapsamlı erişimin BİRİNCİL yolu artık otomatik (arşiv×üst-fon×tarih kova süpürme → store'a yaz, job_id; arsiv boş→dört arşiv; ust_fon arsiv gerektirir; store yoksa store_required); manuel list_fon_categories+detailed_search enumerasyonu yalnız store kapalıyken yedek. (b) `devarsiv_deep_result` [_RO] — kapsam manifestosu (coverage.archives[] arşiv-başına); complete=true yalnız 6 koşul+tüm arşiv completed; complete=false→boş ≠ 'yok'; tamlık yalnız year_bounds/fon_bounds içinde; async sözleşme OCR K4 ile aynı. (c) `devarsiv_coverage` [_RO] — STORE-FIRST no-fabrication: boş sonuçtan 'arşivde yok' demeden önce hasat defterine bak (kova defterde yoksa 'bilmiyoruz', 'yok' değil). (d) `devarsiv_rebuild_archive` [_RW] — satın-alınanları yerel 300 DPI PDF arşivine kurar (viewer temsilî-sayfa sınırını aşan tek tam-belge yolu; session_required korumalı; arsiv-oku/toplu-okuma önkoşulu). Ayrıca `devarsiv_ocr_image` CONNECTORS'a eklendi (OCR turunda atlanmıştı). §3.1.b tablosu +4 satır (Süpürme grubu) + araç-seçim rehberi + STORE-FIRST bloğu; katalog §2/§2b (§2b.1 async birincil/§2b.2 manuel yedek)/§3; kaynak-avi/arsiv-dalis/olay/boa-katalog/arsiv-oku/toplu-okuma skill'leri; arsiv-tarama-distilleri ajanı; session_start (1a); context-economy S1; CONNECTORS (yetenek katmanı 27 araç/7 grup + mod setleri); envanter 6→7 grup (doctor + start/durum, magic-number yok). HP-tarafı altyapı (rename/systemd/store yedek) plugin değişikliği gerektirmez. Mod sayısı (9) korundu."
@@ -27,7 +28,7 @@ changelog:
 > connector tabloları pedagojik referans olarak korunmuştur; skill standalone
 > (plugin dışı) ortamda da çalışır.
 
-> **Sürüm**: v3.4.12 (devarsiv 27-araç: kapsamlı süpürme + store + OCR — sepet→noVNC→arşiv→
+> **Sürüm**: v3.4.13 (Anamnesis collection=`vekayinuvis:run:<12hex>` + `vkrun:` önek;
 > çift-motor OCR→async job; v2.x tam-filo, bağlam ekonomisi ve marketplace
 > doctor/G0 enforcement davranışı korunur)
 >
@@ -163,7 +164,7 @@ Birliği (6023 sayılı Kanun, 23 Ocak 1953), İstanbul Eczacı Cemiyeti.
 > Bu eksen, kullanıcının paralel yürüttüğü **Türkiye Sağlık Mevzuatı
 > Reformu** ve **1219 sayılı Kanun TBMM teklifi** projeleri için kanun
 > gerekçesi/tarihsel arka plan bölümlerinin akademik altlığını üretmek
-> üzere `lex-sanitas` ile **composable**'dır. Bu eksen tetiklendiğinde
+> üzere `cureolex` ile **composable**'dır. Bu eksen tetiklendiğinde
 > **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md`** zorunlu olarak yüklenir; mod seçimi
 > tipik olarak **`KANUN_GEREKÇESİ`** (§ 5.9) veya **`ACADEMIC_REPORT`**
 > (§ 5.8) olur.
@@ -251,8 +252,8 @@ job) de kapsar. Referans: **`${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references
 > Sync/async kararı: ≤5 sayfa → `devarsiv_ocr_archive_pages` (sync). >5 sayfa VEYA çok-motorlu
 > (`both`) tam belge →
 > `devarsiv_ocr_submit` → `devarsiv_ocr_result(include_text=false)` ile poll → `done`'da
-> **tek sefer** `include_text=true` → anamnesis `ingest_document(doc_id="devarsiv:<code>", …)`
-> → sonraki sorgular `hybrid_query` (§ 3.5 Tam-Filo ve Bağlam Ekonomisi — Tier 0/1 bağlam-
+> **tek sefer** `include_text=true` → anamnesis `ingest_document(collection=vekayinuvis:run:<12hex>, doc_id="vkrun:<12hex>:devarsiv:<code>", …)`
+> → sonraki sorgular `hybrid_query(collection=vekayinuvis:run:<12hex>)` (§ 3.5 Tam-Filo ve Bağlam-
 > ekonomisi; → `skills/toplu-okuma`). `stale` → aynı parametrelerle resubmit (arşiv PDF
 > yerel; maliyet tekrarlanmaz).
 
@@ -361,10 +362,12 @@ atlanmadan, pencere taşmadan** kapsanmasını sağlar (`${CLAUDE_PLUGIN_ROOT}/s
   ham izi düşür) — asla ham dökme. Pencere ekonomisi Tier-1'siz de korunur.
 - **Tier 2 — `anamnesis` RAG/GraphRAG substratı:** büyük tam-metin (belge
   transkripsiyonu, tez PDF, DergiPark tam-metin makale, İА maddesi, within-manifest
-  bloğu) `ingest_document(doc_id=<kanonik id>)` ile bir kez indekslenir →
-  `hybrid_query`/`semantic_search` ile sınırlı, provenance-damgalı dilim çekilir;
-  `upsert_triples`/`graph_neighbors` prosopografi (kişi↔görev↔belge) ve kronoloji
-  (olay↔tarih↔kaynak) grafiğini kurar.
+  bloğu) `ingest_document(collection=vekayinuvis:run:<12hex>, doc_id=vkrun:<12hex>:<kanonik>)`
+  ile bir kez indekslenir → `hybrid_query(collection=…, doc_ids[]?, queries[])` /
+  `semantic_search` ile sınırlı, provenance-damgalı dilim çekilir (atıf `doc_id::idx`;
+  `doc_scope` yoktur; kapsamsız hybrid/graph DENY);
+  `upsert_triples`/`graph_neighbors` aynı collection içinde prosopografi (kişi↔görev↔belge)
+  ve kronoloji (olay↔tarih↔kaynak) grafiğini kurar.
 
 **Değişmez:** ham araç çıktısı ana pencerede akıl yürütülmez; büyük çıktı (>~6KB)
 zorunlu olarak distiller/anamnesis'e yönlenir; büyük belge **kör getirilmez**
@@ -597,7 +600,7 @@ yalnız `web_search`/`web_fetch` fallback'iydi — artık birincil connector). A
 yoksa/degrade ise şeffaf beyan edilir (G0); asla uydurma.
 
 Bir katmanda kanıt boşluğu varsa **şeffaf olarak** belirtilir; varsayım
-üretilmez. Çıktı, `lex-sanitas` ile zincirlendiğinde TBMM İçtüzüğü m. 73-74
+üretilmez. Çıktı, `cureolex` ile zincirlendiğinde TBMM İçtüzüğü m. 73-74
 "Genel Gerekçe – Tarihî Çerçeve" formatına doğrudan yerleştirilebilir.
 
 **Tam paralel-çağrı seti, çıktı şablonu, kalite kapıları (G7-G8) ve
@@ -791,7 +794,7 @@ açıkça bildirilir.
 
 - **medsearch / medical-research** → tıp tarihi konularında modern literatür
   desteği (örn. 1219 sayılı Kanun'un günümüz uluslararası karşılaştırması).
-- **lex-sanitas** → mevzuat tarih bölümü kapsam tanımı.
+- **cureolex** → mevzuat tarih bölümü kapsam tanımı.
 - **lex-mercator** → ticaret tarihi (Düyûn-ı Umûmiye, kapitulasyon).
 - **psychdev** → eğitim ve çocuk gelişimi tarihi.
 
@@ -802,7 +805,7 @@ açıkça bildirilir.
 - **carbon-quarto-scientific** → Quarto/R tabanlı bilimsel rapor (gt/gtsummary
   tabloları, APA 7; tez bölümü / dergi formatı).
 - **md-converter** → DOCX/EPUB/PDF dönüştürme.
-- **lex-sanitas** (geri besleme) → kanun gerekçesi tarihsel bölümü.
+- **cureolex** (geri besleme) → kanun gerekçesi tarihsel bölümü.
 - **brand-platform** → kurum tarihi destekli rebrand altlığı (örn. bir
   vakıf veya cemiyetin tarihsel altyapısı).
 
@@ -819,7 +822,7 @@ Kullanıcı sorusu (örn. "Mekteb-i Tıbbiye'nin kurumsal tarihi")
    ↓
 [carbon-html-report] → A4 print-ready PDF (konferans/komite sunum altlığı olarak da kullanılır)
    ↓
-[lex-sanitas] → Kanun gerekçesi "Tarihsel Çerçeve" bölümüne enjekte
+[cureolex] → Kanun gerekçesi "Tarihsel Çerçeve" bölümüne enjekte
 ```
 
 #### B. Kanun gerekçesi inşası akışı (v1.1)
@@ -838,7 +841,7 @@ Kullanıcı sorusu (örn. "1219 sayılı Kanun reform teklifinin
    ↓
 [Markdown TBMM-uyumlu gerekçe taslağı]
    ↓
-[lex-sanitas] → Madde madde kanun teklifi taslağı
+[cureolex] → Madde madde kanun teklifi taslağı
    ↓
 [carbon-html-report] → TBMM iç tüzüğü m. 73-74 uyumlu PDF (Komisyon sunum altlığı)
 ```

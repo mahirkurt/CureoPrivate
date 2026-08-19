@@ -43,21 +43,44 @@ def env_present(name):
     return bool(name and os.environ.get(name, "").strip())
 
 
-def transcript_text(payload, limit=200_000):
-    """Transkript dosyasından son asistan metnini topla. Yoksa boş string."""
+def _turn_records(payload, window=400):
+    """Son TURUN kayıtlarını (eskiden yeniye) döndür.
+
+    TUR SINIRI: geriye yürürken gerçek bir KULLANICI METNİ mesajında durulur.
+    ⚠️ Araç sonuçları da `role: "user"` olarak kaydedilir — sınır için role tek
+    başına YETMEZ; yalnız `type: "text"` bloğu taşıyan user mesajı gerçek sınırdır.
+    (Bu ayrım ölçüldü: canlı transkriptte 43 `user/tool_result`'a karşı 2 `user/text`.)
+    """
     path = payload.get("transcript_path")
     if not path:
-        return ""
+        return []
     try:
         lines = Path(path).read_text(encoding="utf-8", errors="replace").splitlines()
     except Exception:
-        return ""
-    out = []
-    for line in reversed(lines[-400:]):
+        return []
+    recs = []
+    for line in reversed(lines[-window:]):
         try:
             rec = json.loads(line)
         except Exception:
             continue
+        msg = rec.get("message") or {}
+        role, content = msg.get("role"), msg.get("content")
+        if role == "user":
+            blocks = content if isinstance(content, list) else []
+            is_text = isinstance(content, str) or any(
+                isinstance(b, dict) and b.get("type") == "text" for b in blocks)
+            if is_text:
+                break                      # GERÇEK tur sınırı
+            continue                        # tool_result — sınır değil
+        recs.append(rec)
+    return list(reversed(recs))
+
+
+def transcript_text(payload, limit=200_000):
+    """SON TURDA üretilen asistan metni. Yoksa boş string."""
+    out = []
+    for rec in _turn_records(payload):
         msg = rec.get("message") or {}
         if msg.get("role") != "assistant":
             continue
@@ -70,4 +93,23 @@ def transcript_text(payload, limit=200_000):
             out.append(content)
         if sum(len(x) for x in out) > limit:
             break
-    return "\n".join(reversed(out))
+    return "\n".join(out)
+
+
+def turn_called_mcp(payload):
+    """Bu turda GERÇEK bir MCP connector çağrısı yapıldı mı.
+
+    META-TUR BASKILAYICI: filo/mod adlarını ANAN ama connector ÇAĞIRMAYAN turlar
+    (dokümantasyon, hook öz-kodu, mimari tartışma) araştırma çıktısı DEĞİLDİR —
+    raporlanacak kapsam yoktur. Kapı bunlarda susar. Aksi hâlde 'MORBUS' kelimesini
+    yazmak, o modda araştırma yapmakla aynı sayılır (canlı oturumda gözlendi).
+    """
+    for rec in _turn_records(payload):
+        msg = rec.get("message") or {}
+        if msg.get("role") != "assistant":
+            continue
+        for block in msg.get("content") or []:
+            if (isinstance(block, dict) and block.get("type") == "tool_use"
+                    and str(block.get("name", "")).startswith("mcp__")):
+                return True
+    return False

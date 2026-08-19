@@ -16,8 +16,9 @@ Akış:
    birlikte çalıştır (literatur tam-metin ve tüm-dergi kapsamıyla tamamlar).
 2. Uluslararası literatür için `paper-search` (Google Scholar/Semantic Scholar/CrossRef) +
    `consensus` + `scholar-gateway` + `exa`; modern uzman/ekol için **`yok-akademik`**.
-3. **Bağlam ekonomisi:** büyük tam-metin makaleyi ham işleme — `anamnesis.ingest_document(doc_id=doi:…)`
-   → `hybrid_query(queries=[…])` ile bounded dilim çek; ağır süpürmeyi `arsiv-tarama-distilleri`
+3. **Bağlam ekonomisi:** büyük tam-metin makaleyi ham işleme —
+   `anamnesis.ingest_document(collection=vekayinuvis:run:<12hex>, doc_id=vkrun:<12hex>:doi:…)`
+   → `hybrid_query(collection=…, queries=[…])` ile bounded dilim çek; ağır süpürmeyi `arsiv-tarama-distilleri`
    ajanına delege et (${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md).
 
 Çıktı: ekol haritası + ana tartışma eksenleri + dönüm-noktası eserler + son 10 yılın eğilimi;

@@ -71,7 +71,7 @@ Hücre: ● birincil/zorunlu · ○ koşullu/opsiyonel · — kullanılmaz.
 |---|---|---|---|---|---|---|---|
 | **PubMed / EuropePMC MCP** | `pubmed.mcp.claude.com/mcp` | ● | ● | ○ | — | ● | ≥2 sorgu × 25; çok-ülke AFF döngüsü (6 ülke) atlanamaz. |
 | **ClinicalTrials MCP** | `hcls.mcp.claude.com/clinical_trials/mcp` | ● | ● | — | — | ● | v2 yapılı sorgu; pivotal RCT NCT eşleme. |
-| **bioRxiv MCP** | `hcls.mcp.claude.com/biorxiv/mcp` | ● | ● | — | — | ● | Preprint sinyali; PubMed timeout fallback'i. |
+| **bioRxiv MCP** | stdio → `CureoHub/mcp-servers/biorxiv-mcp` (`uv run biorxiv-mcp`; `${workspaceFolder:CureoHub}`) | ● | ● | — | — | ● | Yerel Hub paketi. Anthropic HCLS `hcls.mcp.claude.com/biorxiv/mcp` 2026-08-17'de `api.biorxiv.org/details` HTTP 200 + boş gövde → `json.loads("")` ile düşer. `/details` yedek host `api.medrxiv.org`; isteğe bağlı `query` Europe PMC `SRC:PPR`. Preprint = hakemsiz. |
 | **Consensus MCP** | `mcp.consensus.app/mcp` | ● | ● | — | — | ○ | Kanıt sentezi evet/hayır verdiktleri. |
 | **Scholar Gateway MCP** | `connector.scholargateway.ai/mcp` | ● | ● | — | — | ○ | Semantik akademik korpus; PubMed fallback. |
 | **Paper Search MCP** | `server.smithery.ai/@adamamer20/paper-search-mcp-openai` | ● | ● | — | — | ○ | Çok-kaynak akademik agregasyon + full-text indirme. |

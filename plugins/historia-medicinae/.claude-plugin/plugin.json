@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "historia-medicinae",
   "displayName": "Historia Medicinae",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Küresel tıp tarihi araştırma orkestratörü — Avrupa-merkezli olmayan, Mezopotamya/Mısır'dan çağdaş küresel sağlığa uzanan kapsamda birincil-kaynak-öncelikli araştırma ve iki dilli akademik rapor üretimi. TAM-FİLO (25 server) beş banda ayrılır: akademik çekirdek (OpenAlex + PubMed/EPMC MeSH K01.400 tarih aparatı + Semantic Scholar + Google Scholar/CrossRef + Consensus + Scholar Gateway), birincil kaynak (jenerik IIIF motoru — ölçülmüş yetenek matrisi: Wellcome sayfa-düzeyi tam-metin araması + Gallica/Internet Archive/Princeton manifest + DPLA; LoC ve NLM ölçülmüş biçimde bloklu), tam-metin şelalesi (lisanslı OpenAthens → son çare Anna's Reader; tıp tarihi monograf-ağırlıklı bir alandır), tarihsel yasama (Hansard 1803+, GovInfo/Congress, uluslararası sözleşmeler, mevzuat/TBMM/Resmî Gazete) ve terminoloji/epidemiyoloji (MeSH-ICD eşlemesi, WHO GHO, GLOBOCAN). 11 araştırma modu — SOURCE_HUNT, MORBUS (salgın ve hastalık biyografisi), INSTITUTIO (kurum ve meslekleşme), CONCEPTUS (fikir ve kavram tarihi), ETHICA (etik ve karanlık bölümler), PROSOPOGRAPHIA, THERAPEUTICA, SANITAS_PUBLICA, HISTORIOGRAPHIA, EDITIO, RELATIO. Metodolojik omurga alanın kendi literatürüyle temellendirilmiştir: retrospektif tanı karar prosedürü (Karenberg 2009 / Arrizabalaga 2002 / Mitchell 2011 — yasak değil, işaretli izin), kaynak eleştirisi (ölüm nedeni serileri patolojiyi değil sertifikayı yazanın bilgisini kodlar), kurban-merkezli zulüm etiği (Weindling 2016 + Viyana Protokolü), Avrupa-merkezsizleştirme tüzüğü (BHM 2015) ve dijital korpus OCR çekincesi (yokluk kanıt değildir). G0 kapsam manifestosu ile tam-filo garantisi; Tier-1 tarih-tarama-distilleri alt-ajanı ve Tier-2 anamnesis RAG/GraphRAG substratı ile bağlam ekonomisi. carbon-html-report ve carbon-quarto-scientific ile bileşir, sci-audit ile denetlenir, Osmanlıca paleografi/HTR zanaatını vekayinuvis'e, çağdaş klinik geçerliliği evidentia'ya delege eder.",
   "author": {
     "name": "Cureonics",
@@ -182,11 +182,12 @@
     "anamnesis_api_key": {
       "type": "string",
       "title": "Anamnesis MCP key",
-      "description": "anamnesis MCP anahtarı (RAG/GraphRAG bağlam-ekonomisi substratı; doc_id ön-eki histmed:) — header ANAMNESIS_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. Anahtar yoksa büyük tam-metin sınırlı-parça getirime düşer; ham döküm ASLA yapılmaz.",
+      "description": "anamnesis MCP anahtarı (RAG/GraphRAG bağlam-ekonomisi substratı; collection=histmed:run:<12hex>, doc_id hmrun:<12hex>:<kanonik>) — header ANAMNESIS_MCP_API_KEY ortam değişkenini okur; aynı değeri env olarak da dışa aktarın. Anahtar yoksa büyük tam-metin sınırlı-parça getirime düşer; ham döküm ASLA yapılmaz.",
       "sensitive": true,
       "required": false
     }
   },
   "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
   "defaultEnabled": false
 }

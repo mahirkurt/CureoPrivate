@@ -371,7 +371,7 @@ connectors_used:
 composes_with:
   - carbon-html-report | carbon-pptx (consume sidecar)
   - onko-erisim | saglik-sigorta | pharmapatent | pharmaintel | rxos | talent-praetor
-  - lex-mercator | lex-sanitas | promo-censor (regulatory/legal handoff)
+  - lex-mercator | cureolex | promo-censor (regulatory/legal handoff)
 constraints:
   native_first: true
   drug_intel_gating: §1.O fires only on 0.5.I

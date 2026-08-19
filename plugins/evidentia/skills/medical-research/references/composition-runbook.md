@@ -10,7 +10,7 @@ Mirrors `skill-manifest.yaml` → `composition`.
 - **pharmapatent** — FTO/IP landscape (with Türk Patent output).
 - **thoughtspot-roche** — IQVIA MIDAS market sizing (ThoughtSpot connector).
 - **onko-erisim / saglik-sigorta** — individual TR access / SGK / insurance.
-- **lex-sanitas / lex-mercator / promo-censor** — regulatory reform / commercial law / promo compliance.
+- **cureolex / lex-mercator / promo-censor** — regulatory reform / commercial law / promo compliance.
 - **rxos (rxpraxis)** — generic/biosimilar opportunity scan.
 
 ## 2. Scope guard (what medical-research does NOT do)

@@ -399,8 +399,8 @@ MULTIPAGE_MAX_PAGES). **>5 sayfa VEYA çok-motorlu (`both`) tam belge** → asyn
 devarsiv_ocr_submit(code, pages?, engine?, lang?, arsiv?)     [_RW, idempotent, job_id döner]
   → devarsiv_ocr_result(job_id, include_text=false)            [_RO, poll: queued/running/done/error/stale]
   → done'da TEK SEFER devarsiv_ocr_result(job_id, include_text=true)
-  → anamnesis ingest_document(doc_id="devarsiv:<code>", …)
-  → sonraki sorgular anamnesis hybrid_query (bağlam ekonomisi §3.5)
+  → anamnesis ingest_document(collection=vekayinuvis:run:<12hex>, doc_id="vkrun:<12hex>:devarsiv:<code>", …)
+  → sonraki sorgular anamnesis hybrid_query(collection=…) (bağlam ekonomisi §3.5; atıf doc_id::idx)
 ```
 
 `stale` dönerse **aynı parametrelerle resubmit** (arşiv PDF yerel; maliyet tekrarlanmaz —

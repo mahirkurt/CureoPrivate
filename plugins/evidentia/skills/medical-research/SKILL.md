@@ -14,7 +14,7 @@ description: >
   derleme, kapsam derleme, PRISMA, PICO, PECO, screening, risk of bias, GRADE, kanıt
   sentezi, meta-analiz, dahil hariç kriterleri.
 metadata:
-  version: 9.0.1
+  version: 9.0.2
 ---
 
 > ## 🧩 Plugin entegrasyon notu (evidentia)
@@ -27,13 +27,13 @@ metadata:
 >   çakışmada `CONNECTORS.md` üstündür.
 > - [`../../shared/canonical-cache-contract.md`](../../shared/canonical-cache-contract.md) —
 >   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; openfda
->   tekil+retry+skippable). P2 retrieval'ın paralel çağrı listesi bu sözleşmeye tabidir.
+>   tekil+retry+skippable). Connector **sırası** `references/execution-map.md` playbook'udur.
 >
-> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.1**
+> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.2**
 > (v9 = 10-eksen zorunlu yükleyici → **P0–P7 PRISMA hattı + opsiyonel zenginleştirme sınıflandırıcısı**;
 > web tier / OSINT ekseni kaldırılmıştı — saf yapısal-kanıt korunur). Plugin sürümü skill'den ayrıdır.
 
-# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.1 (medical-research)
+# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.2 (medical-research)
 
 **This block is read and applied before any other structure. It runs on every invocation.**
 
@@ -58,9 +58,10 @@ view references/output-templates.md      # SR/ScR output structure + sidecar —
 view references/report-presentation.md   # clean-copy doctrine — used at P7
 view references/prisma-reporting.md       # PRISMA flow diagram + SoF + checklist — P7
 ```
-Phase files `prisma-protocol.md` (P0), `search-strategy.md` (P1), `screening.md` (P3),
-`data-extraction.md` (P4), `risk-of-bias.md` (P5) are loaded **per-phase** (progressive
-disclosure). Optional enrichment modules load only per Adım 0.5.
+Phase files `prisma-protocol.md` (P0), `search-strategy.md` (P1), `execution-map.md` (P2
+ordered tool playbook — **load before the first MCP call**), `screening.md` (P3),
+`data-extraction.md` (P4), `risk-of-bias.md` (P5) are loaded **per-phase**. Optional
+enrichment modules load only per Adım 0.5.
 
 ## Adım 0.1: Project Settings (if present)
 
@@ -75,7 +76,10 @@ YAML frontmatter before proceeding:
   (default) keeps the copyright gate on the cascade (`fulltext-retrieval.md`).
 - `completeness_gate: lenient|standard|strict` → tune the Completeness/G-COVERAGE strictness.
 - `auto_ingest_rag: true` → ingest long fetched documents into the `anamnesis` RAG substrate
-  before synthesis.
+  before synthesis. **Exclusive working set (dual-write):** `collection=evidentia:run:<run_id>`
+  AND prefix every `doc_id` `evrun:<run_id>:` (SessionStart injects both). Scoped
+  `hybrid_query`/`semantic_search`/`graph_*` are allowed; unscoped hybrid/graph/global search
+  is denied. Hooks prefer `forget_collection` on SessionEnd / next `/evidentia` (no Stop-hook forget).
 
 Absent the file, behave with defaults (no enrichment module active).
 
@@ -120,7 +124,7 @@ module file (progressive disclosure).
 | Rare Disease (0.5.H) | orphan/natural-history/registry-endpoint specifics | `rare-disease-layer.md` |
 | Drug Intelligence (0.5.I) | drug/MoA/target/pipeline/deal landscape | `drug-intelligence-layer.md` |
 | Türkiye market | TR reimbursement/SUT/native-registry context | `turkiye-layer.md` |
-| Epidemiology / Burden (0.5.K) | incidence/prevalence/mortality/disease-burden, US surveillance | `regulatory-intelligence.md` (ICD-11 via openfda; US surveillance via PopHIVE; global/TR burden = documented gap) |
+| Epidemiology / Burden (0.5.K) | incidence/prevalence/mortality/disease-burden, US/global/TR | `regulatory-intelligence.md` (ICD-11 via openfda; US = PopHIVE; global/TR = who-gho; cancer = globocan; IHME/GBD still gap) |
 
 **No signal:** the pure PRISMA pipeline runs with the academic core only — no enrichment loaded.
 
@@ -138,12 +142,15 @@ vs scoping), eligibility criteria, and pre-register the protocol intent. **`view
 ### P1 — Search Strategy
 Build a comprehensive, reproducible search: MeSH/Emtree + free-text, Boolean structure, per-database
 translation, date/language limits, grey-literature plan. **`view references/search-strategy.md`**.
+Discovery **order** (OpenAlex → pubmed-epmc → Semantic Scholar → CT.gov → bioRxiv →
+Consensus/Paper Search → YÖK Tez) is binding in **`references/execution-map.md`**.
 
 ### P2 — Retrieval & Deduplication
-Execute the P1 strategy across the native academic core (native-MCP-first; `connector-registry.md`),
-capture records with IDs (PMID/DOI/NCT/…), deduplicate, and record counts for the PRISMA flow.
-Subject to the **tek-sefer / kanonik-önbellek** contract. Optional enrichment retrieval (Adım 0.5)
-is injected here only when a module is active. See **Multi-Source Retrieval** below.
+Execute the P1 strategy **in playbook order** (`execution-map.md`; native-MCP-first;
+`connector-registry.md`), capture records with IDs (PMID/DOI/NCT/…), deduplicate, and record
+counts for the PRISMA flow. Subject to the **tek-sefer / kanonik-önbellek** contract. Optional
+enrichment retrieval (Adım 0.5) is injected here only when a module is active. A MUST/SHOULD
+connector that does not run needs a `SKIP-REASON` — never a silent skip.
 
 ### P3 — Screening (Title/Abstract → Full-Text)
 Two-stage screening against eligibility criteria; log include/exclude with reasons; resolve
@@ -171,36 +178,36 @@ Assemble the PRISMA 2020 flow diagram, Summary-of-Findings table, and PRISMA/PRI
 render the clean Turkish report. **`view references/prisma-reporting.md`** (+ `output-templates.md`,
 `report-presentation.md`).
 
-### Multi-Source Retrieval (P2 native-first ladder)
+### Multi-Source Retrieval (P2 — ordered playbook)
 
 Resolve every need by the **Native-First ladder** (native MCP → Python REST → documented gap;
-**no web tier**). Use the **verified tool names** from `connector-registry.md`.
+**no web tier**). **Order, duty (MUST/SHOULD/MAY/OUT), and skip codes** live in
+`references/execution-map.md` — that file is binding. Use verified tool names from
+`connector-registry.md`. De-skew applies ONLY to Adım 0.5 enrichment, NEVER to core discovery.
 
-**A. Academic Core — ALWAYS-ON (fire ALL ten discovery connectors every query, in parallel; de-skew
-applies ONLY to the Adım 0.5 domain enrichment modules, NEVER to core discovery):**
-`PubMed/EPMC:search_articles`, `ClinicalTrials:search_trials`, `Consensus:search` (reproduce usage
-message), `ScholarGateway:semanticSearch`, `PaperSearch:search`, `bioRxiv:search_preprints` (preprint
-flag), `YÖK Tez:search_yok_tez_detailed`,
-`openalex:openalex_search_entities` (+ `openalex_resolve_name` / `openalex_get_citation_graph`),
-`semantic-scholar:search_papers`, `pubmed-epmc:pubmed_europepmc_search`. An unreachable core
-connector is logged as a **visible OPS gap**, never silently dropped.
+**A. Academic Core — ALWAYS-ON, ordered (execution-map P1.1→P1.7).** Floor ≥1 call per
+MUST/SHOULD rung; unreachable/unloaded → `SKIP-REASON` in OPS, never a silent drop:
+`openalex` (resolve_name → search_entities) → `pubmed-epmc` (lookup_mesh → search_articles →
+europepmc_search) → `semantic-scholar.search_papers` → Clinical Trials companion
+`search_trials` → bioRxiv `search_preprints` (preprint flag) → Consensus `search` (usage
+message verbatim) + Paper Search → YÖK Tez. PubMed HCLS companion SHOULD if loaded.
 
 **B. Extended (native MCP first; `requests` fallback)** — ChEMBL (`bio-research:chembl`), EPMC SR
 filter (`… AND systematic review[Publication Type]`), PubChem/OpenAlex/DailyMed/Unpaywall/DOAJ/
 J-STAGE via REST (`extended-api.md`), native `openfda:openfda_search` (drugsfda + label + FAERS).
 
 **Extended Tier-K — first-class, signal-gated (tool whitelist + cross-validation per `connector-registry.md §2.6`).** Loaded only when an optional drug/terminology module (Adım 0.5) fires (progressive disclosure preserved); each recipe **ends at a cross-validation gate** — patient-impacting output is confirmed against an authoritative source before it is presented (DEĞİŞMEZ 4):
-- **Terminology / coding** — `med-terminologies:atc_classify` (drug→ATC) + `med-terminologies:map_icd10_to_icd11` (ICD-10→ICD-11, WHO 2025-01) + `nih-clinicaltables:icd10cm` (**code→description ONLY**) + `nih-clinicaltables:conditions`/`drugs`. **ICD-11 text search → ALWAYS `openfda:icd11_search`** (D6: `med-terminologies.icd11_search` is AUTH-broken; `nih.icd10cm` name-search returns 0). → cross-validate any patient-impacting code against the authoritative coder.
+- **Terminology / coding** — `med-terminologies:atc_classify` (drug→ATC) + `med-terminologies:map_icd10_to_icd11` (ICD-10→ICD-11, WHO 2025-01) + `nih-clinicaltables:icd10cm` (**code→description ONLY**) + `nih-clinicaltables:conditions`/`drugs`. **ICD-11 text search** → `openfda:icd11_search` (operator-owned) **or** `med-terminologies:icd11_search` (D6 retired 2026-08-17, live 3B10.0). `nih.icd10cm` name-search still returns 0 (D3). → cross-validate any patient-impacting code against the authoritative coder.
 - **Drug normalization / RxCUI** — `nlm-rxnorm:rxnorm_search` (name→SBD/SCD) + `nlm-rxnorm:rxnorm_get_properties`. Brand↔generic → **TİTCK `find_equivalent_products_by_substance`** or `med-terminologies:atc_classify` (D2/D4: `rxnorm_related` 400). **Never call** `rxnorm_interactions` (D1: 404). → cross-validate the normalized concept against TİTCK/DailyMed.
 - **Clinical DDI** — `drugddx:normalize_drug` → `drugddx:interaction_label` (DailyMed SPL interaction-section pointer) + DailyMed REST. ⚠️ **label text, NOT a computed pairwise verdict** → confirm interactions with a licensed source (Lexicomp/UpToDate/DrugBank); **TİTCK `find_drug_drug_interactions` is substance-overlap, NOT clinical DDI** — never present as interaction data. → cross-validation gate is mandatory before any DDI statement.
 - **Mechanism / target** — `iuphar-gtopdb:search_targets`/`search_ligands` (+`target_interactions`/`ligand_interactions`) **complements** ChEMBL `get_mechanism`/`target_search`; second source when OpenTargets is offline. → ground mechanism claims in ChEMBL/EPMC (cross-validate).
-- **Out-of-whitelist (never call):** pipeworx **generic** tools (`ask_pipeworx`, `discover_tools`, `remember`/`recall`/`forget`, `polymarket_*`, `scan_*`, `subscribe`, `validate_claim`) — least-privilege, tool-level (G-WHITELIST). **Runtime-enforced:** the plugin's PreToolUse guard hook (`hooks/guard_tool_call.py`) DENIES these + the D1/D2/D6 broken tools at call time and redirects — you should not reach for them, but the guard is the backstop.
+- **Out-of-whitelist (never call):** pipeworx **generic** tools (`ask_pipeworx`, `discover_tools`, `remember`/`recall`/`forget`, `polymarket_*`, `scan_*`, `subscribe`, `validate_claim`) — least-privilege, tool-level (G-WHITELIST). **Runtime-enforced:** the plugin's PreToolUse guard hook (`hooks/guard_tool_call.py`) DENIES anything outside the §2.6 allowlist on pipeworx gateways + the D1/D2 broken tools at call time and redirects — you should not reach for them, but the guard is the backstop.
 
 **C. Multi-Country AFF (EPMC native)** — `for country in [Turkey, China, Japan, Germany, Brazil, Korea]: EPMC:search_articles(f'({topic}) AND AFF:"{country}"')`. Run when geographic breadth matters.
 
-**D. Türkiye native (when TR context/enrichment active)** — TİTCK `search_drugs` (`titck.cureonics.com`, gated — the cache-fallback rung was retired 2026-07-31; call it directly), Mevzuat `search_mevzuat` (SUT/yönetmelik), YÖK Tez, EPMC `AFF:"Turkey"`. Null → "Türkiye Veri Boşluğu" block. See `turkiye-layer.md`.
+**D. Türkiye native (when TR context/enrichment active)** — TİTCK `search_drugs` (`titck.cureonics.com`, gated — the cache-fallback rung was retired 2026-07-31; call it directly), YÖK Tez, EPMC `AFF:"Turkey"`. SUT/legislation text is **out of scope** (no mevzuat MCP in this plugin → `cureolex`). Null → "Türkiye Veri Boşluğu" block. See `turkiye-layer.md`.
 
-**E. Guidelines & HTA / Epidemiology** — society-guideline PDFs (NICE/ESMO/NCCN/Cochrane) and HTA bodies have **no native MCP** → **documented gap (VERİ YOK)**, never web-scraped. Epidemiology: ICD-11 coding via `openfda`; US surveillance via **PopHIVE** (`get_current_status`/`get_trend`/`get_map`/`get_coverage`/`compare` — relay precomputed evidence; **US-ONLY**); global (WHO-GHO/GLOBOCAN/IHME) + Türkiye burden = documented gap. If the operator supplies a guideline PDF, ingest it into anamnesis.
+**E. Guidelines & HTA / Epidemiology** — society-guideline PDFs (NICE/ESMO/NCCN/Cochrane) and HTA bodies have **no native MCP** → **documented gap (VERİ YOK)**, never web-scraped. Epidemiology (MAY, Adım 0.5.K): ICD-11 via `openfda` or `med-terminologies.icd11_search`; US via **PopHIVE** (**US-ONLY**); global/TR burden via **`who-gho`**; cancer via **`globocan`** (modelled + `ui`); **IHME/GBD** still a gap. Operator-supplied PDFs → anamnesis ingest.
 
 **Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 6-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **openathens `oa_resolve` + `oa_fetch_fulltext` for text or `oa_fetch_pdf(doi|url)` for the provider's original PDF (Tier 3 — LICENSED institutional, provider-neutral, primary paywall gate, legal-first, BEFORE Wiley; unbound → skip)** → Wiley (auth, Tier 4) → **annas-reader reader flow or `download_document(id=DOI|MD5)` for the original PDF/EPUB/etc. (Tier 5 — LAST RESORT, after the licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA, Tier 6). Both file tools return short-lived opaque `resource_link`s: consume promptly, record SHA-256/provenance, never cache the link as a permanent source. Copyright: analysis only; CC-BY freely quotable; no web scraping.
 
@@ -211,9 +218,9 @@ Token cycles enable, not constrain. Depth is never reduced for "budget," and dep
 P2 comprehensive retrieval → P3/P4/P5/P6 thorough appraisal → P7 complete reporting). Minimum
 retrieval depths are retained (PubMed ≥2 queries ×25, EPMC ×2, 6-country AFF, CT.gov ×2, Türkiye
 native when active) **plus a ≥1-discovery-call floor for every other always-on core connector**
-(Consensus, Scholar Gateway, Paper Search, bioRxiv/medRxiv, YÖK Tez, OpenAlex, Semantic Scholar,
-pubmed-epmc) — a core connector that is unreachable is logged as a visible OPS gap, never silently
-skipped. Active enrichment modules **add** depth. **No upper cap.**
+(Consensus, Paper Search, bioRxiv/medRxiv, YÖK Tez, OpenAlex, Semantic Scholar, pubmed-epmc) —
+unreachable = `SKIP-REASON` in OPS, never a silent skip (`execution-map.md`). Active enrichment
+modules **add** depth. **No upper cap.**
 
 Retry generosity: 3× + exponential backoff; pagination up to 3 pages. **openfda (FDA/ICD-11)
 exception:** call singly (not parallel), one retry, mark skippable if it stalls.
@@ -259,9 +266,9 @@ first. Renderer handoff: carbon-html-report consumes-and-strips VIZ/OPS comments
 
 Re-scan `references/knowledge-map.md` against the question and the work done, in THREE mandatory
 sub-checks (strictness tuned by the Adım 0.1 `completeness_gate: lenient|standard|strict` setting):
-1. **Always-on core fired exhaustively** — confirm every discovery connector (§A) + the applicable
-   full-text rung actually ran (or is logged as a visible OPS gap). A silently-skipped core
-   connector is a gate failure.
+1. **Always-on core fired in playbook order** — confirm every MUST/SHOULD rung in
+   `execution-map.md` ran, or carries a `SKIP-REASON`. A silently-skipped core connector is a
+   gate failure. All 19 bundled servers are used, MAY+`enrichment_off`, or OUT+`out_of_scope`.
 2. **De-skew decision log** — reconcile the `coverage_set`: a domain enrichment module NOT run
    because it was judged irrelevant is a LOGGED de-skew decision (Ops sidecar), NOT a gap; a module
    that IS relevant but was missed by keyword signals IS a gap → load it. (This is the mechanism
@@ -275,19 +282,24 @@ sub-checks (strictness tuned by the Adım 0.1 `completeness_gate: lenient|standa
 - **Scientific integrity** — never fabricate; preprints flagged; no-API sources → documented gap.
 - **Native-First integrity** — prefer the verified native tool; a referenced connector MUST resolve
   to a real tool in `connector-registry.md`.
-- **No web tier / no fabrication** — Exa/Tavily/OSINT removed; no-API sources (EMA, guideline PDFs,
-  GLOBOCAN/IHME) are a documented gap, never web-scraped.
+- **No web tier / no fabrication** — Exa/Tavily/OSINT removed; no-API sources (guideline PDFs,
+  IHME/GBD) are a documented gap. EMA → `ema`; GLOBOCAN → `globocan`; WHO GHO → `who-gho`.
 - **Copyright** — full text for analysis only; no verbatim bulk reproduction; CC-BY quotable.
 - **Türkiye relevance** — when TR context is active, TİTCK reimbursement/SUT is often determinative.
 - **Connector failure** — never silently omit; report the gap + queries attempted.
 - **Clean-copy / sunum bütünlüğü** — file reports read like a peer-reviewed article; no tooling,
   connector names, phase/module codes or telemetry in the reader-facing body (`report-presentation.md`).
+- **Anamnesis is ephemeral scratch for THIS PRISMA run** — not a long-lived library. Dual-write
+  `collection=evidentia:run:<run_id>` and `doc_id=evrun:<run_id>:…`. Flagship:
+  `hybrid_query(collection=…)`. Unscoped hybrid/graph/global search stays denied.
+  `corpus_stats` is not the working set (`list_docs`). Hooks prefer `forget_collection`
+  on SessionEnd or a new `/evidentia` — they never wipe another tenant's docs. No Stop-hook forget.
 
 ## Limitations / Out-of-Scope
 This skill provides the evidence-synthesis layer; it hands off, never absorbs: individual SGK
 appeal / litigation → `onko-erisim` / `saglik-sigorta`; promotional MLR review → `promo-censor`;
 net-new commercial strategy + OSINT/web competitive intelligence → `pharmaintel`; FTO/IP litigation
-depth → `pharmapatent`; deep TR regulatory reform → `lex-sanitas`. FAERS counts are context, never
+depth → `pharmapatent`; deep TR regulatory reform → `cureolex`. FAERS counts are context, never
 clinical evidence or incidence. β-candidate connectors are not wired until probe-verified.
 
 ---
@@ -307,11 +319,12 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 | `screening.md` | P3 | Two-stage screening, exclusion logging, conflict resolution |
 | `data-extraction.md` | P4 | Extraction tables, numerical outcome capture, Extended-Tier recipes |
 | `risk-of-bias.md` | P5 | RoB2 / ROBINS-I / QUADAS-2 / Newcastle-Ottawa |
+| `execution-map.md` | P1/P2 (before first MCP call) | Ordered MUST/SHOULD/MAY/OUT playbook for all 19 bundled servers + 9 companions; skip-reason template |
 | `extended-api.md` | P2 (as needed) | Native-MCP-first + Python REST fallback (PubChem/DOAJ/J-STAGE/…) |
 | `fulltext-retrieval.md` | P2/P4 (as needed) | Legal-first 6-tier: EPMC PMC OA → Paper Search → OpenAthens/Millet (Tier 3 licensed) → Wiley (Tier 4) → annas-reader (Tier 5 last resort) → pubmed-epmc Unpaywall (Tier 6) |
 | Optional enrichment layers (`oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease/drug-intelligence-layer.md`, `regulatory-intelligence.md`, `turkiye-layer.md`) | per Adım 0.5 | Domain deep-dive + appraisal checklist + native wiring (NON-mandatory) |
 | `skill-manifest.yaml` | tooling / audit | Standalone SMP manifest (runtime.mcp_servers, composition, verification gates) |
-| `execution-map.md` / `composition-runbook.md` / `benchmark-suite.md` / `benchmark-protocol.md` / `v8-wiring-patch.md` | large query / cross-skill / dev / historical | Fan-out planning, pipelines, eval harness, wiring history |
+| `composition-runbook.md` / `benchmark-suite.md` / `benchmark-protocol.md` / `v8-wiring-patch.md` | large query / cross-skill / dev / historical | Pipelines, eval harness, wiring history |
 | `evals/check_integrity.py` + `evals/benchmark-queries.json` | dev / pre-release | Executable integrity gates + regression queries |
 
 ---
@@ -320,6 +333,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 
 | Version | Date | Changes |
 |---|---|---|
+| **9.0.2** | **Aug 2026** | Ordered P0–P7 tool playbook (`execution-map.md`): MUST/SHOULD/MAY/OUT + `SKIP-REASON` for all 19 bundled servers + 9 companions. Completeness Gate requires skip reasons. who-gho/globocan/ema native (IHME still gap). Anamnesis exclusive-run hybrid is P4/P6 MUST after ingest. |
 | **8.3** | Jun 2026 | Semantic coverage mechanism: Adım 0.4 + knowledge-map + Completeness Gate + G-COVERAGE; optional evidentia-kb booster. |
 | **8.4** | Jun 2026 | Structured-Authoritative Refocus — Exa/Tavily web tier + OSINT axis removed; 3 keyless Tier-K academic connectors added (OpenAlex/PubMed-EPMC/Semantic Scholar). |
 | **8.5** | Jun 2026 | Extended-Tier promotion (med-terminologies/nih-clinicaltables/nlm-rxnorm/iuphar-gtopdb first-class + tool whitelists + cross-validation gates); drugddx Tier-O live; openfda D-α; PopHIVE US epidemiology; gates G-PROBE/G-XVAL/G-WHITELIST. |
@@ -336,7 +350,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 ```yaml
 skill_manifest_protocol: 1.0
 skill_name: medical-research
-skill_version: 9.0.1
+skill_version: 9.0.2
 produces:
   - prisma-systematic-review-markdown (P0–P7; PRISMA flow diagram + Summary-of-Findings)
   - clean-copy-report (journal-grade reader-facing article; tooling/telemetry/viz carried
@@ -355,14 +369,14 @@ connectors_used:
     bioRxiv, YÖKTez, OpenAlex(keyless), SemanticScholar(keyless), PubMed-EPMC(keyless)]
   extended_tier_k: [med-terminologies, nih-clinicaltables, nlm-rxnorm, iuphar-gtopdb]   # TOOL-whitelisted (§2.6); cross-validated
   clinical_ddi: [drugddx]   # NOT a pairwise engine — cross-validate
-  regulatory_epi: [openfda(openFDA+ICD11), PopHIVE(US surveillance); global/TR burden = documented gap]
-  turkiye: [TİTCK, Mevzuat, TÜRKPATENT, YÖKTez]
+  regulatory_epi: [openfda(openFDA+ICD11), PopHIVE(US), who-gho(global/TR), globocan(cancer), ema(EU); IHME/GBD = documented gap]
+  turkiye: [TİTCK, TÜRKPATENT, YÖKTez]
   fulltext: [EuropePMC PMC, PaperDownload, OpenAthens(Tier3 licensed), Wiley(auth Tier4), annas-reader(Tier5 last-resort), pubmed-epmc(Unpaywall Tier6)]   # legal-first 6-tier
 composes_with:
   - carbon-html-report | carbon-pptx (consume sidecar)
-  - onko-erisim | saglik-sigorta | pharmapatent | pharmaintel | lex-sanitas | promo-censor
+  - onko-erisim | saglik-sigorta | pharmapatent | pharmaintel | cureolex | promo-censor
 verification:   # executable — evals/check_integrity.py
-  gates: [G-REF, G-CONN, G-ALWAYS, G-VERSION, G-COVERAGE, G-PROBE, G-XVAL, G-WHITELIST, G-SIZE, G-DESC]
+  gates: [G-REF, G-CONN, G-ALWAYS, G-VERSION, G-COVERAGE, G-PROBE, G-XVAL, G-WHITELIST, G-SIZE, G-DESC, G-PHASES, G-PLAYBOOK]
 constraints:
   native_first: true
   enrichment_optional: true   # v9 — no domain module is mandatory; core PRISMA runs regardless

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CureoPrivate plugin filosu denetimi — lex-sanitas v3.5.0 denetiminin genellemesi.
+"""CureoPrivate plugin filosu denetimi — cureolex v3.5.0 denetiminin genellemesi.
 
 Beş eksen:
   [A] CANLI MCP SAĞLIĞI   her uca gerçek `initialize`; auth_missing ≠ unauthorized
@@ -8,7 +8,7 @@ Beş eksen:
   [D] YAPISAL HİJYEN      çift hooks.json, eksik hook betiği, commit'li __pycache__
   [E] KURULUM DURUMU      enabledPlugins'te var mı
 
-Prob istemcisi lex-sanitas/hooks/scripts/fleet_probe.py ile aynı sertleştirmeleri
+Prob istemcisi cureolex/hooks/scripts/fleet_probe.py ile aynı sertleştirmeleri
 taşır (açık UA / 256KB okuma / 12s eşik) — aksi hâlde sağlıklı server'lar sahte
 arızalı görünür.
 """

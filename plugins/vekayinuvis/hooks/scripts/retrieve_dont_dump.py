@@ -8,9 +8,10 @@ taşırır ve detay atlar (bağlam-ekonomisi Tier 0 ihlali). İki katmanlı yön
 (${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md):
   * küçük-eşik üstü (>threshold): ağır çok-connector getirim → `arsiv-tarama-distilleri` alt-ajanına
     delege (Tier 1); ana pencereye kompakt `arsiv_distillate` + coverage döner.
-  * BÜYÜK-eşik üstü (>big_threshold): tek belge çok büyük → `anamnesis.ingest_document(doc_id=<kanonik>)`
-    ile Tier 2 RAG substratına indeksle → hybrid_query(queries[]) ile bounded, provenance-damgalı
-    dilim çek. Aynı doc_id iki kez ingest edilmez (kanonik cache).
+  * BÜYÜK-eşik üstü (>big_threshold): tek belge çok büyük →
+    `anamnesis.ingest_document(collection=vekayinuvis:run:<12hex>, doc_id=vkrun:<12hex>:<kanonik>)`
+    ile Tier 2 RAG substratına indeksle → hybrid_query(collection=…, queries[]) ile bounded,
+    provenance-damgalı dilim çek; atıf `doc_id::idx`. Aynı doc_id iki kez ingest edilmez.
 Advisory only — asla bloklamaz. Fail-open. Eşikler VEKAYI_DUMP_THRESHOLD / VEKAYI_BIG_THRESHOLD (karakter).
 """
 import json
@@ -90,13 +91,16 @@ def main():
         msg = (
             "[vekayinuvis] büyük-veri: '{base}' ~{kb} KB tek büyük gövde döndürdü (Tier 0 sınırı aşıldı). "
             "Bunu HAM işleme. Tier 2 RAG substratına indeksle: "
-            "anamnesis.ingest_document(doc_id=<kanonik: devarsiv:arsiv/fon/kutu-gömlek / yoktez:tez-no / "
-            "doi:… / iiif:manifest-url>, text=<gövde>) → anamnesis.hybrid_query(doc_scope=<doc_id>, "
-            "queries=[<hedef kişi/olay/tarih/kavram>]) ile bounded, provenance-damgalı dilim çek. Aynı "
-            "doc_id iki kez ingest edilmez (kanonik cache; ${{CLAUDE_PLUGIN_ROOT}}/shared/context-economy-contract.md §3). anamnesis "
+            "anamnesis.ingest_document(collection=vekayinuvis:run:<12hex>, "
+            "doc_id=vkrun:<12hex>:<kanonik: devarsiv:… / yoktez:… / doi:… / iiif:…>, text=<gövde>) → "
+            "anamnesis.hybrid_query(collection=vekayinuvis:run:<12hex>, "
+            "doc_ids=[vkrun:<12hex>:<kanonik>], queries=[<hedef kişi/olay/tarih/kavram>]) ile bounded, "
+            "provenance-damgalı dilim çek. Cevap yalnız bu chunk'lardan; atıf `doc_id::idx`. "
+            "doc_scope YOKTUR. Aynı doc_id iki kez ingest edilmez "
+            "(kanonik cache; ${{CLAUDE_PLUGIN_ROOT}}/shared/context-economy-contract.md §3). anamnesis "
             "anahtarı yoksa → bounded-chunk fallback: ottoman_search_within_manifest / get_yok_tez_document_"
             "markdown(page) ile hedefi lokalize et, yalnız o parçayı çek. Detay ATLAMA: grafiğe upsert_triples "
-            "ile kişi↔görev↔belge / olay↔tarih↔kaynak ilişkilerini de yaz."
+            "(collection=aynı) ile kişi↔görev↔belge / olay↔tarih↔kaynak ilişkilerini de yaz."
         ).format(base=base, kb=round(n / 1024, 1))
     else:
         msg = (

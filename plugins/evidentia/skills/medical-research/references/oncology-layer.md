@@ -18,8 +18,8 @@ TMB, RECIST, irRECIST, neoadjuvan, adjuvan, metastatik, OS, PFS, ORR, DoR, bioma
 - **ESMO** Clinical Practice Guidelines + **ESMO-MCBS** (magnitude of clinical benefit) + ESCAT
   (tumor-agnostic actionability of molecular targets).
 - **ASCO** guidelines + **ASCO Value Framework**.
-- TR layer: **TİTCK off-label** list (`find_off_label_uses_for_drug`, native) + SUT onkoloji
-  protokolleri (Mevzuat) — often determinative for Turkish practice.
+- TR layer: **TİTCK off-label** list (`find_off_label_uses_for_drug`, native). SUT onkoloji
+  protokolleri are a documented gap (hand off to `cureolex`).
 
 ## 2. Molecular / biomarker knowledge bases
 - **OncoKB** (levels of evidence 1–4, R1–R2) and **CIViC** — **no native MCP/API → documented gap**

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import emit_block, load_lock, read_payload, transcript_text  # noqa: E402
+from _common import emit_block, load_lock, read_payload, transcript_text, turn_called_mcp  # noqa: E402
 
 # Substantif araştırma sinyali: mod adı veya en az iki alan terimi
 MODES = ("SOURCE_HUNT", "MORBUS", "INSTITUTIO", "CONCEPTUS", "ETHICA", "PROSOPOGRAPHIA",
@@ -21,6 +21,8 @@ def main():
     payload = read_payload()
     if payload.get("stop_hook_active"):
         return  # döngü koruması
+    if not turn_called_mcp(payload):
+        return  # META-TUR: filo adlarını anıyor ama connector çağırmıyor
 
     text = transcript_text(payload)
     if not text or len(text) < 1200:

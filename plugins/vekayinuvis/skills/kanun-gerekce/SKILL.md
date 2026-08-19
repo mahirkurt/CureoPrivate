@@ -41,7 +41,7 @@ ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/kanun-gerekcesi-workflow.md 
 alanındaysa (1219, 6023, Hıfzıssıhha…) ${CLAUDE_PLUGIN_ROOT}/skills/vekayinuvis/references/medical-history.md de yükle.
 Bir katmanda kanıt boşluğu varsa şeffaf belirt; varsayım üretme. Çıktı,
 TBMM İçtüzüğü m. 73-74 "Genel Gerekçe – Tarihî Çerçeve" formatına yerleşir ve
-lex-sanitas ile composable'dır.
+cureolex ile composable'dır.
 
 **Yasama-atıf disiplini (bu modun sorumluluğu):** yasama/mevzuat iddiaları arşiv
 künyesiyle değil, **kanun/kararname no + madde + Resmî Gazete tarih/sayı** ile

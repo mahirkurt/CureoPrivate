@@ -12,12 +12,13 @@ documentation drifts found in the 2026-08-07 audit accumulated while every gate 
 WHAT IT RUNS (offline, deterministic, no secrets, no network)
   check_integrity.py   14 structural gates (G-REF/G-CONN/G-ALWAYS/G-VERSION/G-COVERAGE/G-PROBE/
                        G-XVAL/G-WHITELIST/G-SIZE/G-DESC/G-PHASES/G-DESKEW/G-AGENT/G-PLAYBOOK)
-  hooks/test_hooks.py  guard + retrieve-don't-dump + preflight regression pack
+  hooks/test_hooks.py  guard + retrieve-don't-dump + preflight + context-economy P0–P3 pack
   scripts/g_bundle.py  .mcp.json <-> CONNECTORS.md consistency (pure static — the URLs it
                        compares are string literals, it opens no socket)
   scripts/g_identity.py  each self-host Worker carries its own realm/package/wrangler name
   rag_quality.py       G-RAG output faithfulness, STRUCTURAL layer only (the LLM-judge path is
                        opt-in behind --judge + EVIDENTIA_JUDGE_KEY and is deliberately not used)
+  context_economy_synth.py  P3 synthetic 40-paper eval (silent-skip / Gate v2 / RDD proxy)
 
 WHAT IT DELIBERATELY DOES NOT RUN — and why it says so out loud
   g_probe.py  / g_tools.py     need live network AND Bearer credentials for the gated
@@ -51,6 +52,7 @@ GATES = [
     ("G-BUNDLE", "scripts/g_bundle.py", []),
     ("G-IDENTITY", "scripts/g_identity.py", []),
     ("G-RAG (yapısal)", "skills/medical-research/evals/rag_quality.py", []),
+    ("P3 context-economy synth", "skills/medical-research/evals/context_economy_synth.py", []),
 ]
 
 # Named so a reader can never mistake CI-green for full coverage.

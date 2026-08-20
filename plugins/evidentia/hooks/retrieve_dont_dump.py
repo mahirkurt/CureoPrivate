@@ -33,7 +33,7 @@ import sys
 # the live fleet inventory 2026-08-14. The original-file tools normally return only compact link
 # metadata, but remain classified here so an unexpectedly embedded body is still diverted to RAG.
 FULLTEXT_TOOLS = {
-    "oa_fetch_fulltext",            # openathens Tier 3 licensed
+    "oa_fetch_fulltext",            # openathens Tier 4 licensed
     "oa_fetch_pdf",                 # openathens original PDF resource link
     "pubmed_fetch_fulltext",        # pubmed-epmc, Unpaywall legal-OA
     "pubmed_europepmc_fetch",       # pubmed-epmc, Europe PMC body
@@ -42,10 +42,13 @@ FULLTEXT_TOOLS = {
     "get_full_text_article",        # claude.ai PubMed connector (operator-connected)
     "read_pubmed_paper", "read_semantic_paper", "read_biorxiv_paper",
     "read_medrxiv_paper", "read_crossref_paper", "read_arxiv_paper",  # Paper Search (operator)
+    "ebsco_get",                    # marmara-ebsco Tier 3 licensed body
 }
 
-DEFAULT_THRESHOLD = 6000    # chars — full-text tools: a body this size belongs in the RAG substrate
-BULK_THRESHOLD = 25000      # chars — any other MCP tool: a result this size is a bulk dump
+# Context-economy P0 (2026-08-20): tightened so mid-size abstracts/batches divert to RAG
+# before they become synth input. Env overrides preserved.
+DEFAULT_THRESHOLD = 3000    # chars — full-text tools: a body this size belongs in the RAG substrate
+BULK_THRESHOLD = 8000       # chars — any other MCP tool: a result this size is a bulk dump
 
 
 def result_len(data):
@@ -86,23 +89,25 @@ def main():
     if fulltext:
         msg = (
             "[evidentia] retrieve-don't-dump: '{base}' ~{kb} KB tam-metin/büyük çıktı döndürdü. "
-            "Bunu HAM olarak işleme (bağlam-penceresi taşması → eksik/tutarsız değerlendirme). "
+            "SENTEZ YASAK — bu gövdeyi ham sentez/GRADE/çıkarım girdisi yapma "
+            "(bağlam taşması → atlanan kaynak). "
             "anamnesis.ingest_document(collection=evidentia:run:<run_id>, "
             "doc_id=evrun:<run_id>:<DOI>) ile BİR KEZ indeksle (dual-write) → "
             "hybrid_query(collection=aynı) veya semantic_search(collection=aynı / "
-            "doc_id=önekli) ile sınırlı, provenance-damgalı dilim çek "
+            "doc_id=önekli) ile sınırlı, provenance-damgalı dilim / PICO kartı çek "
             "(evidence_index; CONNECTORS.md §3). Kapsamsız hybrid/graph DENY. "
             "Aynı doc_id iki kez ingest edilmez."
         ).format(base=base, kb=kb)
     else:
         msg = (
             "[evidentia] retrieve-don't-dump: '{base}' ~{kb} KB döndürdü — tam-metin aracı değil, "
-            "yani bu ÇOK GENİŞ bir sorgu sonucu. Ham dökümü akıl yürütme girdisi yapma. "
-            "Önce sorguyu DARALT (daha dar `search`/filtre, daha küçük `limit`, `count` toplaması, "
-            "gerekli alanları seç); yine de büyükse anamnesis.ingest_document("
+            "yani bu ÇOK GENİŞ bir sorgu sonucu. SENTEZ YASAK — ham dökümü akıl yürütme "
+            "girdisi yapma. Önce sorguyu DARALT (ID+title+year / daha küçük `limit` / alan "
+            "kısıtı); yine de büyükse anamnesis.ingest_document("
             "collection=evidentia:run:<run_id>, doc_id=evrun:<run_id>:<id>) ile BİR KEZ "
             "indeksle → hybrid_query(collection=aynı) / semantic_search(doc_id=önekli) "
-            "ile sınırlı dilim çek (evidence_index; CONNECTORS.md §3; kapsamsız hybrid DENY). "
+            "ile sınırlı dilim veya PICO kartı çek (evidence_index; CONNECTORS.md §3; "
+            "kapsamsız hybrid DENY). "
             "Not: openfda `drug/label` tek kayıtta ~100 KB'dır — `limit=1` + dar `search` kullan."
         ).format(base=base, kb=kb)
     sys.stdout.write(json.dumps({"systemMessage": msg}))

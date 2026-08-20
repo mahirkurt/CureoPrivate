@@ -12,7 +12,7 @@ protocol_reference: "SMP v1.0 (see SKILL.md 'SMP v1.0 Manifest' section + smp-or
 # --- Skill identity ---------------------------------------------------------
 skill:
   name: medical-research
-  version: "9.0.3"
+  version: "9.0.6"
   title: "General Medical Literature-Review Engine (PRISMA)"
   description: >
     General-purpose medical literature review engine. Runs an end-to-end PRISMA 2020 /
@@ -412,14 +412,16 @@ references:
 
 # --- Build ------------------------------------------------------------------
   build:
-  version: "9.0.4"
-  release_date: "2026-08-19"
-  release_name: "Claude Directory companions wired"
+  version: "9.0.6"
+  release_date: "2026-08-20"
+  release_name: "Context-economy P1+P2 (Anamnesis reconcile + coverage gate)"
   compatibility:
-    backward_compatible_with: ["9.0.3", "9.0.2", "9.0.1", "9.0.0", "8.5", "8.4", "8.3", "8.2", "8.1", "8.0"]
+    backward_compatible_with: ["9.0.5", "9.0.4", "9.0.3", "9.0.2", "9.0.1", "9.0.0", "8.5", "8.4", "8.3", "8.2", "8.1", "8.0"]
     breaking_changes:
       - "v9.0.0: mandatory 10-axis domain matrix replaced by a fixed PRISMA 2020 / PRISMA-ScR pipeline (P0-P7); Adım 0.5 changed from a MANDATORY axis loader into an OPTIONAL, context-triggered enrichment classifier — default review path loads NO domain layer"
     additive_changes:
+      - "v9.0.6: context-economy P1+P2 — reconcile_anamnesis_ledger (list_docs↔ledger); multi-query hybrid MUST (advisory); coverage_gate auto Completeness Gate (EVIDENTIA_COVERAGE_ENFORCE soft DENY); synthesizer coverage block n_include/n_cited/n_skipped_reasoned/uncovered[]; annas collection gap documented; P3 eval-only (no version bump): evals/context_economy_synth.py synthetic 40-paper silent-skip/Gate/RDD floors"
+      - "v9.0.5: context-economy P0 — working_set_ledger (PMID|DOI|NCT) under .claude/evidentia-run/<id>/; retrieve-don't-dump 3KB/8KB + synthesis forbidden; Completeness Gate v2 article coverage (standard≥0.90); ID-first P1/P2; Cömertlik=depth≠dump; screening_table.jsonl scratch"
       - "v9.0.4: Claude Directory companions (bioRxiv, Scite, BioRender, SNOMED CT Terminology) + fleet.yaml tool_prefixes; P1 discovery order OpenAlex→pubmed-epmc→S2→PubMed→CT→bioRxiv→Consensus→Paper Search→Elicit→Scite→AdisInsight→YÖK Tez; Claude vs self-host preference; 13 companions"
       - "v9.0.2: ordered P0-P7 tool playbook (execution-map.md MUST/SHOULD/MAY/OUT + SKIP-REASON) covering all 19 bundled servers + 9 companions; Completeness Gate requires skip reasons; who-gho/globocan/ema native (IHME still gap); Anamnesis exclusive-run hybrid is P4/P6 MUST after ingest; G-PLAYBOOK gate"
       - "v9.0.1: OpenAthens Tier 3 adds provider-neutral oa_fetch_pdf(doi|url); Anna Tier 5 adds download_document(DOI|MD5) for PDF/EPUB and supported formats; both return short-lived opaque resource links with checksum/provenance and route long documents through anamnesis"

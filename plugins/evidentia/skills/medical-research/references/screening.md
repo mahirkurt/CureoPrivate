@@ -32,8 +32,11 @@ tutarlı — post-hoc daraltma yasak).
 ## 2. Parti-parti işleme ve hariç gerekçesi
 
 Kayıtlar tek seferde değil **N'li partiler** hâlinde işlenir (bağlam taşmasını
-önlemek ve insan-onay kapısının [§3] yönetilebilir kalması için). Her kayıt üç
-etiketten birini alır:
+önlemek ve insan-onay kapısının [§3] yönetilebilir kalması için). **Scratch (zorunlu):**
+satır satır kararlar `.claude/evidentia-run/<run_id>/screening_table.jsonl` dosyasına
+yazılır; bağlama yalnız **sayaçlar + belirsiz ~10 ID örneği** alınır — 500 satırlık
+tablo context'te tutulmaz. Working-set ledger status: `screened` → `included` /
+`skipped`(+reason). Her kayıt üç etiketinden birini alır:
 
 - **`include`** — tüm beş eksende uygun.
 - **`exclude`** — PRISMA hariç kategorilerinden **biriyle etiketlenmiş gerekçe**

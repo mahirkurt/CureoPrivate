@@ -1,5 +1,5 @@
 {
-  "description": "evidentia runtime enforcement — turns prose invariants into enforced behavior: (1) PreToolUse guard denies pipeworx-gateway tools outside the §2.6 domain allowlist + D1/D2 broken MCP tools with a redirect (least-privilege / G-WHITELIST + broken-tool avoidance; D6 icd11_search retired 2026-08-17); (2) PreToolUse DENIES unscoped anamnesis hybrid/graph/global search and ALLOWS collection=evidentia:run:<run_id> (and/or evrun:<run_id>: prefix) scoped hybrid/search/graph — shared-corpus leak class; (3) PostToolUse reminds retrieve-don't-dump on large full-text output (evidence_index) and ledgers anamnesis ingest ids; (4) SessionStart preflight flags gated-connector problems, deriving the key map from fleet.lock.json (never hardcoded) and consulting the 24h-cached live fleet probe so a CONFIGURATION FAULT (401/403) is never mistaken for a legitimate key-absent degrade — silent when the fleet is healthy; (5) SessionStart + UserPromptSubmit mint an exclusive Anamnesis run collection+prefix; SessionEnd prefers forget_collection (fallback ledger forget_document). No Stop-hook forget. All command hooks are deterministic and fail-open. Disable the guard with <project>/.claude/evidentia-guard.off; run the preflight offline with EVIDENTIA_PREFLIGHT_NO_PROBE=1; stub forget with EVIDENTIA_ANAMNESIS_FORGET_LOG (CI).",
+  "description": "evidentia runtime enforcement — turns prose invariants into enforced behavior: (1) PreToolUse guard denies pipeworx-gateway tools outside the §2.6 domain allowlist + D1/D2 broken MCP tools with a redirect (least-privilege / G-WHITELIST + broken-tool avoidance; D6 icd11_search retired 2026-08-17); (2) PreToolUse DENIES unscoped anamnesis hybrid/graph/global search and ALLOWS collection=evidentia:run:<run_id> (and/or evrun:<run_id>: prefix) scoped hybrid/search/graph — shared-corpus leak class; (3) PostToolUse reminds retrieve-don't-dump on large full-text output (evidence_index; synthesis forbidden over threshold) and ledgers anamnesis ingest ids; (4) PostToolUse working-set ledger upserts PMID|DOI|NCT from search/fulltext into .claude/evidentia-run/<id>/ledger.json (Completeness Gate v2; separate from Anamnesis doc_id ledger) and reconciles list_docs → ledger (P1); (5) PreToolUse + UserPromptSubmit coverage_gate — multi-query hybrid advisory, collection pass-through advisory, Completeness Gate v2 coverage systemMessage (soft DENY only if EVIDENTIA_COVERAGE_ENFORCE=1); (6) SessionStart preflight flags gated-connector problems, deriving the key map from fleet.lock.json (never hardcoded) and consulting the 24h-cached live fleet probe so a CONFIGURATION FAULT (401/403) is never mistaken for a legitimate key-absent degrade — silent when the fleet is healthy; (7) SessionStart + UserPromptSubmit mint an exclusive Anamnesis run collection+prefix; SessionEnd prefers forget_collection (fallback ledger forget_document). No Stop-hook forget. All command hooks are deterministic and fail-open. Disable the guard with <project>/.claude/evidentia-guard.off; run the preflight offline with EVIDENTIA_PREFLIGHT_NO_PROBE=1; stub forget with EVIDENTIA_ANAMNESIS_FORGET_LOG (CI).",
   "hooks": {
     "PreToolUse": [
       {
@@ -8,6 +8,11 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard_tool_call.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/coverage_gate.py\"",
             "timeout": 10
           }
         ]
@@ -20,6 +25,11 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/retrieve_dont_dump.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/working_set_ledger.py\"",
             "timeout": 10
           }
         ]
@@ -62,6 +72,12 @@
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/anamnesis_lifecycle.py\"",
             "timeout": 25,
             "statusMessage": "evidentia: anamnesis koşu kapsamı"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/coverage_gate.py\"",
+            "timeout": 10,
+            "statusMessage": "evidentia: Completeness Gate v2 coverage"
           }
         ]
       }

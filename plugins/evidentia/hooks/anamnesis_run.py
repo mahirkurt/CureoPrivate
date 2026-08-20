@@ -139,6 +139,34 @@ def ledger_path() -> Path:
     return Path(tempfile.gettempdir()) / f"evidentia-anamnesis-{uid}" / LEDGER_NAME
 
 
+def project_claude_dir() -> Path:
+    """Project ``.claude/`` root (or temp fallback). Shared by anamnesis + working-set."""
+    proj = os.environ.get("CLAUDE_PROJECT_DIR", "").strip()
+    if proj:
+        return Path(proj) / ".claude"
+    uid = str(os.getuid()) if hasattr(os, "getuid") else "user"
+    return Path(tempfile.gettempdir()) / f"evidentia-claude-{uid}"
+
+
+def run_dir(run_id: str | None = None) -> Path:
+    """Scratch dir for bibliographic working-set artefacts.
+
+    Path: ``.claude/evidentia-run/<run_id>/`` (ledger.json, hits.jsonl,
+    screening_table.jsonl). Separate from ``evidentia-anamnesis-run.json``
+    (Anamnesis doc_id exclusivity ledger — do not merge).
+    """
+    override = os.environ.get("EVIDENTIA_WORKING_SET_DIR", "").strip()
+    if override:
+        return Path(override)
+    rid = (run_id or "").strip()
+    if not rid:
+        led = load_ledger()
+        rid = str((led or {}).get("run_id") or "")
+    if not RUN_ID_RE.match(rid):
+        rid = mint_run_id()
+    return project_claude_dir() / "evidentia-run" / rid
+
+
 def empty_ledger(run_id: str | None = None) -> dict:
     rid = run_id or mint_run_id()
     return {

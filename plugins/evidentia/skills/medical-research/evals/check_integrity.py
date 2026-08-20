@@ -317,6 +317,35 @@ def gate_coverage() -> bool:
         _ok(f"map consistent with corpus ({len(ref_files)} files, {len(phases)} phases, 0 dangling)")
     else:
         _fail("map drift detected — update references/knowledge-map.md")
+
+    # (4) Completeness Gate v2 / working-set ledger contract presence (cheap schema lock)
+    skill_text_full = _read(SKILL_MD)
+    cache = SKILL_DIR.parent.parent / "shared" / "canonical-cache-contract.md"
+    wsl = SKILL_DIR.parent.parent / "hooks" / "working_set_ledger.py"
+    cov_gate = SKILL_DIR.parent.parent / "hooks" / "coverage_gate.py"
+    synth = SKILL_DIR.parent.parent / "agents" / "evidence-synthesizer.md"
+    cache_text = cache.read_text(encoding="utf-8", errors="replace") if cache.is_file() else ""
+    wsl_text = wsl.read_text(encoding="utf-8", errors="replace") if wsl.is_file() else ""
+    synth_text = synth.read_text(encoding="utf-8", errors="replace") if synth.is_file() else ""
+    for label, present in (
+        ("SKILL Completeness Gate v2", "Completeness Gate v2" in skill_text_full),
+        ("SKILL coverage formula", "cited_or_skipped_with_reason" in skill_text_full),
+        ("SKILL reconcile / multi-query", "reconcile" in skill_text_full.lower()
+         and "queries" in skill_text_full),
+        ("working_set_ledger.py hook", wsl.is_file()),
+        ("reconcile_anamnesis_ledger helper", "def reconcile_anamnesis_ledger" in wsl_text),
+        ("coverage_block helper", "def coverage_block" in wsl_text),
+        ("coverage_gate.py hook", cov_gate.is_file()),
+        ("canonical-cache working_set_ledger", "working_set_ledger" in cache_text),
+        ("canonical-cache n_include schema", "n_include" in cache_text),
+        ("synthesizer n_include coverage block", "n_include" in synth_text
+         and "uncovered" in synth_text),
+    ):
+        if present:
+            _ok(f"G-COVERAGE schema: {label}")
+        else:
+            _fail(f"G-COVERAGE schema missing: {label}")
+            ok = False
     return ok
 
 

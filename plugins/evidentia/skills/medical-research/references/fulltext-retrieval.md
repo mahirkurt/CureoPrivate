@@ -236,3 +236,11 @@ license note + the anamnesis `doc_id::idx` provenance where ingested.
 5. **Anna's DOI↔content fidelity is not guaranteed** — always reconcile the Crossref header with
    the returned body before extraction.
 6. **No mevzuat in this cascade** — legislation is out of Evidentia scope (hand off to cureolex).
+7. **`collection` / `doc_id` pass-through matrix (P1 verified):**
+   - **OpenAthens `oa_fetch_fulltext`** — **PASS** (`collection` + `doc_id` optional; omit →
+     mint `openathens:fetch:<sha1-8>`). Evidentia MUST pass `evidentia:run:<id>` + `evrun:…`.
+   - **Marmara EBSCO `ebsco_get`** — **PASS** (same contract; omit → `marmara:fetch:<sha1-8>`).
+   - **annas `read_article` / `download_document` / `read_document`** — **GAP**: schemas accept
+     only `doi`/`id`/`md5` (+ page bounds). No `collection`/`doc_id`. After ephemeral read,
+     **MUST** `anamnesis.ingest_document(collection=evidentia:run:<id>, doc_id=evrun:<id>:<DOI>)`
+     before synthesis. Do not invent Worker API changes.

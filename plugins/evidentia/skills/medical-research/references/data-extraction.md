@@ -37,20 +37,24 @@ değer asla üretilmez (bkz. §4).
    (EPMC OA → Paper Search → Marmara EBSCO [Tier 3 lisanslı birinci] → OpenAthens/Millet
    [Tier 4 lisanslı ikinci] → Wiley [Tier 5] → annas-mcp [Tier 6 son çare] → pubmed-epmc
    Unpaywall [Tier 7]).
-2. **Ingest** — edinilen tam metin (veya operatörün sağladığı PDF metni)
+2. **Ham gövde bağlama YASAK.** Eşik üstü çıktı (≥3 KB fulltext / ≥8 KB bulk) → **sentez
+   yasağı**: gövdeyi GRADE/çıkarım girdisi yapma. Yalnız ingest + bounded retrieve.
+3. **Ingest** — edinilen tam metin (veya operatörün sağladığı PDF metni)
    `anamnesis: ingest_document(text=..., collection="evidentia:run:<run_id>",
    doc_id="evrun:<run_id>:<PMID|DOI>", source="<Tier adı>", title=...)` ile semantik-parçalanıp
    **bu koşunun** çalışma setine yazılır (dual-write: collection + önek). Dönen MANIFEST yalnız
-   parça sayısı + önizleme (ham metin bağlama dökülmez).
-3. **Retrieve** — flagship: `hybrid_query(collection="evidentia:run:<run_id>", query=…, queries=[…])`.
+   parça sayısı + önizleme (ham metin bağlama dökülmez). Working-set ledger'da status →
+   `extracted` + `anamnesis_doc_id`.
+4. **Retrieve** — flagship: `hybrid_query(collection="evidentia:run:<run_id>", query=…, queries=[…])`.
    Tek belge daraltması: `semantic_search(…, collection=aynı, doc_id="evrun:<run_id>:<PMID|DOI>")`
    veya `doc_ids[]`. Kapsamsız hybrid/graph/global search çağrılmaz (PreToolUse DENY;
    NSCLC↔emicizumab sızıntı sınıfı). `upsert_triples` collection veya her triple.`doc_id` önekli.
-4. Her dönen parça `{doc_id, idx, score}` provenance taşır — çıkarılan her sayısal
+   Bağlama yalnız **PICO / extraction kartları** + `doc_id::idx` — full body değil.
+5. Her dönen parça `{doc_id, idx, score}` provenance taşır — çıkarılan her sayısal
    değer bu parça kimliğine **iğnelenir** (aşağıdaki sidecar `source_chunk` alanı).
-5. Copyright kapısı (`fulltext-retrieval.md` §3) burada da geçerlidir: sayı/olgu
+6. Copyright kapısı (`fulltext-retrieval.md` §3) burada da geçerlidir: sayı/olgu
    çıkarımı serbest, geniş **verbatim** blok asla kopyalanmaz.
-6. **Temizlik** — P7 / abort / oturum kapanışı: hook `forget_collection` tercih eder; yoksa
+7. **Temizlik** — P7 / abort / oturum kapanışı: hook `forget_collection` tercih eder; yoksa
    ledger `forget_document`. Küresel wipe yok; Stop-hook forget yok.
 
 ---

@@ -14,7 +14,7 @@ description: >
   derleme, kapsam derleme, PRISMA, PICO, PECO, screening, risk of bias, GRADE, kanıt
   sentezi, meta-analiz, dahil hariç kriterleri.
 metadata:
-  version: 9.0.4
+  version: 9.0.6
 ---
 
 > ## 🧩 Plugin entegrasyon notu (evidentia)
@@ -27,13 +27,16 @@ metadata:
 >   çakışmada `CONNECTORS.md` üstündür.
 > - [`../../shared/canonical-cache-contract.md`](../../shared/canonical-cache-contract.md) —
 >   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; openfda
->   tekil+retry+skippable). Connector **sırası** `references/execution-map.md` playbook'udur.
+>   tekil+retry+skippable; **working_set_ledger** + `hits.jsonl`). Connector **sırası**
+>   `references/execution-map.md` playbook'udur.
 >
-> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.4**
+> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.6**
 > (v9 = 10-eksen zorunlu yükleyici → **P0–P7 PRISMA hattı + opsiyonel zenginleştirme sınıflandırıcısı**;
-> web tier / OSINT ekseni kaldırılmıştı — saf yapısal-kanıt korunur). Plugin sürümü skill'den ayrıdır.
+> web tier / OSINT ekseni kaldırılmıştı — saf yapısal-kanıt korunur; 9.0.5 = P0 ledger/dump;
+> 9.0.6 = Anamnesis reconcile + zorunlu multi-query hybrid + otomatik coverage gate).
+> Plugin sürümü skill'den ayrıdır.
 
-# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.4 (medical-research)
+# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.6 (medical-research)
 
 **This block is read and applied before any other structure. It runs on every invocation.**
 
@@ -42,8 +45,9 @@ the same eight phases regardless of subject. The former "10-axis" domain matrix 
 **OPTIONAL, context-triggered enrichment layer** (Adım 0.5) — **the default review path loads NO
 domain layer.** Backbone doctrines are preserved and rewired onto the phases:
 **native-MCP-first** resolution (native MCP → Python REST → documented gap; no web tier),
-**clean-copy** presentation, **retrieve-don't-dump** (surface every loaded detail),
-**no-fabrication** (no-API sources → documented gap), **Cömertlik/uncapped depth**, and the
+**clean-copy** presentation, **retrieve-don't-dump** (surface every loaded detail — never as
+raw synth input over the dump threshold), **no-fabrication** (no-API sources → documented gap),
+**Cömertlik** (depth ≠ dump; MUST = call or `SKIP-REASON`), and the
 **tek-sefer / kanonik-önbellek** contract.
 
 ## Adım 0: Mandatory Loading
@@ -213,16 +217,27 @@ J-STAGE via REST (`extended-api.md`), native `openfda:openfda_search` (drugsfda 
 
 **Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 7-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **marmara-ebsco `ebsco_search` → `ebsco_get(record_id, collection?, doc_id?)` (Tier 3 — LICENSED VETİS EBSCOhost, FIRST paywall gate; miss → SKIP-REASON then continue)** → **openathens `oa_verify_access`/`oa_resolve` + `oa_fetch_fulltext` or `oa_fetch_pdf` (Tier 4 — Millet Kütüphanesi, SECOND licensed gate)** → Wiley (auth, Tier 5) → **annas-reader reader flow or `download_document(id=DOI|MD5)` (Tier 6 — LAST RESORT after licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (Unpaywall legal-OA, Tier 7). Pass `collection=evidentia:run:<id>` + `evrun:` doc_id into Hub fetch tools when accepted. File tools' opaque `resource_link`s: consume promptly. Copyright: analysis only; CC-BY freely quotable; no web scraping.
 
-## Adım 2: Generosity Principle (UNCAPPED — depth across phases)
+## Adım 2: Generosity Principle (depth ≠ dump)
 
-Token cycles enable, not constrain. Depth is never reduced for "budget," and depth is spent
-**across all phases** (P0 breadth of protocol/PICO framing → P1 exhaustive search translation →
-P2 comprehensive retrieval → P3/P4/P5/P6 thorough appraisal → P7 complete reporting). Minimum
-retrieval depths are retained (PubMed ≥2 queries ×25, EPMC ×2, 6-country AFF, CT.gov ×2, Türkiye
-native when active) **plus a ≥1-discovery-call floor for every other always-on core connector**
-(Consensus, Paper Search, bioRxiv/medRxiv, YÖK Tez, OpenAlex, Semantic Scholar, pubmed-epmc) —
-unreachable = `SKIP-REASON` in OPS, never a silent skip (`execution-map.md`). Active enrichment
-modules **add** depth. **No upper cap.**
+Token cycles enable, not constrain. **Depth** means every phase/rung is attempted (call **or**
+`SKIP-REASON`) — it does **not** mean dumping unbounded raw bodies into the context window.
+Depth is spent **across all phases** (P0 protocol/PICO → P1 ID-first search → P2 retrieval →
+P3/P4/P5/P6 appraisal → P7 reporting). Minimum retrieval floors remain (PubMed ≥2 queries ×25,
+EPMC ×2, 6-country AFF, CT.gov ×2, Türkiye native when active) **plus a ≥1-discovery-call floor
+for every other always-on core connector** (Consensus, Paper Search, bioRxiv/medRxiv, YÖK Tez,
+OpenAlex, Semantic Scholar, pubmed-epmc) — unreachable = `SKIP-REASON` in OPS, never a silent
+skip (`execution-map.md`). Active enrichment modules **add** depth. **No upper cap on
+bibliographic coverage**; **hard cap on raw dump as synth input** (retrieve-don't-dump;
+fulltext ≥3 KB / bulk ≥8 KB → **synthesis forbidden** — ingest + `hybrid_query` / PICO card only).
+
+**MUST = call or `SKIP-REASON`**, never “paste the full tool body into context.” P1/P2 keep
+ID+title+year (abstract ≤400 chars when needed); full bodies go to Anamnesis
+(`collection=evidentia:run:<id>`). Screening tables live in
+`.claude/evidentia-run/<id>/screening_table.jsonl` — context gets counts + a small sample.
+
+**Ops phase token budgets (guidance, not hard host limits):** P1 dump ≤~40 K tokens of raw
+connector text; P4 ≤~15 hybrid packages; companions prefer summary/ID fields. Exceeding a
+budget → scratch + Anamnesis, never silent truncation of the include set.
 
 Retry generosity: 3× + exponential backoff; pagination up to 3 pages. **openfda (FDA/ICD-11)
 exception:** call singly (not parallel), one retry, mark skippable if it stalls.
@@ -234,7 +249,8 @@ reader-facing body (Adım 5 + `report-presentation.md`). In short interactive an
 ---
 Cömertlik Garantisi: Bu yanıtın üretiminde [N] API çağrısı yapıldı. Aktif fazlar: P0–P7.
 Aktif zenginleştirme modülleri: [... veya "yok — çekirdek PRISMA hattı"]. Native-first çözümleme
-uygulandı (web tier yok). Hiçbir faz/boyut budget gerekçesiyle atlanmadı.
+uygulandı (web tier yok). Hiçbir faz/kaynak sınıfı atlanmadı (çağrı veya SKIP-REASON);
+ham gövde sentez girdisi yapılmadı (retrieve-don't-dump / working-set ledger).
 [Eğer varsa: (openfda gecikmesi nedeniyle tekil çağrı + retry. / Native-API'siz kaynak(lar) dürüstçe VERİ YOK olarak işaretlendi — web-scraping yok.)]
 ```
 
@@ -264,21 +280,42 @@ Telemetry (the Cömertlik note + all operational trace) relocates to the `<!-- O
 Run the **finalization gate G1–G7** (`report-presentation.md`) before emitting; fix any failure
 first. Renderer handoff: carbon-html-report consumes-and-strips VIZ/OPS comments.
 
-## Completeness Gate (MANDATORY — immediately before finalising)
+## Completeness Gate v2 (MANDATORY — immediately before finalising)
 
-Re-scan `references/knowledge-map.md` against the question and the work done, in THREE mandatory
-sub-checks (strictness tuned by the Adım 0.1 `completeness_gate: lenient|standard|strict` setting):
+Re-scan `references/knowledge-map.md` against the question and the work done. Strictness tuned by
+Adım 0.1 `completeness_gate: lenient|standard|strict`. **Four** mandatory sub-checks:
+
 1. **Always-on core fired in playbook order** — confirm every MUST/SHOULD rung in
    `execution-map.md` ran, or carries a `SKIP-REASON`. A silently-skipped core connector is a
    gate failure. All 20 bundled servers are used, MAY+`enrichment_off`, or OUT+`out_of_scope`.
 2. **De-skew decision log** — reconcile the `coverage_set`: a domain enrichment module NOT run
    because it was judged irrelevant is a LOGGED de-skew decision (Ops sidecar), NOT a gap; a module
-   that IS relevant but was missed by keyword signals IS a gap → load it. (This is the mechanism
-   that engages every *relevant* module without force-loading irrelevant ones.)
+   that IS relevant but was missed by keyword signals IS a gap → load it.
 3. **Semantic re-scan** — "Is there any phase, section, or connector relevant to this question that
    was NOT consulted?" (Booster: if `kb_search` reachable, run it once more.)
-- Produce a gap list (in the Ops sidecar). If non-empty: load + address each gap, then re-check.
-- Finalise only when the gap list is empty — making coverage deterministic and repeatable.
+4. **Article coverage (working-set ledger)** — read
+   `.claude/evidentia-run/<run_id>/ledger.json` (hook-maintained; separate from the Anamnesis
+   `evidentia-anamnesis-run.json` doc_id ledger):
+   ```
+   coverage = cited_or_skipped_with_reason / include_set
+   floors: lenient ≥0.75 · standard ≥0.90 · strict ≥0.98
+   ```
+   `include_set` = records with status ∈ {included, extracted, cited, skipped}. A record counts
+   toward the numerator only if `cited` **or** `skipped` with a non-empty `skip_reason`
+   (`abstract_only`, `copyright_gate`, `not_retrieved`, …). **Refuse P6/P7 finalize** (skill:
+   do not emit the clean copy) when coverage &lt; floor — close gaps (cite, skip-with-reason, or
+   extract) first. Required Ops/`coverage` block:
+   `{n_include, n_cited, n_skipped_reasoned, coverage, uncovered[]}`. Hook
+   `coverage_gate.py` emits the same as advisory (soft DENY only if
+   `EVIDENTIA_COVERAGE_ENFORCE=1`; empty include_set → advisory only).
+5. **Anamnesis reconcile (P1 — before P4 extract / P6 synthesize)** —
+   `list_docs(collection=evidentia:run:<id>)` ↔ working-set ledger via
+   `reconcile_anamnesis_ledger` (hook on list_docs / hybrid PreToolUse / SessionStart resume).
+   Close `missing_extractions`; investigate `orphans`. **Multi-query MUST:**
+   `hybrid_query(collection=…, query=…, queries=[≥2])` — single-query synthesis forbidden
+   (PreToolUse advisory).
+- Produce a gap list (Ops sidecar). If non-empty: load + address each gap, then re-check.
+- Finalise only when connector gaps are empty **and** article coverage ≥ floor.
 
 ## Important Principles
 - **Scientific integrity** — never fabricate; preprints flagged; no-API sources → documented gap.
@@ -293,8 +330,9 @@ sub-checks (strictness tuned by the Adım 0.1 `completeness_gate: lenient|standa
   connector names, phase/module codes or telemetry in the reader-facing body (`report-presentation.md`).
 - **Anamnesis is ephemeral scratch for THIS PRISMA run** — not a long-lived library. Dual-write
   `collection=evidentia:run:<run_id>` and `doc_id=evrun:<run_id>:…`. Flagship:
-  `hybrid_query(collection=…)`. Unscoped hybrid/graph/global search stays denied.
-  `corpus_stats` is not the working set (`list_docs`). Hooks prefer `forget_collection`
+  `hybrid_query(collection=…, queries[≥2])` (single-query forbidden for synthesis).
+  Unscoped hybrid/graph/global search stays denied. `corpus_stats` is not the working set
+  (`list_docs`). Before P4/P6: reconcile `list_docs` ↔ ledger. Hooks prefer `forget_collection`
   on SessionEnd or a new `/evidentia` — they never wipe another tenant's docs. No Stop-hook forget.
 
 ## Limitations / Out-of-Scope
@@ -335,6 +373,8 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 
 | Version | Date | Changes |
 |---|---|---|
+| **9.0.6** | **Aug 2026** | Context-economy P1+P2: `reconcile_anamnesis_ledger` (list_docs↔ledger; missing_extractions/orphans); multi-query `hybrid_query` mandatory (advisory); `coverage_gate` auto Completeness Gate (soft DENY via `EVIDENTIA_COVERAGE_ENFORCE=1`); synthesizer required `coverage` block (`n_include`/`n_cited`/`n_skipped_reasoned`/`uncovered[]`); OpenAthens/EBSCO pass-through vs annas gap documented. **P3 eval (no doctrine bump):** offline synthetic 40-paper harness `evals/context_economy_synth.py` — `skip_silent_rate=0` on correct ledger; Gate surfaces uncovered; RDD dump proxy (see `evals/CONTEXT-ECONOMY-P3.md`). |
+| **9.0.5** | **Aug 2026** | Context-economy P0: working-set ledger (PMID\|DOI\|NCT) under `.claude/evidentia-run/<id>/`; retrieve-don't-dump floors 3 KB/8 KB + **synthesis forbidden**; Completeness Gate v2 article coverage (standard ≥0.90); ID-first P1/P2; Cömertlik = depth≠dump; screening scratch file. |
 | **9.0.4** | **Aug 2026** | Claude Directory companions wired (bioRxiv, Scite, BioRender, SNOMED CT Terminology) + ordered P1 discovery (OpenAlex→pubmed-epmc→S2→PubMed→CT→bioRxiv→Consensus→Paper Search→Elicit→Scite→AdisInsight→YÖK Tez); Claude vs self-host preference table; 13 companions. |
 | **9.0.3** | **Aug 2026** | Full-text cascade inserts **Marmara EBSCO** as Tier 3 (FIRST licensed institutional attempt): EBSCO → OpenAthens → Wiley → Annas → Unpaywall (7-tier). Fleet +1 gated server (`marmara-ebsco`). EBSCO miss MUST `SKIP-REASON` before OpenAthens. Anamnesis `collection`/`doc_id` pass-through on `ebsco_get`. |
 | **9.0.2** | **Aug 2026** | Ordered P0–P7 tool playbook (`execution-map.md`): MUST/SHOULD/MAY/OUT + `SKIP-REASON` for all 19 bundled servers + 9 companions. Completeness Gate requires skip reasons. who-gho/globocan/ema native (IHME still gap). Anamnesis exclusive-run hybrid is P4/P6 MUST after ingest. |
@@ -354,7 +394,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 ```yaml
 skill_manifest_protocol: 1.0
 skill_name: medical-research
-skill_version: 9.0.3
+skill_version: 9.0.6
 produces:
   - prisma-systematic-review-markdown (P0–P7; PRISMA flow diagram + Summary-of-Findings)
   - clean-copy-report (journal-grade reader-facing article; tooling/telemetry/viz carried

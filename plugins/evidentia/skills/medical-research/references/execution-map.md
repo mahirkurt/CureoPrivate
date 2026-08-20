@@ -1,6 +1,6 @@
-# Execution Map — Ordered PRISMA Tool Playbook (v9.0.4)
+# Execution Map — Ordered PRISMA Tool Playbook (v9.0.6)
 
-**Loaded:** before the first MCP call of a review (P1+). Completeness Gate re-reads this
+**Loaded:** before the first MCP call of a review (P1+). Completeness Gate v2 re-reads this
 file. **Binding:** which connector fires, in which order, for what purpose is decided
 here — not by convenience. Silent skip is a gate failure.
 
@@ -105,9 +105,15 @@ CONNECTORS.md §1.0/§1.2; if absent, `SKIP-REASON companion_unloaded` or docume
 
 ## P1 — Search strategy + discovery (ordered — do not skip a rung)
 
+**ID-first (context economy):** every discovery call returns **ID + title + year** into the
+working-set ledger (`.claude/evidentia-run/<run_id>/ledger.json` + `hits.jsonl`). Do **not**
+paste full abstracts/bodies as synthesis input. Prefer small `limit` + field filters; abstract
+≤~400 chars only when screening needs it. Bulk dumps ≥8 KB → **synthesis forbidden**
+(retrieve-don't-dump) — narrow the query or ingest once.
+
 Execute **in this order**. A later rung may start once the previous rung's first call
 is in flight, but the **log order and skip log follow this sequence**. Floor: ≥1 call
-per MUST/SHOULD rung (Adım 2 Cömertlik).
+per MUST/SHOULD rung (Adım 2 Cömertlik — call or `SKIP-REASON`, not raw-body dump).
 
 | Step | Connector | Tool (verbatim) | Duty |
 |---|---|---|---|
@@ -208,9 +214,11 @@ SessionEnd / next-`/evidentia` hook (`forget_collection`); no Stop-hook forget.
 ## P6 — GRADE
 
 1. Per-outcome certainty from `evidence_table` + P5 (`evidence-grading.md`).
-2. **MUST** if corpus non-empty: scoped `hybrid_query` for effect estimates / SoF cells
-   (`doc_id::idx` provenance).
-3. **OUT:** new bibliographic or regulatory calls (those belong in P1/P2/P7).
+2. **MUST** if corpus non-empty: scoped **multi-query** `hybrid_query` (`queries[]` ≥2) for
+   effect estimates / SoF cells (`doc_id::idx` provenance). Single-query synthesis **forbidden**.
+3. **MUST before synthesize:** `list_docs(collection=…)` → reconcile with working-set ledger
+   (close `missing_extractions`; investigate `orphans`).
+4. **OUT:** new bibliographic or regulatory calls (those belong in P1/P2/P7).
 
 ## P7 — PRISMA report + optional enrichment appendices
 
@@ -236,22 +244,30 @@ P7 close: hook prefers `forget_collection`. Do not `forget_document` the world.
 
 ---
 
-## Completeness Gate (binds this map)
+## Completeness Gate v2 (binds this map)
 
 Before finalising:
 
 1. Every **MUST** row ran **or** has a `SKIP-REASON`.
-2. Every bundled server (19) is either used in its home phase, tagged MAY+`enrichment_off`,
+2. Every bundled server (20) is either used in its home phase, tagged MAY+`enrichment_off`,
    or tagged OUT+`out_of_scope` for that phase. **No silent omission.**
 3. Companions: used, or `companion_unloaded` / degrade note.
 4. Anamnesis queries (if any ingest happened) used `collection=evidentia:run:<id>`
    and/or `evrun:` `doc_id` — never unscoped hybrid.
+5. **Article coverage:** `coverage = cited_or_skipped_with_reason / include_set` from
+   `.claude/evidentia-run/<id>/ledger.json`. Floors (Ops): lenient≥0.75, **standard≥0.90**,
+   strict≥0.98. Required return block:
+   `{n_include, n_cited, n_skipped_reasoned, coverage, uncovered[]}`. Below floor →
+   **refuse finalize** (close cites/skips first). Dump used as synth input is a FAIL
+   (`dump_used_as_synth_input`). Hook `coverage_gate` advisory; soft DENY only if
+   `EVIDENTIA_COVERAGE_ENFORCE=1` (empty include_set never hard-breaks).
 
-Call counts and skip log live in `<!-- OPS -->`, never the clean copy.
+Call counts, skip log, and coverage block live in `<!-- OPS -->`, never the clean copy.
 
 ## Latency / quota (unchanged)
 
 - `openfda`: serial, 1 retry, skippable.
 - OpenAthens batch: defensive pacing (sequential, 20–60 s jitter; per-run 25 / daily 100).
 - Consensus: ≤3 calls/batch.
-- No upper cap on bibliographic depth (Adım 2).
+- Bibliographic depth uncapped as **coverage**; raw dump as synth input capped
+  (retrieve-don't-dump 3 KB/8 KB; Adım 2).

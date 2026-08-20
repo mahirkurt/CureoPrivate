@@ -70,9 +70,32 @@ def main() -> int:
         # startup/clear: forget leftover from a crashed prior session, then mint.
         if src in {"startup", "clear"}:
             led = rotate_run(forget_previous=True)
-        else:
-            led = ensure_ledger()
-        emit("SessionStart", context_message(led))
+            emit("SessionStart", context_message(led))
+            return 0
+
+        led = ensure_ledger()
+        ctx = context_message(led)
+        # P1 leftover path: on resume/compact, reconcile Anamnesis doc_id ledger
+        # with bibliographic working-set (advisory only — no MCP list_docs call).
+        try:
+            from working_set_ledger import (
+                load_working_set,
+                reconcile_advisory,
+                reconcile_anamnesis_ledger,
+                save_working_set,
+            )
+            ws = load_working_set(led["run_id"])
+            report = reconcile_anamnesis_ledger(
+                ws, list(led.get("doc_ids") or []), run_id=led["run_id"], phase="P4",
+            )
+            if report.get("changed"):
+                save_working_set(ws)
+            if (led.get("doc_ids") or report.get("missing_extractions")
+                    or report.get("orphans") or (ws.get("records") or {})):
+                ctx = ctx + "\n" + reconcile_advisory(report, ws)
+        except Exception:
+            pass
+        emit("SessionStart", ctx)
         return 0
     except Exception:
         return 0

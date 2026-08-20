@@ -22,6 +22,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 | `terminology_map` | İlk `med-terminologies`/`nlm-rxnorm`/`nih-clinicaltables` | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar taraması | KOL haritası, ağ analizi |
 | `evidence_index` | İlk anamnesis `ingest_document` — dual-write `collection=evidentia:run:<run_id>` + `doc_id=evrun:<run_id>:<DOI>` (Tier 3 openathens `oa_fetch_fulltext` veya tüketilmiş `oa_fetch_pdf` dosyası · Tier 4 Wiley · Tier 5 annas reader veya tüketilmiş `download_document` dosyası · yüklenen PDF). Kısa-ömürlü resource link değil DOI/MD5 + SHA-256/provenance saklanır. Koşu bitince `forget_collection` — kalıcı kütüphane değil | sentez, tam-metin, scoped `hybrid_query(collection=…)` / önekli `semantic_search` — **ham metin değil, indeks** |
+| `working_set_ledger` | PostToolUse `working_set_ledger.py` — P1/P2 search (+ fulltext) sonuçlarından PMID\|DOI\|NCT upsert; yol `.claude/evidentia-run/<run_id>/ledger.json` (+ `hits.jsonl`, `screening_table.jsonl`). **Anamnesis `evidentia-anamnesis-run.json` doc_id ledger'ından ayrı** (münhasırlık bozulmaz). P1: `list_docs` → `reconcile_anamnesis_ledger` (missing_extractions / orphans). P2: `coverage_gate.py` Completeness Gate advisory | Completeness Gate v2 coverage%; P3/P4/P6 status geçişleri; synthesizer `coverage` bloğu (`n_include`/`n_cited`/`n_skipped_reasoned`/`uncovered[]`) |
 
 ---
 
@@ -41,13 +42,23 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   `regulatory_snapshot`'a yazılır; precomputed kanıt **BİREBİR** taşınır (PopHIVE sayıları
   yeniden-türetilMEZ). YALNIZCA ABD — global/Türkiye yük için bu artefakta yazma (belgelenmiş boşluk).
 - **anamnesis `evidence_index` (self-host) — retrieve-don't-dump + münhasır scratch.** Tam-metin
-  makale/kitap veya büyük araç çıktısı **asla ham olarak bağlama dökülmez**. Dual-write: bir
+  makale/kitap veya büyük araç çıktısı **asla ham olarak bağlama dökülmez** (eşik: fulltext
+  ≥3 KB / bulk ≥8 KB → **sentez yasağı**; yalnız ingest + `hybrid_query` / PICO kartı). Dual-write: bir
   belge **bir kez** `ingest_document(collection=evidentia:run:<run_id>, doc_id=evrun:<run_id>:<PMID|DOI>)`
   ile yazılır. Flagship: `hybrid_query(collection=aynı, queries[])`. `semantic_search` collection
   ve/veya önekli `doc_id` / `doc_ids[]` ile de ALLOW. Kapsamsız hybrid/graph/global search
   PreToolUse DENY (canlı unscoped `semantic_search` compat için durur). Aynı önekli `doc_id` iki
   kez ingest edilmez. Varlık/ilişki çıkarımı orchestrator'dadır → `upsert_triples` (collection
   veya her triple.`doc_id` önekli); Worker yalnız depolar. `nodeKey`/`edgeId` collection içerir.
+- **`working_set_ledger` (bibliyografik kapsam).** Alanlar: `id`, `title`, `sources[]`,
+  `phase_seen`, `status` ∈ {identified\|screened\|included\|extracted\|cited\|skipped},
+  `skip_reason`, `anamnesis_doc_id?`, `cited_chunks[]`, `extraction_gap?`. Completeness Gate v2:
+  `coverage = cited_or_skipped_with_reason / include_set` (standard floor **0.90**).
+  Synthesizer dönüşü: `{n_include, n_cited, n_skipped_reasoned, coverage, uncovered[]}`.
+  Anamnesis doc_id ledger ile **birleştirilmez**; `reconcile_anamnesis_ledger` yalnız bağlar.
+  **P3 ölçüm (eval-only):** `skills/medical-research/evals/context_economy_synth.py` —
+  sentetik 40 makale; doğru ledger kullanımında `skip_silent_rate=0`; coverage_gate
+  uncovered ID'leri listeler (`CONTEXT-ECONOMY-P3.md`).
 - **anamnesis korpusu KOŞU-İÇİ doldurulur — boş-set guard'ı (D9).** anamnesis kalıcı bir kütüphane
   DEĞİLDİR. `corpus_stats` **küresel gözlemdir**; `docs > 0` bu koşunun çalışma seti demek DEĞİLDİR.
   Çalışma seti = `list_docs(collection=evidentia:run:<run_id>)` / ledger. Öneksiz + koleksiyonsuz
@@ -57,10 +68,11 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   `/evidentia` kancası bu koşunun koleksiyonunu siler (idempotent). Stop-hook forget YOK.
   Öneksiz / başka koşunun id'si veya koleksiyonu guard'da DENY. Küresel wipe yok.
   `forget_by_prefix` API değildir.
-- **RECALL — çok-sorgulu ayrıştırma (v1.6.0, "hiçbir detayı atlamama" kuralı).** Karmaşık/çok-yönlü bir
-  soruda TEK `query` ile çağırılMAZ. Soruyu ayrı **alt-yönlere + eşanlamlı/terminoloji varyantlarına**
-  ayır ve hepsini `queries:[...]` ile `hybrid_query(collection=evidentia:run:<run_id>)` veya
-  scoped `semantic_search`'e geçir. Yalnız bu chunk'lardan sentezle; `doc_id::idx` cite.
+- **RECALL — çok-sorgulu ayrıştırma (v1.6.0 + P1 enforce, "hiçbir detayı atlamama").** Karmaşık/
+  çok-yönlü sentezde TEK `query` ile çağırılMAZ (`queries[]` ≥2 zorunlu; PreToolUse advisory).
+  Soruyu ayrı **alt-yönlere + eşanlamlı/terminoloji varyantlarına** ayır ve hepsini
+  `hybrid_query(collection=evidentia:run:<run_id>, queries:[...])` veya scoped
+  `semantic_search`'e geçir. Yalnız bu chunk'lardan sentezle; `doc_id::idx` cite.
 
 ---
 

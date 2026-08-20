@@ -34,18 +34,34 @@ Flagship: `../skills/medical-research/SKILL.md`.
    `upsert_triples(collection=aynı, [{…, doc_id:"evrun:<run_id>:<DOI>", evidence:"<doc_id::idx>"}])`
    yaz. Kapsamsız hybrid/graph/global search YASAK.
 
-4. **Flagship sorgula.** Çok-yönlü soruyu `queries[]` ile ayır; `hybrid_query(collection=aynı,
-   queries=[…])` tek pakette birleştirir. `list_docs(collection=aynı)` seti doğrular.
+4. **Flagship sorgula.** Çok-yönlü soruyu `queries[]` (≥2) ile ayır; tek `query` yasak.
+   `hybrid_query(collection=aynı, query=…, queries=[…])` tek pakette birleştirir.
+   `list_docs(collection=aynı)` → ledger reconcile (`missing_extractions` / `orphans`).
    Kapsam zayıfsa: daha fazla kaynak ingest et → tekrar sorgula. Graph hop: yalnız
    `graph_neighbors`/`subgraph` **collection veya önekli doc_id ile**.
 
 5. **Sentezle (P6, GRADE-disiplinli).** **YALNIZ** bu koşunun chunk'larından sentez yaz; her
    iddiayı **chunk granülaritesinde** (`doc_id::idx`) atıfla. Çelişen kanıtı işaretle; sonuç-bazlı
    GRADE kesinliği (`references/evidence-grading.md`) ve Summary-of-Findings diline sadık kal.
+   Ham fulltext/bulk dump **sentez girdisi değildir** (retrieve-don't-dump; ≥3 KB/≥8 KB → yasak).
 
-6. **Temizlik.** P7 bitince veya komut abort olunca SessionEnd / sonraki `/evidentia` kancası
+6. **Coverage bloğu (zorunlu dönüş).** Parent'a damıtık paketle birlikte Completeness Gate v2
+   özeti ver:
+   `{n_include, n_cited, n_skipped_reasoned, coverage, uncovered[]}`
+   (`coverage = cited_or_skipped_with_reason / include_set`, standard floor 0.90) from
+   `.claude/evidentia-run/<run_id>/ledger.json`. `pass:false` → finalize etme.
+   Hook `coverage_gate` aynı bloğu advisory olarak yüzeyler (`EVIDENTIA_COVERAGE_ENFORCE=1`
+   soft DENY).
+
+7. **Temizlik.** P7 bitince veya komut abort olunca SessionEnd / sonraki `/evidentia` kancası
    `forget_collection` tercih eder (yedek: ledger `forget_document`). Elle küresel wipe yok.
    Stop-hook forget yok.
+
+## Parent sözleşmesi
+
+Ana pencere **yalnız distillate** görür: evidence_table özeti + gap listesi + `coverage` bloğu.
+Anamnesis `hybrid_query` bu komutta (veya `evidence-synthesizer` child'ta) kalır — parent'a ham
+chunk dökülmez.
 
 ## Sınırlar (dürüst)
 

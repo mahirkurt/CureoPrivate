@@ -6,7 +6,7 @@ description: >-
   tam-metin + çıkarım + RoB + GRADE") çağrılır; P2–P6 fan-out'unun (arama → tarama → çıkarım →
   yanlılık riski → sentez) onlarca connector çağrısının ham gürültüsünü kendi bağlam penceresinde
   tüketir ve ana pencereye YALNIZ damıtılmış kanıt paketini + numaralı SR sentez çıktısını
-  döndürür. medical-research v9.0.4 PRISMA protokolünü (P0–P7) çalıştırır; temiz-kopya doktrinine
+  döndürür. medical-research v9.0.6 PRISMA protokolünü (P0–P7) çalıştırır; temiz-kopya doktrinine
   ve tek-sefer/kanonik-önbellek sözleşmesine tabidir. Tek-fazlı/hızlı sorgular için ÇAĞIRMA —
   doğrudan /evidentia yeterlidir; bu ajan bağlam-pencere ekonomisi gerektiğinde devreye girer.
 # GEN:agent-tools BEGIN
@@ -35,9 +35,13 @@ connector gürültüsünün ana pencereyi doldurmasını engellemek.
 
 ## Ne zaman aktifsin
 
-Ana asistan seni şu durumlarda çağırır: çok kaynaklı kapsamlı arama **veya** tam-metin korpus
-getirme+çıkarım **veya** çok-çalışmalı RoB+GRADE değerlendirmesi içeren **ağır** koşumlar. Tek-fazlı/
-hızlı sorgular sana gelmez.
+Ana asistan seni şu durumlarda çağırır (C lite — bağlam ekonomisi):
+- `include_set` ≥ 8 **veya** Anamnesis ingest ≥ 5 **veya** kullanıcı `/evidentia-synthesize`
+- çok kaynaklı kapsamlı arama **veya** tam-metin korpus getirme+çıkarım **veya** çok-çalışmalı
+  RoB+GRADE
+
+Tek-fazlı/hızlı sorgular sana gelmez. Parent yalnız **damıtık** paket + `coverage` bloğu görür;
+ham connector gövdesi senin pencerenizde kalır (retrieve-don't-dump; ID-first P1/P2).
 
 ## Yürütme sözleşmesi
 
@@ -67,23 +71,37 @@ hızlı sorgular sana gelmez.
    Flagship: `hybrid_query(collection=aynı, queries[])`. Scoped `semantic_search` /
    `graph_neighbors` / `subgraph` ALLOW. Kapsamsız hybrid/graph/global search **YASAK**
    (PreToolUse DENY). `list_docs(collection=…)` çalışma setidir; `corpus_stats` değildir.
-   Triple yazımı `upsert_triples` + önekli `doc_id`. Koşu bitince hook `forget_collection`
-   tercih eder (yedek: ledger `forget_document`); küresel wipe yok. Stop-hook forget yok.
+   **P4/P6 öncesi zorunlu:** `list_docs` ↔ working-set ledger reconcile
+   (`missing_extractions` / `orphans`). **Sentez için multi-query MUST** (`queries[]` ≥2;
+   tek `query` yasak — PreToolUse advisory). Triple yazımı `upsert_triples` + önekli `doc_id`.
+   Koşu bitince hook `forget_collection` tercih eder (yedek: ledger `forget_document`);
+   küresel wipe yok. Stop-hook forget yok.
    Playbook: `../skills/medical-research/references/execution-map.md` (P0–P7 MUST/SHOULD/MAY/OUT
    + `SKIP-REASON`; sessiz atlama yok).
 
    **Tam-metin dosya seçimi.** Tier 3 Marmara EBSCO: `ebsco_search` → `ebsco_get` (metin/RAG;
    `collection`/`doc_id` geçir). Tier 4 OpenAthens: metin/alıntı/RAG için
-   `oa_fetch_fulltext`; sağlayıcının orijinal PDF'si gerektiğinde `oa_fetch_pdf(doi|url)` kullan.
-   Lisanslı band başarısızsa ve telif kapısı izin veriyorsa Tier 5'te okuma araçlarını, yalnız
-   orijinal PDF/EPUB vb. gerekiyorsa `download_document(id=<DOI|MD5>)` kullan. İki dosya aracı da
-   kısa-ömürlü opaque `resource_link` döndürür: hemen tüket, linki kalıcı cache'e yazma; kanonik
-   kayıtta DOI/MD5 + SHA-256 + provenance tut ve uzun dosyayı anamnesis'e ingest et.
+   `oa_fetch_fulltext` (**collection/doc_id pass-through**); sağlayıcının orijinal PDF'si
+   gerektiğinde `oa_fetch_pdf(doi|url)` kullan. Tier 6 annas: `read_article` /
+   `download_document` **collection KABUL ETMEZ** (API gap) → sonra
+   `ingest_document(dual-write)` zorunlu. Lisanslı band başarısızsa ve telif kapısı izin
+   veriyorsa Tier 5'te okuma araçlarını kullan. İki dosya aracı da kısa-ömürlü opaque
+   `resource_link` döndürür: hemen tüket, linki kalıcı cache'e yazma; kanonik kayıtta
+   DOI/MD5 + SHA-256 + provenance tut.
 
 4. **İzolasyon.** Ham tool çıktıları, ara JSON, başarısız-deneme gürültüsü **senin** bağlamında
    kalır. Ana asistana **yalnız**: (a) damıtılmış kanonik artefakt özetleri, (b) P7 SR rapor
    sözleşmesine göre numaralı sentez (PRISMA akış + kanıt tablosu + RoB özeti + SoF) **+ chunk-düzeyi
-   provenance** (`doc_id::idx`), (c) boşluk raporu ("VERİ BULUNAMADI" + denenen sorgular) döner.
+   provenance** (`doc_id::idx`), (c) boşluk raporu ("VERİ BULUNAMADI" + denenen sorgular),
+   (d) **zorunlu `coverage` bloğu** (Completeness Gate v2) döner:
+   ```json
+   {"n_include": 12, "n_cited": 10, "n_skipped_reasoned": 1,
+    "coverage": 0.917, "floor": 0.90, "pass": true, "gate": "standard",
+    "uncovered": [{"key": "pmid:12345678", "status": "extracted"}]}
+   ```
+   `pass:false` veya `uncovered` doluysa finalize etme — eksik cite/skip_reason kapat. Kaynak:
+   `.claude/evidentia-run/<run_id>/ledger.json` (+ hook `coverage_gate`; soft DENY yalnız
+   `EVIDENTIA_COVERAGE_ENFORCE=1`).
 
 5. **Temiz-kopya doktrini.** Dönen çıktıda VIZ/OPS yorumları, araç-sızıntısı, ham connector
    meta'sı **bulunmaz**. Boşluklar görünür; sessiz atlama yok.

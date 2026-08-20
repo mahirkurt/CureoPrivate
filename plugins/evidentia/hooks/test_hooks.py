@@ -79,22 +79,26 @@ CASES_GUARD = [
 # hook exists to prevent. The three "bulk" sizes below are the ones MEASURED on the live fleet that
 # day, each of which the old name-keyed hook let through without a word.
 CASES_RDD = [
-    ("mcp__claude_ai_openathens__oa_fetch_fulltext", 8000, "MSG", "ingest_document",
-     "fulltext over threshold"),
+    ("mcp__claude_ai_openathens__oa_fetch_fulltext", 3500, "MSG", "SENTEZ YASAK",
+     "fulltext over 3KB threshold (P0)"),
     ("mcp__claude_ai_openathens__oa_fetch_fulltext", 5, "ALLOW", None,
      "fulltext under threshold stays silent"),
-    ("mcp__claude_ai_openathens__oa_fetch_pdf", 8000, "MSG", "ingest_document",
+    ("mcp__claude_ai_openathens__oa_fetch_pdf", 3500, "MSG", "ingest_document",
      "openathens original PDF tool is classified as fulltext"),
-    ("mcp__annas-reader__read_document", 8000, "MSG", "ingest_document",
+    ("mcp__annas-reader__read_document", 3500, "MSG", "ingest_document",
      "annas read_document (real fleet name, was missing from the list)"),
-    ("mcp__annas-reader__download_document", 8000, "MSG", "ingest_document",
+    ("mcp__annas-reader__download_document", 3500, "MSG", "ingest_document",
      "annas original-file tool is classified as fulltext"),
-    ("mcp__openfda__openfda_search", 254891, "MSG", "DARALT",
-     "openfda 250KB bulk dump must warn and say narrow-the-query"),
+    ("mcp__marmara-ebsco__ebsco_get", 3500, "MSG", "SENTEZ YASAK",
+     "marmara-ebsco body is classified as fulltext"),
+    ("mcp__openfda__openfda_search", 254891, "MSG", "SENTEZ YASAK",
+     "openfda 250KB bulk dump must warn and forbid synthesis"),
     ("mcp__titck__search_drugs", 78837, "MSG", "DARALT", "titck 79KB bulk dump must warn"),
     ("mcp__anamnesis__semantic_search", 50444, "MSG", "DARALT", "anamnesis 50KB bulk dump must warn"),
     ("mcp__globocan__gco_list_cancers", 4596, "ALLOW", None,
-     "normal-sized result stays silent (hook must not become noise)"),
+     "sub-8KB non-fulltext stays silent (bulk floor 8KB)"),
+    ("mcp__openalex__openalex_search_entities", 9000, "MSG", "SENTEZ YASAK",
+     "bulk search over 8KB forbids synthesis"),
     ("Read", 999999, "ALLOW", None, "non-MCP tools are out of scope"),
 ]
 
@@ -394,6 +398,312 @@ def _anamnesis_cases():
     return fails
 
 
+def _working_set_cases():
+    """Bibliographic working-set ledger (P0.1) — ID upsert + coverage floors."""
+    fails = 0
+    env, _ledger, _log = _anam_env()
+    ws_dir = tempfile.mkdtemp()
+    env = dict(env)
+    env["EVIDENTIA_WORKING_SET_DIR"] = ws_dir
+
+    payload = {
+        "tool_name": "mcp__pubmed-epmc__pubmed_search_articles",
+        "tool_result": (
+            '{"pmid":"12345678","title":"Emicizumab trial A",'
+            '"doi":"10.1234/Example.DOI","title2":"NSCLC paper B",'
+            '"id":"NCT01234567","title3":"Registry C"}'
+        ),
+    }
+    code, j = run("working_set_ledger.py", payload, env)
+    if code != 0:
+        fails += 1
+        print("FAIL working_set: non-zero exit")
+    if decision(j) != "MSG":
+        fails += 1
+        print("FAIL working_set: expected advisory MSG on ID upsert")
+    ledger_file = os.path.join(ws_dir, "ledger.json")
+    if not os.path.isfile(ledger_file):
+        fails += 1
+        print("FAIL working_set: ledger.json missing")
+        return fails
+    ws = _read_json(ledger_file)
+    recs = ws.get("records") or {}
+    want_keys = {"pmid:12345678", "doi:10.1234/example.doi", "nct:NCT01234567"}
+    if not want_keys.issubset(set(recs)):
+        fails += 1
+        print(f"FAIL working_set: missing ids — got {sorted(recs)}")
+    for k in want_keys:
+        if (recs.get(k) or {}).get("status") != "identified":
+            fails += 1
+            print(f"FAIL working_set: {k} status != identified")
+    hits = os.path.join(ws_dir, "hits.jsonl")
+    if not os.path.isfile(hits):
+        fails += 1
+        print("FAIL working_set: hits.jsonl missing")
+
+    sys.path.insert(0, HERE)
+    import working_set_ledger as wsl  # noqa: E402
+    stats0 = wsl.coverage_stats(ws)
+    if stats0["include_set"] != 0 or not stats0["pass"]:
+        fails += 1
+        print(f"FAIL working_set: empty include should pass — {stats0}")
+    keys = list(want_keys)
+    wsl.set_status(ws, keys[0], "included", phase="P3")
+    wsl.set_status(ws, keys[1], "cited", phase="P6", cited_chunk="evrun:x:doi::0")
+    wsl.set_status(ws, keys[2], "skipped", skip_reason="abstract_only", phase="P4")
+    stats1 = wsl.coverage_stats(ws, gate="standard")
+    if stats1["include_set"] != 3 or stats1["cited_or_skipped_with_reason"] != 2:
+        fails += 1
+        print(f"FAIL working_set: coverage counts — {stats1}")
+    if stats1["pass"]:
+        fails += 1
+        print("FAIL working_set: 2/3 should fail standard floor 0.90")
+    wsl.set_status(ws, keys[0], "cited", phase="P6", cited_chunk="evrun:x:pmid::1")
+    stats2 = wsl.coverage_stats(ws, gate="standard")
+    if not stats2["pass"] or stats2["coverage"] < 0.90:
+        fails += 1
+        print(f"FAIL working_set: 3/3 should pass — {stats2}")
+
+    _, j2 = run("working_set_ledger.py", {
+        "tool_name": "mcp__openfda__openfda_search",
+        "tool_result": '{"pmid":"99999999"}',
+    }, env)
+    if decision(j2) != "ALLOW":
+        fails += 1
+        print("FAIL working_set: non-search tool should be silent")
+
+    return fails
+
+
+def _reconcile_coverage_cases():
+    """P1 reconcile + P2 coverage_gate advisory / soft DENY."""
+    fails = 0
+    env, ledger, _log = _anam_env()
+    ws_dir = tempfile.mkdtemp()
+    env = dict(env)
+    env["EVIDENTIA_WORKING_SET_DIR"] = ws_dir
+    # Parent-process helpers must see the same scratch dir as the subprocess hooks.
+    prev_ws = os.environ.get("EVIDENTIA_WORKING_SET_DIR")
+    os.environ["EVIDENTIA_WORKING_SET_DIR"] = ws_dir
+    prev_proj = os.environ.get("CLAUDE_PROJECT_DIR")
+    if env.get("CLAUDE_PROJECT_DIR"):
+        os.environ["CLAUDE_PROJECT_DIR"] = env["CLAUDE_PROJECT_DIR"]
+
+    try:
+        # Seed bibliographic ledger via search PostToolUse
+        code0, j0 = run("working_set_ledger.py", {
+            "tool_name": "mcp__pubmed-epmc__pubmed_search_articles",
+            "tool_result": (
+                '{"pmid":"11111111","title":"Paper A",'
+                '"doi":"10.1000/aaa","title2":"Paper B"}'
+            ),
+        }, env)
+        if code0 != 0:
+            fails += 1
+            print("FAIL reconcile: seed hook non-zero")
+            return fails
+        sys.path.insert(0, HERE)
+        import working_set_ledger as wsl  # noqa: E402
+        import importlib
+        importlib.reload(wsl)
+        ws = wsl.load_working_set()
+        keys = list((ws.get("records") or {}).keys())
+        if len(keys) < 2:
+            fails += 1
+            print(f"FAIL reconcile: seed missing — {keys} (hook={decision(j0)})")
+            return fails
+        k_a, k_b = keys[0], keys[1]
+        wsl.set_status(ws, k_a, "included", phase="P3")
+        wsl.set_status(ws, k_b, "included", phase="P3")
+        wsl.save_working_set(ws)
+
+        rid = (_read_json(ledger).get("run_id") or ANAM_RUN)
+        doc_a = f"evrun:{rid}:{(ws['records'][k_a].get('id'))}"
+        list_payload = {
+            "tool_name": "mcp__anamnesis__list_docs",
+            "tool_input": {"collection": f"evidentia:run:{rid}"},
+            "tool_result": json.dumps({
+                "docs": [
+                    {"doc_id": doc_a, "title": "Paper A", "n_chunks": 3},
+                    {"doc_id": f"evrun:{rid}:orphan-xyz", "title": "Orphan", "n_chunks": 1},
+                ]
+            }),
+        }
+        code, j = run("working_set_ledger.py", list_payload, env)
+        if code != 0 or decision(j) != "MSG":
+            fails += 1
+            print("FAIL reconcile: list_docs should advisory MSG")
+        ctx = ((j or {}).get("hookSpecificOutput") or {}).get("additionalContext", "")
+        if "missing_extractions" not in ctx or "orphans" not in ctx:
+            fails += 1
+            print("FAIL reconcile: advisory missing gap labels")
+        ws2 = wsl.load_working_set()
+        rec_a = (ws2.get("records") or {}).get(k_a) or {}
+        if rec_a.get("anamnesis_doc_id") != doc_a or rec_a.get("status") != "extracted":
+            fails += 1
+            print(f"FAIL reconcile: doc_a not linked/extracted — {rec_a}")
+        report = wsl.reconcile_anamnesis_ledger(
+            ws2, [doc_a, f"evrun:{rid}:orphan-xyz"], run_id=rid,
+        )
+        if not any(m.get("key") == k_b for m in report["missing_extractions"]):
+            fails += 1
+            print(f"FAIL reconcile: k_b should be missing — {report}")
+        if not any("orphan-xyz" in o for o in report["orphans"]):
+            fails += 1
+            print(f"FAIL reconcile: orphan not surfaced — {report}")
+
+        block = wsl.coverage_block(ws2, gate="standard")
+        for field in ("n_include", "n_cited", "n_skipped_reasoned", "coverage", "uncovered"):
+            if field not in block:
+                fails += 1
+                print(f"FAIL coverage_block: missing {field}")
+
+        _, jh = run("coverage_gate.py", {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "mcp__anamnesis__hybrid_query",
+            "tool_input": {
+                "collection": f"evidentia:run:{rid}",
+                "query": "emicizumab efficacy",
+            },
+        }, env)
+        if decision(jh) != "MSG":
+            fails += 1
+            print("FAIL coverage_gate: single-query hybrid should advisory")
+        else:
+            msg = (jh or {}).get("systemMessage", "") + str(
+                ((jh or {}).get("hookSpecificOutput") or {}).get("additionalContext", "")
+            )
+            if "queries[]" not in msg and "multi-query" not in msg.lower():
+                fails += 1
+                print("FAIL coverage_gate: hybrid advisory missing multi-query hint")
+
+        _, jh2 = run("coverage_gate.py", {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "mcp__anamnesis__hybrid_query",
+            "tool_input": {
+                "collection": f"evidentia:run:{rid}",
+                "query": "emicizumab efficacy",
+                "queries": ["efficacy", "safety", "population"],
+            },
+        }, env)
+        if decision(jh2) == "DENY":
+            fails += 1
+            print("FAIL coverage_gate: default must not DENY hybrid")
+
+        _, ju = run("coverage_gate.py", {
+            "hook_event_name": "UserPromptSubmit",
+            "prompt": "P7 finalize the PRISMA report please",
+        }, env)
+        if decision(ju) != "MSG":
+            fails += 1
+            print("FAIL coverage_gate: finalize prompt should advisory")
+        else:
+            umsg = (ju or {}).get("systemMessage", "")
+            if "Completeness Gate" not in umsg and "coverage" not in umsg.lower():
+                fails += 1
+                print("FAIL coverage_gate: finalize advisory missing coverage")
+
+        env_enf = dict(env)
+        env_enf["EVIDENTIA_COVERAGE_ENFORCE"] = "1"
+        _, jd = run("coverage_gate.py", {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "mcp__anamnesis__hybrid_query",
+            "tool_input": {
+                "collection": f"evidentia:run:{rid}",
+                "query": "x",
+                "queries": ["a", "b"],
+            },
+        }, env_enf)
+        if decision(jd) != "DENY":
+            fails += 1
+            print("FAIL coverage_gate: enforce=1 below floor should DENY hybrid")
+
+        empty_dir = tempfile.mkdtemp()
+        env_empty = dict(env_enf)
+        env_empty["EVIDENTIA_WORKING_SET_DIR"] = empty_dir
+        _, je = run("coverage_gate.py", {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "mcp__anamnesis__hybrid_query",
+            "tool_input": {
+                "collection": f"evidentia:run:{rid}",
+                "query": "x",
+                "queries": ["a", "b"],
+            },
+        }, env_empty)
+        if decision(je) == "DENY":
+            fails += 1
+            print("FAIL coverage_gate: empty include_set must not DENY")
+
+        _, jo = run("coverage_gate.py", {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "mcp__openathens__oa_fetch_fulltext",
+            "tool_input": {"doi": "10.1000/aaa"},
+        }, env)
+        if decision(jo) != "MSG":
+            fails += 1
+            print("FAIL coverage_gate: oa_fetch without collection should advisory")
+    finally:
+        if prev_ws is None:
+            os.environ.pop("EVIDENTIA_WORKING_SET_DIR", None)
+        else:
+            os.environ["EVIDENTIA_WORKING_SET_DIR"] = prev_ws
+        if prev_proj is None:
+            os.environ.pop("CLAUDE_PROJECT_DIR", None)
+        else:
+            os.environ["CLAUDE_PROJECT_DIR"] = prev_proj
+
+    return fails
+
+
+def _context_economy_p3_cases():
+    """P3 synthetic 40-paper eval — silent-skip / Gate v2 / RDD dump proxy (offline)."""
+    fails = 0
+    eval_dir = os.path.join(ROOT, "skills", "medical-research", "evals")
+    sys.path.insert(0, eval_dir)
+    try:
+        import context_economy_synth as ces  # noqa: E402
+    except Exception as exc:
+        print(f"FAIL p3-synth: import — {exc}")
+        return 1
+    code, report = ces.run_eval()
+    if code == 2:
+        fails += 1
+        print(f"FAIL p3-synth setup: {report.get('error')}")
+        return fails
+    for msg in report.get("fails") or []:
+        fails += 1
+        print(f"FAIL p3-synth: {msg}")
+    # Derive assertion count from fixture floors (no magic number drift).
+    # correct(3) + silent(4 planted checks collapsed to fail-list) + dump(2) —
+    # we count scenario pass/fail blocks as 3 units when green.
+    if not report.get("fails"):
+        # Explicit floor locks so a silent green cannot hide a metric regression.
+        correct = ((report.get("scenarios") or {}).get("correct_ledger") or {}).get(
+            "gold_metrics"
+        ) or {}
+        if correct.get("skip_silent_rate") != 0.0:
+            fails += 1
+            print(f"FAIL p3-synth: correct skip_silent_rate != 0 — {correct}")
+        if not correct.get("gate_pass"):
+            fails += 1
+            print(f"FAIL p3-synth: correct gate_pass false — {correct}")
+        silent = ((report.get("scenarios") or {}).get("silent_skips") or {}).get(
+            "gold_metrics"
+        ) or {}
+        planted = ((report.get("scenarios") or {}).get("silent_skips") or {}).get(
+            "planted_silent"
+        ) or []
+        unc = set(silent.get("uncovered_keys") or [])
+        if not planted or not set(planted).issubset(unc):
+            fails += 1
+            print(f"FAIL p3-synth: planted silent not in uncovered — {planted} vs {unc}")
+        dump = ((report.get("scenarios") or {}).get("dump_pressure") or {}).get("dump") or {}
+        if int(dump.get("dump_trigger_events") or 0) < 3:
+            fails += 1
+            print(f"FAIL p3-synth: dump triggers < 3 — {dump}")
+    return fails
+
+
 def main():
     fails = 0
 
@@ -420,6 +730,9 @@ def main():
         print("FAIL guard disable-flag")
 
     fails += _anamnesis_cases()
+    fails += _working_set_cases()
+    fails += _reconcile_coverage_cases()
+    fails += _context_economy_p3_cases()
 
     # malformed → fail-open
     p = subprocess.run([sys.executable, os.path.join(HERE, "guard_tool_call.py")],
@@ -517,7 +830,13 @@ def main():
     #   5 = fleet_probe cache: reuse-on-same + 3 roster mutations + legacy-format
     #  51 = anamnesis exclusive-run isolate + cleanup (guard/ledger/lifecycle; live MCP yok)
     #      27 table-driven guard + 24 ledger/lifecycle (dual-write collection + prefix)
-    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 5 + 2 * len(gated) + 51
+    #   8 = working-set ledger (ID upsert + coverage floors + non-search silence)
+    #  12 = reconcile + coverage_gate (list_docs link, missing/orphan, block schema,
+    #       hybrid multi-query advisory, finalize advisory, enforce DENY, empty no-DENY,
+    #       oa collection advisory)
+    #   4 = P3 context-economy synth floor locks (silent=0, gate_pass, planted uncovered,
+    #       dump triggers≥3) — detailed scenario fails counted in fails above
+    total = len(CASES_GUARD) + len(CASES_RDD) + 3 + 5 + 2 * len(gated) + 51 + 8 + 12 + 4
     if fails:
         print(f"\n{fails}/{total} FAILED")
         return 1

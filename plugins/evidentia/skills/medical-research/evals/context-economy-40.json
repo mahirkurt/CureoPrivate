@@ -1,0 +1,148 @@
+{
+  "schema": "evidentia.context_economy_synth.v1",
+  "description": "Offline synthetic 40-paper corpus for context-economy P3. No live MCP, no copyrighted text — synthetic PMIDs/DOIs/titles only.",
+  "run_id": "ce40synth0001",
+  "n_papers": 40,
+  "gold_include": [
+    "pmid:30000001",
+    "pmid:30000002",
+    "pmid:30000003",
+    "pmid:30000004",
+    "pmid:30000005",
+    "pmid:30000006",
+    "pmid:30000007",
+    "pmid:30000008",
+    "doi:10.9999/synth.a09",
+    "doi:10.9999/synth.a10",
+    "doi:10.9999/synth.a11",
+    "nct:NCT90000001",
+    "nct:NCT90000002",
+    "pmid:30000014"
+  ],
+  "papers": [
+    {"id": "30000001", "id_kind": "pmid", "title": "Synth efficacy RCT alpha", "year": 2018},
+    {"id": "30000002", "id_kind": "pmid", "title": "Synth safety cohort beta", "year": 2019},
+    {"id": "30000003", "id_kind": "pmid", "title": "Synth meta-analysis gamma", "year": 2020},
+    {"id": "30000004", "id_kind": "pmid", "title": "Synth dose-finding delta", "year": 2020},
+    {"id": "30000005", "id_kind": "pmid", "title": "Synth real-world epsilon", "year": 2021},
+    {"id": "30000006", "id_kind": "pmid", "title": "Synth pediatric zeta", "year": 2021},
+    {"id": "30000007", "id_kind": "pmid", "title": "Synth biomarker eta", "year": 2022},
+    {"id": "30000008", "id_kind": "pmid", "title": "Synth QoL theta", "year": 2022},
+    {"id": "10.9999/synth.a09", "id_kind": "doi", "title": "Synth mechanism iota", "year": 2023},
+    {"id": "10.9999/synth.a10", "id_kind": "doi", "title": "Synth PK/PD kappa", "year": 2023},
+    {"id": "10.9999/synth.a11", "id_kind": "doi", "title": "Synth network meta lambda", "year": 2024},
+    {"id": "NCT90000001", "id_kind": "nct", "title": "Synth registry mu", "year": 2024},
+    {"id": "NCT90000002", "id_kind": "nct", "title": "Synth registry nu", "year": 2025},
+    {"id": "30000014", "id_kind": "pmid", "title": "Synth long-term xi", "year": 2025},
+    {"id": "30000015", "id_kind": "pmid", "title": "Synth off-topic omicron", "year": 2017},
+    {"id": "30000016", "id_kind": "pmid", "title": "Synth animal-only pi", "year": 2016},
+    {"id": "30000017", "id_kind": "pmid", "title": "Synth case-report rho", "year": 2015},
+    {"id": "30000018", "id_kind": "pmid", "title": "Synth letter sigma", "year": 2014},
+    {"id": "30000019", "id_kind": "pmid", "title": "Synth protocol tau", "year": 2018},
+    {"id": "30000020", "id_kind": "pmid", "title": "Synth conference upsilon", "year": 2019},
+    {"id": "10.9999/synth.b21", "id_kind": "doi", "title": "Synth duplicate phi", "year": 2020},
+    {"id": "10.9999/synth.b22", "id_kind": "doi", "title": "Synth wrong-pop chi", "year": 2021},
+    {"id": "10.9999/synth.b23", "id_kind": "doi", "title": "Synth no-outcome psi", "year": 2022},
+    {"id": "NCT90000003", "id_kind": "nct", "title": "Synth unfinished omega", "year": 2023},
+    {"id": "30000025", "id_kind": "pmid", "title": "Synth language-barrier aa", "year": 2019},
+    {"id": "30000026", "id_kind": "pmid", "title": "Synth retracted bb", "year": 2018},
+    {"id": "30000027", "id_kind": "pmid", "title": "Synth preprint-only cc", "year": 2024},
+    {"id": "30000028", "id_kind": "pmid", "title": "Synth narrative dd", "year": 2017},
+    {"id": "30000029", "id_kind": "pmid", "title": "Synth editorial ee", "year": 2016},
+    {"id": "30000030", "id_kind": "pmid", "title": "Synth guideline-adjacent ff", "year": 2020},
+    {"id": "10.9999/synth.c31", "id_kind": "doi", "title": "Synth device-only gg", "year": 2021},
+    {"id": "10.9999/synth.c32", "id_kind": "doi", "title": "Synth diagnostic hh", "year": 2022},
+    {"id": "NCT90000004", "id_kind": "nct", "title": "Synth phase-1 ii", "year": 2023},
+    {"id": "30000034", "id_kind": "pmid", "title": "Synth economic jj", "year": 2024},
+    {"id": "30000035", "id_kind": "pmid", "title": "Synth qualitative kk", "year": 2015},
+    {"id": "30000036", "id_kind": "pmid", "title": "Synth methods-paper ll", "year": 2018},
+    {"id": "30000037", "id_kind": "pmid", "title": "Synth secondary-analysis mm", "year": 2019},
+    {"id": "30000038", "id_kind": "pmid", "title": "Synth wrong-intervention nn", "year": 2020},
+    {"id": "30000039", "id_kind": "pmid", "title": "Synth wrong-comparator oo", "year": 2021},
+    {"id": "30000040", "id_kind": "pmid", "title": "Synth insufficient-data pp", "year": 2022}
+  ],
+  "scenarios": {
+    "correct_ledger": {
+      "description": "P0–P2 helpers used correctly: every gold include is cited or skipped_with_reason.",
+      "cite": [
+        "pmid:30000001",
+        "pmid:30000002",
+        "pmid:30000003",
+        "pmid:30000004",
+        "pmid:30000005",
+        "pmid:30000006",
+        "pmid:30000007",
+        "pmid:30000008",
+        "doi:10.9999/synth.a09",
+        "doi:10.9999/synth.a10",
+        "doi:10.9999/synth.a11",
+        "nct:NCT90000001"
+      ],
+      "skip_reasoned": {
+        "nct:NCT90000002": "abstract_only",
+        "pmid:30000014": "copyright_gate"
+      },
+      "dump_payloads_chars": []
+    },
+    "silent_skips": {
+      "description": "Intentional silent skips: three gold includes left as included without cite/reason.",
+      "cite": [
+        "pmid:30000001",
+        "pmid:30000002",
+        "pmid:30000003",
+        "pmid:30000004",
+        "pmid:30000005",
+        "pmid:30000006",
+        "pmid:30000007",
+        "pmid:30000008",
+        "doi:10.9999/synth.a09",
+        "doi:10.9999/synth.a10"
+      ],
+      "skip_reasoned": {
+        "nct:NCT90000002": "abstract_only"
+      },
+      "silent_included": [
+        "doi:10.9999/synth.a11",
+        "nct:NCT90000001",
+        "pmid:30000014"
+      ],
+      "dump_payloads_chars": []
+    },
+    "dump_pressure": {
+      "description": "Simulated oversized MCP payloads that would fire retrieve-don't-dump (3KB fulltext / 8KB bulk).",
+      "cite": [
+        "pmid:30000001",
+        "pmid:30000002",
+        "pmid:30000003",
+        "pmid:30000004",
+        "pmid:30000005",
+        "pmid:30000006",
+        "pmid:30000007",
+        "pmid:30000008",
+        "doi:10.9999/synth.a09",
+        "doi:10.9999/synth.a10",
+        "doi:10.9999/synth.a11",
+        "nct:NCT90000001",
+        "nct:NCT90000002",
+        "pmid:30000014"
+      ],
+      "skip_reasoned": {},
+      "dump_payloads": [
+        {"tool": "mcp__openathens__oa_fetch_fulltext", "chars": 3500, "expect_trigger": true},
+        {"tool": "mcp__openathens__oa_fetch_fulltext", "chars": 500, "expect_trigger": false},
+        {"tool": "mcp__openalex__openalex_search_entities", "chars": 9000, "expect_trigger": true},
+        {"tool": "mcp__openalex__openalex_search_entities", "chars": 4000, "expect_trigger": false},
+        {"tool": "mcp__annas-reader__read_document", "chars": 12000, "expect_trigger": true}
+      ]
+    }
+  },
+  "floors": {
+    "gate": "standard",
+    "skip_silent_rate_max_correct": 0.0,
+    "cite_coverage_min_correct": 0.9,
+    "gate_v2_coverage_min_correct": 0.9,
+    "skip_silent_rate_min_bad": 0.2,
+    "uncovered_min_bad": 3,
+    "dump_trigger_min": 3
+  }
+}

@@ -1,4 +1,4 @@
-# Execution Map — Ordered PRISMA Tool Playbook (v9.0.6)
+# Execution Map — Ordered PRISMA Tool Playbook (v9.0.7)
 
 **Loaded:** before the first MCP call of a review (P1+). Completeness Gate v2 re-reads this
 file. **Binding:** which connector fires, in which order, for what purpose is decided

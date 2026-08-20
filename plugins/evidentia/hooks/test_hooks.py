@@ -484,6 +484,157 @@ def _working_set_cases():
         fails += 1
         print("FAIL working_set: non-search tool should be silent")
 
+    fails += _ebsco_title_binding_cases(env)
+    return fails
+
+
+def _ebsco_title_binding_cases(env: dict) -> int:
+    """Multi-hit ebsco_search must not cross-contaminate titles; ebsco_get LWW."""
+    fails = 0
+    sys.path.insert(0, HERE)
+    import importlib
+    import working_set_ledger as wsl  # noqa: E402
+    importlib.reload(wsl)
+
+    # --- unit: extract_hits per-object titles ---
+    blob = json.dumps({
+        "results": [
+            {
+                "record_id": "2hpohdt7cj",
+                "title": "Insomnia and cancer outcomes in older adults",
+                "doi": "10.1002/cam4.71913",
+            },
+            {
+                "record_id": "scrnaseq001",
+                "title": "Single-Cell Sequencing Data Revealed Colorectal Cancer",
+                "doi": "10.1155/bmri/8830690",
+            },
+            {
+                "record_id": "ncthit001",
+                "title": "Journal of Sleep Research annual review",
+                "nct": "NCT02753023",
+            },
+        ]
+    })
+    hits = wsl.extract_hits(blob, source="ebsco_search")
+    by_key = {f"{h['id_kind']}:{h['id']}": h for h in hits}
+    want = {
+        "doi:10.1002/cam4.71913": "Insomnia and cancer outcomes in older adults",
+        "doi:10.1155/bmri/8830690": "Single-Cell Sequencing Data Revealed Colorectal Cancer",
+        "nct:NCT02753023": "Journal of Sleep Research annual review",
+    }
+    for k, title in want.items():
+        got = (by_key.get(k) or {}).get("title")
+        if got != title:
+            fails += 1
+            print(f"FAIL title-bind: {k} title={got!r} want={title!r}")
+    # record_id attached for later reconcile
+    if (by_key.get("doi:10.1002/cam4.71913") or {}).get("record_id") != "2hpohdt7cj":
+        fails += 1
+        print("FAIL title-bind: record_id not attached to DOI hit")
+
+    # --- hook path: ebsco_search upsert ---
+    ws_dir = env.get("EVIDENTIA_WORKING_SET_DIR") or tempfile.mkdtemp()
+    env = dict(env)
+    env["EVIDENTIA_WORKING_SET_DIR"] = ws_dir
+    prev = os.environ.get("EVIDENTIA_WORKING_SET_DIR")
+    os.environ["EVIDENTIA_WORKING_SET_DIR"] = ws_dir
+    try:
+        code, j = run("working_set_ledger.py", {
+            "tool_name": "mcp__marmara-ebsco__ebsco_search",
+            "tool_result": blob,
+        }, env)
+        if code != 0 or decision(j) != "MSG":
+            fails += 1
+            print("FAIL ebsco_search hook: expected advisory")
+        ws = wsl.load_working_set()
+        recs = ws.get("records") or {}
+        for k, title in want.items():
+            if (recs.get(k) or {}).get("title") != title:
+                fails += 1
+                print(f"FAIL ebsco_search ledger title: {k} → {(recs.get(k) or {}).get('title')!r}")
+
+        # ebsco_get last-write-wins title + anamnesis_doc_id link
+        get_blob = json.dumps({
+            "ok": True,
+            "data": {
+                "record_id": "2hpohdt7cj",
+                "title": "Insomnia corrected title from get",
+                "doi": "10.1002/cam4.71913",
+                "doc_id": "10.1002/cam4.71913",
+                "ingested": True,
+            },
+        })
+        code_g, j_g = run("working_set_ledger.py", {
+            "tool_name": "mcp__marmara-ebsco__ebsco_get",
+            "tool_result": get_blob,
+        }, env)
+        if code_g != 0:
+            fails += 1
+            print("FAIL ebsco_get hook: non-zero")
+        ws2 = wsl.load_working_set()
+        rec = (ws2.get("records") or {}).get("doi:10.1002/cam4.71913") or {}
+        if rec.get("title") != "Insomnia corrected title from get":
+            fails += 1
+            print(f"FAIL ebsco_get LWW title: {rec.get('title')!r}")
+        if rec.get("anamnesis_doc_id") != "10.1002/cam4.71913":
+            fails += 1
+            print(f"FAIL ebsco_get anamnesis_doc_id: {rec.get('anamnesis_doc_id')!r}")
+        if rec.get("status") != "extracted":
+            fails += 1
+            print(f"FAIL ebsco_get promote extracted: {rec.get('status')!r}")
+
+        # --- reconcile: bare DOI + record_id doc_ids (no evrun: prefix) ---
+        # Seed a second DOI still null; list_docs uses Anamnesis ``id`` field.
+        wsl.set_status(ws2, "doi:10.1155/bmri/8830690", "included", phase="P3")
+        wsl.save_working_set(ws2)
+        rid = ws2.get("run_id") or ""
+        list_blob = json.dumps({
+            "collection": f"evidentia:run:{rid}",
+            "docs": [
+                {"id": "10.1002/cam4.71913", "title": "Insomnia", "n_chunks": 4},
+                {"id": "scrnaseq001", "title": "Colorectal", "n_chunks": 3},
+                {"id": "orphan-no-ledger", "title": "Ghost", "n_chunks": 1},
+            ],
+        })
+        # Attach record_id on colorectal row for record_id match
+        rec_c = (ws2.get("records") or {}).get("doi:10.1155/bmri/8830690") or {}
+        rec_c["record_id"] = "scrnaseq001"
+        wsl.save_working_set(ws2)
+
+        code_l, j_l = run("working_set_ledger.py", {
+            "tool_name": "mcp__anamnesis__list_docs",
+            "tool_input": {"collection": f"evidentia:run:{rid}"},
+            "tool_result": list_blob,
+        }, env)
+        if code_l != 0 or decision(j_l) != "MSG":
+            fails += 1
+            print("FAIL reconcile list_docs: expected MSG")
+        ws3 = wsl.load_working_set()
+        rec_b = (ws3.get("records") or {}).get("doi:10.1155/bmri/8830690") or {}
+        if rec_b.get("anamnesis_doc_id") != "scrnaseq001":
+            fails += 1
+            print(f"FAIL reconcile record_id link: {rec_b.get('anamnesis_doc_id')!r}")
+        if rec_b.get("status") != "extracted":
+            fails += 1
+            print(f"FAIL reconcile promote: {rec_b.get('status')!r}")
+        report = wsl.reconcile_anamnesis_ledger(
+            ws3,
+            ["10.1002/cam4.71913", "scrnaseq001", "orphan-no-ledger"],
+            run_id=rid,
+        )
+        if not any("orphan-no-ledger" in o for o in report["orphans"]):
+            fails += 1
+            print(f"FAIL reconcile: true orphan not surfaced — {report}")
+        if report["linked"] < 2:
+            fails += 1
+            print(f"FAIL reconcile: expected ≥2 linked — {report}")
+    finally:
+        if prev is None:
+            os.environ.pop("EVIDENTIA_WORKING_SET_DIR", None)
+        else:
+            os.environ["EVIDENTIA_WORKING_SET_DIR"] = prev
+
     return fails
 
 

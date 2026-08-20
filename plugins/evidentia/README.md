@@ -3,7 +3,7 @@
 **Genel-amaçlı PRISMA tıbbi literatür inceleme aracı** — bir Claude Code / Cursor /
 claude.ai marketplace plugin'i. Tüm tıp alanlarını ve her soru tipini (tedavi/tanı/prognoz/etiyoloji/
 önleme) kapsayan uçtan uca **PRISMA 2020 / PRISMA-ScR sistematik/kapsam derlemesi** motoru.
-`medical-research` v9.0.6 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
+`medical-research` v9.0.7 flagship skill'ini, her-zaman-açık bibliyografik çekirdek
 connector'ları, opsiyonel bağlam-tetiklemeli zenginleştirme modüllerini ve `mcp-scout` ile
 canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette toplar.
 
@@ -11,7 +11,7 @@ canlı-doğrulanmış klinik genişletme MCP'lerini tek kurulabilir pakette topl
 
 ## Ne sağlar
 
-- **Flagship skill:** `medical-research` v9.0.6 — omurga **P0–P7 PRISMA hattı**, soru
+- **Flagship skill:** `medical-research` v9.0.7 — omurga **P0–P7 PRISMA hattı**, soru
   konusundan bağımsız her derlemede aynı sekiz fazı çalıştırır:
   - **P0 Protokol** — PICO/PECO/PCC çerçeveleme, derleme tipi (sistematik/kapsam), uygunluk
     kriterleri, protokol ön-kaydı.
@@ -218,8 +218,8 @@ bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py`.
 
 ---
 
-*AS IS; no warranty. Internal-use grant. **Plugin v2.7.6 / flagship skill `medical-research`
-v9.0.6** — v9.0.6 Marmara EBSCO-first cascade + v9.0.2 ordered tool playbook (`execution-map.md`) binds MUST/SHOULD/MAY/OUT +
+*AS IS; no warranty. Internal-use grant. **Plugin v2.7.7 / flagship skill `medical-research`
+v9.0.7** — v9.0.7 Marmara EBSCO-first cascade + v9.0.2 ordered tool playbook (`execution-map.md`) binds MUST/SHOULD/MAY/OUT +
 `SKIP-REASON` for all 20 bundled servers. v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
 PRISMA-ScR P0–P7 hattına** yeniden yazıldı; eski eksenler silinmedi, **opsiyonel, bağlam-tetiklemeli
 zenginleştirme modülleri**ne dönüştü (Adım 0.5, de-skew invariant). Native-MCP-first, temiz-kopya,

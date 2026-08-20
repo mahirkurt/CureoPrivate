@@ -35,7 +35,7 @@ python3 hooks/test_hooks.py
 python3 tests/run_suites.py
 ```
 
-Skill version stays **9.0.6** — P3 adds measurement only; doctrine text is unchanged
+Skill version **9.0.7** (ledger title/reconcile QA). P3 remains measurement-only relative to P1+P2 doctrine
 (P0–P2 already shipped Completeness Gate v2 + ledger + coverage_gate).
 
 ## Anamnesis exclusivity

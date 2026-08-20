@@ -6,7 +6,7 @@ description: >-
   tam-metin + çıkarım + RoB + GRADE") çağrılır; P2–P6 fan-out'unun (arama → tarama → çıkarım →
   yanlılık riski → sentez) onlarca connector çağrısının ham gürültüsünü kendi bağlam penceresinde
   tüketir ve ana pencereye YALNIZ damıtılmış kanıt paketini + numaralı SR sentez çıktısını
-  döndürür. medical-research v9.0.6 PRISMA protokolünü (P0–P7) çalıştırır; temiz-kopya doktrinine
+  döndürür. medical-research v9.0.7 PRISMA protokolünü (P0–P7) çalıştırır; temiz-kopya doktrinine
   ve tek-sefer/kanonik-önbellek sözleşmesine tabidir. Tek-fazlı/hızlı sorgular için ÇAĞIRMA —
   doğrudan /evidentia yeterlidir; bu ajan bağlam-pencere ekonomisi gerektiğinde devreye girer.
 # GEN:agent-tools BEGIN

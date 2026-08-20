@@ -98,12 +98,27 @@ NCT_RE = re.compile(r"\b(NCT\d{8})\b", re.IGNORECASE)
 TITLE_NEAR_ID_RE = re.compile(
     r"\"(?:title|Title|display_name|displayName)\"\s*:\s*\"([^\"]{8,240})\"",
 )
+# Bare DOI / PMID / NCT that may appear as Anamnesis doc_id suffixes.
+BARE_DOI_RE = re.compile(r"(10\.\d{4,9}/[^\s\"'<>\]\},]+)", re.IGNORECASE)
+BARE_PMID_RE = re.compile(r"\b(\d{5,9})\b")
+RECORD_ID_KEY_RE = re.compile(
+    r"\"(?:record_id|recordId)\"\s*:\s*\"([^\"]{4,128})\"",
+)
+DOC_ID_FIELD_RE = re.compile(
+    r"\"(?:doc_id|docId)\"\s*:\s*\"([^\"]+)\"",
+)
 
 COVERAGE_FLOORS = {
     "lenient": 0.75,
     "standard": 0.90,
     "strict": 0.98,
 }
+
+_TITLE_KEYS = ("title", "Title", "display_name", "displayName")
+_PMID_KEYS = ("pmid", "PMID", "pubmed_id", "pubmedId")
+_DOI_KEYS = ("doi", "DOI")
+_NCT_KEYS = ("nct", "NCT", "nct_id", "nctId", "clinical_trial_id")
+_RECORD_KEYS = ("record_id", "recordId")
 
 
 def _result_text(data: dict) -> str:
@@ -116,39 +131,222 @@ def _result_text(data: dict) -> str:
         return str(r or "")
 
 
+def _norm_id(kind: str, raw: str) -> str:
+    rid = str(raw or "").strip().rstrip(").,;")
+    if kind == "doi":
+        return rid.lower()
+    if kind == "nct":
+        return rid.upper()
+    return rid
+
+
+def _title_from_mapping(obj: dict) -> str:
+    for k in _TITLE_KEYS:
+        v = obj.get(k)
+        if isinstance(v, str) and len(v.strip()) >= 8:
+            return v.strip()[:240]
+    return ""
+
+
+def _ids_from_mapping(obj: dict) -> list[tuple[str, str]]:
+    """Bibliographic ids from one hit-like object (never from sibling hits)."""
+    found: list[tuple[str, str]] = []
+    for k in _PMID_KEYS:
+        v = obj.get(k)
+        if v is not None and str(v).strip():
+            s = str(v).strip()
+            if re.fullmatch(r"\d{5,9}", s):
+                found.append(("pmid", _norm_id("pmid", s)))
+    for k in _DOI_KEYS:
+        v = obj.get(k)
+        if isinstance(v, str) and v.strip():
+            m = BARE_DOI_RE.search(v)
+            if m:
+                found.append(("doi", _norm_id("doi", m.group(1))))
+    for k in _NCT_KEYS:
+        v = obj.get(k)
+        if isinstance(v, str) and v.strip():
+            m = NCT_RE.search(v)
+            if m:
+                found.append(("nct", _norm_id("nct", m.group(1))))
+    # Generic ``id`` only when it is clearly NCT / DOI (not EBSCO record_id).
+    generic = obj.get("id")
+    if isinstance(generic, str) and generic.strip():
+        g = generic.strip()
+        if NCT_RE.fullmatch(g):
+            found.append(("nct", _norm_id("nct", g)))
+        elif BARE_DOI_RE.fullmatch(g) or g.lower().startswith("10."):
+            m = BARE_DOI_RE.search(g)
+            if m:
+                found.append(("doi", _norm_id("doi", m.group(1))))
+        elif re.fullmatch(r"\d{5,9}", g) and any(k in obj for k in _PMID_KEYS):
+            found.append(("pmid", _norm_id("pmid", g)))
+    return found
+
+
+def _record_id_from_mapping(obj: dict) -> str:
+    for k in _RECORD_KEYS:
+        v = obj.get(k)
+        if isinstance(v, str) and len(v.strip()) >= 4:
+            return v.strip()
+    return ""
+
+
+def _merge_hit(
+    hits: dict[str, dict],
+    *,
+    kind: str,
+    rid: str,
+    title: str,
+    source: str,
+    record_id: str = "",
+    anamnesis_doc_id: str = "",
+) -> None:
+    key = f"{kind}:{rid}"
+    if key in hits:
+        row = hits[key]
+        if source and source not in row["sources"]:
+            row["sources"].append(source)
+        # Prefer a non-empty title over empty; never overwrite a set title with "".
+        if title and (not row.get("title") or title != row.get("title")):
+            # Structured per-object titles win over earlier empty/placeholder.
+            if not row.get("title"):
+                row["title"] = title
+        if record_id and not row.get("record_id"):
+            row["record_id"] = record_id
+        if anamnesis_doc_id and not row.get("anamnesis_doc_id"):
+            row["anamnesis_doc_id"] = anamnesis_doc_id
+        return
+    hits[key] = {
+        "id": rid,
+        "id_kind": kind,
+        "title": title or "",
+        "sources": [source] if source else [],
+        "record_id": record_id or "",
+        "anamnesis_doc_id": anamnesis_doc_id or "",
+    }
+
+
+def _walk_json_hits(node: object, source: str, hits: dict[str, dict]) -> None:
+    """Walk JSON; bind each object's title only to ids found on that object."""
+    if isinstance(node, dict):
+        title = _title_from_mapping(node)
+        record_id = _record_id_from_mapping(node)
+        doc_id = ""
+        for k in ("doc_id", "docId"):
+            v = node.get(k)
+            if isinstance(v, str) and v.strip():
+                doc_id = v.strip()
+                break
+        local_ids = _ids_from_mapping(node)
+        # EBSCO record_id alone is not a bibliographic key, but attach it to
+        # sibling DOI/PMID/NCT on the same hit for later reconcile.
+        for kind, rid in local_ids:
+            _merge_hit(
+                hits,
+                kind=kind,
+                rid=rid,
+                title=title,
+                source=source,
+                record_id=record_id,
+                anamnesis_doc_id=doc_id,
+            )
+        for v in node.values():
+            _walk_json_hits(v, source, hits)
+    elif isinstance(node, list):
+        for item in node:
+            _walk_json_hits(item, source, hits)
+
+
+def _enclosing_object_slice(text: str, pos: int) -> str:
+    """Return the nearest ``{...}`` slice containing ``pos`` (best-effort)."""
+    start = text.rfind("{", 0, pos + 1)
+    if start < 0:
+        start = max(0, pos - 400)
+    depth = 0
+    end = len(text)
+    for i in range(start, len(text)):
+        ch = text[i]
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+    return text[start:end]
+
+
+def _title_near_span(text: str, pos: int) -> str:
+    """Title from the same JSON object as ``pos`` — never the batch's first title."""
+    chunk = _enclosing_object_slice(text, pos)
+    titles = TITLE_NEAR_ID_RE.findall(chunk)
+    if titles:
+        return titles[0].strip()[:240]
+    return ""
+
+
+def _extract_hits_regex(text: str, source: str) -> list[dict]:
+    """Regex fallback with per-match local title binding (no title broadcast)."""
+    hits: dict[str, dict] = {}
+    # Build record_id → nearest title map from the same object slices.
+    record_near: dict[str, str] = {}
+    for m in RECORD_ID_KEY_RE.finditer(text):
+        rid = m.group(1).strip()
+        record_near[rid] = _title_near_span(text, m.start())
+
+    def upsert(kind: str, raw: str, pos: int) -> None:
+        rid = _norm_id(kind, raw)
+        if not rid:
+            return
+        title = _title_near_span(text, pos)
+        # If this object also has a record_id, attach it.
+        chunk = _enclosing_object_slice(text, pos)
+        rec_m = RECORD_ID_KEY_RE.search(chunk)
+        record_id = rec_m.group(1).strip() if rec_m else ""
+        if not title and record_id:
+            title = record_near.get(record_id, "")
+        doc_m = DOC_ID_FIELD_RE.search(chunk)
+        doc_id = doc_m.group(1).strip() if doc_m else ""
+        _merge_hit(
+            hits,
+            kind=kind,
+            rid=rid,
+            title=title,
+            source=source,
+            record_id=record_id,
+            anamnesis_doc_id=doc_id,
+        )
+
+    for m in PMID_RE.finditer(text):
+        upsert("pmid", m.group(1), m.start())
+    for m in DOI_RE.finditer(text):
+        upsert("doi", m.group(1), m.start())
+    for m in NCT_RE.finditer(text):
+        upsert("nct", m.group(1), m.start())
+    return list(hits.values())
+
+
 def extract_hits(text: str, source: str) -> list[dict]:
-    """Pull PMID / DOI / NCT ids from a tool result blob."""
+    """Pull PMID / DOI / NCT ids from a tool result blob.
+
+    Each id gets the title from **its own** hit object. Never broadcast the
+    first title in a batch onto every id (Marmara EBSCO QA regression).
+    """
     if not text:
         return []
     hits: dict[str, dict] = {}
-    titles = TITLE_NEAR_ID_RE.findall(text)
-    title0 = titles[0] if titles else ""
-
-    def upsert(kind: str, raw: str) -> None:
-        rid = raw.strip().rstrip(").,;")
-        if kind == "doi":
-            rid = rid.lower()
-        elif kind == "nct":
-            rid = rid.upper()
-        key = f"{kind}:{rid}"
-        if key in hits:
-            if source and source not in hits[key]["sources"]:
-                hits[key]["sources"].append(source)
-            return
-        hits[key] = {
-            "id": rid,
-            "id_kind": kind,
-            "title": title0,
-            "sources": [source] if source else [],
-        }
-
-    for m in PMID_RE.finditer(text):
-        upsert("pmid", m.group(1))
-    for m in DOI_RE.finditer(text):
-        upsert("doi", m.group(1))
-    for m in NCT_RE.finditer(text):
-        upsert("nct", m.group(1))
-    return list(hits.values())
+    # Prefer structured JSON walk when the blob parses.
+    try:
+        parsed = json.loads(text)
+    except Exception:
+        parsed = None
+    if parsed is not None:
+        _walk_json_hits(parsed, source, hits)
+        if hits:
+            return list(hits.values())
+    # Partial / MCP-wrapped text: regex with per-object title binding.
+    return _extract_hits_regex(text, source)
 
 
 def empty_working_set(run_id: str) -> dict:
@@ -223,8 +421,13 @@ def upsert_identified(
     *,
     phase: str = "P1",
     source: str = "",
+    overwrite_title: bool = False,
 ) -> bool:
-    """Insert or merge a bibliographic hit. Returns True if ledger changed."""
+    """Insert or merge a bibliographic hit. Returns True if ledger changed.
+
+    ``overwrite_title=True`` (ebsco_get / fulltext success) is last-write-wins
+    for title + metadata so a corrected get response fixes search-batch drift.
+    """
     rid = str(hit.get("id") or "").strip()
     if not rid:
         return False
@@ -242,7 +445,8 @@ def upsert_identified(
             "phase_seen": [phase],
             "status": "identified",
             "skip_reason": None,
-            "anamnesis_doc_id": None,
+            "anamnesis_doc_id": hit.get("anamnesis_doc_id") or None,
+            "record_id": hit.get("record_id") or None,
             "cited_chunks": [],
         }
         return True
@@ -253,8 +457,19 @@ def upsert_identified(
     if phase and phase not in (rec.get("phase_seen") or []):
         rec.setdefault("phase_seen", []).append(phase)
         changed = True
-    if (hit.get("title") or "") and not rec.get("title"):
-        rec["title"] = hit["title"]
+    new_title = (hit.get("title") or "").strip()
+    if new_title:
+        if overwrite_title or not (rec.get("title") or "").strip():
+            if rec.get("title") != new_title:
+                rec["title"] = new_title
+                changed = True
+    rec_id = (hit.get("record_id") or "").strip()
+    if rec_id and rec.get("record_id") != rec_id:
+        rec["record_id"] = rec_id
+        changed = True
+    aid = (hit.get("anamnesis_doc_id") or "").strip()
+    if aid and rec.get("anamnesis_doc_id") != aid:
+        rec["anamnesis_doc_id"] = aid
         changed = True
     # Do not demote status on re-sight.
     return changed
@@ -376,19 +591,66 @@ def coverage_block(ws: dict, gate: str = "standard") -> dict:
 
 
 def _strip_evrun_prefix(doc_id: str, run_id: str) -> str:
-    from anamnesis_run import prefix_for
-    want = prefix_for(run_id)
+    """Peel ``evrun:<run_id>:`` / any ``evrun:<12hex>:`` prefix from a doc_id."""
+    from anamnesis_run import PREFIX_RE, prefix_for
     s = str(doc_id or "").strip()
-    if s.startswith(want):
-        return s[len(want):]
+    if not s:
+        return s
+    if run_id:
+        want = prefix_for(run_id)
+        if s.startswith(want):
+            return s[len(want):]
+    m = PREFIX_RE.match(s)
+    if m:
+        return s[m.end():]
     return s
 
 
+def _bibliographic_tokens(raw: str) -> list[tuple[str, str]]:
+    """DOI / PMID / NCT tokens embedded in a doc_id or suffix."""
+    s = str(raw or "").strip()
+    if not s:
+        return []
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+
+    def add(kind: str, rid: str) -> None:
+        key = f"{kind}:{rid}"
+        if key in seen:
+            return
+        seen.add(key)
+        out.append((kind, rid))
+
+    doi_m = BARE_DOI_RE.search(s)
+    if doi_m:
+        add("doi", _norm_id("doi", doi_m.group(1)))
+    nct_m = NCT_RE.search(s)
+    if nct_m:
+        add("nct", _norm_id("nct", nct_m.group(1)))
+    # PMID only when the whole suffix (or trailing segment) is digits — avoid
+    # chewing random numbers out of DOIs / record hashes.
+    if re.fullmatch(r"\d{5,9}", s):
+        add("pmid", _norm_id("pmid", s))
+    else:
+        tail = s.rsplit(":", 1)[-1]
+        if re.fullmatch(r"\d{5,9}", tail):
+            add("pmid", _norm_id("pmid", tail))
+    return out
+
+
 def _match_ledger_key(ws: dict, suffix: str) -> str | None:
-    """Map an anamnesis doc suffix (PMID|DOI|record) onto a working-set key."""
+    """Map an anamnesis doc suffix (PMID|DOI|record|bare) onto a working-set key."""
     raw = str(suffix or "").strip()
     if not raw:
         return None
+    # Skip collection names mistaken for doc ids.
+    if raw.startswith(("evidentia:run:", "evidentia:sess:", "cureolex:",
+                       "marmara:fetch:")) and "/" not in raw and "10." not in raw:
+        # marmara:fetch:<sha> has no bibliographic payload — not a ledger key.
+        if raw.startswith("marmara:fetch:"):
+            return None
+        if raw.startswith(("evidentia:", "cureolex:")):
+            return None
     recs = ws.get("records") or {}
     candidates = [
         f"doi:{raw.lower()}",
@@ -397,6 +659,8 @@ def _match_ledger_key(ws: dict, suffix: str) -> str | None:
         raw,
         raw.lower(),
     ]
+    for kind, rid in _bibliographic_tokens(raw):
+        candidates.append(f"{kind}:{rid}")
     for c in candidates:
         if c in recs:
             return c
@@ -408,25 +672,49 @@ def _match_ledger_key(ws: dict, suffix: str) -> str | None:
             return key
         if key.endswith(":" + raw) or key.endswith(":" + low):
             return key
+        # EBSCO ingest often stores doc_id = record_id when caller omits
+        # evrun:/DOI; match via search-time record_id attachment.
+        rec_id = str(rec.get("record_id") or "").strip()
+        if rec_id and (rec_id == raw or rec_id.lower() == low):
+            return key
+    # Token soft-match: doc_id contains a ledger DOI/PMID/NCT.
+    for kind, rid in _bibliographic_tokens(raw):
+        key = f"{kind}:{rid}"
+        if key in recs:
+            return key
     return None
 
 
 def parse_list_docs_ids(text: str) -> list[str]:
-    """Extract doc_id values from a list_docs tool result blob."""
+    """Extract doc_id values from a list_docs tool result blob.
+
+    Anamnesis ``list_docs`` returns SQL rows with field ``id`` (not ``doc_id``).
+    Prefer explicit ``doc_id`` / ``docId``; also accept ``id`` when it is not a
+    collection name.
+    """
     if not text:
         return []
     out, seen = [], set()
-    # JSON-ish "doc_id": "…" / "id": "evrun:…"
-    for m in re.finditer(
-        r"\"(?:doc_id|docId|id)\"\s*:\s*\"([^\"]+)\"",
-        text,
-    ):
-        s = m.group(1).strip()
+
+    def _keep(s: str) -> None:
+        s = s.strip()
         if not s or s in seen:
-            continue
-        # Prefer evrun-prefixed; keep bare ids too (caller may mint short forms).
+            return
+        # Collection names are not documents.
+        if re.match(
+            r"^(?:evidentia|cureolex|historia|vekayinuvis):"
+            r"(?:run|sess|lib|scratch):",
+            s,
+        ):
+            return
         seen.add(s)
         out.append(s)
+
+    for m in re.finditer(r"\"(?:doc_id|docId)\"\s*:\s*\"([^\"]+)\"", text):
+        _keep(m.group(1))
+    # Anamnesis list_docs row primary key is ``id``.
+    for m in re.finditer(r"\"id\"\s*:\s*\"([^\"]+)\"", text):
+        _keep(m.group(1))
     return out
 
 
@@ -440,8 +728,9 @@ def reconcile_anamnesis_ledger(
 ) -> dict:
     """Reconcile Anamnesis working memory with the bibliographic ledger (P1).
 
-    * Links matching ``evrun:<run_id>:<PMID|DOI>`` → set ``anamnesis_doc_id``;
-      optionally promote status to ``extracted``.
+    * Links matching ``evrun:<run_id>:<PMID|DOI>`` / bare DOI|PMID|NCT /
+      EBSCO ``record_id`` → set ``anamnesis_doc_id``; optionally promote to
+      ``extracted``.
     * ``missing_extractions`` — include_set rows still without a live Anamnesis doc.
     * ``orphans`` — Anamnesis docs with no matching ledger record.
 
@@ -456,8 +745,11 @@ def reconcile_anamnesis_ledger(
     orphans: list[str] = []
 
     for doc in docs:
-        suffix = _strip_evrun_prefix(doc, rid) if rid else doc
+        suffix = _strip_evrun_prefix(doc, rid) if rid else _strip_evrun_prefix(doc, "")
         key = _match_ledger_key(ws, suffix)
+        if not key:
+            # Retry with the raw doc_id (record_id / DOI without peel).
+            key = _match_ledger_key(ws, doc)
         if not key:
             orphans.append(doc)
             continue
@@ -622,12 +914,33 @@ def main() -> int:
             return 0
         ws = load_working_set(rid)
         ws["run_id"] = rid
+        # ebsco_get / fulltext: last-write-wins title + link anamnesis_doc_id
+        # from the get envelope when present.
+        overwrite = base in FULLTEXT_TOOLS
         n_new = 0
         for hit in hits:
             before = len(ws.get("records") or {})
-            upsert_identified(ws, hit, phase=phase, source=base)
+            upsert_identified(
+                ws, hit, phase=phase, source=base, overwrite_title=overwrite,
+            )
             if len(ws.get("records") or {}) > before:
                 n_new += 1
+            # Immediate link when get response carries anamnesis doc_id.
+            aid = (hit.get("anamnesis_doc_id") or "").strip()
+            if aid and overwrite:
+                kind = str(hit.get("id_kind") or "id").lower()
+                hrid = str(hit.get("id") or "").strip()
+                key = f"{kind}:{hrid}" if kind != "id" else hrid
+                rec = (ws.get("records") or {}).get(key)
+                if rec is not None:
+                    if rec.get("anamnesis_doc_id") != aid:
+                        rec["anamnesis_doc_id"] = aid
+                    cur = rec.get("status") or "identified"
+                    if cur in {"identified", "screened", "included"}:
+                        set_status(
+                            ws, key, "extracted",
+                            anamnesis_doc_id=aid, phase=phase,
+                        )
         save_working_set(ws)
         append_hits(rid, hits, tool=base)
         if n_new or hits:

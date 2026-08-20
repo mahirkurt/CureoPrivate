@@ -55,7 +55,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   `skip_reason`, `anamnesis_doc_id?`, `cited_chunks[]`, `extraction_gap?`. Completeness Gate v2:
   `coverage = cited_or_skipped_with_reason / include_set` (standard floor **0.90**).
   Synthesizer dönüşü: `{n_include, n_cited, n_skipped_reasoned, coverage, uncovered[]}`.
-  Anamnesis doc_id ledger ile **birleştirilmez**; `reconcile_anamnesis_ledger` yalnız bağlar.
+  Anamnesis doc_id ledger ile **birleştirilmez**; `reconcile_anamnesis_ledger` yalnız bağlar (per-hit title; `ebsco_get` LWW; bare DOI/PMID/NCT/`record_id` ↔ `anamnesis_doc_id`).
   **P3 ölçüm (eval-only):** `skills/medical-research/evals/context_economy_synth.py` —
   sentetik 40 makale; doğru ledger kullanımında `skip_silent_rate=0`; coverage_gate
   uncovered ID'leri listeler (`CONTEXT-ECONOMY-P3.md`).

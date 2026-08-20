@@ -14,7 +14,7 @@ description: >
   derleme, kapsam derleme, PRISMA, PICO, PECO, screening, risk of bias, GRADE, kanıt
   sentezi, meta-analiz, dahil hariç kriterleri.
 metadata:
-  version: 9.0.6
+  version: 9.0.7
 ---
 
 > ## 🧩 Plugin entegrasyon notu (evidentia)
@@ -27,16 +27,15 @@ metadata:
 >   çakışmada `CONNECTORS.md` üstündür.
 > - [`../../shared/canonical-cache-contract.md`](../../shared/canonical-cache-contract.md) —
 >   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; openfda
->   tekil+retry+skippable; **working_set_ledger** + `hits.jsonl`). Connector **sırası**
->   `references/execution-map.md` playbook'udur.
+>   tekil+retry+skippable; **working_set_ledger** + `hits.jsonl`). Connector **sırası**>   `references/execution-map.md` playbook'udur.
 >
-> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.6**
+> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.7**
 > (v9 = 10-eksen zorunlu yükleyici → **P0–P7 PRISMA hattı + opsiyonel zenginleştirme sınıflandırıcısı**;
 > web tier / OSINT ekseni kaldırılmıştı — saf yapısal-kanıt korunur; 9.0.5 = P0 ledger/dump;
-> 9.0.6 = Anamnesis reconcile + zorunlu multi-query hybrid + otomatik coverage gate).
+> 9.0.6 = Anamnesis reconcile + multi-query hybrid + coverage gate; 9.0.7 = working-set ledger per-hit title binding + EBSCO/reconcile anamnesis_doc_id fix).
 > Plugin sürümü skill'den ayrıdır.
 
-# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.6 (medical-research)
+# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.7 (medical-research)
 
 **This block is read and applied before any other structure. It runs on every invocation.**
 
@@ -311,7 +310,7 @@ Adım 0.1 `completeness_gate: lenient|standard|strict`. **Four** mandatory sub-c
 5. **Anamnesis reconcile (P1 — before P4 extract / P6 synthesize)** —
    `list_docs(collection=evidentia:run:<id>)` ↔ working-set ledger via
    `reconcile_anamnesis_ledger` (hook on list_docs / hybrid PreToolUse / SessionStart resume).
-   Close `missing_extractions`; investigate `orphans`. **Multi-query MUST:**
+   Links `evrun:` / bare DOI|PMID|NCT / EBSCO `record_id` → `anamnesis_doc_id` (search titles are per-hit; `ebsco_get` overwrites). Close `missing_extractions`; investigate `orphans`. **Multi-query MUST:**
    `hybrid_query(collection=…, query=…, queries=[≥2])` — single-query synthesis forbidden
    (PreToolUse advisory).
 - Produce a gap list (Ops sidecar). If non-empty: load + address each gap, then re-check.
@@ -373,6 +372,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 
 | Version | Date | Changes |
 |---|---|---|
+| **9.0.7** | **Aug 2026** | Working-set ledger QA fix (Marmara EBSCO): per-hit title binding (no batch title broadcast); `ebsco_get` last-write-wins title + `anamnesis_doc_id`; `reconcile_anamnesis_ledger` matches bare DOI/PMID/NCT, `evrun:` peel, and EBSCO `record_id` when collection-scoped ingest omits prefix; list_docs `id` field. |
 | **9.0.6** | **Aug 2026** | Context-economy P1+P2: `reconcile_anamnesis_ledger` (list_docs↔ledger; missing_extractions/orphans); multi-query `hybrid_query` mandatory (advisory); `coverage_gate` auto Completeness Gate (soft DENY via `EVIDENTIA_COVERAGE_ENFORCE=1`); synthesizer required `coverage` block (`n_include`/`n_cited`/`n_skipped_reasoned`/`uncovered[]`); OpenAthens/EBSCO pass-through vs annas gap documented. **P3 eval (no doctrine bump):** offline synthetic 40-paper harness `evals/context_economy_synth.py` — `skip_silent_rate=0` on correct ledger; Gate surfaces uncovered; RDD dump proxy (see `evals/CONTEXT-ECONOMY-P3.md`). |
 | **9.0.5** | **Aug 2026** | Context-economy P0: working-set ledger (PMID\|DOI\|NCT) under `.claude/evidentia-run/<id>/`; retrieve-don't-dump floors 3 KB/8 KB + **synthesis forbidden**; Completeness Gate v2 article coverage (standard ≥0.90); ID-first P1/P2; Cömertlik = depth≠dump; screening scratch file. |
 | **9.0.4** | **Aug 2026** | Claude Directory companions wired (bioRxiv, Scite, BioRender, SNOMED CT Terminology) + ordered P1 discovery (OpenAlex→pubmed-epmc→S2→PubMed→CT→bioRxiv→Consensus→Paper Search→Elicit→Scite→AdisInsight→YÖK Tez); Claude vs self-host preference table; 13 companions. |
@@ -394,7 +394,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 ```yaml
 skill_manifest_protocol: 1.0
 skill_name: medical-research
-skill_version: 9.0.6
+skill_version: 9.0.7
 produces:
   - prisma-systematic-review-markdown (P0–P7; PRISMA flow diagram + Summary-of-Findings)
   - clean-copy-report (journal-grade reader-facing article; tooling/telemetry/viz carried

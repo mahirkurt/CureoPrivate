@@ -58,10 +58,11 @@ PaperSearch: download_pubmed / download_biorxiv / download_semantic
 
 ### Tier 3 — Marmara EBSCO (LICENSED institutional — FIRST paywall gate)
 **Status:** connector `marmara-ebsco` — HP category server over shared VETİS session
-(target `ebsco.cureonics.com/mcp`, port 8222; `MARMARA_EBSCO_MCP_API_KEY`). Code + systemd unit
-ship in CureoHub `mcp-servers/marmara-mcp`; **HP deploy/tunnel/DNS is an operator gate**
-(`deploy/HP-DEPLOY.md` §marmara-ebsco) — if unbound/unreachable, `SKIP-REASON unreachable`
-then continue to Tier 4 (never silent skip). Distinct from `marmara-clinical` (ClinicalKey/UTD).
+(`ebsco.cureonics.com/mcp`, port 8222; `MARMARA_EBSCO_MCP_API_KEY`). Live (2026-08-19):
+HP systemd + tunnel + DNS; `/health` + `tools/list` (4 tools). Wired in fleet `.mcp.json`
+(Claude Code `${VAR}`) and `.cursor-plugin/mcp.json` (Cursor `${env:VAR}`). Unreachable /
+missing key → `SKIP-REASON unreachable` then Tier 4 (never silent skip). Distinct from
+`marmara-clinical` (ClinicalKey/UTD).
 
 **Coverage:** Marmara Üniversitesi VETİS → EBSCOhost (`db_id=426`); default search spans **all**
 subscribed databases discovered at landing. Full text only when `downloadLinks` expose PDF/HTML
@@ -226,8 +227,9 @@ license note + the anamnesis `doc_id::idx` provenance where ingested.
    sees only the anamnesis-indexed, provenance-stamped slice, never a base64 dump. Marmara EBSCO
    delivers extracted text (PDF/HTML) via `ebsco_get` + anamnesis, not a client-side resource_link.
 2. **Copyright** — the dominant constraint; default to paraphrase + data extraction.
-3. **Marmara EBSCO deploy gate** — tooling is ready; public `ebsco.cureonics.com` requires operator
-   HP install (shared `.env` append of `MARMARA_EBSCO_*`, unit, tunnel). Unreachable → Tier 4.
+3. **Marmara EBSCO key / reachability** — endpoint live (`ebsco.cureonics.com`); host process
+   must expose `MARMARA_EBSCO_MCP_API_KEY` (Doppler `cureohub/dev_personal`). Missing key or
+   unreachable → Tier 4.
 4. **OpenAthens LIVE, partial publisher coverage** — `openathens-mcp` is deployed
    (`openathens.cureonics.com/mcp`) with working OpenAthens SP-initiated SAML federation. Full-text
    extraction succeeds for federation publishers *without* a browser anti-bot wall (Springer,

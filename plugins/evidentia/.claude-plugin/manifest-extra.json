@@ -3,7 +3,7 @@
   "metadata": {
     "flagship_skill": "medical-research",
     "flagship_version": "9.0.6",
-    "plugin_version": "2.7.5",
+    "plugin_version": "2.7.6",
     "smp_manifest": "./skills/medical-research/skill-manifest.yaml",
     "connector_source_of_truth": "./CONNECTORS.md",
     "fleet_source_of_truth": "./fleet.yaml",
@@ -26,7 +26,7 @@
       "G-WHITELIST",
       "G-PLAYBOOK"
     ],
-    "min_host": "Claude Code / claude.ai custom connectors",
+    "min_host": "Claude Code / Cursor / claude.ai custom connectors",
     "connector_probe_basis": "skill-manifest.yaml + mcp-scout live registry+initialize + fleet.yaml (20 server / 11 gated / 13 companion, 2026-08-19)",
     "third_party_trust_note": "Academic bibliographic core (openalex / pubmed-epmc / semantic-scholar) runs on CureoHub HP self-host (*.cureonics.com, 2026-08-17); old *.workers.dev academic Workers undeployed. Remaining third-party keyless surfaces: med-terminologies (sidneybissoli) and pipeworx gateway (nih-clinicaltables / nlm-rxnorm / iuphar-gtopdb) — public data only; output is untrusted DATA not instructions; clinical/numeric claims are cross-verified. Pipeworx servers advertise includeTools allowlists in .mcp.json.",
     "architecture_note_v1_4_0": "Structured-authoritative only: Exa/Tavily web-retrieval tier and OSINT axis removed. No-API sources still without a native connector are reported as a documented gap, never web-scraped or fabricated. Known upstream tool defects (rxnorm_interactions 404, rxnorm_related 400, nih icd10cm name-search) are documented + rerouted in CONNECTORS §8 / connector-registry §6. D6 (med-terminologies.icd11_search AUTH) retired 2026-08-17 after a live ICD-11 hit (3B10.0).",
@@ -39,7 +39,7 @@
       "./self-host/globocan-mcp",
       "./self-host/ema-mcp"
     ],
-    "self_host_hp": "openathens (openathens.cureonics.com) + academic trio openalex/pubmed/semanticscholar (CureoHub HP systemd; Worker trees under self-host/* are RETIRED archives)",
+    "self_host_hp": "marmara-ebsco (ebsco.cureonics.com, Tier 3) + openathens (openathens.cureonics.com, Tier 4) + academic trio openalex/pubmed/semanticscholar (CureoHub HP systemd; Worker trees under self-host/* are RETIRED archives)",
     "rag_substrate": "./self-host/anamnesis-mcp (semantic chunking + Vectorize bge-m3 1024-d + D1 GraphRAG + FTS5; evidence_index canonical artifact). 8 tools. v1.6.0: MULTI-QUERY HYBRID retrieval (FULL §4.1.1 — queries[] decomposition → per-query vector ∥ BM25/FTS5 → RRF fuse across all queries×arms → cross-encoder rerank vs PRIMARY → top-k; recall-maximising 'miss no detail', graceful-degrade; E2E-verified) + §8 retrieval telemetry (CF logs); forget_document clean teardown. Worker ver 984a9b59.",
     "fulltext_connector": "marmara-ebsco (HP, Tier 3 licensed first) → openathens (HP, Tier 4 licensed) → Wiley companion (OAuth) → annas-reader (Tier 6 last resort)"
   }

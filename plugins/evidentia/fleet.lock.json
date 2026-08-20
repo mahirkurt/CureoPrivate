@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "evidentia",
-  "plugin_version": "2.7.5",
+  "plugin_version": "2.7.6",
   "counts": {
     "servers": 20,
     "gated": 11,

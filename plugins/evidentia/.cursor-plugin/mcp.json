@@ -1,63 +1,5 @@
 {
-  "name": "evidentia",
-  "version": "2.7.6",
-  "description": "Genel-amaçlı tıbbi literatür inceleme motoru — tüm tıp ve her soru tipi (tedavi/tanı/prognoz/etiyoloji/önleme) için uçtan uca PRISMA 2020 / PRISMA-ScR sistematik/kapsam derlemesi. medical-research v9.0.3 flagship (P0 protokol/PICO → P1 arama/MeSH-Emtree → P2 getirim+dedup → P3 tarama → P4 çıkarım → P5 yanlılık riski [RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST] → P6 GRADE → P7 PRISMA akış diyagramı + Summary-of-Findings) + start skill + 7 komut (/evidentia · /evidentia-protocol · /evidentia-fulltext · /evidentia-synthesize · /evidentia-appraise · /evidentia-kol · /evidentia-connectors) + evidence-synthesizer alt-ajan. Bibliyografik çekirdek her-zaman-açık (PubMed/EuropePMC, ClinicalTrials, OpenAlex, Semantic Scholar, Consensus, bioRxiv/medRxiv, Paper Search, YÖK Tez + legal-first 7-katman tam-metin [Marmara EBSCO Tier 3 → OpenAthens/Millet Tier 4 → Wiley Tier 5 → annas Tier 6 son çare → Unpaywall] + anamnesis RAG/GraphRAG). Opsiyonel, bağlam-tetiklemeli zenginleştirme modülleri (tedavi-alanı, ilaç/regülatuar/openFDA+ICD-11, AB-ruhsat+CHMP/EPAR/ema, HTA, KOL, Türkiye-pazarı/TİTCK, epidemiyoloji [ABD/PopHIVE + küresel-yük/who-gho + kanser-yükü/globocan]) — varsayılanı asla belirlemez (de-skew). Saf yapısal-otoriter kanıt; web/OSINT tier yok; native kaynakta yoksa 'VERİ YOK', uydurma yok; retrieve-don't-dump; temiz-kopya. SEKİZ self-host connector: yedi Cloudflare Worker (anamnesis · drugddx · openfda · evidentia-kb · who-gho [küresel GHO yük] · globocan [IARC kanser insidans/mortalite] · ema [AB ruhsat+CHMP/EPAR]) + openathens HP self-host (tam-metin Tier 3 lisanslı — Millet Kütüphanesi/OpenAthens SAML). Runtime enforcement hook katmanı: PreToolUse guard (en-az-yetki/G-WHITELIST + kırık-araç D1/D2/D6 deny→redirect) · PostToolUse retrieve-don't-dump · SessionStart credential preflight (fail-open, deterministik).",
-  "author": {
-    "name": "operator (Cureonics fleet)",
-    "url": "https://cureonics.com"
-  },
-  "homepage": "https://cureonics.com",
-  "license": "Internal-use grant; AS IS; no warranty",
-  "keywords": [
-    "systematic-review",
-    "prisma",
-    "prisma-scr",
-    "literature-review",
-    "scoping-review",
-    "meta-analysis",
-    "risk-of-bias",
-    "grade",
-    "screening",
-    "evidence-synthesis",
-    "medical-research",
-    "clinical-trials",
-    "full-text",
-    "rag",
-    "graphrag",
-    "icd-11",
-    "openfda",
-    "openalex",
-    "europepmc",
-    "turkiye",
-    "titck",
-    "epidemiology",
-    "kol",
-    "pharmacovigilance",
-    "drug-intelligence",
-    "hta",
-    "orchestrator"
-  ],
-  "skills": "./skills/",
-  "interface": {
-    "displayName": "Evidentia",
-    "shortDescription": "PRISMA sistematik ve kapsam derlemeleri için tıbbi kanıt sentezi motoru.",
-    "longDescription": "Genel-amaçlı PRISMA 2020 / PRISMA-ScR tıbbi literatür inceleme motoru — tüm tıp ve her soru tipi (tedavi/tanı/prognoz/etiyoloji/önleme) için uçtan uca sistematik/kapsam derlemesi. medical-research v9.0.3 flagship: P0 protokol/PICO → P1 arama/MeSH-Emtree → P2 getirim+dedup → P3 tarama → P4 çıkarım → P5 yanlılık riski (RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST) → P6 GRADE → P7 PRISMA akış diyagramı + Summary-of-Findings. Bibliyografik çekirdek HER SORGUDA always-on (PubMed/EuropePMC, ClinicalTrials, Consensus, Scholar Gateway, Paper Search, bioRxiv/medRxiv, YÖK Tez, OpenAlex, Semantic Scholar, pubmed-epmc) + legal-first 7-katman tam-metin (EPMC OA → Paper Search → Marmara EBSCO [Tier 3] → OpenAthens/Millet [Tier 4] → Wiley [Tier 5] → annas [Tier 6 son çare] → Unpaywall [Tier 7]) + anamnesis RAG/GraphRAG (retrieve-don't-dump, evidence_index). Opsiyonel, bağlam-tetiklemeli zenginleştirme modülleri (tedavi-alanı, ilaç/regülatuar/openFDA+ICD-11, HTA, KOL, Türkiye-pazarı/TİTCK, epidemiyoloji/PopHIVE) — varsayılanı ASLA belirlemez (de-skew invariant). Saf yapısal-otoriter kanıt; web/OSINT tier yok; native kaynakta yoksa 'VERİ YOK', uydurma yok; temiz-kopya doktrini; klinik çapraz-doğrulama. BEŞ self-host connector: dört Cloudflare Worker (anamnesis semantik-chunking/Vectorize-RAG/D1-GraphRAG · drugddx klinik-DDI · openfda openFDA+WHO ICD-11 · evidentia-kb kb_search recall booster) + openathens HP self-host (tam-metin Tier 3 lisanslı, Millet Kütüphanesi/OpenAthens SAML). Runtime enforcement hook katmanı (v2.2): PreToolUse guard pipeworx-generic + kırık-araç (D1/D2/D6) çağrılarını deny→redirect eder, PostToolUse retrieve-don't-dump hatırlatır, SessionStart credential preflight yapar (deterministik, fail-open). Karar/araştırma destek niteliğindedir; klinik tavsiye değildir.",
-    "developerName": "operator (Cureonics fleet)",
-    "category": "Research",
-    "capabilities": [
-      "Interactive",
-      "Read",
-      "Write"
-    ],
-    "websiteURL": "https://cureonics.com",
-    "brandColor": "#7C3AED",
-    "defaultPrompt": [
-      "Create a PRISMA review protocol for this clinical question.",
-      "Run a medical literature evidence synthesis.",
-      "Appraise the risk of bias and GRADE certainty."
-    ],
-    "screenshots": []
-  },
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — evidentia MCP wiring. 20 server (11 Bearer-gated, 9 public), 13 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Cursor `${env:VAR}` process-env interpolasyonu (plugin-variable paste formu değil).",
   "mcpServers": {
     "med-terminologies": {
       "type": "http",
@@ -110,7 +52,7 @@
       "type": "http",
       "url": "https://openalex.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${OPENALEX_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:OPENALEX_MCP_API_KEY}"
       },
       "_tier": "K",
       "_role": "OpenAlex bilimsel katalog (works/authors/institutions/topics/funders) — KOL haritalama + atıf-ağı + kurum/yazar disambiguasyonu (ORCID/ROR); §8 KOL Haritası + medaffairs-ops. native_rest_fallback'tan native Tier-K'ya terfi. resolve_name → search_entities/analyze_trends/get_citation_graph",
@@ -121,7 +63,7 @@
       "type": "http",
       "url": "https://pubmed.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${PUBMED_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:PUBMED_MCP_API_KEY}"
       },
       "_tier": "K",
       "_role": "PubMed/PMC + Europe PMC genişliği + Unpaywall YASAL açık-erişim tam-metin (annas gri-alanına temiz alternatif; full-text cascade'i besler). Hesap-seviyesi Anthropic PubMed'i tamamlar: pubmed_europepmc_search + pubmed_fetch_fulltext + pubmed_lookup_mesh",
@@ -132,7 +74,7 @@
       "type": "http",
       "url": "https://semanticscholar.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${SEMANTICSCHOLAR_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:SEMANTICSCHOLAR_MCP_API_KEY}"
       },
       "_tier": "K",
       "_role": "Semantic Scholar atıf-grafiği / etki-atıfı (influential citations) — Consensus+Scholar Gateway sentezini ham atıf-grafik ile tamamlar (İKİNCİL). SEMANTIC_SCHOLAR_API_KEY Doppler'da (upstream Graph API); connector Bearer = SEMANTICSCHOLAR_MCP_API_KEY",
@@ -179,7 +121,7 @@
       "type": "http",
       "url": "https://titck.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${TITCK_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:TITCK_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "Türkiye ilaç indeksinin KANONİK kaynağı (Türkiye Dörtlüsü) — 66 araç, v0.5.8 (ölçüm 2026-08-07). ⚠️ 2026-07-31'de `titck-cache-mcp` Worker'ı EMEKLİ edildi ve önbellek sunucunun içine taşındı: bu URL artık bir \"önbellek/yedek basamak\" DEĞİL, kapılı kanonik uçtur. Eski \"native TİTCK stall'da çağır\" yönergesi geçersiz — bundle'daki TEK TİTCK budur, doğrudan çağrılır. Whitelist: search_drugs · get_drug · get_atc_hierarchy · get_atc_class_summary · find_equivalent_products_by_substance · find_biosimilar_group · find_off_label_uses_for_drug · find_reference_prices_for_drug · compare_drug_to_alternatives · get_price_history · get_withdrawal_trend · find_authorization_cancellations_for_drug",
@@ -190,7 +132,7 @@
       "type": "http",
       "url": "https://yok-akademik.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${YOK_AKADEMIK_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:YOK_AKADEMIK_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "Türk KOL kimliklendirme (§8 KOL Haritası TR katmanı) — YÖK Tez'den FARKLI; h-index, ortak-yazar ağı, yayın, danışmanlık tezleri. 16 araç (ölçüm 2026-08-07). Whitelist: yok_search (⚠️ zorunlu argüman `term`, `query` DEĞİL) · yok_search_academics · yok_get_profile · yok_get_full_profile · yok_get_publications · yok_get_collaborators · yok_get_supervised_theses · yok_get_projects · yok_list_universities/yok_list_fields (taksonomi). Kimlik = 16-hex authorId; akış yok_search → authorId → yok_get_*"
@@ -199,7 +141,7 @@
       "type": "http",
       "url": "https://ebsco.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${MARMARA_EBSCO_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:MARMARA_EBSCO_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal BİRİNCİ deneme (Marmara VETİS → EBSCOhost; OpenAthens Tier 4 ve annas Tier 6'nın ÖNÜNDE). 4 araç: ebsco_server_info · ebsco_list_databases · ebsco_search(query, full_text_only?) · ebsco_get(record_id, prefer=pdf|html, collection?, doc_id?). Akış: DOI/başlık ile ebsco_search → isabet + tam-metin linki varsa ebsco_get. collection/doc_id anamnesis'e pass-through (Evidentia: collection=evidentia:run:<id>, doc_id=evrun:<id>:<DOI|record>); yoksa marmara:fetch:<sha1-8> mint. Miss / manual_required / session_invalid / no_fulltext_link → SKIP-REASON yaz + Tier 4 OpenAthens'e düş (sessiz atlama YOK). Key ${MARMARA_EBSCO_MCP_API_KEY} Doppler (cureohub/dev_personal); klinik kardeş MARMARA_CLINICAL_* ayrı kalır.",
@@ -210,7 +152,7 @@
       "type": "http",
       "url": "https://openathens.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${OPENATHENS_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:OPENATHENS_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "Tam-metin cascade Tier 4 — LİSANSLI kurumsal İKİNCİ deneme (Marmara EBSCO Tier 3 miss sonrası; annas Tier 6'nın ÖNÜNDE). 11 araç (ölçüm 2026-08-14): oa_resolve · oa_fetch_fulltext(ingest; collection?/doc_id?) · oa_fetch_pdf(doi|url) (sağlayıcı-nötr orijinal PDF; kısa-ömürlü opaque resource_link + filename/MIME/size/SHA-256/ acquired_via; HTML-only → `pdf_unavailable`) · oa_verify_access (DOI erişilebilir mi — getirmeden ÖNCE sor) · oa_session_status · oa_list_databases · oa_server_info · oa_batch_submit/oa_batch_result · search/fetch. Millet Kütüphanesi/OpenAthens SAML → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/JSTOR/Cochrane. ANTI-BOT v2: Xvfb headed profil; interactive challenge → `challenge_required` → Tier 5/6'ya degrade (sessiz atlama YOK). Bağlı değilse cascade Tier 5/6'ya düşer. Key ${OPENATHENS_MCP_API_KEY} Doppler'da → ek credential yok",
@@ -221,7 +163,7 @@
       "type": "http",
       "url": "https://annas.cureonics.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${ANNAS_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:ANNAS_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "Tam-metin geri-çağırma (full-text cascade Tier 6 — SON ÇARE, lisanslı band [Marmara EBSCO Tier 3 + OpenAthens Tier 4 + Wiley Tier 5] getiremeyince). 9 araç (ölçüm 2026-08-14): efemer okuma için article_search/read_article ve book_search/get_document_info/search_in_document/read_document; orijinal dosya için `download_document(id=<DOI|32-hex MD5>)`. PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque resource_link + format/size/SHA-256 olarak teslim edilir; link kalıcı kaynak diye cache'lenmez, DOI gövdesi Crossref/içerik-kimliği kapısından geçer. Uzun belge analizi → anamnesis ingest/bounded query. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1).",
@@ -232,7 +174,7 @@
       "type": "http",
       "url": "https://anamnesis-mcp.cureonics.workers.dev/mcp",
       "headers": {
-        "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "RAG/GraphRAG retrieval substratı (10 araç) — ingest_document + semantic_search + upsert_triples + graph_neighbors + subgraph + hybrid_query + list_docs + corpus_stats + forget_document + forget_collection. collection={plugin}:{run|sess|lib}:{id} (Evidentia scratch: evidentia:run:<12hex>); eksik collection → `_legacy`. hybrid_query kapsamsız → MCP error. **ÇOK-SORGULU HİBRİT GETİRİM (v1.6.0, tam §4.1.1): semantic_search/hybrid_query = `queries[]` ayrıştırma → her sorgu için vektör (bge-m3) ∥ BM25 (FTS5) → RRF füzyon (tüm sorgu×arm) → cross-encoder rerank (bge-reranker) → top-k; her aşama graceful-degrade.** Karmaşık çok-yönlü soruda recall-maks (detay atlamama): soruyu alt-yönlere/eşanlamlılara böl→`queries[]` ile geç; kavramsal+tam- terminoloji (ilaç/gen/kod). §8 retrieval telemetri CF-log'da. Bağlam-penceresi koruması (evidence_index). Vectorize 1024-d cosine + D1 graph + FTS5; Worker 1.2.0",
@@ -251,7 +193,7 @@
       "type": "http",
       "url": "https://openfda-mcp.cureonics.workers.dev/mcp",
       "headers": {
-        "Authorization": "Bearer ${OPENFDA_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:OPENFDA_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "openFDA + WHO ICD-11 TİPLİ erişim (2 araç) — `openfda_search`: drug/event (FAERS), drug/label, drug/drugsfda (onay), drug/enforcement (recall), device/* (api.fda.gov keyless); **`icd11_search`**: WHO ICD-11 MMS (server-side OAuth = ICD11_CLIENT_ID/SECRET, çağırana keyless; canlı 3B10.0 Haemophilia A doğrulandı). ⚠️ FAERS sayımları spontan rapor, insidans DEĞİL. ICD-11 buradan VEYA `med-terminologies.icd11_search` (D6 2026-08-17 emekli — canlı 3B10.0). RegulatoryMCP/Cureolex roster'dan ÇIKARILDI: karşılaştırmalı-hukuk araçları medikal kanıtta gürültü (WHO GHO/Health Canada/EUR-Lex gerekirse operatörün standalone Cureolex connector'ından).",
@@ -262,7 +204,7 @@
       "type": "http",
       "url": "https://evidentia-kb-mcp.cureonics.workers.dev/mcp",
       "headers": {
-        "Authorization": "Bearer ${EVIDENTIA_KB_MCP_API_KEY}"
+        "Authorization": "Bearer ${env:EVIDENTIA_KB_MCP_API_KEY}"
       },
       "_tier": "O",
       "_role": "OPSİYONEL semantik recall takviyesi (medical-research Adım 0.4 + Completeness Gate): `kb_search(query,k)` KB'yi (SKILL.md + references/*.md, knowledge-map.md HARİÇ) bge-m3 ile arar, ilgili bölümleri {file,section,score} ile döner. Bağlı değilse akış map-only'ye degrade eder — ASLA kapı değil. (`kb_upsert` = setup-only, Bearer-gated, scripts/kb_ingest.py içindir.)",

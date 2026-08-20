@@ -62,7 +62,8 @@ Kontrol listesi (**execution-map sırası**):
 6. **İkincil** — Elicit, AdisInsight, Literatür, SNOMED companion, BioRender (P7 visual)
    (`companion_unloaded` dürüst).
 
-> **Yüzey:** Claude Code `.mcp.json` otomatik; claude.ai Settings → Connectors. Directory
+> **Yüzey:** Claude Code `.mcp.json` (`${VAR}`) + Cursor `.cursor-plugin/mcp.json`
+> (`${env:VAR}`, örn. `MARMARA_EBSCO_MCP_API_KEY`) otomatik; claude.ai Settings → Connectors. Directory
 > OAuth (PubMed, CT.gov, Consensus, Elicit, Wiley…) roster'da STATİK URL ile yok.
 
 Eksik connector → graceful: `SKIP-REASON` + fallback merdiveni; araştırmayı durdurma.

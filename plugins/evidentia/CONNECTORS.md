@@ -57,7 +57,8 @@ probe'lanmaları önlenir (`docs/evidentia.local.md.example`).
 | **NPI Registry** | claude.ai: **Directory'den etkinleştir** | none / HCLS | `npi_search`, `npi_lookup`, `npi_validate` — yalnız ABD-KOL sinyali | K* (opsiyonel §1.3) |
 
 > **Claude vs self-host (Evidentia):** Bundled `pubmed-epmc`, `openalex`, `semantic-scholar`,
-> `marmara-ebsco`, `openathens` filoda **birincil** — Bearer/OAuth ile Claude Code'da otomatik.
+> `marmara-ebsco`, `openathens` filoda **birincil** — Bearer ile Claude Code (`.mcp.json`)
+> ve Cursor (`.cursor-plugin/mcp.json`, `${env:VAR}`) otomatik.
 > Directory companion'lar (PubMed HCLS, Clinical Trials, bioRxiv, Consensus, Elicit, Scite,
 > AdisInsight, SNOMED, BioRender, Paper Search, YÖK Tez, Wiley, Literatür) hesap düzeyinde
 > bağlanır; yüklü değilse `SKIP-REASON companion_unloaded` + fleet degrade (execution-map).
@@ -65,8 +66,8 @@ probe'lanmaları önlenir (`docs/evidentia.local.md.example`).
 >
 > **Kural:** Bu satırlar `.mcp.json`'a **eklenmez** (G-BUNDLE kapısı bunu bekler). Yüklü değilse
 > `SKIP-REASON companion_unloaded`. **Yüzey ayrımı §6'da normatiftir**; Tier-K/Tier-O statik-URL
-> connector'ları (who-gho, openfda, anamnesis, med-terminologies, marmara-ebsco…) `.mcp.json`'da
-> bildirilir ve Claude Code'da otomatik bağlanır.
+> connector'ları (who-gho, openfda, anamnesis, med-terminologies, marmara-ebsco…) `.mcp.json` /
+> `.cursor-plugin/mcp.json`'da bildirilir ve Claude Code / Cursor'da otomatik bağlanır.
 
 ### 1.1 Bibliyografik Çekirdek (her-zaman-açık getirim seti)
 | Connector | claude.ai | Auth | Anahtar araçlar | Güven | Katman |
@@ -297,11 +298,12 @@ canlıda compat için durur — guard yine DENY eder. (Kanonik artefakt:
 
 ---
 
-## 6. claude.ai ⇄ Claude Code Yüzey Ayrımı (KRİTİK)
+## 6. claude.ai ⇄ Claude Code ⇄ Cursor Yüzey Ayrımı (KRİTİK)
 
-| Yüzey | `.mcp.json` auto-wire? | Eylem |
+| Yüzey | Auto-wire yolu | Eylem |
 |---|---|---|
-| **Claude Code** (plugin runtime) | ✅ Tam — `mcpServers` doğrudan bağlanır | Plugin kurulumu connector'ları yükler |
+| **Claude Code** (plugin runtime) | ✅ `.claude-plugin/plugin.json` → `./.mcp.json` (`${VAR}`) | Plugin kurulumu connector'ları yükler |
+| **Cursor** (plugin runtime) | ✅ `.cursor-plugin/plugin.json` → `./.cursor-plugin/mcp.json` (`${env:VAR}`) | Marketplace refresh + süreç ortamında Doppler adları (`MARMARA_EBSCO_MCP_API_KEY` vb.). `${VAR}` paste formu **kullanılmaz** |
 | **claude.ai** (web) | ⚠️ Kısmî | Tier-K/Tier-O remote URL'leri **Settings → Connectors → Add custom connector**; Tier-A OAuth'u Advanced settings |
 | **ChatGPT** (web · Developer Mode) | ❌ Yok — elle | **Settings → Connectors** (Plus/Pro/Business/Enterprise/Edu + **Developer Mode**). Self-host Worker URL'leri (`…/mcp`) elle eklenir; gated olanlarda OAuth, drugddx + keyless'larda "No authentication". Detay: `docs/KURULUM.md` Kurulum yolu **C**. |
 

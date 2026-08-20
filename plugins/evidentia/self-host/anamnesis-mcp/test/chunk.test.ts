@@ -23,6 +23,38 @@ describe("estimateTokens", () => {
     expect(estimateTokens("one two three four")).toBeGreaterThanOrEqual(4);
     expect(estimateTokens("")).toBe(1);
   });
+
+  it("floors by char length when spaces are scarce (PDF/OCR)", () => {
+    const dense = "a".repeat(400);
+    expect(estimateTokens(dense)).toBeGreaterThanOrEqual(100);
+  });
+});
+
+describe("resolveOpts", () => {
+  const { resolveOpts } = __testing;
+
+  it("keeps defaults when caller passes explicit undefined (MCP omit)", () => {
+    const o = resolveOpts({ breakThreshold: undefined, maxTokens: undefined });
+    expect(o.maxTokens).toBe(512);
+    expect(o.breakThreshold).toBe(0.55);
+  });
+
+  it("honors an explicit maxTokens override", () => {
+    expect(resolveOpts({ maxTokens: 64 }).maxTokens).toBe(64);
+  });
+});
+
+describe("semanticChunk - undefined opts must not disable the token cap", () => {
+  it("splits a long same-topic run when opts carry undefined maxTokens", async () => {
+    const sent = "Alpha " + "word ".repeat(40) + ".";
+    // ~52 tokens/window × 20 windows ≫ default maxTokens 512 → must split
+    const text = (sent + " ").repeat(20);
+    // Reproduce the MCP handler shape: always spread optional fields, even when unset.
+    const { chunks, windowCount } = await semanticChunk(
+      text, fakeEmbed, { breakThreshold: undefined, maxTokens: undefined, windowSentences: 1 });
+    expect(windowCount).toBeGreaterThan(1);
+    expect(chunks.length).toBeGreaterThan(1);
+  });
 });
 
 describe("splitBlocks", () => {

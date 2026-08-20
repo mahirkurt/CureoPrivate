@@ -43,10 +43,15 @@ const DEFAULTS: Required<ChunkOpts> = {
   maxWindows: 400,
 };
 
-/** Rough token estimate: words * 1.3 (good enough for budgeting, no tokenizer in-Worker). */
+/** Rough token estimate: max(words×1.3, chars/4); no tokenizer in-Worker. */
 export function estimateTokens(text: string): number {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words * 1.3));
+  // Word heuristic undercounts space-starved PDF/OCR text; char/4 is the usual
+  // fallback so the maxTokens cap still fires on dense extracts.
+  const trimmed = text.trim();
+  const words = trimmed.split(/\s+/).filter(Boolean).length;
+  const byWords = Math.round(words * 1.3);
+  const byChars = Math.ceil(trimmed.length / 4);
+  return Math.max(1, byWords, byChars);
 }
 
 /** Split into structural blocks: blank-line paragraphs + heading/section boundaries. */
@@ -102,12 +107,30 @@ export interface ChunkResult {
 }
 
 /**
+ * Merge caller opts over defaults WITHOUT letting explicit `undefined` clobber.
+ * MCP tool handlers often pass `{ maxTokens: a.max_tokens }` where the field is
+ * omitted → `undefined`; a naïve `{ ...DEFAULTS, ...opts }` then sets
+ * `maxTokens`/`breakThreshold` to undefined, disabling BOTH the token cap and
+ * the cosine boundary (`n > undefined` / `sim < undefined` are always false) and
+ * collapsing every multi-window document into a single chunk (n_chunks=1 with
+ * window_count ≫ 1). Measured live 2026-08-20.
+ */
+function resolveOpts(opts: ChunkOpts): Required<ChunkOpts> {
+  const out: Required<ChunkOpts> = { ...DEFAULTS };
+  if (opts.breakThreshold !== undefined) out.breakThreshold = opts.breakThreshold;
+  if (opts.maxTokens !== undefined) out.maxTokens = opts.maxTokens;
+  if (opts.windowSentences !== undefined) out.windowSentences = opts.windowSentences;
+  if (opts.maxWindows !== undefined) out.maxWindows = opts.maxWindows;
+  return out;
+}
+
+/**
  * Produce semantic chunks. Stored chunk vectors are the MEAN of their window embeddings
  * (avoids a second embedding pass per chunk; mean-pooling of bge-m3 windows is a faithful
  * representation for cosine retrieval). Returns chunk vectors so the caller upserts directly.
  */
 export async function semanticChunk(text: string, embed: EmbedFn, opts: ChunkOpts = {}): Promise<ChunkResult> {
-  const o = { ...DEFAULTS, ...opts };
+  const o = resolveOpts(opts);
   const { units, truncated } = buildWindows(text, o.windowSentences, o.maxWindows);
   if (units.length === 0) return { chunks: [], truncated, windowCount: 0 };
   if (units.length === 1) {
@@ -163,4 +186,4 @@ function cosineLocal(a: number[], b: number[]): number {
   return na && nb ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
 }
 
-export const __testing = { splitBlocks, splitSentences, estimateTokens, meanVector };
+export const __testing = { splitBlocks, splitSentences, estimateTokens, meanVector, resolveOpts };

@@ -139,10 +139,15 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     },
     async (a) => {
       try {
+        // Only forward defined chunk opts — spreading `undefined` over
+        // semanticChunk defaults disables the token cap (see chunk.ts resolveOpts).
+        const chunkOpts: { breakThreshold?: number; maxTokens?: number } = {};
+        if (a.break_threshold !== undefined) chunkOpts.breakThreshold = a.break_threshold;
+        if (a.max_tokens !== undefined) chunkOpts.maxTokens = a.max_tokens;
         const res = await ingestDocument(env, {
           text: a.text, doc_id: a.doc_id, collection: a.collection,
           title: a.title, source: a.source, ttl_hours: a.ttl_hours,
-          chunkOpts: { breakThreshold: a.break_threshold, maxTokens: a.max_tokens },
+          chunkOpts,
         });
         return ok({ ...res, note: SUBSTRATE_NOTE });
       } catch (e: unknown) { return toolErr(e, "ingest_document"); }

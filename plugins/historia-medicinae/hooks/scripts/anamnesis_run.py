@@ -43,6 +43,25 @@ COLLECTION_RE = re.compile(r"^histmed:run:([0-9a-f]{12})$")
 
 HYBRID_GRAPH = {"hybrid_query", "graph_neighbors", "subgraph"}
 OBSERVE = {"corpus_stats"}
+
+# Fleet-wide Anamnesis collection / doc_id prefixes. Own prefixes are excluded
+# below so wrong own-run still DENYs; peer prefixes pass through (the owning
+# plugin's guard enforces exclusivity). Copied per plugin — no shared package.
+ANAMNESIS_FLEET_SCOPE_PREFIXES = (
+    "evidentia:run:",
+    "evrun:",
+    "cureolex:sess:",
+    "cureolex:run:",
+    "cureolex:lib:",
+    "vekayinuvis:run:",
+    "vkrun:",
+    "histmed:run:",
+    "hmrun:",
+    "openathens:fetch:",
+    "marmara:fetch:",
+    "marmara:ebsco",
+)
+OWN_SCOPE_PREFIXES = ("histmed:run:", "hmrun:")
 _UA = "Mozilla/5.0 (histmed-anamnesis-cleanup)"
 _INIT = {
     "jsonrpc": "2.0",
@@ -291,6 +310,41 @@ def context_message(ledger: dict) -> str:
     )
 
 
+def peer_scope_prefixes() -> tuple[str, ...]:
+    own = set(OWN_SCOPE_PREFIXES)
+    return tuple(p for p in ANAMNESIS_FLEET_SCOPE_PREFIXES if p not in own)
+
+
+def _matches_scope_prefix(value: str, prefixes: tuple[str, ...]) -> bool:
+    s = str(value or "").strip()
+    return bool(s) and any(s.startswith(p) for p in prefixes)
+
+
+def is_peer_plugin_scope(inp: dict) -> bool:
+    """True when collection / doc_id belongs to another known plugin namespace."""
+    peers = peer_scope_prefixes()
+    coll = str((inp or {}).get("collection") or "").strip()
+    if coll:
+        return _matches_scope_prefix(coll, peers)
+    ids = ids_of(inp or {})
+    if ids:
+        return all(_matches_scope_prefix(i, peers) for i in ids)
+    triples = (inp or {}).get("triples") or []
+    if isinstance(triples, list) and triples:
+        for t in triples:
+            if not isinstance(t, dict):
+                return False
+            tcoll = str(t.get("collection") or "").strip()
+            doc = str(t.get("doc_id") or t.get("docId") or "").strip()
+            if tcoll:
+                if not _matches_scope_prefix(tcoll, peers):
+                    return False
+            elif not _matches_scope_prefix(doc, peers):
+                return False
+        return True
+    return False
+
+
 def deny_reason(base: str, inp: dict, ledger: dict) -> str | None:
     rid = ledger["run_id"]
     coll = collection_for(rid)
@@ -298,6 +352,9 @@ def deny_reason(base: str, inp: dict, ledger: dict) -> str | None:
     got = str(inp.get("collection") or "").strip()
 
     if base in OBSERVE:
+        return None
+
+    if is_peer_plugin_scope(inp):
         return None
 
     if base in HYBRID_GRAPH:

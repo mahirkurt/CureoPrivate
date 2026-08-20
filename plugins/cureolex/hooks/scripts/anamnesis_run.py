@@ -49,6 +49,25 @@ SCOPED_SEARCH = {"semantic_search"}
 TRIPLE_WRITE = {"upsert_triples"}
 OBSERVE = {"corpus_stats"}
 
+# Fleet-wide Anamnesis collection / doc_id prefixes. Own prefixes are excluded
+# below so wrong own-sess still DENYs; peer prefixes pass through (the owning
+# plugin's guard enforces exclusivity). Copied per plugin — no shared package.
+ANAMNESIS_FLEET_SCOPE_PREFIXES = (
+    "evidentia:run:",
+    "evrun:",
+    "cureolex:sess:",
+    "cureolex:run:",
+    "cureolex:lib:",
+    "vekayinuvis:run:",
+    "vkrun:",
+    "histmed:run:",
+    "hmrun:",
+    "openathens:fetch:",
+    "marmara:fetch:",
+    "marmara:ebsco",
+)
+OWN_SCOPE_PREFIXES = ("cureolex:sess:", "cureolex:run:", "cureolex:lib:")
+
 _UA = "Mozilla/5.0 (cureolex-anamnesis-cleanup)"
 _INIT = {
     "jsonrpc": "2.0",
@@ -332,12 +351,65 @@ def is_scoped(inp: dict, ledger: dict) -> bool:
     return _collection_matches(inp, ledger) or _ids_match(inp, ledger)
 
 
+def peer_scope_prefixes() -> tuple[str, ...]:
+    own = set(OWN_SCOPE_PREFIXES)
+    return tuple(p for p in ANAMNESIS_FLEET_SCOPE_PREFIXES if p not in own)
+
+
+def _matches_scope_prefix(value: str, prefixes: tuple[str, ...]) -> bool:
+    s = str(value or "").strip()
+    return bool(s) and any(s.startswith(p) for p in prefixes)
+
+
+def is_peer_plugin_scope(inp: dict) -> bool:
+    """True when collection / doc_id belongs to another known plugin namespace.
+
+    Pass-through ALLOW so co-installed plugin guards do not mutually DENY.
+    Wrong own-sess / unscoped / unknown still follow this plugin's DENY rules.
+    """
+    peers = peer_scope_prefixes()
+    coll = str((inp or {}).get("collection") or "").strip()
+    if coll:
+        return _matches_scope_prefix(coll, peers)
+    ids: list[str] = []
+    for key in ("doc_id", "docId"):
+        v = (inp or {}).get(key)
+        if v:
+            ids.append(str(v).strip())
+    extra = (inp or {}).get("doc_ids") or (inp or {}).get("docIds") or []
+    if isinstance(extra, list):
+        for item in extra:
+            s = str(item or "").strip()
+            if s:
+                ids.append(s)
+    if ids:
+        return all(_matches_scope_prefix(i, peers) for i in ids)
+    triples = (inp or {}).get("triples") or []
+    if isinstance(triples, list) and triples:
+        for t in triples:
+            if not isinstance(t, dict):
+                return False
+            tcoll = str(t.get("collection") or "").strip()
+            doc = str(t.get("doc_id") or t.get("docId") or "").strip()
+            if tcoll:
+                if not _matches_scope_prefix(tcoll, peers):
+                    return False
+            elif not _matches_scope_prefix(doc, peers):
+                return False
+        return True
+    return False
+
+
 def deny_reason(base: str, inp: dict, ledger: dict) -> str | None:
     """Return a deny string, or None to allow. corpus_stats always allowed."""
     coll = ledger["collection"]
     example = scoped_doc_id(coll, "mevzuat:1219/1")
 
     if base in OBSERVE:
+        return None
+
+    # Another plugin's valid namespace — skip this guard (do not mutual-DENY).
+    if is_peer_plugin_scope(inp):
         return None
 
     if base in GLOBAL_READ:

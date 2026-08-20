@@ -303,6 +303,19 @@ got, _ = _g("mcp__anamnesis__hybrid_query",
 check("hybrid_query + collection → ALLOW", got == "ALLOW")
 
 got, _ = _g("mcp__anamnesis__hybrid_query",
+            {"collection": "evidentia:run:ffffffffffff", "queries": ["x"]}, env)
+check("hybrid_query peer evidentia collection → ALLOW", got == "ALLOW")
+got, _ = _g("mcp__anamnesis__semantic_search",
+            {"query": "x", "collection": "evidentia:run:aabbccddeeff"}, env)
+check("semantic_search peer evidentia collection → ALLOW", got == "ALLOW")
+got, _ = _g("mcp__anamnesis__hybrid_query",
+            {"collection": "cureolex:sess:ffffffffffff", "queries": ["x"]}, env)
+check("hybrid_query wrong own sess → DENY", got == "DENY")
+got, _ = _g("mcp__anamnesis__hybrid_query",
+            {"doc_ids": ["evrun:ffffffffffff:10.1/x"], "queries": ["x"]}, env)
+check("hybrid_query peer evrun doc_ids → ALLOW", got == "ALLOW")
+
+got, _ = _g("mcp__anamnesis__hybrid_query",
             {"doc_ids": [ANAM_DOC], "queries": ["ruhsat"]}, env)
 check("hybrid_query + prefixed doc_ids[] → ALLOW", got == "ALLOW")
 
@@ -342,7 +355,10 @@ got, _ = _g("mcp__anamnesis__forget_document", {"doc_id": ANAM_DOC}, env)
 check("forget own prefixed id → ALLOW", got == "ALLOW")
 got, _ = _g("mcp__anamnesis__forget_collection",
             {"collection": "evidentia:run:ffffffffffff"}, env)
-check("forget_collection foreign → DENY", got == "DENY")
+check("forget_collection peer plugin → ALLOW (pass-through)", got == "ALLOW")
+got, _ = _g("mcp__anamnesis__forget_collection",
+            {"collection": "cureolex:sess:ffffffffffff"}, env)
+check("forget_collection wrong own sess → DENY", got == "DENY")
 got, _ = _g("mcp__anamnesis__forget_collection",
             {"collection": ANAM_COLL}, env)
 check("forget_collection own sess → ALLOW", got == "ALLOW")

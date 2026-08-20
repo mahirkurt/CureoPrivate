@@ -41,6 +41,25 @@ TRIPLE_WRITE = {"upsert_triples"}
 OBSERVE = {"corpus_stats"}
 PLUGIN_NAME = "evidentia"
 
+# Fleet-wide Anamnesis collection / doc_id prefixes. Own prefixes are excluded
+# below so wrong own-run still DENYs; peer prefixes pass through (the owning
+# plugin's guard enforces exclusivity). Copied per plugin — no shared package.
+ANAMNESIS_FLEET_SCOPE_PREFIXES = (
+    "evidentia:run:",
+    "evrun:",
+    "cureolex:sess:",
+    "cureolex:run:",
+    "cureolex:lib:",
+    "vekayinuvis:run:",
+    "vkrun:",
+    "histmed:run:",
+    "hmrun:",
+    "openathens:fetch:",
+    "marmara:fetch:",
+    "marmara:ebsco",
+)
+OWN_SCOPE_PREFIXES = ("evidentia:run:", "evrun:")
+
 # User-Agent: Cloudflare bot-filter blocks default Python-urllib (D10).
 _UA = "Mozilla/5.0 (evidentia-anamnesis-cleanup)"
 _INIT = {
@@ -316,6 +335,45 @@ def context_message(ledger: dict) -> str:
     )
 
 
+def peer_scope_prefixes() -> tuple[str, ...]:
+    own = set(OWN_SCOPE_PREFIXES)
+    return tuple(p for p in ANAMNESIS_FLEET_SCOPE_PREFIXES if p not in own)
+
+
+def _matches_scope_prefix(value: str, prefixes: tuple[str, ...]) -> bool:
+    s = str(value or "").strip()
+    return bool(s) and any(s.startswith(p) for p in prefixes)
+
+
+def is_peer_plugin_scope(inp: dict) -> bool:
+    """True when collection / doc_id belongs to another known plugin namespace.
+
+    Pass-through ALLOW so co-installed plugin guards do not mutually DENY.
+    Wrong own-run / unscoped / unknown still follow this plugin's DENY rules.
+    """
+    peers = peer_scope_prefixes()
+    coll = collection_of(inp)
+    if coll:
+        return _matches_scope_prefix(coll, peers)
+    ids = listed_doc_ids(inp)
+    if ids:
+        return all(_matches_scope_prefix(i, peers) for i in ids)
+    triples = (inp or {}).get("triples") or []
+    if isinstance(triples, list) and triples:
+        for t in triples:
+            if not isinstance(t, dict):
+                return False
+            tcoll = str(t.get("collection") or "").strip()
+            doc = str(t.get("doc_id") or t.get("docId") or "").strip()
+            if tcoll:
+                if not _matches_scope_prefix(tcoll, peers):
+                    return False
+            elif not _matches_scope_prefix(doc, peers):
+                return False
+        return True
+    return False
+
+
 def deny_reason(base: str, inp: dict, ledger: dict) -> str | None:
     """Return a deny string, or None to allow. corpus_stats always allowed."""
     rid = ledger["run_id"]
@@ -325,6 +383,10 @@ def deny_reason(base: str, inp: dict, ledger: dict) -> str | None:
     ids = listed_doc_ids(inp)
 
     if base in OBSERVE:
+        return None
+
+    # Another plugin's valid namespace — skip this guard (do not mutual-DENY).
+    if is_peer_plugin_scope(inp):
         return None
 
     if coll and not collection_matches(coll, rid):

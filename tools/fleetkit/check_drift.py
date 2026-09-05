@@ -4,6 +4,7 @@
 Altı denetim (hepsi deterministik):
   [1] Türetilmiş dosyalar güncel mi        gen_fleet --check
   [2] Sürüm tutarlı mı                     plugin.json ↔ marketplace ↔ codex ↔ SKILL.md
+                                           ↔ kök README katalog satırı
   [3] Vendor'lı fleet_probe bayt-özdeş mi  kanonik kopyayla karşılaştırılır
   [4] Çift hooks.json var mı               kök + hooks/ aynı anda
   [5] Düzyazı filo sayısı doğru mu         (fleet.yaml `prose_count_check: true` derse)
@@ -197,10 +198,31 @@ def scan_server_ids(root: Path, fleet: dict):
     return out
 
 
-def versions(d: Path, marketplace: dict):
+# Kök README'nin katalog tablosundaki sürüm sütunu:
+#   | **<ad>** (Görünen Ad) | 1.2.4 | alan | açıklama |
+# NEDEN SÜRÜM ZİNCİRİNE DAHİL (2026-09-05): bu satır, kullanıcının plugin
+# listesinde GÖRDÜĞÜ tek sürümdür — ama hiçbir kapı onu denetlemiyordu.
+# plugin.json bump edilip bu hücre unutulduğunda sürüklenme sessizdir:
+# `vekayinuvis` 3.4.12→3.4.13 bu yüzden İKİ KEZ bayat kaldı (biri plugin'in
+# kendi README'sinde, biri burada). Tabloda satırı olmayan plugin None döner
+# ve `versions()`'ın None-filtresiyle düşer — yanlış pozitif üretmez.
+_CATALOG_ROW = re.compile(
+    r"^\|\s*\*\*([a-z0-9-]+)\*\*[^|]*\|\s*([0-9]+\.[0-9]+\.[0-9]+)\s*\|", re.M)
+
+
+def catalog_readme_versions() -> dict:
+    p = REPO / "README.md"
+    if not p.is_file():
+        return {}
+    return {m.group(1): m.group(2)
+            for m in _CATALOG_ROW.finditer(p.read_text(encoding="utf-8"))}
+
+
+def versions(d: Path, marketplace: dict, readme: dict | None = None):
     man = json.loads((d / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     name = man["name"]
-    vs = {"plugin.json": man.get("version"), "marketplace": marketplace.get(name)}
+    vs = {"plugin.json": man.get("version"), "marketplace": marketplace.get(name),
+          "README(katalog)": (readme or {}).get(name)}
     codex = d / ".codex-plugin" / "plugin.json"
     if codex.is_file():
         vs["codex"] = json.loads(codex.read_text(encoding="utf-8")).get("version")
@@ -231,6 +253,7 @@ def main(argv=None) -> int:
     mk_entries = {p["name"]: p for p in json.loads(
         (REPO / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))["plugins"]}
     marketplace = {n: p.get("version") for n, p in mk_entries.items()}
+    readme_versions = catalog_readme_versions()
     canonical = CANONICAL_PROBE.read_bytes()
     failed, checked = False, 0
 
@@ -245,7 +268,7 @@ def main(argv=None) -> int:
             issues.append(("[1] türetilmiş dosya güncel değil", stale,
                            "python3 tools/fleetkit/gen_fleet.py"))
 
-        vs = versions(d, marketplace)
+        vs = versions(d, marketplace, readme_versions)
         if len(set(vs.values())) > 1:
             issues.append(("[2] sürüm tutarsız", [f"{k}={v}" for k, v in vs.items()],
                            "hepsini plugin.json sürümüne eşitle"))

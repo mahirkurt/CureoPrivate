@@ -70,7 +70,7 @@ jobs:
         run: |
           set -e
           python3 - <<'PY'
-          import json, pathlib, subprocess, sys
+          import json, pathlib, re, subprocess, sys
           def gate(script):
               return subprocess.run([sys.executable, f'tools/fleetkit/{script}', '--quiet'],
                                     capture_output=True).returncode
@@ -86,17 +86,34 @@ jobs:
             ('check_marketplace.py', 'plugins/cureolex/commands/lex-draft.md',
              lambda s: s.replace('description: ', 'description: Mod X: bozuk ', 1),
              'geçersiz YAML frontmatter'),
+            # 2026-09-05: kök README katalog tablosundaki sürüm hücresi, kullanıcının
+            # plugin listesinde GÖRDÜĞÜ tek sürümdür ama sürüm zincirinde yoktu →
+            # `vekayinuvis` 3.4.12→3.4.13 bumpı burada İKİ KEZ bayat kaldı. Artık
+            # check_drift [2] bu hücreyi de zincire katıyor; mutasyon onu doğrular.
+            # Mutasyon SÜRÜMDEN BAĞIMSIZ: sabit bir sürüm dizgisi yazılsaydı bir
+            # sonraki bump'ta sessizce no-op olur, kapı "YAKALADI" sanılırdı.
+            ('check_drift.py', 'README.md',
+             lambda s: re.sub(r'(\*\* \(Vekayinüvis\) \| )\d+\.\d+\.\d+',
+                              r'\g<1>0.0.1', s, count=1),
+             'katalog README sürüm hücresi bayat'),
           ]
           fail = False
           for script, path, mutate, label in checks:
               p = pathlib.Path(path); orig = p.read_text(encoding='utf-8')
-              p.write_text(mutate(orig), encoding='utf-8')
+              mutated = mutate(orig)
+              # Mutasyonun KENDİSİ bayatlayabilir: hedef metin değişince
+              # `replace`/`sub` sessizce no-op olur, kapı temiz döner ve bu
+              # "YAKALADI" sanılırdı — yani mutasyon testi de dekoratifleşirdi.
+              # Değişmemiş dosya başarısızlıktır.
+              noop = mutated == orig
+              p.write_text(mutated, encoding='utf-8')
               args = ['--all'] if script == 'check_drift.py' else []
               rc = subprocess.run([sys.executable, f'tools/fleetkit/{script}', *args, '--quiet'],
                                   capture_output=True).returncode
               p.write_text(orig, encoding='utf-8')
-              ok = rc == 1
-              print(f"  {'YAKALADI' if ok else 'KAÇIRDI'}  {label}  ({script})")
+              ok = rc == 1 and not noop
+              print(f"  {'YAKALADI' if ok else 'KAÇIRDI '}  {label}  ({script})"
+                    + ('  ⚠ MUTASYON NO-OP — hedef metin değişmiş' if noop else ''))
               fail |= not ok
           sys.exit(1 if fail else 0)
           PY

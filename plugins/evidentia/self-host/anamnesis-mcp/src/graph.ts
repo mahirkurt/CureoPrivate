@@ -188,16 +188,29 @@ export async function neighbors(
   return { center: start, found: true, collection, edges, entities: [...visited] };
 }
 
-/** Induced subgraph: edges whose BOTH endpoints fall in the given entity set. Collection-scoped. */
+/**
+ * Induced subgraph: edges whose BOTH endpoints fall in the given entity set. Collection-scoped.
+ *
+ * The induced predicate lives in SQL. It used to reuse edgesTouching(), which pre-cuts with
+ * `ORDER BY weight DESC LIMIT 500`, and only then filtered for "both endpoints in the set" — so
+ * once more than 500 edges touched the seed entities, non-induced neighbours crowded the real
+ * induced edges out of the slice and the tool returned an EMPTY subgraph while the edges plainly
+ * existed. A silent false negative, and exactly the shape that scales into `lib` corpora
+ * (audit finding A9).
+ */
 export async function subgraph(
   env: GraphEnv, entities: string[], limit = 200, collectionRaw?: string,
 ): Promise<{ collection: string; edges: GraphEdge[]; entities: string[] }> {
   const collection = requireCollection(collectionRaw, "subgraph");
   const keys = entities.map((e) => nodeKey(collection, e));
   if (keys.length < 1) return { collection, edges: [], entities: [] };
-  const es = await edgesTouching(env, keys, collection);
-  const keySet = new Set(keys);
-  const edges = es.filter((e) => keySet.has(e.subject) && keySet.has(e.object)).slice(0, limit);
+  const ph = keys.map(() => "?").join(",");
+  const rows = await env.DB.prepare(
+    `SELECT ${EDGE_COLUMNS} FROM edges
+      WHERE collection = ? AND subject IN (${ph}) AND object IN (${ph})
+      ORDER BY weight DESC LIMIT ?`,
+  ).bind(collection, ...keys, ...keys, limit).all();
+  const edges = ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => mapEdgeRow(r, collection));
   return { collection, edges, entities: keys };
 }
 

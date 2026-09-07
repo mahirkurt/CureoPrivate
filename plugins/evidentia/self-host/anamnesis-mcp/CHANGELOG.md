@@ -84,30 +84,33 @@ Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/); sürümleme [S
   `offsets`, `ingest`, `retrieval`, `schema`, `graph-weight`, `tool-surface`
   (sonuncusu gerçek MCP handler'ı üzerinden uçtan uca `tools/list` + `tools/call`).
 
-### Bilinen açık
-- **A9 — `subgraph` induced filtresi `LIMIT 500` ön-filtresinden SONRA uygulanıyor**, bu yüzden
-  geniş varlık kümesinde yüksek-ağırlıklı induced-olmayan kenarlar gerçek induced kenarları
-  dışarı itebilir. Düzeltilmedi: hata yalnız tohum kümesine değen kenar sayısı 500'ü aşınca
-  ortaya çıkıyor ve ölçüldü ki kalıcı bir regresyon testi bunu üretmek için ~12-24 sn sürüyor
-  (1000 üçlü = 23.5 sn); eşit ağırlıklarda daha ucuz bir kurgu ise sıralama bağına dayandığı
-  için kırılgan olurdu. Faz 4'e bırakıldı.
+### Operasyon
+- **Süresi dolan scratch artık gerçekten toplanıyor.** `expires_at` ingest'te yazılıp okumada
+  filtreleniyordu ama hiçbir şey satırı silmiyordu: cron tetikleyici yoktu, `scheduled()` handler
+  yoktu. İki sonucu vardı ve ikisi de sessizdi — D1 sınırsız büyüyordu ve daha kötüsü **Vectorize
+  hiç TTL filtrelenmiyordu**: ölü vektörler indekste yer tutmaya ve `topK` aday havuzunda (30-80)
+  dönmeye devam ediyor, D1 post-filter onları atınca canlı sonuçlardan aday yeri çalıyorlardı.
+  Yani indeks cesetle doldukça recall eriyordu. Artık gecelik cron (`10 4 * * *`) →
+  `src/reaper.ts`. Hook temizliği fail-open olduğu için reaper ayrıca **TTL'siz kalmış scratch'i**
+  de 14 günden sonra süpürür (son savunma hattı). `lib` asla süpürülmez. (A2)
+- **Derin sağlık kontrolü.** `/health` (public, ucuz) aynı kaldı; `/health?deep=1` (Bearer'lı) D1,
+  Vectorize ve Workers AI'yı ayrı ayrı yoklar ve düşen bileşeni **adıyla** bildirir — yeşil bir
+  liveness probe'u getirim gerçekten çalışıyor mu sorusuna cevap vermiyordu. `smoke_oauth_public.sh`
+  bunu kontrol eder.
+- **`_legacy` kirliliği görünür oldu.** Global `corpus_stats` artık `legacy_docs` döndürür ve
+  sıfırdan büyükse `note` bunu kapsam ihlali göstergesi olarak açıkça beyan eder. (B3)
 
-### Dokümantasyon
-- `/mnt/thunderbolt/workspaces/evidentia-cc/.../anamnesis-mcp` (git-takipsiz v1.0.0 kopyası)
-  `RETIRED.md` ile işaretlendi. Kanonik ağaç bu dizindir. (Denetim bulgusu D3)
+### Düzeltildi (devam)
+- **`subgraph` induced kenarları kaybediyordu.** Induced testi ("her iki uç da istenen kümede")
+  `ORDER BY weight DESC LIMIT 500` ön-kesitinden SONRA uygulanıyordu; tohum kümesine 500'den fazla
+  kenar değdiğinde induced-olmayan komşular gerçek induced kenarları dışarı itiyor ve araç kenar
+  apaçık varken **boş** dönüyordu. Sessiz yanlış-negatif ve tam olarak `lib` korpuslarına
+  ölçeklenen şekil. Induced yüklem SQL'e indirildi; 510 kenarlık gerçek bir regresyon testiyle
+  sabitlendi. (A9)
 
-## [1.2.1] — 2026-08-20
-
-### Düzeltildi
-- `undefined` chunk seçeneklerinin tüm pencereleri tek chunk'a çökertmesi durduruldu
-  (`chunk.ts` `resolveOpts`; canlı ölçüm 2026-08-20). — `0dbd7de`
-
-## [1.2.0]
-
-### Eklendi
-- Koleksiyon sözleşmesi (`{plugin}:{run|sess|lib}:{id}`), `src/collection.ts`,
-  `migrations/0001_collection.sql`, `test/collection.{test,eval}.ts`. — `4f738a1`
-
-## [1.1.0] / [1.0.0]
-
-Denetim öncesi; kayıt için `git log` ve emekliye ayrılmış kopyaların `package.json`'ına bakınız.
+### Test
+- 6 dosya / 77 test → **18 dosya / 139 test**. Yeni kapsam: reranker yanıt-şekli toleransı
+  (`response`/`result`/çıplak dizi) ve bozuk reranker'da RRF sırasına düşme; TTL'nin **okuma
+  anında** filtrelenmesi (reaper koşmadan önce); graf gezinmesi (çok-hop BFS, induced subgraph,
+  belge-kaynaklı kenarlar); cron reaper'ın uçtan uca tetiklenmesi; derin sağlık kontrolünün
+  kapılanması ve düşen bileşeni adıyla bildirmesi.

@@ -619,11 +619,21 @@ export async function corpusStats(
     const c = await env.DB.prepare(`SELECT COUNT(*) AS n FROM chunks`).first<{ n: number }>();
     const nodes = await env.DB.prepare(`SELECT COUNT(*) AS n FROM nodes`).first<{ n: number }>();
     const edges = await env.DB.prepare(`SELECT COUNT(*) AS n FROM edges`).first<{ n: number }>();
+    // `_legacy` is where every unscoped write lands, and an unscoped read can see all of it.
+    // Surfacing the count makes tenancy drift observable instead of invisible (finding B3).
+    const legacy = await env.DB.prepare(`SELECT COUNT(*) AS n FROM docs WHERE collection = ?`)
+      .bind(LEGACY_COLLECTION).first<{ n: number }>();
+    const legacyDocs = Number(legacy?.n ?? 0);
     return {
       scope: "global",
-      note: "Global observation only — not a working set. Pass collection for a tenant count.",
+      note: "Global observation only — not a working set. Pass collection for a tenant count." +
+        (legacyDocs > 0
+          ? ` WARNING: ${legacyDocs} document(s) sit in '${LEGACY_COLLECTION}' — those were written`
+            + " without a collection and are readable by any unscoped search. Migrate or forget them."
+          : ""),
       docs: Number(d?.n ?? 0), chunks: Number(c?.n ?? 0),
       nodes: Number(nodes?.n ?? 0), edges: Number(edges?.n ?? 0),
+      legacy_docs: legacyDocs,
     };
   }
   const d = await env.DB.prepare(`SELECT COUNT(*) AS n FROM docs WHERE collection = ?`).bind(scoped).first<{ n: number }>();

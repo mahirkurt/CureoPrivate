@@ -62,8 +62,8 @@ ANAMNESIS_FLEET_SCOPE_PREFIXES = (
     "vkrun:",
     "histmed:run:",
     "hmrun:",
-    "openathens:fetch:",
-    "marmara:fetch:",
+    "openathens:run:",
+    "marmara:run:",
     "marmara:ebsco",
 )
 OWN_SCOPE_PREFIXES = ("cureolex:sess:", "cureolex:run:", "cureolex:lib:")

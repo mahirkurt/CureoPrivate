@@ -29,4 +29,13 @@ export default defineConfig({
       },
     }),
   ],
+  test: {
+    // EXPLICIT include. Vitest's default glob is `**/*.{test,spec}.?(c|m)[jt]s?(x)`, which does
+    // NOT match `test/collection.eval.ts` -- so the ONLY integration suite (cross-collection
+    // leak, forget_collection isolation, re-ingest tail, unscoped hybrid_query, graph isolation)
+    // silently never ran. Measured 2026-09-07: `npm test` reported 6 files / 77 tests; the eval
+    // file was the invisible 7th. The `.eval.ts` name is kept (it is a behavioural eval, not a
+    // unit test) and the glob is widened to match it instead of renaming the file.
+    include: ["test/**/*.{test,eval}.ts"],
+  },
 });

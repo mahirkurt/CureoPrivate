@@ -43,10 +43,19 @@
   ],
 
   // NON-SECRET vars only. OAUTH_ALLOWED_REDIRECT_ORIGINS empty => default allowlist
-  // (https://claude.ai, https://claude.com). MCP_ALLOW_NO_AUTH MUST stay "0" in production.
+  // (see DEFAULT_ALLOWED_ORIGINS in src/auth.ts). Loopback (127.0.0.1/localhost/::1,
+  // any port — VS Code/Codex CLI/native OAuth) and cursor:// are allowed unconditionally
+  // in code regardless of this var. MCP_ALLOW_NO_AUTH MUST stay "0" in production.
+  //
+  // STRICT_COLLECTION: tenancy transition switch (audit 2026-09-07, findings B1-B3). "0" keeps
+  // today's behaviour and merely LOGS every unscoped call as an `anamnesis.scope_violation` line;
+  // "1" turns those into errors (unscoped ingest / search / forget / upsert_triples). Flip it
+  // only once the logs are clean for all four plugins, the two sibling MCP servers
+  // (marmara, openathens) and the thesis scripts — evidence first, breakage second.
   "vars": {
     "MCP_ALLOW_NO_AUTH": "0",
-    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+    "STRICT_COLLECTION": "0",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com,https://oauth-redirect.googleusercontent.com,https://vscode.dev,https://insiders.vscode.dev,https://cursor.com,https://www.cursor.com"
   },
 
   "observability": { "enabled": true }

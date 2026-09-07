@@ -10,10 +10,24 @@
  * The embedding function is INJECTED (not imported) so this module is unit-testable with a
  * deterministic fake embedder — no Workers AI needed in CI.
  *
+ * SOURCE SPANS ARE THREADED, NOT RECONSTRUCTED (audit 2026-09-07, findings A1+A4).
+ * Every block / sentence / window / chunk carries an EXACT `[start,end)` offset into the
+ * ORIGINAL text. Previously rag.ts recovered offsets afterwards with `text.indexOf(chunkText)`,
+ * which misses on any source with wrapped lines (i.e. nearly every PDF/OCR extract, the primary
+ * input) because block and window assembly joins with " ". The old fallback then emitted a
+ * SYNTHETIC offset indistinguishable from a real one. Threading positions makes the offsets
+ * true by construction and, as a side effect, lets `charsIndexed` report exactly how far the
+ * window cap got — so truncation is measurable instead of silent.
+ *
+ * Consequences for the implementation below: the source is never rewritten before scanning.
+ * Paragraph/heading detection walks the original string, and abbreviation protection is a
+ * lookbehind TEST at a candidate boundary rather than a `<DOT>` substitution (which would
+ * shift every subsequent offset by +4 per match).
+ *
  * Honest cost note: real semantic chunking costs N window-embeddings (boundary detection) +
  * M chunk-embeddings (stored vectors) per document. We bound N by grouping sentences into
- * windows and capping windows/doc; very long inputs are pre-segmented. This is the deliberate
- * accuracy/cost trade — documented, not hidden.
+ * windows and capping windows/doc; over-long inputs stop at the cap and report `charsIndexed`
+ * so the caller can resume with `offset` instead of losing the tail.
  */
 
 export interface SemanticChunk {
@@ -21,6 +35,10 @@ export interface SemanticChunk {
   text: string;
   tokenEst: number;
   vector?: number[];
+  /** Exact start offset of this chunk in the ORIGINAL text (inclusive). */
+  charStart: number;
+  /** Exact end offset of this chunk in the ORIGINAL text (exclusive). */
+  charEnd: number;
 }
 
 export interface ChunkOpts {
@@ -30,8 +48,10 @@ export interface ChunkOpts {
   maxTokens?: number;
   /** sentences grouped per embedding window (bounds embed calls). Default 2. */
   windowSentences?: number;
-  /** safety cap on windows per document (very long inputs are truncated with a flag). */
+  /** safety cap on windows per document (over-long inputs stop here and report charsIndexed). */
   maxWindows?: number;
+  /** resume position: start scanning the source at this offset. Default 0. */
+  offset?: number;
 }
 
 export type EmbedFn = (texts: string[]) => Promise<number[][]>;
@@ -41,7 +61,15 @@ const DEFAULTS: Required<ChunkOpts> = {
   maxTokens: 512,
   windowSentences: 2,
   maxWindows: 400,
+  offset: 0,
 };
+
+/** A slice of the source with its exact offsets. `text` is whitespace-normalised. */
+export interface Span {
+  text: string;
+  start: number;
+  end: number;
+}
 
 /** Rough token estimate: max(words×1.3, chars/4); no tokenizer in-Worker. */
 export function estimateTokens(text: string): number {
@@ -54,56 +82,135 @@ export function estimateTokens(text: string): number {
   return Math.max(1, byWords, byChars);
 }
 
-/** Split into structural blocks: blank-line paragraphs + heading/section boundaries. */
-export function splitBlocks(text: string): string[] {
-  const normalized = text.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n");
-  const rawParas = normalized.split(/\n\s*\n/);
-  const blocks: string[] = [];
-  for (const para of rawParas) {
-    const trimmed = para.trim();
-    if (!trimmed) continue;
-    // promote markdown headings / ALL-CAPS short section markers to their own block
-    const lines = trimmed.split("\n");
-    let buf: string[] = [];
-    const flush = () => { if (buf.length) { blocks.push(buf.join(" ").trim()); buf = []; } };
-    for (const line of lines) {
-      const l = line.trim();
-      const isHeading = /^#{1,6}\s/.test(l) ||
-        (/^[A-ZÇĞİÖŞÜ0-9][A-ZÇĞİÖŞÜ0-9 .,:()/-]{2,60}$/.test(l) && l.length < 64 && !/[.!?]$/.test(l));
-      if (isHeading) { flush(); blocks.push(l.replace(/^#{1,6}\s/, "")); }
-      else buf.push(l);
-    }
-    flush();
-  }
-  return blocks.filter(Boolean);
+const WS = /\s/;
+
+/** Tighten [s,e) onto non-whitespace and emit a normalised span (dropped when empty). */
+function pushSpan(out: Span[], text: string, s: number, e: number): void {
+  while (s < e && WS.test(text[s])) s++;
+  while (e > s && WS.test(text[e - 1])) e--;
+  if (e > s) out.push({ text: text.slice(s, e).replace(/\s+/g, " "), start: s, end: e });
 }
 
-/** Sentence splitter (abbreviation-light; medical text tolerant). */
-export function splitSentences(block: string): string[] {
-  // protect common abbreviations from false breaks
-  const protectedText = block
-    .replace(/\b(e\.g|i\.e|et al|vs|Dr|Prof|Fig|No|cf|approx|ca)\./gi, "$1<DOT>");
-  const parts = protectedText.split(/(?<=[.!?])\s+(?=[A-ZÇĞİÖŞÜ0-9"'(])/);
-  return parts.map((s) => s.replace(/<DOT>/g, ".").trim()).filter(Boolean);
+const HEADING_MARKER = /^#{1,6}\s+/;
+/** Short ALL-CAPS section markers ("METHODS", "2. RESULTS") with no terminal punctuation. */
+const CAPS_HEADING = /^[A-ZÇĞİÖŞÜ0-9][A-ZÇĞİÖŞÜ0-9 .,:()/-]{2,60}$/;
+
+/** Emit blocks for one paragraph: a heading line becomes its own block, other lines merge. */
+function paragraphBlocks(text: string, start: number, end: number, out: Span[]): void {
+  let bufStart = -1;
+  let bufEnd = -1;
+  const flush = (): void => {
+    if (bufStart >= 0) pushSpan(out, text, bufStart, bufEnd);
+    bufStart = -1;
+    bufEnd = -1;
+  };
+  let lineStart = start;
+  while (lineStart < end) {
+    let lineEnd = text.indexOf("\n", lineStart);
+    if (lineEnd < 0 || lineEnd > end) lineEnd = end;
+    let s = lineStart;
+    let e = lineEnd;
+    while (s < e && WS.test(text[s])) s++;
+    while (e > s && WS.test(text[e - 1])) e--;
+    const line = text.slice(s, e);
+    if (line) {
+      const marker = HEADING_MARKER.exec(line);
+      const isHeading = marker !== null ||
+        (CAPS_HEADING.test(line) && line.length < 64 && !/[.!?]$/.test(line));
+      if (isHeading) {
+        flush();
+        // Span starts AFTER the markdown marker so slice(start,end) === the emitted text.
+        pushSpan(out, text, s + (marker ? marker[0].length : 0), e);
+      } else {
+        if (bufStart < 0) bufStart = s;
+        bufEnd = e;
+      }
+    }
+    lineStart = lineEnd + 1;
+  }
+  flush();
 }
 
-/** Build sentence windows (units) across all blocks, preserving order. */
-function buildWindows(text: string, windowSentences: number, maxWindows: number): { units: string[]; truncated: boolean } {
-  const units: string[] = [];
-  for (const block of splitBlocks(text)) {
-    const sents = splitSentences(block);
-    for (let i = 0; i < sents.length; i += windowSentences) {
-      units.push(sents.slice(i, i + windowSentences).join(" "));
-      if (units.length >= maxWindows) return { units, truncated: true };
-    }
+/** Structural blocks (blank-line paragraphs + promoted headings) with exact source spans. */
+export function blockSpans(text: string, from = 0): Span[] {
+  const out: Span[] = [];
+  const n = text.length;
+  let i = Math.max(0, Math.min(from, n));
+  const para = /\n[ \t\r]*\n/g;
+  while (i < n) {
+    while (i < n && WS.test(text[i])) i++;
+    if (i >= n) break;
+    para.lastIndex = i;
+    const hit = para.exec(text);
+    const paraEnd = hit ? hit.index : n;
+    paragraphBlocks(text, i, paraEnd, out);
+    i = hit ? hit.index + hit[0].length : n;
   }
-  return { units, truncated: false };
+  return out;
+}
+
+/** Abbreviations that must not end a sentence. Tested as a LOOKBEHIND on the source, so no
+ *  substitution shifts the offsets (the old `<DOT>` trick added +4 chars per match). */
+const ABBREV_TAIL = /\b(e\.g|i\.e|et al|vs|Dr|Prof|Fig|No|cf|approx|ca)$/i;
+const SENTENCE_START = /[A-ZÇĞİÖŞÜ0-9"'(]/;
+
+/** Sentence spans inside one block, with exact source offsets. */
+export function sentenceSpans(text: string, block: Span): Span[] {
+  const out: Span[] = [];
+  const { start, end } = block;
+  let s = start;
+  let i = start;
+  while (i < end) {
+    const ch = text[i];
+    if (ch === "." || ch === "!" || ch === "?") {
+      let j = i + 1;
+      let sawGap = false;
+      while (j < end && WS.test(text[j])) {
+        j++;
+        sawGap = true;
+      }
+      const isBoundary = sawGap && j < end && SENTENCE_START.test(text[j]) &&
+        !(ch === "." && ABBREV_TAIL.test(text.slice(start, i)));
+      if (isBoundary) {
+        pushSpan(out, text, s, i + 1);
+        s = j;
+        i = j;
+        continue;
+      }
+    }
+    i++;
+  }
+  pushSpan(out, text, s, end);
+  return out;
 }
 
 export interface ChunkResult {
   chunks: SemanticChunk[];
   truncated: boolean;
   windowCount: number;
+  /** Absolute offset in the ORIGINAL text up to which this call indexed. When `truncated`,
+   *  pass this back as `offset` to ingest the remainder — nothing is lost silently. */
+  charsIndexed: number;
+}
+
+/** Group sentences into embedding windows, stopping at the window cap. */
+function buildWindows(
+  text: string, from: number, windowSentences: number, maxWindows: number,
+): { units: Span[]; truncated: boolean } {
+  const units: Span[] = [];
+  for (const block of blockSpans(text, from)) {
+    const sents = sentenceSpans(text, block);
+    for (let i = 0; i < sents.length; i += windowSentences) {
+      const group = sents.slice(i, i + windowSentences);
+      units.push({
+        text: group.map((g) => g.text).join(" "),
+        start: group[0].start,
+        end: group[group.length - 1].end,
+      });
+      if (units.length >= maxWindows) return { units, truncated: true };
+    }
+  }
+  return { units, truncated: false };
 }
 
 /**
@@ -121,6 +228,7 @@ function resolveOpts(opts: ChunkOpts): Required<ChunkOpts> {
   if (opts.maxTokens !== undefined) out.maxTokens = opts.maxTokens;
   if (opts.windowSentences !== undefined) out.windowSentences = opts.windowSentences;
   if (opts.maxWindows !== undefined) out.maxWindows = opts.maxWindows;
+  if (opts.offset !== undefined) out.offset = opts.offset;
   return out;
 }
 
@@ -131,43 +239,55 @@ function resolveOpts(opts: ChunkOpts): Required<ChunkOpts> {
  */
 export async function semanticChunk(text: string, embed: EmbedFn, opts: ChunkOpts = {}): Promise<ChunkResult> {
   const o = resolveOpts(opts);
-  const { units, truncated } = buildWindows(text, o.windowSentences, o.maxWindows);
-  if (units.length === 0) return { chunks: [], truncated, windowCount: 0 };
+  const from = Math.max(0, Math.min(o.offset, text.length));
+  const { units, truncated } = buildWindows(text, from, o.windowSentences, o.maxWindows);
+  // Truncated ⇒ we stopped at the last window's end; otherwise the whole source was consumed.
+  const charsIndexed = truncated && units.length ? units[units.length - 1].end : text.length;
+  if (units.length === 0) return { chunks: [], truncated, windowCount: 0, charsIndexed };
   if (units.length === 1) {
-    const [v] = await embed(units);
-    return { chunks: [{ idx: 0, text: units[0], tokenEst: estimateTokens(units[0]), vector: v }], truncated, windowCount: 1 };
+    const [v] = await embed([units[0].text]);
+    return {
+      chunks: [{
+        idx: 0, text: units[0].text, tokenEst: estimateTokens(units[0].text), vector: v,
+        charStart: units[0].start, charEnd: units[0].end,
+      }],
+      truncated, windowCount: 1, charsIndexed,
+    };
   }
 
-  const vectors = await embed(units);
+  const vectors = await embed(units.map((u) => u.text));
 
   // greedy merge with cosine boundary + token cap
   const chunks: SemanticChunk[] = [];
-  let curText: string[] = [units[0]];
+  let curUnits: Span[] = [units[0]];
   let curVecs: number[][] = [vectors[0]];
-  let curTokens = estimateTokens(units[0]);
+  let curTokens = estimateTokens(units[0].text);
 
-  const pushChunk = () => {
-    const text = curText.join(" ").trim();
-    chunks.push({ idx: chunks.length, text, tokenEst: estimateTokens(text), vector: meanVector(curVecs) });
+  const pushChunk = (): void => {
+    const body = curUnits.map((u) => u.text).join(" ").trim();
+    chunks.push({
+      idx: chunks.length, text: body, tokenEst: estimateTokens(body), vector: meanVector(curVecs),
+      charStart: curUnits[0].start, charEnd: curUnits[curUnits.length - 1].end,
+    });
   };
 
   for (let i = 1; i < units.length; i++) {
     const sim = cosineLocal(vectors[i - 1], vectors[i]);
-    const nextTokens = estimateTokens(units[i]);
+    const nextTokens = estimateTokens(units[i].text);
     const boundary = sim < o.breakThreshold || curTokens + nextTokens > o.maxTokens;
     if (boundary) {
       pushChunk();
-      curText = [units[i]];
+      curUnits = [units[i]];
       curVecs = [vectors[i]];
       curTokens = nextTokens;
     } else {
-      curText.push(units[i]);
+      curUnits.push(units[i]);
       curVecs.push(vectors[i]);
       curTokens += nextTokens;
     }
   }
   pushChunk();
-  return { chunks, truncated, windowCount: units.length };
+  return { chunks, truncated, windowCount: units.length, charsIndexed };
 }
 
 function meanVector(vs: number[][]): number[] {
@@ -184,6 +304,14 @@ function cosineLocal(a: number[], b: number[]): number {
   const n = Math.min(a.length, b.length);
   for (let i = 0; i < n; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
   return na && nb ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
+}
+
+/** Text-only views kept for the existing unit suite and for callers that do not need spans. */
+function splitBlocks(text: string): string[] {
+  return blockSpans(text, 0).map((b) => b.text);
+}
+function splitSentences(block: string): string[] {
+  return sentenceSpans(block, { text: block, start: 0, end: block.length }).map((s) => s.text);
 }
 
 export const __testing = { splitBlocks, splitSentences, estimateTokens, meanVector, resolveOpts };

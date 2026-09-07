@@ -368,7 +368,7 @@ servers:
       ebsco_get(record_id, prefer=pdf|html, collection?, doc_id?). Akış: DOI/başlık ile
       ebsco_search → isabet + tam-metin linki varsa ebsco_get. collection/doc_id
       anamnesis'e pass-through (Evidentia: collection=evidentia:run:<id>,
-      doc_id=evrun:<id>:<DOI|record>); yoksa marmara:fetch:<sha1-8> mint. Miss /
+      doc_id=evrun:<id>:<DOI|record>); yoksa marmara:run:<sha1-8> mint. Miss /
       manual_required / session_invalid / no_fulltext_link → SKIP-REASON yaz + Tier 4
       OpenAthens'e düş (sessiz atlama YOK). Key ${MARMARA_EBSCO_MCP_API_KEY} Doppler
       (cureohub/dev_personal); klinik kardeş MARMARA_CLINICAL_* ayrı kalır.

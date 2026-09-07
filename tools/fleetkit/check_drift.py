@@ -241,6 +241,9 @@ def versions(d: Path, marketplace: dict, readme: dict | None = None):
     return {k: v for k, v in vs.items() if v is not None}
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from vendor import anamnesis_pairs  # noqa: E402
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Cureonics sürüklenme kapısı")
     ap.add_argument("plugins", nargs="*")
@@ -278,6 +281,20 @@ def main(argv=None) -> int:
             issues.append(("[3] vendor'lı fleet_probe kanoniğinden sapmış",
                            [str(vend.relative_to(REPO))],
                            "python3 tools/fleetkit/vendor.py"))
+
+        # [3b] Anamnesis çekirdeği — aynı bayt-özdeşlik kuralı. 2026-09-07'de vekayinuvis ve
+        # historia-medicinae elle kopyalanmış iki nüsha taşıyordu; ölçüm %98.7 aynı olduklarını
+        # ama vekayinuvis'in `scoped_doc_id` normalizasyonunu KAÇIRDIĞINI gösterdi (koleksiyon
+        # biçimli bir doc_id çift öneklenip 56 bayta şişiyor, yani anamnesis'in doc_id tavanına
+        # dayanıyordu). Sessiz sürüklenmenin maliyeti budur; bu kapı onu tekrarlatmaz.
+        anam_drift = [
+            str(t.relative_to(REPO))
+            for c, t in anamnesis_pairs()
+            if t.parent.parent.parent == d and (not t.is_file() or t.read_bytes() != c.read_bytes())
+        ]
+        if anam_drift:
+            issues.append(("[3b] vendor'lı anamnesis çekirdeği kanoniğinden sapmış",
+                           anam_drift, "python3 tools/fleetkit/vendor.py"))
 
         if (d / "hooks.json").is_file() and (d / "hooks" / "hooks.json").is_file():
             issues.append(("[4] çift hooks.json", ["hooks.json + hooks/hooks.json"],

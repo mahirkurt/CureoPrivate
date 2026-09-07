@@ -1,17 +1,30 @@
 #!/usr/bin/env python3
-"""vekayinuvis Anamnesis helpers — exclusive collection + prefixed doc_id.
+"""Anamnesis helpers — exclusive collection + prefixed doc_id. CANONICAL, VENDORED.
+
+DO NOT EDIT THE COPY INSIDE A PLUGIN. The canonical source is
+`tools/fleetkit/vendor/anamnesis/anamnesis_run.py`; `tools/fleetkit/vendor.py`
+copies it byte-identically into each consuming plugin and `check_drift.py`
+fails CI if a copy diverges.
+
+WHY VENDORED AND NOT IMPORTED: plugins install from the marketplace as ONE
+DIRECTORY, so shared code at the repo root never reaches the installed copy.
+Runtime components must live inside the plugin — the same constraint that
+already governs `fleet_probe.py`.
+
+Everything plugin-specific lives in a sibling `anamnesis_config.py`; this file
+derives the rest, so the two consumers stay byte-identical here.
 
 Contract:
-  collection = "vekayinuvis:run:<12hex>"
-  doc_id     = "vkrun:<12hex>:<canonical>"   (devarsiv:… / yoktez:… / doi:… / iiif:…)
-  kind ∈ {run, sess, lib} — this plugin defaults to run, never lib.
+  collection = "{PLUGIN_ID}:{KIND}:<12hex>"
+  doc_id     = "{PREFIX_HEAD}<12hex>:<canonical>"
+  kind ∈ {run, sess, lib} — a plugin picks one, never lib.
 
 Guard DENY unscoped hybrid_query / graph_* / search. ALLOW when collection
 matches this run. Cleanup: forget_collection (fallback N× forget_document)
 on SessionEnd + next flagship command + startup leftover. No Stop forget.
 
-CI: VEKAYI_ANAMNESIS_FORGET_LOG stubs HTTP; VEKAYI_ANAMNESIS_NO_NETWORK skips
-live calls. Secrets are never logged. Fail-open on I/O.
+CI: <ENV_PREFIX>_FORGET_LOG stubs HTTP; <ENV_PREFIX>_NO_NETWORK skips live
+calls. Secrets are never logged. Fail-open on I/O.
 """
 from __future__ import annotations
 
@@ -24,22 +37,22 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-PLUGIN_ROOT = Path(__file__).resolve().parent.parent.parent
-PLUGIN_ID = "vekayinuvis"
-KIND = "run"
-PREFIX_HEAD = "vkrun:"
-LEDGER_NAME = "anamnesis-vekayinuvis.json"
-ENV_PREFIX = "VEKAYI_ANAMNESIS"
-GUARD_OFF = "vekayinuvis-anamnesis.off"
-# Flagship / :start open a new working set. Subcommands (kaynak-avi, rapor, …)
-# share the session collection so SOURCE_HUNT → ARCHIVE_DEEP_DIVE cache holds.
-NEW_RUN_RE = re.compile(
-    r"(?:^|\s)/vekayinuvis(?:\:start)?(?:\s|$)",
-    re.IGNORECASE,
+from anamnesis_config import (  # noqa: E402  — per-plugin identity, vendored core stays generic
+    DOC_ID_EXAMPLE,
+    ENV_PREFIX,
+    GUARD_OFF,
+    KIND,
+    LEDGER_NAME,
+    NEW_RUN_RE,
+    PLUGIN_ID,
+    PLUGIN_LABEL,
+    PREFIX_HEAD,
 )
+
+PLUGIN_ROOT = Path(__file__).resolve().parent.parent.parent
 RUN_ID_RE = re.compile(r"^[0-9a-f]{12}$")
-PREFIX_RE = re.compile(r"^vkrun:([0-9a-f]{12}):")
-COLLECTION_RE = re.compile(r"^vekayinuvis:run:([0-9a-f]{12})$")
+PREFIX_RE = re.compile(rf"^{re.escape(PREFIX_HEAD)}([0-9a-f]{{12}}):")
+COLLECTION_RE = re.compile(rf"^{re.escape(PLUGIN_ID)}:{re.escape(KIND)}:([0-9a-f]{{12}})$")
 
 HYBRID_GRAPH = {"hybrid_query", "graph_neighbors", "subgraph"}
 OBSERVE = {"corpus_stats"}
@@ -61,8 +74,9 @@ ANAMNESIS_FLEET_SCOPE_PREFIXES = (
     "marmara:run:",
     "marmara:ebsco",
 )
-OWN_SCOPE_PREFIXES = ("vekayinuvis:run:", "vkrun:")
-_UA = "Mozilla/5.0 (vekayinuvis-anamnesis-cleanup)"
+COLLECTION_HEAD = f"{PLUGIN_ID}:{KIND}:"
+OWN_SCOPE_PREFIXES = (COLLECTION_HEAD, PREFIX_HEAD)
+_UA = f"Mozilla/5.0 ({PLUGIN_ID}-anamnesis-cleanup)"
 _INIT = {
     "jsonrpc": "2.0",
     "id": 1,
@@ -70,7 +84,7 @@ _INIT = {
     "params": {
         "protocolVersion": "2025-06-18",
         "capabilities": {},
-        "clientInfo": {"name": "vekayinuvis-anamnesis", "version": "1"},
+        "clientInfo": {"name": f"{PLUGIN_ID}-anamnesis", "version": "1"},
     },
 }
 
@@ -124,6 +138,14 @@ def scoped_doc_id(run_id: str, raw: str) -> str:
     m = PREFIX_RE.match(raw)
     if m:
         return want + raw[m.end():]
+    if raw.startswith(COLLECTION_HEAD):
+        rest = raw.split(":", 2)[-1]
+        # {PLUGIN_ID}:{KIND}:<id>:<canonical> from another run
+        if ":" in rest:
+            rest = rest.split(":", 1)[1]
+        return want + rest
+    if raw.startswith(f"{PLUGIN_ID}:"):
+        return want + raw[len(PLUGIN_ID) + 1:]
     return want + raw
 
 
@@ -146,7 +168,7 @@ def ledger_path() -> Path:
     if proj:
         return Path(proj) / ".claude" / LEDGER_NAME
     uid = str(os.getuid()) if hasattr(os, "getuid") else "user"
-    return Path(tempfile.gettempdir()) / f"anamnesis-vekayinuvis-{uid}" / LEDGER_NAME
+    return Path(tempfile.gettempdir()) / f"anamnesis-{PLUGIN_ID}-{uid}" / LEDGER_NAME
 
 
 def empty_ledger(run_id: str | None = None) -> dict:
@@ -290,14 +312,14 @@ def context_message(ledger: dict) -> str:
     prefix = prefix_for(rid)
     n = len(ledger.get("doc_ids") or [])
     return (
-        "[vekayinuvis] Anamnesis münhasır çalışma seti — "
+        f"[{PLUGIN_LABEL}] Anamnesis münhasır çalışma seti — "
         f"collection=`{coll}` · doc_id öneki `{prefix}` ({n} kayıtlı belge). "
-        "Her ingest: collection + `vkrun:<id>:<kanonik>` (devarsiv:/yoktez:/doi:/iiif:). "
+        f"Her ingest: collection + `{PREFIX_HEAD}<id>:<kanonik>` ({DOC_ID_EXAMPLE}). "
         "hybrid_query / graph_neighbors / subgraph YALNIZ bu collection ile. "
         "Kapsamsız çağrı DENY (paylaşılan korpus sızıntısı). "
         "Cevap yalnız dönen chunk'lardan; atıf `doc_id::idx`. "
         "corpus_stats küresel gözlemdir, bu koşunun çalışma seti değildir. "
-        "Stop'ta silinmez. SessionEnd / sonraki `/vekayinuvis` / startup "
+        f"Stop'ta silinmez. SessionEnd / sonraki `/{PLUGIN_LABEL}` / startup "
         "yalnız bu collection'ı forget_collection (yoksa ledger id'leri) ile temizler."
     )
 
@@ -382,7 +404,7 @@ def deny_reason(base: str, inp: dict, ledger: dict) -> str | None:
         if not doc:
             return (
                 f"anamnesis münhasır: ingest_document doc_id zorunlu — "
-                f"`{prefix}<kanonik>` (ör. `{prefix}devarsiv:<code>`)."
+                f"`{prefix}<kanonik>` (ör. `{prefix}{DOC_ID_EXAMPLE}`)."
             )
         if not has_run_prefix(doc, rid):
             return (
@@ -489,7 +511,7 @@ def _rpc_parse(content_type: str, body: str) -> dict | None:
 
 def _http_session():
     """Best-effort MCP session. Never prints the bearer value."""
-    if _env("NO_NETWORK") or os.environ.get("VEKAYI_ANAMNESIS_NO_NETWORK"):
+    if _env("NO_NETWORK") or os.environ.get("HISTMED_ANAMNESIS_NO_NETWORK"):
         return None
     key = os.environ.get("ANAMNESIS_MCP_API_KEY", "").strip()
     if not key:
@@ -543,7 +565,7 @@ def _call_ok(body: dict | None) -> bool:
 def _http_forget(doc_ids: list[str], collection: str) -> list[dict]:
     post = _http_session()
     if post is None:
-        reason = "no_network" if (_env("NO_NETWORK") or os.environ.get("VEKAYI_ANAMNESIS_NO_NETWORK")) else "no_key"
+        reason = "no_network" if (_env("NO_NETWORK") or os.environ.get("HISTMED_ANAMNESIS_NO_NETWORK")) else "no_key"
         return [{"doc_id": d, "ok": False, "skipped": reason} for d in doc_ids] or [
             {"collection": collection, "ok": False, "skipped": reason}
         ]

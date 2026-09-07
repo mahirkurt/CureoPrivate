@@ -96,6 +96,15 @@ jobs:
              lambda s: re.sub(r'(\*\* \(Vekayinüvis\) \| )\d+\.\d+\.\d+',
                               r'\g<1>0.0.1', s, count=1),
              'katalog README sürüm hücresi bayat'),
+             # 2026-09-07: vekayinuvis ve historia-medicinae, aynı anamnesis çekirdeğinin elle
+             # kopyalanmış iki nüshasını taşıyordu. Ölçüm %98.7 aynı olduklarını ama vekayinuvis'in
+             # `scoped_doc_id` normalizasyonunu KAÇIRDIĞINI gösterdi: koleksiyon biçimli bir doc_id
+             # çift öneklenip 56 bayta şişiyor ve anamnesis'in doc_id tavanına dayanıyordu. Çekirdek
+             # artık vendor'lı; [3b] bayt-özdeşliği zorlar. Bu mutasyon kapının dekoratif olmadığını
+             # kanıtlar — tek bir yorum satırı bile yakalanmalı.
+             ('check_drift.py', 'plugins/vekayinuvis/hooks/scripts/anamnesis_run.py',
+              lambda s: s + '\n# mutasyon: vendor sapmasi\n',
+              'vendorli anamnesis cekirdegi sapmis'),
           ]
           fail = False
           for script, path, mutate, label in checks:

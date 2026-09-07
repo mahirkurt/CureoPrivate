@@ -235,6 +235,81 @@ check("tam çıktı-sözleşmesi → sessiz PASS", rc == 0 and not out)
 rc, out = run("stop_coverage.py", {"last_assistant_message": "MADDE 1 gerekçe 5210", "stop_hook_active": True})
 check("stop_hook_active döngü koruması → sessiz", rc == 0 and not out)
 
+# ── Kapsam daraltma (2026-09-07): mühendislik turu reform çıktısı sanılmasın ──
+# ÖLÇÜLEN YANLIŞ POZİTİF: üç MCP sunucusunun denetim raporu, yalnız "gerekçe" +
+# "madde 4.3" kelimeleri yüzünden reform-modu sanılıp G0 manifestosu istendi.
+_eng = ("Üç sunucunun kaynak kodunu okudum. Reddettiğim seçenekleri gerekçeleriyle yazdım; "
+        "ayrıntı planda madde 4.3 olarak duruyor. Ölçüm: 6/6 kayıt DOI taşıyor.")
+rc, out = run("stop_coverage.py", {"last_assistant_message": _eng, "stop_hook_active": False})
+check("mühendislik turu ('gerekçe' + 'madde 4.3') → sessiz", rc == 0 and not out,
+      f"out={str(out)[:120]}")
+
+# Mod jetonları BÜYÜK-HARF DUYARLI olmalı: sıradan İngilizce kelimeler mod bildirimi değildir.
+_eng_en = ("I will draft the change, analyze the failure, and comply with the amendment "
+           "policy. The rationale is recorded. This is a code review, not legislation.")
+rc, out = run("stop_coverage.py", {"last_assistant_message": _eng_en, "stop_hook_active": False})
+check("İngilizce 'draft/analyze/comply/amend' → mod bildirimi DEĞİL → sessiz",
+      rc == 0 and not out, f"out={str(out)[:120]}")
+
+# META-TUR baskılayıcı: hook'un kendi kodunu konuşan tur.
+_meta = ("hooks/scripts/stop_coverage.py içindeki MODE_SIGNALS listesini daralttım; "
+         "MADDE 1 gibi örnekler yalnız fixture. 5210 sayılı kanun örnek olarak geçiyor.")
+rc, out = run("stop_coverage.py", {"last_assistant_message": _meta, "stop_hook_active": False})
+check("plugin-iç öz-referans (meta-tur) → sessiz", rc == 0 and not out, f"out={str(out)[:120]}")
+
+# Gerçek reform metni HÂLÂ yakalanmalı (daraltma invaryantı öldürmedi).
+rc, out = run("stop_coverage.py",
+              {"last_assistant_message": "MADDE 3 - Bu Yönetmeliğin amacı ... 3359 sayılı Kanun",
+               "stop_hook_active": False})
+check("gerçek yasama metni (MADDE + 'sayılı') → hâlâ block",
+      (out or {}).get("decision") == "block", f"out={str(out)[:120]}")
+
+
+def _transcript(tool_names):
+    """Son kullanıcı prompt'u + verilen araçları çağıran asistan turu (JSONL)."""
+    fd = tempfile.mkdtemp()
+    path = os.path.join(fd, "t.jsonl")
+    recs = [{"type": "user", "message": {"content": [{"type": "text", "text": "yap"}]}}]
+    recs.append({"type": "assistant", "message": {"content": [
+        {"type": "tool_use", "name": n} for n in tool_names]}})
+    with open(path, "w", encoding="utf-8") as fh:
+        for r in recs:
+            fh.write(json.dumps(r) + "\n")
+    return path
+
+
+_reform_text = "MADDE 1 - ... gerekçe ... 5210 uyumlu yönetmelik taslağı"
+# Davranış kapısı: filo aracı çağrılmadıysa metin ne derse desin sessiz.
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _transcript(["Bash", "Read", "Write"]),
+                                   "stop_hook_active": False})
+check("transkript var + filo aracı YOK → davranış kapısı kapalı → sessiz",
+      rc == 0 and not out, f"out={str(out)[:120]}")
+
+# Saf teşhis ucu kapıyı AÇMAZ (bir sunucuyu yoklamak hukuk araştırması değildir).
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _transcript(
+                                       ["mcp__openathens__oa_server_info"]),
+                                   "stop_hook_active": False})
+check("yalnız *_server_info çağrıldı → kapı kapalı → sessiz",
+      rc == 0 and not out, f"out={str(out)[:120]}")
+
+# Gerçek filo veri-aracı çağrıldıysa manifesto BEKLENİR.
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _transcript(
+                                       ["mcp__mevzuat__search_mevzuat"]),
+                                   "stop_hook_active": False})
+check("gerçek filo veri-aracı çağrıldı + manifesto yok → block",
+      (out or {}).get("decision") == "block", f"out={str(out)[:120]}")
+
+import _turn_tools as _tt  # noqa: E402
+check("_turn_tools: companion (Yargı/Open_Law/Ansvar) filo aracı sayılır",
+      all(_tt.fleet_data_tool_invoked({"transcript_path": _transcript([n])})
+          for n in ("mcp__Yarg__search_detailed", "mcp__Open_Law__lookup_statute",
+                    "mcp__claude_ai_Ansvar__search")))
+check("_turn_tools: transkript yoksa transcript_available False (yedeğe düşülür)",
+      not _tt.transcript_available({"transcript_path": "/yok/olmayan.jsonl"}))
+
 print("== anamnesis collection (guard / ledger / lifecycle) ==")
 import json as _json
 import anamnesis_run as _ar  # noqa: E402

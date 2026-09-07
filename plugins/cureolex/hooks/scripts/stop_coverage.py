@@ -3,10 +3,25 @@
 
 Bir cureolex reform modu (DRAFT/AMEND/ANALYZE/COMPLY/OPINE/RIA/COMPARATIVE/TBMM/EX_POST)
 koştuğunda çıktı ZORUNLU olarak (a) tam-filo kanıtı olan **kapsam manifestosu (G0)** ve
-(b) **confidence_label**'ı taşımalıdır (SKILL §7). Bu hook, son asistan mesajını inceler:
+(b) **confidence_label**'ı taşımalıdır (SKILL §7). Bu hook son asistan mesajını inceler:
 cureolex mod-çıktısı imzası varsa AMA manifesto/label eksikse, turu bloklamadan devam
-ettirir ve eksiği tamamlatır. cureolex ile ilgisiz turlarda SESSİZ. Fail-open; stop_hook_active
-döngüyü kırar.
+ettirir ve eksiği tamamlatır. cureolex ile ilgisiz turlarda SESSİZ. Fail-open;
+stop_hook_active döngüyü kırar.
+
+KAPSAM (2026-09-07 daraltması). Tetikleme artık metinden **davranışa** bağlıdır ve bölüşüm
+üç kardeş plugin'de aynıdır (vekayinuvis `fleet_data_tool_invoked`, historia-medicinae
+`turn_called_mcp`; cureolex tek istisnaydı):
+
+  * Transkript VARSA — birincil kapı `fleet_data_tool_invoked()`: bu turda gerçekten bir
+    cureolex filo veri-aracı çağrıldı mı? Filo hakkında KOD/PLAN konuşmak araç çağırmaz →
+    sessiz. Saf teşhis uçları (`*_server_info`, `*_session_status`) kapıyı açmaz.
+  * Transkript YOKSA — davranış kapısına güvenilmez; metin-sezgisi yedeği çalışır:
+    meta-tur baskılayıcı + (1 GÜÇLÜ sinyal VEYA 2 ZAYIF sinyal).
+
+Neden gerekti (ölçüldü): üç MCP sunucusunun mühendislik denetim raporu, yalnız "gerekçe" ve
+"madde 4.3" kelimeleri yüzünden reform çıktısı sanılıp G0 manifestosu istendi — ortada tek bir
+hukuk normu yoktu. Eski mod jetonları ayrıca IGNORECASE ve sonda sınırsızdı, yani "draft",
+"analyze", "comply", "amendment" gibi sıradan İngilizce kelimeler mod bildirimi sayılıyordu.
 
 Stop sözleşmesi: {"decision":"block","reason":...} turu reddetmez — verilen gerekçeyle devam ettirir.
 """
@@ -15,15 +30,56 @@ import os
 import re
 import sys
 
-# Bir cureolex reform-modu çıktısının imzası (en az iki farklı sinyal → mod-çıktısı say).
-MODE_SIGNALS = [
-    re.compile(r"\bMADDE\s+\d+", re.IGNORECASE),
-    re.compile(r"gerekçe", re.IGNORECASE),
-    re.compile(r"(yönetmelik|tebliğ|kanun teklifi|CBK|genelge)\s+(taslağı|metni|değişik)", re.IGNORECASE),
-    re.compile(r"\b(DRAFT|AMEND|ANALYZE|COMPLY|OPINE|RIA|COMPARATIVE_LAW|TBMM_KANUN_TEKLIFI|EX_POST)", re.IGNORECASE),
-    re.compile(r"5210", re.IGNORECASE),
-    re.compile(r"(karşılaştırma cetveli|DEA|BEF|R6b|belirlilik ilkes)", re.IGNORECASE),
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _turn_tools import fleet_data_tool_invoked, transcript_available  # noqa: E402
+
+# ── Reform-modu imzası: GÜÇLÜ / ZAYIF ayrımı ────────────────────────────────
+# Eski tasarım altı GEVŞEK sinyalden ikisinin eşleşmesini "mod çıktısı" sayıyordu.
+# 2026-09-07'de üç ayrı yanlış-pozitif kaynağı ÖLÇÜLDÜ (üç MCP sunucusunun denetim
+# raporu reform çıktısı sanıldı; ortada tek bir hukuk normu yoktu):
+#   1. `gerekçe` — Türkçe teknik metnin sıradan kelimesi ("reddetme gerekçesi").
+#   2. `\bMADDE\s+\d+` IGNORECASE — "madde 4.3" gibi bir PLAN maddesi atfını yasama
+#      maddesi sanıyordu.
+#   3. Mod jetonları IGNORECASE ve SONDA `\b` YOK: `\bDRAFT`→"draft",
+#      `\bANALYZE`→"analyze", `\bCOMPLY`→"comply", `\bAMEND`→"amendment" — yani
+#      sıradan İngilizce kelimeler mod bildirimi sayılıyordu. `DEA` da sınırsızdı.
+# Düzeltme: mod jetonları BÜYÜK-HARF DUYARLI + tam sınırlı; "MADDE" yasama başlığı
+# olarak büyük harfle aranır; `gerekçe` yalnız yasama eş-dizimiyle GÜÇLÜ sayılır.
+STRONG_SIGNALS = [
+    re.compile(r"\bMADDE\s+\d+"),                       # yasama madde başlığı (BÜYÜK harf)
+    re.compile(r"\b(DRAFT|AMEND|ANALYZE|COMPLY|OPINE|RIA|COMPARATIVE_LAW|"
+               r"TBMM_KANUN_TEKLIFI|EX_POST)\b"),        # mod bildirimi (büyük-harf duyarlı)
+    re.compile(r"(yönetmelik|tebliğ|kanun teklifi|CBK|genelge)\s+(taslağı|metni|değişik)",
+               re.IGNORECASE),
+    re.compile(r"(genel|madde)\s+gerekçe|gerekçe\s+(metni|bölümü)", re.IGNORECASE),
+    re.compile(r"karşılaştırma cetveli", re.IGNORECASE),
+    re.compile(r"\b\d{3,5}\s+sayılı\b", re.IGNORECASE),  # TR mevzuat atfı
 ]
+# Tek başına yetmez — güçlü sinyal yokken en az İKİSİ gerekir.
+WEAK_SIGNALS = [
+    re.compile(r"\bgerekçe", re.IGNORECASE),
+    re.compile(r"\b5210\b"),
+    re.compile(r"\b(DEA|BEF|R6b)\b"),
+    re.compile(r"belirlilik ilkes", re.IGNORECASE),
+    re.compile(r"düzenleyici etki analizi", re.IGNORECASE),
+]
+# Plugin-iç öz-referans: reform ÇIKTISINDA görünmez, mühendislik/inceleme turunda görünür.
+META_MARKERS = re.compile(
+    r"hooks/scripts|stop_coverage|scope_guard|anamnesis_guard|fleet_probe|test_hooks|"
+    r"plugins/cureolex|fleet\.lock\.json|plugin\.json|\.mcp\.json|MODE_SIGNALS",
+    re.IGNORECASE,
+)
+
+
+def is_meta_turn(text):
+    """Filo/mod ADINI anan ama üretmeyen tur mu? (inceleme/dokümantasyon/mühendislik)
+
+    Yalnız transkript-YOK yedeğinde uygulanır; transkript varken davranış kapısı zaten
+    kesindir — vekayinuvis'teki aynı bölüşüm.
+    """
+    return bool(META_MARKERS.search(text or ""))
+
+
 # Zorunlu çıktı bileşenleri.
 HAS_MANIFEST = re.compile(r"(kapsam manifesto|coverage manifest|\bG0\b|hit \d|skipped:|empty\b)", re.IGNORECASE)
 HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_review_required|güven etiketi)", re.IGNORECASE)
@@ -129,9 +185,23 @@ def main():
     if not text:
         sys.exit(0)
 
-    signals = sum(1 for rx in MODE_SIGNALS if rx.search(text))
-    if signals < 2:
-        sys.exit(0)  # cureolex mod-çıktısı değil → sessiz
+    # DAVRANIŞ KAPISI (birincil, transkript varsa) — yer gerçeği: bu turda gerçekten bir
+    # cureolex filo veri-aracı çağrıldı mı? Filo hakkında KOD/PLAN konuşmak (sunucu adlarını
+    # port tablosunda/.mcp.json'da anmak, hook'un kendi kodunu düzenlemek) araç ÇAĞIRMAZ
+    # → kapı kapalı → sessiz. Saf teşhis uçları (`*_server_info`) da kapıyı açmaz.
+    # Transkript YOKSA davranış kapısına güvenilmez (araç seti boş görünür ama bu transkript
+    # yokluğundan olabilir) → metin-sezgisi yedeğine düşülür ki invaryant sessizce kaybolmasın.
+    # Bölüşüm vekayinuvis/stop_coverage.py ile birebir; üç kardeş plugin ayrışmasın.
+    if transcript_available(event):
+        if not fleet_data_tool_invoked(event):
+            sys.exit(0)
+    else:
+        if is_meta_turn(text):
+            sys.exit(0)  # filo/mod adını anan ama üretmeyen mühendislik turu → sessiz
+        strong = any(rx.search(text) for rx in STRONG_SIGNALS)
+        weak = sum(1 for rx in WEAK_SIGNALS if rx.search(text))
+        if not (strong or weak >= 2):
+            sys.exit(0)  # cureolex mod-çıktısı değil → sessiz
 
     missing = []
     if not HAS_MANIFEST.search(text):

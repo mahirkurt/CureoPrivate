@@ -84,6 +84,20 @@ Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/); sürümleme [S
   `offsets`, `ingest`, `retrieval`, `schema`, `graph-weight`, `tool-surface`
   (sonuncusu gerçek MCP handler'ı üzerinden uçtan uca `tools/list` + `tools/call`).
 
+### Düzeltildi (canlı sevkiyatta ortaya çıktı — 2026-09-07)
+- **Toplu vektör silme Vectorize sınırını aşıyordu.** `deleteVectors` 1000'lik gruplar
+  gönderiyordu, ama Vectorize bir silme yükünde en fazla **100** id kabul ediyor
+  (`VECTOR_DELETE_ERROR 40007`). Yani `forget_document`, `forget_collection` **ve yeni gecelik
+  reaper**, 100 chunk'tan büyük her çalışma setinde — yani tam olarak bu substratın taşımak için
+  var olduğu büyük korpuslarda — hata veriyordu. Üretim indeksinde 178 chunk'lık bir doğrulama
+  koleksiyonu silinirken ölçüldü. Grup boyutu 100'e indirildi; `MockVectorize` de artık aynı
+  sınırı uyguluyor (yoksa harness var olmayan bir API'yi modelliyordu).
+- **`truncated` yanlış pozitif veriyordu.** Pencere kapağı `units.length >= maxWindows` anında
+  tetiklendiği için, kapak **son** pencerede dolduğunda ve geriye hiçbir şey kalmadığında da
+  `truncated:true` + dolu `next_offset` dönüyordu; çağıran boş bir devam çağrısı yapmak zorunda
+  kalıyor ve daha kötüsü, eksik içerik olmadığı hâlde "eksik" bilgisi alıyordu. `truncated` artık
+  "geriye **indekslenmemiş içerik kaldı**" demektir. 126 KB'lık canlı belgede ölçüldü: 4 çağrı → 3.
+
 ### Operasyon
 - **Süresi dolan scratch artık gerçekten toplanıyor.** `expires_at` ingest'te yazılıp okumada
   filtreleniyordu ama hiçbir şey satırı silmiyordu: cron tetikleyici yoktu, `scheduled()` handler

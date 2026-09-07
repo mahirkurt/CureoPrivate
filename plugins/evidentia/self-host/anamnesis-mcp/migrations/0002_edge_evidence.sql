@@ -16,5 +16,7 @@ ALTER TABLE edges ADD COLUMN assert_count INTEGER DEFAULT 1;
 UPDATE edges
    SET doc_ids = CASE WHEN doc_id IS NULL OR doc_id = '' THEN '[]' ELSE json_array(doc_id) END,
        assert_count = COALESCE(weight, 1),
-       weight = CASE WHEN doc_id IS NULL OR doc_id = '' THEN 1 ELSE 1 END
+       -- Every pre-migration edge has at most ONE supporting doc_id, so its honest evidence
+       -- weight is 1 regardless; the old inflated value is preserved in assert_count above.
+       weight = 1
  WHERE doc_ids IS NULL;

@@ -240,9 +240,17 @@ function resolveOpts(opts: ChunkOpts): Required<ChunkOpts> {
 export async function semanticChunk(text: string, embed: EmbedFn, opts: ChunkOpts = {}): Promise<ChunkResult> {
   const o = resolveOpts(opts);
   const from = Math.max(0, Math.min(o.offset, text.length));
-  const { units, truncated } = buildWindows(text, from, o.windowSentences, o.maxWindows);
-  // Truncated ⇒ we stopped at the last window's end; otherwise the whole source was consumed.
-  const charsIndexed = truncated && units.length ? units[units.length - 1].end : text.length;
+  const capped = buildWindows(text, from, o.windowSentences, o.maxWindows);
+  const units = capped.units;
+  // Stopped at the last window's end when the cap fired; otherwise the whole source is consumed.
+  const stoppedAt = capped.truncated && units.length ? units[units.length - 1].end : text.length;
+  // The cap fires the moment units.length reaches maxWindows — which can be the LAST window, with
+  // nothing after it. Reporting `truncated` there sends the caller back for an empty continuation
+  // and, worse, tells them content is missing when none is. `truncated` therefore means "content
+  // REMAINS unindexed", not "the cap was reached". Measured live 2026-09-07 on a 126 KB document.
+  const remainder = text.slice(stoppedAt).trim();
+  const truncated = capped.truncated && remainder.length > 0;
+  const charsIndexed = truncated ? stoppedAt : text.length;
   if (units.length === 0) return { chunks: [], truncated, windowCount: 0, charsIndexed };
   if (units.length === 1) {
     const [v] = await embed([units[0].text]);

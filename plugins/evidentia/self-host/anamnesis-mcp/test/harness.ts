@@ -60,7 +60,18 @@ export class MockVectorize implements VectorizeBinding {
     return { count: vectors.length };
   }
 
+  /** Real Vectorize caps a delete payload at 100 ids (VECTOR_DELETE_ERROR 40007). The mock
+   *  enforces it too — otherwise the harness silently models an API that does not exist, which
+   *  is exactly how the 1000-id batching shipped and then failed live on 2026-09-07. */
+  static readonly MAX_DELETE_IDS = 100;
+
   async deleteByIds(ids: string[]): Promise<unknown> {
+    if (ids.length > MockVectorize.MAX_DELETE_IDS) {
+      throw new Error(
+        `VECTOR_DELETE_ERROR (code = 40007): too many ids in payload; max id count is ` +
+        `${MockVectorize.MAX_DELETE_IDS}, got ${ids.length}`,
+      );
+    }
     for (const id of ids) this.store.delete(id);
     return { count: ids.length };
   }

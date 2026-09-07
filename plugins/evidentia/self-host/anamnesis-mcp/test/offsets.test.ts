@@ -60,6 +60,17 @@ describe("truncation reporting (A1 — no silent loss)", () => {
     expect(res.charsIndexed).toBe(MANY.length);
   });
 
+  it("does not claim truncation when the cap fires exactly at the end", async () => {
+    // buildWindows returns truncated:true the moment units.length hits maxWindows -- even when
+    // that was the LAST window and nothing remains. The caller then sees a non-null next_offset
+    // and makes a pointless extra ingest call. Measured live 2026-09-07 on a 126 KB document:
+    // part 3 covered chars_indexed == chars_total yet still reported next_offset.
+    const three = ["Alpha claim one.", "Beta claim two.", "Gamma claim three."].join("\n\n");
+    const res = await semanticChunk(three, fakeEmbed, { maxWindows: 3 });
+    expect(res.charsIndexed).toBe(three.length);
+    expect(res.truncated).toBe(false);
+  });
+
   it("resumes from an offset so a capped document can be completed", async () => {
     const first = await semanticChunk(MANY, fakeEmbed, { maxWindows: 3 });
     const second = await semanticChunk(MANY, fakeEmbed, { offset: first.charsIndexed });

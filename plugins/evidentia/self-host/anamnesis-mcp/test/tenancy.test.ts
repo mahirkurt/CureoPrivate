@@ -70,3 +70,22 @@ describe("STRICT_COLLECTION flagged transition (B2/B3)", () => {
     await expect(forgetDocument(env as never, "flag:d")).rejects.toThrow(/collection/i);
   });
 });
+
+describe("bulk delete respects the Vectorize payload cap", () => {
+  it("forgets a document with far more than 100 chunks", async () => {
+    const vec = new MockVectorize();
+    const env = evalEnv(vec);
+    // 260 distinct one-sentence topics => well over the 100-id delete cap.
+    const text = Array.from({ length: 260 }, (_, i) => `Konu${i} kendi savini tasir.`).join("\n\n");
+    const r = await ingestDocument(env, {
+      text, doc_id: "bulk:a", collection: A, chunkOpts: { maxTokens: 6, windowSentences: 1 },
+    });
+    expect(r.n_chunks).toBeGreaterThan(100);
+
+    // Batching at 1000 sent one oversized payload and Vectorize rejected the whole delete, so
+    // forget_document / forget_collection / the reaper all failed on any large working set.
+    const f = await forgetDocument(env, "bulk:a", A);
+    expect(f.deleted.vectors).toBe(r.n_chunks);
+    expect(vec.ids().filter((i) => i.startsWith("bulk:a"))).toEqual([]);
+  });
+});

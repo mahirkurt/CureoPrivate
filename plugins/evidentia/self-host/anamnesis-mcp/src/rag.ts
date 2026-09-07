@@ -653,10 +653,21 @@ export interface ForgetResult {
   deleted: { chunks: number; vectors: number; edges: number; nodes_removed: number; nodes_updated: number };
 }
 
+/**
+ * Vectorize rejects a delete payload carrying more than 100 ids:
+ *   VECTOR_DELETE_ERROR (code = 40007): too many ids in payload; max id count is 100
+ *
+ * The batch size here was 1000, so `forget_document`, `forget_collection` AND the nightly reaper
+ * all threw on any working set larger than 100 chunks — i.e. precisely the large corpora this
+ * substrate exists to hold. Measured live against the production index on 2026-09-07 while
+ * cleaning up a 178-chunk verification collection.
+ */
+export const VECTORIZE_DELETE_BATCH = 100;
+
 async function deleteVectors(env: RagEnv, chunkIds: string[]): Promise<number> {
   if (!chunkIds.length || typeof env.VECTORIZE.deleteByIds !== "function") return 0;
-  for (let i = 0; i < chunkIds.length; i += 1000) {
-    await env.VECTORIZE.deleteByIds!(chunkIds.slice(i, i + 1000));
+  for (let i = 0; i < chunkIds.length; i += VECTORIZE_DELETE_BATCH) {
+    await env.VECTORIZE.deleteByIds!(chunkIds.slice(i, i + VECTORIZE_DELETE_BATCH));
   }
   return chunkIds.length;
 }

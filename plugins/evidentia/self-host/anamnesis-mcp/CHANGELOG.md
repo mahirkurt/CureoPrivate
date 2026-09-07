@@ -127,6 +127,20 @@ mekanizma kümesi buldu, seviye 1 tam olarak iki alanı ayırdı (onkoloji / hem
 köprü kenarı onları birleştirmedi; Claude'un yazdığı özet yeniden indekslemede korundu; başka
 koleksiyondan özet yazma reddedildi.
 
+### Kiracılık zorunlu kılındı — `STRICT_COLLECTION="1"` (2026-09-07)
+Bayrak, her bilinen çağıran denetlenip migrate edildikten sonra açıldı:
+- dört plugin guard'ı kapsamsız çağrıyı zaten DENY ediyordu,
+- `marmara`/`openathens` her ingest'te koleksiyon geçiriyor (C1 düzeltmesinden sonra geçerli),
+- **`doktoratezi/scripts/mcp/anamnesis_client.py` HİÇ koleksiyon göndermiyordu** → ingest'i
+  `_legacy`'ye düşüyor, `hybrid_query`/`graph_neighbors`/`subgraph`'i ise ZATEN kırıktı (sunucu
+  v1.2.0'dan beri onlarda koleksiyonu zorunlu tutuyor). `doktoratezi:lib:t1dm`'e migrate edildi
+  ve canlıya karşı doğrulandı.
+
+Canlı doğrulama: kapsamsız `semantic_search` / `ingest_document` / `upsert_triples` /
+`forget_document` dördü de hata döner; kapsamlı çağrılar ve kardeş sunucuların mint ettiği
+koleksiyonlar çalışır; `_legacy` operatör tarafından **açık kapsamla hâlâ okunabilir**
+(tasfiye kararı zorlanmaz). Geri alma: `"0"` + redeploy; ihlal loglaması her iki durumda kalır.
+
 ### Operasyon
 - **Süresi dolan scratch artık gerçekten toplanıyor.** `expires_at` ingest'te yazılıp okumada
   filtreleniyordu ama hiçbir şey satırı silmiyordu: cron tetikleyici yoktu, `scheduled()` handler

@@ -47,14 +47,16 @@
   // any port — VS Code/Codex CLI/native OAuth) and cursor:// are allowed unconditionally
   // in code regardless of this var. MCP_ALLOW_NO_AUTH MUST stay "0" in production.
   //
-  // STRICT_COLLECTION: tenancy transition switch (audit 2026-09-07, findings B1-B3). "0" keeps
-  // today's behaviour and merely LOGS every unscoped call as an `anamnesis.scope_violation` line;
-  // "1" turns those into errors (unscoped ingest / search / forget / upsert_triples). Flip it
-  // only once the logs are clean for all four plugins, the two sibling MCP servers
-  // (marmara, openathens) and the thesis scripts — evidence first, breakage second.
+  // STRICT_COLLECTION: tenancy enforcement (audit 2026-09-07, findings B1-B3). "1" makes an
+  // unscoped ingest / search / forget / upsert_triples an ERROR instead of a silent `_legacy`
+  // bucket or a cross-tenant scan. Flipped on 2026-09-07 after every known caller was audited
+  // and migrated: the four plugin guards already denied unscoped calls, marmara/openathens pass
+  // collection on every ingest, and doktoratezi/scripts/mcp/anamnesis_client.py — which sent NO
+  // collection at all — was migrated to `doktoratezi:lib:t1dm`.
+  // Roll back by setting "0" and redeploying; the violation logging stays either way.
   "vars": {
     "MCP_ALLOW_NO_AUTH": "0",
-    "STRICT_COLLECTION": "0",
+    "STRICT_COLLECTION": "1",
     "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com,https://oauth-redirect.googleusercontent.com,https://vscode.dev,https://insiders.vscode.dev,https://cursor.com,https://www.cursor.com"
   },
 

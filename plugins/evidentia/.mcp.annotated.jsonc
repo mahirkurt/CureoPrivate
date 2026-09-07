@@ -91,7 +91,7 @@
       "url": "https://annas.cureonics.com/mcp",
       "_tier": "O",
       "_trust": "operator self-host (HP Docker, hardened OAuth 2.1 + Bearer)",
-      "_probe": "2026-08-14 CANLI · 9 araç · download_document PDF/EPUB ve desteklenen diğer dosyalar için doğrulandı",
+      "_probe": "2026-08-14 CANLI · 11 araç · download_document PDF/EPUB ve desteklenen diğer dosyalar için doğrulandı",
       "_role": "Tam-metin cascade Tier 5 — SON ÇARE: bounded analiz için reader araçları; orijinal PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS için download_document(id=DOI|MD5) → kısa-ömürlü resource_link + SHA-256. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. Telif: yalnız analiz, toplu birebir çoğaltma yok."
     },
 

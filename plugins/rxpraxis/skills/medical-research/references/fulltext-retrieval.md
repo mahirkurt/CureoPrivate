@@ -36,18 +36,32 @@ PaperSearch: read_pubmed_paper(paper_id="<PMID/PMCID>")   # extracts text
 PaperSearch: download_pubmed / download_biorxiv / download_semantic
 ```
 
-### Tier 3 — annas-mcp (paywalled article / methodology book) — VERIFIED
+### Tier 3 — annas-reader (paywalled article / methodology book) — ⚠️ NOT WIRED IN THIS PLUGIN
+> **Corrected 2026-09-07.** This section described `article_download(doi=…)` and
+> `book_download(hash=,format=,title=)` as "verified working". **Neither tool exists.** They
+> are the RETIRED tool names of the upstream `iosifache/annas-mcp` Go binary, which wrote
+> files to the user's disk; the self-hosted server that replaced it
+> (`annas.cureonics.com`, HP Docker) removed them on purpose and returns a short-lived
+> opaque `resource_link` instead — it never touches the user's filesystem. The "downloads
+> land on the user's computer" note described the Go binary, not this server.
+>
+> **`plugins/rxpraxis/.mcp.json` also wires no annas server at all**, so this whole tier is
+> currently a documented capability the plugin does not have. Skip it and record the skip;
+> do not attempt these calls.
+
+To actually enable this tier, add the connector and use the REAL surface (v0.1.0, 11 tools):
+
 ```
-annas: article_search(query="<DOI or keywords>")   # → metadata + SciDB handle
-annas: article_download(doi="10.xxxx/...")          # VERIFIED: downloads PDF to user machine
-annas: book_search(query="Cochrane Handbook ...")   # methodology references
-annas: book_download(hash="<md5>", format="pdf", title="...")
+annas-reader: article_search(query="<DOI or keywords>", limit, page)
+              # → {status, reason, rows[], evidence}; status 'empty' is a VERIFIED absence,
+              #   'degraded'/'blocked' means DO NOT record an absence
+annas-reader: book_search(query="...", language?, format?, min_size_mb?)
+annas-reader: read_article(doi=...) / read_document(md5|id, page_start, page_end)
+annas-reader: search_in_document(query, md5|id, k)      # BM25, page-referenced
+annas-reader: download_document(id="<DOI|32-hex md5>")  # short-lived resource_link
+annas-reader: annas_ingest_document(id, collection, doc_id?)   # full text → anamnesis
+annas-reader: annas_server_info()                       # liveness / quota / capabilities
 ```
-**Verified 9 Jun 2026:** `article_search("10.1136/bmj.39489.470347.AD")` resolved the GRADE
-2008 paper; `article_download` succeeded (file → user's Downloads). `book_search("Cochrane
-Handbook ...")` returned the 2019/2020 2nd edition.
-**Note:** downloads land on the **user's computer**, not the sandbox — they are for the
-user + for your analysis of the retrieved content, not re-upload.
 
 ### Tier 4 — Wiley (publisher full text, OAuth-gated)
 `Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals). Graceful
@@ -99,5 +113,6 @@ Tag each: citation + `[tam metin: PMC OA | annas analiz | Wiley | Exa]` + licens
 
 ---
 
-*v8.0 — annas-mcp `article_search`/`article_download`/`book_search` verified working; EPMC
+*v8.0 — (superseded 2026-09-07: `article_download` is a retired upstream Go tool name and
+annas is not wired in this plugin — see the Tier 3 block above); EPMC
 `get_full_text_article`/`get_copyright_status` schemas verified 9 June 2026.*

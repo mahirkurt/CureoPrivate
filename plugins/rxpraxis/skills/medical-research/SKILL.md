@@ -125,7 +125,7 @@ Injected per Adım 0.5 signal. Highlights (full lists in each layer file):
 - **§1.P Epidemiology (v8.0)** — **WHO GHO `who_gho_query`** (burden/incidence/mortality) + **ICD-11 `icd11_search`** (coding) + GLOBOCAN (Exa) → feeds HTA budget-impact + rare-disease prevalence. ⚠️ regulatory MCP is latency-prone: call singly, retry, skippable.
 
 ### Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`)
-Cascade: EPMC `get_full_text_article` (PMC OA) → `get_copyright_status` → PaperSearch `read_pubmed_paper` → **annas-mcp `article_download`** (DOI, verified) / `book_search` (methodology) → Wiley (auth) → Exa `web_fetch_exa`. **Copyright:** analysis only; no verbatim bulk reproduction; CC-BY (via copyright_status) freely quotable.
+Cascade: EPMC `get_full_text_article` (PMC OA) → `get_copyright_status` → PaperSearch `read_pubmed_paper` → **annas-reader** (⚠️ NOT wired in this plugin — record the skip; `article_download` never existed, see `references/fulltext-retrieval.md`) → Wiley (auth) → Exa `web_fetch_exa`. **Copyright:** analysis only; no verbatim bulk reproduction; CC-BY (via copyright_status) freely quotable.
 
 ## Adım 2: Generosity Principle (UNCAPPED)
 

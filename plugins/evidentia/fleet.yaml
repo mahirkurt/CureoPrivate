@@ -428,7 +428,7 @@ servers:
       _trust: >-
         operator self-host (HP Docker, hardened OAuth 2.1 + Bearer)
       _probe: >-
-        2026-08-14 CANLI · 9 araç · download_document PDF/EPUB ve diğer desteklenen
+        2026-08-14 CANLI · 11 araç · download_document PDF/EPUB ve diğer desteklenen
         formatları kısa-ömürlü resource_link olarak teslim ediyor.
 
   - name: anamnesis

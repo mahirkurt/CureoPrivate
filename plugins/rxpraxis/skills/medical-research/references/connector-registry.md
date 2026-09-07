@@ -66,7 +66,7 @@ Keyword search also works for discovery (`ToolSearch "adisinsight drug pipeline"
 | **Türk Mevzuat** | `fbf16a1a…` | `search_mevzuat` (needs `tur` code for `baslik` search), `get_mevzuat_text`, `get_mevzuat_content`, `get_anayasa`, `get_mevzuat_madde_tree`, `get_mevzuat_madde_diff` | SUT, yönetmelik, fiyat kararnamesi — native legislation |
 | **TÜRKPATENT** | `ded65854…` | `search_patents` (title/applicant/IPC/CPC), `search_trademarks`, `search_designs`, `get_patent_details` | Turkey IP — pharmapatent composition |
 | **NPI Registry** | `64557ced…` | `npi_search`, `npi_lookup`, `npi_validate` | US PI/KOL verification (NPI-1 individual, NPI-2 org). US-only |
-| **annas-mcp** | `annas-mcp` | `article_search` (DOI/keywords), `book_search`, `article_download` (by DOI — **verified working**), `book_download` (MD5 hash + format) | Full-text cascade tier 3. ⚠️ Copyright: analysis only, no verbatim bulk reproduction |
+| **annas-reader** | ⚠️ **NOT WIRED** in `.mcp.json` | Real surface (v0.1.0): `article_search`/`book_search` (structured envelope), `read_article`, `read_document`, `search_in_document`, `get_document_info`, `download_document(id=DOI\|md5)`, `annas_ingest_document`, `annas_server_info` | Full-text cascade tier 3 — **currently unavailable to this plugin**. The previously listed `article_download`/`book_download` are RETIRED upstream Go tool names and do not exist. ⚠️ Copyright: analysis only, no verbatim bulk reproduction |
 
 ### 2.4 Output / compose / visualize
 - **AdisInsight `generate_chart`** — Chart.js inline (phase distribution, competitor landscape).
@@ -89,8 +89,15 @@ Keyword search also works for discovery (`ToolSearch "adisinsight drug pipeline"
 ### 3.4 Tavily — quota-aware web research
 When live, `tavily_search` supports **real** `include_domains`/`exclude_domains` (Exa cannot), `time_range`, `search_depth: advanced`, `country` boosting; `tavily_research` is an autonomous multi-source agent; `tavily_extract` pulls clean markdown from URLs. **Currently quota-limited (432).** Pattern: attempt Tavily for domain-scoped/deep tasks → on 432/error, **fall through to Exa** and note the fallback in output.
 
-### 3.5 annas-mcp — full-text retrieval (verified)
-`article_search(DOI)` resolves metadata + SciDB handle; `article_download(doi=…)` downloads the PDF (verified: GRADE 2008 → `…/Downloads`). `book_search` finds methodology references (Cochrane Handbook 2nd ed., GRADE guidance). Downloads land on the **user's machine**, not the sandbox. **Copyright discipline:** retrieve for analysis/extraction only; never reproduce large verbatim blocks; prefer CC-BY items (check EPMC `get_copyright_status`).
+### 3.5 annas-reader — full-text retrieval (⚠️ not wired in this plugin)
+**Corrected 2026-09-07.** `article_download` / `book_download` do not exist: they are the
+retired tool names of the upstream Go binary, and this plugin's `.mcp.json` wires no annas
+server at all. The self-hosted replacement returns a short-lived opaque `resource_link`
+(`download_document(id=<DOI|32-hex md5>)`) and never writes to the user's machine. Search
+returns a structured envelope whose `status` must be respected: `empty` is a verified
+absence, `degraded`/`blocked` means the page could not be read and **no absence may be
+recorded**. **Copyright discipline:** analysis/extraction only; never reproduce large
+verbatim blocks; prefer CC-BY items (check EPMC `get_copyright_status`).
 
 ### 3.6 EPMC copyright gate
 `get_copyright_status(pmids=[…])` distinguishes open-access (CC-BY → free quotation) from restricted. Run before quoting; complements Unpaywall/DOAJ for OA determination.

@@ -797,6 +797,12 @@ export async function forgetCollection(env: RagEnv, collectionRaw: string): Prom
   await env.DB.prepare(`DELETE FROM docs WHERE collection = ?`).bind(collection).run();
   await env.DB.prepare(`DELETE FROM edges WHERE collection = ?`).bind(collection).run();
   await env.DB.prepare(`DELETE FROM nodes WHERE collection = ?`).bind(collection).run();
+  // The community partition is derived from this collection's graph, so it dies with it.
+  // Leaving it behind would let global_query hand the next run a summary of documents that no
+  // longer exist — evidence pointing at nothing.
+  try {
+    await env.DB.prepare(`DELETE FROM communities WHERE collection = ?`).bind(collection).run();
+  } catch { /* table absent on a deployment that never ran migration 0003 */ }
 
   return {
     collection,

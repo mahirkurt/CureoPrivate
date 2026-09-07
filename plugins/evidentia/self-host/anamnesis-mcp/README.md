@@ -35,6 +35,10 @@ istemci guard'ı bunu DENY etmelidir. `forget_by_prefix` API değildir; çalış
 | `corpus_stats` | collection yok = küresel gözlem (çalışma seti değil) | read-only |
 | `forget_document` | Tek `doc_id` temiz silme; `collection` **sahiplik kontrolüdür** — başka koleksiyona ait belge reddedilir | **mutation (destructive)** |
 | **`forget_collection`** | Bir koleksiyon: SQL + Vectorize `deleteByIds`; başka koleksiyona dokunmaz | **mutation (destructive)** |
+| `graph_export` | Bir koleksiyonun tüm grafını çevrimdışı indeksleyiciye verir | read-only |
+| `upsert_communities` | Leiden bölümlemesini saklar (öncekini **değiştirir**) | mutation |
+| `community_summarize` | Orkestratörün (Claude) topluluk özetini iliştirir | mutation |
+| **`global_query`** | **GLOBAL arama:** "bu korpus X hakkında genel olarak ne diyor?" — özet yoksa `summary_status:"absent"` + üye listesi | read-only |
 
 Sentez kılavuzu: *Synthesize ONLY from these chunks; cite doc_id::idx*.
 
@@ -58,6 +62,17 @@ Log'lar temizlenene kadar `"0"` kalır. Önce kanıt, sonra kırılma.
 metadata `collection` + `doc_id`) + **D1** (chunk metni + bilgi grafiği). Çıkarım **orchestrator
 (Claude) tarafından** yapılır (LLM-in-the-loop GraphRAG); Worker depolar+gezer. In-Worker LLM
 çıkarımı ve sahte GraphRAG community özeti **yoktur** (BUILD-BRIEF §5).
+
+## GraphRAG global arama
+`hybrid_query` pasaj getirir; **`global_query`** korpusun tamamını tarar. Üç katman, hiçbirinde
+yaklaşıklama yok: Worker **saklar+sunar**, HP'deki `anamnesis-indexer` **gerçek Leiden** ile
+bölümler (saf graf matematiği, dil modeli yok), özeti **orkestratör (Claude)** yazar
+(`community_summarize`) — `upsert_triples` ile aynı doktrin. Özeti olmayan topluluk bunu
+`summary_status:"absent"` ile söyler ve üye listesini döner; özet asla uydurulmaz. Sıralama
+lexical routing sezgiselidir, embedding getirimi değil — yanıtta böyle beyan edilir.
+
+Bölümleme gerektirir: indeksleyici koşmadan `global_query` boş döner (dürüstçe). Kurulum ve
+kapsam: `../anamnesis-indexer/README.md`.
 
 ## Bakım
 Gecelik cron (`10 4 * * *`) → `src/reaper.ts`: süresi dolmuş belgelerin D1 satırlarını, FTS
@@ -84,6 +99,7 @@ npx wrangler vectorize create-metadata-index anamnesis-index --property-name=doc
 npx wrangler d1 create anamnesis-graph            # database_id → wrangler.jsonc
 npx wrangler d1 execute anamnesis-graph --remote --file=migrations/0001_collection.sql
 npx wrangler d1 execute anamnesis-graph --remote --file=migrations/0002_edge_evidence.sql
+npx wrangler d1 execute anamnesis-graph --remote --file=migrations/0003_communities.sql
 wrangler secret put MCP_API_KEY && wrangler secret put AUTH_HMAC_SECRET
 wrangler deploy
 ```

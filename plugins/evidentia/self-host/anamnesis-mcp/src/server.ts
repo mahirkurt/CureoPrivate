@@ -32,9 +32,10 @@ import {
 } from "./rag.js";
 import { upsertTriples, neighbors, subgraph, edgesByDocs, type GraphEnv, type Triple, type GraphEdge } from "./graph.js";
 import { CollectionRequiredError, InvalidCollectionError, requireCollection } from "./collection.js";
+import { exportGraph, upsertCommunities, summarizeCommunity, globalQuery, type CommunityEnv } from "./community.js";
 import pkg from "../package.json";
 
-export type AnamEnv = RagEnv & GraphEnv;
+export type AnamEnv = RagEnv & GraphEnv & CommunityEnv;
 
 const SUBSTRATE_NOTE =
   "anamnesis substrate: this is a context-window-bounded retrieval slice, not the full corpus. " +
@@ -339,6 +340,82 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     async (a) => {
       try { return ok(await forgetDocument(env, a.doc_id, a.collection)); }
       catch (e: unknown) { return toolErr(e, "forget_document"); }
+    },
+  );
+
+  // ---- graph_export (GraphRAG global search: indexer feed) ----------------
+  server.tool(
+    "graph_export",
+    "Export ONE collection's whole entity-relation graph (nodes + edges) for offline community " +
+      "detection. This is the read side of the GraphRAG global-search loop: the anamnesis-indexer " +
+      "on HP pulls the graph, runs Leiden partitioning (pure graph maths, no language model), and " +
+      "writes the partition back with upsert_communities. Read-only.",
+    {
+      collection: z.string().describe("Working set ({plugin}:{kind}:{id}) — required"),
+    },
+    async (a) => {
+      try { return ok(await exportGraph(env, a.collection)); }
+      catch (e: unknown) { return toolErr(e, "graph_export"); }
+    },
+  );
+
+  // ---- upsert_communities -------------------------------------------------
+  server.tool(
+    "upsert_communities",
+    "Store a community partition for ONE collection (written by the offline Leiden indexer). " +
+      "REPLACES the collection's previous partition — a partition is a whole object, so a " +
+      "re-index that finds fewer clusters must not leave orphans behind. Summaries are carried " +
+      "over for communities whose membership is unchanged. Mutation.",
+    {
+      collection: z.string().describe("Working set ({plugin}:{kind}:{id}) — required"),
+      communities: z.array(z.object({
+        level: z.number().int().min(0).describe("Leiden hierarchy level (0 = finest)"),
+        members: z.array(z.string()).describe("Node ids from graph_export"),
+        edge_count: z.number().int().min(0).optional(),
+      })).describe("The full partition for this collection"),
+    },
+    async (a) => {
+      try { return ok(await upsertCommunities(env, a.collection, a.communities)); }
+      catch (e: unknown) { return toolErr(e, "upsert_communities"); }
+    },
+  );
+
+  // ---- community_summarize ------------------------------------------------
+  server.tool(
+    "community_summarize",
+    "Attach YOUR summary of one community, so later runs reuse it instead of re-reading the " +
+      "members. Summaries are written by the orchestrator (you), never by a model inside this " +
+      "Worker — the same Claude-in-the-loop doctrine as upsert_triples. A community owned by " +
+      "another collection is refused. Mutation.",
+    {
+      collection: z.string().describe("Owning working set — required, and checked"),
+      community_id: z.string().describe("id from global_query"),
+      summary: z.string().describe("What this cluster is about, in a few sentences"),
+    },
+    async (a) => {
+      try { return ok(await summarizeCommunity(env, a.collection, a.community_id, a.summary)); }
+      catch (e: unknown) { return toolErr(e, "community_summarize"); }
+    },
+  );
+
+  // ---- global_query -------------------------------------------------------
+  server.tool(
+    "global_query",
+    "GLOBAL search: 'what does this corpus say about X overall?' — the question hybrid_query " +
+      "cannot answer, because it retrieves passages rather than surveying the whole graph. " +
+      "Ranks the collection's stored communities against your question and returns their " +
+      "summaries, or their member lists when no summary exists yet (summary_status:'absent' — " +
+      "never a fabricated one). Ranking is a LEXICAL routing heuristic, not embedding retrieval. " +
+      "Requires a partition: run the indexer first, else the result is empty. Read-only.",
+    {
+      collection: z.string().describe("Working set ({plugin}:{kind}:{id}) — required"),
+      query: z.string().describe("The corpus-level question"),
+      level: z.number().int().min(0).optional().describe("Restrict to one hierarchy level"),
+      k: z.number().int().min(1).max(25).optional().describe("How many communities (default 5)"),
+    },
+    async (a) => {
+      try { return ok(await globalQuery(env, a)); }
+      catch (e: unknown) { return toolErr(e, "global_query"); }
     },
   );
 

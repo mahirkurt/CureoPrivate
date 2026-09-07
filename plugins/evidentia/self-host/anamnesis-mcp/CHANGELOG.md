@@ -98,6 +98,35 @@ Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/); sürümleme [S
   kalıyor ve daha kötüsü, eksik içerik olmadığı hâlde "eksik" bilgisi alıyordu. `truncated` artık
   "geriye **indekslenmemiş içerik kaldı**" demektir. 126 KB'lık canlı belgede ölçüldü: 4 çağrı → 3.
 
+### Eklendi — GraphRAG global arama (BUILD-BRIEF §5'in ertelediği yetenek)
+`BUILD-BRIEF.md` §5 global aramayı **bilinçli olarak sevk etmemişti**: topluluk tespiti
+istek-kapsamlı bir Worker'ın işi değil ve özetlemeyi Worker içindeki zayıf bir modele yaptırmak
+kanıt substratına güvenilmez metin sokardı. Erteleme hedefi (Cloud Run) 2026-07'de emekli oldu.
+İş üçe bölündü ve **hiçbir yerde yaklaşık bir şey yapılmıyor**:
+
+- **Worker saklar ve sunar** (`src/community.ts`, `migrations/0003_communities.sql`) — burada
+  kümeleme yok. Dört yeni araç: `graph_export` · `upsert_communities` · `community_summarize` ·
+  `global_query`. Araç sayısı 10 → **14**.
+- **Bölümleme HP'de** (`../anamnesis-indexer/`, systemd timer 04:30 Europe/Istanbul) — gerçek
+  Leiden (igraph + leidenalg). Saf graf matematiği, dil modeli yok. Seviye 1 daima seviye 0'ın
+  **birleşimidir**, yeniden dilimlenmesi değil — hiyerarşiyi hiyerarşi yapan budur.
+- **Özetleme orkestratörde** (`community_summarize`) — `upsert_triples` ile aynı doktrin.
+  Özeti olmayan topluluk `summary_status:"absent"` der ve üye listesini döner; **özet uydurulmaz**.
+  Sıralama lexical routing sezgiselidir ve yanıtta böyle beyan edilir (embedding getirimi değil).
+
+Kapsam config-driven (`ANAMNESIS_INDEX_COLLECTIONS`): "tüm koleksiyonları listele" diye bir araç
+YOK ve indeksleyici öyle bir araç istemiyor — başka kiracıların çalışma setlerini saymak, bu
+denetimin kapattığı çapraz-koleksiyon sızıntısının ta kendisi olurdu. Yalnız dayanıklı (`lib`)
+korpuslar indekslenir; scratch bir oturum boyu yaşar ve reaper'a gider.
+
+`forget_collection` artık koleksiyonun bölümlemesini de siler — silinmiş belgelerin özetini
+sunmaya devam eden bir global arama, hiçbir şeye işaret eden kanıt üretirdi.
+
+**Canlı doğrulama (2026-09-07):** 12 düğüm / 11 kenarlık iki-alanlı test korpusunda seviye 0 dört
+mekanizma kümesi buldu, seviye 1 tam olarak iki alanı ayırdı (onkoloji / hemofili) ve aradaki tek
+köprü kenarı onları birleştirmedi; Claude'un yazdığı özet yeniden indekslemede korundu; başka
+koleksiyondan özet yazma reddedildi.
+
 ### Operasyon
 - **Süresi dolan scratch artık gerçekten toplanıyor.** `expires_at` ingest'te yazılıp okumada
   filtreleniyordu ama hiçbir şey satırı silmiyordu: cron tetikleyici yoktu, `scheduled()` handler

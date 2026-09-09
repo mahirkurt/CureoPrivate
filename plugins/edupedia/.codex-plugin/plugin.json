@@ -1,6 +1,6 @@
 {
   "name": "edupedia",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "carbon-edupedia (DEHB-odaklı, IBM Carbon v11, WCAG 2.1 AA, tek-dosya çevrimdışı HTML) + start yönlendiricisi + İKİ anahtarlı MCP connector'ı: maarif-mufredat (21 araç; MEB kazanım/müfredat ve 105 ders kitabı tam metni) ile tamamlayıcı egitim-kaynak OER RAG (6 kb_* araç; PhET CC BY-NC 4.0 + Vikipedi-TR arka plan). Flagship 9 mod sunar: MODULE · QUIZ · FLASHCARDS · GAME · EXPLAINER · ASSESSMENT · SERIES · CURRICULUM · EXAM; yerel validator 16 kalite kapısı çalıştırır. Yerel tek-dosya HTML teslim edilir; plugin yayınlamaz. Komutlar: /edupedia:modul, /edupedia:mufredat, /edupedia:soru, /edupedia:kazanim-bul, /edupedia:durum. Native komut, platforma özgü hook, module-auditor ve yerel script otomasyonu yalnız Claude Code/Cursor'dadır; diğer hostlar destekliyorsa authenticated MCP ve/veya SKILL.md prompt uyarlaması kullanır. Tier-2a metadata/MCP ImageContent gözlemidir; Tier-2b scripts/fetch_figure.py ile yerel binary çıkarımıdır ve dosya sistemi+Python gerektirir. Kapsam yalnız Türkiye MEB.",
   "author": {
     "name": "Cureonics",

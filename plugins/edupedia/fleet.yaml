@@ -9,7 +9,7 @@
 
 version: 2
 plugin: edupedia
-plugin_version: "0.10.0"
+plugin_version: "0.10.1"
 
 servers:
   - name: maarif-mufredat

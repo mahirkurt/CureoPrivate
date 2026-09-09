@@ -16,10 +16,11 @@
  * The Durable Object class `Ema` is exported and bound as MCP_OBJECT in wrangler.jsonc.
  */
 
-import { McpAgent } from "agents/mcp";
+import { DurableObject } from "cloudflare:workers";
+import { createMcpHandler } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools } from "./server.js";
-import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
+import { preflight, handleOAuth, requireBearer, type AuthEnv, CORS } from "./auth.js";
 // serverInfo.version is fed from package.json so `initialize` can distinguish deployments.
 // Until 2026-08-08 every Worker advertised a hardcoded "1.0.0" that never moved, so the
 // handshake could not tell one deploy from another — the audit had to read wrangler output
@@ -30,11 +31,33 @@ export interface Env extends AuthEnv {
   MCP_OBJECT: DurableObjectNamespace;
 }
 
-export class Ema extends McpAgent<Env> {
-  server = new McpServer({ name: "ema-mcp", version: pkg.version });
-  async init(): Promise<void> {
-    registerTools(this.server);
-  }
+/**
+ * STATELESS TRANSPORT (2026-09-09). /mcp used to run through `McpAgent.serve()`, which routes
+ * every session into a Durable Object and makes `McpAgent._ensureSchema` write session tables
+ * into DO SQL storage. Measured live: once the account crossed the Durable Objects free-tier
+ * storage cap, EVERY `initialize` threw —
+ *   "Exceeded allowed bytes stored in Durable Objects free tier."
+ * — surfacing as HTTP 500 / Cloudflare 1101 on six sibling Workers at once. Nothing here ever
+ * kept state in the DO (no ctx.storage, no sql): the DO was only the transport. /mcp now builds
+ * a fresh McpServer per request with `sessionIdGenerator: undefined`, exactly as anamnesis-mcp
+ * already does. The DO class stays exported as an EMPTY shell so migration history stays valid.
+ *
+ * CORS: the old McpAgent transport emitted the CORS headers itself, from BELOW the bearer gate.
+ * The stateless handler does not, so responses are wrapped here.
+ */
+export class Ema extends DurableObject<Env> {}
+
+/** Fresh server per request — no DO session SQL. */
+function mcpServerFor(env: Env): McpServer {
+  const server = new McpServer({ name: "ema-mcp", version: pkg.version });
+  registerTools(server);
+  return server;
+}
+
+function withCors(res: Response): Response {
+  const h = new Headers(res.headers);
+  for (const [k, v] of Object.entries(CORS)) h.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 }
 
 export default {
@@ -69,12 +92,16 @@ export default {
       return handleOAuth(req, env);
     }
 
-    if (p === "/mcp" || p === "/sse") {
+    if (p === "/mcp" || p.startsWith("/sse")) {
       const denied = requireBearer(req, env);   // null when MCP_ALLOW_NO_AUTH=1 (keyless)
-      if (denied) return denied;
-      return p === "/sse"
-        ? Ema.serveSSE("/sse").fetch(req, env, ctx)
-        : Ema.serve("/mcp").fetch(req, env, ctx);
+      if (denied) return withCors(denied);
+      if (p.startsWith("/sse")) {
+        return withCors(new Response(JSON.stringify({ error: "sse_retired",
+          hint: "Use POST /mcp (Streamable HTTP, stateless). Durable Object SSE hit the free-tier SQL write cap." }),
+          { status: 410, headers: { "content-type": "application/json" } }));
+      }
+      const handler = createMcpHandler(mcpServerFor(env), { sessionIdGenerator: undefined, enableJsonResponse: true });
+      return withCors(await handler(req, env, ctx));
     }
 
     return new Response("not found", { status: 404, headers: { "content-type": "text/plain" } });

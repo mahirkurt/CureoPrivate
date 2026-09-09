@@ -26,7 +26,11 @@ export interface AuthEnv {
   MCP_ALLOW_NO_AUTH?: string;                // var — "1" disables auth (LOCAL ONLY)
 }
 
-const DEFAULT_ALLOWED_ORIGINS = ["https://claude.ai", "https://claude.com"];
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://claude.ai", "https://claude.com", "https://grok.com", "https://chatgpt.com",
+  "https://oauth-redirect.googleusercontent.com", "https://vscode.dev", "https://insiders.vscode.dev",
+  "https://cursor.com", "https://www.cursor.com",
+];
 const CODE_TTL_SECONDS = 600;               // invariant (4): 10-minute TTL
 const REALM = "openfda-mcp";
 
@@ -120,9 +124,22 @@ function allowedOrigins(env: AuthEnv): string[] {
   return raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : DEFAULT_ALLOWED_ORIGINS;
 }
 function redirectAllowed(env: AuthEnv, redirectUri: string): boolean {
-  let origin: string;
-  try { origin = new URL(redirectUri).origin; } catch { return false; }
-  return allowedOrigins(env).includes(origin);   // FULL-ORIGIN match, not substring
+  let parsed: URL;
+  try { parsed = new URL(redirectUri); } catch { return false; }
+  // Loopback redirects (RFC 8252 native-app flow) are accepted on ANY port, in
+  // production too: VS Code / GitHub Copilot / OpenAI Codex CLI register a fixed
+  // loopback port but fall back to a RANDOM free port when it's taken, so pinning
+  // the port breaks the connector silently. Safe because the code lands on the
+  // user's OWN machine and the authorize form still requires the connector key —
+  // a remote attacker never receives it.
+  if (
+    parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" ||
+    parsed.hostname === "::1" || parsed.hostname === "[::1]"
+  ) return true;
+  // Cursor desktop MCP OAuth: cursor://anysphere.cursor-mcp/oauth/callback.
+  // WHATWG origin is "null" for this scheme, so the HTTPS allowlist cannot match.
+  if (parsed.protocol === "cursor:" && parsed.hostname === "anysphere.cursor-mcp") return true;
+  return allowedOrigins(env).includes(parsed.origin);   // FULL-ORIGIN match, not substring
 }
 
 // ---- RFC 9728 / RFC 8414 metadata + RFC 7591 register stub -----------------

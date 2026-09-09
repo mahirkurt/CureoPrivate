@@ -202,7 +202,7 @@
         "Authorization": "Bearer ${MARMARA_EBSCO_MCP_API_KEY}"
       },
       "_tier": "O",
-      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal BİRİNCİ deneme (Marmara VETİS → EBSCOhost; OpenAthens Tier 4 ve annas Tier 6'nın ÖNÜNDE). 4 araç: ebsco_server_info · ebsco_list_databases · ebsco_search(query, full_text_only?) · ebsco_get(record_id, prefer=pdf|html, collection?, doc_id?). Akış: DOI/başlık ile ebsco_search → isabet + tam-metin linki varsa ebsco_get. collection/doc_id anamnesis'e pass-through (Evidentia: collection=evidentia:run:<id>, doc_id=evrun:<id>:<DOI|record>); yoksa marmara:fetch:<sha1-8> mint. Miss / manual_required / session_invalid / no_fulltext_link → SKIP-REASON yaz + Tier 4 OpenAthens'e düş (sessiz atlama YOK). Key ${MARMARA_EBSCO_MCP_API_KEY} Doppler (cureohub/dev_personal); klinik kardeş MARMARA_CLINICAL_* ayrı kalır.",
+      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal BİRİNCİ deneme (Marmara VETİS → EBSCOhost; OpenAthens Tier 4 ve annas Tier 6'nın ÖNÜNDE). 4 araç: ebsco_server_info · ebsco_list_databases · ebsco_search(query, full_text_only?) · ebsco_get(record_id, prefer=pdf|html, collection?, doc_id?). Akış: DOI/başlık ile ebsco_search → isabet + tam-metin linki varsa ebsco_get. collection/doc_id anamnesis'e pass-through (Evidentia: collection=evidentia:run:<id>, doc_id=evrun:<id>:<DOI|record>); yoksa marmara:run:<sha1-8> mint. Miss / manual_required / session_invalid / no_fulltext_link → SKIP-REASON yaz + Tier 4 OpenAthens'e düş (sessiz atlama YOK). Key ${MARMARA_EBSCO_MCP_API_KEY} Doppler (cureohub/dev_personal); klinik kardeş MARMARA_CLINICAL_* ayrı kalır.",
       "_trust": "operator self-host (HP systemd category server — aynı VETİS storage_state; hardened OAuth 2.1 + Bearer; AUTH_HMAC_SECRET ayrı)",
       "_probe": "Kod+unit hazır (port 8222, hedef ebsco.cureonics.com); HP deploy/tunnel/DNS Canlı (2026-08-19): HP systemd marmara-ebsco :8222, tunnel ebsco.cureonics.com; public+local tools/list (4 araç); ebsco_search smoke 10 kayıt."
     },
@@ -226,7 +226,7 @@
       "_tier": "O",
       "_role": "Tam-metin geri-çağırma (full-text cascade Tier 6 — SON ÇARE, lisanslı band [Marmara EBSCO Tier 3 + OpenAthens Tier 4 + Wiley Tier 5] getiremeyince). 9 araç (ölçüm 2026-08-14): efemer okuma için article_search/read_article ve book_search/get_document_info/search_in_document/read_document; orijinal dosya için `download_document(id=<DOI|32-hex MD5>)`. PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque resource_link + format/size/SHA-256 olarak teslim edilir; link kalıcı kaynak diye cache'lenmez, DOI gövdesi Crossref/içerik-kimliği kapısından geçer. Uzun belge analizi → anamnesis ingest/bounded query. Telif: yalnız analiz, toplu birebir çoğaltma yok (CONNECTORS.md §1).",
       "_trust": "operator self-host (HP Docker, hardened OAuth 2.1 + Bearer)",
-      "_probe": "2026-08-14 CANLI · 9 araç · download_document PDF/EPUB ve diğer desteklenen formatları kısa-ömürlü resource_link olarak teslim ediyor."
+      "_probe": "2026-08-14 CANLI · 11 araç · download_document PDF/EPUB ve diğer desteklenen formatları kısa-ömürlü resource_link olarak teslim ediyor."
     },
     "anamnesis": {
       "type": "http",

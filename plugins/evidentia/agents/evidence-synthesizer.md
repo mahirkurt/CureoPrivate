@@ -82,9 +82,12 @@ ham connector gövdesi senin pencerenizde kalır (retrieve-don't-dump; ID-first 
    **Tam-metin dosya seçimi.** Tier 3 Marmara EBSCO: `ebsco_search` → `ebsco_get` (metin/RAG;
    `collection`/`doc_id` geçir). Tier 4 OpenAthens: metin/alıntı/RAG için
    `oa_fetch_fulltext` (**collection/doc_id pass-through**); sağlayıcının orijinal PDF'si
-   gerektiğinde `oa_fetch_pdf(doi|url)` kullan. Tier 6 annas: `read_article` /
-   `download_document` **collection KABUL ETMEZ** (API gap) → sonra
-   `ingest_document(dual-write)` zorunlu. Lisanslı band başarısızsa ve telif kapısı izin
+   gerektiğinde `oa_fetch_pdf(doi|url)` kullan. Tier 6 annas: **API gap KAPANDI (2026-09-07,
+   v0.1.0)** — `annas_ingest_document(id, collection, doc_id?)` tam metni sunucu tarafında
+   anamnesis'e yazar ve yalnız manifest döner (gövde ana pencereye GİRMEZ); ayrıca
+   `download_document` da `collection`/`doc_id` kabul eder. Ayrı bir
+   `ingest_document(dual-write)` artık gerekmez; `annas_server_info.capabilities`
+   `anamnesis_ingest` alanıyla plan anında doğrula. Lisanslı band başarısızsa ve telif kapısı izin
    veriyorsa Tier 5'te okuma araçlarını kullan. İki dosya aracı da kısa-ömürlü opaque
    `resource_link` döndürür: hemen tüket, linki kalıcı cache'e yazma; kanonik kayıtta
    DOI/MD5 + SHA-256 + provenance tut.

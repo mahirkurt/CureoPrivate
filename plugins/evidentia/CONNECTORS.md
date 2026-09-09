@@ -89,7 +89,7 @@ probe'lanmaları önlenir (`docs/evidentia.local.md.example`).
 |---|---|---|---|---|---|
 | **marmara-ebsco** (self-host, `https://ebsco.cureonics.com/mcp`) | 🟡 | OAuth/Bearer | 4 araç: `ebsco_server_info` · `ebsco_list_databases` · `ebsco_search` · `ebsco_get(record_id, prefer, collection?, doc_id?)`. **Tam-metin Tier 3: LİSANSLI BİRİNCİ deneme** (Marmara VETİS→EBSCOhost; OpenAthens'in önünde). Miss → SKIP-REASON + Tier 4. Kod hazır; HP deploy/tunnel operatör kapısı | operatör self-host | O |
 | **openathens** (self-host, `https://openathens.cureonics.com/mcp`) | 🟢 | OAuth/Bearer | 11 araç, ölçüm 2026-08-14: `oa_resolve` · `oa_fetch_fulltext`(metin/ingest; collection?) · **`oa_fetch_pdf(doi\|url)`** · `oa_verify_access` · `oa_list_databases` · `oa_session_status` · `oa_batch_submit`/`oa_batch_result` · `search`/`fetch`. **Tam-metin Tier 4: LİSANSLI İKİNCİ deneme**, annas'ın önünde | operatör self-host | O |
-| annas-reader | 🟡 | Bearer | 9 araç, ölçüm 2026-08-14: reader + **`download_document(id=DOI\|32-hex MD5)`**. (**Tier 6 SON ÇARE**, lisanslı band'dan sonra; yalnız analiz) | operatör self-host | O |
+| annas-reader | 🟡 | Bearer | 11 araç, ölçüm 2026-09-07: reader + **`download_document(id=DOI\|32-hex MD5)`**. (**Tier 6 SON ÇARE**, lisanslı band'dan sonra; yalnız analiz) | operatör self-host | O |
 | Unpaywall (pubmed-epmc üzerinden) | 🟢 | none | pubmed_fetch_fulltext (EuropePMC + Unpaywall yasal-OA çözümü; Tier 7 son legal-OA süpürmesi) | topluluk (cyanheads) | K |
 
 **RAG substratı (retrieve-don't-dump, çekirdeğin parçası — enrichment-kapılı DEĞİL):**
@@ -155,7 +155,7 @@ bağlı olduğu modülü/rung'u bozar.
 |---|---|---|
 | **TİTCK** (kapılı) | `https://titck.cureonics.com/mcp` | **Kanonik** Türkiye ilaç indeksi — 66 araç, v0.5.8. ⚠️ Önbellek Worker'ı 2026-07-31'de emekli edildi → bu bir "yedek basamak" DEĞİL, bundle'daki TEK TİTCK; doğrudan çağrılır |
 | YÖK Akademik | `https://yok-akademik.cureonics.com/mcp` | Türk KOL kimliklendirme (§8 TR katmanı; YÖK Tez'den FARKLI) |
-| **Annas Reader** | `https://annas.cureonics.com/mcp` | **Tam-metin geri-çağırma** (HP self-host Docker, Bearer/OAuth-gated; 9 araç, 2026-08-14) — **full-text cascade Tier 6 (SON ÇARE)**, lisanslı band (Marmara EBSCO + OpenAthens + Wiley) getiremeyince. Reader akışı bounded metin verir; `download_document(id=DOI|MD5)` orijinal PDF/EPUB ve desteklenen diğer formatları kısa-ömürlü opaque resource link + checksum/provenance ile teslim eder. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
+| **Annas Reader** | `https://annas.cureonics.com/mcp` | **Tam-metin geri-çağırma** (HP self-host Docker, Bearer/OAuth-gated; 11 araç, 2026-09-07) — **full-text cascade Tier 6 (SON ÇARE)**, lisanslı band (Marmara EBSCO + OpenAthens + Wiley) getiremeyince. Reader akışı bounded metin verir; `download_document(id=DOI|MD5)` orijinal PDF/EPUB ve desteklenen diğer formatları kısa-ömürlü opaque resource link + checksum/provenance ile teslim eder. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. **Telif:** yalnız analiz, toplu birebir çoğaltma YOK. |
 
 ### 1.5 Genişletme Katmanı (mcp-scout canlı-doğrulanmış · Tier-K · §6)
 **Karışık katman — dikkat:** `openalex` / `pubmed-epmc` / `semantic-scholar` **bibliyografik

@@ -12,7 +12,7 @@
 > · CureoPrivate `plugins/evidentia`
 > · **ChatGPT custom-connector uyumu** (orijinal **4 CF self-host Worker**, 2026-06-30 canlı doğrulandı; bkz. Kurulum yolu **C**)
 > · **openathens (HP self-host) full-text Tier-3**: 11 araç; metin + sağlayıcı-nötr orijinal PDF
-> (`oa_fetch_fulltext`/`oa_fetch_pdf`). **annas-reader Tier-5 son çare**: 9 araç; okuma +
+> (`oa_fetch_fulltext`/`oa_fetch_pdf`). **annas-reader Tier-6 son çare**: 11 araç; okuma +
 > PDF/EPUB ve desteklenen diğer formatlar (`download_document`).
 >
 > 🔒 **GÜVENLİK.** Bu kamuya açık dosya hiçbir canlı MCP anahtar değeri içermez. Anahtarların tek
@@ -43,7 +43,7 @@
 | **openalex** | `openalex.cureonics.com/mcp` | ✅ | `OPENALEX_MCP_API_KEY` | CureoHub HP self-host `:8324` (Worker undeploy 2026-08-17) |
 | **pubmed-epmc** | `pubmed.cureonics.com/mcp` | ✅ | `PUBMED_MCP_API_KEY` | CureoHub HP self-host `:8325` (Worker undeploy 2026-08-17) |
 | **semantic-scholar** | `semanticscholar.cureonics.com/mcp` | ✅ | `SEMANTICSCHOLAR_MCP_API_KEY` | CureoHub HP self-host `:8323` (Worker undeploy 2026-08-17) |
-| **annas-reader** | `annas.cureonics.com/mcp` | ✅ | `ANNAS_MCP_API_KEY` | Operatör-bağlı HP self-host (Docker); static-Bearer veya OAuth. 9 araç: Tier-5 son çare okuma + `download_document(id=<DOI\|MD5>)`; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque link + SHA-256, yalnız analiz. |
+| **annas-reader** | `annas.cureonics.com/mcp` | ✅ | `ANNAS_MCP_API_KEY` | Operatör-bağlı HP self-host (Docker); static-Bearer veya OAuth. 11 araç: Tier-6 son çare okuma + `download_document(id=<DOI\|MD5>)`; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque link + SHA-256, yalnız analiz. |
 | **yok-akademik** | `yok-akademik.cureonics.com/mcp` | ✅ | `YOK_AKADEMIK_MCP_API_KEY` | Operatör-bağlı HP self-host; OAuth 2.1 + Bearer |
 | **openathens** (self-host) | `openathens.cureonics.com/mcp` | ✅ | `OPENATHENS_MCP_API_KEY` | Operatör-bağlı HP self-host (systemd); OAuth 2.1 + Bearer. 11 araç: tam-metin **Tier 3 LİSANSLI**; `oa_fetch_fulltext` + sağlayıcı-nötr `oa_fetch_pdf(doi\|url)` (kısa-ömürlü opaque link + PDF doğrulama/SHA-256; 100 MiB tavanı). annas'ın önünde, legal-öncelikli. |
 

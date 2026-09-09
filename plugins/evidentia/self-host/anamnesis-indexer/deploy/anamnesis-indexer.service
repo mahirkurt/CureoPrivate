@@ -1,0 +1,17 @@
+[Unit]
+Description=anamnesis-indexer — Leiden community detection for GraphRAG global search
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=mahirkurt
+# Absolute paths: for a *system* unit systemd's %h resolves to /root, NOT User='s home.
+WorkingDirectory=/home/mahirkurt/anamnesis-indexer
+EnvironmentFile=/home/mahirkurt/anamnesis-indexer/.env
+ExecStart=/home/mahirkurt/anamnesis-indexer/.venv/bin/python -m indexer.main
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+RestrictSUIDSGID=true
+ProtectSystem=full

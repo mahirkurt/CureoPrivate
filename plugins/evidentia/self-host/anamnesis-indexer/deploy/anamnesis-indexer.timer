@@ -1,0 +1,10 @@
+[Unit]
+Description=anamnesis-indexer — gecelik topluluk bölümlemesi (04:30 Europe/Istanbul)
+
+[Timer]
+# Filo penceresinden kaçınır: saglik 04:00, ich 04:20, egitim-kaynak 04:40, yokatlas 04:50.
+OnCalendar=*-*-* 04:30:00 Europe/Istanbul
+Persistent=true
+
+[Install]
+WantedBy=timers.target

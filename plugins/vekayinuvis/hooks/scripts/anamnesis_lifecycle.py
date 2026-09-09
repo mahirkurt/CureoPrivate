@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
-"""vekayinuvis Anamnesis lifecycle — mint exclusive collection, forget own only.
+"""Anamnesis lifecycle — mint exclusive collection, forget own only.
+
+CANONICAL, VENDORED — do not edit the copy inside a plugin. Source:
+`tools/fleetkit/vendor/anamnesis/anamnesis_lifecycle.py`; `tools/fleetkit/vendor.py` copies it
+byte-identically and `check_drift.py` fails CI on divergence. Plugins install as
+one directory, so shared code at the repo root never reaches them; per-plugin
+identity lives in a sibling `anamnesis_config.py`.
+
 
   SessionStart  startup|clear  → forget leftover, mint new
   SessionStart  resume|compact → keep collection (canonical cache across modes)
-  UserPromptSubmit             → `/vekayinuvis` / `:start` remints after forget
+  UserPromptSubmit             → flagship command / `:start` remints after forget
   SessionEnd                   → forget_collection (fallback ledger ids)
 
-Does NOT forget on Stop (coverage/citation checkpoints end a turn, not the run).
+Does NOT forget on Stop (G0/anachronism checkpoints end a turn, not the run).
 Fail-open.
 """
 from __future__ import annotations

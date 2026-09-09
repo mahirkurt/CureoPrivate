@@ -135,7 +135,7 @@ servers:
     auth_env: ANNAS_MCP_API_KEY
     role: >-
       SON-ÇARE kitap+makale tam-metin (Anna's Archive efemer-RAG reader) — lisanslı band
-      (openathens Tier 3) getiremeyince. 9 araç (2026-08-14): book_search/article_search →
+      (openathens Tier 3) getiremeyince. 11 araç (2026-09-07): book_search/article_search →
       get_document_info → read_document/read_article/search_in_document (BM25) ve orijinal
       dosya için `download_document(id=<DOI|32-hex MD5>)`. PDF/EPUB/MOBI/AZW/DjVu/FB2/
       CBZ/CBR/XPS kısa-ömürlü opaque resource_link + SHA-256/format metadata olarak gelir.

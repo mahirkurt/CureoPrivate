@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """PostToolUse ledger — record ingest_document ids, drop forget ids.
 
+CANONICAL, VENDORED — do not edit the copy inside a plugin. Source:
+`tools/fleetkit/vendor/anamnesis/anamnesis_ledger.py`; `tools/fleetkit/vendor.py` copies it
+byte-identically and `check_drift.py` fails CI on divergence. Plugins install as
+one directory, so shared code at the repo root never reaches them; per-plugin
+identity lives in a sibling `anamnesis_config.py`.
+
+
 Matcher: mcp__.*anamnesis.*  Advisory additionalContext on ingest. Fail-open.
 """
 from __future__ import annotations
@@ -18,6 +25,7 @@ from anamnesis_run import (  # noqa: E402
     is_anamnesis_tool,
     load_ledger,
     record_doc_id,
+    save_ledger,
     tool_base,
 )
 
@@ -39,7 +47,6 @@ def main() -> int:
         led["doc_ids"] = []
         led["pending_forget"] = []
         led["status"] = "empty"
-        from anamnesis_run import save_ledger
         save_ledger(led)
         return 0
     if not doc or not has_run_prefix(doc, led["run_id"]):

@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
-"""vekayinuvis PreToolUse — DENY unscoped Anamnesis hybrid/graph/search.
+"""PreToolUse — DENY unscoped Anamnesis hybrid/graph/search.
 
-Matcher: mcp__.*  Fail-open. Disable: <project>/.claude/vekayinuvis-anamnesis.off
+CANONICAL, VENDORED — do not edit the copy inside a plugin. Source:
+`tools/fleetkit/vendor/anamnesis/anamnesis_guard.py`; `tools/fleetkit/vendor.py` copies it
+byte-identically and `check_drift.py` fails CI on divergence. Plugins install as
+one directory, so shared code at the repo root never reaches them; per-plugin
+identity lives in a sibling `anamnesis_config.py`.
+
+
+Matcher: mcp__.*  Fail-open. Disable: <project>/.claude/<GUARD_OFF>
 """
 from __future__ import annotations
 
@@ -11,6 +18,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from anamnesis_config import PLUGIN_LABEL  # noqa: E402
 from anamnesis_run import (  # noqa: E402
     GUARD_OFF,
     deny_reason,
@@ -26,7 +34,7 @@ def deny(reason: str) -> None:
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": "[vekayinuvis anamnesis] " + reason,
+            "permissionDecisionReason": f"[{PLUGIN_LABEL} anamnesis] " + reason,
         }
     }))
     sys.exit(0)

@@ -27,14 +27,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
-  ingestDocument, semanticSearch, corpusStats, forgetDocument, forgetCollection, listDocs,
-  SYNTHESIZE_GUIDANCE, type RagEnv, type RetrievedChunk,
+  ingestDocument, hybridRetrieve, corpusStats, forgetDocument, forgetCollection, listDocs,
+  MAX_DOC_ID_BYTES, SYNTHESIZE_GUIDANCE, type RagEnv,
 } from "./rag.js";
 import { upsertTriples, neighbors, subgraph, edgesByDocs, type GraphEnv, type Triple, type GraphEdge } from "./graph.js";
 import { CollectionRequiredError, InvalidCollectionError, requireCollection } from "./collection.js";
+import { exportGraph, upsertCommunities, summarizeCommunity, globalQuery, type CommunityEnv } from "./community.js";
 import pkg from "../package.json";
 
-export type AnamEnv = RagEnv & GraphEnv;
+export type AnamEnv = RagEnv & GraphEnv & CommunityEnv;
 
 const SUBSTRATE_NOTE =
   "anamnesis substrate: this is a context-window-bounded retrieval slice, not the full corpus. " +
@@ -44,6 +45,17 @@ const SUBSTRATE_NOTE =
   "collection = {plugin}:{run|sess|lib}:{id}; Evidentia scratch = evidentia:run:<12hex>. " +
   "Unscoped semantic_search (no collection and no doc_id/doc_ids) can hit _legacy + all tenants " +
   "and is kept only for compat — clients MUST scope.";
+
+const DEGRADED_NOTE =
+  "DEGRADED: the embedding arm was unavailable, so these hits come from FTS5/BM25 lexical " +
+  "matching alone. Recall for paraphrased or cross-language questions is materially lower than " +
+  "a healthy hybrid run — say so rather than treating a thin result as an absence of evidence.";
+
+const TRUNCATION_NOTE =
+  "PARTIAL INGEST: the window cap stopped before the end of this document. Everything after " +
+  "`chars_indexed` is NOT searchable. Call ingest_document again with offset=<next_offset> " +
+  "(use a part-suffixed doc_id, e.g. '<doc_id>::part2') until next_offset is null. Until then, " +
+  "a query that finds nothing is NOT evidence of absence.";
 
 const ok = (obj: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(obj, null, 2) }] });
 const err = (msg: string) => ({ isError: true, content: [{ type: "text" as const, text: msg }] });
@@ -74,7 +86,7 @@ export async function runHybridQuery(env: AnamEnv, a: HybridQueryArgs): Promise<
   const perChunk = a.per_chunk_chars ?? 1100;
   const maxEdges = a.max_edges ?? 40;
 
-  const chunks: RetrievedChunk[] = await semanticSearch(env, {
+  const { chunks, degraded } = await hybridRetrieve(env, {
     query: a.query, queries: a.queries, k, collection,
     doc_id: a.doc_id, doc_ids: a.doc_ids,
   });
@@ -109,7 +121,13 @@ export async function runHybridQuery(env: AnamEnv, a: HybridQueryArgs): Promise<
   return {
     query: a.query,
     collection,
-    retrieval: { pipeline: "vector∥bm25→rrf→rerank", k, chunks: bundleChunks.length, graph_edges: graph.length, docs: docIds },
+    retrieval: {
+      pipeline: "vector∥bm25→rrf→rerank", k, chunks: bundleChunks.length,
+      graph_edges: graph.length, docs: docIds,
+      // Non-null ⇒ an arm was lost and this bundle is thinner than the pipeline name implies.
+      degraded,
+      ...(degraded ? { degraded_note: DEGRADED_NOTE } : {}),
+    },
     chunks: bundleChunks,
     graph,
     approx_token_budget: approxTokens,
@@ -126,7 +144,11 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
       "New clients MUST pass collection={plugin}:{run|sess|lib}:{id} (Evidentia scratch: " +
       "evidentia:run:<12hex>). Missing collection stores `_legacy` (compat). Re-ingest forgets " +
       "that doc_id first so stale tail chunks cannot survive a shorter body. Optional ttl_hours " +
-      "on scratch (run/sess). Returns a MANIFEST — NOT the full text. " + SUBSTRATE_NOTE,
+      "on scratch (run/sess). Returns a MANIFEST — NOT the full text. The manifest reports " +
+      "chars_indexed / chars_total / next_offset: when next_offset is non-null the tail was NOT " +
+      "indexed and you MUST continue from that offset. doc_id is capped at " + MAX_DOC_ID_BYTES +
+      " bytes (chunk ids are '<doc_id>::<idx>' and Vectorize caps a vector id at 64 bytes). " +
+      SUBSTRATE_NOTE,
     {
       text: z.string().describe("Full document text to ingest (article body, book chapter, etc.)"),
       doc_id: z.string().describe("Stable id, e.g. a DOI or 'cochrane-handbook-ch8'. Re-ingest overwrites after forget."),
@@ -136,6 +158,9 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
       ttl_hours: z.number().positive().max(24 * 30).optional().describe("Scratch TTL (run/sess only); ignored for lib"),
       break_threshold: z.number().min(0).max(1).optional().describe("Semantic boundary cosine threshold (default 0.55)"),
       max_tokens: z.number().int().min(64).max(2048).optional().describe("Hard token cap per chunk (default 512)"),
+      offset: z.number().int().min(0).optional().describe(
+        "Resume position: start indexing at this character offset. Pass a prior call's next_offset " +
+        "to continue a document the window cap cut short."),
     },
     async (a) => {
       try {
@@ -147,9 +172,13 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
         const res = await ingestDocument(env, {
           text: a.text, doc_id: a.doc_id, collection: a.collection,
           title: a.title, source: a.source, ttl_hours: a.ttl_hours,
-          chunkOpts,
+          offset: a.offset, chunkOpts,
         });
-        return ok({ ...res, note: SUBSTRATE_NOTE });
+        return ok({
+          ...res,
+          ...(res.truncated ? { action_required: TRUNCATION_NOTE } : {}),
+          note: SUBSTRATE_NOTE,
+        });
       } catch (e: unknown) { return toolErr(e, "ingest_document"); }
     },
   );
@@ -172,15 +201,16 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     },
     async (a) => {
       try {
-        const chunks = await semanticSearch(env, {
+        const { chunks, degraded } = await hybridRetrieve(env, {
           query: a.query, queries: a.queries, k: a.k, collection: a.collection,
           doc_id: a.doc_id, doc_ids: a.doc_ids, rerank: a.rerank,
         });
         return ok({
           query: a.query, collection: a.collection ?? null,
           queries: a.queries?.length ?? 0, k: a.k ?? 8, hits: chunks.length,
-          pipeline: "multiquery→vector∥bm25→rrf→rerank", chunks,
-          guidance: SYNTHESIZE_GUIDANCE, note: SUBSTRATE_NOTE,
+          pipeline: "multiquery→vector∥bm25→rrf→rerank", degraded,
+          ...(degraded ? { degraded_note: DEGRADED_NOTE } : {}),
+          chunks, guidance: SYNTHESIZE_GUIDANCE, note: SUBSTRATE_NOTE,
         });
       } catch (e: unknown) { return toolErr(e, "semantic_search"); }
     },
@@ -298,13 +328,94 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
     "forget_document",
     "Hard-delete one document from the index by doc_id. Removes Vectorize vectors, D1 chunk " +
       "text + manifest, graph edges, and shrinks node provenance. Idempotent. This stays the " +
-      "per-document API — do not use a prefix wipe; for a working set call forget_collection.",
+      "per-document API — do not use a prefix wipe; for a working set call forget_collection. " +
+      "PASS collection: it is the ownership check, and a document that belongs to another " +
+      "collection is refused rather than deleted.",
     {
       doc_id: z.string().describe("Stable id used at ingest. Exact match."),
+      collection: z.string().optional().describe(
+        "Owning working set ({plugin}:{kind}:{id}). When given, a document owned by a different " +
+        "collection is refused. Omitting it is compat-only and will become an error."),
     },
     async (a) => {
-      try { return ok(await forgetDocument(env, a.doc_id)); }
+      try { return ok(await forgetDocument(env, a.doc_id, a.collection)); }
       catch (e: unknown) { return toolErr(e, "forget_document"); }
+    },
+  );
+
+  // ---- graph_export (GraphRAG global search: indexer feed) ----------------
+  server.tool(
+    "graph_export",
+    "Export ONE collection's whole entity-relation graph (nodes + edges) for offline community " +
+      "detection. This is the read side of the GraphRAG global-search loop: the anamnesis-indexer " +
+      "on HP pulls the graph, runs Leiden partitioning (pure graph maths, no language model), and " +
+      "writes the partition back with upsert_communities. Read-only.",
+    {
+      collection: z.string().describe("Working set ({plugin}:{kind}:{id}) — required"),
+    },
+    async (a) => {
+      try { return ok(await exportGraph(env, a.collection)); }
+      catch (e: unknown) { return toolErr(e, "graph_export"); }
+    },
+  );
+
+  // ---- upsert_communities -------------------------------------------------
+  server.tool(
+    "upsert_communities",
+    "Store a community partition for ONE collection (written by the offline Leiden indexer). " +
+      "REPLACES the collection's previous partition — a partition is a whole object, so a " +
+      "re-index that finds fewer clusters must not leave orphans behind. Summaries are carried " +
+      "over for communities whose membership is unchanged. Mutation.",
+    {
+      collection: z.string().describe("Working set ({plugin}:{kind}:{id}) — required"),
+      communities: z.array(z.object({
+        level: z.number().int().min(0).describe("Leiden hierarchy level (0 = finest)"),
+        members: z.array(z.string()).describe("Node ids from graph_export"),
+        edge_count: z.number().int().min(0).optional(),
+      })).describe("The full partition for this collection"),
+    },
+    async (a) => {
+      try { return ok(await upsertCommunities(env, a.collection, a.communities)); }
+      catch (e: unknown) { return toolErr(e, "upsert_communities"); }
+    },
+  );
+
+  // ---- community_summarize ------------------------------------------------
+  server.tool(
+    "community_summarize",
+    "Attach YOUR summary of one community, so later runs reuse it instead of re-reading the " +
+      "members. Summaries are written by the orchestrator (you), never by a model inside this " +
+      "Worker — the same Claude-in-the-loop doctrine as upsert_triples. A community owned by " +
+      "another collection is refused. Mutation.",
+    {
+      collection: z.string().describe("Owning working set — required, and checked"),
+      community_id: z.string().describe("id from global_query"),
+      summary: z.string().describe("What this cluster is about, in a few sentences"),
+    },
+    async (a) => {
+      try { return ok(await summarizeCommunity(env, a.collection, a.community_id, a.summary)); }
+      catch (e: unknown) { return toolErr(e, "community_summarize"); }
+    },
+  );
+
+  // ---- global_query -------------------------------------------------------
+  server.tool(
+    "global_query",
+    "GLOBAL search: 'what does this corpus say about X overall?' — the question hybrid_query " +
+      "cannot answer, because it retrieves passages rather than surveying the whole graph. " +
+      "Ranks the collection's stored communities against your question and returns their " +
+      "summaries, or their member lists when no summary exists yet (summary_status:'absent' — " +
+      "never a fabricated one). Ranking is a LEXICAL routing heuristic, not embedding retrieval. " +
+      "Requires a partition: run the indexer first, else the result is empty. Read-only.",
+    {
+      collection: z.string().describe("Working set ({plugin}:{kind}:{id}) — required"),
+      query: z.string().describe("The corpus-level question"),
+      level: z.number().int().min(0).optional().describe("Restrict to one hierarchy level"),
+      k: z.number().int().min(1).max(25).optional().describe("How many communities (default 5)"),
+    },
+    async (a) => {
+      try { return ok(await globalQuery(env, a)); }
+      catch (e: unknown) { return toolErr(e, "global_query"); }
     },
   );
 

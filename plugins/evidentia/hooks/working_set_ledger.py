@@ -645,9 +645,9 @@ def _match_ledger_key(ws: dict, suffix: str) -> str | None:
         return None
     # Skip collection names mistaken for doc ids.
     if raw.startswith(("evidentia:run:", "evidentia:sess:", "cureolex:",
-                       "marmara:fetch:")) and "/" not in raw and "10." not in raw:
-        # marmara:fetch:<sha> has no bibliographic payload — not a ledger key.
-        if raw.startswith("marmara:fetch:"):
+                       "marmara:run:")) and "/" not in raw and "10." not in raw:
+        # marmara:run:<sha> has no bibliographic payload — not a ledger key.
+        if raw.startswith("marmara:run:"):
             return None
         if raw.startswith(("evidentia:", "cureolex:")):
             return None

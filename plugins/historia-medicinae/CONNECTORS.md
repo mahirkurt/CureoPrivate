@@ -33,7 +33,7 @@
 | Tier | Server | Anahtar | Dosya teslim sözleşmesi |
 |---|---|---|---|
 | 3 | `openathens` | `OPENATHENS_MCP_API_KEY` | 11 araç (2026-08-14): metin/RAG `oa_fetch_fulltext`; provider-nötr orijinal PDF `oa_fetch_pdf(doi\|url)` |
-| 4 (son çare) | `annas-reader` | `ANNAS_MCP_API_KEY` | 9 araç (2026-08-14): bounded reader akışı; orijinal PDF/EPUB/etc. `download_document(id=DOI\|MD5)` |
+| 4 (son çare) | `annas-reader` | `ANNAS_MCP_API_KEY` | 11 araç (2026-09-07): bounded reader akışı; orijinal PDF/EPUB/etc. `download_document(id=DOI\|MD5)` |
 
 Her iki dosya aracı kısa-ömürlü opaque `resource_link` + checksum/provenance döndürür.
 Link derhal tüketilir, kalıcı URL diye saklanmaz; uzun belge `hmrun:<12hex>:<kanonik>`

@@ -43,11 +43,26 @@
   ],
 
   // NON-SECRET vars only. OAUTH_ALLOWED_REDIRECT_ORIGINS empty => default allowlist
-  // (https://claude.ai, https://claude.com). MCP_ALLOW_NO_AUTH MUST stay "0" in production.
+  // (see DEFAULT_ALLOWED_ORIGINS in src/auth.ts). Loopback (127.0.0.1/localhost/::1,
+  // any port — VS Code/Codex CLI/native OAuth) and cursor:// are allowed unconditionally
+  // in code regardless of this var. MCP_ALLOW_NO_AUTH MUST stay "0" in production.
+  //
+  // STRICT_COLLECTION: tenancy enforcement (audit 2026-09-07, findings B1-B3). "1" makes an
+  // unscoped ingest / search / forget / upsert_triples an ERROR instead of a silent `_legacy`
+  // bucket or a cross-tenant scan. Flipped on 2026-09-07 after every known caller was audited
+  // and migrated: the four plugin guards already denied unscoped calls, marmara/openathens pass
+  // collection on every ingest, and doktoratezi/scripts/mcp/anamnesis_client.py — which sent NO
+  // collection at all — was migrated to `doktoratezi:lib:t1dm`.
+  // Roll back by setting "0" and redeploying; the violation logging stays either way.
   "vars": {
     "MCP_ALLOW_NO_AUTH": "0",
-    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com"
+    "STRICT_COLLECTION": "1",
+    "OAUTH_ALLOWED_REDIRECT_ORIGINS": "https://claude.ai,https://claude.com,https://grok.com,https://chatgpt.com,https://oauth-redirect.googleusercontent.com,https://vscode.dev,https://insiders.vscode.dev,https://cursor.com,https://www.cursor.com"
   },
+
+  // Nightly TTL reaper (audit finding A2). Expired scratch used to accumulate forever in D1 AND
+  // in Vectorize, where dead vectors stole candidate-pool slots from live results. 04:10 UTC.
+  "triggers": { "crons": ["10 4 * * *"] },
 
   "observability": { "enabled": true }
 }

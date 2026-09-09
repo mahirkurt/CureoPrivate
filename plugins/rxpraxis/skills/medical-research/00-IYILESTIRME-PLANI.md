@@ -1,5 +1,11 @@
 # medical-research Skill — Kapsamlı İyileştirme Planı (v7.1 → v8.0)
 
+> **⚠️ Tarihsel kayıt.** Bu belgedeki `annas-mcp` satırları (`article_download`,
+> `book_download`) 2026-06-09 tarihli **upstream Go ikilisine** aittir. Cureonics
+> self-host sunucusunda (`annas.cureonics.com`) o araçlar YOKTUR ve rxpraxis
+> `.mcp.json` hiçbir annas sunucusu bağlamaz. Güncel yüzey:
+> `skills/medical-research/references/fulltext-retrieval.md` Tier 3.
+
 **Belge türü:** Mühendislik iyileştirme planı + konnektör entegrasyon mimarisi
 **Hazırlanma tarihi:** 9 Haziran 2026
 **Kapsam:** SKILL.md + 18 referans dosyasının uçtan uca yeniden mimarisi

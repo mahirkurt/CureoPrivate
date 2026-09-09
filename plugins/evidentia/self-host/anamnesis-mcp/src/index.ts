@@ -17,6 +17,9 @@ import { DurableObject } from "cloudflare:workers";
 import { createMcpHandler } from "agents/mcp";
 import { buildServer, type AnamEnv } from "./server.js";
 import { preflight, handleOAuth, requireBearer, type AuthEnv } from "./auth.js";
+import { reapExpired } from "./reaper.js";
+import { embedOne, EMBED_DIMS, EMBED_MODEL } from "./embed.js";
+import pkg from "../package.json";
 
 export interface Env extends AuthEnv, AnamEnv {
   MCP_OBJECT: DurableObjectNamespace;
@@ -46,7 +49,35 @@ function withCors(res: Response): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 }
 
+/** Probe each dependency independently so a failure names itself instead of hiding behind "ok". */
+async function deepHealth(env: Env): Promise<Response> {
+  const check = async (fn: () => Promise<unknown>): Promise<string> => {
+    try { await fn(); return "ok"; } catch (e: unknown) {
+      return `error: ${e instanceof Error ? e.message : String(e)}`.slice(0, 200);
+    }
+  };
+  const d1 = await check(() => env.DB.prepare("SELECT 1 AS ok").first());
+  const vectorize = await check(() => env.VECTORIZE.query(new Array(EMBED_DIMS).fill(0), { topK: 1 }));
+  const ai = await check(() => embedOne(env, "health"));
+  const status = [d1, vectorize, ai].every((v) => v === "ok") ? "ok" : "degraded";
+  return new Response(
+    JSON.stringify({ status, d1, vectorize, ai, version: pkg.version, embed_model: EMBED_MODEL }, null, 2),
+    { status: 200, headers: { "content-type": "application/json" } },
+  );
+}
+
 export default {
+  /**
+   * Nightly garbage collection (audit finding A2). Expired scratch used to accumulate forever:
+   * D1 grew unbounded and, worse, expired vectors kept occupying Vectorize and stealing slots
+   * in the candidate pool, so retrieval recall decayed silently over time.
+   */
+  async scheduled(event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
+    // Use the trigger's own timestamp rather than wall-clock: a delayed or replayed run then
+    // reaps against the time it was scheduled for, which is also what makes it testable.
+    await reapExpired(env, { now: event.scheduledTime });
+  },
+
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     const p = url.pathname;
@@ -60,7 +91,16 @@ export default {
     if (pf) return pf;
 
     if (p === "/health") {
-      return withCors(new Response("ok", { status: 200, headers: { "content-type": "text/plain" } }));
+      // Plain liveness stays public and cheap — uptime probes must not need a credential.
+      if (url.searchParams.get("deep") !== "1") {
+        return withCors(new Response("ok", { status: 200, headers: { "content-type": "text/plain" } }));
+      }
+      // The DEEP probe touches D1, Vectorize and Workers AI, so it is bearer-gated: it costs
+      // real calls and it reports internal topology. Without it a green /health said nothing
+      // about whether retrieval could actually run.
+      const denied = requireBearer(req, env);
+      if (denied) return withCors(denied);
+      return withCors(await deepHealth(env));
     }
 
     if (p.startsWith("/.well-known/oauth") || p.startsWith("/oauth/")) {

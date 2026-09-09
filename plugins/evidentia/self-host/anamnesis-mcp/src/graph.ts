@@ -13,9 +13,9 @@
  */
 
 import type { D1Like } from "./rag.js";
-import { LEGACY_COLLECTION, resolveWriteCollection, requireCollection } from "./collection.js";
+import { CollectionRequiredError, LEGACY_COLLECTION, resolveWriteCollection, requireCollection } from "./collection.js";
 
-export interface GraphEnv { DB: D1Like; }
+export interface GraphEnv { DB: D1Like; STRICT_COLLECTION?: string; }
 
 export interface Triple {
   subject: string;
@@ -67,6 +67,16 @@ export async function upsertTriples(
   env: GraphEnv, triples: Triple[], collectionRaw?: string,
 ): Promise<UpsertResult> {
   const defaultColl = resolveWriteCollection(collectionRaw);
+  if (defaultColl === LEGACY_COLLECTION && !(collectionRaw ?? "").trim()) {
+    // Same transition contract as rag.ts writeScope(): log now, enforce under the flag.
+    if (String(env.STRICT_COLLECTION ?? "0") === "1") throw new CollectionRequiredError("upsert_triples");
+    try {
+      console.log(JSON.stringify({
+        evt: "anamnesis.scope_violation", tool: "upsert_triples",
+        reason: "missing_collection", bucketed_as: LEGACY_COLLECTION,
+      }));
+    } catch { /* never throw */ }
+  }
   const nodeIds = new Set<string>();
   let edgeCount = 0;
   for (const t of triples) {
@@ -77,14 +87,28 @@ export async function upsertTriples(
     nodeIds.add(sId); nodeIds.add(oId);
     const eId = await edgeId(collection, sId, t.predicate, oId);
     const now = Date.now();
+    // `weight` counts DISTINCT supporting documents. It used to be `weight + 1` on every write,
+    // which made it a count of how often the orchestrator repeated itself — and every
+    // `ORDER BY weight DESC` in this module inherited that bias (audit finding A10). Restating a
+    // triple from the SAME document is not corroboration; a second document is. The read-modify-
+    // write mirrors upsertNode, which already merges doc provenance this way.
+    const prior = await env.DB.prepare(`SELECT doc_ids, assert_count FROM edges WHERE id = ?`)
+      .bind(eId).first<{ doc_ids: string | null; assert_count: number | null }>();
+    let edgeDocs: string[] = [];
+    if (prior?.doc_ids) { try { edgeDocs = JSON.parse(prior.doc_ids); } catch { edgeDocs = []; } }
+    if (t.doc_id && !edgeDocs.includes(t.doc_id)) edgeDocs.push(t.doc_id);
+    const assertCount = Number(prior?.assert_count ?? 0) + 1;
+    const weight = Math.max(1, edgeDocs.length);
     await env.DB.prepare(
-      `INSERT INTO edges (id, subject, predicate, object, doc_id, evidence, weight, updated_at, collection)
-       VALUES (?,?,?,?,?,?,1,?,?)
-       ON CONFLICT(id) DO UPDATE SET weight = edges.weight + 1,
+      `INSERT INTO edges (id, subject, predicate, object, doc_id, evidence, weight, doc_ids, assert_count, updated_at, collection)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)
+       ON CONFLICT(id) DO UPDATE SET weight = excluded.weight,
          doc_id = COALESCE(excluded.doc_id, edges.doc_id),
          evidence = COALESCE(excluded.evidence, edges.evidence),
+         doc_ids = excluded.doc_ids, assert_count = excluded.assert_count,
          updated_at = excluded.updated_at, collection = excluded.collection`,
-    ).bind(eId, sId, t.predicate, oId, t.doc_id ?? null, t.evidence ?? null, now, collection).run();
+    ).bind(eId, sId, t.predicate, oId, t.doc_id ?? null, t.evidence ?? null,
+           weight, JSON.stringify(edgeDocs), assertCount, now, collection).run();
     edgeCount++;
   }
   return { nodes: nodeIds.size, edges: edgeCount, collection: defaultColl };
@@ -92,24 +116,41 @@ export async function upsertTriples(
 
 export interface GraphEdge {
   subject: string; predicate: string; object: string;
-  doc_id?: string | null; evidence?: string | null; weight: number;
+  doc_id?: string | null; evidence?: string | null;
+  /** Number of DISTINCT documents supporting this triple. Ranking key for every graph read. */
+  weight: number;
+  /** Every document that asserted this triple. */
+  doc_ids?: string[];
+  /** How many times the triple was written. Repetition is transparency, never evidence. */
+  assert_count?: number;
   collection?: string | null;
+}
+
+const EDGE_COLUMNS =
+  "subject, predicate, object, doc_id, evidence, weight, doc_ids, assert_count, collection";
+
+function mapEdgeRow(r: Record<string, unknown>, collection: string): GraphEdge {
+  let docIds: string[] = [];
+  try { docIds = JSON.parse(String(r["doc_ids"] ?? "[]")); } catch { docIds = []; }
+  return {
+    subject: String(r["subject"]), predicate: String(r["predicate"]), object: String(r["object"]),
+    doc_id: (r["doc_id"] as string) ?? null, evidence: (r["evidence"] as string) ?? null,
+    weight: Number(r["weight"] ?? 1),
+    doc_ids: docIds,
+    assert_count: Number(r["assert_count"] ?? 1),
+    collection: (r["collection"] as string) ?? collection,
+  };
 }
 
 async function edgesTouching(env: GraphEnv, ids: string[], collection: string): Promise<GraphEdge[]> {
   if (!ids.length) return [];
   const ph = ids.map(() => "?").join(",");
   const rows = await env.DB.prepare(
-    `SELECT subject, predicate, object, doc_id, evidence, weight, collection FROM edges
+    `SELECT ${EDGE_COLUMNS} FROM edges
      WHERE collection = ? AND (subject IN (${ph}) OR object IN (${ph}))
      ORDER BY weight DESC LIMIT 500`,
   ).bind(collection, ...ids, ...ids).all();
-  return ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => ({
-    subject: String(r["subject"]), predicate: String(r["predicate"]), object: String(r["object"]),
-    doc_id: (r["doc_id"] as string) ?? null, evidence: (r["evidence"] as string) ?? null,
-    weight: Number(r["weight"] ?? 1),
-    collection: (r["collection"] as string) ?? collection,
-  }));
+  return ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => mapEdgeRow(r, collection));
 }
 
 /** N-hop neighbour expansion from one entity (BFS over the undirected edge set). Collection-scoped. */
@@ -147,16 +188,29 @@ export async function neighbors(
   return { center: start, found: true, collection, edges, entities: [...visited] };
 }
 
-/** Induced subgraph: edges whose BOTH endpoints fall in the given entity set. Collection-scoped. */
+/**
+ * Induced subgraph: edges whose BOTH endpoints fall in the given entity set. Collection-scoped.
+ *
+ * The induced predicate lives in SQL. It used to reuse edgesTouching(), which pre-cuts with
+ * `ORDER BY weight DESC LIMIT 500`, and only then filtered for "both endpoints in the set" — so
+ * once more than 500 edges touched the seed entities, non-induced neighbours crowded the real
+ * induced edges out of the slice and the tool returned an EMPTY subgraph while the edges plainly
+ * existed. A silent false negative, and exactly the shape that scales into `lib` corpora
+ * (audit finding A9).
+ */
 export async function subgraph(
   env: GraphEnv, entities: string[], limit = 200, collectionRaw?: string,
 ): Promise<{ collection: string; edges: GraphEdge[]; entities: string[] }> {
   const collection = requireCollection(collectionRaw, "subgraph");
   const keys = entities.map((e) => nodeKey(collection, e));
   if (keys.length < 1) return { collection, edges: [], entities: [] };
-  const es = await edgesTouching(env, keys, collection);
-  const keySet = new Set(keys);
-  const edges = es.filter((e) => keySet.has(e.subject) && keySet.has(e.object)).slice(0, limit);
+  const ph = keys.map(() => "?").join(",");
+  const rows = await env.DB.prepare(
+    `SELECT ${EDGE_COLUMNS} FROM edges
+      WHERE collection = ? AND subject IN (${ph}) AND object IN (${ph})
+      ORDER BY weight DESC LIMIT ?`,
+  ).bind(collection, ...keys, ...keys, limit).all();
+  const edges = ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => mapEdgeRow(r, collection));
   return { collection, edges, entities: keys };
 }
 
@@ -168,15 +222,10 @@ export async function edgesByDocs(
   if (!ids.length) return [];
   const ph = ids.map(() => "?").join(",");
   const rows = await env.DB.prepare(
-    `SELECT subject, predicate, object, doc_id, evidence, weight, collection FROM edges
+    `SELECT ${EDGE_COLUMNS} FROM edges
      WHERE collection = ? AND doc_id IN (${ph}) ORDER BY weight DESC LIMIT ?`,
   ).bind(collection, ...ids, limit).all();
-  return ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => ({
-    subject: String(r["subject"]), predicate: String(r["predicate"]), object: String(r["object"]),
-    doc_id: (r["doc_id"] as string) ?? null, evidence: (r["evidence"] as string) ?? null,
-    weight: Number(r["weight"] ?? 1),
-    collection: (r["collection"] as string) ?? collection,
-  }));
+  return ((rows.results ?? []) as Array<Record<string, unknown>>).map((r) => mapEdgeRow(r, collection));
 }
 
 export const __testing = { nodeKey, edgeId, LEGACY_COLLECTION };

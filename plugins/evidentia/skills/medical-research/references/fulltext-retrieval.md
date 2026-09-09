@@ -82,7 +82,7 @@ marmara-ebsco: ebsco_get(record_id="…", prefer="pdf",
   `manual_required` / `session_invalid` / `landing_incomplete` → record `SKIP-REASON` with the
   envelope reason, then Tier 4. Do **not** invent a `record_id`.
 - **Anamnesis:** pass `collection` + `doc_id` into `ebsco_get` when available; omitted collection
-  mints `marmara:fetch:<sha1-8>`. Prefer Evidentia exclusive-run identity so P4/P6 hybrid stays
+  mints `marmara:run:<sha1-8>`. Prefer Evidentia exclusive-run identity so P4/P6 hybrid stays
   scoped. Raw verbatim is never dumped to context.
 - **Pacing:** human-jitter delay is server-side; keep per-run volume modest (same spirit as
   OpenAthens caps — protect the institutional account).
@@ -240,8 +240,8 @@ license note + the anamnesis `doc_id::idx` provenance where ingested.
 6. **No mevzuat in this cascade** — legislation is out of Evidentia scope (hand off to cureolex).
 7. **`collection` / `doc_id` pass-through matrix (P1 verified):**
    - **OpenAthens `oa_fetch_fulltext`** — **PASS** (`collection` + `doc_id` optional; omit →
-     mint `openathens:fetch:<sha1-8>`). Evidentia MUST pass `evidentia:run:<id>` + `evrun:…`.
-   - **Marmara EBSCO `ebsco_get`** — **PASS** (same contract; omit → `marmara:fetch:<sha1-8>`).
+     mint `openathens:run:<sha1-8>`). Evidentia MUST pass `evidentia:run:<id>` + `evrun:…`.
+   - **Marmara EBSCO `ebsco_get`** — **PASS** (same contract; omit → `marmara:run:<sha1-8>`).
    - **annas `read_article` / `download_document` / `read_document`** — **GAP**: schemas accept
      only `doi`/`id`/`md5` (+ page bounds). No `collection`/`doc_id`. After ephemeral read,
      **MUST** `anamnesis.ingest_document(collection=evidentia:run:<id>, doc_id=evrun:<id>:<DOI>)`

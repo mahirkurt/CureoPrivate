@@ -68,8 +68,8 @@ SYNTH_HYBRID_HINT = (
 COLLECTION_HINT = (
     "[evidentia] fulltext collection pass-through (P1): '{base}' çağrısında "
     "`collection=evidentia:run:<run_id>` + `doc_id=evrun:<run_id>:<DOI>` geçir "
-    "(OpenAthens/EBSCO Hub auto-ingest). Eksikse mint `openathens:fetch:` / "
-    "`marmara:fetch:` olur → koşu scratch'ine düşmez. "
+    "(OpenAthens/EBSCO Hub auto-ingest). Eksikse mint `openathens:run:` / "
+    "`marmara:run:` olur → koşu scratch'ine düşmez. "
     "Gap: annas `read_article`/`download_document` collection KABUL ETMEZ — "
     "sonra anamnesis.ingest_document(dual-write) zorunlu."
 )

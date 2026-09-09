@@ -170,8 +170,15 @@ describe("collection scope helpers", () => {
   it("builds a Vectorize equality filter for collection and a single doc_id", () => {
     expect(vectorFilter("evidentia:run:aabbccddeeff", ["doc-1"]))
       .toEqual({ collection: "evidentia:run:aabbccddeeff", doc_id: "doc-1" });
-    expect(vectorFilter("evidentia:run:aabbccddeeff", ["a", "b"]))
-      .toEqual({ collection: "evidentia:run:aabbccddeeff" });
     expect(vectorFilter(undefined, undefined)).toBeUndefined();
+  });
+
+  it("narrows the vector arm with $in when several doc_ids are requested", () => {
+    // This case previously asserted `{ collection }` alone — it pinned audit finding A5 as if
+    // it were the spec. Dropping the doc_ids made Vectorize return an unfiltered top-K over the
+    // whole collection, which D1 then discarded, collapsing recall on the very narrowing path
+    // the cureolex/evidentia contracts tell callers to use.
+    expect(vectorFilter("evidentia:run:aabbccddeeff", ["a", "b"]))
+      .toEqual({ collection: "evidentia:run:aabbccddeeff", doc_id: { $in: ["a", "b"] } });
   });
 });

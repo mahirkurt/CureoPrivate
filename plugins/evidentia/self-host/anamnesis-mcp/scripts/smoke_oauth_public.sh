@@ -18,6 +18,17 @@ echo "smoke: $BASE"
 code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/health" || true)
 [ "$code" = "200" ] && pass "/health 200" || fail "/health expected 200 got $code"
 
+# 1b) deep health — must stay bearer-gated, and must name a failing dependency rather than
+# reporting a blanket ok. A green liveness probe says nothing about whether retrieval can run.
+code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/health?deep=1" || true)
+[ "$code" = "401" ] && pass "/health?deep=1 gated (401)" || fail "/health?deep=1 expected 401 got $code"
+if [ -n "${MCP_API_KEY:-}" ]; then
+  deep=$(curl -s -H "Authorization: Bearer $MCP_API_KEY" "$BASE/health?deep=1")
+  echo "$deep" | grep -q '"status": *"ok"' \
+    && pass "/health?deep=1 all dependencies ok" \
+    || fail "/health?deep=1 degraded: $deep"
+fi
+
 # 2) OAuth AS metadata advertises S256 only
 meta=$(curl -s "$BASE/.well-known/oauth-authorization-server")
 echo "$meta" | grep -q '"S256"' && pass "AS metadata advertises S256" || fail "S256 not advertised"

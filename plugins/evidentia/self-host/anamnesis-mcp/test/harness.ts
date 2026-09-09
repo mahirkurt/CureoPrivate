@@ -40,6 +40,18 @@ function cosine(a: number[], b: number[]): number {
   return d;
 }
 
+/** Mirrors Vectorize metadata-filter semantics: equality, or `{ $in: [...] }` set membership.
+ *  The Worker narrows multi-doc queries with `$in`, so the mock must honour it — otherwise the
+ *  harness silently models a filter that matches nothing. */
+function matchFilter(clause: unknown, value: unknown): boolean {
+  if (clause == null) return true;
+  if (typeof clause === "object" && clause !== null && "$in" in (clause as Record<string, unknown>)) {
+    const set = (clause as { $in?: unknown }).$in;
+    return Array.isArray(set) && set.includes(value);
+  }
+  return value === clause;
+}
+
 export class MockVectorize implements VectorizeBinding {
   store = new Map<string, { values: number[]; metadata: Record<string, unknown> }>();
 
@@ -48,7 +60,18 @@ export class MockVectorize implements VectorizeBinding {
     return { count: vectors.length };
   }
 
+  /** Real Vectorize caps a delete payload at 100 ids (VECTOR_DELETE_ERROR 40007). The mock
+   *  enforces it too — otherwise the harness silently models an API that does not exist, which
+   *  is exactly how the 1000-id batching shipped and then failed live on 2026-09-07. */
+  static readonly MAX_DELETE_IDS = 100;
+
   async deleteByIds(ids: string[]): Promise<unknown> {
+    if (ids.length > MockVectorize.MAX_DELETE_IDS) {
+      throw new Error(
+        `VECTOR_DELETE_ERROR (code = 40007): too many ids in payload; max id count is ` +
+        `${MockVectorize.MAX_DELETE_IDS}, got ${ids.length}`,
+      );
+    }
     for (const id of ids) this.store.delete(id);
     return { count: ids.length };
   }
@@ -58,8 +81,8 @@ export class MockVectorize implements VectorizeBinding {
     const topK = Number(opts["topK"] ?? 10);
     const scored: Array<{ id: string; score: number; metadata: Record<string, unknown> }> = [];
     for (const [id, row] of this.store) {
-      if (filter["collection"] != null && row.metadata["collection"] !== filter["collection"]) continue;
-      if (filter["doc_id"] != null && row.metadata["doc_id"] !== filter["doc_id"]) continue;
+      if (!matchFilter(filter["collection"], row.metadata["collection"])) continue;
+      if (!matchFilter(filter["doc_id"], row.metadata["doc_id"])) continue;
       scored.push({ id, score: cosine(vector, row.values), metadata: row.metadata });
     }
     scored.sort((a, b) => b.score - a.score);

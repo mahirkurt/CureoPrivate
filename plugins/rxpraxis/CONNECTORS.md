@@ -47,7 +47,7 @@ Hücre: ● birincil/zorunlu · ○ koşullu/opsiyonel · — kullanılmaz.
 | Connector | Endpoint / Kaynak | MR | PI | PP | TS | RX | Notlar |
 |---|---|---|---|---|---|---|---|
 | **ThoughtSpot Spotter MCP** | `agent.thoughtspot.app/mcp` | — | ● | — | ● | ● | Oturum-tabanlı beşli: `check_connectivity` · `create_analysis_session` · `send_session_message` · `get_session_updates` · `create_dashboard`. **Ham hücre döndürmez** (§4). |
-| **MIDAS REST (`midas-mcp`)** | `midas-mcp.cureonics.workers.dev/mcp` (Cloudflare Worker → ThoughtSpot REST `searchdata`) | — | ○ | — | ● | ● | Ham sayısal değer yolu (Path B). `searchdata` zarfı: `contents[0].column_names` + `data_rows`. Auth → GUID çözümü → veri çekimi. **G9 no-fabrication.** |
+| **MIDAS REST (`midas-mcp`)** — ~~EMEKLİ 2026-09-05~~ | Worker `wrangler delete` ile kaldırıldı (ölçüm 2026-09-09: `/mcp` ve `/health` **404**); üçüncü `TS_SESSION_COOKIE` süre dolumundan sonra sürdürülemez bulundu. Paketten ÇIKARILDI (v1.2.4) | — | ○ | — | ● | ● | Ham sayısal değer yolu (Path B) artık **doğrudan ThoughtSpot REST `searchdata`** üzerinden yürür — `contents[0].column_names` + `data_rows` sözleşmesi ve **G9 no-fabrication** aynen geçerlidir. Yerine geçen bağlantı: MIDAS Spotter (aşağıdaki satır). |
 | **MIDAS Spotter (agent)** | `agent.thoughtspot.app/mcp` | — | — | — | ● | ● | NLG + yapı doğrulaması; rakam için REST zorunlu. |
 
 > **MIDAS küp envanteri:** MIDAS Monthly · MIDAS Disease Monthly · MIDAS Quarterly.

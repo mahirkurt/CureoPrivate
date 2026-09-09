@@ -1,6 +1,6 @@
 {
   "name": "rxpraxis",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) ile medical-research, pharmaintel, pharmapatent ve thoughtspot-roche kaynak-tipi skill'lerini tek bir paylaşılan connector sözleşmesi ve kanonik-artefakt önbelleği altında birleştirir. Retail/topluluk-eczanesi kanalı, oral + topikal küçük molekül, tüm terapötik alanlar. Hospital/IV kapsam dışı.",
   "author": {
     "name": "Cureonics",
@@ -14,7 +14,6 @@
     "biosimilar-feasibility",
     "turkiye-urun-gelistirme",
     "rxopportunityscanner",
-    "iqvia-midas",
     "titck",
     "patent-fto",
     "market-access",
@@ -56,13 +55,6 @@
       "url": "https://mevzuat.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
-      }
-    },
-    "midas": {
-      "type": "http",
-      "url": "https://midas-mcp.cureonics.workers.dev/mcp",
-      "headers": {
-        "Authorization": "Bearer ${MIDAS_MCP_SHARED_SECRET}"
       }
     },
     "pubmed": {

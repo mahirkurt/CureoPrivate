@@ -15,13 +15,6 @@
         "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
       }
     },
-    "midas": {
-      "type": "http",
-      "url": "https://midas-mcp.cureonics.workers.dev/mcp",
-      "headers": {
-        "Authorization": "Bearer ${MIDAS_MCP_SHARED_SECRET}"
-      }
-    },
     "pubmed": {
       "type": "http",
       "url": "https://pubmed.mcp.claude.com/mcp"

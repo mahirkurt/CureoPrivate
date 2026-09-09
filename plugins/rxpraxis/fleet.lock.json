@@ -1,10 +1,10 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "rxpraxis",
-  "plugin_version": "1.2.3",
+  "plugin_version": "1.2.4",
   "counts": {
-    "servers": 6,
-    "gated": 3,
+    "servers": 5,
+    "gated": 2,
     "public": 3,
     "companions": 0,
     "delegations": 0
@@ -19,11 +19,6 @@
       "name": "mevzuat",
       "url": "https://mevzuat.cureonics.com/mcp",
       "auth_env": "MEVZUAT_MCP_API_KEY"
-    },
-    {
-      "name": "midas",
-      "url": "https://midas-mcp.cureonics.workers.dev/mcp",
-      "auth_env": "MIDAS_MCP_SHARED_SECRET"
     },
     {
       "name": "pubmed",

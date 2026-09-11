@@ -197,7 +197,7 @@ en umut vericisi için yine `get_belge` ile künye çekilir (hash zinciri korunu
   ```text
   Oturum düştü (session_required / Runtime Error 500 ≈ expired oturum → BEKLEME değil RE-LOGIN):
   1. HP: sudo systemctl restart devarsiv-chrome
-  2. HP: x11vnc -display :99 -rfbauth ~/devarsiv/vncpass -rfbport 5900 -localhost -forever -bg
+  2. (İsteğe bağlı) `sudo systemctl restart devarsiv-chrome` — yalnız Chrome şişmiş/form render etmiyorsa; restart oturumu düşürür (zaten ölüyse bedelsiz). Kalıcı devarsiv-x11vnc/noVNC unit'leri zaten aktif (vncpass YOK).
          (kalıcı devarsiv-x11vnc.service zaten aktifse bu adım atlanır)
   3. noVNC: https://devarsiv-vnc.cureonics.com/vnc.html (Cloudflare Access, @cureonics.com OTP)
   4. Tarayıcıda reCAPTCHA çöz + T.C. Kimlik ile giriş (Doppler DEVLET_ARSIVLERI_*)
@@ -409,3 +409,30 @@ yalnız OCR işi yeniden kuyruklanır).
 **Değişmez (no-fabrication, dört akışın tamamı için):** Çok-sayfa TAM erişim **yalnız
 satın-alınmış** belgelerde; satın-alınmamışta katalog 2..N sayfayı sunmaz → o sayfalar
 **uydurulmaz**, yalnız 1 önizleme + §8.1 satın-alma akışına yönlendirme yapılır.
+
+### 2026-09-11 — devarsiv v0.2.0 sözleşme ekleri (ADDITIVE; eski alanlar değişmedi)
+
+- **Oturum telemetrisi:** `devarsiv_session_status.session` artık `state` (`alive|dead|unknown`),
+  `kind` (`session_dead|upstream_outage|unknown` — kesinti ile oturum ölümünü ayırır),
+  `last_alive_at`, `dead_for_s`, `death_count`, `novnc_url`, `runbook[]` (kanonik, sunucudan) taşır.
+  `session_required`/`upstream_error` zarfları da aynı alanları taşır → hook `runbook`'u sunucudan basar.
+  Sunucu ölümü kendi tespit eder (süreç-içi probe, 8 dk; HTTP 500 = oturum yok) ve ntfy push atar.
+- **`filter_unapplied`** (`devarsiv_detailed_search`): filtre uygulanamadı → arama YÜRÜTÜLMEDİ
+  (`field`, `control_id`, `requested_value`, `reason ∈ control_missing|option_missing:N|readback_mismatch`).
+  Bu bir SONUÇ değildir; `option_missing` = o değer bu arşivin listesinde yok (ör. `SH.`) →
+  `devarsiv_list_fon_categories`. deep_search kovası bu durumda `filter_unapplied` (terminal), `complete:false`.
+  Başarılı detaylı aramada `filters_applied[]` (`verified`, `verified_after_submit`).
+- **`membership_expired`**: üyelik bitimi (1 yıl + uzatma) ≠ oturum ölümü; `needs_relogin:false` →
+  DAB/e-Devlet yenileme.
+- **`devarsiv_relogin_prepare()`** `[_RW]`: oturum ölüyken tarayıcıyı e-Devlet kapısına götürür,
+  kimlik formunda DURUR (sır yok, otomatik giriş yok); reCAPTCHA kota hatasında yedek yol.
+- **`devarsiv_fon_info(code|query)`** `[_RO]`: Osmanlı Arşivi Rehberi 2017 EK III (941 fon kodu) —
+  kod/ön-ek/ad; **`devarsiv_yer_adi(query)`** `[_RO]`: resmî Yer Adları Sözlüğü (66.466 madde) —
+  Osmanlıcası, nam-ı diğer, kaza/liva/vilayet, `search_variants[]` (arama adayları). Her ikisi
+  ≤50 satır, `source` + `license_note` (atıf zorunlu, RG 31616 Md. 12/1).
+- **`semantic_search.fon_hints[]`** (olası üst-fonlar); `deep_search` fon sırasını buna göre öne
+  alır (`fon_bounds.order_source`). Gazetteer genişletme katmanı **varsayılan kapalı** (ablasyon önce).
+- **Sepet:** `cart.cost_estimate_try` (0,50 TL/görüntü) + `cost_estimate_matches_total`; BAĞLAYICI
+  tutar yine `toplam_tutar`. **`usage_terms`** arşiv/OCR çıktılarında (Md. 11/2 ticari yasak, 12/1 atıf).
+- **Store v2:** `detailed_search` ölü oturumda da store fallback'li (`filter_fidelity`); satırlar
+  `yil_norm/takvim/hash_verified_at` taşır. `server_info.tools` registry'den (30 araç).

@@ -20,15 +20,33 @@ TRIGGER_SIGNALS = ("session_required", "viewer_runtime_error")
 
 RUNBOOK = (
     "[vekayinuvis] devlet-arşivleri oturumu düştü (session_required / viewer Runtime Error 500 "
-    "≈ oturum süresi doldu → BEKLEME değil re-login gerekir):\n"
-    "1. HP: sudo systemctl restart devarsiv-chrome\n"
-    "2. noVNC: https://devarsiv-vnc.cureonics.com/vnc.html (Cloudflare Access, @cureonics.com OTP)\n"
-    "3. Tarayıcıda reCAPTCHA çöz + T.C. Kimlik ile giriş (Doppler DEVLET_ARSIVLERI_*)\n"
-    "4. devarsiv_session_status → alive:true doğrula\n"
-    "5. Degrade-devam: katalog düşükken yerel arşiv (list_archive/get_archive_page) + anamnesis + "
-    "akademik katman ÇALIŞMAYA DEVAM EDER — rapor akışını durdurma, \"katalog doğrulaması "
-    "bekliyor\" şerhi düş."
+    "≈ sunucu-taraflı oturum kaybı → BEKLEME değil re-login gerekir):\n"
+    "1. noVNC: https://devarsiv-vnc.cureonics.com/vnc.html?autoconnect=1&resize=scale "
+    "(Cloudflare Access, @cureonics.com OTP)\n"
+    "2. (İsteğe bağlı) Chrome şişmiş/login formu render etmiyorsa: sudo systemctl restart "
+    "devarsiv-chrome — restart mevcut oturumu düşürür (zaten ölüyse bedelsiz)\n"
+    "3. Tarayıcıda reCAPTCHA çöz + T.C. Kimlik ile giriş (Doppler DEVLET_ARSIVLERI_*); reCAPTCHA "
+    "'kota aşıldı' verirse devarsiv_relogin_prepare → e-Devlet yolu\n"
+    "4. devarsiv_session_status → session.state == \"alive\" doğrula\n"
+    "5. Degrade-devam: katalog düşükken yerel arşiv (list_archive/get_archive_page) + store "
+    "(live:false) + anamnesis + akademik katman ÇALIŞMAYA DEVAM EDER — rapor akışını durdurma, "
+    "\"katalog doğrulaması bekliyor\" şerhi düş."
 )
+
+
+def _runbook_from(resp) -> str:
+    """Sunucu (devarsiv v0.2.0+) zarfa kanonik `runbook` listesi koyar → onu bas; yoksa statik."""
+    try:
+        rb = resp.get("runbook") if isinstance(resp, dict) else None
+        if isinstance(rb, list) and rb:
+            head = "[vekayinuvis] devlet-arşivleri oturumu düştü — kanonik runbook (sunucu):\n"
+            extra = ""
+            if resp.get("last_alive_at"):
+                extra = f"\nSon canlı: {resp['last_alive_at']}; ölüm sayısı: {resp.get('death_count')}"
+            return head + "\n".join(str(x) for x in rb) + extra
+    except Exception:
+        pass
+    return RUNBOOK
 
 
 def main():

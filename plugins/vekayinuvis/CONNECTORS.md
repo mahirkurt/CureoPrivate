@@ -57,7 +57,7 @@ varsayılanın kendisidir (tam roster bundled).
 B. Tam-Metin Arama · C. Belge/Metin Çekme · D. Hesaplama/Yardımcı (tarih, ebced,
 defter şeması) · E. Matbu-korpus boru hattı (opt-in eScriptorium; el yazması motoru değil).
 
-**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog — 27 araç, 7 grup**;
+**Devlet Arşivleri yetenek katmanı** (skill § 3.1 · **F. Resmî Katalog — 30 araç, 8 grup**;
 kesin sayı deploy'a göre değişir, grup-kapsamı ölçülür → `/vekayinuvis:durum`):
 
 - **Arama 5'lisi** — `devarsiv_search` (fon/kutu/gömlek + özet + tarih + item_id/hash +

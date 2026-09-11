@@ -23,10 +23,19 @@ _RESEARCH = "II. Mahmud dönemi tımar sistemi üzerine arşiv taraması yaptım
 _ARCHIVE_CLAIM = "BOA HR.UHM.00048.00035 gömleğinde vali şöyle yazıyor: mühimme kaydı."
 
 
-def _transcript(tool_calls, assistant_text):
+def _transcript(tool_calls, assistant_text, mode=True):
+    """`mode=True` transkriptin başına bir `/vekayinuvis:…` komutu koyar.
+
+    Davranış kapısı tek başına yetmiyor: `literatur` hem bu filonun üyesi hem de bağımsız
+    bir MCP paketi, dolayısıyla o paketin KODUNU ölçen bir mühendislik turu da filo aracı
+    çağırmış görünür ve G0 manifestosu istenir.
+    """
     fd, path = tempfile.mkstemp(suffix=".jsonl")
     os.close(fd)
     with open(path, "w", encoding="utf-8") as f:
+        if mode:
+            f.write(json.dumps({"type": "user", "message": {
+                "content": "<command-name>/vekayinuvis:arsiv-dalis</command-name>"}}) + "\n")
         f.write(json.dumps({"type": "user", "message": {"content": "kullanıcı sorusu"}}) + "\n")
         for tc in tool_calls:
             f.write(json.dumps({"type": "assistant",
@@ -42,8 +51,8 @@ def _run(hook, event):
     return bool(p.stdout.strip() or p.returncode != 0)
 
 
-def _fires_with_transcript(hook, tool_calls, text):
-    tp = _transcript(tool_calls, text)
+def _fires_with_transcript(hook, tool_calls, text, mode=True):
+    tp = _transcript(tool_calls, text, mode=mode)
     try:
         return _run(hook, {"transcript_path": tp, "last_assistant_message": text})
     finally:
@@ -135,3 +144,51 @@ def test_no_transcript_single_mode_output_still_fires():
 def test_no_transcript_multiphase_with_locator_still_fires():
     """Çok-fazlı gerçek rapor + arşiv künyesi (meta değil) + manifesto yok → yanar."""
     assert _run("stop_coverage", {"last_assistant_message": _REAL_MULTIPHASE_WITH_LOCATOR}) is True
+
+
+# --- Mod kapısı ------------------------------------------------------------------
+
+_LICENSE_FIX = (
+    "tr-literatur paketinin lisans ayrıştırıcısını onardım; CC URI biçimleri artık tanınıyor."
+)
+
+
+def test_engineering_turn_on_a_fleet_package_is_silent():
+    """Ölçülen yanlış-pozitif (2026-09-10).
+
+    `literatur` bu filonun üyesidir *ve* bağımsız bir MCP paketidir. O paketin kodunu
+    onarırken aracı ölçmek için `tr_literatur_*` çağrıldı; davranış kapısı açıldı ve
+    ortada tek bir arşiv iddiası yokken G0 manifestosu istendi. Eksik boyut moddu.
+    """
+    assert _fires_with_transcript(
+        "stop_coverage",
+        ["mcp__claude_ai_TR_Dizin__tr_literatur_get_journal"],
+        _LICENSE_FIX,
+        mode=False,
+    ) is False
+
+
+def test_same_call_inside_a_research_session_still_fires():
+    """Mod kapısı invaryantı öldürmemeli: mod açıksa aynı çağrı manifesto bekletir."""
+    assert _fires_with_transcript(
+        "stop_coverage",
+        ["mcp__claude_ai_TR_Dizin__tr_literatur_get_journal"],
+        _RESEARCH,
+        mode=True,
+    ) is True
+
+
+def test_prose_mention_does_not_open_the_mode_gate():
+    """Eşleşme yapısaldır — düzyazıda adı anmak modu açmaz."""
+    tp = _transcript(["mcp__devlet-arsivleri__devarsiv_search"], _RESEARCH, mode=False)
+    try:
+        with open(tp, "r+", encoding="utf-8") as f:
+            body = f.read()
+            f.seek(0)
+            f.write(json.dumps({"type": "user", "message": {
+                "content": "vekayinuvis plugin'ini konuşalım"}}) + "\n")
+            f.write(body)
+        assert _run("stop_coverage",
+                    {"transcript_path": tp, "last_assistant_message": _RESEARCH}) is False
+    finally:
+        os.unlink(tp)

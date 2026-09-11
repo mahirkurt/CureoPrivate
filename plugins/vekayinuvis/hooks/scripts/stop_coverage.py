@@ -17,7 +17,11 @@ import re
 import sys
 
 from _signals import has_record_locator
-from _turn_tools import fleet_data_tool_invoked, transcript_available
+from _turn_tools import (
+    fleet_data_tool_invoked,
+    mode_invoked,
+    transcript_available,
+)
 
 # Substantif araştırma-modu çıktısının imzası (en az bir güçlü sinyal).
 # NOT: eskiden burada üçüncü bir "zayıf" sinyal vardı (`\bfon[/\s]|gömlek|BOA\b|BCA\b|devarsiv`)
@@ -153,6 +157,13 @@ def main():
     # Transkript YOKSA davranış kapısına güvenmeyiz → eski metin-sezgisi yedeğine düşeriz
     # (invaryant sessizce kaybolmasın): (a) mod bildirimi VEYA (b) ≥2 connector VE somut kayıt yeri.
     if transcript_available(event):
+        # MOD KAPISI (davranış kapısından önce) — G0 sözleşmesi vekayinüvis *araştırma
+        # çıktısı* içindir. Davranış kapısı tek başına yetmiyor: `literatur` hem bu
+        # filonun üyesi hem de bağımsız bir MCP paketi, dolayısıyla o paketin KODUNU
+        # ölçen bir tur filo aracı çağırmış görünür. Modun bu oturumda gerçekten
+        # açılmış olması şart.
+        if not mode_invoked(event):
+            sys.exit(0)
         if not fleet_data_tool_invoked(event):
             sys.exit(0)
     else:

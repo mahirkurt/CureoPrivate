@@ -130,3 +130,72 @@ def transcript_available(event):
     """
     path = event.get("transcript_path") or ""
     return bool(path and os.path.exists(path) and _records(path))
+
+
+#: Bu plugin'in kendi skill/komut ad alanı. Slash biçimi `/cureolex:lex-draft`,
+#: Skill-aracı biçimi `{"skill": "cureolex:lex-draft"}` — ikisi de bu önekle başlar.
+MODE_NAMESPACE = "cureolex"
+_COMMAND_RX = re.compile(
+    r"<command-name>\s*/" + MODE_NAMESPACE + r"\b", re.IGNORECASE
+)
+
+
+def _message_text(rec):
+    msg = rec.get("message", rec)
+    content = msg.get("content", "")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(
+            str(b.get("text", ""))
+            for b in content
+            if isinstance(b, dict) and b.get("type") == "text"
+        )
+    return ""
+
+
+def _skill_invocations(rec):
+    msg = rec.get("message", rec)
+    content = msg.get("content", [])
+    if not isinstance(content, list):
+        return []
+    out = []
+    for b in content:
+        if not isinstance(b, dict) or b.get("type") != "tool_use":
+            continue
+        if str(b.get("name", "")) != "Skill":
+            continue
+        skill = str((b.get("input") or {}).get("skill", ""))
+        if skill:
+            out.append(skill)
+    return out
+
+
+def mode_invoked(event):
+    """Bu OTURUMDA cureolex'in kendi skill'i veya slash komutu çalıştırıldı mı?
+
+    G0 sözleşmesi cureolex *mod çıktısı* içindir. Davranış kapısı tek başına bunu
+    ayırt edemiyordu: `literatur` (DergiPark tam metni) hem bu filonun üyesidir hem de
+    bağımsız bir MCP paketidir, dolayısıyla o paketin KODUNU ölçen bir mühendislik turu
+    `mcp__…tr_literatur_get_journal` çağırır ve kapı açılır. 2026-09-10'da birebir
+    yaşandı: tr-literatur lisans ayrıştırıcısı onarılırken hiçbir hukuk normu
+    üretilmemişken G0 manifestosu istendi.
+
+    Mod kapısı bu eksik boyutu ekler: filo aracına dokunmak yetmez, cureolex modu bu
+    oturumda gerçekten açılmış olmalıdır.
+
+    Tarama OTURUM GENELİDİR (davranış kapısının aksine tur-başı değil): mod bir kez
+    açıldıktan sonra takip turları da mod çıktısıdır. Eşleşme YAPISALDIR — düzyazıda
+    "cureolex" kelimesini anmak kapıyı açmaz; yalnız `<command-name>/cureolex…` bloğu
+    veya `Skill` aracının `skill` girdisi sayılır.
+    """
+    path = event.get("transcript_path") or ""
+    if not path or not os.path.exists(path):
+        return False
+    for rec in _records(path):
+        if _COMMAND_RX.search(_message_text(rec)):
+            return True
+        for skill in _skill_invocations(rec):
+            if skill.lower().startswith(MODE_NAMESPACE):
+                return True
+    return False

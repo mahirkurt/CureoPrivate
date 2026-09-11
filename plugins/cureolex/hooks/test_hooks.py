@@ -265,11 +265,21 @@ check("gerçek yasama metni (MADDE + 'sayılı') → hâlâ block",
       (out or {}).get("decision") == "block", f"out={str(out)[:120]}")
 
 
-def _transcript(tool_names):
-    """Son kullanıcı prompt'u + verilen araçları çağıran asistan turu (JSONL)."""
+def _transcript(tool_names, mode=True):
+    """Son kullanıcı prompt'u + verilen araçları çağıran asistan turu (JSONL).
+
+    `mode=True` transkriptin başına bir `/cureolex:…` komutu koyar, yani "bu oturumda
+    cureolex modu açıldı" der. Davranış kapısı tek başına yetmiyor: `literatur` hem bu
+    filonun üyesi hem de bağımsız bir MCP paketi, dolayısıyla o paketin KODUNU ölçen bir
+    mühendislik turu da filo aracı çağırmış görünür.
+    """
     fd = tempfile.mkdtemp()
     path = os.path.join(fd, "t.jsonl")
-    recs = [{"type": "user", "message": {"content": [{"type": "text", "text": "yap"}]}}]
+    recs = []
+    if mode:
+        recs.append({"type": "user", "message": {"content": [
+            {"type": "text", "text": "<command-name>/cureolex:lex-draft</command-name>"}]}})
+    recs.append({"type": "user", "message": {"content": [{"type": "text", "text": "yap"}]}})
     recs.append({"type": "assistant", "message": {"content": [
         {"type": "tool_use", "name": n} for n in tool_names]}})
     with open(path, "w", encoding="utf-8") as fh:
@@ -301,6 +311,57 @@ rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
                                    "stop_hook_active": False})
 check("gerçek filo veri-aracı çağrıldı + manifesto yok → block",
       (out or {}).get("decision") == "block", f"out={str(out)[:120]}")
+
+# ── MOD KAPISI ──────────────────────────────────────────────────────────────
+# Ölçülen yanlış-pozitif (2026-09-10): tr-literatur MCP paketinin lisans ayrıştırıcısı
+# onarılırken `mcp__…tr_literatur_get_journal` çağrıldı. `literatur` cureolex filosunun
+# gerçek bir üyesi olduğu için davranış kapısı açıldı ve ortada tek bir hukuk normu
+# yokken G0 manifestosu istendi. Eksik olan boyut moddu.
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _transcript(
+                                       ["mcp__claude_ai_TR_Dizin__tr_literatur_get_journal"],
+                                       mode=False),
+                                   "stop_hook_active": False})
+check("mod açılmadı + filo aracı çağrıldı → mod kapısı kapalı → sessiz",
+      rc == 0 and not out, f"out={str(out)[:120]}")
+
+# Mod açıldıysa aynı çağrı manifesto bekletir — invaryant sessizce kaybolmamalı.
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _transcript(
+                                       ["mcp__claude_ai_TR_Dizin__tr_literatur_get_journal"],
+                                       mode=True),
+                                   "stop_hook_active": False})
+check("mod açıldı + filo aracı + manifesto yok → block",
+      (out or {}).get("decision") == "block", f"out={str(out)[:120]}")
+
+# Mod Skill aracıyla da açılabilir (slash komutu tek yol değil).
+_skill_tr = _transcript(["mcp__mevzuat__search_mevzuat"], mode=False)
+with open(_skill_tr, "r+", encoding="utf-8") as _fh:
+    _body = _fh.read()
+    _fh.seek(0)
+    _fh.write(json.dumps({"type": "assistant", "message": {"content": [
+        {"type": "tool_use", "name": "Skill", "input": {"skill": "cureolex:lex-draft"}}]}}) + "\n")
+    _fh.write(_body)
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _skill_tr,
+                                   "stop_hook_active": False})
+check("mod Skill aracıyla açıldı → kapı açık → block",
+      (out or {}).get("decision") == "block", f"out={str(out)[:120]}")
+
+# Düzyazıda adı anmak kapıyı AÇMAZ (eşleşme yapısaldır).
+_prose = _transcript(["mcp__mevzuat__search_mevzuat"], mode=False)
+with open(_prose, "r+", encoding="utf-8") as _fh:
+    _body = _fh.read()
+    _fh.seek(0)
+    _fh.write(json.dumps({"type": "user", "message": {"content": [
+        {"type": "text", "text": "cureolex plugin'ini konusalim"}]}}) + "\n")
+    _fh.write(_body)
+rc, out = run("stop_coverage.py", {"last_assistant_message": _reform_text,
+                                   "transcript_path": _prose,
+                                   "stop_hook_active": False})
+check("düzyazıda 'cureolex' anmak modu açmaz → sessiz",
+      rc == 0 and not out, f"out={str(out)[:120]}")
+
 
 import _turn_tools as _tt  # noqa: E402
 check("_turn_tools: companion (Yargı/Open_Law/Ansvar) filo aracı sayılır",

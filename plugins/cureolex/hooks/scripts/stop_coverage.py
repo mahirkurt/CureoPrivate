@@ -31,7 +31,11 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _turn_tools import fleet_data_tool_invoked, transcript_available  # noqa: E402
+from _turn_tools import (  # noqa: E402
+    fleet_data_tool_invoked,
+    mode_invoked,
+    transcript_available,
+)
 
 # ── Reform-modu imzası: GÜÇLÜ / ZAYIF ayrımı ────────────────────────────────
 # Eski tasarım altı GEVŞEK sinyalden ikisinin eşleşmesini "mod çıktısı" sayıyordu.
@@ -193,6 +197,12 @@ def main():
     # yokluğundan olabilir) → metin-sezgisi yedeğine düşülür ki invaryant sessizce kaybolmasın.
     # Bölüşüm vekayinuvis/stop_coverage.py ile birebir; üç kardeş plugin ayrışmasın.
     if transcript_available(event):
+        # MOD KAPISI (davranış kapısından önce) — G0 sözleşmesi cureolex *mod çıktısı*
+        # içindir. Davranış kapısı tek başına yetmiyor: `literatur` hem bu filonun üyesi
+        # hem de bağımsız bir MCP paketi, dolayısıyla o paketin KODUNU ölçen bir tur
+        # filo aracı çağırmış görünür. Modun bu oturumda gerçekten açılmış olması şart.
+        if not mode_invoked(event):
+            sys.exit(0)
         if not fleet_data_tool_invoked(event):
             sys.exit(0)
     else:

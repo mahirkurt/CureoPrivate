@@ -142,7 +142,7 @@ zenginleşir.
 | `scholar-gateway` | http | `https://connector.scholargateway.ai/mcp` | Tam-metin akademik korpus + pasaj-düzeyi atıf | OAuth / sağlayıcıya göre key |
 | `exa` | http | `https://mcp.exa.ai/mcp` | Akademik blog, kurum sayfası, ansiklopedi entries | OAuth veya Exa API key |
 | `tavily` | http | `https://mcp.tavily.com/mcp` | Geniş web tarama, çok-sayfa araştırma, crawl | OAuth veya Tavily API key |
-| `literatur` | http | `https://literatur-mcp.surucu.dev/mcp` | **DergiPark tam-metin** — Türk akademik dergi makalesi arama (yıl/tür/dizin/sıralama filtreli) + **PDF→HTML tam metin** + referans çekme. ottoman-archives `search_dergipark`'ı (curated OAI-PMH metadata) tam-metin ve tüm-dergi kapsamıyla tamamlar | Hazır remote (surucu.dev), **authless** — CapSolver/Mistral yazar tarafında; kurulumsuz |
+| `literatur` | http | `https://literatur.cureonics.com/mcp` | **DergiPark tam-metin** — Türk akademik dergi makalesi arama (yıl/tür/dizin/sıralama filtreli) + **PDF→HTML tam metin** + referans çekme. ottoman-archives `search_dergipark`'ı (curated OAI-PMH metadata) tam-metin ve tüm-dergi kapsamıyla tamamlar | HP self-host (`literatur.cureonics.com`), **Bearer** `TR_LITERATUR_MCP_API_KEY` — eski authless `surucu.dev` ucu 2026-09-11'de ölçülerek kapalı bulundu |
 | `yok-akademik` | http | `https://yok-akademik.cureonics.com/mcp` | **YÖK Akademik profilleri** (15 salt-okunur araç) — akademisyen arama, yayın/proje/tez danışmanlığı, eş-yazar ego-ağı. **Destekleyici unsur**: modern prosopografi + ekol/uzman haritası; birincil arşiv işlevine gerekli değil | HP self-host, `/mcp` Bearer (`${YOK_AKADEMIK_MCP_API_KEY}`) |
 | `detsis` | http | `https://detsis.cureonics.com/mcp` | **DETSİS kurumsal prosopografi** — `detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar` zinciri (teşkilat tarihçesi + kuruluş mevzuatı). **Destekleyici unsur, Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez** | `/mcp` Bearer (`${DETSIS_MCP_API_KEY}`) |
 | `openathens` *(tam-metin)* | http | `https://openathens.cureonics.com/mcp` | **Lisanslı kurumsal tam-metin**, 11 araç (2026-08-14). Metin/RAG: `oa_fetch_fulltext`; hesap kapsamındaki tüm sağlayıcılar için provider-nötr orijinal PDF: `oa_fetch_pdf(doi\|url)` → kısa-ömürlü opaque resource link + filename/MIME/size/SHA-256/acquired_via. HTML-only sayfa `pdf_unavailable`; sahte PDF yok, 100 MiB tavanı. **Tier 3**, annas'tan önce | HP self-host, `/mcp` Bearer (`${OPENATHENS_MCP_API_KEY}`); SAML creds sunucu-taraflı |
@@ -192,7 +192,7 @@ API-key gerektiren sunucular `userConfig` ile parametrelenir; bu durumda
     },
     "literatur": {
       "type": "http",
-      "url": "https://literatur-mcp.surucu.dev/mcp"
+      "url": "https://literatur.cureonics.com/mcp"
     },
     "yok-akademik": {
       "type": "http",
@@ -303,7 +303,7 @@ keychain'ine yazılır (settings.json'a değil).
    Code/Desktop'ta statik Bearer, claude.ai/grok'ta OAuth akışı). `devlet-arsivleri`
    ayrıca **tek-cihaz oturum kilitli** — connector auth'undan bağımsız olarak, upstream
    katalog oturumu HP'deki kalıcı authenticated tarayıcıda yaşar (bkz. § 8).
-   `literatur` hazır remote (surucu.dev), authless.
+   `literatur` HP self-host (`literatur.cureonics.com`), Bearer `TR_LITERATUR_MCP_API_KEY`.
 2. **OAuth 2.0 sunucuları (consensus vb.)** — token `.mcp.json`'a **gömülmez**;
    her kullanıcı `/mcp` tarayıcı akışıyla bir kez doğrular. Bu, public bir
    marketplace deposu için güvenli yoldur.

@@ -82,17 +82,19 @@ servers:
     tools_used: [search_kanun, search_mevzuat, get_mevzuat_content,
                  search_within_mevzuat, get_mevzuat_gerekce, get_mevzuat_madde_tree]
     role: >-
-      İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — her sorguda
-      çalıştırılır. Primer v0.15.1+ (HP production) kanun/mevzuat NUMARASI lookup,
-      search_within_mevzuat ve bedesten gerekçe tam metnini kendisi taşır; bu
-      server bağımsız ikinci oy + Playwright-yüzey çaprazıdır. Çatışmada primer
-      kazanır, sonuç manifestoya girer.
+      İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — bağımsız ikinci oy
+      + Playwright-yüzey çaprazı; çatışmada primer kazanır. ⚠️ UPSTREAM ÖLÇÜLEN ŞEKİLDE
+      KAPALI (2026-09-11): `mevzuat.surucu.dev` DNS'te 77.245.156.197'ye çözülüyor ama TCP
+      bağlantısı kurulmuyor — iki bağımsız ağdan (Lenovo + HP) doğrulandı; `surucu.dev`
+      kökü 200 döndüğü için alan sahibi ayakta, yalnız bu alt alan kapalı. Kalıcı arıza,
+      geçici blip DEĞİL. Wire bilinçli KORUNUYOR: in-house eşdeğeri yok (primer `mevzuat`
+      ile aynı upstream'i farklı bir uygulamayla okur, çapraz-kontrol değeri buradan gelir)
+      ve upstream dönerse kendiliğinden çalışır.
     degrade: >-
-      Erişilemezse bağımsız ikinci oy ve Playwright-yüzey çapraz-kontrolü düşer;
-      manifestoda 'degraded' — primer tek başına sentezi taşır (0.15.1+ production
-      uçta numara/`phrase`/`search_within`/tam gerekçe primerde kalır),
-      çapraz-doğrulama notu düşülür.
-
+      BEKLENEN KARARLI DURUM (upstream kapalı): bağımsız ikinci oy ve Playwright-yüzey
+      çapraz-kontrolü düşer; manifestoda 'degraded: upstream kapalı (2026-09-11 ölçümü)'
+      — primer tek başına sentezi taşır (numara/`phrase`/`search_within`/tam gerekçe
+      primerde kalır). Bu satırın manifestoda görünmesi arıza değil, dürüst beyandır.
   - name: resmi-gazete
     url: https://resmi-gazete-mcp.cureonics.workers.dev/mcp
     # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).
@@ -491,18 +493,18 @@ servers:
       'illustrative_placeholder_not_verified' etiketlenir, KULLANILMAZ.
 
   - name: literatur
-    url: https://literatur-mcp.surucu.dev/mcp
+    url: https://literatur.cureonics.com/mcp
     tier: doctrine
-    auth_env: null
+    auth_env: TR_LITERATUR_MCP_API_KEY
     shard: S3
     modes: [ALL]
     gate: G5
-    tools_used: [search_articles, pdf_to_html, get_article_references]
+    tools_used: [tr_literatur_search_articles, tr_literatur_read_article, tr_literatur_get_article_references]
     role: >-
       DergiPark Türk akademik dergi makaleleri — arama (yıl/tür/dizin/sıralama) +
       PDF→HTML TAM METİN + referans çekme. Doktrin katmanının tek OKUNABİLİR TR
       kaynağı: yok-akademik yalnız metadata verir, bu tam metin verir. Gerekçe
-      akademik dayanağı + ANALYZE doktrin taraması. Authless (surucu.dev).
+      akademik dayanağı + ANALYZE doktrin taraması. HP self-host (`literatur.cureonics.com`), Bearer.
     degrade: >-
       Erişilemezse doktrin katmanı metadata-only'ye (yok-akademik) düşer;
       gerekçede doktrin atfı yapılabilir ama içerik alıntılanamaz → manifestoda

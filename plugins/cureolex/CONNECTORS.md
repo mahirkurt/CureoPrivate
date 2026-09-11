@@ -71,7 +71,7 @@ userConfig→env fallback sözdiziminin belgelenmemiş olmasından gelir.
 | `oecd` | `https://oecd.cureonics.com/mcp` | Bearer | `OECD_MCP_API_KEY` | support |
 | `yok-akademik` | `https://yok-akademik.cureonics.com/mcp` | Bearer | `YOK_AKADEMIK_MCP_API_KEY` | doctrine |
 | `yoktez` | `https://yoktezmcp.fastmcp.app/mcp` | public | — | doctrine |
-| `literatur` | `https://literatur-mcp.surucu.dev/mcp` | public | — | doctrine |
+| `literatur` | `https://literatur.cureonics.com/mcp` | Bearer | `TR_LITERATUR_MCP_API_KEY` | doctrine |
 | `openathens` | `https://openathens.cureonics.com/mcp` | Bearer | `OPENATHENS_MCP_API_KEY` | fulltext |
 | `annas-reader` | `https://annas.cureonics.com/mcp` | Bearer | `ANNAS_MCP_API_KEY` | fulltext |
 | `eurlex` | `https://eurlex.cureonics.com/mcp` | Bearer | `EURLEX_MCP_API_KEY` | comparative |

@@ -4,8 +4,8 @@
   "plugin_version": "3.4.13",
   "counts": {
     "servers": 17,
-    "gated": 11,
-    "public": 6,
+    "gated": 12,
+    "public": 5,
     "companions": 0,
     "delegations": 0
   },
@@ -30,9 +30,9 @@
     },
     {
       "name": "literatur",
-      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "url": "https://literatur.cureonics.com/mcp",
       "tier": "academic",
-      "auth_env": null
+      "auth_env": "TR_LITERATUR_MCP_API_KEY"
     },
     {
       "name": "yok-akademik",

@@ -61,7 +61,7 @@ amacıyla kullanılır.
 
 ### F. Türkiye kolu (3)
 
-`yoktez` (—) · `literatur` (—) · `yok-akademik` (`YOK_AKADEMIK_MCP_API_KEY`)
+`yoktez` (—) · `literatur` (`TR_LITERATUR_MCP_API_KEY`) · `yok-akademik` (`YOK_AKADEMIK_MCP_API_KEY`)
 
 ### G. Web — üçüncül (2)
 

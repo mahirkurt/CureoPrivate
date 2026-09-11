@@ -15,7 +15,7 @@ import os
 import sys
 
 # Gated çekirdek + companion + substrat + yasama/mevzuat connector → env var
-# (yoktez/literatur/consensus/scholar-gateway/exa/tavily authless veya OAuth → env-key yok;
+# (yoktez/consensus/scholar-gateway/exa/tavily authless veya OAuth → env-key yok;
 #  paper-search Smithery key'i userConfig ile enable-time'da).
 GATED = {
     "devlet-arsivleri": "DEVARSIV_MCP_API_KEY",
@@ -28,6 +28,7 @@ GATED = {
     "mevzuat": "MEVZUAT_MCP_API_KEY",
     "tbmm": "TBMM_MCP_API_KEY",
     "detsis": "DETSIS_MCP_API_KEY",
+    "literatur": "TR_LITERATUR_MCP_API_KEY",
 }
 
 CONVENTIONS = (
@@ -118,8 +119,8 @@ def main():
             + ", ".join(missing)
             + ". Bunlar çağrı anında 401 döner ve ilgili katman degrade eder (çıktı durmaz, "
             "uydurma yok). Çözüm: oturumu `doppler run -p cureohub -c dev_personal -- claude` "
-            "ile başlat → tüm ${VAR}'lar otomatik enjekte olur. (yoktez ve literatur authless — "
-            "etkilenmez.) devlet-arsivleri anahtarı olsa bile upstream katalog oturumu ayrıca "
+            "ile başlat → tüm ${VAR}'lar otomatik enjekte olur. (yoktez authless — etkilenmez.) "
+            "devlet-arsivleri anahtarı olsa bile upstream katalog oturumu ayrıca "
             "HP'de canlı olmalı (`devarsiv_session_status`)."
         )
 

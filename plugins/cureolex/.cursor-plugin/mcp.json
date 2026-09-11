@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — cureolex MCP wiring. 22 server (19 Bearer-gated, 3 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Cursor `${env:VAR}` process-env interpolasyonu (plugin-variable paste formu değil). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır — wire edilemez. Fedlex 2026-08-08'de wire edildi. G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — cureolex MCP wiring. 22 server (20 Bearer-gated, 2 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Cursor `${env:VAR}` process-env interpolasyonu (plugin-variable paste formu değil). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır — wire edilemez. Fedlex 2026-08-08'de wire edildi. G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.",
   "mcpServers": {
     "mevzuat": {
       "type": "http",
@@ -14,7 +14,7 @@
       "type": "http",
       "url": "https://mevzuat.surucu.dev/mcp",
       "_tier": "secondary",
-      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — her sorguda çalıştırılır. Primer v0.15.1+ (HP production) kanun/mevzuat NUMARASI lookup, search_within_mevzuat ve bedesten gerekçe tam metnini kendisi taşır; bu server bağımsız ikinci oy + Playwright-yüzey çaprazıdır. Çatışmada primer kazanır, sonuç manifestoya girer."
+      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — bağımsız ikinci oy + Playwright-yüzey çaprazı; çatışmada primer kazanır. ⚠️ UPSTREAM ÖLÇÜLEN ŞEKİLDE KAPALI (2026-09-11): `mevzuat.surucu.dev` DNS'te 77.245.156.197'ye çözülüyor ama TCP bağlantısı kurulmuyor — iki bağımsız ağdan (Lenovo + HP) doğrulandı; `surucu.dev` kökü 200 döndüğü için alan sahibi ayakta, yalnız bu alt alan kapalı. Kalıcı arıza, geçici blip DEĞİL. Wire bilinçli KORUNUYOR: in-house eşdeğeri yok (primer `mevzuat` ile aynı upstream'i farklı bir uygulamayla okur, çapraz-kontrol değeri buradan gelir) ve upstream dönerse kendiliğinden çalışır."
     },
     "resmi-gazete": {
       "type": "http",
@@ -132,9 +132,12 @@
     },
     "literatur": {
       "type": "http",
-      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "url": "https://literatur.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:TR_LITERATUR_MCP_API_KEY}"
+      },
       "_tier": "doctrine",
-      "_role": "DergiPark Türk akademik dergi makaleleri — arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. Doktrin katmanının tek OKUNABİLİR TR kaynağı: yok-akademik yalnız metadata verir, bu tam metin verir. Gerekçe akademik dayanağı + ANALYZE doktrin taraması. Authless (surucu.dev)."
+      "_role": "DergiPark Türk akademik dergi makaleleri — arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. Doktrin katmanının tek OKUNABİLİR TR kaynağı: yok-akademik yalnız metadata verir, bu tam metin verir. Gerekçe akademik dayanağı + ANALYZE doktrin taraması. HP self-host (`literatur.cureonics.com`), Bearer."
     },
     "openathens": {
       "type": "http",

@@ -393,12 +393,12 @@ servers:
     degrade: "Upstream düşerse TR tez katmanı `degraded` yazılır; literatur ile ikame."
 
   - name: literatur
-    url: https://literatur-mcp.surucu.dev/mcp
+    url: https://literatur.cureonics.com/mcp
     tier: turkiye
-    auth_env: null
+    auth_env: TR_LITERATUR_MCP_API_KEY
     shard: S6
     modes: [ALL]
-    tools_used: [search_articles, pdf_to_html, get_article_references]
+    tools_used: [tr_literatur_search_articles, tr_literatur_read_article, tr_literatur_get_article_references]
     role: >-
       DergiPark tam-metin — Türkçe tıp tarihi dergileri (Osmanlı Bilimi Araştırmaları,
       Tıp Tarihi Araştırmaları, Lokman Hekim Dergisi) ve referans çıkarımı. Bu

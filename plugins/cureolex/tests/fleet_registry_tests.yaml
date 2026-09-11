@@ -27,7 +27,11 @@ cases:
   - id: FR-02-public-server-anahtarsiz-200
     given: "fleet.yaml'de auth_env: null işaretli her server anahtarsız prob edilir."
     expect:
-      - "mevzuat-bilgisi, yoktez, literatur anahtarsız HTTP 200 dönmeli."
+      - "yoktez anahtarsız HTTP 200 dönmeli."
+      - "literatur ARTIK auth_env taşır (2026-09-11 cutover: surucu.dev → literatur.cureonics.com);
+         bu listede DEĞİL, FR-01 kapsamındadır."
+      - "mevzuat-bilgisi upstream KAPALI (2026-09-11 ölçümü, iki ağdan TCP bağlanmıyor) →
+         200 beklenmez; bu bir wiring hatası değil, kaynağa yazılmış kalıcı durumdur."
       - "Herhangi biri 401/403 dönerse upstream KAPILANMIŞ demektir → fleet.yaml'e auth_env eklenmeli, sonra `python3 tools/fleetkit/gen_fleet.py`."
       - "Bu, titck dersinin genellemesidir: 'public' bir varsayım değil, ölçülen bir olgudur."
 

@@ -134,7 +134,7 @@ class RetrieveDontDump(unittest.TestCase):
 
     def test_tier1_threshold(self):
         out = run("retrieve_dont_dump.py",
-                  {"tool_name": "mcp__literatur__search_articles", "tool_response": "A" * 8000})
+                  {"tool_name": "mcp__literatur__tr_literatur_search_articles", "tool_response": "A" * 8000})
         self.assertIn("tarih-tarama-distilleri", out)
 
     def test_tier2_threshold_and_prefix(self):

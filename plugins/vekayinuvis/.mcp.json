@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — vekayinuvis MCP wiring. 17 server (11 Bearer-gated, 6 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — vekayinuvis MCP wiring. 17 server (12 Bearer-gated, 5 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma).",
   "mcpServers": {
     "ottoman-archives": {
       "type": "http",
@@ -27,9 +27,12 @@
     },
     "literatur": {
       "type": "http",
-      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "url": "https://literatur.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TR_LITERATUR_MCP_API_KEY}"
+      },
       "_tier": "academic",
-      "_role": "DergiPark Türk akademik dergi makaleleri — makale arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. ottoman-archives search_dergipark'ı (curated OAI-PMH metadata) tam-metin ve tüm-dergi kapsamıyla tamamlar; HISTORIOGRAPHY birincil, KANUN_GEREKÇESİ L5. Authless hazır remote (surucu.dev); büyük tam-metin → anamnesis'e ingest."
+      "_role": "DergiPark Türk akademik dergi makaleleri — makale arama (yıl/tür/dizin/sıralama) + PDF→HTML TAM METİN + referans çekme. ottoman-archives search_dergipark'ı (curated OAI-PMH metadata) tam-metin ve tüm-dergi kapsamıyla tamamlar; HISTORIOGRAPHY birincil, KANUN_GEREKÇESİ L5. HP self-host (`literatur.cureonics.com`), Bearer; büyük tam-metin → anamnesis'e ingest."
     },
     "yok-akademik": {
       "type": "http",

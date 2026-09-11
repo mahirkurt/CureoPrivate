@@ -60,7 +60,7 @@ FLEET: tuple[ServerSpec, ...] = (
         "resmi katalog; devarsiv_session_status gerekli",
     ),
     ServerSpec("yoktez", "Cekirdek arsiv", "authless", "YOK Tez transkripsiyon katmani"),
-    ServerSpec("literatur", "Akademik", "authless", "DergiPark tam-metin"),
+    ServerSpec("literatur", "Akademik", "env", "DergiPark tam-metin (HP self-host)"),
     ServerSpec("consensus", "Akademik", "oauth", "hakemli sentez; /mcp login gerekebilir"),
     ServerSpec("scholar-gateway", "Akademik", "oauth", "pasaj-duzeyi akademik arama"),
     ServerSpec("exa", "Akademik", "oauth_or_key", "Exa remote; OAuth veya opsiyonel API key"),

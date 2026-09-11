@@ -4,8 +4,8 @@
   "plugin_version": "3.8.8",
   "counts": {
     "servers": 22,
-    "gated": 19,
-    "public": 3,
+    "gated": 20,
+    "public": 2,
     "companions": 3,
     "delegations": 2
   },
@@ -180,9 +180,9 @@
     },
     {
       "name": "literatur",
-      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "url": "https://literatur.cureonics.com/mcp",
       "tier": "doctrine",
-      "auth_env": null,
+      "auth_env": "TR_LITERATUR_MCP_API_KEY",
       "shard": "S3",
       "modes": [
         "ALL"

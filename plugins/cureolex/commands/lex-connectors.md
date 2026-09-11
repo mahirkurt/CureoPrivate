@@ -85,7 +85,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
 | `oecd` | support | `OECD_MCP_API_KEY` |
 | `yok-akademik` | doctrine | `YOK_AKADEMIK_MCP_API_KEY` |
 | `yoktez` | doctrine | _(public — anahtar yok)_ |
-| `literatur` | doctrine | _(public — anahtar yok)_ |
+| `literatur` | doctrine | `TR_LITERATUR_MCP_API_KEY` |
 | `openathens` | fulltext | `OPENATHENS_MCP_API_KEY` |
 | `annas-reader` | fulltext | `ANNAS_MCP_API_KEY` |
 | `eurlex` | comparative | `EURLEX_MCP_API_KEY` |

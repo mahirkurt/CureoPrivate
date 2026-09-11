@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — historia-medicinae MCP wiring. 25 server (16 Bearer-gated, 9 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Beş bant: akademik çekirdek (her sorguda) · birincil kaynak/IIIF · tam-metin şelalesi (lisanslı → son çare) · tarihsel yasama · terminoloji/epidemiyoloji, artı Türkiye kolu, üçüncül web ve anamnesis substratı. Web bandı kanıt hiyerarşisinin EN ALTIDIR ve tek başına akademik iddia taşıyamaz.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — historia-medicinae MCP wiring. 25 server (17 Bearer-gated, 8 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Beş bant: akademik çekirdek (her sorguda) · birincil kaynak/IIIF · tam-metin şelalesi (lisanslı → son çare) · tarihsel yasama · terminoloji/epidemiyoloji, artı Türkiye kolu, üçüncül web ve anamnesis substratı. Web bandı kanıt hiyerarşisinin EN ALTIDIR ve tek başına akademik iddia taşıyamaz.",
   "mcpServers": {
     "openalex": {
       "type": "http",
@@ -162,7 +162,10 @@
     },
     "literatur": {
       "type": "http",
-      "url": "https://literatur-mcp.surucu.dev/mcp",
+      "url": "https://literatur.cureonics.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TR_LITERATUR_MCP_API_KEY}"
+      },
       "_tier": "turkiye",
       "_role": "DergiPark tam-metin — Türkçe tıp tarihi dergileri (Osmanlı Bilimi Araştırmaları, Tıp Tarihi Araştırmaları, Lokman Hekim Dergisi) ve referans çıkarımı. Bu literatür Batı indekslerinde büyük ölçüde GÖRÜNMEZ; Türkiye kolunun taşıyıcısı."
     },

@@ -28,7 +28,7 @@ export interface AuthEnv {
 
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://claude.ai", "https://claude.com", "https://grok.com", "https://chatgpt.com",
-  "https://oauth-redirect.googleusercontent.com", "https://vscode.dev", "https://insiders.vscode.dev",
+  "https://oauth-redirect.googleusercontent.com", "https://vscode.dev", "https://insiders.vscode.dev", "https://vscode.flexdev.roche.com",
   "https://cursor.com", "https://www.cursor.com",
 ];
 const CODE_TTL_SECONDS = 600;               // invariant (4): 10-minute TTL

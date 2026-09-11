@@ -33,3 +33,12 @@ plugins/*/dist/
 # ${CLAUDE_PLUGIN_ROOT} kullanılarak giderildi). Buradaki içerik plugin kataloğuna
 # ait değildir — kendi yerine taşıyın, commit ETMEYİN.
 /shared/
+
+# Yerel workspace meta verisi — CureoHub'ın .gitignore'u ile simetrik.
+# `.claude/settings.json` `permissions.additionalDirectories` kablolamasını taşır;
+# izin ayarları bilinçli olarak git'e KONMAZ (repo erişimi olan herkesin izin
+# yüzeyini değiştirebilmesi demek olurdu). 2026-09-11'de ölçüldü: CureoHub bunu
+# ignore ediyordu, bu repo ise ne ignore ne track ediyordu — yani `git clean -fd`
+# dosyayı sessizce silerdi.
+.claude/
+*.code-workspace

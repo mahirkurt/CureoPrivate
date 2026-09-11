@@ -25,7 +25,9 @@
     "turkiye"
   ],
   "skills": "./skills/",
-  "agents": ["./agents/module-auditor.md"],
+  "agents": [
+    "./agents/module-auditor.md"
+  ],
   "commands": "./commands/",
   "hooks": "./hooks/hooks-cursor.json",
   "mcpServers": "./.cursor-plugin/mcp.json"

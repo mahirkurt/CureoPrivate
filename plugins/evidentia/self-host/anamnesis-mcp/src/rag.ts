@@ -242,12 +242,24 @@ export interface IngestResult {
   /** Resume position when truncated; null when the document was fully indexed. */
   next_offset: number | null;
   expires_at?: number | null;
-  manifest: Array<{ idx: number; token_est: number; preview: string; char_start: number; char_end: number }>;
+  manifest: Array<{ idx: number; token_est: number; preview?: string; char_start: number; char_end: number }>;
+  /** True when the caller asked for previews to be withheld (see `includePreviews`). */
+  previews_suppressed?: boolean;
 }
 
 /**
  * Ingest a document: forget prior same-id rows → semantic-chunk → embed → Vectorize + D1.
- * Returns a MANIFEST (idx + token estimate + 160-char preview) — NOT the full text.
+ * Returns a MANIFEST (idx + token estimate + char offsets) — NOT the full text.
+ *
+ * By default each entry also carries a 160-char `preview`, which at the 512-token
+ * (~950 char) chunk cap is ~17% of the document echoed back VERBATIM, once per chunk.
+ * That is useful orientation for anamnesis' own non-licensed corpora and a copyright
+ * problem for licensed ones. Only the CALLER knows which it is holding, so it decides:
+ * pass `includePreviews: false` and the manifest carries structure and provenance
+ * only, with `previews_suppressed: true` saying so out loud.
+ *
+ * NOT keyed on the collection prefix: scope is a TENANCY contract, not a licensing
+ * one, and prefix-sniffing would silently miss every newly added licensed source.
  */
 export async function ingestDocument(
   env: RagEnv,
@@ -260,8 +272,11 @@ export async function ingestDocument(
     ttl_hours?: number;
     offset?: number;
     chunkOpts?: ChunkOpts;
+    /** Default true (unchanged behaviour). False → omit every chunk preview. */
+    includePreviews?: boolean;
   },
 ): Promise<IngestResult> {
+  const includePreviews = args.includePreviews !== false;   // default: unchanged
   await ensureSchema(env);
   const collection = writeScope(env, args.collection, "ingest_document");
   assertDocIdFits(args.doc_id);
@@ -323,9 +338,13 @@ export async function ingestDocument(
     next_offset: truncated ? charsIndexed : null,
     expires_at: expiresAt,
     manifest: located.map((c) => ({
-      idx: c.idx, token_est: c.tokenEst, preview: c.text.slice(0, 160),
+      idx: c.idx, token_est: c.tokenEst,
+      // Key omitted rather than blanked: an empty string reads as "this chunk was
+      // empty", which would be a second, quieter lie.
+      ...(includePreviews ? { preview: c.text.slice(0, 160) } : {}),
       char_start: c.char_start, char_end: c.char_end,
     })),
+    ...(includePreviews ? {} : { previews_suppressed: true }),
   };
 }
 

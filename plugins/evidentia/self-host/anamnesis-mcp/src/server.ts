@@ -144,7 +144,9 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
       "New clients MUST pass collection={plugin}:{run|sess|lib}:{id} (Evidentia scratch: " +
       "evidentia:run:<12hex>). Missing collection stores `_legacy` (compat). Re-ingest forgets " +
       "that doc_id first so stale tail chunks cannot survive a shorter body. Optional ttl_hours " +
-      "on scratch (run/sess). Returns a MANIFEST — NOT the full text. The manifest reports " +
+      "on scratch (run/sess). Returns a MANIFEST — NOT the full text, though each entry does " +
+      "carry a 160-char preview of its chunk unless you pass include_previews:false " +
+      "(do that for licensed material). The manifest reports " +
       "chars_indexed / chars_total / next_offset: when next_offset is non-null the tail was NOT " +
       "indexed and you MUST continue from that offset. doc_id is capped at " + MAX_DOC_ID_BYTES +
       " bytes (chunk ids are '<doc_id>::<idx>' and Vectorize caps a vector id at 64 bytes). " +
@@ -161,6 +163,12 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
       offset: z.number().int().min(0).optional().describe(
         "Resume position: start indexing at this character offset. Pass a prior call's next_offset " +
         "to continue a document the window cap cut short."),
+      include_previews: z.boolean().optional().describe(
+        "Default true. Each manifest entry normally carries a 160-char preview of its chunk — " +
+        "~17% of the document echoed back verbatim at the default chunk size. Useful orientation " +
+        "for your own corpora; a copyright problem for LICENSED full text. Only you know which " +
+        "you are holding, so pass false when ingesting licensed or last-resort material: the " +
+        "manifest then carries structure and provenance only and reports previews_suppressed."),
     },
     async (a) => {
       try {
@@ -172,7 +180,7 @@ export function registerTools(server: McpServer, env: AnamEnv): void {
         const res = await ingestDocument(env, {
           text: a.text, doc_id: a.doc_id, collection: a.collection,
           title: a.title, source: a.source, ttl_hours: a.ttl_hours,
-          offset: a.offset, chunkOpts,
+          offset: a.offset, chunkOpts, includePreviews: a.include_previews,
         });
         return ok({
           ...res,

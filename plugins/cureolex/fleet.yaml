@@ -23,7 +23,7 @@
 
 version: 2
 plugin: cureolex
-plugin_version: "3.8.8"
+plugin_version: "3.9.0"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # cureolex bu sayıları G0 kapı ölçütü olarak kullandığı için açık.

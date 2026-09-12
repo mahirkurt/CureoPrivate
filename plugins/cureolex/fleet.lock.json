@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "cureolex",
-  "plugin_version": "3.8.8",
+  "plugin_version": "3.9.0",
   "counts": {
     "servers": 21,
     "gated": 20,

@@ -4,7 +4,7 @@
 
 ## Kurallar
 
-- Wire edilmiş **22 MCP** + **3 companion** (Yarg/Open_Law/Ansvar — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
+- Wire edilmiş **21 MCP** + **3 companion** (Yarg/Open_Law/Ansvar — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false`) · `skipped: <gerekçe>` (anahtar yok / mod için N/A).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.
@@ -18,7 +18,6 @@
 ### Kapsam Manifestosu (G0) — Mod: DRAFT · Konu: ATMP (ileri tedavi tıbbi ürünleri) yönetmelik taslağı
 TR mevzuat çekirdeği
   mevzuat              → hit 7   (1262 SK, 3359 SK, Beşeri Tıbbi Ürünler Ruhsat Yön., …)
-  mevzuat-bilgisi      → hit 2   (çapraz-kontrol: kanun-no lookup 1262/3359)
   resmi-gazete         → hit 3   (RG 11/12/2021-31686 ruhsat yön. yürürlük teyidi)
   saglikbakanligi      → hit 1   (TİTCK ATMP kılavuz taslağı — soft-law)
   titck                → hit 4   (ATMP ATC/ürün envanteri, search_titck_guidelines)

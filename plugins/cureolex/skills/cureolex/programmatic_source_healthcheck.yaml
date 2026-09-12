@@ -262,22 +262,6 @@ endpoints:
     on_failure: degrade_and_label
     fallback: "Connector DOWN ise sarılan uçlara (eCFR/FedReg/GovInfo/e-LAWS/FRL/...) doğrudan Fetch+parse; referanslar mcp_verified=false + confidence_label.mcp_unavailability."
 
-  # ---- Katman-1 yedeği (M-5, v1.1) ----
-  - id: ep.mevzuat_bilgisi_mcp
-    registry_id: mcp.mevzuat_bilgisi
-    name: "Mevzuat Bilgisi MCP — birincil mevzuat sunucusu düştüğünde YEDEK"
-    kind: mcp_streamable_http
-    base_url: "https://mevzuat.surucu.dev/"
-    health_path: "/mcp"
-    method: POST
-    expected_status: [200, 401]
-    check_frequency: daily
-    on_failure: degrade_and_label
-    fallback: >
-      Yedek de DOWN ise Türk mevzuatı iddiası ÜRETME — `manual_required`
-      (mevzuat.gov.tr derin-bağlantısı + sorgu yankısı). `resolve_resmi_gazete`
-      KARŞILIĞI YEDEKTE YOKTUR: RG çapa çözümlemesi yalnız birincildedir.
-
 # --------------------------------------------------------------------------
 # Sonuç şeması (bir koşum üretirse beklenen kayıt)
 # --------------------------------------------------------------------------

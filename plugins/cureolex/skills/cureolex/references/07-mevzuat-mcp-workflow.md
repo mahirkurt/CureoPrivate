@@ -2,7 +2,7 @@
 
 Bu dosya, Mevzuat MCP'nin tool'larının mod bazlı **somut kullanım örüntülerini** içerir.
 
-**0.15.1+ (HP production `mevzuat.cureonics.com`, 2026-08 cutover).** Primer first-party bedesten: `search_mevzuat` boş query + `mevzuat_no` / yalnız-rakam NUMARA lookup + `phrase` (Solr); `search_within_mevzuat` belge-içi AND/OR/NOT (EK/GEÇİCİ ağacı; `mevzuat_tur` INTEGER); `get_mevzuat_gerekce` TBMM locator **ve** bedesten `getGerekceContent` tam metin (`gerekceId` yoksa locator-only dürüst). Playwright clone yok. Tool listesinde yoksa uydurma; ikincil `mevzuat-bilgisi` (wire'lıysa) veya `manual_required`.
+**0.15.1+ (HP production `mevzuat.cureonics.com`, 2026-08 cutover).** Primer first-party bedesten: `search_mevzuat` boş query + `mevzuat_no` / yalnız-rakam NUMARA lookup + `phrase` (Solr); `search_within_mevzuat` belge-içi AND/OR/NOT (EK/GEÇİCİ ağacı; `mevzuat_tur` INTEGER); `get_mevzuat_gerekce` TBMM locator **ve** bedesten `getGerekceContent` tam metin (`gerekceId` yoksa locator-only dürüst). Playwright clone yok. Tool listesinde yoksa uydurma → `manual_required` (ikincil ayna yoktur; 2026-09-12'de kaldırıldı).
 
 ## 1. Mevzuat MCP Tool Envanteri (Yeniden)
 

@@ -1,6 +1,6 @@
 # Cureolex — Bağlam Ekonomisi ve Büyük-Veri Sözleşmesi
 
-**Problem:** cureolex **tam-filo** çalışır — 22 kaynak MCP + companion + evidentia her sorguda ateşlenir. Bu, ham hâliyle **onlarca büyük belge** (tam kanun metinleri, madde ağaçları, RG OCR, yabancı statute'lar, tam gerekçeler) üretir; hepsini ana bağlam penceresine dökmek pencereyi taşırır ve **eksik/tutarsız** norm-üretimine yol açar. Bu sözleşme, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştıran **zorunlu** disiplindir.
+**Problem:** cureolex **tam-filo** çalışır — 21 kaynak MCP + companion + evidentia her sorguda ateşlenir. Bu, ham hâliyle **onlarca büyük belge** (tam kanun metinleri, madde ağaçları, RG OCR, yabancı statute'lar, tam gerekçeler) üretir; hepsini ana bağlam penceresine dökmek pencereyi taşırır ve **eksik/tutarsız** norm-üretimine yol açar. Bu sözleşme, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştıran **zorunlu** disiplindir.
 
 **Değişmez:** ana pencere yalnız (a) kullanıcı talebi, (b) mod planı, (c) G0 kapsam manifestosu, (d) damıtılmış zarflar (`retrieval_distillate`), (e) `evidence_ledger`, (f) nihai artefakt tutar. **Ham araç çıktısı ana pencerede ASLA akıl yürütülmez.**
 
@@ -26,7 +26,7 @@ kaynağı `fleet.yaml`'dır (`tests/run_suites.py` ve `check_drift` sapmayı yak
 
 | Shard | Server kümesi (fleet.yaml `shard:`) | Distiller |
 |---|---|---|
-| **S1 — TR çekirdek** | mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis · **intl-treaty (Md.90/5, shard S1+S2)** | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
+| **S1 — TR çekirdek** | mevzuat · resmi-gazete · titck · tbmm · saglikbakanligi · detsis · **intl-treaty (Md.90/5, shard S1+S2)** | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
 | **S2 — Karşılaştırmalı** | health-policy · german-law · **eurlex (G6)** · **fedlex (CH)** · **uk-legal** · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law UK · Ansvar companion) | `comparative-law-researcher` |
 | **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı companion) | `legal-distiller` · `gerekce-drafter` |
 | **S4 — Tam-metin şelalesi** | **openathens** (`oa_fetch_fulltext` / `oa_fetch_pdf`, Tier 3 lisanslı) → **annas-reader** (reader / `download_document`, Tier 4 son çare) | `comparative-law-researcher` |

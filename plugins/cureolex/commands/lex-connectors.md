@@ -1,6 +1,6 @@
 ---
 name: lex-connectors
-description: Cureolex tam-filo bağlantı durumu — wire edilmiş 22 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+description: Cureolex tam-filo bağlantı durumu — wire edilmiş 21 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
 ---
@@ -34,7 +34,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
    | `error` | 200 ama geçersiz JSON-RPC | sunucu sürümü uyumsuz olabilir |
 
 4. **Katmanlara göre grupla** (`fleet.lock.json`'daki `tier` alanı):
-   - **TR primer/idari** (`primary`/`secondary`/`support`, shard S1): mevzuat · mevzuat-bilgisi · resmi-gazete · titck · tbmm · saglikbakanligi · detsis
+   - **TR primer/idari** (`primary`/`secondary`/`support`, shard S1): mevzuat · resmi-gazete · titck · tbmm · saglikbakanligi · detsis
    - **Karşılaştırmalı/uluslararası** (`comparative`, shard S2): health-policy (**semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · **eurlex (G6 CELEX)** · **fedlex (CH)** · **uk-legal (UK içtihat/Hansard)** · ich-guidelines · intl-treaty · eudamed · oecd
    - **Doktrin** (`doctrine`, shard S3): yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması — v3.5.0'da wire'landı, artık companion DEĞİL) · **literatur** (DergiPark makale tam-metni)
    - **Tam-metin şelalesi** (`fulltext`, shard S4): **openathens** (Tier 3 lisanslı) → **annas-reader** (Tier 4 son çare, yalnız analiz). Şelale sırasını raporda belirt.
@@ -71,7 +71,6 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
 | Server | Tier | Env-var (Doppler → Bearer) |
 |---|---|---|
 | `mevzuat` | primary | `MEVZUAT_MCP_API_KEY` |
-| `mevzuat-bilgisi` | secondary | _(public — anahtar yok)_ |
 | `resmi-gazete` | primary | `RESMI_GAZETE_MCP_API_KEY` |
 | `titck` | primary | `TITCK_MCP_API_KEY` |
 | `tbmm` | primary | `TBMM_MCP_API_KEY` |

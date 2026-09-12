@@ -1,6 +1,6 @@
 # CONNECTORS.md — cureolex yüzey ve connector sözleşmesi
 
-> **Normatif.** Wire edilmiş 22 hukuk/regülasyon MCP + 3 companion (Yargı · Open
+> **Normatif.** Wire edilmiş 21 hukuk/regülasyon MCP + 3 companion (Yargı · Open
 > Law · Ansvar) için uç listesi, auth modeli ve **hangi ajan yüzeyinin neyi
 > otomatik bağladığı** burada sabittir. `.mcp.json` bu dosyadaki roster'dan
 > üretilir (`fleet.yaml` → `python3 tools/fleetkit/gen_fleet.py`). Anahtar
@@ -14,7 +14,7 @@ yüzeye göre ayrı bağlanır.
 
 ## 1. Yüzey matrisi
 
-| Yüzey | Skill / komut / ajan | 22 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
+| Yüzey | Skill / komut / ajan | 21 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
 |---|---|---|---|---|
 | **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -p cureohub -c dev_personal -- claude` |
 | **Cursor** | marketplace / GitHub plugin | `.cursor-plugin/mcp.json` auto-wire (`plugin-cureolex-<server>`) | çalışır (`python3`) | Süreç ortamında Doppler adları (`${env:VAR}`). `doppler run … -- cursor` veya `dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor restart. `${VAR}` plugin-variable paste formu **kullanılmaz**. |
@@ -57,7 +57,6 @@ userConfig→env fallback sözdiziminin belgelenmemiş olmasından gelir.
 | Server | Endpoint | Auth | Doppler var | Tier |
 |---|---|:---:|---|---|
 | `mevzuat` | `https://mevzuat.cureonics.com/mcp` | Bearer | `MEVZUAT_MCP_API_KEY` | primary |
-| `mevzuat-bilgisi` | `https://mevzuat.surucu.dev/mcp` | public | — | secondary |
 | `resmi-gazete` | `https://resmi-gazete-mcp.cureonics.workers.dev/mcp` | Bearer | `RESMI_GAZETE_MCP_API_KEY` | primary |
 | `titck` | `https://titck.cureonics.com/mcp` | Bearer | `TITCK_MCP_API_KEY` | primary |
 | `tbmm` | `https://tbmm.cureonics.com/mcp` | Bearer | `TBMM_MCP_API_KEY` | primary |
@@ -95,7 +94,7 @@ granularity, bölgesel M1 vs ICH M2–M5, spesifikasyon sürümü, Q&A). COMPARA
 ve DRAFT dosya-yapısı atıfı yapabilir; şirket sequence / otorite gönderimi
 `pharmaintel` ops'tur — ICH MCP bu soruları reddetmez.
 
-Public (Bearer yok): `mevzuat-bilgisi`, `yoktez`, `literatur`.
+Public (Bearer yok): `yoktez`.
 
 Gated Bearer: süreç ortamındaki Doppler adı. Claude Code `${VAR}` okur. Cursor
 native wire (`.cursor-plugin/mcp.json`) **`${env:VAR}`** okur — IDE bunu plugin

@@ -1,5 +1,5 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — cureolex MCP wiring. 22 server (20 Bearer-gated, 2 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır — wire edilemez. Fedlex 2026-08-08'de wire edildi. G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — cureolex MCP wiring. 21 server (20 Bearer-gated, 1 public), 3 companion. Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır (retrieve-don't-dump). Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır — wire edilemez. Fedlex 2026-08-08'de wire edildi. G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.",
   "mcpServers": {
     "mevzuat": {
       "type": "http",
@@ -9,12 +9,6 @@
       },
       "_tier": "primary",
       "_role": "PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover 2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz): list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun → get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/ relations → search_within_mevzuat → get_mevzuat_gerekce → resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup, phrase, search_within, gerekçe tam metin). Tüm modların TR-mevzuat omurgası."
-    },
-    "mevzuat-bilgisi": {
-      "type": "http",
-      "url": "https://mevzuat.surucu.dev/mcp",
-      "_tier": "secondary",
-      "_role": "İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — bağımsız ikinci oy + Playwright-yüzey çaprazı; çatışmada primer kazanır. ⚠️ UPSTREAM ÖLÇÜLEN ŞEKİLDE KAPALI (2026-09-11): `mevzuat.surucu.dev` DNS'te 77.245.156.197'ye çözülüyor ama TCP bağlantısı kurulmuyor — iki bağımsız ağdan (Lenovo + HP) doğrulandı; `surucu.dev` kökü 200 döndüğü için alan sahibi ayakta, yalnız bu alt alan kapalı. Kalıcı arıza, geçici blip DEĞİL. Wire bilinçli KORUNUYOR: in-house eşdeğeri yok (primer `mevzuat` ile aynı upstream'i farklı bir uygulamayla okur, çapraz-kontrol değeri buradan gelir) ve upstream dönerse kendiliğinden çalışır."
     },
     "resmi-gazete": {
       "type": "http",

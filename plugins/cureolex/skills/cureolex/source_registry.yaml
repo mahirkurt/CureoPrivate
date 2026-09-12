@@ -13,7 +13,7 @@
 #   international_guidance | comparative_jurisdiction | mcp_server |
 #   scientific_connector | hta_body
 #
-# Doğrulama (verification): mevzuat_mcp | mevzuat_bilgisi_mcp | yargi_mcp |
+# Doğrulama (verification): mevzuat_mcp | yargi_mcp |
 #   yoktez_mcp | titck_mcp | health_policy_mcp | german_law_mcp |
 #   fedlex_swiss_companion | open_primary_source | medical_research_connector |
 #   manual
@@ -426,33 +426,6 @@ mcp_server:
       kesin kanıt değil (caveat). faaliyetDurumuId etiketlenmez.
     access: { url: "https://detsis.cureonics.com/mcp", mcp_server: detsis }
     verification: open_primary_source
-  - id: mcp.mevzuat_bilgisi
-    name: "Mevzuat Bilgisi MCP (bedesten.adalet.gov.tr + mevzuat.gov.tr)"
-    role: >
-      Katman-1 YEDEĞİ (v1.1, 2026-08-07 eklendi). `mcp.mevzuat` birincil sunucusu
-      düştüğünde (upstream TLS/erişim arızası, origin timeout) aynı Türk mevzuat
-      sorgusunu BAĞIMSIZ bir uygulama ve BAĞIMSIZ bir upstream (bedesten REST)
-      üzerinden yanıtlar. 2026-08-06 denetiminde birincil düşükken 5210 sayılı
-      Yönetmeliği doğru döndürdüğü fiilen ölçüldü.
-    access: { url: "https://mevzuat.surucu.dev/mcp", mcp_server: mevzuat-bilgisi }
-    verification: mevzuat_bilgisi_mcp
-    note: >
-      YEDEK, EŞDEĞER DEĞİL. Primer (mevzuat-mcp 0.15.1+, HP production
-      mevzuat.cureonics.com) first-party bedesten taşır: kanun/mevzuat NUMARASI
-      lookup, `phrase` (Solr), `search_within_mevzuat`, `get_mevzuat_gerekce`
-      tam metin (bedesten `gerekceId` yoksa locator-only dürüst).
-      Farklılıklar zorunlu olarak beyan edilir:
-      (a) yapısal graf (`madde_tree`/`madde_diff`/`timeline`/`relations`) yalnız
-      primerdedir; ikincil bağımsız ikinci oydur (çatışmada primer);
-      (b) ikincil `search_mevzuat` AND/OR/NOT DESTEKLEMEZ → `+terim1 +terim2`;
-      belge-içi AND/OR/NOT primere `search_within_mevzuat` aittir;
-      (c) `resolve_resmi_gazete` KARŞILIĞI YOKTUR — RG çapa yalnız birincil
-      `mcp.mevzuat`tadır, yedek bu boşluğu KAPATMAZ.
-      Playwright-yalnız ikincil yüzeyleri (CB karar/genelge PDF markdown,
-      OpenRouter semantik search_within) primere mal etme.
-      Yedekten gelen her atıf `source: mevzuat_bilgisi_mcp (fallback)` etiketi ve
-      birincil doğrulama açığı notu taşır; birincil ayağa kalkınca çapraz-doğrulanır.
-
   - id: mcp.health_policy
     name: "Health Policy MCP (Cloudflare Worker connector)"
     role: >

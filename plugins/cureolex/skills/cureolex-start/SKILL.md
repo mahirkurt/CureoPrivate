@@ -5,7 +5,7 @@ description: >-
   onu flagship `cureolex` skill'ine/komutlarına yönlendirir. Kullan — "cureolex nedir / nereden başlamalıyım /
   hangi modu kullanmalıyım / hangi komut", "connector'larım bağlı mı / hepsi çalışıyor mu / tam-filo durumu", ya da
   kullanıcı sağlık mevzuatı reformu istiyor ama hangi modun (DRAFT/AMEND/ANALYZE/COMPLY/OPINE/RIA/COMPARATIVE/TBMM/
-  EX_POST) uygun olduğu belirsizse. 22 hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder,
+  EX_POST) uygun olduğu belirsizse. 21 hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder,
   9 modu ve 10 komutu tanıtır, niyet→komut yönlendirmesi yapar. Somut bir drafting talebi (ör. "yönetmelik taslağı
   hazırla") NET ise doğrudan flagship `cureolex` skill'i devreye girer — bu router araya girmez.
 version: 3.4.0
@@ -17,7 +17,7 @@ Bu skill, Cureolex süitinin giriş kapısıdır: **tam-filo durumunu kontrol ed
 
 ## 1. Önce tam-filo durumunu göster
 
-Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı / hepsi çalışıyor mu" diye sorduysa, **`/lex-connectors`** komutunu çalıştır — 22 wire'lı MCP + companion + evidentia/sci-audit'in canlı erişilebilirliğini raporlar (SessionStart preflight çıktısıyla tutarlı). **Web yüzeyinde** (`claude.ai`, ChatGPT) Python hook ve `fleet_probe.py` **yoktur**: `CONNECTORS.md` yüzey matrisini göster, kullanıcının elle eklediği connector'ları sor, canlı `ok` iddia etme.
+Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı / hepsi çalışıyor mu" diye sorduysa, **`/lex-connectors`** komutunu çalıştır — 21 wire'lı MCP + companion + evidentia/sci-audit'in canlı erişilebilirliğini raporlar (SessionStart preflight çıktısıyla tutarlı). **Web yüzeyinde** (`claude.ai`, ChatGPT) Python hook ve `fleet_probe.py` **yoktur**: `CONNECTORS.md` yüzey matrisini göster, kullanıcının elle eklediği connector'ları sor, canlı `ok` iddia etme.
 
 ## 2. Niyet → mod/komut yönlendirmesi
 

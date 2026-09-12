@@ -68,33 +68,11 @@ servers:
       adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup,
       phrase, search_within, gerekçe tam metin). Tüm modların TR-mevzuat omurgası.
     degrade: >-
-      Anahtar yoksa TR-mevzuat omurgası düşer; mevzuat-bilgisi ikincil korpusuna
-      degrade + manifestoda 'skipped: anahtar yok'. Üst-norm zinciri kurulamazsa
-      G2 CONDITIONAL.
+      Anahtar yoksa TR-mevzuat omurgası düşer — ikincil korpus YOKTUR (surucu.dev
+      aynası 2026-09-12'de kaldırıldı: aynı upstream'i okuyordu, yani veri değil
+      yalnız çapraz-kontrol sağlıyordu, ve upstream kalıcı kapalıydı). Manifestoda
+      'skipped: anahtar yok'. Üst-norm zinciri kurulamazsa G2 CONDITIONAL.
 
-  - name: mevzuat-bilgisi
-    url: https://mevzuat.surucu.dev/mcp
-    tier: secondary
-    auth_env: null
-    shard: S1
-    modes: [ALL]
-    gate: null
-    tools_used: [search_kanun, search_mevzuat, get_mevzuat_content,
-                 search_within_mevzuat, get_mevzuat_gerekce, get_mevzuat_madde_tree]
-    role: >-
-      İKİNCİL TR-mevzuat çapraz-kontrol aynası (surucu.dev topluluk) — bağımsız ikinci oy
-      + Playwright-yüzey çaprazı; çatışmada primer kazanır. ⚠️ UPSTREAM ÖLÇÜLEN ŞEKİLDE
-      KAPALI (2026-09-11): `mevzuat.surucu.dev` DNS'te 77.245.156.197'ye çözülüyor ama TCP
-      bağlantısı kurulmuyor — iki bağımsız ağdan (Lenovo + HP) doğrulandı; `surucu.dev`
-      kökü 200 döndüğü için alan sahibi ayakta, yalnız bu alt alan kapalı. Kalıcı arıza,
-      geçici blip DEĞİL. Wire bilinçli KORUNUYOR: in-house eşdeğeri yok (primer `mevzuat`
-      ile aynı upstream'i farklı bir uygulamayla okur, çapraz-kontrol değeri buradan gelir)
-      ve upstream dönerse kendiliğinden çalışır.
-    degrade: >-
-      BEKLENEN KARARLI DURUM (upstream kapalı): bağımsız ikinci oy ve Playwright-yüzey
-      çapraz-kontrolü düşer; manifestoda 'degraded: upstream kapalı (2026-09-11 ölçümü)'
-      — primer tek başına sentezi taşır (numara/`phrase`/`search_within`/tam gerekçe
-      primerde kalır). Bu satırın manifestoda görünmesi arıza değil, dürüst beyandır.
   - name: resmi-gazete
     url: https://resmi-gazete-mcp.cureonics.workers.dev/mcp
     # 2026-08-07 oturumunda ÖLÇÜLEN claude.ai connector adı (tahmin değil).

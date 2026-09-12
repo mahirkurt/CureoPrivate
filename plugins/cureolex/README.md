@@ -8,7 +8,7 @@ En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağ
 >
 > **Sürüm 3.8.6 (2026-08-18):** İkinci semantik geçiş — canlı yeteneklerin sıraya emilmesi: uk-legal `legislation_*` (httpx fix), UHRI HP indexer (`uhri_search`/`uhri_fetch_document` Md.90 sonrası zorunlu), fedlex Vernehmlassung RIA-only, mevzuat 0.15.1 `phrase`/`search_within`/bedesten gerekçe (ikincile gövde yok), german free-tier EU korunur. Stale skip'ler (UHRI exclude, `legislation_* yok`, Open Law-only UK) temizlendi. Önceki: **3.8.5** tools_used genişletme + conscious_excludes tek yer; fedlex danışma tools_used.
 >
-> **Sürüm 3.8.5 (2026-08-17):** Tam-filo araç ince ayarı — `tools_used` genişletildi (mevzuat list_*/detail/kurumlar, RG pdf/info, sb birimler/taslaklar, health-policy keşif araçları, oecd 9/9 + GOV_REG, yok/detsis omurga); distiller semantik sıra (ANALYZE→DRAFT, german resolve→EU, TBMM sira_no→gerekçe gövdesi, ich M4/M8, eudamed≠ÜTS); `conscious_excludes` tek yerde. **2026-08-18:** fedlex Vernehmlassung RIA'ya alındı. Önceki: **3.8.4** Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → 22 server.
+> **Sürüm 3.8.5 (2026-08-17):** Tam-filo araç ince ayarı — `tools_used` genişletildi (mevzuat list_*/detail/kurumlar, RG pdf/info, sb birimler/taslaklar, health-policy keşif araçları, oecd 9/9 + GOV_REG, yok/detsis omurga); distiller semantik sıra (ANALYZE→DRAFT, german resolve→EU, TBMM sira_no→gerekçe gövdesi, ich M4/M8, eudamed≠ÜTS); `conscious_excludes` tek yerde. **2026-08-18:** fedlex Vernehmlassung RIA'ya alındı. Önceki: **3.8.4** Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → 21 server.
 >
 > **Sürüm 3.8.3 (2026-08-16):** marketplace yüzey wiring — `.claude-plugin/plugin.json` artık `mcpServers` / `hooks` / `skills` / `commands` / `agents` bildirir; native `.cursor-plugin/plugin.json`; Codex `openai.yaml` `.codex-plugin/` altına taşındı; `CONNECTORS.md` Claude Code / Cursor / claude.ai / ChatGPT ayrımını sabitledi (web'de hook yok, MCP elle connector). Distiller `tools:` allowlist'ine Cursor tireli önek (`mcp__plugin-cureolex-<server>__*`) eklendi.
 >
@@ -17,7 +17,7 @@ En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağ
 ## Öne çıkanlar
 
 - **9 mod:** DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION.
-- **Tam-filo aktivasyonu:** wire edilmiş **22 hukuk/regülasyon MCP + 3 zorunlu companion** (Yargı · Open Law · Ansvar) her sorguda çalışır; her çıktı **kapsam manifestosu (G0)** taşır — hangi server çalıştı/boş/degrade/atlandı (sessiz atlama yasak; bağlam-dışı companion satırı dürüstçe `skipped: mod için N/A`).
+- **Tam-filo aktivasyonu:** wire edilmiş **21 hukuk/regülasyon MCP + 3 zorunlu companion** (Yargı · Open Law · Ansvar) her sorguda çalışır; her çıktı **kapsam manifestosu (G0)** taşır — hangi server çalıştı/boş/degrade/atlandı (sessiz atlama yasak; bağlam-dışı companion satırı dürüstçe `skipped: mod için N/A`).
 - **Bağlam ekonomisi + büyük-veri:** tam-filo ham veriyi ana pencereye dökmez — **3-katmanlı ekonomi** (Tier 0 ana pencere · Tier 1 ≤4 paralel distiller alt-ajanı · Tier 2 **anamnesis** RAG/GraphRAG substratı, `collection=cureolex:sess:<id>`) + **kanonik cache** (bir-kez-getir, G0–G9 aynı sess) + **kör-getirme-yok chunking** + **devre-kesici/extract-then-evict**. Büyük kanun/statute/OCR → anamnesis ingest→bounded query (`doc_scope` yoktur; atıf `doc_id::idx`). Sözleşme: `skills/cureolex/shared/context-economy-contract.md`.
 - **No-fabrication:** kanun/CELEX/AYM/Yargıtay/PMID asla uydurulmaz; her atıf MCP-doğrulanmış (`evidence_ledger`).
 - **Yumuşak delegasyon:** klinik kanıt → **evidentia**; atıf-adli + Türkçe dil → **sci-audit** (varsa; yoksa graceful degrade).
@@ -40,20 +40,20 @@ En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağ
 
 Serbest metinle de tetiklenir (skill `cureolex` + `cureolex-start` router). Oryantasyon için `/lex-connectors` veya "cureolex nedir".
 
-## Wire edilmiş MCP filosu (22 server + 3 companion)
+## Wire edilmiş MCP filosu (21 server + 3 companion)
 
 Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`, `fleet.lock.json`, `/lex-connectors` anahtar tablosu, distiller ajanlarının `tools:` kısıtı ve mod×server matrisi **ondan üretilir** (`python3 tools/fleetkit/gen_fleet.py`); `tools/fleetkit/check_drift.py` türetilmiş≠commit'li hâlini ve düzyazıdaki yanlış filo sayılarını CI'da yakalar. **`tools/fleetkit/` KURULU PLUGIN'DE BULUNMAZ** — kaynak depoya (`CureoPrivate`) ait bir GELİŞTİRME aracıdır; kurulu pakette türetme/kapı komutları çalıştırılamaz, `fleet.yaml` ve türevleri salt-okunur kanıttır.
 
 | Katman | Shard | Server'lar |
 |---|---|---|
-| TR primer/idari | S1 | mevzuat (primer) · mevzuat-bilgisi (ikincil çapraz-kontrol) · resmi-gazete · titck · tbmm · saglikbakanligi · detsis |
+| TR primer/idari | S1 | mevzuat (primer) · resmi-gazete · titck · tbmm · saglikbakanligi · detsis |
 | Karşılaştırmalı/uluslararası | S2 | health-policy (yabancı ülke) · german-law · **eurlex (G6 CELEX)** · **fedlex (CH birincil)** · **uk-legal (UK içtihat/Hansard)** · ich-guidelines · intl-treaty · eudamed · oecd |
 | Doktrin | S3 | yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması) · **literatur** (DergiPark makale tam-metni) |
 | Tam-metin şelalesi | S4 | **openathens** (Tier 3: `oa_fetch_fulltext` / `oa_fetch_pdf`) → **annas-reader** (Tier 4: reader / `download_document`, son çare, yalnız analiz) |
 | Büyük-veri substratı | tümü | anamnesis (RAG/GraphRAG evidence_index — kaynak değil, bağlam-ekonomisi Tier 2) |
 | **Companion** (wire edilemez — claude.ai connector) | — | Yargı içtihat · Open Law (UK çapraz/HUDOC; statute = `uk-legal` `legislation_*`) · Ansvar (58-yargı tarama) |
 
-19'u Bearer-gated, 3'ü public (`mevzuat-bilgisi`, `yoktez`, `literatur`).
+20'si Bearer-gated, 1'i public (`yoktez`).
 
 ## Kurulum ve kimlik doğrulama
 
@@ -84,9 +84,9 @@ cureolex/
 ├── .codex-plugin/plugin.json       # ChatGPT / Codex (inline mcpServers)
 ├── .codex-plugin/openai.yaml       # ChatGPT interface stub
 ├── CONNECTORS.md                   # yüzey matrisi + connector roster (üretilen tablo)
-├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (22 server + 3 companion)
+├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (21 server + 3 companion)
 ├── fleet.lock.json                 # üretilir — hook'ların okuduğu stdlib türev
-├── .mcp.json                       # üretilir — 22 MCP + tam-filo rol notları
+├── .mcp.json                       # üretilir — 21 MCP + tam-filo rol notları
 ├── skills/
 │   ├── cureolex/                # flagship (9 mod, G0-G9) + 19 referans + 12 template + 4 şema
 │   │   └── shared/                 # composition · coverage-manifest · context-economy (v3.5.5'te skill içine alındı)

@@ -30,8 +30,6 @@ cases:
       - "yoktez anahtarsız HTTP 200 dönmeli."
       - "literatur ARTIK auth_env taşır (2026-09-11 cutover: surucu.dev → literatur.cureonics.com);
          bu listede DEĞİL, FR-01 kapsamındadır."
-      - "mevzuat-bilgisi upstream KAPALI (2026-09-11 ölçümü, iki ağdan TCP bağlanmıyor) →
-         200 beklenmez; bu bir wiring hatası değil, kaynağa yazılmış kalıcı durumdur."
       - "Herhangi biri 401/403 dönerse upstream KAPILANMIŞ demektir → fleet.yaml'e auth_env eklenmeli, sonra `python3 tools/fleetkit/gen_fleet.py`."
       - "Bu, titck dersinin genellemesidir: 'public' bir varsayım değil, ölçülen bir olgudur."
 
@@ -115,10 +113,11 @@ cases:
       timeout (CF 524) veriyor, resolve_resmi_gazete boş `items` + dolu
       `diagnostics` (ör. SSL CERTIFICATE_VERIFY_FAILED) döndürüyor.
     expect:
-      - "Çıktı DURMAZ: Türk mevzuatı yükünü `mcp__mevzuat-bilgisi__*` devralır (SKILL.md §3 DEVRALMA KURALI)."
-      - "Manifestoda İKİ satır zorunlu: 'mevzuat → degraded: <teşhis>' VE 'mevzuat-bilgisi → hit N (fallback devraldı)'. Tek satır yazmak G0 FAIL."
-      - "Yedekten gelen her atıf `source: mevzuat_bilgisi_mcp (fallback)` + birincil-doğrulama açığı notu taşımalı; birincil ayağa kalkınca çapraz-doğrulanmalı."
-      - "Yedek EŞDEĞER SAYILMAMALI: yapısal graf ve resolve_resmi_gazete yalnız primerdedir; ikincil search_mevzuat AND/OR/NOT desteklemez (`+terim1 +terim2`). Primer 0.15.1+ (HP production) numara lookup / phrase / search_within / tam gerekçe taşır."
+      - "YEDEK YOKTUR (2026-09-12): devralacak ikinci sunucu yok — ikincil ayna mevzuat-bilgisi kaldırıldı (aynı upstream'i farklı uygulamayla okuyordu; veri değil yalnız çapraz-kontrol sağlıyordu, upstream'i de kalıcı kapalıydı)."
+      - "Çıktı DÜRÜSTÇE DURUR: manifestoda TEK satır 'mevzuat → degraded: <teşhis>'; ikinci bir fallback satırı ARANMAZ (eski iki-satır kuralı geçersizdir)."
+      - "TR-mevzuat iddiası ÜRETİLMEZ → manual_required (mevzuat.gov.tr derin-bağlantısı + sorgu yankısı); primer ayağa kalkınca sorgu tekrarlanır."
+      - "Boşluğu model belleğinden mevzuat metni yazarak doldurmak G0 + no-fabrication İHLALİDİR — bu senaryonun asıl sınadığı şey budur."
+      - "resolve_resmi_gazete, yapısal graf (madde_tree/madde_diff/timeline/relations/ilga) ve get_mevzuat_gerekce zaten YALNIZ primerdeydi; TBMM yasama tarihçesi yalnız mcp__tbmm__*'tedir."
       - "`resolve_resmi_gazete` KARŞILIĞI YEDEKTE YOKTUR — RG çapa çözümlemesi gerekiyorsa `manual_required`; yedekle kapatıldığı İMA EDİLMEMELİ."
       - "İkisi de düşükse Türk mevzuatı iddiası ÜRETİLMEMELİ (no-fabrication)."
     rationale: >-

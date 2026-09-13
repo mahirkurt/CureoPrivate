@@ -32,10 +32,14 @@ komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
    (`bm25+vector-fallback` / `fts5-bm25`); `kb_search` sonucundaki ise *o sorguda gerçekten
    izlenen yoldur* (`fts5-bm25` / `vector-fallback`). Birini diğerinin değeriyle raporlamayın.
    Yoksa **bağlı değil** → modül üretimi yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır
-   (asla uydurma kaynak). **`alignment_built: false` iken `kb_for_outcome` dürüstçe
-   `alignment_not_built` döner** — kazanım hizalaması, korpus müfredat konularını kapsayana +
-   insan denetimi geçene kadar bilinçli kapalıdır; bu bir arıza DEĞİL, no-fabrication gereğidir.
-   O halde kazanım konusunu `kb_search`'e sorgu olarak verin.
+   (asla uydurma kaynak). **`alignment_built: false` iken `kb_for_outcome` artık ham
+   `alignment_not_built` DÖNMEZ** — ara mod (EK-11) kazanımın kök metnini `kb_search`'e sorgu
+   verir; `status:"ok"` (`alignment_kind:"query_time_bm25"`/`"query_time_vector_fallback"`)
+   YALNIZ tam AND ya da terimlerin ≥%40'ını tutan basamakta, aksi hâlde `status:"degraded"`/
+   `reason:"interim_low_relevance"`. **`degraded` dönerse `kb_search`'e düşün** — kazanım
+   konusunu serbest sorgu olarak verin. Saklı (embedding-vetted) hizalama, korpus müfredat
+   konularını kapsayana + insan denetimi geçene kadar bilinçli kapalıdır; bu bir arıza DEĞİL,
+   no-fabrication gereğidir.
 
 5. **Kanonik-önbellek durumu:** Bu oturumda üretilmiş kanonik artefaktları (`subject_registry`,
    `outcomes_extract`, `framework_map`, `figure_probe`) ve `connector_call_ledger`'ı

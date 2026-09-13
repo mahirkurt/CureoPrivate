@@ -92,12 +92,18 @@ Workers AI). Sonuçlar `retrieval` (**gerçekte izlenen yol**: `fts5-bm25` / `ve
 sorguyu anmayabilir). Sıralama kademe-birincildir → **`score`'a göre yeniden sıralamayın**.
 Sorgu 512 karakterde kesilir (`query_truncated`).
 
-**`kb_for_outcome` HENÜZ KURULMADI** (dürüstçe `alignment_not_built` döner, asla uydurma hizalama):
-kazanım-hizalaması, korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar
-bilinçli olarak kapalıdır. Kazanımdan modül üretirken kazanım metnindeki konuyu `kb_search`'e
-sorgu olarak verin. *(Ölçüm 2026-07-17: korpusu büyütmek tek başına yetmedi — 1758 vektörde bile
-kazanım↔pasaj kosinüsleri konuyu değil "ikisi de uzun resmî Türkçe"yi ölçüyor; bu yüzden
-hizalama bir eşik ayarıyla açılamaz.)*
+**`kb_for_outcome` — saklı hizalama (Faz 2) HENÜZ KURULMADI, ama artık ham
+`alignment_not_built` DÖNMEZ.** Hizalama tablosu boşken ara mod (EK-11, ikinci dalga) kazanımın
+kök metnini `kb_search`'e sorgu verir ve `status:"ok"` (`alignment_kind:"query_time_bm25"` ya da
+vektör yedeğiyle `"query_time_vector_fallback"`) YALNIZ tam AND ya da terimlerin ≥%40'ını tutan
+bir gevşetme basamağında döner (`retrieval_tier`, `rung`, `coverage`); aksi hâlde
+`status:"degraded"`/`reason:"interim_low_relevance"` — **bu durumda `kb_search`'e düşün**,
+kazanım metnindeki konuyu serbest sorgulayın. Bilinmeyen kod → `outcome_code_unknown`; kazanım
+JSONL'i hiç yoksa → `outcome_text_unavailable`. Saklı, embedding-vetted bir hizalama hiçbir
+zaman iddia edilmez — korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar
+bilinçli olarak kurulmadı. *(Ölçüm 2026-07-17: korpusu büyütmek tek başına yetmedi — 1758
+vektörde bile kazanım↔pasaj kosinüsleri konuyu değil "ikisi de uzun resmî Türkçe"yi ölçüyor; bu
+yüzden saklı hizalama bir eşik ayarıyla açılamaz.)*
 
 Connector bağlı değilse: kullanıcıya Settings → Connectors'tan etkinleştirmesini bildirin ve
 `carbon-edupedia`'nın **MCP olmadan da** (kullanıcının verdiği ders metniyle) çalıştığını, üretimin

@@ -96,7 +96,8 @@ Sorgu 512 karakterde kesilir (`query_truncated`).
 `alignment_not_built` DÖNMEZ.** Hizalama tablosu boşken ara mod (EK-11, ikinci dalga) kazanımın
 kök metnini `kb_search`'e sorgu verir ve `status:"ok"` (`alignment_kind:"query_time_bm25"` ya da
 vektör yedeğiyle `"query_time_vector_fallback"`) YALNIZ tam AND ya da terimlerin ≥%40'ını tutan
-bir gevşetme basamağında döner (`retrieval_tier`, `rung`, `coverage`); aksi hâlde
+bir gevşetme basamağında döner (`retrieval_tier` — `and`/`ladder`/`or`/`or_only`/`none` beş
+değerinden biri; `rung`, `coverage`); aksi hâlde
 `status:"degraded"`/`reason:"interim_low_relevance"` — **bu durumda `kb_search`'e düşün**,
 kazanım metnindeki konuyu serbest sorgulayın. Bilinmeyen kod → `outcome_code_unknown`; kazanım
 JSONL'i hiç yoksa → `outcome_text_unavailable`. Saklı, embedding-vetted bir hizalama hiçbir

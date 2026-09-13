@@ -37,6 +37,7 @@ kaldırıldı (§8). Teslim yerel tek-dosya HTML'dir.
 | **Kapsam (hard)** | **YALNIZ Türkiye MEB / Türkiye Yüzyılı Maarif Modeli (2024).** Yabancı müfredat (IB, Cambridge), üniversite içeriği veya genel konu anlatımı **kapsam dışı** — bunlar için connector çağrılmaz, kullanıcı kaynağı / yerleşik bilgi kullanılır (skill `SKILL.md §7`). |
 | **Korpus (introspeksiyon 2026-07-06, BAYAT — güncel değer 2026-09-13 canlı ölçüm)** | `tymm.meb.gov.tr` · corpus_version **1.5** (eski: 1.4) · 60 ders · **4.286** kanonik kazanım (eski introspeksiyon 4.069'du; ham/dedup-öncesi satır sayısı farklı ve daha yüksektir — `search_learning_outcomes`'un `included_fragment_types` zarfıyla karıştırma) · 13 çerçeve (266 madde) · 105 ders kitabı · 157 video · sunucu **21 araç** (eski introspeksiyon dönemindeki sayıdan farklı olabilir). `server_info` ile her zaman doğrula — bu tablo bir anlık görüntüdür. |
 | **`search` zarfı (R30, kırıcı değişiklik — mufredat 0.4.x)** | `search` artık düz dizi DEĞİL, `{results, included_outcome_fragment_types}` döner; `search_learning_outcomes` de `{results, included_fragment_types}` zarfına sarılıdır. Bu tablonun altındaki araç satırları bu zarfı varsayar — eski düz-dizi bekleyen bir ayrıştırıcı güncellenmeden kırılır. |
+| **Diğer 0.4.x sözleşme değişiklikleri (MF-3/MF-7)** | (1) `list_learning_outcomes` artık düz dizi DEĞİL, `{items, included_fragment_types, offset, limit, has_more}` zarfı döner; `limit` varsayılanı **100**, tavanı **200** (eski `limit=1000` çağrısı doğrulamada reddedilir) — **`has_more:true` iken `offset += limit` ile tekrar çağırın**, aksi hâlde sessizce kısmi bir kazanım kümesiyle çalışılır. (2) `get_curriculum_program` varsayılan olarak hafif `toc` döner (ünite/bölüm başlıkları; belge metni yüklenmez); eski ağır sayfa-başı dizini yalnız `page_index=true` ile `page_index` alanında gelir. (3) `get_subject.outcome_count` artık **kanonik** sayıdır (yalnız `fragment_type='outcome'` satırları); eski tüm-parça toplamı `fragment_count` alanındadır. |
 
 > Ham introspeksiyon çıktısı: `./docs/mcp-introspection-2026-07-06.json` (denetlenebilirlik; BAYAT — 2026-09-13 canlı sayımlarla değiştirilmedi, yeniden introspeksiyon önerilir).
 
@@ -54,14 +55,14 @@ envanterde saymaz; **canlı sunucu `get_figure`'ı DA bildirir** → Tier-2 mevc
 | `server_info` | Korpus sürümü, build tarihi, sayımlar | **Provenans damgası** için sürüm öğrenme; pre-flight canlılık |
 | `list_education_levels` | İki seviye (`temel-egitim`, `ortaogretim`) + ders sayısı | En üst seviye keşif |
 | `list_subjects` | 60 ders (slug + ad + seviye + sınıf sayısı); `q` ile isim filtresi | **Ders slug'ını bulma** (kritik ilk adım) |
-| `get_subject` | Bir dersin programları, sınıfları, ders kitapları, `outcome_count` | Ders profilini doğrulama |
+| `get_subject` | Bir dersin programları, sınıfları, ders kitapları, kanonik `outcome_count` (eski tüm-parça toplamı: `fragment_count`) | Ders profilini doğrulama |
 | `list_curriculum_programs` | Program belgeleri (subject/grade filtreli) | Program belge id'sini bulma |
-| `get_curriculum_program` | Program belgesi + hafif sayfa-başlığı içindekiler | Ünite/bölüm yapısını görme |
+| `get_curriculum_program` | Program belgesi + varsayılan hafif `toc` (ünite/bölüm başlıkları); ağır sayfa-başı dizini yalnız `page_index=true` ile | Ünite/bölüm yapısını görme |
 
 ### B · Kazanım (öğrenme çıktısı) erişimi — **modülün çekirdek kaynağı**
 | Araç | Ne döner | Rol |
 |---|---|---|
-| `list_learning_outcomes` | Bir dersin kazanımları (kod, metin, sınıf, sayfa). `distinct_codes:true` ile kod başına tek kanonik satır | **Birincil çekme** — konu/ünite kazanımları |
+| `list_learning_outcomes` | Bir dersin kazanımları (kod, metin, sınıf, sayfa) — `{items, included_fragment_types, offset, limit, has_more}` zarfında, `limit` varsayılan 100 / tavan 200. `distinct_codes:true` ile kod başına tek kanonik satır | **Birincil çekme** — konu/ünite kazanımları; **`has_more:true` iken `offset += limit` ile döngü** (kısmi kümeyle çalışma) |
 | `search_learning_outcomes` | Tam-metin kazanım araması (`q`); ders/sınıf/seviye filtresi. `distinct_codes:true` desteklenir | Konu adından kazanım bulma ("hücre", "kesir") |
 | `search` | Birleşik FTS: program sayfaları + çerçeveler + kazanımlar (`kind` filtresi) | Geniş keşif; konunun program metnindeki yeri |
 
@@ -229,7 +230,8 @@ Müfredat MCP bir **zenginleştirme ve doğrulama katmanıdır**, tek-nokta bağ
   **offline** yola dön (kullanıcı kaynağı veya etiketli yerleşik bilgi). `curriculum` bloğu
   kısmi doldurulabilir veya atlanır; mod CURRICULUM yerine MODULE'a düşebilir.
 - **Kazanım bulunamadı** (`search_learning_outcomes` boş): sorguyu genişlet (eş anlamlı, kısa
-  terim) → gerekirse `list_learning_outcomes(distinct_codes=true)` ile üniteyi tara → hâlâ yoksa
+  terim) → gerekirse `list_learning_outcomes(distinct_codes=true)` ile üniteyi tara (`has_more:true` iken
+  `offset += limit` ile tüm sayfaları) → hâlâ yoksa
   doğru ders/sınıf/konu sor.
 - **Yanlış slug:** `list_subjects` çıktısındaki slug'ı **birebir** kullan; ezberden yazma.
 - **Ders kitabı metni boş:** beklenen davranış (`get_document_text` ders kitaplarında `pdf_url`
@@ -293,7 +295,7 @@ lisans-etiketli pasajlarla** zenginleştirir. MEB öğretim programının KENDİ
 |---|---|
 | `kb_search` | Eğitsel korpusta arama → **belge başına EN İYİ pasaj** (`top_k` BELGE sayar). Her sonuç `license` + `quote_allowed` + `match_kind` taşır; `match_kind` **üç değerli**: `text` (sözlüksel kanıt) > `title_only` > `semantic` (**vektör tahmini** — gövde sorguyu hiç anmayabilir). Sıralama kademe-birincildir; `score` ikincil anahtar ve listede monoton azalmaz → **`score`'a göre yeniden sıralamayın**. `score_kind` (`bm25`/`cosine`) ile hangi ölçek olduğu bildirilir. |
 | `kb_for_outcome` | Bir MEB kazanım koduna hizalanmış pasajlar. **Faz 2 (saklı hizalama) hâlâ kapalı, ama artık ham `alignment_not_built` DÖNMEZ** — ara mod (`alignment_kind:"query_time_bm25"` ya da vektör yedeğiyle `"query_time_vector_fallback"`) kazanımın kendi kök metnini sorgular; `status:"ok"` yalnız tam AND ya da ≥%40 terim-kapsamlı basamakta (`retrieval_tier` — `and`/`ladder`/`or`/`or_only`/`none` beş değerinden biri; `rung`,
-`coverage` alanlarıyla), aksi hâlde `status:"degraded"`/`reason:"interim_low_relevance"`. Bilinmeyen kod → `outcome_code_unknown`; kazanım JSONL'i hiç yoksa → `outcome_text_unavailable`. Asla sahte/saklı hizalama iddia edilmez. `degraded` dönerse **`kb_search`'e düşün** (kazanım metnindeki konuyu serbest sorgulayın). |
+`coverage` alanlarıyla), aksi hâlde `status:"degraded"`/`reason:"interim_low_relevance"`. Export'ta olmayan kod → `outcome_code_unknown` — bu çağıranın hatası olmak zorunda değil: kod yanlış olabilir, egitim-kaynak'ın tek seferlik kazanım export'u mufredat korpusunun gerisinde kalmış olabilir ya da kod bilinçli olarak hariç tutulan bir aileden olabilir. **Okul öncesi (D1…D18) kodları şu an tasarım gereği `outcome_code_unknown` döner** (kısa davranışsal kazanımlarda kapsama kapısı konu dışı `ok` üretti; kapı yeniden kalibre edilene dek export dışı) — bunlar için kazanım metnini `maarif-mufredat`'tan alıp `kb_search` kullanın; diğer kodları `list_learning_outcomes`/`search_learning_outcomes` ile doğrulayın. Kazanım JSONL'i hiç yoksa → `outcome_text_unavailable`. Asla sahte/saklı hizalama iddia edilmez. `degraded` dönerse **`kb_search`'e düşün** (kazanım metnindeki konuyu serbest sorgulayın). |
 | `kb_get` | Bir belgenin tam/kısmi metni (bağlam genişletme; `kb_search` bir pasaj döner, gerisini bununla aç). Bilinmeyen `doc_id` → `not_found`. |
 | `kb_patterns` | Etkileşim/oyunlaştırma desen kartları (Faz 4; şimdilik boş + caveat). |
 | `kb_sources` | Kaynak envanteri: lisans, `quote_allowed`, belge/chunk sayısı. |

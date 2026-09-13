@@ -99,8 +99,11 @@ vektör yedeğiyle `"query_time_vector_fallback"`) YALNIZ tam AND ya da terimler
 bir gevşetme basamağında döner (`retrieval_tier` — `and`/`ladder`/`or`/`or_only`/`none` beş
 değerinden biri; `rung`, `coverage`); aksi hâlde
 `status:"degraded"`/`reason:"interim_low_relevance"` — **bu durumda `kb_search`'e düşün**,
-kazanım metnindeki konuyu serbest sorgulayın. Bilinmeyen kod → `outcome_code_unknown`; kazanım
-JSONL'i hiç yoksa → `outcome_text_unavailable`. Saklı, embedding-vetted bir hizalama hiçbir
+kazanım metnindeki konuyu serbest sorgulayın. Export'ta olmayan kod → `outcome_code_unknown` (kod
+yanlış, export mufredat korpusunun gerisinde ya da kod bilinçli hariç tutulan bir aileden olabilir);
+**okul öncesi (D1…D18) kodları şu an tasarım gereği `outcome_code_unknown` döner** — bunlar için
+kazanım metnini `maarif-mufredat`'tan alıp `kb_search` kullanın. Kazanım JSONL'i hiç yoksa →
+`outcome_text_unavailable`. Saklı, embedding-vetted bir hizalama hiçbir
 zaman iddia edilmez — korpus müfredat konularını kapsayana **ve** insan denetimi geçene kadar
 bilinçli olarak kurulmadı. *(Ölçüm 2026-07-17: korpusu büyütmek tek başına yetmedi — 1758
 vektörde bile kazanım↔pasaj kosinüsleri konuyu değil "ikisi de uzun resmî Türkçe"yi ölçüyor; bu

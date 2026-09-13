@@ -85,14 +85,14 @@ Araçlar dört işlevsel kümeye ayrılır. **Çoğu modül için 3–6 çağrı
 | `server_info` | Korpus sürümü, build tarihi, sayımlar | Provenans damgası için sürüm öğrenme |
 | `list_education_levels` | İki seviye (`temel-egitim`, `ortaogretim`) + ders sayısı | En üst seviye keşif |
 | `list_subjects` | 60 ders (slug + ad + seviye + sınıf sayısı); `q` ile isim filtresi | **Ders slug'ını bulma** (kritik ilk adım) |
-| `get_subject` | Bir dersin programları, sınıfları, ders kitapları, `outcome_count` | Ders profilini doğrulama |
+| `get_subject` | Bir dersin programları, sınıfları, ders kitapları, kanonik `outcome_count` (yalnız `fragment_type='outcome'`; eski tüm-parça toplamı `fragment_count`'ta) | Ders profilini doğrulama |
 | `list_curriculum_programs` | Program belgeleri (subject/grade filtreli) | Program belge id'sini bulma |
-| `get_curriculum_program` | Program belgesi + hafif sayfa-başlığı içindekiler | Ünite/bölüm yapısını görme |
+| `get_curriculum_program` | Program belgesi + varsayılan hafif `toc` (ünite/bölüm başlıkları; belge metni yüklenmez). Ağır sayfa-başı dizini yalnız `page_index=true` ile `page_index` alanında | Ünite/bölüm yapısını görme |
 
 ### B. Kazanım (öğrenme çıktısı) erişimi — **modülün çekirdek kaynağı**
 | Araç | Ne döner | Tipik kullanım |
 |---|---|---|
-| `list_learning_outcomes` | Bir dersin kazanımları (kod, metin, sınıf, sayfa). `distinct_codes:true` ile kod başına tek kanonik satır | **Birincil çekme** — konu/ünite kazanımlarını listele |
+| `list_learning_outcomes` | Bir dersin kazanımları (kod, metin, sınıf, sayfa) — `{items, included_fragment_types, offset, limit, has_more}` zarfında; `limit` varsayılan **100**, tavan **200** (eski 1000 reddedilir); varsayılan yalnız kanonik `outcome` satırları. `distinct_codes:true` ile kod başına tek kanonik satır | **Birincil çekme** — konu/ünite kazanımlarını listele; **`has_more:true` iken `offset += limit` ile döngü** |
 | `search_learning_outcomes` | Tam-metin kazanım araması (`q`); ders/sınıf/seviye filtresi | Konu adından kazanım bulma ("hücre", "kesir") |
 | `search` | Birleşik FTS: program sayfaları + çerçeveler + kazanımlar (`kind` filtresi) | Geniş keşif; konunun program metnindeki yeri |
 
@@ -200,6 +200,10 @@ fen, hücre")? İkisi de aynı akışa girer; fark yalnız Adım 2'nin sorgusudu
 - Tüm ünite gerekiyorsa: `list_learning_outcomes(subject=<slug>, grade=<sınıf>,
   distinct_codes=true)` → hedef kazanımları (ve İÇERİK ÇERÇEVESİ / Anahtar
   Kavramlar bloklarını) seç.
+- **Sayfalamayı bitir (ZORUNLU):** yanıt `{items, …, offset, limit, has_more}`
+  zarfıdır ve `limit` varsayılan 100 / tavan 200'dür. `has_more:true` iken aynı
+  çağrıyı `offset += limit` ile tekrarla ve `items`'ları birleştir; `has_more:false`
+  gelmeden kümeyi tam sayma — kısmi bir kazanım kümesiyle sessizce çalışılmaz.
 - Kullanıcı kod verdiyse: aynı araçla kodu doğrula + tam metni al.
 
 **Adım 3 — ÇERÇEVEYİ ÇİZ: ders kitabını AÇ (ZORUNLU, opsiyonel değil).**
@@ -520,7 +524,7 @@ Müfredat MCP **derleme anında** çağrılır; her zaman erişilebilir olmayabi
   doldurulabilir veya atlanabilir; mod CURRICULUM yerine MODULE'a düşebilir.
 - **Kazanım bulunamadıysa** (`search_learning_outcomes` boş): Önce sorguyu
   genişlet/yeniden ifade et (eş anlamlı, daha kısa terim), gerekirse `list_learning_outcomes`
-  ile üniteyi tara. Hâlâ yoksa kullanıcıya doğru ders/sınıf/konu sor.
+  ile üniteyi tara (`has_more:true` iken `offset += limit` ile tüm sayfaları). Hâlâ yoksa kullanıcıya doğru ders/sınıf/konu sor.
 - **Yanlış slug:** `list_subjects` çıktısındaki slug'ları **birebir** kullan;
   slug'ı ezberden yazma/uydurma. Hatalı parametre boş sonuç döndürür → slug'ı doğrula.
 - **Ders kitabı metni boş:** Beklenen davranıştır (`get_document_text` ders
@@ -538,7 +542,8 @@ Müfredat MCP **derleme anında** çağrılır; her zaman erişilebilir olmayabi
   `get_framework`'ü yalnız resmî beceri kodu/tanımı **modülde gösterilecekse** çağır.
 - **`distinct_codes:true` kullan** (`list_learning_outcomes`): PDF parçalaması aynı
   kodu birden çok kez döndürür; bu bayrak kod başına tek kanonik satır verir = boşa
-  token engellenir.
+  token engellenir. Sayfalama yine geçerlidir: `has_more:true` ise `offset += limit`
+  ile devam et (token tasarrufu için sayfa atlanmaz).
 - **`get_document_text`'i dar al:** maks 25 sayfa, ama `page_range` ile 2–4 sayfa
   genelde yeter; yalnız kazanım metni olgu için yetersizse çağır.
 - **Keşif sonuçlarını yeniden kullan:** Aynı oturumda birden çok modül üretiliyorsa
@@ -552,7 +557,8 @@ Müfredat MCP **derleme anında** çağrılır; her zaman erişilebilir olmayabi
 2. `search_learning_outcomes(q="hücre", subject="fen-bilimleri-dersi",
    grade="5.Sınıf")` → ünite 3 kazanımları görünür.
 3. `list_learning_outcomes(subject="fen-bilimleri-dersi", grade="5.Sınıf",
-   distinct_codes=true)` → hedef kazanımlar seçilir:
+   distinct_codes=true)` → `has_more:true` ise `offset=100` ile tekrar çağrılıp
+   `items` birleştirilir; hedef kazanımlar seçilir:
    - **FB.5.3.1.1** — "Bitki ve hayvan hücrelerini ... *karşılaştırabilme*"
    - **FB.5.3.1.2** — "Hücre-doku-organ-sistem-organizma ... *yapılandırabilme*"
    - İÇERİK ÇERÇEVESİ / Anahtar Kavramlar blokları olgu kaynağı olarak not edilir.

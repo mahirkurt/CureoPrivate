@@ -1,8 +1,8 @@
 ---
 name: start
 description: edupedia süitine giriş ve yönlendirme. Bağlı İKİ MCP connector'ını (maarif-mufredat müfredat/kazanım, egitim-kaynak açık eğitsel kaynak RAG içerik-zenginleştirme) kontrol eder, flagship carbon-edupedia skill'ini ve komutları tanıtır, kullanıcının niyetine göre doğru komuta yönlendirir. İlk kez süitle çalışırken, hangi connector'ın bağlı olduğunu görmek için, ya da "edupedia nedir / nereden başlamalıyım / hangi komutu kullanmalıyım / connector'ım bağlı mı / Maarif MCP çalışıyor mu / egitim-kaynak bağlı mı" türü oryantasyon sorularında kullanın. Tetikleyiciler — edupedia başlat, süit oryantasyonu, connector kontrolü, "ne yapabilirsin", "nereden başlayayım", "Maarif Modeli modülü nasıl üretirim", "kazanımdan modül nasıl".
-version: 1.2.1
-last_updated: 2026-08-18
+version: 1.2.2
+last_updated: 2026-09-14
 ---
 
 # edupedia — Başlangıç ve Yönlendirme

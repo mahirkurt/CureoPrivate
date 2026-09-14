@@ -1,5 +1,29 @@
 # Changelog — Vekayinüvis Plugin
 
+## 3.5.0 — 2026-09-14
+
+MINOR: tüketici sözleşmesi genişledi (yeni araçlar) — geriye dönük uyumlu.
+
+- **devlet-arşivleri v0.2.0 sözleşmesi wire'landı — 27 → 30 araç**, katalog yetenek
+  katmanı 7 → 8 grup. Yeni: `devarsiv_fon_info` (Rehber 2017 EK III, 941 fon kodu),
+  `devarsiv_yer_adi` (Yer Adları Sözlüğü, 66.466 madde), `devarsiv_relogin_prepare`
+  (reCAPTCHA kotası dolduğunda rehberli e-Devlet yolu).
+- Degrade hook'u runbook'u artık **sunucudan** okur (`runbook[]` + `last_alive_at` +
+  `death_count`); statik metin yalnız yedek. Statik sırada `systemctl restart
+  devarsiv-chrome` artık 1. adım değil — restart yaşayan oturumu düşürür, önce noVNC.
+- `literatur` connector'ı ölçülen şekilde kapalı `literatur-mcp.surucu.dev` ucundan
+  HP self-host `literatur.cureonics.com`'a taşındı.
+- **Stop hook MOD kapısı:** davranış kapısı tek başına bir yazılım mühendisliği turunu
+  (filo MCP paketinin kodunu ölçen) araştırma çıktısından ayıramıyordu. Artık filo
+  aracına dokunmak yetmez; vekayinuvis modu oturumda gerçekten açılmış olmalıdır.
+  Düzyazıda plugin adını anmak kapıyı açmaz.
+- anamnesis: SessionStart mandatı birlikte kurulu plugin'lerle çelişmeyecek şekilde
+  kendi bağlamına sınırlandı; çekirdek vendor'a alındı ve bayt-özdeşlik kapısıyla
+  korunuyor (`scoped_doc_id` normalizasyon kaçağı kapandı); birlikte kurulu guard'lar
+  için peer-namespace pass-through.
+- `annas-reader` v0.1.0 connector notları: yapılandırılmış zarf ve `status` sözleşmesi
+  (`empty` = doğrulanmış yokluk; `degraded`/`blocked` = yokluk KAYDEDİLMEZ).
+
 ## 3.4.13 — 2026-08-17
 
 - Anamnesis paylaşılan collection sözleşmesi: her ingest

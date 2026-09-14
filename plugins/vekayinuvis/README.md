@@ -6,7 +6,7 @@
 > kaynak hiyerarşisine sadakat, akademik yayın disiplini.
 
 Birincil-kaynak-öncelikli **Osmanlı/Türk tarih araştırma orkestrasyon** Claude
-Code plugin'i. Ottoman Archives, resmî Devlet Arşivleri kataloğu (27 araç, 7 grup —
+Code plugin'i. Ottoman Archives, resmî Devlet Arşivleri kataloğu (30 araç, 8 grup —
 kapsamlı async süpürme + yerel store (`deep_search`→`deep_result` + `coverage`),
 eSatış sepeti, noVNC satın-alma, yerel BOA-kodlu arşiv, OCR/HTR (Transleyt varsayılan),
 async job kuyruğu), YÖK Tez, DergiPark tam-metin, YÖK Akademik, akademik
@@ -21,7 +21,7 @@ sepet/arşiv/OCR akış-skill'i** sunar. Her mod bir slash-komut girişine sahip
 
 | Bileşen | Yol | Açıklama |
 |---------|-----|----------|
-| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.4.13) + 9 referans dosyası |
+| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.5.0) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
 | Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,olay,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 11 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü; `olay`=EVENT_RECONSTRUCTION v3.1'de eklendi, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
 | Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async OCR zinciri (bkz. **Yeni Akışlar**) |
@@ -64,7 +64,7 @@ opt-in). Etkinleştirme:
 `.mcp.json` **17 sunucuyu** bundle eder (kategoriler `CONNECTORS.md § 1`'deki
 katman tanımlarıyla birebir):
 
-- **Çekirdek arşiv** (3): `ottoman-archives`, `devlet-arsivleri` (27 araç, 7 grup —
+- **Çekirdek arşiv** (3): `ottoman-archives`, `devlet-arsivleri` (30 araç, 8 grup —
   arama/**süpürme**/belge/eSatış sepeti/satın-alınmış-arşiv/async-OCR/durum;
   kesin sayı deploy'a göre değişir), `yoktez`.
 - **Akademik triangülasyon** (6): `literatur`, `consensus`, `scholar-gateway`,
@@ -249,5 +249,5 @@ python3 ./plugins/vekayinuvis/scripts/vekayinuvis_doctor.py --topic preflight --
 
 ## Sürüm
 
-- Plugin paketi: `v3.4.13`
-- Flagship skill: `v3.4.13` (bkz. `CHANGELOG.md`)
+- Plugin paketi: `v3.5.0`
+- Flagship skill: `v3.5.0` (bkz. `CHANGELOG.md`)

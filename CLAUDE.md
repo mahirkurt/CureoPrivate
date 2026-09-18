@@ -52,7 +52,7 @@ python3 tools/fleetkit/check_marketplace.py     # katalog ↔ disk bileşen söz
 
 | Kapı | Yakaladığı sınıf |
 |---|---|
-| `check_drift` | bayat türetilmiş dosya · sürüm zinciri tutarsızlığı · sapmış vendor'lı `fleet_probe` · çift `hooks.json` · düzyazıdaki filo sayısının yanlışlığı · filoda olmayan sunucu kimliğine atıf |
+| `check_drift` | bayat türetilmiş dosya · sürüm zinciri tutarsızlığı · sapmış vendor'lı `fleet_probe` · çift `hooks.json` · düzyazıdaki filo sayısının yanlışlığı · filoda olmayan sunucu kimliğine atıf · bayat yüzey paketi (`plugins/<p>/scripts/build_surfaces.py --check`) |
 | `check_marketplace` | katalog ↔ disk uyuşmazlığı · skill/agent `name` ≠ dizin · eksik `description` · bilinmeyen hook olayı · var olmayan hook betiği · `CLAUDE_PLUGIN_ROOT` kullanmayan komut · `timeout` yok · hook betiğinde sözdizimi hatası |
 
 İkisi ayrıdır çünkü `check_drift` yalnız *türetilen* şeyleri denetler; skill frontmatter'ı,

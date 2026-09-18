@@ -25,7 +25,7 @@ Hiçbiri bir teste takılmıyordu, çünkü hiçbiri türetilmiyordu.
 | Dosya | Ne zaman koşar | İş |
 |---|---|---|
 | `gen_fleet.py` | geliştirme | `fleet.yaml` → türev artefaktlar |
-| `check_drift.py` | **CI kapısı** (ağ gerektirmez) | 5 denetim: türev güncelliği · sürüm tutarlılığı · vendor bayt-özdeşliği · çift `hooks.json` · düzyazı sayıları |
+| `check_drift.py` | **CI kapısı** (ağ gerektirmez) | 7 denetim: türev güncelliği · sürüm tutarlılığı · vendor bayt-özdeşliği · çift `hooks.json` · düzyazı sayıları · sunucu kimliği · yüzey paketleri |
 | `fleet_probe.py` | **runtime** (hook'lar) | canlı MCP `initialize`; `auth_missing` ≠ `unauthorized` |
 | `vendor.py` | geliştirme | kanonik prob'u hook'lu plugin'lere birebir kopyalar |
 | `audit_plugins.py` | elle / periyodik | 5 eksenli **canlı** filo denetimi (ağ + Doppler ister) |

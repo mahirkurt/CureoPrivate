@@ -105,6 +105,11 @@ jobs:
              ('check_drift.py', 'plugins/vekayinuvis/hooks/scripts/anamnesis_run.py',
               lambda s: s + '\n# mutasyon: vendor sapmasi\n',
               'vendorli anamnesis cekirdegi sapmis'),
+             # 2026-09 (edupedia 1.0.0): web yüzeyi paketleri surfaces/bootstrap.md'den türetilir; talimat
+             # değişip üretici koşulmazsa claude.ai/Codex/Grok/Gemini eski talimatla kalır. [7] bunu yakalamalı.
+             ('check_drift.py', 'plugins/edupedia/surfaces/bootstrap.md',
+              lambda s: s + '\n- mutasyon: yeniden üretilmemiş talimat satırı\n',
+              'yüzey paketi talimattan bayat'),
           ]
           fail = False
           for script, path, mutate, label in checks:

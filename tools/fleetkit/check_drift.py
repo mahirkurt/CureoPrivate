@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Cureonics sürüklenme kapısı — AĞ ERİŞİMİ GEREKTİRMEZ, CI'da güvenle koşar.
 
-Altı denetim (hepsi deterministik):
+Yedi denetim (hepsi deterministik):
   [1] Türetilmiş dosyalar güncel mi        gen_fleet --check
   [2] Sürüm tutarlı mı                     plugin.json ↔ marketplace ↔ codex ↔ SKILL.md
                                            ↔ kök README katalog satırı
@@ -9,6 +9,7 @@ Altı denetim (hepsi deterministik):
   [4] Çift hooks.json var mı               kök + hooks/ aynı anda
   [5] Düzyazı filo sayısı doğru mu         (fleet.yaml `prose_count_check: true` derse)
   [6] Sunucu KİMLİĞİ filoda var mı         `mcp__<id>__*` / `mcp_server: <id>` ↔ fleet.yaml
+  [7] Yüzey paketleri güncel mi            <plugin>/scripts/build_surfaces.py --check
 
 NEDEN VAR: 2026-08-06 denetimi tek koşumda üç ölü katman, iki sapmış codex bloğu
 ve beş sürüm sürüklenmesi buldu — hiçbiri bir teste takılmıyordu çünkü hiçbiri
@@ -31,6 +32,7 @@ Kullanım:
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -318,6 +320,18 @@ def main(argv=None) -> int:
                            "(yeniden adlandırma/emeklilik sürüklenmesi)",
                            [f"{f}:{ln} → {r!r}" for f, ln, r in bad_ids],
                            "fleet.yaml'e ekle ya da atfı güncel sunucuya taşı"))
+
+        # [7] Yüzey paketleri (edupedia 1.0.0): claude.ai/Codex/Grok/Gemini paketleri ve ince skill tek
+        # başlangıç talimatından türetilir. Talimat değişip üretici koşulmazsa web yüzeyleri eski talimatla
+        # kalır ve hiçbir şey hata vermez — [1]'in fleet.yaml türevleri için yakaladığı sınıfın aynısı.
+        builder = d / "scripts" / "build_surfaces.py"
+        if builder.is_file():
+            res = subprocess.run([sys.executable, str(builder), "--check"],
+                                 capture_output=True, text=True, timeout=60)
+            if res.returncode != 0:
+                lines = [ln for ln in (res.stdout + res.stderr).splitlines() if ln.strip()]
+                issues.append(("[7] yüzey paketleri bayat", lines or [f"rc={res.returncode}"],
+                               f"python3 {builder.relative_to(REPO)}"))
 
         if issues:
             failed = True

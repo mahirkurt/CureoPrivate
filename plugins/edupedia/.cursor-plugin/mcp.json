@@ -1,6 +1,11 @@
 {
-  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — edupedia MCP wiring. 2 server (2 Bearer-gated, 0 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Cursor `${env:VAR}` process-env interpolasyonu (plugin-variable paste formu değil).",
+  "_comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py — edupedia MCP wiring. 3 server (2 Bearer-gated, 1 public). Auth'lu server'lar Doppler-injected Bearer bekler; anahtar yoksa o katman graceful degrade eder (asla uydurma). Cursor `${env:VAR}` process-env interpolasyonu (plugin-variable paste formu değil).",
   "mcpServers": {
+    "tedy": {
+      "type": "http",
+      "url": "https://mcp.tedy.online/mcp",
+      "_auth": "İnteraktif OAuth 2.1 — Google girişi, yalnız TEDY aile listesindeki tam yetkili hesap; Bearer anahtarı YOK. Kimliksiz initialize 401 + WWW-Authenticate döner ve bu sağlıklı durumdur. Orkestratör ted-mcp (TED deposu) derler, kapılardan geçirir ve tedy.online kataloğuna yayınlar."
+    },
     "maarif-mufredat": {
       "type": "http",
       "url": "https://mufredat.cureonics.com/mcp",

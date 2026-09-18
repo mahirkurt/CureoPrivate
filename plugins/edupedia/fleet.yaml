@@ -1,17 +1,27 @@
 # edupedia MCP filosunun TEK GERÇEK KAYNAĞI.
 #
 # Şu dosyalar BURADAN ÜRETİLİR — onları elle düzenlemeyin:
-#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · fleet.lock.json
+#   .mcp.json · .codex-plugin/plugin.json (mcpServers+version) · .cursor-plugin/{plugin,mcp}.json · fleet.lock.json
+#   surfaces/** ve skills/edupedia/SKILL.md → scripts/build_surfaces.py (fleet.lock.json + surfaces/bootstrap.md)
 #
 # Değişiklik yolu:  bu dosyayı düzenle → `python3 tools/fleetkit/gen_fleet.py`
 # Denetim:          `python3 tools/fleetkit/check_drift.py --all` (ağ gerektirmez)
-# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py`
+# Canlı sağlık:     `python3 tools/fleetkit/audit_plugins.py` (tedy kimliksiz 401 döner — interaktif OAuth, arıza değil)
 
 version: 2
 plugin: edupedia
-plugin_version: "0.10.2"
+plugin_version: "1.0.0"
 
 servers:
+  - name: tedy
+    url: https://mcp.tedy.online/mcp
+    auth_env: null
+    extra:
+      _auth: >-
+        İnteraktif OAuth 2.1 — Google girişi, yalnız TEDY aile listesindeki tam yetkili hesap; Bearer
+        anahtarı YOK. Kimliksiz initialize 401 + WWW-Authenticate döner ve bu sağlıklı durumdur.
+        Orkestratör ted-mcp (TED deposu) derler, kapılardan geçirir ve tedy.online kataloğuna yayınlar.
+
   - name: maarif-mufredat
     url: https://mufredat.cureonics.com/mcp
     auth_env: MUFREDAT_MCP_API_KEY

@@ -1,4 +1,4 @@
 interface:
   display_name: "Edupedia"
-  short_description: "MEB Maarif Modeli uyumlu, erişilebilir etkileşimli öğrenim modülü üreticisi."
-  default_prompt: "Create an accessible MEB-aligned interactive module."
+  short_description: "Maarif Modeli modüllerini TEDY orkestratörüyle üretip tedy.online'da yayınlar."
+  default_prompt: "Işık'ın yaklaşan bir sınavı için QUIZ modunda edupedia modülü hazırla."

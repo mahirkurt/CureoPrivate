@@ -1,55 +1,11 @@
 ---
-description: Bir ders + sınıf + konudan MEB kazanımlarını keşfeder ve kazanım-izlenebilir etkileşimli öğrenim modülü üretir
-argument-hint: "<ders> <sınıf> <konu> (örn. Fen 5 hücre)"
+description: Ders, sınıf ve konudan doğrulanmış kazanımları bulup TEDY orkestratörüyle etkileşimli modül üretir
+argument-hint: "<ders> <sınıf> <konu> (örn. Fen 5 maddenin hâlleri)"
 ---
 
-`edupedia:carbon-edupedia` skill'ini **CURRICULUM modunda** çağır. Mantığı tekrarlama — bu komut
-ders+sınıf+konu girdisini kanonik kazanım keşfine ve `/edupedia:modul` üretim akışına bağlar.
+`edupedia` skill'indeki kuralları uygula. Girdi: $ARGUMENTS
 
-**Hedef:** $ARGUMENTS  *(ders + sınıf + konu)*
-
-## Yürütme protokolü
-
-1. **Niyeti çöz — ders ve sınıf EKSİKSE SOR, varsayma.** $ARGUMENTS'tan ders, sınıf ve konuyu
-   ayır (örn. "Fen 5 hücre" → ders=Fen, sınıf=5, konu=hücre). **Üçünden biri eksik veya
-   belirsizse `AskUserQuestion` ile sor** — sınıf ve ders modülün derinliğini ve kapsamını
-   belirler; tahminle üretilen modül yanlış sınıfa hitap eder ve bu sessiz bir hatadır
-   (kullanıcı sözleşmesi, 2026-07-17).
-
-2. **Ders slug'ını çöz** (`maarif-mufredat`; `../CONNECTORS.md §1-A` + §2 kimlik uyarıları):
-   `list_subjects(q=<ders>)` → doğru `slug` (asla isimden uydurma; örn. "Fen" → `fen-bilimleri-dersi`).
-   `subject_registry` artefaktına yaz (tek-sefer). Gerekirse `get_subject(slug)` ile geçerli sınıf
-   etiketini doğrula (`5.Sınıf` biçimi — nokta sonrası boşluksuz).
-
-3. **Hedef kazanımları keşfet:** `search_learning_outcomes(q=<konu>, subject=<slug>, grade=<sınıf>,
-   distinct_codes=true)` → konuya denk gelen kazanım kodlarını seç → kanonik `outcomes_extract`
-   artefaktı (tek-sefer). Boş dönerse sorguyu genişlet (eş anlamlı/kısa terim) veya
-   `list_learning_outcomes(distinct_codes=true)` ile üniteyi tara; hâlâ yoksa doğru ders/sınıf/konu sor.
-
-4. **`/edupedia:modul` akışının 2–5. adımlarını uygula** — **Adım 2.5 (ders kitabını aç:
-   çerçeveyi o çizer), Adım 3 (kitabın KENDİ figürleri öncelikli) ve Adım 3.5 (kapsam +
-   doğruluk denetimi) DAHİL, hepsi zorunlu**: beceri → etkileşim haritalama
-   (`framework_map`, skill §4) · modülü üret + `scripts/validate_module.py` kapıları
-   (G-CURRICULUM + G-VERIFY + G-VOICE + G-SVG dahil) +
-   `meta.sourceCitation` damgası + `/mnt/user-data/outputs/`'a kaydet · HTML ile **aynı ad +
-   `.manifest.json`** run-manifest'i yaz (şema `../shared/run-manifest-schema.json`; dosya adı
-   sözleşmesi    `../shared/canonical-cache-contract.md §1`). Kalite kapılarının OTORİTESİ yerel
-   `scripts/validate_module.py`'dir. `quality_gates` yazılacaksa `python
-   scripts/validate_module.py --json <html>` çıktısının BİREBİR kendisi olmalı —
-   elle yazma, konsol raporundan transkribe, hiçbir kapıyı PASS'a yükseltme yok.
-   Koşturulmayan kapı `--json` çıktısında kendiliğinden `SKIPPED` gelir (asla `PASS`).
-   `run_id` **NORMATİF KALIP** ile (verbatim, başka biçim KULLANMA):
-   `Edupedia-YYYYMMDD-<ders>-<konu>-v<N>` — ör. `Edupedia-20260712-fen5-hucre-v1`
-   (`<ders>`/`<konu>` yalnız küçük harf/rakam/tire, `<N>` sürüm tamsayısı; şema kısıtı
-   `run-manifest-schema.json` `properties.run_id.pattern`).
-
-## Sınırlılık
-
-Tek bir kazanım kodu verildiyse → `/edupedia:modul` (doğrulama+çekme kısayolu). Yalnız keşif
-(üretim yok) isteniyorsa → `/edupedia:kazanim-bul`. Ders Türkiye MEB dışıysa (IB/Cambridge) →
-kapsam dışı, connector çağrılmaz.
-
-## Teslim
-
-Modül yerel tek-dosya HTML'dir. Yayınlama, siteye yükleme veya `edupedia_publish` **yok**.
-claude.ai'de HTML'i sohbet artefaktı olarak sun; Claude Code'da dosyaya yaz.
+1. `edupedia_rehber` → `bolum: "akis"`; istek yaklaşan bir sınav ya da ödevle ilgiliyse `edupedia_baglam`.
+2. `edupedia_kapsam(ders, sinif, konu)`; dönen kazanımları göster ve hangisine odaklanılacağını sor.
+3. MODULE_DATA → `edupedia_derle` → FAIL kalmayana dek düzelt → isteğe bağlı `edupedia_onizle` → onayla `edupedia_yayinla` (sınava bağlıysa `ted_link`).
+4. `url`'yi, coverage manifestosunu ve kapı raporunu bildir.

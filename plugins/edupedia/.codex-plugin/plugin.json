@@ -1,7 +1,7 @@
 {
   "name": "edupedia",
-  "version": "0.10.2",
-  "description": "carbon-edupedia (DEHB-odaklı, IBM Carbon v11, WCAG 2.1 AA, tek-dosya çevrimdışı HTML) + start yönlendiricisi + İKİ anahtarlı MCP connector'ı: maarif-mufredat (21 araç; MEB kazanım/müfredat ve 105 ders kitabı tam metni) ile tamamlayıcı egitim-kaynak OER RAG (6 kb_* araç; PhET CC BY-NC 4.0 + Vikipedi-TR arka plan). Flagship 9 mod sunar: MODULE · QUIZ · FLASHCARDS · GAME · EXPLAINER · ASSESSMENT · SERIES · CURRICULUM · EXAM; yerel validator 16 kalite kapısı çalıştırır. Yerel tek-dosya HTML teslim edilir; plugin yayınlamaz. Komutlar: /edupedia:modul, /edupedia:mufredat, /edupedia:soru, /edupedia:kazanim-bul, /edupedia:durum. Native komut, platforma özgü hook, module-auditor ve yerel script otomasyonu yalnız Claude Code/Cursor'dadır; diğer hostlar destekliyorsa authenticated MCP ve/veya SKILL.md prompt uyarlaması kullanır. Tier-2a metadata/MCP ImageContent gözlemidir; Tier-2b scripts/fetch_figure.py ile yerel binary çıkarımıdır ve dosya sistemi+Python gerektirir. Kapsam yalnız Türkiye MEB.",
+  "version": "1.0.0",
+  "description": "TEDY edupedia ince istemcisi (1.0.0) — Türkiye Yüzyılı Maarif Modeli'ne hizalı, WCAG 2.1 AA, IBM Carbon v11 tabanlı etkileşimli öğrenim modüllerini tedy MCP orkestratörüyle (mcp.tedy.online; interaktif OAuth, yalnız TEDY aile listesi) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. start + edupedia skill'leri, beş komut (/edupedia:modul, /edupedia:mufredat, /edupedia:kazanim-bul, /edupedia:soru, /edupedia:durum) ve tedy-yalnız SessionStart preflight. maarif-mufredat ve egitim-kaynak isteğe bağlı doğrudan bağlayıcılar. claude.ai, Codex, Grok ve Gemini Spark paketleri surfaces/ altında tek başlangıç talimatından türetilir. Kırıcı: yerel HTML teslimi, yerel doğrulayıcı ve denetçi alt-ajan kaldırıldı. Kapsam yalnız Türkiye MEB.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"
@@ -25,8 +25,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Edupedia",
-    "shortDescription": "MEB Maarif Modeli uyumlu, erişilebilir etkileşimli öğrenim modülü üreticisi.",
-    "longDescription": "MEB Türkiye Yüzyılı Maarif Modeli kazanımlarından DEHB-dostu, WCAG 2.1 AA, IBM Carbon v11 tabanlı tek-dosya çevrimdışı HTML modüller üretir. Flagship carbon-edupedia 9 mod (MODULE, QUIZ, FLASHCARDS, GAME, EXPLAINER, ASSESSMENT, SERIES, CURRICULUM, EXAM) ve 16 kalite kapısı sunar. Anahtarlı maarif-mufredat ile egitim-kaynak MCP'leri desteklenir. Codex/ChatGPT yüzeyinde bu kayıt prompt uyarlaması ve host destekliyorsa authenticated MCP metadata'sı sağlar; Claude Code/Cursor komut, hook, alt-ajan ve yerel script otomasyonuyla eşdeğerlik iddia etmez. Tier-2a MCP gözlemidir; Tier-2b yerel dosya sistemi+Python gerektirir. Teslim yerel HTML'dir; plugin yayınlamaz.",
+    "shortDescription": "Maarif Modeli modüllerini TEDY orkestratörüyle üretip tedy.online'da yayınlar.",
+    "longDescription": "TEDY edupedia ince istemcisi (1.0.0) — Türkiye Yüzyılı Maarif Modeli'ne hizalı, WCAG 2.1 AA, IBM Carbon v11 tabanlı etkileşimli öğrenim modüllerini tedy MCP orkestratörüyle (mcp.tedy.online; interaktif OAuth, yalnız TEDY aile listesi) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. start + edupedia skill'leri, beş komut (/edupedia:modul, /edupedia:mufredat, /edupedia:kazanim-bul, /edupedia:soru, /edupedia:durum) ve tedy-yalnız SessionStart preflight. maarif-mufredat ve egitim-kaynak isteğe bağlı doğrudan bağlayıcılar. claude.ai, Codex, Grok ve Gemini Spark paketleri surfaces/ altında tek başlangıç talimatından türetilir. Kırıcı: yerel HTML teslimi, yerel doğrulayıcı ve denetçi alt-ajan kaldırıldı. Kapsam yalnız Türkiye MEB.",
     "developerName": "Cureonics",
     "category": "Education",
     "capabilities": [
@@ -37,13 +37,18 @@
     "websiteURL": "https://cureonics.com",
     "brandColor": "#EA580C",
     "defaultPrompt": [
-      "Create an accessible MEB-aligned interactive module.",
-      "Find curriculum outcomes for this topic and grade.",
-      "Audit this learning module against Carbon and WCAG."
+      "Işık'ın yaklaşan bir sınavı için QUIZ modunda edupedia modülü hazırla.",
+      "5. sınıf Fen Bilimleri maddenin hâlleri kazanımlarını bul.",
+      "tedy bağlantısını ve kapı sayısını kontrol et."
     ],
     "screenshots": []
   },
   "mcpServers": {
+    "tedy": {
+      "type": "http",
+      "url": "https://mcp.tedy.online/mcp",
+      "_auth": "İnteraktif OAuth 2.1 — Google girişi, yalnız TEDY aile listesindeki tam yetkili hesap; Bearer anahtarı YOK. Kimliksiz initialize 401 + WWW-Authenticate döner ve bu sağlıklı durumdur. Orkestratör ted-mcp (TED deposu) derler, kapılardan geçirir ve tedy.online kataloğuna yayınlar."
+    },
     "maarif-mufredat": {
       "type": "http",
       "url": "https://mufredat.cureonics.com/mcp",
@@ -60,5 +65,5 @@
       }
     }
   },
-  "longDescription": "MEB Türkiye Yüzyılı Maarif Modeli kazanımlarından DEHB-dostu, WCAG 2.1 AA, IBM Carbon v11 tabanlı tek-dosya çevrimdışı HTML modüller üretir. Flagship carbon-edupedia 9 mod (MODULE, QUIZ, FLASHCARDS, GAME, EXPLAINER, ASSESSMENT, SERIES, CURRICULUM, EXAM) ve 16 kalite kapısı sunar. Anahtarlı maarif-mufredat ile egitim-kaynak MCP'leri desteklenir. Codex/ChatGPT yüzeyinde bu kayıt prompt uyarlaması ve host destekliyorsa authenticated MCP metadata'sı sağlar; Claude Code/Cursor komut, hook, alt-ajan ve yerel script otomasyonuyla eşdeğerlik iddia etmez. Tier-2a MCP gözlemidir; Tier-2b yerel dosya sistemi+Python gerektirir. Teslim yerel HTML'dir; plugin yayınlamaz."
+  "longDescription": "TEDY edupedia ince istemcisi (1.0.0) — Türkiye Yüzyılı Maarif Modeli'ne hizalı, WCAG 2.1 AA, IBM Carbon v11 tabanlı etkileşimli öğrenim modüllerini tedy MCP orkestratörüyle (mcp.tedy.online; interaktif OAuth, yalnız TEDY aile listesi) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. start + edupedia skill'leri, beş komut (/edupedia:modul, /edupedia:mufredat, /edupedia:kazanim-bul, /edupedia:soru, /edupedia:durum) ve tedy-yalnız SessionStart preflight. maarif-mufredat ve egitim-kaynak isteğe bağlı doğrudan bağlayıcılar. claude.ai, Codex, Grok ve Gemini Spark paketleri surfaces/ altında tek başlangıç talimatından türetilir. Kırıcı: yerel HTML teslimi, yerel doğrulayıcı ve denetçi alt-ajan kaldırıldı. Kapsam yalnız Türkiye MEB."
 }

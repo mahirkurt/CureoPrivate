@@ -1,5 +1,5 @@
 {
-  "description": "edupedia runtime desteği — iki fail-open hook: (1) SessionStart preflight, fleet.lock.json'daki filoya canlı prob atar (24 saat cache'li) ve anahtar eksikliği / arızasını ayırır, süit konvansiyonlarını enjekte eder; (2) PostToolUse validate_module_hook, MODULE_DATA taşıyan bir .html yazıldığında 16 kalite kapısını advisory olarak denetler. Hiçbiri bloklamaz. Kapı otoritesi yerel validate_module.py'dir. Plugin yayınlamaz.",
+  "description": "edupedia 1.0.0 ince istemci — tek fail-open hook: SessionStart preflight tedy orkestratörünü (mcp.tedy.online) 24 saat önbellekli yoklar ve orkestratör akış kurallarını enjekte eder. Kimliksiz 401 sağlıklıdır (interaktif OAuth). Modül derleme, kalite kapıları ve yayın sunucudadır; bloklayan hook yoktur.",
   "hooks": {
     "SessionStart": [
       {
@@ -9,20 +9,7 @@
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session_start.py\"",
             "timeout": 45,
-            "statusMessage": "edupedia: connector kadrosu preflight ve konvansiyonlar"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|StrReplace",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate_module_hook.py\"",
-            "timeout": 30,
-            "statusMessage": "edupedia: modül kalite kapıları (advisory)"
+            "statusMessage": "edupedia: tedy orkestratörü preflight ve akış kuralları"
           }
         ]
       }

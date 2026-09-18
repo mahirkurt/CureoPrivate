@@ -52,7 +52,7 @@ python3 tools/fleetkit/check_marketplace.py     # katalog ↔ disk bileşen söz
 
 | Kapı | Yakaladığı sınıf |
 |---|---|
-| `check_drift` | bayat türetilmiş dosya · sürüm zinciri tutarsızlığı · sapmış vendor'lı `fleet_probe` · çift `hooks.json` · düzyazıdaki filo sayısının yanlışlığı · filoda olmayan sunucu kimliğine atıf |
+| `check_drift` | bayat türetilmiş dosya · sürüm zinciri tutarsızlığı · sapmış vendor'lı `fleet_probe` · çift `hooks.json` · düzyazıdaki filo sayısının yanlışlığı · filoda olmayan sunucu kimliğine atıf · bayat yüzey paketi (`plugins/<p>/scripts/build_surfaces.py --check`) |
 | `check_marketplace` | katalog ↔ disk uyuşmazlığı · skill/agent `name` ≠ dizin · eksik `description` · bilinmeyen hook olayı · var olmayan hook betiği · `CLAUDE_PLUGIN_ROOT` kullanmayan komut · `timeout` yok · hook betiğinde sözdizimi hatası |
 
 İkisi ayrıdır çünkü `check_drift` yalnız *türetilen* şeyleri denetler; skill frontmatter'ı,
@@ -77,7 +77,7 @@ Elle koşulur.
 | `historia-medicinae` | Küresel tıp tarihi; anakronizm/presentizm/difüzyonizm denetimi |
 | `rxpraxis` | Farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat taraması |
 | `sci-audit` | Bilimsel metin denetçisi (atıf-adli, yedi eksen) |
-| `edupedia` | Maarif Modeli öğrenim modülü üreticisi |
+| `edupedia` | Maarif Modeli modülleri — TEDY orkestratörü ince istemcisi (tedy.online'da yayın) |
 | `brand-ecosystem-core` | Marka ekosistemi (isim · renk · tipografi · kültürel tarama) |
 | `fon-uzmani` · `bist-analyst` | Finans (fon-mcp / Borsa MCP) |
 

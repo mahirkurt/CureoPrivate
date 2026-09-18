@@ -95,7 +95,7 @@ def main() -> None:
     check("None → unreachable", fleet_probe.classify(None, "") == "unreachable")
 
     lock = fleet_probe.load_lock(ROOT)
-    check("fleet.lock.json 2 server barındırıyor", bool(lock) and lock["counts"]["servers"] == 2)
+    check("fleet.lock.json 3 server barındırıyor", bool(lock) and lock["counts"]["servers"] == 3)
 
     with tempfile.TemporaryDirectory() as td:
         cp = Path(td) / "test_cache.json"

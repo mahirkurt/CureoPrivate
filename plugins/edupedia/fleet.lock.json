@@ -1,15 +1,20 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "edupedia",
-  "plugin_version": "0.10.2",
+  "plugin_version": "1.0.0",
   "counts": {
-    "servers": 2,
+    "servers": 3,
     "gated": 2,
-    "public": 0,
+    "public": 1,
     "companions": 0,
     "delegations": 0
   },
   "servers": [
+    {
+      "name": "tedy",
+      "url": "https://mcp.tedy.online/mcp",
+      "auth_env": null
+    },
     {
       "name": "maarif-mufredat",
       "url": "https://mufredat.cureonics.com/mcp",

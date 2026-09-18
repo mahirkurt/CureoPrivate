@@ -1,0 +1,33 @@
+{
+  "name": "edupedia",
+  "version": "1.0.0",
+  "description": "TEDY edupedia ince istemcisi — tek başlangıç skill'i ve tedy MCP orkestratörü (OAuth).",
+  "author": {
+    "name": "Cureonics",
+    "url": "https://cureonics.com"
+  },
+  "homepage": "https://cureonics.com",
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": {
+    "tedy": {
+      "type": "http",
+      "url": "https://mcp.tedy.online/mcp"
+    }
+  },
+  "interface": {
+    "displayName": "Edupedia",
+    "shortDescription": "Maarif Modeli modüllerini TEDY orkestratörüyle üretip tedy.online'da yayınlar.",
+    "developerName": "Cureonics",
+    "category": "Education",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Işık'ın yaklaşan bir sınavı için QUIZ modunda edupedia modülü hazırla.",
+      "5. sınıf Fen Bilimleri maddenin hâlleri kazanımlarını bul."
+    ]
+  }
+}

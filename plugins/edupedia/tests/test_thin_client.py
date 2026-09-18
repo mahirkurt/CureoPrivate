@@ -73,3 +73,27 @@ def test_manifests_declare_no_agent_and_only_session_start_hooks():
     assert "agents" not in claude and "agents" not in cursor
     assert list(_json("hooks/hooks.json")["hooks"]) == ["SessionStart"]
     assert list(_json("hooks/hooks-cursor.json")["hooks"]) == ["sessionStart"]
+
+
+BANNED = ("validate_module", "module-auditor", "carbon-edupedia", "canonical-cache-contract", "fetch_figure",
+          "references/", "16 kalite", "yerel tek-dosya", "plugin yayınlamaz")
+
+
+def test_no_file_points_at_the_removed_local_authoring_stack():
+    scanned = sorted(tree() - {"tests/test_thin_client.py"})
+    assert "README.md" in scanned and "commands/modul.md" in scanned  # the surface exists before the absence claim
+    offenders = [f"{rel}: {word}" for rel in scanned for word in BANNED
+                 if word in (PLUGIN / rel).read_text(encoding="utf-8")]
+    assert offenders == []
+
+
+def test_every_command_routes_through_the_orchestrator():
+    commands = sorted(r for r in tree() if r.startswith("commands/"))
+    assert len(commands) == 5
+    for rel in commands:
+        text = (PLUGIN / rel).read_text(encoding="utf-8")
+        assert text.startswith("---\ndescription: "), rel
+        assert "edupedia_" in text, rel
+    soru = (PLUGIN / "commands" / "soru.md").read_text(encoding="utf-8")
+    assert "EXAM" in soru and "yayınlanmaz" in soru
+    assert "Modül üretme" in (PLUGIN / "commands" / "kazanim-bul.md").read_text(encoding="utf-8")

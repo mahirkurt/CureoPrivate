@@ -37,7 +37,7 @@ bunlarla senkron tutulur (tek doğruluk kaynağı = plugin.json).
 | **fon-uzmani** (Fon Uzmanı) | 1.3.1 | finans | Türkiye yatırım (YAT) + emeklilik (EMK) fonları **karar-destek** süiti: 8-aşamalı `fon-analiz-orkestratoru` (G0–G7) + 6 kaynak skill + 12-modül saf-Python kuant kütüphanesi (Sharpe…HRP). Borsa MCP + fon-mcp omurgası; beş mod. SPK yatırım tavsiyesi **değildir**. |
 | **bist-analyst** (BIST Uzmanı) | 1.1.9 | finans | **Borsa İstanbul** analist kopilotu — çok zaman dilimli teknik + sektör-normalize temel + KAP açıklama/duygu + TCMB makro rejimini tek gerekçeli brifingde sentezler (tek hisse, haftalık tarama, KAP olayı, izleme listesi modları). Borsa MCP omurgası paket içinde. Yatırım tavsiyesi **değildir**. |
 | **sci-audit** (Scientific Audit) | 0.2.4 | bilimsel bütünlük | LLM-üretimi bilimsel metinler için **alan-bağımsız adli + dilsel denetçi**. Yedi eksen: (A) referans bütünlüğü · (B) iddia temellendirme + tam-metin doğrulama · (C) belge-içi istatistik tutarlılığı (statcheck/GRIM/GRIMMER/SPRITE) · (D) halüsinasyon sinyalleri + varlık doğrulama · (E) 14 raporlama kılavuzu (PRISMA/CONSORT/STROBE/TRIPOD…) · (F) AI-şeffaflığı (ICMJE/COPE) · (G) Türkçe bilimsel dil. Deterministik çekirdek **saf Python stdlib**. Çözülemeyen kaynak `unverified` olur, asla "geçti" olmaz. |
-| **edupedia** (Edupedia) | 1.0.0 | eğitim | MEB **Türkiye Yüzyılı Maarif Modeli** (2024) kazanımlarından kazanım-izlenebilir, WCAG 2.1 AA erişilebilir, tek-dosya etkileşimli **HTML öğrenim modülleri** üretir (DEHB-odaklı, IBM Carbon v11). `carbon-edupedia` flagship 9 mod (MODULE · QUIZ · FLASHCARDS · GAME · EXPLAINER · ASSESSMENT · SERIES · CURRICULUM · EXAM) ve 16 kalite kapısı sunar; `start` yönlendirir. İki anahtarlı MCP: `maarif-mufredat` · `egitim-kaynak`. Teslim yerel HTML; plugin yayınlamaz. `/edupedia:soru` bir veya birden fazla soruyu tek HTML'de çözer. Kapsam yalnız Türkiye MEB. |
+| **edupedia** (Edupedia) | 1.0.0 | eğitim | MEB **Türkiye Yüzyılı Maarif Modeli** kazanımlarından etkileşimli, WCAG 2.1 AA **öğrenim modülleri** — **TEDY orkestratörü ince istemcisi**: derleme, 18 kalite kapısı ve tedy.online aile kataloğuna yayın `tedy` MCP'sinde (interaktif OAuth). `edupedia` + `start` skill'leri, 5 komut, `tedy`-yalnız preflight; isteğe bağlı doğrudan `maarif-mufredat` · `egitim-kaynak`. claude.ai / Codex / Grok / Gemini Spark paketleri `surfaces/` altında tek talimattan türetilir. Kapsam yalnız Türkiye MEB. |
 | **brand-ecosystem-core** (Brand Ecosystem) | 1.1.4 | marka | Brand Ecosystem'in stratejik + sözel + görsel katmanları: 12 skill (brand-audit · brand-platform · brand-story · brand-maker · brand-visual · figma-forge · brand-touchpoint · brand-launch · brand-verify · brand-market-signal …) + `/brand-ecosystem-core:pipeline` komutu. Claude.ai-native; Figma/GoDaddy/Exa **opsiyonel**. Ses katmanı ayrı `brand-voice` plugin'ine aittir. |
 
 ### Bileşen envanteri
@@ -54,7 +54,7 @@ Sayılar diskteki `commands/` dosyaları, `skills/` alt dizinleri, `agents/` alt
 | fon-uzmani | 5 | 8 | — | — | 2 |
 | bist-analyst | — | 2 | — | — | 1 |
 | sci-audit | 7 | 7 | 8 | ✅ | 4 |
-| edupedia | 5 | 2 | 1 | ✅ | 3 |
+| edupedia | 5 | 2 | — | ✅ | 3 |
 | brand-ecosystem-core | 1 | 12 | 5 | ✅ | 7 |
 
 **Komutu olmayan plugin'ler** (vekayinuvis, historia-medicinae, bist-analyst) önek-siz **skill mimarisi** kullanır:
@@ -97,9 +97,9 @@ CureoPrivate/                             ← repo kökü (Claude Code'a EKLENEC
     ├── sci-audit/                        ← bilimsel metin denetçisi
     │   ├── commands/ (7)   skills/ (7)   agents/ (8)   hooks/   scripts/
     │   └── README.md
-    ├── edupedia/                         ← Maarif Modeli öğrenim modülü üreticisi
-    │   ├── commands/ (6)   skills/ (carbon-edupedia · start)   agents/   hooks/
-    │   └── CONNECTORS.md · README.md
+    ├── edupedia/                         ← Maarif Modeli modülleri — TEDY orkestratörü ince istemcisi
+    │   ├── commands/ (5)   skills/ (edupedia · start)   hooks/   surfaces/ (4 yüzey)   scripts/
+    │   └── CONNECTORS.md · KURULUM.md · README.md
     └── brand-ecosystem-core/             ← marka ekosistemi
         ├── commands/pipeline.md   skills/ (12)   agents/ (5)   hooks/
         └── .mcp.json · mcp.optional.json · README.md · CHANGELOG.md
@@ -160,12 +160,13 @@ sci-audit'e delege edilir. Birincil kaynak IIIF motorudur (Wellcome sayfa-düzey
 /audit <metin>                             # · /verify-citations · /check-stats · /check-turkish
 ```
 
-**edupedia** — Maarif kazanımından etkileşimli modül
+**edupedia** — Maarif kazanımından tedy.online'da yayınlanan etkileşimli modül
 
 ```
 /plugin install edupedia@cureonics-marketplace
+/mcp                                       # tedy → Authenticate (TEDY aile hesabı)
 /edupedia:kazanim-bul <konu>               # kazanım keşfi
-/edupedia:modul <kazanım-kodu>             # yerel tek-dosya HTML modül üret
+/edupedia:modul <kazanım-kodu>             # modül üret → derle → tedy.online'da yayınla
 ```
 
 **rxpraxis** — jenerik/biyobenzer fırsat taraması

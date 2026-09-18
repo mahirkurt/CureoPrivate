@@ -77,7 +77,7 @@ Elle koşulur.
 | `historia-medicinae` | Küresel tıp tarihi; anakronizm/presentizm/difüzyonizm denetimi |
 | `rxpraxis` | Farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat taraması |
 | `sci-audit` | Bilimsel metin denetçisi (atıf-adli, yedi eksen) |
-| `edupedia` | Maarif Modeli öğrenim modülü üreticisi |
+| `edupedia` | Maarif Modeli modülleri — TEDY orkestratörü ince istemcisi (tedy.online'da yayın) |
 | `brand-ecosystem-core` | Marka ekosistemi (isim · renk · tipografi · kültürel tarama) |
 | `fon-uzmani` · `bist-analyst` | Finans (fon-mcp / Borsa MCP) |
 

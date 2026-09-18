@@ -1,54 +1,10 @@
 ---
-description: İki MCP connector'ının (maarif-mufredat, egitim-kaynak) sağlığını ve Tier-2 (get_figure) yeteneğini raporlar
+description: TEDY orkestratörünün (tedy) bağlantısını, sürümünü, kapı sayısını ve filo sağlığını raporlar
 argument-hint: "(argüman gerekmez)"
 ---
 
-Plugin'in **iki MCP connector'ının** sağlık kontrolünü yap. Bu, `edupedia:start` skill'inin Adım 2'sini
-komut olarak yüzeyler. Modül üretmez — yalnız durum raporlar.
+1. `edupedia_durum` aracını `canli: true` ile çağır; sürüm, kullanıcı ve rol, kapı sayısı, filo `coverage`'ı ve medya bütçesi kalanını (tahmin olduğunu belirterek) raporla.
+2. Araç görünmüyorsa ya da yetki hatası dönüyorsa: `/mcp` → `tedy` → Authenticate; Google girişinde TEDY aile listesindeki tam yetkili hesabı kullan; onay sayfasında geri-çağırma adresini kontrol edip "Onayla".
+3. İsteğe bağlı doğrudan bağlayıcılar (`maarif-mufredat`, `egitim-kaynak`) bağlıysa yalnız bağlı olduklarını belirt; modül akışı onlara bağlı değildir.
 
-## Yürütme protokolü
-
-1. **Pre-flight / canlılık** (`../CONNECTORS.md §6`): `server_info` çağır. Yanıt verirse
-   connector **canlı**; korpus sürümünü (`corpus_version`, `build_date`) ve sayımları (ders,
-   kazanım, çerçeve, figür) raporla. Hata verirse **bağlı değil / erişilemez** — kullanıcıya
-   Settings → Connectors'tan `maarif-mufredat`'ı etkinleştirmesini söyle ve `carbon-edupedia`'nın
-   MCP'siz (offline, kullanıcı kaynağı) yolla da çalıştığını hatırlat.
-
-2. **Araç kümesi** (`../CONNECTORS.md §1`): Hangi araçların çağrılabilir olduğunu dört kümeye
-   göre raporla — A·Keşif · B·Kazanım · C·Beceri çerçevesi · D·Belge+medya. Otoritatif sayı **21**.
-
-3. **Tier-2 yeteneği** (`../CONNECTORS.md §3.1` + `../shared/canonical-cache-contract.md §4`):
-   `get_figure` araç listesinde **var mı**? Varsa Tier-2 (resmî görsel gömme) **mevcut** — bir
-   `search_figures(query, subject)` denemesiyle bir aday `figure_id` bulup
-   `get_figure(figure_id, include_image=false)` metadata yolunu (Tier-1 zenginleştirme) doğrula.
-   Yoksa `tier2_status: unavailable` (yalnız Tier-1).
-
-4. **Eğitim Kaynak RAG (`egitim-kaynak`) sağlığı:** `kb_server_info` çağır. Yanıt verirse
-   **canlı** — faz (`phase`), getirme **modu** (`retrieval`: `bm25+vector-fallback` = vektör
-   yedeği devrede, `fts5-bm25` = embedding kapalı/yok), `embedding_model`, hizalama durumu
-   (`alignment_built`) ve korpus sayımlarını (`stats`: `chunk_count`, `vector_count`,
-   `source_count`, `vector_coverage`) raporla. **Dikkat — `retrieval` adını iki farklı alan
-   taşır ve değer kümeleri AYRIDIR:** burada `kb_server_info`'nunki *sunucunun modudur*
-   (`bm25+vector-fallback` / `fts5-bm25`); `kb_search` sonucundaki ise *o sorguda gerçekten
-   izlenen yoldur* (`fts5-bm25` / `vector-fallback`). Birini diğerinin değeriyle raporlamayın.
-   Yoksa **bağlı değil** → modül üretimi yerleşik bilgiyle sürer, kaynak zenginleştirme atlanır
-   (asla uydurma kaynak). **`alignment_built: false` iken `kb_for_outcome` artık ham
-   `alignment_not_built` DÖNMEZ** — ara mod (EK-11) kazanımın kök metnini `kb_search`'e sorgu
-   verir; `status:"ok"` (`alignment_kind:"query_time_bm25"`/`"query_time_vector_fallback"`)
-   YALNIZ tam AND ya da terimlerin ≥%40'ını tutan basamakta, aksi hâlde `status:"degraded"`/
-   `reason:"interim_low_relevance"`. **`degraded` dönerse `kb_search`'e düşün** — kazanım
-   konusunu serbest sorgu olarak verin. Saklı (embedding-vetted) hizalama, korpus müfredat
-   konularını kapsayana + insan denetimi geçene kadar bilinçli kapalıdır; bu bir arıza DEĞİL,
-   no-fabrication gereğidir.
-
-5. **Kanonik-önbellek durumu:** Bu oturumda üretilmiş kanonik artefaktları (`subject_registry`,
-   `outcomes_extract`, `framework_map`, `figure_probe`) ve `connector_call_ledger`'ı
-   (`single_shot_enforced`) özetle.
-
-## Çıktı
-
-Kısa durum kartı, **iki connector** için canlılık:
-- `maarif-mufredat`: korpus sürümü · araç kümeleri (A/B/C/D, 21) · `get_figure` (Tier-2 yeteneği)
-- `egitim-kaynak`: faz · getirme yöntemi · hizalama durumu · chunk sayısı
-Ayrıca kanonik-önbellek durumu. Her eksik connector'ın etkisini söyle — hiçbiri üretimi bloke etmez
-(Maarif yoksa offline yol; egitim-kaynak yoksa zenginleştirme atlanır). Plugin yayınlamaz.
+Modül üretme.

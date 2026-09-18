@@ -54,7 +54,7 @@ Sayılar diskteki `commands/` dosyaları, `skills/` alt dizinleri, `agents/` alt
 | fon-uzmani | 5 | 8 | — | — | 2 |
 | bist-analyst | — | 2 | — | — | 1 |
 | sci-audit | 7 | 7 | 8 | ✅ | 4 |
-| edupedia | 5 | 2 | 1 | ✅ | 2 |
+| edupedia | 5 | 2 | 1 | ✅ | 3 |
 | brand-ecosystem-core | 1 | 12 | 5 | ✅ | 7 |
 
 **Komutu olmayan plugin'ler** (vekayinuvis, historia-medicinae, bist-analyst) önek-siz **skill mimarisi** kullanır:

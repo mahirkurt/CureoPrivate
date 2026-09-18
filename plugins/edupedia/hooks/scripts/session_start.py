@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-"""edupedia SessionStart preflight — connector kadrosu prob'u + pedagojik konvansiyon enjeksiyonu.
+"""edupedia SessionStart preflight (1.0.0 ince istemci) — tedy orkestratörü prob'u + akış kuralları.
 
-v1.0.0: anahtar haritası hardcoded DEĞİL — `fleet.lock.json`'dan gelir (`tools/fleetkit/gen_fleet.py`
-üretir, kaynak `fleet.yaml`). Preflight gerçek MCP `initialize` prob'u yapar (24 saat cache'li)
-ve iki hâli AYIRIR:
-
-  auth_missing → anahtar süreç ortamında yok  → MEŞRU DEGRADE
-  unauthorized → sunucu 401/403 verdi         → YAPILANDIRMA ARIZASI
-
-Sağlıklı filoda preflight bölümü SESSİZDİR (yalnız konvansiyonlar enjekte edilir).
-Fail-open: prob veya lock çökerse yalnız konvansiyonlar gider, oturum durmaz.
+Filo fleet.lock.json'dan gelir (tools/fleetkit/gen_fleet.py üretir). Vendor'lı fleet_probe kimliksiz
+`initialize` gönderir (24 saat önbellekli); yalnız `tedy` sonucu yorumlanır: 401 sağlıklı (interaktif
+OAuth), 200 güvenlik uyarısı, 403 erişim reddi, diğerleri erişilemedi. Fail-open: prob ya da lock çökerse
+yalnız akış kuralları gider, oturum durmaz.
 """
 from __future__ import annotations
 
@@ -27,7 +22,7 @@ try:
 except Exception:
     fleet_probe = None
 
-from hook_core import build_context, conventions, session_context  # noqa: E402,F401
+from hook_core import session_context  # noqa: E402
 
 
 def main() -> int:
@@ -35,13 +30,11 @@ def main() -> int:
         sys.stdin.read()  # drain stdin payload if any
     except Exception:
         pass
-
     try:
-        ctx = session_context(ROOT, os.environ, fleet_probe)
         payload = {
             "hookSpecificOutput": {
                 "hookEventName": "SessionStart",
-                "additionalContext": ctx,
+                "additionalContext": session_context(ROOT, os.environ, fleet_probe),
             }
         }
         sys.stdout.write(json.dumps(payload, ensure_ascii=False))

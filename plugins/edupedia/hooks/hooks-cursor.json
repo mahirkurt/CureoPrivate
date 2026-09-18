@@ -8,15 +8,6 @@
         "timeout": 45,
         "failClosed": false
       }
-    ],
-    "postToolUse": [
-      {
-        "type": "command",
-        "command": "/usr/bin/env python3 \"${CURSOR_PLUGIN_ROOT}/hooks/scripts/cursor_validate_module_hook.py\"",
-        "matcher": "Write",
-        "timeout": 30,
-        "failClosed": false
-      }
     ]
   }
 }

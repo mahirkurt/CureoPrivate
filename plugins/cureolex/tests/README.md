@@ -35,7 +35,7 @@ cases:
 
 | Alan | Anlam |
 |------|-------|
-| `expect.mode` | Beklenen cureolex modu (9 moddan biri) veya `out_of_scope` |
+| `expect.mode` | Beklenen cureolex modu (12 kanonik moddan biri ya da bir paketin `mode_aliases` takma adı) veya `out_of_scope` |
 | `expect.medical_research` | `mandatory` / `conditional` / `none` (R14 §1.2) |
 | `expect.routed_to` | `cureolex` veya `out_of_scope` |
 | `expect.redirect` | Kapsam-dışıysa hedef skill(ler): `saglik-sigorta` / `onko-erisim` / `promo-censor` |
@@ -48,7 +48,7 @@ cases:
 
 | Süit | Kapsanan |
 |------|----------|
-| `routing_tests.yaml` | 9 mod sınıflandırma + medical-research tetikleme seviyesi |
+| `routing_tests.yaml` | 3.x'in 9 modu için sınıflandırma + medical-research tetikleme seviyesi |
 | `scope_boundary_tests.yaml` | 5 kapsam-dışı kalemin negatif testi + reform pozitif karşılıkları |
 | `mod9_medical_research_tests.yaml` | Mod 9 otomatik tetikleme + `ex_post_metrics` + G9 + şema-2.3.1 zorunluluğu |
 | `citation_hallucination_tests.yaml` | G7 epistemik dürüstlük — uydurma CELEX/AYM/Yargıtay + `mcp_verified` etiketleme |
@@ -90,3 +90,22 @@ ve doktrin tam-metin katmanının çalıştığı (FR-11).
 
 **Ağ gerektirir.** Ağsız/deterministik CI kapısı `tools/fleetkit/check_drift.py`'dir:
 türetilmiş dosya sürüklenmesi + düzyazı filo sayısı + hook kapsam açığı.
+
+## Yargı bölgesi paketleri (v4.0.0)
+
+`tests/validate_packs.py` — **ağsız, deterministik** paket doğrulayıcısı; `run_suites.py`
+tarafından da çağrılır (tek çıkış kodu). Denetimleri: paket şeması · yayım kuralı
+(`active` ⇒ wire'lı S1 + uzman paneli) · bağlayıcının filoda varlığı ve companion/wired
+tutarlılığı · `references/` + `templates/` dosyalarının **tam olarak bir kez** sahiplenilmesi
+(paket `owned_files` ya da `jurisdictions/core_files.yaml`) · paket `shards` ↔ `fleet.yaml`
+aynası · legistik rubrik eşlemesi (K-1…K-21) · kod sözlüğü (ISO / `ORG:` / eski takma ad) ·
+bağlayıcı sözleşmesi ↔ `tools_used`.
+
+Paketlerin altın/adversarial vakaları (`jurisdictions/<kod>/golden_cases.yaml`) aynı süit
+biçimindedir ve `run_suites.py` [1]–[4] denetiminden geçer. Ek olarak `pack_check` bloğu
+taşıyan vakalar **deterministik olarak koşulur**: `g11_violations` (kanıt defterinde yanlış
+rolle kaydedilmiş yabancı kaynak sayısı — `validate_packs.g11_ihlalleri`) ve `ceiling`
+(paket bayraklarından güven tavanı — `validate_packs.tavan_hesapla`). Doğrulayıcı 2026-09-24'te
+sekiz enjekte kusurla sınandı (taslak paketin active yapılması · sahipsiz dosya · G11 beklenti
+sapması · parça aynası · yanlış aileye K eşleme · dayanaksız bayrak · companion'ın wired
+işaretlenmesi · `UK` paket kodu) — sekizi de yakalandı.

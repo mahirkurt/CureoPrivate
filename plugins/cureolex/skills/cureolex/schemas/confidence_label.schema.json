@@ -16,7 +16,7 @@
     "label_version": { "type": "string", "const": "1.0" },
     "mode": {
       "type": "string",
-      "enum": ["DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA", "COMPARATIVE_LAW", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION"]
+      "enum": ["DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA", "COMPARATIVE_LAW", "PARLIAMENTARY_BILL", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION", "REGULATORY_MATURITY", "TRANSPOSITION", "RELIANCE_FRAMEWORK"]
     },
     "medical_research_invoked": {
       "description": "Klinik konulu çalışmalarda medical-research çağrıldı mı? (R14 §1.2). Klinik konuda zorunlu modlarda true beklenir.",
@@ -45,7 +45,7 @@
           "additionalProperties": false,
           "required": ["version", "mcp_unavailability_during_query", "uncertain_interpretations"],
           "properties": {
-            "version": { "type": "string", "pattern": "^[23]\\.[0-9]+(\\.[0-9]+)?$" },
+            "version": { "type": "string", "pattern": "^[2-9]\\.[0-9]+(\\.[0-9]+)?$" },
             "sidecar_schema_origin": { "type": "string", "enum": ["2.0", "2.3", "2.3.1"] },
             "mcp_unavailability_during_query": { "type": "array", "items": { "type": "string" } },
             "uncertain_interpretations": { "type": "array", "items": { "type": "string" } },
@@ -78,6 +78,27 @@
         "enum": ["saglik-sigorta", "onko-erisim", "promo-censor"]
       }
     },
+    "jurisdiction_pack": {
+      "description": "4.0: çıktıyı üreten yargı bölgesi paketi. status=draft ise combined_confidence en fazla LOW (CC-6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "pack_version", "status"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^(?:[A-Z]{2}(?:-[A-Z0-9]{1,3})?|ORG:[A-Z][A-Z0-9-]{1,15}|INTL|WHO)$", "description": "Paket kodu (jurisdictions/<kod>/jurisdiction_pack.yaml)." },
+        "pack_version": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "draft", "deprecated"] }
+      }
+    },
+    "confidence_ceiling": {
+      "description": "4.0: paketin yetenek bayraklarından türeyen tavan (jurisdictions/_schema/confidence_ceiling_rules.yaml). combined_confidence bu tavanı AŞAMAZ.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ceiling", "applied_rules"],
+      "properties": {
+        "ceiling": { "type": "string", "enum": ["HIGH", "MODERATE", "LOW"] },
+        "applied_rules": { "type": "array", "items": { "type": "string", "pattern": "^CC-[0-9]+$" } }
+      }
+    },
     "unverified_claims_present": {
       "description": "Evidence ledger'da doğrulanmamış/temsilî kayıt varsa true; çıktıda bilgi-sınırı uyarısı zorunlu.",
       "type": "boolean"
@@ -88,6 +109,16 @@
       "$comment": "EX_POST_EVALUATION için medical-research çağrısı zorunludur (R14 §1.2 + §6.1).",
       "if": { "properties": { "mode": { "const": "EX_POST_EVALUATION" } }, "required": ["mode"] },
       "then": { "properties": { "medical_research_invoked": { "const": true } }, "required": ["medical_research_invoked"] }
+    },
+    {
+      "$comment": "4.0 güven tavanı: MODERATE tavanında HIGH yasak.",
+      "if": { "properties": { "confidence_ceiling": { "properties": { "ceiling": { "const": "MODERATE" } } } }, "required": ["confidence_ceiling"] },
+      "then": { "properties": { "combined_confidence": { "enum": ["MODERATE", "LOW"] } } }
+    },
+    {
+      "$comment": "4.0 güven tavanı: LOW tavanında yalnız LOW.",
+      "if": { "properties": { "confidence_ceiling": { "properties": { "ceiling": { "const": "LOW" } } } }, "required": ["confidence_ceiling"] },
+      "then": { "properties": { "combined_confidence": { "const": "LOW" } } }
     }
   ]
 }

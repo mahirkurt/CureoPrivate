@@ -1,0 +1,75 @@
+# Güven etiketi TAVANI — yetenek bayraklarından türetilir (planın 4. önerisi).
+#
+# İLKE: "iyimser beyan yasağı"nın doğal uzantısı. Kaynak bir şeyi YAYIMLAMIYORSA, o şeye
+# dayanan bir iddia yüksek güvenle üretilemez. Tavan bir ÜST SINIRDIR; model daha düşük
+# bir etiket seçebilir, daha yükseğini SEÇEMEZ.
+#
+# Birleşik tavan = uygulanan tüm kuralların EN DÜŞÜĞÜ.  Sıra: HIGH > MODERATE > LOW.
+# `tests/validate_packs.py::tavan_hesapla` bu dosyayı okur; kurallar kodda değil burada yaşar.
+
+order: [HIGH, MODERATE, LOW]
+
+rules:
+  - id: CC-1
+    when: { capability: has_consolidated_text, value: false }
+    ceiling: MODERATE
+    reason: >-
+      Konsolide metin yayımlanmıyor. Yürürlükteki metin ancak değişiklik zincirinin elle
+      birleştirilmesiyle kurulabilir; bu birleştirmenin kendisi doğrulanamaz.
+
+  - id: CC-2
+    when: { capability: has_point_in_time, value: false }
+    ceiling: MODERATE
+    applies_to_modes: [AMEND, COMPLY, ANALYZE, EX_POST_EVALUATION, TRANSPOSITION]
+    gate_effect: { G10: CONDITIONAL }
+    reason: >-
+      Belirli tarihte yürürlükteki sürüm yayımlanmıyor. Bir hükmün referans tarihinde
+      yürürlükte olduğu doğrulanamaz; G10 en fazla CONDITIONAL.
+
+  - id: CC-3
+    when: { capability: has_case_law_api, value: false }
+    ceiling: MODERATE
+    applies_to_modes: [ANALYZE, OPINE, COMPLY]
+    gate_effect: { G5: CONDITIONAL }
+    reason: >-
+      İçtihat programatik olarak erişilebilir değil. İçtihat zinciri eksik kalabilir;
+      G5 en fazla CONDITIONAL.
+
+  - id: CC-4
+    when: { capability: has_explanatory_memoranda, value: false }
+    ceiling: MODERATE
+    applies_to_modes: [AMEND, PARLIAMENTARY_BILL, EX_POST_EVALUATION]
+    reason: >-
+      Gerekçe/açıklayıcı not yayımlanmıyor. Yasa koyucu iradesi ve ex-ante varsayımlar
+      belgeden okunamaz.
+
+  - id: CC-5
+    when: { capability: has_authentic_translation, value: false }
+    applies_when: output_language_not_authentic
+    ceiling: MODERATE
+    reason: >-
+      Çıktı dili, hukuken geçerli bir dil sürümü değil. Çeviri hukuki eşdeğerlik değildir.
+
+  - id: CC-6
+    when: { pack_status: draft }
+    ceiling: LOW
+    reason: >-
+      Paket taslaktır — uzman paneli değerlendirmesinden geçmedi. Çıktı yalnız keşif
+      amaçlıdır ve taslak uyarısı taşır.
+
+  - id: CC-7
+    when: { s1_connector_wired: false }
+    ceiling: LOW
+    reason: >-
+      Wire'lı S1 (birincil mevzuat) bağlayıcısı yok. Model ön bilgisi küçük ve az temsil
+      edilen yargı bölgelerinde zayıftır; birincil kaynak olmadan hüküm iddiası
+      doğrulanamaz. (Bu durumdaki paket 'active' olamaz — yayım kuralı.)
+
+  - id: CC-8
+    when: { legistic_profile_verified: false }
+    ceiling: MODERATE
+    applies_to_modes: [DRAFT, AMEND, COMPLY, PARLIAMENTARY_BILL]
+    gate_effect: { G1: CONDITIONAL }
+    reason: >-
+      Ulusal mevzuat hazırlama kılavuzunun içeriği birincil kaynaktan doğrulanmadı; şekil
+      uyumu (G1) iddiası en fazla CONDITIONAL.

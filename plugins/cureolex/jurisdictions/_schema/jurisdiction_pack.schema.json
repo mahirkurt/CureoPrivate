@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cureolex.local/schemas/jurisdiction_pack.schema.json",
+  "title": "cureolex yargı bölgesi paketi (jurisdiction pack)",
+  "description": "Yargı bölgesinden bağımsız ÇEKİRDEK ile takılıp çıkarılabilir ÜLKE PAKETİNİ ayıran sözleşme. Kapılar (G1–G5, G8, G10, G11) parametrelerini buradan okur. Bir paket 'active' olabilmesi için S1 (birincil mevzuat) bağlayıcısı taşımalı ve uzman paneli değerlendirmesinden geçmiş olmalıdır — `tests/validate_packs.py` bunu zorlar.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pack_version", "jurisdiction", "status", "legal_family", "languages",
+               "norm_hierarchy", "connectors", "capabilities", "legistic_profile",
+               "language_profile", "institutions", "publication"],
+  "properties": {
+    "pack_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+
+    "jurisdiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "name", "kind"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "ISO 3166-1 alfa-2 (ülke) · ISO 3166-2 (alt birim, ör. DE-BY) · ORG:<ad> (ulusüstü/uluslararası örgüt). Bkz. supranational_codes.yaml.",
+          "pattern": "^(?:[A-Z]{2}(?:-[A-Z0-9]{1,3})?|ORG:[A-Z][A-Z0-9-]{1,15})$"
+        },
+        "name": { "type": "string" },
+        "kind": { "enum": ["national", "subnational", "supranational", "international_org"] },
+        "iso_note": { "type": "string" }
+      }
+    },
+
+    "status": {
+      "enum": ["active", "draft", "deprecated"],
+      "description": "'active' YALNIZ S1 bağlayıcısı + uzman paneli değerlendirmesi ile. 'draft' iskelet — çıktı üretimi için KULLANILMAZ."
+    },
+
+    "legal_family": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary"],
+      "properties": {
+        "primary": { "enum": ["civil_law", "common_law", "mixed", "religious_elements"] },
+        "federal": { "type": "boolean", "default": false },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "languages": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["code", "authentic"],
+        "properties": {
+          "code": { "type": "string", "pattern": "^[a-z]{2,3}(?:-[A-Z]{2})?$" },
+          "authentic": { "type": "boolean", "description": "Bu dil sürümü hukuken geçerli (eşit derecede) mi? Çok dilli yargılarda birden fazla true olabilir — çeviri hukuki eşdeğerlik DEĞİLDİR." }
+        }
+      }
+    },
+
+    "norm_hierarchy": {
+      "type": "array", "minItems": 1,
+      "description": "Üstten alta SIRALI norm hiyerarşisi. G2 (üst-norm uyumu) bu sırayı okur.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["rank", "name"],
+        "properties": {
+          "rank": { "type": "integer", "minimum": 1 },
+          "name": { "type": "string" },
+          "instrument_types": { "type": "array", "items": { "type": "string" } },
+          "note": { "type": "string" }
+        }
+      }
+    },
+
+    "connectors": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["role", "tier", "status"],
+        "properties": {
+          "role": { "enum": ["primary_legislation", "official_gazette", "parliament", "case_law",
+                             "secondary_legislation", "regulator_data", "doctrine", "treaty"] },
+          "server": { "type": "string", "description": "fleet.yaml'daki sunucu adı veya companion adı. Doğrulayıcı filoda var olduğunu denetler." },
+          "endpoint": { "type": "string", "description": "Sarmalanmamış programatik yol (ep.*) veya portal URL'i." },
+          "tier": {
+            "enum": ["A", "B", "C"],
+            "description": "A: API/ELI/AKN · B: yalnız HTML portalı (kayıttaki tarihsel 'D-sınıfı web_primary' buna denk) · C: yalnız PDF resmî gazete (OCR + anamnesis hattı gerekir)."
+          },
+          "status": { "enum": ["wired", "companion", "web_primary", "unverified", "broken"] },
+          "contract_capabilities": {
+            "type": "array",
+            "items": { "enum": ["search", "point_in_time_text", "timeline", "repeal_relations",
+                                "article_tree", "gazette_resolve", "explanatory_memorandum",
+                                "case_law_search", "legislative_history"] }
+          },
+          "note": { "type": "string" }
+        },
+        "anyOf": [ { "required": ["server"] }, { "required": ["endpoint"] } ]
+      }
+    },
+
+    "capabilities": {
+      "type": "object", "additionalProperties": false,
+      "description": "Kaynağın YAYIMLADIĞI şeyler. Güven etiketi tavanı bunlardan türer (confidence_ceiling_rules.yaml). Her bayrak bir DAYANAK taşır — dayanaksız 'true' iyimser beyandır.",
+      "required": ["has_consolidated_text", "has_point_in_time", "has_explanatory_memoranda",
+                   "has_case_law_api", "has_authentic_translation"],
+      "properties": {
+        "has_consolidated_text":     { "$ref": "#/$defs/capability" },
+        "has_point_in_time":         { "$ref": "#/$defs/capability" },
+        "has_explanatory_memoranda": { "$ref": "#/$defs/capability" },
+        "has_case_law_api":          { "$ref": "#/$defs/capability" },
+        "has_authentic_translation": { "$ref": "#/$defs/capability" }
+      }
+    },
+
+    "legistic_profile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "verified", "families"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "source": { "type": "string", "description": "Ulusal mevzuat hazırlama kılavuzu / düzenleme." },
+        "verified": { "type": "boolean", "description": "false ise G1 en fazla CONDITIONAL — kılavuz içeriği bu oturumda birincil kaynaktan doğrulanmadı." },
+        "families": {
+          "type": "object",
+          "description": "Anahtarlar legistic_rubric_families.yaml'daki aile kimlikleridir.",
+          "additionalProperties": { "$ref": "#/$defs/familyParams" }
+        }
+      }
+    },
+
+    "language_profile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reference", "verified"],
+      "properties": {
+        "reference": { "type": "string" },
+        "qc_points": { "type": "integer", "minimum": 0 },
+        "verified": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "constitutional_health_rights": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["instrument", "provisions"],
+        "properties": {
+          "instrument": { "type": "string" },
+          "provisions": { "type": "array", "items": { "type": "string" } },
+          "note": { "type": "string" }
+        }
+      }
+    },
+
+    "institutions": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "regulator": { "type": "array", "items": { "$ref": "#/$defs/institution" } },
+        "payer":     { "type": "array", "items": { "$ref": "#/$defs/institution" } },
+        "hta":       { "type": "array", "items": { "$ref": "#/$defs/institution" },
+                       "description": "evidentia'ya delegasyonda `cureolex_legal_context.hta_bodies` olarak aktarılır." },
+        "legislature": { "type": "array", "items": { "$ref": "#/$defs/institution" } },
+        "constitutional_review": { "type": "array", "items": { "$ref": "#/$defs/institution" },
+                       "description": "G2'nin okuduğu anayasal yargı denetimi merciileri." }
+      }
+    },
+
+    "shards": {
+      "type": "object",
+      "description": "Parça eşlemesi: S1 (ulusal çekirdek) · S2 (karşılaştırmalı) · S3 (doktrin) · S4 (klinik).",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
+
+    "gate_params": {
+      "type": "object",
+      "description": "Kapıların bu pakete özgü parametreleri. Anahtarlar G1…G11.",
+      "propertyNames": { "pattern": "^G(?:[0-9]|1[01])$" },
+      "additionalProperties": { "type": "object" }
+    },
+
+    "mode_aliases": {
+      "type": "object",
+      "description": "Ulusal usul adı → genel mod adı (ör. TBMM_KANUN_TEKLIFI → PARLIAMENTARY_BILL).",
+      "additionalProperties": { "type": "string" }
+    },
+
+    "owned_files": {
+      "type": "array",
+      "description": "Bu pakete ait (yargı bölgesine özgü) dosyalar — plugin köküne göre yol. Doğrulayıcı hem varlığı hem de TR-özgü dosyaların sahipsiz kalmadığını denetler.",
+      "items": { "type": "string" }
+    },
+
+    "golden_cases": { "type": "string", "description": "Paketin altın + adversarial vaka dosyası (plugin köküne göre)." },
+
+    "publication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["s1_connector_required", "expert_panel"],
+      "properties": {
+        "s1_connector_required": { "const": true, "description": "Pazarlık konusu değildir: S1 bağlayıcısı olmayan paket yayımlanmaz." },
+        "expert_panel": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status"],
+          "properties": {
+            "status": { "enum": ["not_started", "in_progress", "completed", "grandfathered"] },
+            "note": { "type": "string" },
+            "inter_rater_agreement": { "type": ["number", "null"] }
+          }
+        },
+        "local_legal_partner": { "type": ["string", "null"] }
+      }
+    }
+  },
+
+  "$defs": {
+    "capability": {
+      "type": "object", "additionalProperties": false,
+      "required": ["value", "basis"],
+      "properties": {
+        "value": { "type": "boolean" },
+        "basis": { "type": "string", "minLength": 8, "description": "Neye dayanarak? (bağlayıcı aracı, ölçüm tarihi). Dayanaksız bayrak kabul edilmez." }
+      }
+    },
+    "institution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "registry_id": { "type": "string", "description": "source_registry.yaml'daki kayıt kimliği (varsa)." },
+        "note": { "type": "string" }
+      }
+    },
+    "familyParams": {
+      "type": "object", "additionalProperties": false,
+      "required": ["anchor"],
+      "properties": {
+        "anchor": { "type": "string", "description": "Ulusal dayanak (ör. '5210 Md.21'). Bilinmiyorsa 'UNVERIFIED'." },
+        "checks": { "type": "array", "items": { "type": "string" } },
+        "risk": { "enum": ["YUKSEK", "ORTA", "DUSUK", "DEGISKEN"] },
+        "coverage_gap": { "type": "boolean", "description": "Bu aileye karşılık gelen ulusal kontrol YOK. Uydurma kontrol eklenmez; boşluk olarak raporlanır." },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

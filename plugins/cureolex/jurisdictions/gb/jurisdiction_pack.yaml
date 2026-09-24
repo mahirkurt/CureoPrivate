@@ -1,0 +1,141 @@
+# Birleşik Krallık — Faz 1 TASLAK paket.
+#
+# `status: draft` — uzman paneli değerlendirmesi YOK. Bu paketle üretilen her çıktı
+# CC-6 gereği en fazla LOW güven taşır ve taslak uyarısı içerir. Yayım kuralı:
+# tests/validate_packs.py paneli tamamlanmamış paketin `active` olmasını reddeder.
+#
+# Kod: GB. "UK" ISO 3166-1'de istisnaen ayrılmış bir koddur (resmî alfa-2 GB);
+# 4.0 öncesi çıktılardaki "UK" eski takma ad olarak GB'ye çözülür (supranational_codes.yaml).
+#
+# Yetenek bayrakları 2026-09-24'te birincil kaynağa karşı ÖLÇÜLDÜ (basis alanlarında).
+
+pack_version: "0.1.0"
+
+jurisdiction:
+  code: GB
+  name: Birleşik Krallık (United Kingdom)
+  kind: national
+  iso_note: "UK istisnaen ayrılmış kod; resmî ISO 3166-1 alfa-2 = GB. Alt birimler ISO 3166-2: GB-ENG, GB-SCT, GB-WLS, GB-NIR."
+
+status: draft
+
+legal_family:
+  primary: common_law
+  federal: false
+  notes: >-
+    Üniter ama yetki devri (devolution) olan devlet: İskoçya, Galler ve Kuzey İrlanda
+    yasama organları devredilen alanlarda (sağlık dahil) kendi mevzuatını çıkarır.
+    İskoç hukuku karma (civil + common) sistemdir. Sağlık mevzuatında 'hangi UK?'
+    sorusu G11'in alt-birim ayağıdır (GB-SCT ≠ GB-ENG).
+
+languages:
+  - { code: en, authentic: true }
+  - { code: cy, authentic: true }
+
+norm_hierarchy:
+  - { rank: 1, name: "Act of Parliament (primary legislation)", instrument_types: [statute],
+      note: "Kodifiye anayasa yoktur; parlamento egemenliği. Devredilmiş yasama organlarının Act'leri kendi yetki alanında birincil mevzuattır." }
+  - { rank: 2, name: "Statutory Instrument (secondary legislation)", instrument_types: [regulation],
+      note: "Yetki veren Act'e (enabling Act) dayanır; ultra vires denetimine tabidir." }
+  - { rank: 3, name: "Guidance / Codes of Practice", instrument_types: [guidance] }
+
+connectors:
+  - role: primary_legislation
+    server: uk-legal
+    tier: A
+    status: wired
+    contract_capabilities: [search, article_tree]
+    note: "legislation_search → legislation_get_toc → legislation_get_section (CLML /data.xml). 2026-08-18 düzeltmesi sonrası Medicines Act 1968 → ukpga/1968/67 doğrulandı."
+  - role: primary_legislation
+    endpoint: "ep.legislation_uk — https://www.legislation.gov.uk/{type}/{year}/{no}[/section/{n}][/{YYYY-MM-DD}]/data.akn|data.xml"
+    tier: A
+    status: web_primary
+    contract_capabilities: [point_in_time_text, timeline]
+    note: "Belirli-tarih sürümü yol ekiyle alınır — wire'lı araçta tarih parametresi YOK; G10 bu uçtan beslenir."
+  - role: case_law
+    server: uk-legal
+    tier: A
+    status: wired
+    contract_capabilities: [case_law_search]
+    note: "Find Case Law (TNA) — case_law_search · judgment_get_index · judgment_get_paragraph."
+  - role: parliament
+    server: uk-legal
+    tier: A
+    status: wired
+    contract_capabilities: [legislative_history]
+    note: "bills_search_bills · parliament_search_hansard · votes_search_divisions · committees_search_evidence."
+  - role: case_law
+    server: Open Law
+    tier: A
+    status: companion
+    contract_capabilities: [case_law_search]
+    note: "Çapraz kontrol + HUDOC. Birincil UK statute yolu uk-legal'dir."
+
+capabilities:
+  has_consolidated_text:
+    value: true
+    basis: "legislation.gov.uk revised (konsolide) metin — uk-legal legislation_get_section; ukpga/1968/67 s.1 2026-08-18 doğrulandı."
+  has_point_in_time:
+    value: true
+    basis: "ÖLÇÜLDÜ 2026-09-24: /ukpga/1968/67/section/1/2000-01-01/data.xml → 200, dct:valid 1999-12-27 (o tarihte geçerli sürüm). Yol ep.legislation_uk'tir, wire'lı araç değil."
+  has_explanatory_memoranda:
+    value: true
+    basis: "ÖLÇÜLDÜ 2026-09-24: /ukpga/2012/7/notes/contents → 200 'Health and Social Care Act 2012 - Explanatory Notes'. SI'lar için Explanatory Memorandum ayrı yayımlanır — SI yolu bu oturumda ölçülmedi."
+  has_case_law_api:
+    value: true
+    basis: "uk-legal case_law_search (Find Case Law, TNA) wire'lı; Open Law companion çapraz."
+  has_authentic_translation:
+    value: true
+    basis: "Senedd (Galler) mevzuatı İngilizce + Galce eşit geçerlidir. DİKKAT: Westminster Act'leri için geçerli dil yalnız İngilizcedir — Galce çıktı Westminster normu için çeviridir (CC-5 uygulanır)."
+
+legistic_profile:
+  id: gb-opc-drafting-guidance
+  name: "Office of the Parliamentary Counsel — Drafting Guidance"
+  source: "https://www.gov.uk/government/publications/drafting-bills-for-parliament (bu oturumda içeriği doğrulanmadı)"
+  verified: false
+  families:
+    ust_norm:                          { anchor: "UNVERIFIED", note: "Enabling Act'e bağlılık (vires) — içerik doğrulanmadı." }
+    yetki_ve_devredilmis_yasama:       { anchor: "UNVERIFIED", note: "Henry VIII yetkileri, SI prosedürü (affirmative/negative) — doğrulanmadı." }
+    gerekce:                           { anchor: "UNVERIFIED" }
+    etki_analizi:                      { anchor: "UNVERIFIED", note: "Impact Assessment (Better Regulation Framework) — doğrulanmadı." }
+    atif_teknigi:                      { anchor: "UNVERIFIED" }
+    gecis_hukumleri:                   { anchor: "UNVERIFIED" }
+    yururluk_ve_ilga:                  { anchor: "UNVERIFIED", note: "Commencement regulations — doğrulanmadı." }
+    dil:                               { anchor: "UNVERIFIED" }
+    yapi_ve_kapsam:                    { anchor: "UNVERIFIED" }
+
+language_profile:
+  reference: "UNVERIFIED — İngiliz yasa dili profili yazılmadı"
+  verified: false
+  note: "G3 bu pakette yalnız genel okunabilirlik denetimi yapabilir; TR 15-nokta QC uygulanmaz (G11: yanlış dil profili de yargı karışmasıdır)."
+
+institutions:
+  regulator:
+    - { name: "Medicines and Healthcare products Regulatory Agency (MHRA)", url: "https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency" }
+  payer:
+    - { name: "NHS England", note: "Devredilmiş bölgelerde ayrı sağlık hizmetleri (NHS Scotland, NHS Wales, HSC NI)." }
+  hta:
+    - { name: "National Institute for Health and Care Excellence (NICE)", url: "https://www.nice.org.uk/", note: "İngiltere. İskoçya: Scottish Medicines Consortium (SMC)." }
+    - { name: "Scottish Medicines Consortium (SMC)", url: "https://www.scottishmedicines.org.uk/" }
+  legislature:
+    - { name: "UK Parliament (House of Commons + House of Lords)", url: "https://www.parliament.uk/" }
+  constitutional_review:
+    - { name: "Supreme Court of the United Kingdom", url: "https://www.supremecourt.uk/",
+        note: "Act'i iptal ETMEZ (parlamento egemenliği). HRA 1998 s.4 uyumsuzluk beyanı; SI'lar ultra vires denetimiyle iptal edilebilir." }
+
+gate_params:
+  G2: { constitution: "Kodifiye anayasa yok — parlamento egemenliği + HRA 1998 + devolution Acts",
+        note: "G2 'anayasaya aykırılık' değil vires + HRA uyumu + devredilmiş yetki sınırı olarak işler." }
+  G5: { courts: ["Supreme Court", "Court of Appeal", "High Court", "ECtHR (HRA s.2 dikkate alma)"], companion: "Open Law" }
+  G10: { point_in_time_path: "ep.legislation_uk /{YYYY-MM-DD}/data.xml", measured: "2026-09-24" }
+  G11: { home_jurisdiction: GB,
+         subnational_note: "Devredilmiş sağlık alanında GB-SCT/GB-WLS/GB-NIR normu GB-ENG normu gibi sunulamaz.",
+         transposition_note: "2020 sonrası AB üyesi değil — retained/assimilated EU law ayrı kategoridir; güncel AB tüzüğü GB'de doğrudan uygulanmaz (Kuzey İrlanda Windsor Çerçevesi istisnası doğrulanmadı)." }
+
+publication:
+  s1_connector_required: true
+  expert_panel:
+    status: not_started
+    note: "İngiliz parlamento hukukçusu (Parliamentary Counsel deneyimli) paneli gerekir. Panel olmadan paket 'active' olamaz."
+    inter_rater_agreement: null
+  local_legal_partner: null

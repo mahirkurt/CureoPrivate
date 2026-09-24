@@ -45,7 +45,7 @@ Parametre notu: `mevzuat_no`/`mevzuat_tertip` INTEGER. as_of tarihli geçmiş s�
 
 ## D. anamnesis (Tier 2) tam çağrı örneği
 
-`doc_scope` **yoktur**. Collection + önekli `doc_id` (insan kuyruğu `mevzuat:`/`celex:`/`ecli:`/`rg:` korunur). G0–G9 aynı `cureolex:sess:<id>`.
+`doc_scope` **yoktur**. Collection + önekli `doc_id` (insan kuyruğu `mevzuat:`/`celex:`/`ecli:`/`rg:` korunur). G0–G11 aynı `cureolex:sess:<id>`.
 
 ```text
 # 1) Bir kez ingest (collection + önekli kanonik id — ikinci kez ingest edilmez):

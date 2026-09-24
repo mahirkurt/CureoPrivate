@@ -1,0 +1,212 @@
+# Türkiye — cureolex'in İLK yargı bölgesi paketi.
+#
+# Bu paket YENİ bir davranış tanımlamaz: 3.9.0'ın çekirdeğe gömülü Türkiye davranışının
+# BİREBİR tanımıdır. 4.0'da o davranış çekirdekten ayrıldı; kapılar parametrelerini artık
+# buradan okur. Faz 0 çıkış ölçütü: bu paketle Türkiye'de GERİLEME YOK.
+#
+# Her yetenek bayrağının `basis` alanı, bayrağın hangi canlı araca dayandığını söyler —
+# dayanaksız "true" iyimser beyandır ve şema onu reddeder.
+
+pack_version: "1.0.0"
+
+jurisdiction:
+  code: TR
+  name: Türkiye
+  kind: national
+
+status: active
+
+legal_family:
+  primary: civil_law
+  federal: false
+
+languages:
+  - { code: tr, authentic: true }
+
+norm_hierarchy:
+  - { rank: 1, name: Anayasa, instrument_types: [constitutional],
+      note: "1982 Anayasası. Md.90/5: usulüne göre yürürlüğe konulmuş temel hak ve özgürlüklere ilişkin milletlerarası andlaşmalar — intl-treaty taşır." }
+  - { rank: 2, name: Kanun, instrument_types: [statute] }
+  - { rank: 3, name: Cumhurbaşkanlığı Kararnamesi (CBK), instrument_types: [decree] }
+  - { rank: 4, name: Yönetmelik, instrument_types: [regulation] }
+  - { rank: 5, name: Tebliğ, instrument_types: [regulation] }
+  - { rank: 6, name: Genelge, instrument_types: [guidance] }
+
+connectors:
+  - role: primary_legislation
+    server: mevzuat
+    tier: A
+    status: wired
+    contract_capabilities: [search, point_in_time_text, timeline, repeal_relations,
+                            article_tree, gazette_resolve, explanatory_memorandum]
+    note: "mevzuat.cureonics.com 0.15.1+. PRİMER DÜŞERSE YEDEK YOKTUR — çıktı manual_required ile durur."
+  - role: official_gazette
+    server: resmi-gazete
+    tier: B
+    status: wired
+    contract_capabilities: [search, gazette_resolve]
+    note: "Eski /eskiler/ htm + /Home/Filter arama; resmî PDF nüsha."
+  - role: parliament
+    server: tbmm
+    tier: B
+    status: wired
+    contract_capabilities: [legislative_history]
+    note: "www5 statik yüzey; modern SPA manual_required."
+  - role: case_law
+    server: Yargı
+    tier: B
+    status: companion
+    contract_capabilities: [case_law_search]
+    note: "Companion (wire'lı değil). Bağlı değilse G5 en fazla CONDITIONAL."
+  - role: secondary_legislation
+    server: saglikbakanligi
+    tier: B
+    status: wired
+    contract_capabilities: [search]
+  - role: regulator_data
+    server: titck
+    tier: B
+    status: wired
+    contract_capabilities: [search]
+  - role: doctrine
+    server: yoktez
+    tier: A
+    status: wired
+    contract_capabilities: [search]
+  - role: treaty
+    server: intl-treaty
+    tier: B
+    status: wired
+    contract_capabilities: [search]
+
+capabilities:
+  has_consolidated_text:
+    value: true
+    basis: "mcp__mevzuat__get_mevzuat_content / get_mevzuat_text — mevzuat.gov.tr konsolide metin"
+  has_point_in_time:
+    value: true
+    basis: "mcp__mevzuat__get_onceki_metinler (önceki metinler) + get_mevzuat_timeline (değişiklik çizelgesi)"
+  has_explanatory_memoranda:
+    value: true
+    basis: "mcp__mevzuat__get_mevzuat_gerekce (bedesten tam metin). KISMİ: bedesten gerekceId yoksa yalnız TBMM locator döner — gövde uydurulmaz."
+  has_case_law_api:
+    value: true
+    basis: "Yargı companion (mcp__Yarg__*) — wire'lı DEĞİL; bağlı olmadığı oturumda G5 CONDITIONAL (CC-3 değil, SKILL.md G5 kuralı)."
+  has_authentic_translation:
+    value: false
+    basis: "Türkçe tek hukuken geçerli dil; mevzuatın resmî (geçerli) başka dil sürümü yayımlanmaz."
+
+legistic_profile:
+  id: tr-5210
+  name: "Mevzuat Hazırlama Usul ve Esasları Hakkında Yönetmelik (5210 sayılı, RG 24/2/2022, 31760)"
+  source: "skills/cureolex/references/01-cerceve-5210.md · 06b-compliance-executable-rubric.md"
+  verified: true
+  families:
+    ust_norm:                          { anchor: "5210 Md.4/a", checks: [K-1], risk: YUKSEK }
+    yetki_ve_devredilmis_yasama:       { anchor: "5210 Md.24", checks: [K-17], risk: YUKSEK }
+    mali_yukun_kanuniligi:             { anchor: "5210 Md.24 + Anayasa Md.73", checks: [K-18], risk: YUKSEK }
+    gerekce:                           { anchor: "5210 Md.10 + Md.23", checks: [K-9, K-15], risk: ORTA }
+    etki_analizi:                      { anchor: "5210 Md.26-27", checks: [K-19], risk: DEGISKEN }
+    atif_teknigi:                      { anchor: "5210 Md.21", checks: [K-12], risk: ORTA }
+    gecis_hukumleri:
+      anchor: "UNVERIFIED"
+      coverage_gap: true
+      note: >-
+        R6b'de bu aileye karşılık gelen kontrol YOK (evrensel aile eşlemesi sırasında ortaya
+        çıktı). 01-cerceve-5210.md alt düzenleme çıkarma süresi ve geçiş döneminde eski
+        hükümlerin uygulanmasından söz eder ama yürütülebilir bir rubrik kontrolü değildir.
+        COMPLY raporu bu aileyi "denetlenmedi — rubrikte kontrol yok" olarak BEYAN eder;
+        uydurma bir K-22 eklenmedi.
+    yururluk_ve_ilga:                  { anchor: "5210 Md.18-19 + Md.21/8", checks: [K-13, K-14], risk: ORTA }
+    dil:                               { anchor: "5210 Md.25 + R9", checks: [K-16, K-21], risk: DEGISKEN }
+    yapi_ve_kapsam:                    { anchor: "5210 Md.4/b,d,e,f + Md.13 + Md.15", checks: [K-2, K-5, K-6, K-7, K-10, K-11], risk: DEGISKEN }
+    mevzuat_ekonomisi_ve_koordinasyon: { anchor: "5210 Md.4/c,ç,g", checks: [K-3, K-4, K-8], risk: YUKSEK }
+    ulusustu_ve_karsilastirmali_uyum:  { anchor: "5210 Md.4/c (operasyonel) + Anayasa Md.90/5", checks: [K-20, K-21], risk: YUKSEK }
+
+language_profile:
+  reference: "skills/cureolex/references/09-turk-hukuk-dili-ve-uslubu.md"
+  qc_points: 15
+  verified: true
+  note: "3 Tabaka + 15-nokta QC (G3). Anti-pattern listesi (G4) aynı dosyadadır."
+
+constitutional_health_rights:
+  - instrument: "1982 Anayasası"
+    provisions: ["Md.17 (yaşama, maddi ve manevi varlık)", "Md.56 (sağlık hakkı)", "Md.90/5 (temel hak andlaşmaları)"]
+  - instrument: "ICESCR (BM)"
+    provisions: ["Md.12 (sağlık hakkı) + AAAQ çerçevesi"]
+    note: "Onay/çekince durumu intl-treaty treaty_status/treaty_reservations ile okunur — uydurulmaz."
+
+institutions:
+  regulator:
+    - { name: "Türkiye İlaç ve Tıbbi Cihaz Kurumu (TİTCK)", url: "https://www.titck.gov.tr/" }
+  payer:
+    - { name: "Sosyal Güvenlik Kurumu (SGK)", url: "https://www.sgk.gov.tr/", note: "SUT; 5510 sayılı Kanun GSS zemini" }
+  hta: []
+  legislature:
+    - { name: "Türkiye Büyük Millet Meclisi (TBMM)", url: "https://www.tbmm.gov.tr/" }
+  constitutional_review:
+    - { name: "Anayasa Mahkemesi (AYM)", url: "https://www.anayasa.gov.tr/", registry_id: tr.court.aym }
+    - { name: "Danıştay", url: "https://www.danistay.gov.tr/", registry_id: tr.court.danistay,
+        note: "Yönetmelik iptal denetimi (idari yargı)" }
+
+# Parça eşlemesi — fleet.yaml'daki `shard` alanının AYNASIDIR (tek kaynak orasıdır).
+# Doğrulayıcı, burada S1'de listelenen sunucuların fleet.yaml'da da S1 olduğunu denetler.
+shards:
+  S1: [mevzuat, resmi-gazete, titck, tbmm, saglikbakanligi, detsis, intl-treaty, eurlex]
+  S3: [yok-akademik, yoktez, literatur]
+
+gate_params:
+  G1: { profile: tr-5210, articles: "Md.10-22", reference: "references/04-madde-yapisi.md" }
+  G2: { constitution: "1982 Anayasası", doctrine: "AYM belirlilik içtihadı", articles: "5210 Md.4-9",
+        upper_norm_entry: "mcp__mevzuat__get_anayasa" }
+  G3: { language_profile: "references/09-turk-hukuk-dili-ve-uslubu.md", qc_points: 15 }
+  G4: { antipattern_source: "references/09-turk-hukuk-dili-ve-uslubu.md" }
+  G5: { courts: [AYM, Danıştay, Yargıtay, AİHM, ABAD], companion: "Yargı",
+        doctrine_layers: [yok-akademik, yoktez, literatur] }
+  G8: { procedure: "Anayasa Md.88 + TBMM İçtüzüğü Md.74-91",
+        template: "templates/tbmm-kanun-teklifi.md",
+        note: "5210 kanun teklifine yalnız REFERANS olarak uygulanır (Md.1/3 kapsam-dışı)." }
+  G10: { point_in_time_tools: [get_onceki_metinler, get_mevzuat_timeline],
+         gazette_check: resolve_resmi_gazete }
+  G11: { home_jurisdiction: TR,
+         transposition_note: "AB üyesi değil — AB direktifi TR'de doğrudan uygulanmaz; uyum 'benchmark' olarak işaretlenir." }
+
+mode_aliases:
+  TBMM_KANUN_TEKLIFI: PARLIAMENTARY_BILL
+
+# Bu pakete AİT, Türkiye'ye özgü dosyalar. Çekirdekte kalan (ama TR bağlamı taşıyan)
+# dosyalar jurisdictions/core_files.yaml'da envanterlenir. Her dosya ikisinden
+# TAM OLARAK BİRİNDE yer alır — doğrulayıcı sahipsiz dosyayı yakalar.
+owned_files:
+  - skills/cureolex/references/01-cerceve-5210.md
+  - skills/cureolex/references/02-saglik-mevzuat-haritasi.md
+  - skills/cureolex/references/03-atif-teknigi.md
+  - skills/cureolex/references/04-madde-yapisi.md
+  - skills/cureolex/references/05-dea-bef.md
+  - skills/cureolex/references/06-compliance-checklist.md
+  - skills/cureolex/references/06b-compliance-executable-rubric.md
+  - skills/cureolex/references/07-mevzuat-mcp-workflow.md
+  - skills/cureolex/references/09-turk-hukuk-dili-ve-uslubu.md
+  - skills/cureolex/references/13-icthat-doktrin-akademik-katman.md
+  - skills/cureolex/templates/yonetmelik-taslagi.md
+  - skills/cureolex/templates/teblig-taslagi.md
+  - skills/cureolex/templates/karsilastirma-cetveli.md
+  - skills/cureolex/templates/gorus-bildirimi.md
+  - skills/cureolex/templates/genel-gerekce.md
+  - skills/cureolex/templates/madde-gerekce.md
+  - skills/cureolex/templates/dea-template.md
+  - skills/cureolex/templates/bef-template.md
+  - skills/cureolex/templates/tbmm-kanun-teklifi.md
+
+golden_cases: jurisdictions/tr/golden_cases.yaml
+
+publication:
+  s1_connector_required: true
+  expert_panel:
+    status: grandfathered
+    note: >-
+      3.x boyunca canlı kullanılan davranışın tanımıdır; paket biçimine geçişte yeniden
+      değerlendirilmedi. Bu "uzman paneli değerlendirmesinden geçti" DEMEK DEĞİLDİR —
+      yerel mevzuat hazırlayıcı paneli ve değerlendiriciler arası uyum raporu hâlâ açık iştir.
+    inter_rater_agreement: null
+  local_legal_partner: null

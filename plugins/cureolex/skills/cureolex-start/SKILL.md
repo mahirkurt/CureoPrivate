@@ -5,15 +5,16 @@ description: >-
   onu flagship `cureolex` skill'ine/komutlarına yönlendirir. Kullan — "cureolex nedir / nereden başlamalıyım /
   hangi modu kullanmalıyım / hangi komut", "connector'larım bağlı mı / hepsi çalışıyor mu / tam-filo durumu", ya da
   kullanıcı sağlık mevzuatı reformu istiyor ama hangi modun (DRAFT/AMEND/ANALYZE/COMPLY/OPINE/RIA/COMPARATIVE/TBMM/
-  EX_POST) uygun olduğu belirsizse. 21 hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder,
-  9 modu ve 10 komutu tanıtır, niyet→komut yönlendirmesi yapar. Somut bir drafting talebi (ör. "yönetmelik taslağı
+  EX_POST/MATURITY/TRANSPOSITION/RELIANCE) uygun olduğu belirsizse, ya da "hangi ülkeler destekleniyor". 21
+  hukuk/regülasyon MCP + evidentia/sci-audit tam-filo durumunu kontrol eder, 12 modu, 13 komutu ve yargı bölgesi
+  paketlerini tanıtır, niyet→komut yönlendirmesi yapar. Somut bir drafting talebi (ör. "yönetmelik taslağı
   hazırla") NET ise doğrudan flagship `cureolex` skill'i devreye girer — bu router araya girmez.
-version: 3.4.0
+version: 4.0.0
 ---
 
 # Cureolex — Başlangıç ve Yönlendirme
 
-Bu skill, Cureolex süitinin giriş kapısıdır: **tam-filo durumunu kontrol eder**, **9 modu tanıtır** ve kullanıcıyı **doğru moda/komuta yönlendirir**.
+Bu skill, Cureolex süitinin giriş kapısıdır: **tam-filo durumunu kontrol eder**, **12 modu tanıtır** ve kullanıcıyı **doğru moda/komuta yönlendirir**.
 
 ## 1. Önce tam-filo durumunu göster
 
@@ -32,7 +33,12 @@ Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı /
 | "karşılaştırmalı analiz", "AB karşılığı", "reliance benchmark" | COMPARATIVE_LAW | `/lex-comparative` |
 | "TBMM kanun teklifi", "1219 SK reform", "Anayasa Md.88" | TBMM_KANUN_TEKLIFI | `/lex-bill` |
 | "ex post değerlendirme", "geriye dönük etki", "sunset clause" | EX_POST_EVALUATION | `/lex-expost` |
+| "WHO GBT", "düzenleyici olgunluk", "ML3 açığı" | REGULATORY_MATURITY | `/lex-maturity` |
+| "direktif aktarımı", "uyum tablosu", "transposition" | TRANSPOSITION | `/lex-transpose` |
+| "reliance", "referans otorite", "kısaltılmış inceleme" | RELIANCE_FRAMEWORK | `/lex-reliance` |
 | "cureolex nedir / bağlantı durumu" | — | `/lex-connectors` |
+
+**Yargı bölgesi (4.0):** belirtilmezse **TR** paketi (3.x davranışı). Başka bölge istenirse `jurisdictions/` altındaki paket yüklenir: **TR active · GB/DE/CH draft** — taslak pakette çıktı en fazla LOW güvenlidir ve bunu kullanıcıya baştan söyle. Paketi olmayan bölge için mod çalıştırılmaz; `manual_required` + mevcut paketler. TR'deki `TBMM_KANUN_TEKLIFI` genel `PARLIAMENTARY_BILL` modunun takma adıdır.
 
 Mod belirsizse, kullanıcıya kısa bir netleştirme sorusu sor (ör. "Mevcut bir mevzuatı mı değiştireceğiz [AMEND], yoksa sıfırdan mı yazacağız [DRAFT]?"). Belirsizlik reform-dışı bir talebe işaret ediyorsa **Scope Guard** uygula (aşağı).
 

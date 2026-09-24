@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""cureolex davranış süiti koşucusu — 7 YAML süiti · 98 vaka · AĞ ERİŞİMİ YOK.
+"""cureolex davranış süiti koşucusu — tests/*.yaml + paket altın vakaları · AĞ ERİŞİMİ YOK.
 
 NE YAPAR (deterministik, offline):
   [1] ŞEMA        her süit `suite`+`cases`; her vaka `id`/`given`/`expect`;
@@ -8,15 +8,17 @@ NE YAPAR (deterministik, offline):
   [3] FIXTURE     `ledger_fixture` → evidence_ledger.schema.json,
                   `sidecar_fixture` → medical_sidecar.schema.json (jsonschema ile)
   [4] REFERANS    vaka metninde adı geçen her sunucu fleet.yaml'da VAR mı ·
-                  her mod 9 kanonik moddan biri mi · her kapı G0-G9 mü ·
+                  her mod kanonik mod ya da paket takma adı mı · her kapı G0-G11 mi ·
                   her dosya yolu diskte mevcut mu
   [5] SAYISAL     süitlerin filo hakkındaki sayısal iddiaları (companion sayısı,
                   MANDATORY_ROWS, sunucu sayısı) fleet.lock.json ile tutuyor mu
+  [7] PAKETLER    tests/validate_packs.py (yargı bölgesi paketleri) aynı koşuda çalışır;
+                  paketlerin `golden_cases` dosyaları da [1]–[4] denetiminden geçer
 
 NE YAPMAZ — ve bu bilinçlidir:
   Bu vakalar MODEL DAVRANIŞI şartnameleridir ("şu prompt şu moda yönlenmeli").
   Bir model koşumu olmadan davranış deterministik olarak doğrulanamaz; bu
-  koşucu davranışı ÇALIŞTIRMAZ. Yaptığı şey, 70 düzyazı şartnamesini
+  koşucu davranışı ÇALIŞTIRMAZ. Yaptığı şey, düzyazı şartnamelerini
   DENETLENEBİLİR artefakta çevirmektir: şartnamenin kendisi bozuksa (var
   olmayan sunucuya atıf, ölü mod adı, şemadan düşen fixture, çakışan id)
   bunu yakalar. Şartname doğruysa ama model yanlış davranıyorsa YAKALAMAZ —
@@ -38,14 +40,27 @@ import yaml
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent                                   # plugin kökü
 
-MODES = {"DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA",
-         "COMPARATIVE_LAW", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION"}
-GATES = {f"G{i}" for i in range(10)}
-# `expect.mode` alanında tarihsel olarak kısa ad da kullanılmış; ikisi de meşru.
-MODE_ALIASES = {"EX_POST": "EX_POST_EVALUATION"}
+import validate_packs  # noqa: E402  (aynı dizin — kanonik mod listesi ve paket takma adları)
+
+MODES = set(validate_packs.CANONICAL_MODES)
+GATES = set(validate_packs.GATES)                    # G0–G11 (4.0: G10 güncellik, G11 yargı tutarlılığı)
+# Ulusal usul adları paketlerden gelir (TR: TBMM_KANUN_TEKLIFI → PARLIAMENTARY_BILL);
+# `EX_POST` tarihsel kısa addır. Takma ad listesi KODDA değil paket verisinde yaşar.
+MODE_ALIASES = validate_packs.mode_aliases(validate_packs.load_packs())
 # Vaka düzyazısında geçen ama sunucu OLMAYAN mcp__ önekleri (kasıtlı negatif
 # örnekler ve companion'lar) — referans denetiminde yanlış-pozitif vermesinler.
 SCHEMA_FAMILIES = {"title", "assertions"}
+
+
+class _Named:
+    """Süit dosyası görünen adı: tests/*.yaml → dosya adı; paket altın vakası → '<kod>/golden_cases.yaml'."""
+    def __init__(self, p):
+        self._p = p._p if isinstance(p, _Named) else p
+        self.name = (f"{self._p.parent.name}/{self._p.name}"
+                     if self._p.parent != HERE else self._p.name)
+
+    def read_text(self, **kw):
+        return self._p.read_text(**kw)
 
 
 def load_fleet():
@@ -89,7 +104,7 @@ def main(argv=None) -> int:
         if p.is_file():
             schemas[nm] = json.loads(p.read_text(encoding="utf-8"))
 
-    suites = sorted(HERE.glob("*.yaml"))
+    suites = sorted(HERE.glob("*.yaml")) + sorted(ROOT.glob("jurisdictions/*/golden_cases.yaml"))
     seen_ids, issues, total = {}, [], 0
 
     for sf in suites:
@@ -98,6 +113,7 @@ def main(argv=None) -> int:
         except yaml.YAMLError as e:
             issues.append((sf.name, f"BOZUK YAML — {e}"))
             continue
+        sf = _Named(sf)
         if not isinstance(doc, dict) or "cases" not in doc:
             issues.append((sf.name, "üst düzeyde `cases` yok"))
             continue
@@ -233,16 +249,25 @@ def main(argv=None) -> int:
     if (ROOT / "agents" / "openai.yaml").exists():
         issues.append(("WIRING", "agents/openai.yaml duruyor — Codex stub ajan sanılır"))
 
+    # [7] Yargı bölgesi paketleri — ayrı doğrulayıcı, aynı çıkış kodu.
+    pack_rc = validate_packs.main(["--quiet"])
+    if pack_rc:
+        issues.append(("PAKETLER", "tests/validate_packs.py ihlal buldu — ayrıntı: "
+                                   "python3 tests/validate_packs.py"))
+
     if not a.quiet:
-        for name in sorted({s.name for s in suites}):
+        by_name = {_Named(s).name: s for s in suites}
+        for name in sorted(by_name):
             bad = [m for f, m in issues if f == name]
-            n = len(yaml.safe_load((HERE / name).read_text(encoding="utf-8")).get("cases", []))
+            n = len(yaml.safe_load(by_name[name].read_text(encoding="utf-8")).get("cases", []))
             if bad:
                 print(f"\n⚠ {name}  ({n} vaka)")
                 for m in bad:
                     print(f"      · {m}")
             else:
                 print(f"✓ {name:36s} {n:>2d} vaka")
+        print(f"{'⚠' if pack_rc else '✓'} yargı bölgesi paketleri              "
+              f"{'İHLAL' if pack_rc else 'ok'}")
         wire = [m for f, m in issues if f == "WIRING"]
         if wire:
             print("\n⚠ yüzey wiring")

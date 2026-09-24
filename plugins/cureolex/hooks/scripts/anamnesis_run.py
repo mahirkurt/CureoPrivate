@@ -12,7 +12,7 @@ The live Worker may still lack `collection` / `doc_ids[]` / `forget_collection`
   * cleanup prefers forget_collection; falls back to N× forget_document
   * HTTP is skipped when CUREOLEX_ANAMNESIS_FORGET_LOG is set (CI stub)
 
-kind ∈ {sess, run, lib}. Default is sess (G0–G9 share one legal-research
+kind ∈ {sess, run, lib}. Default is sess (G0–G11 share one legal-research
 thread). lib is NOT default — mevzuat.gov.tr is never dumped into a forever
 library. Secrets are never logged. Fail-open on I/O.
 """
@@ -36,11 +36,11 @@ SESSION_ID_RE = re.compile(r"^[0-9a-f]{12}$")
 COLLECTION_RE = re.compile(
     rf"^{re.escape(PLUGIN)}:(sess|run|lib):([0-9a-f]{{12}})$"
 )
-# Slash commands that CONTINUE the same sess (G0–G9 canonical cache).
+# Slash commands that CONTINUE the same sess (G0–G11 canonical cache).
 # /lex-connectors is status-only — no collection inject.
 LEX_WORK_RE = re.compile(
     r"(?:^|\s)/lex-(?:draft|amend|analyze|comply|opine|ria|"
-    r"comparative|bill|expost)(?:\s|$)",
+    r"comparative|bill|expost|maturity|transpose|reliance)(?:\s|$)",
     re.IGNORECASE,
 )
 GLOBAL_READ = {"hybrid_query", "graph_neighbors", "subgraph"}
@@ -321,7 +321,7 @@ def context_message(ledger: dict) -> str:
     example = scoped_doc_id(coll, "mevzuat:1219/1")
     return (
         "[cureolex] Anamnesis oturum koleksiyonu "
-        f"`{coll}` ({n} kayıtlı doc_id; kind=sess, G0–G9 aynı cache). "
+        f"`{coll}` ({n} kayıtlı doc_id; kind=sess, G0–G11 aynı cache). "
         "doc_scope YOKTUR — collection + önekli doc_id kullan. "
         f"ingest_document(collection='{coll}', "
         f"doc_id='{example}'). "

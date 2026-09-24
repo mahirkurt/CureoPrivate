@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "cureolex",
-  "plugin_version": "3.9.0",
+  "plugin_version": "4.0.0",
   "counts": {
     "servers": 21,
     "gated": 20,
@@ -189,7 +189,9 @@
         "ANALYZE",
         "RIA",
         "OPINE",
-        "EX_POST_EVALUATION"
+        "EX_POST_EVALUATION",
+        "REGULATORY_MATURITY",
+        "RELIANCE_FRAMEWORK"
       ],
       "gate": "G6"
     },
@@ -228,7 +230,9 @@
       "modes": [
         "COMPARATIVE_LAW",
         "RIA",
-        "DRAFT"
+        "DRAFT",
+        "TRANSPOSITION",
+        "RELIANCE_FRAMEWORK"
       ],
       "gate": null
     },
@@ -241,7 +245,8 @@
       "modes": [
         "COMPARATIVE_LAW",
         "ANALYZE",
-        "OPINE"
+        "OPINE",
+        "RELIANCE_FRAMEWORK"
       ],
       "gate": null
     },
@@ -294,7 +299,8 @@
       "modes": [
         "ANALYZE",
         "RIA",
-        "COMPARATIVE_LAW"
+        "COMPARATIVE_LAW",
+        "TRANSPOSITION"
       ],
       "manifest_row": "Ansvar (companion — Mod7 58-yargı)",
       "degrade": "CH/FR/IT/NL/SE/DK/FI/AT/PL ve yatay çerçeve (GDPR/NIS2) satırları 'manual_required' + kapsam boşluğu beyanı."

@@ -45,7 +45,7 @@ Ana pencere 4 zarfı tek G0 manifestosunda birleştirir; ham getirim distiller p
 **Load-bearing:** health-policy · german-law · eurlex (G6) · ich-guidelines · intl-treaty · eudamed · uk-legal · fedlex · oecd · Open_Law (UK, bağlıysa) · Ansvar (58-yargı). **Çapraz:** mevzuat · Yarg · evidentia.
 **8 adım:** soru tipi → yargı seçimi → TR Tabaka → **semantic_search önce** → yabancı metinler (CELLAR/eCFR; **UK `legislation_search`→`_get_toc`→`_get_section`** (Open Law yalnız çapraz/yedek); german **resolve→EU**; ich **+M4/M8**; cihaz→eudamed not ÜTS; fedlex SR) → **Md.90/5 ateş:** treaty→coe→info→**uhri_search→uhri_fetch_document** → matris → gap → politika → rapor. **Kapılar:** G0-G7 (+ koşullu G8/G9).
 
-## Mod 8 — TBMM_KANUN_TEKLIFI (çekirdek, en üst)
+## Mod 8 — PARLIAMENTARY_BILL · TR paketinde TBMM_KANUN_TEKLIFI (çekirdek, en üst)
 **Load-bearing:** tbmm · mevzuat · resmi-gazete · Yarg · yok-akademik · health-policy/german-law · evidentia (ÇİFT-zorunlu). **Çapraz:** titck · saglikbakanligi · detsis · intl-treaty · oecd · eudamed · Ansvar.
 **Dayanak:** Anayasa Md.88 + TBMM İçtüzüğü Md.74-91 (**5210 yalnız referans**). **10 adım:** (1) `tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi(sira_no)`+`tbmm_get_milletvekili`; (2) ihtiyaç; (3) Tabaka; (4) genel gerekçe — locator `tbmm_search_kanun`, **gövde** primer `get_mevzuat_gerekce` (bedesten; ikincile gövde devretme yok); **Md.90/5** treaty→coe→info→uhri_*; (5) 6-bölüm teklif (tam metin mevzuat + `search_within`/`phrase`); (6) madde gerekçeleri; (7) tutanak (DSpace≠canlı GK); (8) komisyon+havale; (9) OA ekler; (10) kapılar. **Kapılar:** tümü + G8.
 
@@ -53,37 +53,53 @@ Ana pencere 4 zarfı tek G0 manifestosunda birleştirir; ham getirim distiller p
 **Load-bearing:** mevzuat · resmi-gazete · titck · saglikbakanligi · oecd (GOV_REG + HEA) · Yarg · health-policy · evidentia. **Çapraz:** tbmm · intl-treaty · eudamed · yok-akademik.
 **10 adım:** kapsam+dönem → ex-ante → uygulama verisi → **5 OECD kriteri** → yargı → paydaş → mukayese → K-1/2/3 → yol haritası → EDR. **Kapılar:** tümü + G9.
 
+---
+
+> **Mod 10–12 (4.0) yargı bölgesinden bağımsızdır.** "Load-bearing S1" = **aktif paketin** `connectors[role=primary_legislation]` bağlayıcısıdır (TR paketinde `mevzuat`; GB'de `uk-legal`; CH'de `fedlex`; DE'de `german-law`). Aşağıdaki sunucu adları TR paketiyle yazılmıştır; başka pakette paketin bağlayıcısı yerine geçer. Her üç mod G10 + G11'den geçer ve `evidence_ledger.home_jurisdiction` ister.
+
+## Mod 10 — REGULATORY_MATURITY (WHO GBT açık analizi)
+**Load-bearing:** paket S1 (TR: mevzuat · resmi-gazete · saglikbakanligi · titck) · intl-treaty · oecd · openathens (GBT yöntem literatürü). **Çapraz:** Yarg · eurlex · health-policy · evidentia (erişim/kapasite verisi).
+**7 adım:** (1) paket + ürün sınıfı + referans tarihi; (2) GBT çerçevesi yalnız doğrulanmış yapıyla (RS + MA/VL/MC/LI/RI/LT/CT/LR; düzey 1–4, hedef düzey 3) — **gösterge kimliği/metni bellekten yazılmaz**; (3) işlev başına dayanak norm (S1; as-of G10); (4) açık sözlüğü (yetki · usul · yaptırım · şeffaflık · bağımsızlık · kaynak) + "mevzuat dışı" kapasite açıklarının ayrı sütunu; (5) reliance kullanımı → Mod 12'ye köprü; (6) mevzuat yol haritası (paketin norm hiyerarşisiyle); (7) sınırlar: resmî GBT değerlendirmesi değil, düzey ataması yok. **Kapılar:** G0, G2, G5, G6, G7, G10, G11.
+
+## Mod 11 — TRANSPOSITION (aktarım / uyum tablosu)
+**Load-bearing:** eurlex (G6: `eurlex_lookup_celex` → `eurlex_get_relations` → `eurlex_get_document`) · paket S1 · intl-treaty (andlaşma kaynağıysa). **Çapraz:** german-law (`get_german_implementations` — üye devlet emsali) · fedlex (CH özerk uyum) · Ansvar (bağlıysa; üye devlet uygulamaları) · Yarg.
+**7 adım:** (1) **G11 önce** — kaynak normun ev bölgesindeki rolü (`binding` / `transposition_source` / `comparative_benchmark` / `treaty_obligation`; paketin `gate_params.G11`) deftere; (2) kaynak normun konsolide hâli + değişiklik zinciri (G6 + G10); (3) madde-madde ulusal karşılık (S1, as-of); (4) karşılama sözlüğü: Tam · Kısmi · Yok · Aşan · Uygulanmaz; (5) tanım uyumu (çok dilli pakette her geçerli dil ayrı); (6) açık → öneri (norm düzeyi G2); (7) rol `comparative_benchmark` ise "aktarım yükümlülüğü" dili YASAK. **Kapılar:** G0, G1, G2, G6, G7, G10, G11.
+
+## Mod 12 — RELIANCE_FRAMEWORK (reliance çerçevesi taslağı)
+**Load-bearing:** paket S1 · uk-legal / fedlex / eurlex / health-policy (referans otorite mevzuatı — her biri `comparative_benchmark`) · intl-treaty (tanıma → andlaşma). **Çapraz:** Yarg · openathens · evidentia (erişim süresi kanıtı).
+**7 adım:** (1) **yetki analizi önce (G2)** — karar yetkisini veren norm reliance'a izin veriyor mu, gereken norm düzeyi; (2) reliance ↔ tanıma ayrımı (tanıma = andlaşma/anlaşma); (3) referans otorite **ölçütleri** (liste uydurulmaz; kullanıcıdan veya künyeli belgeden); (4) 9 maddelik iskelet — "ulusal karar yetkisinin korunması" atlanamaz; (5) gerekçe (kamu sağlığı kanıtı + egemenlik + karşılaştırmalı emsal G11 rolüyle); (6) risk tablosu; (7) geçiş hükümleri — pakette `coverage_gap` ise beyan. **Kapılar:** G0, G1, G2, G5, G6, G7, G10, G11.
+
 ## Mod × server matrisi (üretilmiş — kaynak: `fleet.yaml`)
 
 Bu matris, bir companion/server satırının hangi modda `skipped: mod için N/A` yazılacağını **düzyazıdan değil veriden** belirler.
 
 <!-- GEN:mode-server-matrix BEGIN -->
-| Server | DRAFT | AMEND | ANLZ | CMPLY | OPINE | RIA | COMP | TBMM | EXPOST |
-|---|---|---|---|---|---|---|---|---|---|
-| `mevzuat` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `resmi-gazete` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `titck` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `tbmm` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `saglikbakanligi` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `detsis` (support) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `health-policy` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `german-law` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `ich-guidelines` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `intl-treaty` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `eudamed` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `oecd` (support) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `yok-akademik` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `yoktez` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `literatur` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `openathens` (fulltext) | · | · | ✓ | · | ✓ | ✓ | ✓ | · | ✓ |
-| `annas-reader` (fulltext) | · | · | ✓ | · | · | · | ✓ | · | · |
-| `eurlex` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `fedlex` (comparative) | ✓ | · | · | · | · | ✓ | ✓ | · | · |
-| `uk-legal` (comparative) | · | · | ✓ | · | ✓ | · | ✓ | · | · |
-| `anamnesis` (substrate) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Yargı** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Open Law** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Ansvar** (companion) | · | · | ✓ | · | · | ✓ | ✓ | · | · |
+| Server | DRAFT | AMEND | ANLZ | CMPLY | OPINE | RIA | COMP | TBMM | EXPOST | GBT | TRNSP | RELY |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `mevzuat` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `resmi-gazete` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `titck` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `tbmm` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `saglikbakanligi` (primary) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `detsis` (support) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `health-policy` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `german-law` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `ich-guidelines` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `intl-treaty` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `eudamed` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `oecd` (support) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `yok-akademik` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `yoktez` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `literatur` (doctrine) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `openathens` (fulltext) | · | · | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ |
+| `annas-reader` (fulltext) | · | · | ✓ | · | · | · | ✓ | · | · | · | · | · |
+| `eurlex` (comparative) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `fedlex` (comparative) | ✓ | · | · | · | · | ✓ | ✓ | · | · | · | ✓ | ✓ |
+| `uk-legal` (comparative) | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · | ✓ |
+| `anamnesis` (substrate) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Yargı** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Open Law** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Ansvar** (companion) | · | · | ✓ | · | · | ✓ | ✓ | · | · | · | ✓ | · |
 
 > `✓` = bu modda taranır · `·` = bu modda **mantıksal olarak N/A** → manifestoda `skipped: mod için N/A` yazılır (satır atlanamaz).
 <!-- GEN:mode-server-matrix END -->

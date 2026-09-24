@@ -185,7 +185,7 @@
         "Authorization": "Bearer ${ANAMNESIS_MCP_API_KEY}"
       },
       "_tier": "substrate",
-      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük hukuk metni ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(collection=cureolex:sess:<id>, doc_id=<collection>:mevzuat|celex|ecli|rg:…) ile BİR KEZ indekslenir → hybrid_query(collection=…, doc_ids=[…], queries[]) ile sınırlı, provenance-damgalı dilim çekilir (doc_id::idx). doc_scope YOKTUR. G0–G9 aynı sess; lib varsayılan değil. forget_document (forget_collection yoksa N× fallback) oturum sonunda yalnız bu koleksiyonu siler. shared/context-economy-contract.md Tier 2."
+      "_role": "BÜYÜK-VERİ RAG/GraphRAG substratı (evidence_index) — bir KAYNAK DEĞİL, bağlam-ekonomisi altyapısı. Büyük hukuk metni ana bağlamda AKIL YÜRÜTÜLMEZ; ingest_document(collection=cureolex:sess:<id>, doc_id=<collection>:mevzuat|celex|ecli|rg:…) ile BİR KEZ indekslenir → hybrid_query(collection=…, doc_ids=[…], queries[]) ile sınırlı, provenance-damgalı dilim çekilir (doc_id::idx). doc_scope YOKTUR. G0–G11 aynı sess; lib varsayılan değil. forget_document (forget_collection yoksa N× fallback) oturum sonunda yalnız bu koleksiyonu siler. shared/context-economy-contract.md Tier 2."
     }
   }
 }

@@ -52,7 +52,8 @@ from _turn_tools import (  # noqa: E402
 STRONG_SIGNALS = [
     re.compile(r"\bMADDE\s+\d+"),                       # yasama madde başlığı (BÜYÜK harf)
     re.compile(r"\b(DRAFT|AMEND|ANALYZE|COMPLY|OPINE|RIA|COMPARATIVE_LAW|"
-               r"TBMM_KANUN_TEKLIFI|EX_POST)\b"),        # mod bildirimi (büyük-harf duyarlı)
+               r"TBMM_KANUN_TEKLIFI|PARLIAMENTARY_BILL|EX_POST|"
+               r"REGULATORY_MATURITY|TRANSPOSITION|RELIANCE_FRAMEWORK)\b"),  # mod bildirimi (büyük-harf duyarlı)
     re.compile(r"(yönetmelik|tebliğ|kanun teklifi|CBK|genelge)\s+(taslağı|metni|değişik)",
                re.IGNORECASE),
     re.compile(r"(genel|madde)\s+gerekçe|gerekçe\s+(metni|bölümü)", re.IGNORECASE),

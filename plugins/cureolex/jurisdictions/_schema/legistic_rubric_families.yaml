@@ -1,0 +1,114 @@
+# Evrensel legistik rubrik — ülkeden BAĞIMSIZ aileler (planın 6. önerisi).
+#
+# Her aile, hangi hukuk düzeninde olursa olsun sorulması gereken bir soruyu tanımlar.
+# ULUSAL AYRINTI (dayanak madde, kontrol listesi, risk ağırlığı) aile tanımında DEĞİL,
+# her paketin `legistic_profile.families` alanında yaşar.
+#
+# Aile listesi planın dokuz ailesinden başlar; R6b'nin 21 kontrolünün TAMAMI eşlenebilsin
+# diye üç aile eklendi (yapi_ve_kapsam · mevzuat_ekonomisi_ve_koordinasyon ·
+# ulusustu_ve_karsilastirmali_uyum). Hiçbir R6b kontrolü eşlenmeden bırakılmadı —
+# `tests/validate_packs.py` bunu denetler.
+
+families:
+  ust_norm:
+    title: Üst norma uygunluk
+    universal_question: >-
+      Norm, hiyerarşide kendisinden üstte duran her normla (anayasa, kanun, ulusüstü hukuk)
+      uyumlu mu ve yetki zinciri eksiksiz mi?
+  yetki_ve_devredilmis_yasama:
+    title: Yetki ve devredilmiş yasama
+    universal_question: >-
+      Normu çıkaran merci buna yetkili mi; alt düzenleyici işlem kanunun bıraktığı alanı
+      aşıyor mu? (Common law: devredilmiş yasamanın parlamento denetim usulü.)
+  mali_yukun_kanuniligi:
+    title: Mali yükün kanuniliği
+    universal_question: >-
+      Vergi, harç, ücret veya başka bir mali yükümlülük, ancak kanunla öngörülebileceği
+      bir alanda alt düzenleyici işlemle mi getiriliyor?
+  gerekce:
+    title: Gerekçe
+    universal_question: >-
+      Norm ve her hükmü, yasa koyucu iradesini ve seçilen çözümün nedenini açıklayan bir
+      gerekçeyle birlikte mi sunuluyor? Gerekçe hüküm metninin tekrarı mı?
+  etki_analizi:
+    title: Etki analizi
+    universal_question: >-
+      Düzenleyici etki analizi ve bütçe etkisi değerlendirmesi yapıldı mı, alternatifler
+      tartıldı mı?
+  atif_teknigi:
+    title: Atıf tekniği
+    universal_question: >-
+      Başka normlara yapılan atıflar tekil, doğru ve ulusal atıf biçimine uygun mu?
+  gecis_hukumleri:
+    title: Geçiş hükümleri
+    universal_question: >-
+      Eski rejimden yenisine geçiş, kazanılmış haklar ve devam eden işlemler için
+      düzenlendi mi?
+  yururluk_ve_ilga:
+    title: Yürürlük, değişiklik ve ilga
+    universal_question: >-
+      Yürürlük tarihi, değiştirilen/kaldırılan hükümler ve değişiklik tekniği açık ve
+      belirli mi?
+  dil:
+    title: Hukuk dili
+    universal_question: >-
+      Metin ulusal hukuk dili kurallarına uygun, açık ve belirli mi? Çok dilli yargılarda
+      eşit derecede geçerli dil sürümleri eşdeğer mi?
+  yapi_ve_kapsam:
+    title: Yapı ve kapsam
+    universal_question: >-
+      Amaç, kapsam ve madde düzeni net mi; maddeler kısa ve tek konulu mu?
+  mevzuat_ekonomisi_ve_koordinasyon:
+    title: Mevzuat ekonomisi ve kurumlar arası koordinasyon
+    universal_question: >-
+      Aynı konu birden çok metinde dağınık mı düzenleniyor; ilgili kurumlarla mutabakat
+      sağlandı mı?
+  ulusustu_ve_karsilastirmali_uyum:
+    title: Ulusüstü ve karşılaştırmalı uyum
+    universal_question: >-
+      Bağlayıcı ulusüstü hukuka (AB müktesebatı, onaylı antlaşmalar) ve insan hakları
+      yükümlülüklerine uyum sağlandı mı? Aktarım gerektiren norm ile doğrudan uygulanan
+      norm ayrımı korunuyor mu?
+
+# Aileye özgü ek modüller — hukuk ailesine / yapıya göre (planın 6. önerisi).
+# Bunlar ayrı AİLE değildir; ilgili paket `legal_family` / `federal` / çok dilli ise
+# ilgili ailelere ek denetim adımı ekler.
+add_on_modules:
+  common_law:
+    - { family: yapi_ve_kapsam, check: "Tanım maddeleri (interpretation/definitions section) tam ve tutarlı mı" }
+    - { family: yetki_ve_devredilmis_yasama, check: "Devredilmiş yasamanın parlamento denetim usulü (affirmative/negative procedure) belirtilmiş mi" }
+  federal:
+    - { family: yetki_ve_devredilmis_yasama, check: "Federal ile eyalet/kanton yasama yetkisi paylaşımına uyuluyor mu" }
+  multilingual:
+    - { family: dil, check: "Eşit derecede geçerli dil sürümleri arasında hukuki eşdeğerlik — çeviri eşdeğerlik değildir" }
+
+# R6b (TR, 5210 sayılı Yönetmelik) — 21 kontrolün aile eşlemesi.
+# Kaynak: skills/cureolex/references/06b-compliance-executable-rubric.md §2–§8.
+r6b_mapping:
+  K-1:  { family: ust_norm,                          anchor: "5210 Md.4/a",          risk: YUKSEK }
+  K-2:  { family: yapi_ve_kapsam,                    anchor: "5210 Md.4/b",          risk: DEGISKEN }
+  K-3:  { family: mevzuat_ekonomisi_ve_koordinasyon, anchor: "5210 Md.4/c",          risk: DUSUK }
+  K-4:  { family: mevzuat_ekonomisi_ve_koordinasyon, anchor: "5210 Md.4/ç",          risk: DUSUK }
+  K-5:  { family: yapi_ve_kapsam,                    anchor: "5210 Md.4/d",          risk: DEGISKEN }
+  K-6:  { family: yapi_ve_kapsam,                    anchor: "5210 Md.4/e",          risk: DEGISKEN }
+  K-7:  { family: yapi_ve_kapsam,                    anchor: "5210 Md.4/f",          risk: DUSUK }
+  K-8:  { family: mevzuat_ekonomisi_ve_koordinasyon, anchor: "5210 Md.4/g",          risk: YUKSEK }
+  K-9:  { family: gerekce,                           anchor: "5210 Md.10 + Md.23",   risk: ORTA }
+  K-10: { family: yapi_ve_kapsam,                    anchor: "5210 Md.15",           risk: ORTA }
+  K-11: { family: yapi_ve_kapsam,                    anchor: "5210 Md.13",           risk: DUSUK }
+  K-12: { family: atif_teknigi,                      anchor: "5210 Md.21",           risk: ORTA }
+  K-13: { family: yururluk_ve_ilga,                  anchor: "5210 Md.21/8",         risk: ORTA }
+  K-14: { family: yururluk_ve_ilga,                  anchor: "5210 Md.18-19",        risk: ORTA }
+  K-15: { family: gerekce,                           anchor: "5210 Md.23",           risk: DUSUK }
+  K-16: { family: dil,                               anchor: "5210 Md.25",           risk: DUSUK }
+  K-17: { family: yetki_ve_devredilmis_yasama,       anchor: "5210 Md.24",           risk: YUKSEK }
+  K-18: { family: mali_yukun_kanuniligi,             anchor: "5210 Md.24 + Anayasa Md.73", risk: YUKSEK }
+  K-19: { family: etki_analizi,                      anchor: "5210 Md.26-27",        risk: DEGISKEN }
+  K-20: { family: ulusustu_ve_karsilastirmali_uyum,  anchor: "5210 Md.4/c (operasyonel)", risk: YUKSEK }
+  K-21: { family: dil,                               anchor: "G-DİL (R9 + içtihat + insan hakları süzgeci)", risk: DEGISKEN,
+          secondary_families: [ulusustu_ve_karsilastirmali_uyum] }
+
+# BULGU (eşleme sırasında ortaya çıktı): "gecis_hukumleri" ailesine karşılık gelen tek bir
+# R6b kontrolü YOKTUR. Bu, mevcut TR rubriğinde bir KAPSAMA BOŞLUĞUDUR. Uydurma bir K-22
+# eklenmedi; TR paketi bu aileyi `coverage_gap: true` ile işaretler ve COMPLY raporu
+# bu aileyi "denetlenmedi — rubrikte kontrol yok" olarak BEYAN eder.

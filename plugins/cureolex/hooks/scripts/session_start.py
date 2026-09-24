@@ -64,7 +64,7 @@ def conventions(lock) -> str:
         "(6) BAĞLAM EKONOMİSİ — tam-filo ham verisi ana pencereye girmez: ≤4 paralel "
         "distiller alt-ajanı (Tier 1, shard-kısıtlı araç kümesiyle) + anamnesis RAG "
         "substratı (Tier 2, collection=cureolex:sess:<id> + önekli doc_id; doc_scope "
-        "YOKTUR; G0–G9 aynı sess, lib varsayılan değil) + kanonik cache "
+        "YOKTUR; G0–G11 aynı sess, lib varsayılan değil) + kanonik cache "
         "(bir-kez-getir) + kör-getirme-yok chunking. "
         "(7) TAM-METİN ŞELALESİ — doktrin tam metni için önce lisanslı band "
         "(openathens Tier 3): metin/RAG için oa_fetch_fulltext, orijinal provider PDF için "

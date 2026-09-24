@@ -1,0 +1,39 @@
+# Yargı bölgesi KOD sözlüğü — ISO 3166-1/2 + ulusüstü ad alanı.
+#
+# NEDEN: 3.x şemasındaki 12 değerli kapalı liste (EU CH DE FR UK US CA AU JP TR WHO INTL)
+# yeni bir ülkenin bulgularını şema doğrulamasından geçirmiyordu ve "AU" hem Avustralya
+# hem Afrika Birliği olamazdı. 4.0'da:
+#   * ülke        → ISO 3166-1 alfa-2          (TR, DE, CH, GB, US, AU = Avustralya)
+#   * alt birim   → ISO 3166-2                  (DE-BY Bavyera, CH-ZH Zürih, US-CA Kaliforniya)
+#   * ulusüstü    → "ORG:" önekli ad alanı      (ORG:AU = Afrika Birliği — çakışma YOK)
+#
+# DOĞRULANDI (2026-09-24, ISO 3166-1 alfa-2):
+#   - "EU" ve "UK" ISO'da İSTİSNAEN AYRILMIŞ kodlardır (UK, Birleşik Krallık'ın talebiyle;
+#     resmî alfa-2 kodu GB'dir). İkisi de 2 harfli desene uyar ve meşrudur.
+#   - Kullanıcı-atanabilir aralık AA, QM–QZ, XA–XZ, ZZ'dir. Ulusüstü örgütler için bu
+#     aralığı KULLANMIYORUZ: 2 harf, ASEAN/Afrika Birliği/DSÖ/AK gibi örgütleri
+#     okunabilir biçimde ayırmaya yetmez ve başka sistemlerle çakışır. "ORG:" öneki
+#     ISO alanının DIŞINDADIR, dolayısıyla hiçbir ISO kodu ile çakışamaz.
+
+reserved_iso_exceptions:
+  EU: { name: "Avrupa Birliği", kind: supranational, note: "ISO 3166-1 istisnaen ayrılmış" }
+  UK: { name: "Birleşik Krallık", kind: national, canonical: GB,
+        note: "ISO 3166-1 istisnaen ayrılmış; resmî alfa-2 GB. 3.x verisiyle geriye uyum için kabul edilir." }
+
+organizations:
+  "ORG:AU":    { name: "Afrika Birliği (African Union)", kind: supranational,
+                 note: "ISO 'AU' = Avustralya. Çakışma ORG: önekiyle çözülür." }
+  "ORG:ASEAN": { name: "Güneydoğu Asya Uluslar Birliği", kind: supranational }
+  "ORG:WHO":   { name: "Dünya Sağlık Örgütü", kind: international_org }
+  "ORG:UN":    { name: "Birleşmiş Milletler", kind: international_org,
+                 note: "Antlaşma durumu (ICESCR, ICCPR, CEDAW, CRC, CRPD) — intl-treaty." }
+  "ORG:COE":   { name: "Avrupa Konseyi", kind: international_org,
+                 note: "Oviedo CETS 164, MEDICRIME CETS 211, YZ Çerçeve Sözleşmesi CETS 225." }
+
+generic:
+  INTL: { name: "Uluslararası (belirli bir örgüte bağlanmamış)", kind: international_org }
+
+# 3.x'ten kalan ve geriye uyum için KABUL EDİLEN eski değerler. Yeni üretimde kullanılmaz.
+legacy_aliases:
+  WHO: "ORG:WHO"
+  UK:  GB

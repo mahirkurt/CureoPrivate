@@ -17,14 +17,15 @@
       "properties": {
         "schema_version": { "type": "string", "enum": ["2.0", "2.3", "2.3.1"] },
         "medical_research_version": { "type": "string" },
-        "cureolex_version": { "type": "string", "pattern": "^[23]\\.[0-9]+(\\.[0-9]+)?$" }
+        "cureolex_version": { "type": "string", "pattern": "^[2-9]\\.[0-9]+(\\.[0-9]+)?$" }
       }
     },
     "mode": {
       "description": "Defteri üreten cureolex modu.",
       "type": "string",
-      "enum": ["DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA", "COMPARATIVE_LAW", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION"]
+      "enum": ["DRAFT", "AMEND", "ANALYZE", "COMPLY", "OPINE", "RIA", "COMPARATIVE_LAW", "PARLIAMENTARY_BILL", "TBMM_KANUN_TEKLIFI", "EX_POST_EVALUATION", "REGULATORY_MATURITY", "TRANSPOSITION", "RELIANCE_FRAMEWORK"]
     },
+    "home_jurisdiction": { "type": "string", "pattern": "^(?:[A-Z]{2}(?:-[A-Z0-9]{1,3})?|ORG:[A-Z][A-Z0-9-]{1,15}|INTL|WHO)$", "description": "G11 (4.0): çıktının yazıldığı yargı bölgesi = aktif paket. ISO 3166-1 alfa-2 · ISO 3166-2 alt birim (DE-BY) · ORG:<ad> ulusüstü örgüt (ORG:WHO; ORG:AU = Afrika Birliği, AU = Avustralya) · INTL. 4.0 öncesi 'WHO'/'UK' eski takma ad olarak kabul edilir; yeni çıktı 'ORG:WHO'/'GB' yazar. Bkz. jurisdictions/_schema/supranational_codes.yaml." },
     "entries": {
       "type": "array",
       "minItems": 1,
@@ -93,7 +94,7 @@
             "mcp_verified": { "type": "boolean" },
             "verifier": {
               "type": "string",
-              "enum": ["mevzuat_mcp", "mevzuat_bilgisi_mcp", "yargi_mcp", "yoktez_mcp", "titck_mcp", "health_policy_mcp", "german_law_mcp", "fedlex_swiss_companion", "open_primary_source", "medical_research_connector", "none"]
+              "enum": ["mevzuat_mcp", "mevzuat_bilgisi_mcp", "yargi_mcp", "yoktez_mcp", "titck_mcp", "health_policy_mcp", "german_law_mcp", "fedlex_swiss_companion", "open_primary_source", "medical_research_connector", "eurlex_mcp", "fedlex_mcp", "uk_legal_mcp", "intl_treaty_mcp", "resmi_gazete_mcp", "none"]
             },
             "status": {
               "type": "string",
@@ -112,8 +113,22 @@
           "minItems": 1,
           "items": { "type": "string" }
         },
-        "citation_vancouver": { "type": "string" }
+        "citation_vancouver": { "type": "string" },
+        "jurisdiction": { "type": "string", "pattern": "^(?:[A-Z]{2}(?:-[A-Z0-9]{1,3})?|ORG:[A-Z][A-Z0-9-]{1,15}|INTL|WHO)$", "description": "G11 (4.0): kanıtın AİT OLDUĞU yargı bölgesi. Verilirse jurisdiction_role zorunludur; home_jurisdiction ile karşılaştırma tests/validate_packs.py ve G11 kapısınındır." },
+        "jurisdiction_role": {
+          "description": "G11 (4.0): kaynağın bu çıktıdaki hukuki rolü. binding yalnız home_jurisdiction'ın kendi normu ya da orada doğrudan uygulanan norm için; treaty_obligation onayı intl-treaty ile doğrulanmış andlaşma için. Yabancı norm ulusal norm gibi sunulamaz.",
+          "type": "string",
+          "enum": ["binding", "transposition_source", "comparative_benchmark", "persuasive", "treaty_obligation"]
+        },
+        "as_of_date": { "type": "string", "description": "G10 (4.0): iddianın dayandığı yürürlük tarihi (ISO-8601)." },
+        "in_force_status": {
+          "description": "G10 (4.0): as_of_date itibarıyla hükmün durumu. repealed bir hüküm yürürlükteki dayanak olarak kullanılamaz.",
+          "type": "string",
+          "enum": ["in_force", "repealed", "amended_since", "not_yet_in_force", "unknown"]
+        }
       },
+      "if": { "required": ["jurisdiction"] },
+      "then": { "required": ["jurisdiction_role"] },
       "$comment": "G7 zinciri: status='verified' YALNIZCA mcp_verified=true ile geçerlidir; aksi halde çıktı bu iddiayı 'doğrulanmamış/temsilî' olarak etiketlemelidir."
     }
   }

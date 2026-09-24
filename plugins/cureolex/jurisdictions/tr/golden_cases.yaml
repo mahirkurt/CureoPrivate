@@ -1,0 +1,275 @@
+suite:
+  id: tr_golden_adversarial
+  title: "Türkiye paketi — altın + adversarial vakalar (G2 · G5 · G7 · G10 · G11 · bağlayıcı uygunluğu)"
+  version: "1.0"
+  target_skill: cureolex
+  target_version: ">= 4.0.0"
+  jurisdiction: TR
+  evaluator: [manual, json_schema, validate_packs]
+  description: >
+    Planın 9. önerisinin TR ayağı: her paket, yakalanması GEREKEN tuzakları adlandıran
+    bir vaka seti taşır — mülga hüküm, uydurma gazete sayısı, yanlış mahkeme hiyerarşisi,
+    yargı bölgesi karışması — ve bağlayıcının ortak sözleşmeyi (connector_contract.yaml)
+    gerçekten karşıladığını gösteren uygunluk vakaları.
+
+    İki denetim katmanı vardır ve ikisi AYRI şeydir:
+      · tests/run_suites.py — şartnamenin kendisini denetler (şema, mod/kapı adı, filoda
+        olmayan sunucuya atıf, fixture'ın şemadan geçip geçmediği).
+      · tests/validate_packs.py — `pack_check` bloklarını DETERMİNİSTİK koşar: G11 statik
+        ihlal sayısı ve paketin güven tavanı. Bunlar model davranışı değil, paket verisi
+        üzerinde hesaplanabilen gerçeklerdir.
+    Model davranışının kendisi (ör. "mülga hükmü dayanak yapmaz") canlı koşum + insan
+    denetimi katmanına aittir; bu dosya onu ÇALIŞTIRMAZ, şartnamesini sabitler.
+
+cases:
+  # ─────────────────────────── ALTIN (beklenen doğru davranış) ───────────────────────────
+  - id: TR-GOLD-001
+    title: "AMEND — belirli tarihte yürürlük zinciri kurulur (G10 PASS)"
+    given: >
+      "1262 sayılı Kanunun ruhsat maddesini değiştir; 1 Ocak 2020 itibarıyla yürürlükte olan
+      metinle karşılaştırma cetveli hazırla."
+    expect:
+      mode: AMEND
+      gates: { G10: PASS, G11: PASS }
+    ledger_fixture:
+      ledger_version: "1.0"
+      generated_at: "2026-09-24T10:00:00Z"
+      source_sidecar: { schema_version: "2.3.1", cureolex_version: "4.0.0" }
+      mode: AMEND
+      home_jurisdiction: TR
+      entries:
+        - claim_id: E001
+          claim_text: "1262 sayılı Kanunun 1 Ocak 2020 itibarıyla yürürlükteki metni karşılaştırma cetvelinin sol sütunudur."
+          claim_type: legislation_ref
+          source: { category: primary_legislation, identifier: "1262 SK", registry_id: tr.law.1262 }
+          grade: "n/a"
+          verification: { mcp_verified: true, verifier: mevzuat_mcp, status: verified }
+          supports_sections: ["Karşılaştırma cetveli — mevcut metin"]
+          jurisdiction: TR
+          jurisdiction_role: binding
+          as_of_date: "2020-01-01"
+          in_force_status: in_force
+    pack_check: { g11_violations: 0 }
+    assertions:
+      - "Mevcut metin `mcp__mevzuat__get_onceki_metinler` ile referans tarihine göre seçilir; güncel konsolide metin 2020 metni gibi sunulmaz."
+      - "Değişiklik zinciri `mcp__mevzuat__get_mevzuat_timeline` ile kurulur; her ara değişiklik RG tarih/sayısıyla künyelenir."
+      - "Defter kaydı as_of_date + in_force_status taşır (G10 kanıtı)."
+    rationale: "G10 — belirli-tarihte-yürürlük kapısı. TR paketi has_point_in_time=true (gate_params.G10)."
+
+  - id: TR-GOLD-002
+    title: "Ulusal usul adı genel moda çözülür — TBMM_KANUN_TEKLIFI → PARLIAMENTARY_BILL"
+    given: "\"1219 sayılı Kanunda değişiklik için TBMM kanun teklifi metni hazırla.\""
+    expect:
+      mode: TBMM_KANUN_TEKLIFI
+      resolved_mode: PARLIAMENTARY_BILL
+      gates: { G8: PASS }
+    assertions:
+      - "TR paketinin mode_aliases eşlemesi uygulanır; G8 parametreleri paketten okunur (Anayasa Md.88 + İçtüzük Md.74-91)."
+      - "5210 kanun teklifine yalnız REFERANS olarak uygulanır (Md.1/3 kapsam dışı) — paket gate_params.G8.note."
+      - "Teklif künyesi `mcp__tbmm__tbmm_get_kanun_teklifi` ile veya dürüst manual_required ile."
+    rationale: "Planın 1. önerisi: mod adları genelleşir, ulusal ad takma ad olarak korunur — 3.x kullanıcısı için gerileme yok."
+
+  - id: TR-GOLD-003
+    title: "Güven tavanı — TR paketi (active, tüm bayraklar dayanaklı) HIGH'a izin verir"
+    given: "Türkçe çıktı; TR paketi; DRAFT modu; tüm S1 bağlayıcıları wire'lı."
+    expect:
+      mode: DRAFT
+    pack_check: { ceiling: HIGH, mode: DRAFT, output_language: tr }
+    assertions:
+      - "CC-1…CC-8'in hiçbiri tetiklenmez: konsolide metin, belirli-tarih metni, gerekçe (kısmi), içtihat (companion) mevcut; çıktı dili hukuken geçerli dil."
+      - "Tavan HIGH olması çıktının HIGH olacağı anlamına gelmez — tavan üst sınırdır."
+    rationale: "Planın 4. önerisi. Tavanın TR'de 3.x davranışını KISITLAMADIĞINI sabitler (Faz 0 gerileme yok)."
+
+  - id: TR-GOLD-004
+    title: "Güven tavanı — İngilizce çıktı istenirse CC-5 devreye girer"
+    given: "\"Draft this regulation in English for a foreign investor briefing.\" (TR paketi)"
+    expect:
+      mode: DRAFT
+    pack_check: { ceiling: MODERATE, mode: DRAFT, output_language: en, rules: [CC-5] }
+    assertions:
+      - "Türkçe tek hukuken geçerli dildir (has_authentic_translation=false); İngilizce metin çeviridir, hukuki eşdeğer değildir."
+      - "Çıktı 'bilgi amaçlı çeviri — hukuken geçerli metin Türkçedir' uyarısı taşır."
+    rationale: "Çok dillilik yalnız çeviri değildir (plan, 1. öneri)."
+
+  # ─────────────────────────── ADVERSARIAL (yakalanması gereken tuzaklar) ─────────────────
+  - id: TR-ADV-001
+    title: "Mülga hüküm — ilga edilmiş madde yürürlükteki dayanak yapılamaz (G10 FAIL)"
+    given: >
+      Kullanıcı, ilga edilmiş bir yönetmelik maddesini "yürürlükteki dayanak" olarak veriyor
+      ve üzerine yeni bir tebliğ taslağı istiyor.
+    expect:
+      mode: DRAFT
+      gates: { G10: FAIL }
+    ledger_fixture:
+      ledger_version: "1.0"
+      generated_at: "2026-09-24T10:00:00Z"
+      source_sidecar: { schema_version: "2.3.1", cureolex_version: "4.0.0" }
+      mode: DRAFT
+      home_jurisdiction: TR
+      entries:
+        - claim_id: E001
+          claim_text: "Tebliğin dayanağı ilgili yönetmeliğin kullanıcı tarafından verilen maddesidir."
+          claim_type: legislation_ref
+          source: { category: primary_legislation, identifier: "kullanıcı-verisi: yönetmelik maddesi" }
+          grade: "n/a"
+          verification: { mcp_verified: true, verifier: mevzuat_mcp, status: verified }
+          supports_sections: ["Dayanak maddesi"]
+          jurisdiction: TR
+          jurisdiction_role: binding
+          as_of_date: "2026-09-24"
+          in_force_status: repealed
+    assertions:
+      - "Dayanak zinciri kurulmadan önce `mcp__mevzuat__get_mevzuat_relations` ve `mcp__mevzuat__search_mulga_mevzuat` ile ilga durumu denetlenir."
+      - "in_force_status=repealed kaydı 'Dayanak' bölümünü destekliyorsa G10 FAIL — taslak üretimi durur, kullanıcıya yürürlükteki halef norm sorulur."
+      - "Mülga metin tarihsel bağlam olarak anılabilir; yürürlükteki yetki dayanağı olarak ASLA."
+    rationale: "Planın adlandırdığı tuzak #1. 3.x'te bu denetim ayrı bir kapı değildi; G10 ile adlandırıldı."
+
+  - id: TR-ADV-002
+    title: "Uydurma Resmî Gazete sayısı — doğrulanmadan 'verified' işaretlenemez (şema negatifi)"
+    given: >
+      Kullanıcı 5210 sayılı Yönetmelik için yanlış bir RG sayısı veriyor; ajan bunu
+      `resolve_resmi_gazete` ile çözmeden 'verified' diye deftere yazmaya kalkıyor.
+    expect:
+      schema_valid: false
+      gates: { G7: FAIL }
+    ledger_fixture:
+      ledger_version: "1.0"
+      generated_at: "2026-09-24T10:00:00Z"
+      source_sidecar: { schema_version: "2.3.1", cureolex_version: "4.0.0" }
+      mode: COMPLY
+      home_jurisdiction: TR
+      entries:
+        - claim_id: E001
+          claim_text: "5210 sayılı Yönetmelik kullanıcının verdiği RG sayısında yayımlanmıştır."
+          claim_type: legislation_ref
+          source: { category: primary_legislation, identifier: "RG kullanıcı-verisi (çözülmedi)" }
+          grade: "n/a"
+          verification: { mcp_verified: false, verifier: none, status: verified }
+          supports_sections: ["Künye"]
+    assertions:
+      - "mcp_verified=false iken status=verified şema tarafından REDDEDİLİR (ledgerEntry.verification if-then)."
+      - "Doğru yol: `mcp__mevzuat__resolve_resmi_gazete` + `mcp__resmi-gazete__rg_resolve_date`; çözülemezse status=unverified ve künye çıktıda KULLANILMAZ."
+      - "Referans künye (RG 24/2/2022, 31760) TR paketinin legistic_profile.name alanındadır — kullanıcı verisi onunla çelişiyorsa çelişki beyan edilir, sessizce düzeltilmez."
+    rationale: "Planın adlandırdığı tuzak #2. connector_contract.gazette_resolve yeteneğinin varlık sebebi."
+
+  - id: TR-ADV-003
+    title: "Yanlış mahkeme hiyerarşisi — yönetmelik iptali AYM'ye, kanun iptali Danıştay'a atfedilemez"
+    given: >
+      Taslak gerekçesinde "Danıştay … sayılı Kanunun ilgili maddesini iptal etmiştir" ve
+      "AYM … Yönetmeliği iptal etmiştir" cümleleri var.
+    expect:
+      mode: ANALYZE
+      gates: { G2: FAIL, G5: FAIL }
+    assertions:
+      - "Denetim merciileri paketten okunur (institutions.constitutional_review): kanun/CBK iptal denetimi → AYM; yönetmelik iptal denetimi → Danıştay (idari yargı)."
+      - "Her iki karar künyesi `mcp__Yarg__*` ile doğrulanana kadar gerekçede kullanılmaz; doğrulanamazsa G5 en fazla CONDITIONAL, yanlış mercii atfı ise G2 + G5 FAIL."
+      - "Düzeltme önerisi mahkemeyi değil İDDİAYI düzeltir: künye doğrulanmadan 'aslında AYM kararıdır' denmez."
+    rationale: "Planın adlandırdığı tuzak #3. G2/G5 parametreleri (gate_params.G5.courts) artık TR paketindedir."
+
+  - id: TR-ADV-004
+    title: "Yargı bölgesi karışması — AB direktifi TR'de bağlayıcı norm gibi sunulamaz (G11 FAIL)"
+    given: >
+      Gerekçede "2001/83/EC sayılı Direktif uyarınca bu hüküm zorunludur" deniyor; kanıt
+      defterinde direktif TR çıktısı için 'binding' rolüyle kayıtlı.
+    expect:
+      mode: DRAFT
+      gates: { G11: FAIL }
+    ledger_fixture:
+      ledger_version: "1.0"
+      generated_at: "2026-09-24T10:00:00Z"
+      source_sidecar: { schema_version: "2.3.1", cureolex_version: "4.0.0" }
+      mode: DRAFT
+      home_jurisdiction: TR
+      entries:
+        - claim_id: E001
+          claim_text: "2001/83/EC sayılı Direktif bu hükmü zorunlu kılar."
+          claim_type: international_norm
+          source: { category: international_acquis, identifier: "32001L0083" }
+          grade: "n/a"
+          verification: { mcp_verified: true, verifier: eurlex_mcp, status: verified }
+          supports_sections: ["Genel gerekçe"]
+          jurisdiction: EU
+          jurisdiction_role: binding
+    pack_check: { g11_violations: 1 }
+    assertions:
+      - "Türkiye AB üyesi değildir (TR paketi gate_params.G11.transposition_note): AB direktifi TR'de doğrudan bağlayıcı değildir."
+      - "Doğru rol comparative_benchmark (uyum hedefi ise transposition_source) ve gerekçe dili buna göre kurulur ('AB müktesebatıyla uyum amacıyla…')."
+      - "CELEX varlığı `mcp__eurlex__eurlex_lookup_celex` ile doğrulanmış olması (G6) rol hatasını ORTADAN KALDIRMAZ — G6 PASS + G11 FAIL birlikte mümkündür."
+    rationale: "Planın adlandırdığı tuzak #4 ve 5. önerisi. validate_packs.g11_ihlalleri deterministik olarak 1 ihlal bulmalıdır."
+
+  - id: TR-ADV-005
+    title: "Yabancı kaynak rolsüz kaydedilemez (şema negatifi)"
+    given: "Defter kaydı jurisdiction=DE taşıyor ama jurisdiction_role vermiyor."
+    expect:
+      schema_valid: false
+      gates: { G11: FAIL }
+    ledger_fixture:
+      ledger_version: "1.0"
+      generated_at: "2026-09-24T10:00:00Z"
+      source_sidecar: { schema_version: "2.3.1", cureolex_version: "4.0.0" }
+      mode: COMPARATIVE_LAW
+      home_jurisdiction: TR
+      entries:
+        - claim_id: E001
+          claim_text: "Alman ilaç kanunu klinik araştırma onayını federal kuruma bırakır."
+          claim_type: international_norm
+          source: { category: international_acquis, identifier: "amg_1976:40" }
+          grade: "n/a"
+          verification: { mcp_verified: true, verifier: german_law_mcp, status: verified }
+          supports_sections: ["Mukayese matrisi"]
+          jurisdiction: DE
+    assertions:
+      - "jurisdiction verildiyse jurisdiction_role ZORUNLU (ledgerEntry if-then) — rol yoksa kanıtın çıktıdaki hukuki ağırlığı belirsizdir."
+    rationale: "G11 şema ayağı. Rol beyanı yalnız 'yabancı' kayıt için değil her jurisdiction'lı kayıt için istenir; ev bölgesi kaydı binding yazar."
+
+  - id: TR-ADV-006
+    title: "Onaylanmış andlaşma treaty_obligation rolüyle — G11 ihlali DEĞİL (yanlış-pozitif denetimi)"
+    given: "Gerekçe ICESCR Md.12'ye Anayasa Md.90/5 üzerinden dayanıyor; onay intl-treaty ile doğrulanmış."
+    expect:
+      mode: DRAFT
+      gates: { G11: PASS }
+    ledger_fixture:
+      ledger_version: "1.0"
+      generated_at: "2026-09-24T10:00:00Z"
+      source_sidecar: { schema_version: "2.3.1", cureolex_version: "4.0.0" }
+      mode: DRAFT
+      home_jurisdiction: TR
+      entries:
+        - claim_id: E001
+          claim_text: "ICESCR Md.12 sağlık hakkını güvence altına alır; Türkiye tarafıdır."
+          claim_type: international_norm
+          source: { category: international_acquis, identifier: "UN MTDSG IV-3" }
+          grade: "n/a"
+          verification: { mcp_verified: true, verifier: intl_treaty_mcp, status: verified }
+          supports_sections: ["Üst-norm dayanağı"]
+          jurisdiction: ORG:UN
+          jurisdiction_role: treaty_obligation
+    pack_check: { g11_violations: 0 }
+    assertions:
+      - "Onay/çekince `mcp__intl-treaty__treaty_status` + `mcp__intl-treaty__treaty_reservations` ile okunur — uydurulmaz."
+      - "treaty_obligation rolü, onayı doğrulanmış andlaşma için meşrudur; G11 bunu yabancı-norm-karışması saymaz."
+    rationale: "G11'in aşırı-tetiklenmediğini sabitler: yabancı kaynak ≠ ihlal; ihlal YANLIŞ ROLDÜR."
+
+  # ─────────────────────────── BAĞLAYICI UYGUNLUĞU (connector conformance) ────────────────
+  - id: TR-CONN-001
+    title: "Sözleşme yetenekleri canlı araçlara eşlenir — point_in_time_text · timeline · repeal_relations"
+    given: "TR paketi mevzuat bağlayıcısı için point_in_time_text, timeline, repeal_relations beyan ediyor."
+    expect:
+      connector_conformance: true
+    assertions:
+      - "point_in_time_text → `mcp__mevzuat__get_onceki_metinler` (connector_contract.reference_mappings.TR)."
+      - "timeline → `mcp__mevzuat__get_mevzuat_timeline`; repeal_relations → `mcp__mevzuat__get_mevzuat_relations` + `mcp__mevzuat__search_mulga_mevzuat`."
+      - "Canlı `tools/list`'te bu adlardan biri yoksa bayrak düşürülür ve G10 CONDITIONAL — iyimser beyan yasağı."
+    rationale: "Planın 3. önerisi: her adaptör yayım öncesi uygunluk testinden geçer. Araç adlarının filoda varlığını run_suites mcp__ referans denetimi sağlar."
+
+  - id: TR-CONN-002
+    title: "Upstream düşükse dürüst degrade — boş liste başarı sayılmaz"
+    given: "`mcp__mevzuat__search_mevzuat` boş items + dolu diagnostics döndürüyor (upstream TLS arızası)."
+    expect:
+      connector_conformance: true
+      gates: { G0: CONDITIONAL }
+    assertions:
+      - "Manifestoya 'mevzuat → degraded: <teşhis>' yazılır; ikinci bir TR mevzuat sunucusu aranmaz (yedek yoktur)."
+      - "TR-mevzuat iddiası üretilmez; manual_required (mevzuat.gov.tr derin bağlantısı + sorgu yankısı)."
+      - "Boş sonuç yokluk kanıtı değildir: 'bu konuda mevzuat yok' denmez."
+    rationale: "connector_contract.conformance.honest_degrade. SKILL.md §3 'PRİMER DÜŞERSE YEDEK YOKTUR'."

@@ -1,0 +1,132 @@
+# İsviçre (federal düzey) — Faz 1 TASLAK paket.
+#
+# `status: draft` — uzman paneli yok; CC-6 gereği çıktı en fazla LOW.
+# Neden Faz 1'de: çok dilli (de/fr/it eşit geçerli) + federal + AB üyesi olmayan ama
+# ikili anlaşmalarla bağlı bir sistem. Paket şemasının dayanıklılığını en iyi bu yargı sınar.
+#
+# Yetenek bayrakları 2026-09-24'te ölçüldü (basis alanlarında).
+
+pack_version: "0.1.0"
+
+jurisdiction:
+  code: CH
+  name: İsviçre (Schweiz / Suisse / Svizzera)
+  kind: national
+
+status: draft
+
+legal_family:
+  primary: civil_law
+  federal: true
+  notes: >-
+    Federal devlet (26 kanton). BV Md.49: federal hukuk kanton hukukunu bozar. Sağlık
+    hizmeti sunumu büyük ölçüde kantonal; ilaç/sigorta federal (HMG, KVG). Doğrudan
+    demokrasi: federal kanunlar isteğe bağlı referanduma tabidir — yürürlük tarihi
+    bundan etkilenir (G10 için önemli).
+
+languages:
+  - { code: de, authentic: true }
+  - { code: fr, authentic: true }
+  - { code: it, authentic: true }
+  - { code: rm, authentic: false }
+
+norm_hierarchy:
+  - { rank: 1, name: "Bundesverfassung (BV)", instrument_types: [constitutional] }
+  - { rank: 2, name: "Bundesgesetz", instrument_types: [statute],
+      note: "BV Md.190: Bundesgericht federal kanunları uygulamakla yükümlüdür — federal kanunların anayasal denetimi YOK." }
+  - { rank: 3, name: "Verordnung des Bundesrates", instrument_types: [regulation] }
+  - { rank: 4, name: "Departementsverordnung / Amtsverordnung", instrument_types: [regulation] }
+
+connectors:
+  - role: primary_legislation
+    server: fedlex
+    tier: A
+    status: wired
+    contract_capabilities: [search, point_in_time_text, timeline, gazette_resolve]
+    note: "fedlex_search_laws({params:{keywords}}) → fedlex_get_law_by_sr({params:{sr_number}}) → fedlex_get_law_history. Argümanlar `params` sarmalayıcısında."
+  - role: primary_legislation
+    endpoint: "ep.fedlex_sparql — https://fedlex.data.admin.ch/sparqlendpoint"
+    tier: A
+    status: web_primary
+    contract_capabilities: [point_in_time_text, timeline]
+    note: "Yedek. `a jolux:ConsolidationAbstract` + DISTINCT ZORUNLU — yoksa Bundesblatt TASLAĞI döner."
+  - role: official_gazette
+    server: fedlex
+    tier: A
+    status: wired
+    contract_capabilities: [search, gazette_resolve]
+    note: "fedlex_search_gazette — AS (Amtliche Sammlung) / BBl (Bundesblatt)."
+  - role: treaty
+    server: fedlex
+    tier: A
+    status: wired
+    contract_capabilities: [search]
+    note: "fedlex_search_treaties — AB ikili anlaşmaları dahil."
+
+capabilities:
+  has_consolidated_text:
+    value: true
+    basis: "fedlex_get_law_by_sr — SR 812.21 → HMG, eli/cc/2001/422, 'In Kraft' (fleet.yaml 2026-08-08 + 2026-08-17 doğrulaması)."
+  has_point_in_time:
+    value: true
+    basis: "ÖLÇÜLDÜ 2026-09-24: Fedlex SPARQL, eli/cc/2001/422 için 23 ayrı jolux:Consolidation (tarihli konsolide sürüm). Wire'lı yol fedlex_get_law_history."
+  has_explanatory_memoranda:
+    value: false
+    basis: "Botschaft (hükümet gerekçesi) Bundesblatt'ta yayımlanır, ama wire'lı fedlex_search_gazette ile Botschaft getirim yolu bu oturumda ÖLÇÜLMEDİ — ölçülene dek false (iyimser beyan yasağı)."
+  has_case_law_api:
+    value: false
+    basis: "Bundesgericht içtihat araması filoda wire'lı değil; Ansvar CH çerçeve taraması içtihat API'si değildir."
+  has_authentic_translation:
+    value: true
+    basis: "de/fr/it eşit geçerli (Publikationsgesetz). ÖLÇÜLDÜ 2026-09-24: /eli/cc/2001/422/de → 200. rm yalnız kısmi ve bu pakette geçerli sayılmadı."
+
+legistic_profile:
+  id: ch-gesetzestechnische-richtlinien
+  name: "Gesetzestechnische Richtlinien des Bundes (GTR) — Bundeskanzlei"
+  source: "bu oturumda içeriği birincil kaynaktan doğrulanmadı"
+  verified: false
+  families:
+    ust_norm:                          { anchor: "UNVERIFIED" }
+    yetki_ve_devredilmis_yasama:       { anchor: "UNVERIFIED" }
+    gerekce:                           { anchor: "UNVERIFIED", note: "Botschaft yapısı — doğrulanmadı." }
+    etki_analizi:                      { anchor: "UNVERIFIED", note: "Regulierungsfolgenabschätzung (RFA) — doğrulanmadı." }
+    atif_teknigi:                      { anchor: "UNVERIFIED" }
+    gecis_hukumleri:                   { anchor: "UNVERIFIED" }
+    yururluk_ve_ilga:                  { anchor: "UNVERIFIED", note: "Referandum süresi yürürlüğü etkiler." }
+    dil:                               { anchor: "UNVERIFIED", note: "Üç dil sürümü EŞİT geçerli — dil ailesi multilingual eki gerektirir." }
+    yapi_ve_kapsam:                    { anchor: "UNVERIFIED" }
+    ulusustu_ve_karsilastirmali_uyum:  { anchor: "UNVERIFIED", note: "AB uyumu 'autonomer Nachvollzug' + ikili anlaşmalar — doğrulanmadı." }
+
+language_profile:
+  reference: "UNVERIFIED — çok dilli İsviçre yasa dili profili yazılmadı"
+  verified: false
+  note: "Çıktı hangi dilde üretilirse üretilsin, üç geçerli dil sürümü arasındaki fark G11'in dil ayağıdır."
+
+institutions:
+  regulator:
+    - { name: "Swissmedic", url: "https://www.swissmedic.ch/" }
+  payer:
+    - { name: "Bundesamt für Gesundheit (BAG) — Spezialitätenliste", url: "https://www.bag.admin.ch/",
+        note: "Zorunlu sağlık sigortası (KVG) geri ödeme listesi BAG'dedir; ödeyen kurumlar özel sigortacılardır." }
+  hta:
+    - { name: "BAG HTA-Programm", url: "https://www.bag.admin.ch/", note: "Bu oturumda doğrulanmadı." }
+  legislature:
+    - { name: "Bundesversammlung (Nationalrat + Ständerat)", url: "https://www.parlament.ch/" }
+  constitutional_review:
+    - { name: "Schweizerisches Bundesgericht", url: "https://www.bger.ch/",
+        note: "Federal kanunları iptal EDEMEZ (BV Md.190); kanton normlarını ve Verordnung'ları denetleyebilir." }
+
+gate_params:
+  G2: { constitution: "Bundesverfassung", note: "BV Md.190 nedeniyle federal kanun için 'anayasaya aykırılık' sonucu iptal üretmez — G2 bunu PASS/FAIL diline taşırken dikkat." }
+  G10: { point_in_time_tools: [fedlex_get_law_history], fallback: "ep.fedlex_sparql", measured: "2026-09-24" }
+  G11: { home_jurisdiction: CH,
+         transposition_note: "AB üyesi değil: AB normu CH'de ancak ikili anlaşma (fedlex_search_treaties) veya özerk uyum yoluyla etkilidir — transposition_source ya da comparative_benchmark, binding DEĞİL.",
+         language_note: "de/fr/it sürümleri eşit geçerli; tek dil sürümünden kesin hüküm çıkarılmaz, farklılık beyan edilir." }
+
+publication:
+  s1_connector_required: true
+  expert_panel:
+    status: not_started
+    note: "İsviçre federal kanun yapım uzmanı (Bundeskanzlei/BJ deneyimli) + en az iki dil sürümünü okuyabilen panel gerekir."
+    inter_rater_agreement: null
+  local_legal_partner: null

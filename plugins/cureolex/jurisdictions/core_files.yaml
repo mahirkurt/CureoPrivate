@@ -1,0 +1,63 @@
+# ÇEKİRDEK dosya envanteri — yargı bölgesinden bağımsız AMAÇLI dosyalar.
+#
+# Her `references/` ve `templates/` dosyası ya bir paketin `owned_files` listesinde ya da
+# burada yer alır — TAM OLARAK BİR KEZ. Sahipsiz dosya = çekirdek/paket sınırının sessizce
+# delindiği yer; `tests/validate_packs.py` bunu yakalar.
+#
+# KİRLENME (tr_contamination): 4.0 bu dosyaları mantıksal olarak çekirdeğe koydu, ama
+# içlerinde hâlâ Türkiye'ye özgü terimler geçiyor. Bu bir GİZLENEN sorun değil, ölçülmüş
+# bir borçtur: Faz 0b'de TR örnekleri TR paketine taşınacak, çekirdek metin paket
+# parametresine atıf yapacak. Sayılar 2026-09-24 ölçümüdür (desen:
+# 5210|TİTCK|SGK|Resmî Gazete|Danıştay|Yargıtay|TBMM|AYM|İçtüzük).
+
+measured_at: "2026-09-24"
+pattern: '5210|TİTCK|TITCK|SGK|Resm[iî] Gazete|Danıştay|Yargıtay|TBMM|AYM|İçtüzük'
+
+files:
+  skills/cureolex/references/00-mod-pipelines.md:
+    purpose: Mod başına pipeline
+    tr_contamination: { lines: 8, total: 89, severity: low }
+  skills/cureolex/references/08-uluslararasi-kaynaklar.md:
+    purpose: Uluslararası kaynaklar
+    tr_contamination: { lines: 9, total: 610, severity: low }
+  skills/cureolex/references/10-bm-uluslararasi-saglik-hukuku.md:
+    purpose: BM uluslararası sağlık hukuku
+    tr_contamination: { lines: 12, total: 565, severity: low }
+  skills/cureolex/references/11-who-derinlemesine-rejim.md:
+    purpose: DSÖ rejimi
+    tr_contamination: { lines: 8, total: 525, severity: low }
+  skills/cureolex/references/12-gelismis-ulke-rejimleri-derin.md:
+    purpose: Gelişmiş ülke rejimleri (karşılaştırmalı katman tohumu)
+    tr_contamination: { lines: 18, total: 698, severity: low }
+  skills/cureolex/references/14-medical-research-entegrasyon-katmani.md:
+    purpose: evidentia entegrasyon katmanı
+    tr_contamination: { lines: 151, total: 1914, severity: high }
+    note: "EN AĞIR kirlenme. Klinik-hukuk köprüsü TR örnekleriyle yazılmış; Faz 0b'nin ilk hedefi."
+  skills/cureolex/references/14b-medical-research-operational-integration.md:
+    purpose: evidentia operasyonel entegrasyon
+    tr_contamination: { lines: 30, total: 706, severity: medium }
+  skills/cureolex/references/15-programatik-veri-kaynaklari.md:
+    purpose: Programatik veri kaynakları
+    tr_contamination: { lines: 4, total: 281, severity: low }
+  skills/cureolex/references/16-baglamyonetimi-ve-buyuk-veri.md:
+    purpose: Bağlam ekonomisi ve büyük veri
+    tr_contamination: { lines: 1, total: 99, severity: low }
+  skills/cureolex/templates/comparative-law-analysis.md:
+    purpose: Karşılaştırmalı analiz (13 bölüm)
+    tr_contamination: { lines: 23, total: 382, severity: medium }
+  skills/cureolex/templates/karsilastirma-uluslararasi.md:
+    purpose: Uluslararası karşılaştırma cetveli
+    tr_contamination: { lines: 4, total: 178, severity: low }
+  skills/cureolex/templates/ex-post-evaluation.md:
+    purpose: Ex-post değerlendirme (14 bölüm)
+    tr_contamination: { lines: 25, total: 487, severity: medium }
+  # 4.0 ile gelen yeni şablonlar — yargı bölgesinden bağımsız YAZILDI; kirlenme 0 (2026-09-24 ölçümü).
+  skills/cureolex/templates/regulatory-maturity-gbt.md:
+    purpose: Düzenleyici olgunluk açığı (WHO GBT)
+    tr_contamination: { lines: 0, total: 86, severity: none }
+  skills/cureolex/templates/transposition-table.md:
+    purpose: Aktarım / uyum tablosu
+    tr_contamination: { lines: 0, total: 68, severity: none }
+  skills/cureolex/templates/reliance-framework.md:
+    purpose: Reliance çerçevesi taslağı
+    tr_contamination: { lines: 0, total: 70, severity: none }

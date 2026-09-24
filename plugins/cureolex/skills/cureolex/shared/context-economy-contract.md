@@ -75,7 +75,7 @@ edilir, ana pencereye yalnız bounded dilim gelir.
 
 ```
 collection = "cureolex:{kind}:{id}"     # kind ∈ {sess, run, lib}
-cureolex scratch: cureolex:sess:<12hex> # G0–G9 AYNI sess (kanonik cache)
+cureolex scratch: cureolex:sess:<12hex> # G0–G11 AYNI sess (kanonik cache)
 lib varsayılan DEĞİL                    # mevzuat.gov.tr forever-library'ye dökülmez
 doc_id   = "{collection}:{human}"       # human = mevzuat:… / celex:… / ecli:… / rg:…
 ```

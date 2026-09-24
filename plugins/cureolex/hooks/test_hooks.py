@@ -89,8 +89,13 @@ with tempfile.TemporaryDirectory() as _d:
 
 check("lock yoksa None (fail-open)", fleet_probe.load_lock("/olmayan/yol") is None)
 _lock = fleet_probe.load_lock(ROOT)
-check("fleet.lock.json okunur ve 22 server taşır",
-      bool(_lock) and _lock["counts"]["servers"] == 22)
+# Sayı SABİT YAZILMAZ: kilit bir bağlayıcı kaldırılınca (adecc17: 22→21) sabit sayı
+# sahte-kırmızı üretir. Kilidin sayacı kendi listesiyle ve .mcp.json ile tutarlı olmalı.
+with open(os.path.join(ROOT, ".mcp.json"), encoding="utf-8") as fh:
+    _mcp_n = len(json.load(fh).get("mcpServers", {}))
+check("fleet.lock.json okunur; sayaç = kilit listesi = .mcp.json sunucu sayısı",
+      bool(_lock) and _lock["counts"]["servers"] == len(_lock.get("servers", []))
+      == _mcp_n)
 with open(os.path.join(SCRIPTS, "fleet_probe.py"), encoding="utf-8") as fh:
     _src = fh.read()
 check("hook YALNIZ stdlib (PyYAML/requests yok)",
@@ -570,7 +575,7 @@ env4, ledger4, log4 = _anam_env(docs=[ANAM_DOC])
 _, _ = run("anamnesis_lifecycle.py", {
     "hook_event_name": "SessionStart", "source": "resume",
 }, env_extra=env4)
-check("resume keeps sess (G0–G9 cache)",
+check("resume keeps sess (G0–G11 cache)",
       _json.loads(open(ledger4, encoding="utf-8").read()).get("session_id") == ANAM_SID)
 check("resume does not forget",
       not (os.path.isfile(log4) and open(log4, encoding="utf-8").read().strip()))
@@ -619,7 +624,7 @@ _, j = run("anamnesis_lifecycle.py", {
     "hook_event_name": "UserPromptSubmit",
     "prompt": "/lex-draft ATMP yönetmeliği",
 }, env_extra=env8)
-check("/lex-draft does NOT remint (G0–G9 same sess)",
+check("/lex-draft does NOT remint (G0–G11 same sess)",
       _json.loads(open(ledger8, encoding="utf-8").read()).get("session_id") == ANAM_SID)
 check("/lex-draft does not forget",
       not (os.path.isfile(log8) and open(log8, encoding="utf-8").read().strip()))

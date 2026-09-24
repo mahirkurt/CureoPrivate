@@ -23,7 +23,7 @@
 
 version: 2
 plugin: cureolex
-plugin_version: "3.9.0"
+plugin_version: "4.0.0"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # cureolex bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -494,7 +494,7 @@ servers:
     tier: fulltext
     auth_env: OPENATHENS_MCP_API_KEY
     shard: S4
-    modes: [COMPARATIVE_LAW, ANALYZE, RIA, OPINE, EX_POST_EVALUATION]
+    modes: [COMPARATIVE_LAW, ANALYZE, RIA, OPINE, EX_POST_EVALUATION, REGULATORY_MATURITY, RELIANCE_FRAMEWORK]
     gate: G6
     tools_used: [oa_session_status, oa_resolve, oa_fetch_fulltext, oa_fetch_pdf,
                  oa_list_databases, oa_verify_access]
@@ -568,7 +568,7 @@ servers:
     tier: comparative
     auth_env: FEDLEX_MCP_API_KEY
     shard: S2
-    modes: [COMPARATIVE_LAW, RIA, DRAFT]
+    modes: [COMPARATIVE_LAW, RIA, DRAFT, TRANSPOSITION, RELIANCE_FRAMEWORK]
     gate: null
     tools_used: [fedlex_search_laws, fedlex_get_law_by_sr, fedlex_get_law_history,
                  fedlex_get_upcoming_changes, fedlex_search_treaties,
@@ -622,7 +622,7 @@ servers:
     tier: comparative
     auth_env: UK_LEGAL_MCP_API_KEY
     shard: S2
-    modes: [COMPARATIVE_LAW, ANALYZE, OPINE]
+    modes: [COMPARATIVE_LAW, ANALYZE, OPINE, RELIANCE_FRAMEWORK]
     gate: null
     # Tercih: legislation_* (statute) + case law → Hansard → bills → OSCOLA.
     # legislation_* 2026-08-18 loopback httpx fix sonrası canlı doğrulandı
@@ -670,7 +670,7 @@ servers:
       ingest_document(collection=cureolex:sess:<id>, doc_id=<collection>:mevzuat|celex|ecli|rg:…)
       ile BİR KEZ indekslenir → hybrid_query(collection=…, doc_ids=[…], queries[]) ile
       sınırlı, provenance-damgalı dilim çekilir (doc_id::idx). doc_scope YOKTUR.
-      G0–G9 aynı sess; lib varsayılan değil. forget_document (forget_collection yoksa
+      G0–G11 aynı sess; lib varsayılan değil. forget_document (forget_collection yoksa
       N× fallback) oturum sonunda yalnız bu koleksiyonu siler. shared/context-economy-contract.md Tier 2.
     degrade: >-
       Anahtar yoksa doğrudan bounded-chunk fetch'e degrade (madde_tree navigasyonu
@@ -719,7 +719,7 @@ companions:
   - name: Ansvar
     tool_prefixes: ["mcp__Ansvar__", "mcp__claude_ai_Ansvar__"]
     gate: null
-    modes: [ANALYZE, RIA, COMPARATIVE_LAW]
+    modes: [ANALYZE, RIA, COMPARATIVE_LAW, TRANSPOSITION]
     manifest_row: "Ansvar (companion — Mod7 58-yargı)"
     degrade: >-
       CH/FR/IT/NL/SE/DK/FI/AT/PL ve yatay çerçeve (GDPR/NIS2) satırları
@@ -769,10 +769,13 @@ generated_blocks:
     generator: mode_matrix
     config:
       modes: [DRAFT, AMEND, ANALYZE, COMPLY, OPINE, RIA, COMPARATIVE_LAW,
-              TBMM_KANUN_TEKLIFI, EX_POST_EVALUATION]
+              TBMM_KANUN_TEKLIFI, EX_POST_EVALUATION,
+              REGULATORY_MATURITY, TRANSPOSITION, RELIANCE_FRAMEWORK]
       abbr: {DRAFT: DRAFT, AMEND: AMEND, ANALYZE: ANLZ, COMPLY: CMPLY,
              OPINE: OPINE, RIA: RIA, COMPARATIVE_LAW: COMP,
-             TBMM_KANUN_TEKLIFI: TBMM, EX_POST_EVALUATION: EXPOST}
+             TBMM_KANUN_TEKLIFI: TBMM, EX_POST_EVALUATION: EXPOST,
+             REGULATORY_MATURITY: GBT, TRANSPOSITION: TRNSP,
+             RELIANCE_FRAMEWORK: RELY}
 
   - file: agents/legal-distiller.md
     name: agent-tools

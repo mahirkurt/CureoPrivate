@@ -2,16 +2,19 @@
 name: cureolex
 description: >-
   Türkiye sağlık mevzuatı reform protokolü — kanun · CBK · yönetmelik · tebliğ · genelge düzeyinde yeni mevzuat
-  üretmek, değiştirmek, yeniden yazmak için 9 mod (DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA ·
-  COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION). 5210 Yönetmelik + AYM belirlilik içtihadı +
-  OECD Better Regulation + Anayasa Md.17/56/90/5; G0-G9 kapı + no-fabrication (evidence_ledger). Kullan —
+  üretmek, değiştirmek, yeniden yazmak için 12 mod (DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA ·
+  COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI/PARLIAMENTARY_BILL · EX_POST_EVALUATION · REGULATORY_MATURITY ·
+  TRANSPOSITION · RELIANCE_FRAMEWORK). 4.0: yargı bölgesinden bağımsız ÇEKİRDEK + takılabilir yargı
+  bölgesi PAKETİ (jurisdictions/; TR aktif, GB/DE/CH taslak). 5210 Yönetmelik + AYM belirlilik içtihadı +
+  OECD Better Regulation + Anayasa Md.17/56/90/5; G0-G11 kapı + no-fabrication (evidence_ledger). Kullan —
   "yönetmelik/tebliğ taslağı hazırla", "şu maddeyi değiştir", "TBMM kanun teklifi", "1219 SK reform", "TİTCK
   yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki analizi/DEA",
-  "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme". 21 wire'lı MCP + 3 companion (Yargı ·
+  "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme", "WHO GBT olgunluk açığı",
+  "AB direktifi aktarım tablosu", "reliance çerçevesi". 21 wire'lı MCP + 3 companion (Yargı ·
   Open Law · Ansvar) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia,
   atıf-adli + Türkçe hukuk dili → sci-audit (kuruluysa ZORUNLU). Şüphede Scope Guard önceliklidir;
   bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi KAPSAM DIŞIDIR.
-version: 3.9.0
+version: 4.0.0
 ---
 
 # Cureolex — Türkiye Sağlık Mevzuatı Reform Protokolü
@@ -23,18 +26,18 @@ Bu yetkinlik, **Türkiye'de sağlık mevzuatının her düzlemde reform, değiş
 ## 0. Nasıl çalışılır (her modda)
 
 1. **Scope Guard'ı önce uygula (§6).** Şüphede yönlendir, çıktı üretme.
-2. **Modu belirle (§1).** Kullanıcı komut verdiyse (`/lex-draft` vb.) mod sabittir; serbest metinse tetikleyicilere göre seç.
+2. **Modu ve yargı bölgesi paketini belirle (§1, §1.5).** Kullanıcı komut verdiyse (`/lex-draft` vb.) mod sabittir; serbest metinse tetikleyicilere göre seç. Yargı bölgesi belirtilmemişse varsayılan **TR** paketidir (3.x davranışı); başka bir bölge istendiyse o paketi yükle — paket yoksa uydurma, `manual_required` + mevcut paket listesi.
 3. **TAM-FİLO devreye al (§3 — zorunlu, her sorgu).** Wire edilmiş **21 kaynak MCP + 3 companion**'un tamamı her sorguda taranır. Getirimi **≤4 paralel shard**'a böl (TR-çekirdek · karşılaştırmalı · doktrin · klinik), her shard'ı bir distiller alt-ajanına ver; ana bağlama yalnız kompakt `retrieval_distillate` + `coverage` döner. Bağlam ekonomisi ve büyük-veri disiplini **zorunludur** (§3.5) — ham veri ana pencereye girmez. Hiçbir server sessizce atlanmaz.
 4. **Üst-norm zincirini kur.** `mcp__mevzuat__get_anayasa` → dayanak kanun/CBK → yönetmelik. Primer arama: anahtar kelime **ve** kanun/mevzuat NUMARASI (`search_mevzuat` `mevzuat_no` veya yalnız-rakam query), `phrase` (bedesten Solr), belge-içi `search_within_mevzuat`. Ayrıntı: `references/07-mevzuat-mcp-workflow.md`. Canlı primer `mevzuat.cureonics.com` **0.15.1+** (HP cutover 2026-08): phrase / `search_within` / bedesten tam gerekçe mevcut — tool listesinde yoksa uydurma; yoklukta ikincil veya `manual_required`.
 5. **Klinik boyut varsa → evidentia'ya delege et (§5, her klinik-boyutlu sorguda).** Sağlık mevzuatında bu ≈ daima; klinik-sıfır saf idari normlarda atla ve **kapsam manifestosunda gerekçesiyle beyan et**.
 6. **Metni/analizi üret**, ilgili **template**'i kullan (§2, `templates/`).
-7. **G0-G9 kapılarından geçir (§4)** — G0 tam-filo kapsamını doğrular. `evidence_ledger` tut.
+7. **G0-G11 kapılarından geçir (§4)** — G0 tam-filo kapsamını doğrular; kapı parametreleri (norm hiyerarşisi, dil profili, mahkemeler) aktif paketten okunur. `evidence_ledger` tut (`home_jurisdiction` + yabancı kayıtlarda `jurisdiction_role`).
 8. **Çıktıyı sci-audit'e delege et (§5 — her çıktıda)** — atıf-adli + istatistik tutarlılık + Türkçe imla/halüsinasyon taraması.
 9. **Kapsam manifestosu + confidence_label ile bitir (§7).** Hook yoksa (claude.ai / ChatGPT) Stop G0 hatırlatması gelmez — manifesto yine zorunludur.
 
 **Progressive disclosure:** bu gövde load-bearing özet + yönlendirmedir. Her modun tam pipeline'ı, kapı kriterleri ve dil kuralları `references/` altındadır — ilgili modda **o dosyayı oku**.
 
-## 1. Dokuz mod
+## 1. On iki mod
 
 | # | Mod | Tetikleyici | Çıktı template | Referans |
 |---|---|---|---|---|
@@ -45,14 +48,37 @@ Bu yetkinlik, **Türkiye'de sağlık mevzuatının her düzlemde reform, değiş
 | 5 | **OPINE** | "kurum görüşü", "Md.6 görüşü", "TİTCK/komisyon görüşü", "bilirkişi mütalaası" | `templates/gorus-bildirimi.md` | `references/06`, `13` |
 | 6 | **RIA** | "DEA hazırla", "düzenleyici etki analizi", "bütçe etki formu/BEF" | `templates/dea-template.md` · `bef-template.md` | `references/05` |
 | 7 | **COMPARATIVE_LAW** | "karşılaştırmalı analiz", "AB karşılığı", "Japonya/PHARMAC nasıl", "reliance benchmark" | `templates/comparative-law-analysis.md` | `references/08`, `12` |
-| 8 | **TBMM_KANUN_TEKLIFI** (çekirdek, en üst) | "TBMM kanun teklifi", "1219 SK reform", "Anayasa Md.88" | `templates/tbmm-kanun-teklifi.md` | `references/09` |
+| 8 | **PARLIAMENTARY_BILL** — TR paketinde **TBMM_KANUN_TEKLIFI** (çekirdek, en üst) | "TBMM kanun teklifi", "1219 SK reform", "Anayasa Md.88" | `templates/tbmm-kanun-teklifi.md` (TR paketi) | `references/09` |
 | 9 | **EX_POST_EVALUATION** | "ex post değerlendirme", "geriye dönük etki", "12-36 ay etki", "sunset clause" | `templates/ex-post-evaluation.md` | `references/05`, `11` |
+| 10 | **REGULATORY_MATURITY** (4.0) | "WHO GBT", "düzenleyici olgunluk", "ML3 açığı", "NRA güçlendirme" | `templates/regulatory-maturity-gbt.md` | `references/11` |
+| 11 | **TRANSPOSITION** (4.0) | "direktif aktarımı", "uyum tablosu", "transposition table", "AB müktesebatına uyum" | `templates/transposition-table.md` | `references/08` |
+| 12 | **RELIANCE_FRAMEWORK** (4.0) | "reliance", "referans otorite", "kısaltılmış inceleme", "WHO Listed Authorities" | `templates/reliance-framework.md` | `references/11`, `12` |
+
+**Mod adları yargı bölgesinden bağımsızdır.** Mod 8'in kanonik adı `PARLIAMENTARY_BILL`'dir; `TBMM_KANUN_TEKLIFI` TR paketinin `mode_aliases` eşlemesiyle ona çözülür ve 3.x'teki gibi kullanılmaya devam eder (gerileme yok). Mod 10–12 komutları: `/lex-maturity` · `/lex-transpose` · `/lex-reliance`.
 
 **Mod başına pipeline özeti** `references/00-mod-pipelines.md` dosyasındadır; bir moda girdiğinde o dosyanın ilgili bölümünü oku. Çekirdek disiplin: **belirsiz manzarada ANALYZE landscape → sonra DRAFT**; DRAFT üst-norm + yatay semantik tarama + AB/uluslararası (german **resolve→EU**; ich **M4/M8** dosya-yapısıysa; cihaz→**eudamed** not ÜTS/TİTCK) + içtihat/doktrin + 5210 Md.15; AMEND `get_onceki_metinler` + Md.18-21; RIA **OECD GOV_REG zorunlu**; TBMM dayanağı **Anayasa Md.88 + İçtüzük Md.74-91** (5210 yalnız referans). **Mod 8:** `sira_no` onerge + gerekçe gövdesi `get_mevzuat_gerekce`; DSpace≠canlı GK. Conscious excludes: `shared/coverage-manifest.md` + `fleet.yaml` `conscious_excludes`.
 
+## 1.5. Yargı bölgesi paketleri (4.0 — `jurisdictions/`)
+
+4.0'da plugin **yargı bölgesinden bağımsız bir çekirdek** ile **takılıp çıkarılabilir ülke paketlerine** ayrıldı. Çekirdek: mod iskeletleri, kapı mantığı, kanıt defteri, no-fabrication, kapsam manifestosu, bağlam ekonomisi. Paket (`jurisdictions/<kod>/jurisdiction_pack.yaml`): norm hiyerarşisi, bağlayıcılar, yetenek bayrakları, legistik profil, dil profili, kurum haritası (düzenleyici · ödeyici · HTA · yasama · anayasal denetim), kapı parametreleri, mod takma adları, altın/adversarial vakalar.
+
+| Paket | Durum | Not |
+|---|---|---|
+| `tr` | **active** (uzman paneli: `grandfathered` — 3.x davranışının birebir tanımı; "panelden geçti" DEĞİL) | Varsayılan. 3.9.0 davranışıyla aynıdır. |
+| `gb` · `de` · `ch` | **draft** | Keşif amaçlı. Çıktı en fazla **LOW** (CC-6) + taslak uyarısı. Legistik profil `verified: false`. |
+
+**Paketi kullanma kuralları:**
+
+1. **Kod:** ISO 3166-1 alfa-2 (GB — "UK" değil), alt birim ISO 3166-2 (DE-BY), ulusüstü `ORG:` ad alanı (`ORG:AU` = Afrika Birliği; `AU` = Avustralya). Sözlük: `jurisdictions/_schema/supranational_codes.yaml`.
+2. **Yetenek bayrakları → güven tavanı.** Paketin beş bayrağı (`has_consolidated_text` · `has_point_in_time` · `has_explanatory_memoranda` · `has_case_law_api` · `has_authentic_translation`) `jurisdictions/_schema/confidence_ceiling_rules.yaml`'deki CC-1…CC-8 kurallarıyla bir **tavan** üretir; `combined_confidence` bu tavanı **aşamaz** ve `confidence_label.confidence_ceiling` alanına yazılır. Kaynak bir şeyi yayımlamıyorsa ona dayanan iddia yüksek güvenle üretilemez.
+3. **Yayım kuralı (pazarlık konusu değil):** wire'lı S1 bağlayıcısı olmayan paket `active` olamaz; uzman paneli değerlendirmesinden geçmemiş paket `active` olamaz. `tests/validate_packs.py` zorlar.
+4. **Bağlayıcı sözleşmesi:** her ülke adaptörü `jurisdictions/_schema/connector_contract.yaml`'deki soyut yetenekleri (search · point_in_time_text · timeline · repeal_relations · article_tree · gazette_resolve · explanatory_memorandum · case_law_search · legislative_history) karşılar; düzey A (API/ELI/AKN) · B (yalnız HTML) · C (yalnız PDF gazete).
+5. **Evrensel legistik rubrik:** 12 aile (`jurisdictions/_schema/legistic_rubric_families.yaml`); R6b'nin 21 kontrolü ailelere eşlidir. TR'de `gecis_hukumleri` ailesinin rubrik kontrolü **yoktur** — COMPLY bunu "denetlenmedi" diye beyan eder, uydurma kontrol eklenmez.
+6. **Çekirdek/paket sınırı ölçülüdür:** `jurisdictions/core_files.yaml` çekirdek dosyalardaki TR kirlenmesini satır sayısıyla kaydeder (en ağır: `references/14`). Fiziksel taşıma Faz 0b'dedir.
+
 ## 2. Şablonlar (`templates/`)
 
-`yonetmelik-taslagi` · `teblig-taslagi` · `karsilastirma-cetveli` (yurtiçi değişiklik) · `karsilastirma-uluslararasi` (3/6-sütun + HTA) · `comparative-law-analysis` (Mod 7, 13-bölüm) · `gorus-bildirimi` (kurum görüşü EK-1) · `genel-gerekce` · `madde-gerekce` (Md.23 tekrar-yok) · `dea-template` (DEA) · `bef-template` (BEF EK-3) · `tbmm-kanun-teklifi` (Mod 8, 9-bölüm) · `ex-post-evaluation` (Mod 9, 14-bölüm).
+`yonetmelik-taslagi` · `teblig-taslagi` · `karsilastirma-cetveli` (yurtiçi değişiklik) · `karsilastirma-uluslararasi` (3/6-sütun + HTA) · `comparative-law-analysis` (Mod 7, 13-bölüm) · `gorus-bildirimi` (kurum görüşü EK-1) · `genel-gerekce` · `madde-gerekce` (Md.23 tekrar-yok) · `dea-template` (DEA) · `bef-template` (BEF EK-3) · `tbmm-kanun-teklifi` (Mod 8, 9-bölüm) · `ex-post-evaluation` (Mod 9, 14-bölüm) · `regulatory-maturity-gbt` (Mod 10) · `transposition-table` (Mod 11) · `reliance-framework` (Mod 12). Mod 10–12 şablonları yargı bölgesinden bağımsız yazıldı; TR'ye özgü şablonlar TR paketinin `owned_files` listesindedir.
 
 ## 3. MCP filosu — tam-filo aktivasyonu (her sorguda)
 
@@ -85,7 +111,7 @@ COMPARATIVE_LAW, DRAFT/AMEND gerekçe (üst-norm), COMPLY (K-1) ve TBMM teklifi 
   - **Open Law ↔ UK (G6 DEĞİL):** UK çapraz + HUDOC. Statute birincil yolu `mcp__uk-legal__legislation_*`. **G6 CELEX wire'lı `mcp__eurlex__eurlex_lookup_celex`'tedir**. Open Law bağlı değilse / origin fail → `ep.legislation_uk`; G6'yı düşürmez. "UK statute yalnız Open Law" YASAK. german-law `get_eu_basis` CELEX üretmez — G6 yedeği değildir.
   - **Ansvar ↔ Mod 7 + yatay çerçeveler:** CH/FR/IT/NL/SE/DK/FI/AT/PL + 58-yargı tarama + GDPR/NIS2. CH **birincil metni** wire'lı `mcp__fedlex__*`'tedir (Ansvar = çerçeve-teyit; çatışmada Fedlex kazanır). Bağlı değilse o yargı satırı `manual_required` — tablodan silinmez.
 
-**Nasıl tam-filo tarama yapılır (retrieve-don't-dump ile):** getirimi **≤4 paralel shard**'a böl (§3.5) ve her shard'ı bir distiller alt-ajanına **tek görevde** ver; alt-ajanlar server'ları paralel süpürür, ham çıktıyı kendi bağlamlarında tüketir, ana bağlama yalnız kompakt `retrieval_distillate` zarfı (~15-20 bulgu, her biri identifier/url'li) + **`coverage` bloğu** (her server: hit/empty/degraded/skipped-with-reason) döner. Zarfın bağlayıcı biçimi: `schemas/retrieval_distillate.schema.json` (v1.1) — şemaya uymayan zarf kabul edilmez. Bu, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştırır: tüm araçlar ateşlenir, ana pencereye yalnız damıtılmış sonuç + kapsam kanıtı gelir. Bir server yoksa/boşsa → **veri boşluğu** olarak işaretle, doldurma; `degrade_and_label` (fetch fallback + `mcp_verified=false`).
+**Nasıl tam-filo tarama yapılır (retrieve-don't-dump ile):** getirimi **≤4 paralel shard**'a böl (§3.5) ve her shard'ı bir distiller alt-ajanına **tek görevde** ver; alt-ajanlar server'ları paralel süpürür, ham çıktıyı kendi bağlamlarında tüketir, ana bağlama yalnız kompakt `retrieval_distillate` zarfı (~15-20 bulgu, her biri identifier/url'li) + **`coverage` bloğu** (her server: hit/empty/degraded/skipped-with-reason) döner. Zarfın bağlayıcı biçimi: `schemas/retrieval_distillate.schema.json` (v1.2 — 4.0: `jurisdiction` ISO/ORG: deseni, `id_kind` += akn · ecli · urn-lex · x-<ad>) — şemaya uymayan zarf kabul edilmez. Bu, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştırır: tüm araçlar ateşlenir, ana pencereye yalnız damıtılmış sonuç + kapsam kanıtı gelir. Bir server yoksa/boşsa → **veri boşluğu** olarak işaretle, doldurma; `degrade_and_label` (fetch fallback + `mcp_verified=false`).
 
 ## 3.5. Bağlam ekonomisi ve büyük-veri (zorunlu)
 
@@ -93,13 +119,13 @@ Tam-filo, ham hâliyle onlarca büyük belge (tam kanun metni, madde ağacı, RG
 
 - **Tier 0 — Ana pencere (kıt):** yalnız talep · mod planı · G0 manifesto · damıtılmış zarflar · `evidence_ledger` · nihai metin. **Ham araç çıktısı ASLA girmez.**
 - **Tier 1 — Distiller alt-ajanları (izole):** `legal-distiller` (S1 TR-çekirdek, S3 doktrin) · `comparative-law-researcher` (S2) · `evidence-synthesizer` (S4 klinik) · `gerekce-drafter` · `compliance-auditor` — ham getirimi kendi pencerelerinde tüketir, kompakt zarf döner. Sharding, tek bir distiller'ın da taşmasını önler.
-- **Tier 2 — RAG substratı (`anamnesis`):** büyük tam-metin `ingest_document(collection='cureolex:sess:<id>', doc_id='cureolex:sess:<id>:mevzuat:…')` ile **bir kez** indekslenir → `hybrid_query(collection=…, doc_ids=[…], queries[])` ile sınırlı, provenance-damgalı **dilim** çekilir (`doc_id::idx`). **`doc_scope` yoktur.** Aynı önekli doc_id iki kez ingest edilmez (**kanonik cache**, G0–G9 aynı sess). `lib` varsayılan değil.
+- **Tier 2 — RAG substratı (`anamnesis`):** büyük tam-metin `ingest_document(collection='cureolex:sess:<id>', doc_id='cureolex:sess:<id>:mevzuat:…')` ile **bir kez** indekslenir → `hybrid_query(collection=…, doc_ids=[…], queries[])` ile sınırlı, provenance-damgalı **dilim** çekilir (`doc_id::idx`). **`doc_scope` yoktur.** Aynı önekli doc_id iki kez ingest edilmez (**kanonik cache**, G0–G11 aynı sess). `lib` varsayılan değil.
 
 **Büyük belge disiplini:** kör getirme yok — önce yapısal navigasyon (`get_mevzuat_madde_tree`/`timeline`/`relations`) ile hedefi lokalize et → yalnız hedef chunk'ı çek (`madde_acikla` / `get_mevzuat_text` `chunk_index`/`start_page`-`end_page`/`max_chars` / `download_mevzuat_document(include_base64=false)`) → tam-metin gerekiyorsa anamnesis'e ingest. **Devre-kesici:** tek çıktı >6KB → PostToolUse hook uyarır, ham işleme; distiller/anamnesis'e yönlen. **Extract-then-evict:** her faz sonu ara getirimleri `evidence_ledger`'a çök, ham izi at. anamnesis anahtarı yoksa → bounded-chunk fallback'e degrade, manifestoda beyan et — asla ham döküm.
 
-## 4. Kalite kapıları (G0-G9)
+## 4. Kalite kapıları (G0-G11)
 
-Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır. Kriterler `references/06b-compliance-executable-rubric.md` ve `references/09` içindedir.
+Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır; **G10 ve G11 (4.0) her modda** çalışır. Kriterler `references/06b-compliance-executable-rubric.md` ve `references/09` içindedir. **Parametreler paketten gelir:** G1 legistik profili, G2 norm hiyerarşisi ve anayasal denetim merciileri, G3/G4 dil profili, G5 mahkeme listesi, G8 parlamento usulü, G10 belirli-tarih araçları, G11 ev bölgesi konumu — aktif paketin `gate_params` alanında. Aşağıdaki tablo TR paketinin değerleriyle yazılmıştır.
 
 | Kapı | Ad | PASS kriteri |
 |---|---|---|
@@ -113,12 +139,14 @@ Her mod **G0-G7'den geçer**; G8/G9 moda bağlıdır. Kriterler `references/06b-
 | **G7** | Epistemik dürüstlük | Uydurma kanun/CELEX/AYM/Yargıtay/YÖK-Tez yok; her atıf MCP- veya primer-kaynak-doğrulanmış. **YÖK-Tez atıfları wire'lı `mcp__yoktez__get_yok_tez_thesis_details` ile doğrulanır** (tez no/başlık/yazar) — companion'a bağlı değil, **hard PASS** (v3.5.0). Doğrulanamayan tez atfı `illustrative_placeholder_not_verified` → KULLANILMAZ |
 | **G8** | TBMM kapsam (Mod 8) | 5210 Md.1/3 kapsam-dışı notu; İçtüzük Md.74-91 primer; 9-bölüm iskelet tam; `tbmm_get_kanun_teklifi(sira_no)` veya dürüst `manual_required`; DSpace zabıt ≠ canlı tutanak |
 | **G9** | Ex-post kapsam (Mod 9) | 5 OECD kriteri hükme bağlanmış; ex-ante↔ex-post tablo; K-1/2/3 kararı; 14-bölüm iskelet |
+| **G10** | Güncellik / belirli-tarihte yürürlük (4.0) | Dayanak yapılan her norm referans tarihinde **yürürlükte** (defter: `as_of_date` + `in_force_status`); `repealed` hüküm yürürlükteki dayanak olarak kullanılmamış. TR: `get_onceki_metinler` + `get_mevzuat_timeline` + `get_mevzuat_relations`/`search_mulga_mevzuat` + RG çözümü. Paket `has_point_in_time: false` ise en fazla **CONDITIONAL** (CC-2) |
+| **G11** | Yargı bölgesi tutarlılığı (4.0) | Defter `home_jurisdiction` taşır; farklı bölgeden gelen her kanıt `jurisdiction` + `jurisdiction_role` (binding · transposition_source · comparative_benchmark · persuasive · treaty_obligation) beyan eder. **Yabancı norm `binding` olamaz** (istisna: paket AB üyeliğini beyan ediyorsa AB normu). Alt birim normu üst birim normu gibi sunulmaz; paketin dil/legistik profili başka bölgenin çıktısına uygulanmaz. Statik denetim: `tests/validate_packs.py::g11_ihlalleri` |
 
 **G-Reverse:** evidentia sidecar `reverse_signals` doluysa Executive Summary'de görünür kılınmalı. **R6b eşikleri (Mod 4):** tümü PASS/N-A & CONDITIONAL≤3, FAIL=0 → YAYINA HAZIR; 1 yüksek-risk FAIL → düzeltme zorunlu; FAIL≥2 → kapsamlı revizyon; FAIL≥5 veya K-1/K-17 FAIL → tasarımı yeniden gözden geçir. K-1 (üst-norm) önce test edilir; FAIL ise dur.
 
 ## 5. Zorunlu delegasyon — evidentia + sci-audit (bağlam-tetiklemeli)
 
-Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki plugin **kuruluysa çağrılmaları opsiyonel DEĞİL, zorunludur** — bağlam tetiklendiğinde atlanmaları **G0 ihlalidir**. Degrade yalnız plugin'in gerçekten kurulu olmadığı durumda meşrudur ("veri boşluğu" işaretiyle, asla uydurmadan) ve manifestoda beyan edilir; SessionStart preflight kurulum durumunu oturum başında işaretler. Tam sözleşme: `shared/composition-contract.md`.
+Bu plugin **bağımsızdır** (ikisi de yokken 12 mod çalışır); ancak bu iki plugin **kuruluysa çağrılmaları opsiyonel DEĞİL, zorunludur** — bağlam tetiklendiğinde atlanmaları **G0 ihlalidir**. Degrade yalnız plugin'in gerçekten kurulu olmadığı durumda meşrudur ("veri boşluğu" işaretiyle, asla uydurmadan) ve manifestoda beyan edilir; SessionStart preflight kurulum durumunu oturum başında işaretler. Tam sözleşme: `shared/composition-contract.md`.
 
 - **Klinik kanıt → evidentia (her klinik-boyutlu sorguda).** Konu ilaç/cihaz/hastalık/tedavi/klinik-çalışma/geri-ödeme içeriyorsa **daima** devrede (DRAFT/ANALYZE/OPINE/RIA/COMPARATIVE/TBMM/EX_POST zorunlu; AMEND/COMPLY koşullu — ama sağlık mevzuatında klinik-boyut ≈ daima vardır). Klinik-sıfır saf idari norm → atla + manifestoda beyan et. **Zenginleştirilmiş sorgu** kur (ham değil): `main_query` (İngilizce) + `explicit_layer_request` + `cureolex_legal_context` (TR referanslar + Anayasa + antlaşmalar) + `requested_sections_priority` + `citation_format:Vancouver` + `epistemic_dual_label:true`. `/evidentia` komutuna veya `evidence-synthesizer` alt-ajanına delege et; dönen sidecar'da **önce `reverse_signals`** oku. Aktarılan her TR referansı `mcp__mevzuat__*`/`mcp__Yarg__*` ile çapraz-doğrula. Kaynakça **asla karıştırma**: 8.1 Türk+uluslararası mevzuat / 8.2 bilimsel (Vancouver) / 8.3 Türk içtihat.
 - **Güvenilirlik + dil → sci-audit (her çıktıda).** Üretilen metnin atıflarını `/verify-citations`, istatistik/nicel iddialarını `/check-stats`, halüsinasyon sinyallerini ve Türkçe yazımı `/check-turkish` ile **her çıktıda** denetlet (bu, tam-filo ilkesinin çıktı-QA ayağıdır). sci-audit ekseni bilimsel-yazım odaklıdır; **hukuk dili G3/R9'da cureolex'a aittir** — sci-audit'i tamamlayıcı imla/tutarlılık/atıf-bütünlüğü katmanı olarak kullan, hukuk-dili otoritesi olarak değil.
@@ -127,7 +155,7 @@ Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki 
 
 ## 6. Scope Guard — kapsam sınırı
 
-**Bağlam karar verir, terim değil.** KAPSAM İÇİ = mevzuat *reformu* (9 mod). YÖNLENDİR:
+**Bağlam karar verir, terim değil.** KAPSAM İÇİ = mevzuat *reformu* (12 mod). YÖNLENDİR:
 
 | Konu | Yönlendir |
 |---|---|
@@ -141,7 +169,7 @@ Bu plugin **bağımsızdır** (ikisi de yokken 9 mod çalışır); ancak bu iki 
 - **Kapsam manifestosu (G0, zorunlu — çıktı başında veya sonunda):** tam-filonun kanıtı. Her wire'lı MCP + bağlı companion + evidentia + sci-audit için tek satır: `server → durum (hit N kayıt / empty / degraded / skipped: <gerekçe>)`. Bu blok, "hepsi her sorguda çalıştı" iddiasının doğrulanabilir kanıtıdır; eksik satır = G0 FAIL. Örnek biçim `shared/coverage-manifest.md`'de.
 - **No-fabrication (G7):** kanun maddesi, CELEX, AYM/Yargıtay/YÖK-Tez, PMID, NCT, NICE-TA, FDA-Guidance başlığı **asla uydurma**. Her referans MCP- veya primer-kaynak-doğrulanmış (YÖK-Tez atıfları **wire'lı `mcp__yoktez__*`** ile — tez no/başlık/yazar — doğrulanır; bu artık companion'a bağlı değildir). Doğrulanamayan → `illustrative_placeholder_not_verified` etiketle, kullanma. Doğrulanamayan referans varsa → **"MCP üzerinden doğrulanamayan referans"** notu.
 - **evidence_ledger:** her somut bilimsel/hukuki iddia → bir `E###` kaydı (kaynak, GRADE, `mcp_verified` bayrağı, desteklenen bölümler, Vancouver atıf). `status=verified` yalnız `mcp_verified=true` ise. Şema: `schemas/evidence_ledger.schema.json`. Kanıt işaretleri `[E1]/[E2]…` sıralı.
-- **confidence_label (zorunlu, çıktı sonu):** mod + `combined_confidence` (HIGH/MODERATE/LOW) + `human_review_required:true` + çift öz-beyan (cureolex MCP-erişilemezliği & belirsiz yorumlar; evidentia bilgi-boşlukları & tek-kaynak bulgular) + `scope_disclaimer`. Şema: `schemas/confidence_label.schema.json`.
+- **confidence_label (zorunlu, çıktı sonu):** mod + `jurisdiction_pack` (kod · sürüm · durum) + `confidence_ceiling` (tavan + uygulanan CC kuralları) + `combined_confidence` (HIGH/MODERATE/LOW — tavanı aşamaz) + `human_review_required:true` + çift öz-beyan (cureolex MCP-erişilemezliği & belirsiz yorumlar; evidentia bilgi-boşlukları & tek-kaynak bulgular) + `scope_disclaimer`. Şema: `schemas/confidence_label.schema.json`.
 - **Temiz-kopya doktrini:** nihai metin, süreç gürültüsünden (araç çağrıları, ham getirim) arınmış olmalı.
 
 ## 8. Referans haritası (`references/`)

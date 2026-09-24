@@ -1,6 +1,6 @@
 # Cureolex — Kompozisyon Sözleşmesi (evidentia + sci-audit + companion connector'lar — bağlam-tetiklemeli ZORUNLU entegrasyon)
 
-Cureolex **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 modu çalıştırır. Ancak **kurulu/bağlı olan** komşu plugin ve companion connector'lar için entegrasyon **opsiyonel değildir**: bağlam tetiklendiğinde çağrılmaları **zorunludur**; atlanmaları **G0 ihlalidir**. "Yumuşak" olan tek şey *yokluk hâlidir* — plugin/connector gerçekten kurulu/bağlı değilse zarifçe degrade edilir, bu kapsam manifestosunda (G0) gerekçesiyle beyan edilir ve ilgili kalite kapısı CONDITIONAL'a düşer. Hiçbir degrade uydurmaya yol açmaz. (Plugin'ler ayrı marketplace girişi olarak kalır.)
+Cureolex **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 12 modu çalıştırır. Ancak **kurulu/bağlı olan** komşu plugin ve companion connector'lar için entegrasyon **opsiyonel değildir**: bağlam tetiklendiğinde çağrılmaları **zorunludur**; atlanmaları **G0 ihlalidir**. "Yumuşak" olan tek şey *yokluk hâlidir* — plugin/connector gerçekten kurulu/bağlı değilse zarifçe degrade edilir, bu kapsam manifestosunda (G0) gerekçesiyle beyan edilir ve ilgili kalite kapısı CONDITIONAL'a düşer. Hiçbir degrade uydurmaya yol açmaz. (Plugin'ler ayrı marketplace girişi olarak kalır.)
 
 **Karar kuralı (her sorguda):** (1) SessionStart preflight'ın kurulum/bağlantı işaretlerini oku → (2) bağlam tetikleyicisini değerlendir (aşağıdaki matrisler) → (3) tetiklenen HER kurulu/bağlı katmanı çağır → (4) manifestoya satırını yaz. "Çağırmasam da olur" diye bir durum yoktur; yalnız "tetiklenmedi (gerekçe)" veya "kurulu/bağlı değil" vardır.
 
@@ -22,13 +22,20 @@ Cureolex **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 9 modu 
      "cureolex_legal_context": {
        "turkish_refs": ["<mevzuat/TİTCK referansları>"],
        "anayasa": ["Md.17", "Md.56", "Md.90/5"],
-       "treaties": ["ICESCR Md.12", "Oviedo CETS 164"]
+       "treaties": ["ICESCR Md.12", "Oviedo CETS 164"],
+       "jurisdiction": "<aktif paket kodu — TR, GB, DE-BY …>",
+       "jurisdiction_pack_status": "<active | draft>",
+       "hta_bodies": ["<paketin institutions.hta listesi — ad + url>"],
+       "payers": ["<paketin institutions.payer listesi>"],
+       "regulators": ["<paketin institutions.regulator listesi>"]
      },
      "requested_sections_priority": {"MANDATORY": ["..."], "RECOMMENDED": ["..."], "OPTIONAL": ["..."]},
      "citation_format": "Vancouver",
      "epistemic_dual_label": true
    }
    ```
+   **4.0 — HTA/maliyet bağlamı paketten aktarılır.** `hta_bodies` / `payers` / `regulators` alanları aktif paketin `institutions` bölümünden **olduğu gibi** kopyalanır; cureolex kurum uydurmaz, evidentia da bu listenin dışındaki bir HTA kurumunun kararını "ev bölgesi kararı" diye sunmaz. Paketin `hta` listesi **boşsa** (TR paketinde bugün böyledir — resmî bir HTA kurumu listelenmedi) alan boş gönderilir ve evidentia HTA bölümünü "ev bölgesinde tanımlı HTA kurumu yok — yabancı HTA kararları yalnız karşılaştırmalı emsaldir" notuyla üretir.
+   **Karşılaştırmalı bağlam-uygunluk kontrolü (4.0):** yabancı bir HTA kararı veya maliyet-etkinlik eşiği ev bölgesine aktarılırken en az şu dört fark beyan edilir: (i) ödeme modeli (tek ödeyici / çoklu sigortacı / cepten), (ii) eşik ve para birimi (ör. QALY başına eşik — yalnız kaynağın yayımladığı değer), (iii) karşılaştırıcı tedavinin ev bölgesinde ruhsatlı/geri ödemeli olup olmadığı, (iv) epidemiyoloji/hasta popülasyonu farkı. Beyan edilmeyen aktarım G11 ihlalidir (yabancı karar ev bölgesi dayanağı gibi sunulmuş olur) ve kanıt defterinde `jurisdiction_role: comparative_benchmark` zorunludur.
 3. Dönen **sidecar**'da **önce `reverse_signals`** oku (uncertainty_flags → dipnot; out_of_scope_flags → skill öner; retry_triggers → yeniden çağır; alternative_interpretations → executive summary; confidence_breakdown → çift-dürüstlük raporu).
 4. Aktarılan **her TR referansı** `mcp__mevzuat__*` / `mcp__Yarg__*` ile **çapraz-doğrula** (evidentia sidecar `mcp_verified` bayrağı ana otorite değil — cureolex kendi doğrulamasını yapar).
 5. Çıktıda evidentia bulgularını `[medical-research, §X.Y, tarih]` etiketiyle işaretle.
@@ -77,10 +84,10 @@ Bu üçü claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da 
 | yalnız evidentia kurulu | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |
 | yalnız sci-audit kurulu | Dil-QA tam, klinik `unverified` uyarısı | `evidentia → skipped: plugin kurulu değil` |
 | companion bağlı değil | İlgili kapı CONDITIONAL / satır `manual_required`-degrade + kullanıcıya bağlama önerisi | `Yarg/Open_Law/Ansvar → skipped: companion bağlı değil ⇒ <kapı/satır etkisi>` |
-| ikisi de yok, companion'lar yok | cureolex tek başına (9 mod çalışır; G5 CONDITIONAL; G6 `eurlex`'e bağlı) | tümü `skipped` + gerekçe |
+| ikisi de yok, companion'lar yok | cureolex tek başına (12 mod çalışır; G5 CONDITIONAL; G6 `eurlex`'e bağlı) | tümü `skipped` + gerekçe |
 
 **Değişmez:** hiçbir degrade durumu **uydurmaya** yol açmaz. Eksik katman = dürüst `unverified`/`skipped` beyanı, asla fabrikasyon. `skipped` yalnız (a) gerçek yokluk, (b) gerekçeli bağlam-dışılık ile meşrudur — kurulu/bağlı bir katmanın tetiklenmiş bağlamda atlanması her zaman ihlaldir. İnsan denetimi her hâlde zorunludur.
 
 ## 5. Paylaşılan büyük-veri substratı (anamnesis)
 
-cureolex ve evidentia **aynı `anamnesis` Worker'ını** paylaşır ama **çalışma setleri ayrıdır** (bkz. `context-economy-contract.md` Tier 2). İzolasyon `collection="{plugin}:{kind}:{id}"` + önekli `doc_id`'dir — **`doc_scope` yoktur** (filtresiz `hybrid_query` global contamination). cureolex scratch: `cureolex:sess:<12hex>` (G0–G9 aynı sess, kanonik cache). İnsan-okunur kuyruk korunur (`mevzuat:`/`celex:`/`ecli:`/`rg:`). Ledger `.claude/anamnesis-cureolex.json` — Evidentia ledger'ına yazılmaz. `lib` varsayılan değil. İki plugin aynı ham id'ye query **atmaz**. anamnesis anahtarı yoksa bounded-chunk fallback.
+cureolex ve evidentia **aynı `anamnesis` Worker'ını** paylaşır ama **çalışma setleri ayrıdır** (bkz. `context-economy-contract.md` Tier 2). İzolasyon `collection="{plugin}:{kind}:{id}"` + önekli `doc_id`'dir — **`doc_scope` yoktur** (filtresiz `hybrid_query` global contamination). cureolex scratch: `cureolex:sess:<12hex>` (G0–G11 aynı sess, kanonik cache). İnsan-okunur kuyruk korunur (`mevzuat:`/`celex:`/`ecli:`/`rg:`). Ledger `.claude/anamnesis-cureolex.json` — Evidentia ledger'ına yazılmaz. `lib` varsayılan değil. İki plugin aynı ham id'ye query **atmaz**. anamnesis anahtarı yoksa bounded-chunk fallback.

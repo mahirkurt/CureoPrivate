@@ -1,0 +1,125 @@
+# Almanya (federal düzey) — Faz 1 TASLAK paket.
+#
+# `status: draft` — uzman paneli yok; CC-6 gereği çıktı en fazla LOW.
+# Kapsam: FEDERAL hukuk (Bund). Eyalet (Land) hukuku ISO 3166-2 alt-paketleri gerektirir
+# (DE-BY, DE-NW …) — bu sürümde yok.
+#
+# DİKKAT — ölçüm sınırı: gesetze-im-internet.de 2026-09-24'te bu makineden ERİŞİLEMEDİ
+# (bağlantı zaman aşımı). Aşağıdaki bayraklar wire'lı german-law korpusunun fleet.yaml'daki
+# ölçümlerine dayanır; kaynağın kendisine karşı bu oturumda yeniden ölçülmedi.
+
+pack_version: "0.1.0"
+
+jurisdiction:
+  code: DE
+  name: Almanya (Bundesrepublik Deutschland)
+  kind: national
+
+status: draft
+
+legal_family:
+  primary: civil_law
+  federal: true
+  notes: >-
+    Federal devlet. GG Md.31: federal hukuk eyalet hukukunu bozar. Sağlıkta yetki
+    paylaşımlıdır (GG Md.74/1 no.19, 19a — rekabet eden yasama). Kanun yapımında
+    Bundesrat'ın onay/itiraz rolü norm türüne göre değişir.
+
+languages:
+  - { code: de, authentic: true }
+
+norm_hierarchy:
+  - { rank: 1, name: "Grundgesetz (GG)", instrument_types: [constitutional] }
+  - { rank: 2, name: "Bundesgesetz", instrument_types: [statute] }
+  - { rank: 3, name: "Rechtsverordnung", instrument_types: [regulation],
+      note: "GG Md.80/1: yetki veren kanun içerik, amaç ve kapsamı belirlemelidir (belirlilik)." }
+  - { rank: 4, name: "Satzung / Verwaltungsvorschrift", instrument_types: [regulation, guidance],
+      note: "G-BA Richtlinien'in bağlayıcılığı özel bir kategoridir — doğrulanmadı." }
+
+connectors:
+  - role: primary_legislation
+    server: german-law
+    tier: A
+    status: wired
+    contract_capabilities: [search]
+    note: "Ücretsiz korpus (6.870 kanun / 91.843 hüküm, data_age 2026-02-14). Çözücü tuzağı: get_provision yalnız {id:'amg_1976:21'} biçimiyle çalışır; {law,article} sessiz null döner."
+  - role: case_law
+    server: Open Law
+    tier: A
+    status: companion
+    contract_capabilities: [case_law_search]
+    note: "search_de_caselaw — companion; german-law search_case_law premium-kapalı."
+  - role: treaty
+    server: eurlex
+    tier: A
+    status: wired
+    contract_capabilities: [search, repeal_relations]
+    note: "DE AB üyesidir: AB tüzüğü doğrudan uygulanır, direktif ulusal uygulama ister (german-law get_german_implementations)."
+
+capabilities:
+  has_consolidated_text:
+    value: true
+    basis: "german-law get_provision — konsolide korpus anlık görüntüsü (data_age 2026-02-14; fleet.yaml 2026-08-08 ölçümü). Güncellik sınırı: korpus tarihinden sonraki değişiklik görünmez."
+  has_point_in_time:
+    value: false
+    basis: "german-law get_provision_history + diff_provision premium-kapalı (premium:false, ölçüldü 2026-08-08). Filoda başka tarihsel sürüm yolu yok. G10 en fazla CONDITIONAL."
+  has_explanatory_memoranda:
+    value: false
+    basis: "Begründung Bundestag Drucksache'de yayımlanır ama filoda getirim yolu yok: german-law get_preparatory_works upgradeRequired (ölçüldü 2026-08-08); DIP bağlayıcısı wire'lı değil."
+  has_case_law_api:
+    value: true
+    basis: "Open Law companion search_de_caselaw — wire'lı DEĞİL; companion bağlı değilse G5 CONDITIONAL. Bu oturumda ölçülmedi."
+  has_authentic_translation:
+    value: false
+    basis: "Almanca tek geçerli dil; BMJ'nin İngilizce çevirileri resmî olmayan çevirilerdir."
+
+legistic_profile:
+  id: de-hdr-ggo
+  name: "Handbuch der Rechtsförmlichkeit (BMJ) + Gemeinsame Geschäftsordnung der Bundesministerien (GGO)"
+  source: "bu oturumda içeriği birincil kaynaktan doğrulanmadı"
+  verified: false
+  families:
+    ust_norm:                          { anchor: "UNVERIFIED" }
+    yetki_ve_devredilmis_yasama:       { anchor: "UNVERIFIED", note: "GG Md.80/1 belirlilik şartı norm hiyerarşisinde not edildi; kılavuz karşılığı doğrulanmadı." }
+    gerekce:                           { anchor: "UNVERIFIED" }
+    etki_analizi:                      { anchor: "UNVERIFIED", note: "Erfüllungsaufwand / Normenkontrollrat — doğrulanmadı." }
+    atif_teknigi:                      { anchor: "UNVERIFIED" }
+    gecis_hukumleri:                   { anchor: "UNVERIFIED" }
+    yururluk_ve_ilga:                  { anchor: "UNVERIFIED" }
+    dil:                               { anchor: "UNVERIFIED" }
+    yapi_ve_kapsam:                    { anchor: "UNVERIFIED", note: "Mantelgesetz / Artikelgesetz tekniği — doğrulanmadı." }
+    ulusustu_ve_karsilastirmali_uyum:  { anchor: "UNVERIFIED" }
+
+language_profile:
+  reference: "UNVERIFIED — Alman kanun dili profili yazılmadı"
+  verified: false
+
+institutions:
+  regulator:
+    - { name: "Bundesinstitut für Arzneimittel und Medizinprodukte (BfArM)", url: "https://www.bfarm.de/" }
+    - { name: "Paul-Ehrlich-Institut (PEI)", url: "https://www.pei.de/", note: "Aşı ve biyolojik ürünler." }
+  payer:
+    - { name: "GKV-Spitzenverband", url: "https://www.gkv-spitzenverband.de/" }
+  hta:
+    - { name: "Gemeinsamer Bundesausschuss (G-BA)", url: "https://www.g-ba.de/", note: "Karar organı (AMNOG ek fayda kararı)." }
+    - { name: "Institut für Qualität und Wirtschaftlichkeit im Gesundheitswesen (IQWiG)", url: "https://www.iqwig.de/", note: "Bilimsel değerlendirme; karar G-BA'nındır." }
+  legislature:
+    - { name: "Deutscher Bundestag", url: "https://www.bundestag.de/" }
+    - { name: "Bundesrat", url: "https://www.bundesrat.de/" }
+  constitutional_review:
+    - { name: "Bundesverfassungsgericht (BVerfG)", url: "https://www.bundesverfassungsgericht.de/" }
+
+gate_params:
+  G2: { constitution: "Grundgesetz", note: "Rechtsverordnung için GG Md.80/1 belirlilik ölçütü." }
+  G5: { courts: ["BVerfG", "BSG (sosyal güvenlik)", "BVerwG", "BGH", "EuGH"], companion: "Open Law" }
+  G11: { home_jurisdiction: DE, eu_member: true,
+         transposition_note: "AB üyesi: AB tüzüğü DE'de binding; direktif ulusal uygulama kanunu üzerinden binding — direktifin kendisi transposition_source rolündedir.",
+         subnational_note: "Land hukuku (DE-BY …) federal hukuk gibi sunulamaz." }
+
+publication:
+  s1_connector_required: true
+  expert_panel:
+    status: not_started
+    note: "Alman kanun yapım uzmanı (BMJ Rechtsförmlichkeitsprüfung deneyimli) paneli gerekir."
+    inter_rater_agreement: null
+  local_legal_partner: null

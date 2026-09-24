@@ -1,0 +1,57 @@
+# Ulusal mevzuat bağlayıcıları için ORTAK SÖZLEŞME (planın 3. önerisi).
+#
+# Türk mevzuat MCP'si fiilen bir sözleşme tanımlıyordu; burada soyutlanır. Her ülke bu
+# arayüzü bir ADAPTÖRLE uygular. Bir paketin `connectors[].contract_capabilities` alanı
+# yalnız aşağıdaki yetenek adlarını kullanabilir (şema enum'u ile aynı küme).
+#
+# TR eşlemesi, bu oturumda görünen CANLI araç listesinden çıkarıldı (mcp__mevzuat__*,
+# 23 araç — planın "19 araç" sayısı güncel değil). Araç adı için tek doğruluk kaynağı
+# canlı `tools/list`'tir.
+
+capabilities:
+  search:
+    semantics: Anahtar kelime / numara / tür ile norm bulma.
+    required_for_active_pack: true
+  point_in_time_text:
+    semantics: Bir normun VERİLEN TARİHTE yürürlükte olan metni (G10'un dayanağı).
+  timeline:
+    semantics: Normun değişiklik geçmişi — hangi tarihte hangi işlemle değişti.
+  repeal_relations:
+    semantics: Değiştiren/değiştirilen, kaldıran/kaldırılan ilişkileri (ilga zinciri).
+  article_tree:
+    semantics: Madde/fıkra/bent yapısal ağacı ve madde düzeyinde fark.
+  gazette_resolve:
+    semantics: Resmî gazete tarih/sayı çözümlemesi (uydurma gazete sayısını yakalar).
+  explanatory_memorandum:
+    semantics: Gerekçe / açıklayıcı not / explanatory memorandum.
+  case_law_search:
+    semantics: Mahkeme kararı arama (içtihat zinciri, G5).
+  legislative_history:
+    semantics: Teklif → komisyon → genel kurul yasama süreci.
+
+# Olgunluk düzeyleri — KAYNAĞIN yayımladığı biçime göre, bağlayıcının kalitesine göre DEĞİL.
+tiers:
+  A: { meaning: "API, ELI veya Akoma Ntoso (AKN) sunan kaynak", example: "EUR-Lex (ELI + SPARQL), legislation.gov.uk (/data.akn)" }
+  B: { meaning: "Yalnız HTML portalı; programatik uç yok veya doğrulanamadı",
+       registry_equivalent: "source_registry.yaml'daki tarihsel 'D-class (web_primary)' işareti bu düzeye denktir" }
+  C: { meaning: "Yalnız PDF resmî gazete — OCR + anamnesis işleme hattı gerekir" }
+
+# Uygunluk testi — her adaptör yayım öncesi bunlardan geçer (planın 3. önerisi).
+conformance:
+  - live_probe: "Canlı `tools/list` + bir altın sorgu; boş sonuç ≠ başarı"
+  - golden_queries: "Paketin golden_cases dosyasındaki `connector_conformance` vakaları"
+  - honest_degrade: "Upstream düşükse `manual_required` döner — asla sessiz boş liste"
+
+reference_mappings:
+  TR:
+    server: mevzuat
+    search:                 [search_mevzuat, search_kanun, search_mevzuat_fihristi, search, build_mevzuat_semantic_context]
+    point_in_time_text:     [get_onceki_metinler, get_mevzuat_text]
+    timeline:               [get_mevzuat_timeline]
+    repeal_relations:       [get_mevzuat_relations, search_mulga_mevzuat]
+    article_tree:           [get_mevzuat_madde_tree, get_mevzuat_madde_diff]
+    gazette_resolve:        [resolve_resmi_gazete]
+    explanatory_memorandum: [get_mevzuat_gerekce]
+    other:                  [get_anayasa, get_mevzuat_content, get_mevzuat_detail, search_within_mevzuat,
+                             list_mevzuat_types, list_mevzuat_by_type, list_kurumlar,
+                             download_mevzuat_document, fetch]

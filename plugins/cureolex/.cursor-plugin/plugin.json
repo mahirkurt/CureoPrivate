@@ -1,8 +1,8 @@
 {
   "name": "cureolex",
   "displayName": "Cureolex",
-  "version": "3.9.0",
-  "description": "Türkiye sağlık mevzuatı reform protokolü — 9 mod (DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI · EX_POST_EVALUATION), 22 wire'lı hukuk/regülasyon MCP + 3 companion, G0-G9 kapı ve no-fabrication.",
+  "version": "4.0.0",
+  "description": "Türkiye sağlık mevzuatı reform protokolü — 12 mod (DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI/PARLIAMENTARY_BILL · EX_POST_EVALUATION · REGULATORY_MATURITY · TRANSPOSITION · RELIANCE_FRAMEWORK), yargı bölgesi paketleri (TR aktif; GB/DE/CH taslak), 21 wire'lı hukuk/regülasyon MCP + 3 companion, G0-G11 kapı ve no-fabrication.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"

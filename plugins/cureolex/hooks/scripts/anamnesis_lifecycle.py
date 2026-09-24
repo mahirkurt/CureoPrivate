@@ -3,11 +3,11 @@
 
 Events:
   SessionStart  startup|clear  → forget leftover (crash residue), mint new sess
-  SessionStart  resume|compact → keep sess (G0–G9 canonical cache)
+  SessionStart  resume|compact → keep sess (G0–G11 canonical cache)
   UserPromptSubmit /lex-*      → keep sess, re-inject collection (no remint)
   SessionEnd                   → forget this sess collection
 
-Does NOT forget on Stop: G0–G9 gates and human review end a turn, not the
+Does NOT forget on Stop: G0–G11 gates and human review end a turn, not the
 legal-research thread. Mid-pipeline wipe would drop the canonical cache.
 
 Cleanup: forget_collection if the Worker has it, else N× forget_document from
@@ -63,7 +63,7 @@ def main() -> int:
             emit("UserPromptSubmit", context_message(led))
             return 0
 
-        # Compact/resume MUST keep the working set (G0–G9 live across compact).
+        # Compact/resume MUST keep the working set (G0–G11 live across compact).
         # Missing `source` is treated as keep — wiping on an unidentified
         # SessionStart would drop the canonical cache.
         if src in {"startup", "clear"}:

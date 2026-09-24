@@ -1,5 +1,5 @@
 {
-  "description": "edupedia 1.0.0 ince istemci — tek fail-open hook: SessionStart preflight tedy orkestratörünü (mcp.tedy.online) 24 saat önbellekli yoklar ve orkestratör akış kurallarını enjekte eder. Kimliksiz 401 sağlıklıdır (interaktif OAuth). Modül derleme, kalite kapıları ve yayın sunucudadır; bloklayan hook yoktur.",
+  "description": "edupedia 1.1.0 ince istemci — tek fail-open hook: SessionStart preflight tedy orkestratörünü (mcp.tedy.online) 24 saat önbellekli yoklar ve orkestratör akış kurallarını enjekte eder. Kimliksiz 401 sağlıklıdır (interaktif OAuth). Modül derleme, kalite kapıları ve yayın sunucudadır; bloklayan hook yoktur.",
   "hooks": {
     "SessionStart": [
       {

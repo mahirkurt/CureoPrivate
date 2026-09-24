@@ -1,4 +1,4 @@
-# edupedia 1.0.0 — Kurulum
+# edupedia 1.1.0 — Kurulum
 
 Her yüzey aynı başlangıç talimatını (`surfaces/bootstrap.md`'den üretilir) ve aynı `tedy` bağlayıcısını kullanır: `https://mcp.tedy.online/mcp`. Bağlanabilen hesaplar TEDY aile listesindeki tam yetkili Google hesaplarıdır. OAuth sırasında Google girişinden sonra açılan onay sayfası istemci adını ve tam geri-çağırma adresini gösterir; adres [`CONNECTORS.md`](CONNECTORS.md)'deki beklenen adresle aynıysa "Onayla", değilse "Reddet".
 

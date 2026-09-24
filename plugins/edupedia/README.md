@@ -1,6 +1,12 @@
 # edupedia
 
-**TEDY edupedia ince istemcisi (1.0.0).** Türkiye Yüzyılı Maarif Modeli'ne hizalı, etkileşimli, tek dosyalık öğrenim modüllerini `tedy` MCP orkestratörüyle (https://mcp.tedy.online/mcp) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. Derin rehber, derleyici, kapılar ve katalog TED deposundaki `ted-mcp`'dedir.
+**TEDY edupedia ince istemcisi (1.1.0).** Türkiye Yüzyılı Maarif Modeli'ne hizalı, etkileşimli, tek dosyalık öğrenim modüllerini `tedy` MCP orkestratörüyle (https://mcp.tedy.online/mcp) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. Derin rehber, derleyici, kapılar ve katalog TED deposundaki `ted-mcp`'dedir.
+
+## 1.1.0 — Tedy tasarım dili
+
+- Modüller tedy.online panosuyla aynı tasarım dilinde derlenir: Carbon g10 (varsayılan) ve g100, lacivert Tedy bandı ve Tedy işareti, cool-gray sayfa zemini; pano temayı modüle kendisi bildirir. Görünüm tamamen orkestratördedir.
+- Başlangıç talimatına kural 4 eklendi: MODULE_DATA'ya renk, tema, CSS ya da `meta.accent` yazılmaz; ders aksanı konudan türetilir, kırmızı aciliyete ayrılmıştır. Orkestratör izinsiz aksanı şema hatasıyla reddeder.
+- Yüzey paketleri (`surfaces/`) ve SessionStart akış kuralları bu kuralla yeniden üretildi.
 
 ## 1.0.0 — kırıcı değişiklik
 

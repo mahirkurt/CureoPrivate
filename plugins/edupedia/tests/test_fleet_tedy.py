@@ -36,4 +36,4 @@ def test_version_chain_is_one_point_zero():
         "lock": _json("fleet.lock.json")["plugin_version"],
         "marketplace": next(p["version"] for p in marketplace["plugins"] if p["name"] == "edupedia"),
     }
-    assert set(versions.values()) == {"1.0.0"}, versions
+    assert set(versions.values()) == {"1.1.0"}, versions

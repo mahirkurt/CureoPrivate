@@ -1,7 +1,7 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "edupedia",
-  "plugin_version": "1.0.0",
+  "plugin_version": "1.1.0",
   "counts": {
     "servers": 3,
     "gated": 2,

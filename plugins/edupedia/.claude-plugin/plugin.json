@@ -1,8 +1,8 @@
 {
   "name": "edupedia",
   "displayName": "Edupedia",
-  "version": "1.0.0",
-  "description": "TEDY edupedia ince istemcisi (1.0.0) — Türkiye Yüzyılı Maarif Modeli'ne hizalı, WCAG 2.1 AA, IBM Carbon v11 tabanlı etkileşimli öğrenim modüllerini tedy MCP orkestratörüyle (mcp.tedy.online; interaktif OAuth, yalnız TEDY aile listesi) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. start + edupedia skill'leri, beş komut (/edupedia:modul, /edupedia:mufredat, /edupedia:kazanim-bul, /edupedia:soru, /edupedia:durum) ve tedy-yalnız SessionStart preflight. maarif-mufredat ve egitim-kaynak isteğe bağlı doğrudan bağlayıcılar. claude.ai, Codex, Grok ve Gemini Spark paketleri surfaces/ altında tek başlangıç talimatından türetilir. Kırıcı: yerel HTML teslimi, yerel doğrulayıcı ve denetçi alt-ajan kaldırıldı. Kapsam yalnız Türkiye MEB.",
+  "version": "1.1.0",
+  "description": "TEDY edupedia ince istemcisi (1.1.0) — Türkiye Yüzyılı Maarif Modeli'ne hizalı, WCAG 2.1 AA, Tedy tasarım dilinde (IBM Carbon v11) etkileşimli öğrenim modüllerini tedy MCP orkestratörüyle (mcp.tedy.online; interaktif OAuth, yalnız TEDY aile listesi) üretir; modüller 18 kalite kapısından geçip tedy.online aile kataloğunda yayınlanır. start + edupedia skill'leri, beş komut (/edupedia:modul, /edupedia:mufredat, /edupedia:kazanim-bul, /edupedia:soru, /edupedia:durum) ve tedy-yalnız SessionStart preflight. maarif-mufredat ve egitim-kaynak isteğe bağlı doğrudan bağlayıcılar. claude.ai, Codex, Grok ve Gemini Spark paketleri surfaces/ altında tek başlangıç talimatından türetilir. Kırıcı: yerel HTML teslimi, yerel doğrulayıcı ve denetçi alt-ajan kaldırıldı. Kapsam yalnız Türkiye MEB.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"

@@ -1,4 +1,4 @@
-# edupedia 1.0.0 — claude.ai kurulumu
+# edupedia 1.1.0 — claude.ai kurulumu
 
 claude.ai'da hook, alt-ajan ve komut yoktur; bütün derinlik `tedy` orkestratöründedir. Gerekenler: özel bağlayıcı ekleyebilen bir plan ve TEDY aile listesindeki tam yetkili Google hesabı.
 

@@ -1,4 +1,4 @@
-# edupedia — Bağlayıcı sözleşmesi (1.0.0)
+# edupedia — Bağlayıcı sözleşmesi (1.1.0)
 
 Filo `fleet.yaml`'dadır; `.mcp.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/mcp.json` ve `fleet.lock.json` ondan üretilir.
 

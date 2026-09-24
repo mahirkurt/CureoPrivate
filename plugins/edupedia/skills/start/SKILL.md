@@ -27,6 +27,6 @@ Yayınlanmış modüller ve ilerleme için `edupedia_katalog` ve `edupedia_ilerl
 ## 3. Sınırlar
 
 - HTML'i model yazmaz; orkestratör derler ve kapılardan geçirir.
-- Görünüm de orkestratördedir: modüller tedy.online panosuyla aynı Tedy tasarım dilinde (Carbon g10/g100, lacivert Tedy bandı) çıkar. MODULE_DATA'ya renk, tema, CSS ya da `meta.accent` yazılmaz.
+- Görünüm de orkestratördedir: modüller tedy.online panosuyla aynı Tedy tasarım dilinde (Carbon g10/g100, lacivert Tedy bandı) çıkar. MODULE_DATA'ya renk, tema, CSS ya da `meta.accent` yazılmaz; `meta.subject` dersin resmî adıdır ve ders rengi ondan çözülür (Tedy ders renk sistemi, panoyla aynı).
 - `maarif-mufredat` ve `egitim-kaynak` isteğe bağlı doğrudan bağlayıcılardır; derleme yine `edupedia_kapsam` çalıştırması ister.
 - claude.ai, Codex, Grok ve Gemini Spark aynı akışı `surfaces/` paketleriyle kullanır; kurulum `KURULUM.md`.

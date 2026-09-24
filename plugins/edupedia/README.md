@@ -5,7 +5,8 @@
 ## 1.1.0 — Tedy tasarım dili
 
 - Modüller tedy.online panosuyla aynı tasarım dilinde derlenir: Carbon g10 (varsayılan) ve g100, lacivert Tedy bandı ve Tedy işareti, cool-gray sayfa zemini; pano temayı modüle kendisi bildirir. Görünüm tamamen orkestratördedir.
-- Başlangıç talimatına kural 4 eklendi: MODULE_DATA'ya renk, tema, CSS ya da `meta.accent` yazılmaz; ders aksanı konudan türetilir, kırmızı aciliyete ayrılmıştır. Orkestratör izinsiz aksanı şema hatasıyla reddeder.
+- Başlangıç talimatına kural 4 eklendi: MODULE_DATA'ya renk, tema, CSS ya da stil yazılmaz; `meta.subject` dersin resmî adıdır.
+- Tedy ders renk sistemi: her ders bir alana, her alan bir Carbon Tag ailesine bağlanır ve modülde, panoda ve katalogda aynı renkle görünür — Türkçe ve edebiyat magenta, matematik mor, fen teal, sosyal bilimler camgöbeği, yabancı diller mavi, din ve değerler sıcak gri, bilişim soğuk gri, sanat-spor ve genel gri. Kırmızı, yeşil, sarı ve turuncu anlam renkleridir, derse verilmez. `meta.accent` yalnız bir aile adı olabilir; orkestratör hex'i şema hatasıyla reddeder.
 - Yüzey paketleri (`surfaces/`) ve SessionStart akış kuralları bu kuralla yeniden üretildi.
 
 ## 1.0.0 — kırıcı değişiklik

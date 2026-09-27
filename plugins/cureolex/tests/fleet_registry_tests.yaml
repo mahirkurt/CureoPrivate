@@ -63,7 +63,7 @@ cases:
     given: "Tüm filo erişilebilirken SessionStart preflight koşulur."
     expect:
       - "additionalContext '[preflight]' bölümü İÇERMEMELİ — gürültü yok."
-      - "Konvansiyonlar (TAM-FİLO, NO-FABRICATION, ŞELALE, SCOPE GUARD) yine enjekte edilmeli."
+      - "Konvansiyonlar (TAM-FİLO, NO-FABRICATION, TAM-METİN, SCOPE GUARD) yine enjekte edilmeli."
       - "Prob 24 saat cache'lenmeli; ikinci oturum ağa çıkmamalı."
 
   - id: FR-07-prob-kendi-arizasini-uretmemeli

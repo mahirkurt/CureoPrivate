@@ -84,8 +84,9 @@ anahtarsız 200 döndüğü (FR-02), her env adının Doppler'da bulunduğu (FR-
 server↔companion kesişiminin boş olduğu (FR-04), preflight'ın 401'i **arıza**
 olarak bildirdiği (FR-05), sağlıklı filoda sessiz kaldığı (FR-06), prob
 istemcisinin kendi arızasını üretmediği (FR-07 — UA/okuma-sınırı/zaman-aşımı),
-türetilmiş dosyaların elle düzenlenemediği (FR-08), tam-metin şelalesinin
-otomatik atlanmadığı (FR-09), yoktez wire'ının G7'yi hard PASS yaptığı (FR-10)
+türetilmiş dosyaların elle düzenlenemediği (FR-08), tam-metnin tek katmanlı
+olduğu ve openathens erişilemezse doğru degrade ettiği (FR-09), yoktez
+wire'ının G7'yi hard PASS yaptığı (FR-10)
 ve doktrin tam-metin katmanının çalıştığı (FR-11).
 
 **Ağ gerektirir.** Ağsız/deterministik CI kapısı `tools/fleetkit/check_drift.py`'dir:

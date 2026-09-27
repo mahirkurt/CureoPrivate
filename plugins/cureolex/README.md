@@ -43,7 +43,7 @@ Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`
 | TR primer/idari | S1 | mevzuat (primer) · resmi-gazete · titck · tbmm · saglikbakanligi · detsis |
 | Karşılaştırmalı/uluslararası | S2 | health-policy (yabancı ülke) · german-law · **eurlex (G6 CELEX)** · **fedlex (CH birincil)** · **uk-legal (UK içtihat/Hansard)** · ich-guidelines · intl-treaty · eudamed · oecd |
 | Doktrin | S3 | yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması) · **literatur** (DergiPark makale tam-metni) |
-| Tam-metin şelalesi | S4 | **openathens** (Tier 3: `oa_fetch_fulltext` / `oa_fetch_pdf`, tek katman — erişilemezse `degraded: tam metin erişilemedi`) |
+| Tam-metin (tek katman) | S4 | **openathens** (Tier 3: `oa_fetch_fulltext` / `oa_fetch_pdf`, tek katman — erişilemezse `degraded: tam metin erişilemedi`) |
 | Büyük-veri substratı | tümü | anamnesis (RAG/GraphRAG evidence_index — kaynak değil, bağlam-ekonomisi Tier 2) |
 | **Companion** (wire edilemez — claude.ai connector) | — | Yargı içtihat · Open Law (UK çapraz/HUDOC; statute = `uk-legal` `legislation_*`) · Ansvar (58-yargı tarama) |
 

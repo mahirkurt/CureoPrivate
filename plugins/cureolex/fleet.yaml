@@ -511,7 +511,7 @@ servers:
       gerekçede doktrin atfı yapılabilir ama içerik alıntılanamaz → manifestoda
       'degraded: tam metin yok'.
 
-  # ── S4 · Tam-metin şelalesi ────────────────────────────────────────────────
+  # ── S4 · Tam metin (tek katman) ──────────────────────────────────────────
   - name: openathens
     url: https://openathens.cureonics.com/mcp
     tier: fulltext

@@ -730,7 +730,7 @@ check("belge biçimli ama ilk düzyazı paragrafı gerçek talep → uyarı", "b
 print("== _turn_tools.py (FLEET_DATA_TOOL — Cowork önek tanıma) ==")
 import _turn_tools  # noqa: E402
 check("Cowork DETSİS aracı filo verisi sayılır (DETS_S)",
-      bool(_turn_tools.FLEET_DATA_TOOL.search("mcp__DETS_S__detsis_search_birim")))
+      bool(_turn_tools.FLEET_DATA_TOOL.search("mcp__DETS_S__resolve_birim")))
 check("Cowork TİTCK aracı filo verisi sayılır (T_TCK)",
       bool(_turn_tools.FLEET_DATA_TOOL.search("mcp__T_TCK__search_drugs")))
 

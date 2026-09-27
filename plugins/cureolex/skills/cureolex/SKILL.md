@@ -1,19 +1,14 @@
 ---
 name: cureolex
 description: >-
-  Türkiye sağlık mevzuatı reform protokolü — kanun · CBK · yönetmelik · tebliğ · genelge düzeyinde yeni mevzuat
-  üretmek, değiştirmek, yeniden yazmak için 12 mod (DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA ·
-  COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI/PARLIAMENTARY_BILL · EX_POST_EVALUATION · REGULATORY_MATURITY ·
-  TRANSPOSITION · RELIANCE_FRAMEWORK). 4.0: yargı bölgesinden bağımsız ÇEKİRDEK + takılabilir yargı
-  bölgesi PAKETİ (jurisdictions/; TR aktif, GB/DE/CH taslak). 5210 Yönetmelik + AYM belirlilik içtihadı +
-  OECD Better Regulation + Anayasa Md.17/56/90/5; G0-G11 kapı + no-fabrication (evidence_ledger). Kullan —
-  "yönetmelik/tebliğ taslağı hazırla", "şu maddeyi değiştir", "TBMM kanun teklifi", "1219 SK reform", "TİTCK
-  yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki analizi/DEA",
-  "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme", "WHO GBT olgunluk açığı",
-  "AB direktifi aktarım tablosu", "reliance çerçevesi". 21 wire'lı MCP + 3 companion (Yargı ·
-  Open Law · Ansvar) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia,
-  atıf-adli + Türkçe hukuk dili → sci-audit (kuruluysa ZORUNLU). Şüphede Scope Guard önceliklidir;
-  bireysel dava (SGK reddi, AYM başvuru), malpraktis ve promosyon denetimi KAPSAM DIŞIDIR.
+  Türkiye sağlık mevzuatı reform protokolü: kanun, CBK, yönetmelik, tebliğ ve genelge düzeyinde yeni mevzuat üretmek,
+  değiştirmek, yeniden yazmak. 12 mod: DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA · COMPARATIVE_LAW ·
+  TBMM_KANUN_TEKLIFI/PARLIAMENTARY_BILL · EX_POST_EVALUATION · REGULATORY_MATURITY · TRANSPOSITION ·
+  RELIANCE_FRAMEWORK. 5210 Yönetmelik, AYM belirlilik içtihadı, OECD Better Regulation, Anayasa Md.17/56/90/5; G0–G11
+  kapıları, no-fabrication. Kullan: "yönetmelik/tebliğ taslağı hazırla", "şu maddeyi değiştir", "TBMM kanun teklifi",
+  "1219 SK reform", "TİTCK yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki
+  analizi/DEA", "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme", "WHO GBT olgunluk açığı", "AB
+  direktifi aktarım tablosu", "reliance çerçevesi". Bireysel dava, hak-arama ve promosyon denetimi kapsam dışıdır.
 version: 4.0.0
 ---
 
@@ -22,6 +17,8 @@ version: 4.0.0
 **Yüzey:** Claude Code ve Cursor `.mcp.json` + Python hook ile çalışır (`doppler run`). claude.ai ve ChatGPT'de MCP **elle connector** eklenir, hook **koşmaz** — G0 kapsam manifestosunu model yazar. Ayrıntı: plugin kökü `CONNECTORS.md`.
 
 Bu yetkinlik, **Türkiye'de sağlık mevzuatının her düzlemde reform, değişiklik ve yeniden yazımı** için tasarlanmış norm-üretim protokolüdür. En temel düzeyden (Anayasal sağlık hakkı) en operasyonel düzeye (tebliğ/genelge) kadar **yeni mevzuat üretir, mevcut mevzuatı değiştirir, gerektiğinde çerçeveyi tamamen yeniden yazar** — **5210 sayılı Yönetmelik** (RG 24/2/2022, 31760), **AYM belirlilik içtihadı**, **OECD Better Regulation**, **Anayasa Md.17/56 + Md.90/5 + ICESCR Md.12** ekseninde ve **savunulabilir, kanıt-temelli** biçimde.
+
+4.0: yargı bölgesinden bağımsız ÇEKİRDEK + takılabilir yargı bölgesi PAKETİ (jurisdictions/; TR aktif, GB/DE/CH taslak). 21 wire'lı MCP + 3 companion (Yargı · Open Law · Ansvar) tam-filonun zorunlu üyeleri; klinik kanıt → evidentia, atıf-adli + Türkçe hukuk dili → sci-audit (kuruluysa ZORUNLU).
 
 ## 0. Nasıl çalışılır (her modda)
 

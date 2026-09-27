@@ -143,5 +143,21 @@ class ForbiddenNamesTests(unittest.TestCase):
         self.assertEqual(pl.check_forbidden_names(root, FLEET)[0], [])
 
 
+class DescriptionLengthTests(unittest.TestCase):
+    def _skill(self, n):
+        return make_root({"skills/x/SKILL.md": f"---\nname: x\ndescription: {'a' * n}\n---\n"})
+
+    def test_over_hard_limit_is_error(self):
+        self.assertTrue(pl.check_description_length(self._skill(1025), FLEET)[0])
+
+    def test_between_soft_and_hard_is_warning(self):
+        errors, warnings = pl.check_description_length(self._skill(960), FLEET)
+        self.assertEqual(errors, [])
+        self.assertTrue(warnings)
+
+    def test_within_target_is_clean(self):
+        self.assertEqual(pl.check_description_length(self._skill(950), FLEET), ([], []))
+
+
 if __name__ == "__main__":
     unittest.main()

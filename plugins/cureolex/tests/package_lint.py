@@ -188,7 +188,23 @@ def check_surface_snapshots(root: Path, fleet: dict):
     return errors, warnings
 
 
-CHECKS = [check_tool_names, check_forbidden_names, check_surface_snapshots]
+def check_description_length(root: Path, fleet: dict, hard: int = 1024, soft: int = 950):
+    """Skill açıklaması: > hard hata (bazı yüzeyler reddeder/kırpar), > soft uyarı."""
+    errors, warnings = [], []
+    for p in sorted(root.glob("skills/*/SKILL.md")):
+        parts = p.read_text(encoding="utf-8").split("---")
+        fm = yaml.safe_load(parts[1]) if len(parts) > 2 else {}
+        n = len(str((fm or {}).get("description", "")))
+        rel = str(p.relative_to(root))
+        if n > hard:
+            errors.append((rel, f"açıklama {n} karakter > {hard}"))
+        elif n > soft:
+            warnings.append((rel, f"açıklama {n} karakter > {soft} (hedef)"))
+    return errors, warnings
+
+
+CHECKS = [check_tool_names, check_forbidden_names, check_surface_snapshots,
+          check_description_length]
 
 
 def run_all(root: Path, fleet: dict):

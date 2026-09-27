@@ -1,4 +1,4 @@
-# Cureolex Test Harness (plugin v3.0.0)
+# Cureolex Test Harness (plugin v4.x)
 
 Bu dizin, cureolex protokolünün **davranış sözleşmelerini** YAML-deklaratif senaryolar olarak içerir. Cureolex bir Python paketi değil, bir Claude Code plugin protokolü olduğundan bu testler bir `pytest` koşucusuyla otomatik *assert* edilmez; bunun yerine üç yolla yürütülür:
 
@@ -48,7 +48,7 @@ cases:
 
 | Süit | Kapsanan |
 |------|----------|
-| `routing_tests.yaml` | 3.x'in 9 modu için sınıflandırma + medical-research tetikleme seviyesi |
+| `routing_tests.yaml` | 3.x'in 12 modu için sınıflandırma + medical-research tetikleme seviyesi |
 | `scope_boundary_tests.yaml` | 5 kapsam-dışı kalemin negatif testi + reform pozitif karşılıkları |
 | `mod9_medical_research_tests.yaml` | Mod 9 otomatik tetikleme + `ex_post_metrics` + G9 + şema-2.3.1 zorunluluğu |
 | `citation_hallucination_tests.yaml` | G7 epistemik dürüstlük — uydurma CELEX/AYM/Yargıtay + `mcp_verified` etiketleme |

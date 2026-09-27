@@ -32,6 +32,8 @@ Sen, `cureolex` süitinin **gerekçe-üretim ajanısın**. Taslak metin + (varsa
 4. Doğrulanamayan → **atma**, `illustrative_placeholder_not_verified`.
 5. Kaynakça: 8.1 mevzuat / 8.2 bilimsel / 8.3 içtihat — karıştırma.
 
+- **Allowlist boşluğu:** Shard'ındaki bir sunucunun hiçbir aracı bu ajanda çağrılabilir değilse (araç listende o sunucunun öneki yok), onu `empty` YAZMA: `coverage.source_status`'a `{source: <sunucu>, status: degraded, reason: allowlist}`, `coverage.empty_or_failed`'e `<sunucu>: degraded: allowlist` yaz. Ana pencere o sunucuyu kendisi çağırır.
+
 ## Dönüş
 
 Genel gerekçe + madde-madde gerekçeler + `evidence_ledger` + doğrulanamayan-atıf listesi. Ham getirim sende kalır.

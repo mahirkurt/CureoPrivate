@@ -77,6 +77,53 @@ class CheckToolNamesTests(unittest.TestCase):
         self.assertEqual(pl.check_tool_names(root, FLEET)[0], [])
 
 
+class SurfaceSnapshotTests(unittest.TestCase):
+    def test_pattern_covers_exact_prefix(self):
+        self.assertTrue(pl.pattern_covers("mcp__T_TCK__*", "mcp__T_TCK__"))
+        self.assertFalse(pl.pattern_covers("mcp__T_TCK_Data__*", "mcp__T_TCK__"))
+
+    def test_case_and_separator_sensitive(self):
+        self.assertFalse(pl.pattern_covers("mcp__health-policy__*", "mcp__Health_Policy__"))
+        self.assertFalse(pl.pattern_covers("mcp__mevzuat__*", "mcp__Mevzuat__"))
+
+    def _fixture(self, tools_line, entries):
+        fleet = {"servers": [{"name": "titck", "shard": "S1"}, {"name": "oecd", "shard": "S2"}],
+                 "generated_blocks": [{"file": "agents/a.md", "name": "agent-tools",
+                                       "generator": "agent_tools", "config": {"shards": ["S1"]}}]}
+        root = make_root({
+            "agents/a.md": f"---\n# GEN:agent-tools BEGIN\n{tools_line}\n# GEN:agent-tools END\n---\n",
+            "tests/surface_snapshots/cowork.yaml":
+                "surface: cowork\nobserved: test\nentries:\n" + entries,
+        })
+        return root, fleet
+
+    def test_uncovered_prefix_is_an_error(self):
+        root, fleet = self._fixture("tools: Read, mcp__titck__*",
+                                    "  - {prefix: mcp__T_TCK__, server: titck, evidence: [search_drugs]}\n")
+        errors, _ = pl.check_surface_snapshots(root, fleet)
+        self.assertTrue(any("mcp__T_TCK__" in m and "agents/a.md" in m for _, m in errors))
+
+    def test_covered_prefix_passes_and_other_shard_ignored(self):
+        root, fleet = self._fixture(
+            "tools: Read, mcp__T_TCK__*",
+            "  - {prefix: mcp__T_TCK__, server: titck, evidence: [search_drugs]}\n"
+            "  - {prefix: mcp__claude_ai_oecd__, server: oecd, evidence: [query_data]}\n")
+        errors, _ = pl.check_surface_snapshots(root, fleet)
+        self.assertEqual(errors, [])
+
+    def test_unmapped_prefix_is_a_warning_not_error(self):
+        root, fleet = self._fixture("tools: Read",
+                                    "  - {prefix: mcp__TR_Dizin__, server: null, evidence: rapor}\n")
+        errors, warnings = pl.check_surface_snapshots(root, fleet)
+        self.assertEqual(errors, [])
+        self.assertTrue(any("mcp__TR_Dizin__" in m for _, m in warnings))
+
+    def test_unknown_server_is_an_error(self):
+        root, fleet = self._fixture("tools: Read",
+                                    "  - {prefix: mcp__X__, server: yok-boyle, evidence: [a_b]}\n")
+        self.assertTrue(pl.check_surface_snapshots(root, fleet)[0])
+
+
 class ForbiddenNamesTests(unittest.TestCase):
     def test_forbidden_name_is_reported(self):
         root = make_root({"skills/cureolex/SKILL.md": "Bireysel dava → saglik-sigorta"})

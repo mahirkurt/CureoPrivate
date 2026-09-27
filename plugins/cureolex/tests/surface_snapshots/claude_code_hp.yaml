@@ -1,0 +1,24 @@
+surface: claude_code_hp
+observed: "2026-09-27 · HP Claude Code oturumu (kullanıcı düzeyi + claude.ai bağlayıcıları)"
+entries:
+  - {prefix: mcp__mevzuat__, server: mevzuat, evidence: [search_mevzuat, get_mevzuat_content]}
+  - {prefix: mcp__claude_ai_Resmi_Gazete__, server: resmi-gazete, evidence: [rg_search, rg_get_item]}
+  - {prefix: mcp__claude_ai_T_TCK__, server: titck, evidence: [search_drugs, get_drug]}
+  - {prefix: mcp__claude_ai_tbmm__, server: tbmm, evidence: [tbmm_search_kanun]}
+  - {prefix: mcp__saglikbakanligi-mcp__, server: saglikbakanligi, evidence: [sb_search]}
+  - {prefix: mcp__detsis-mcp__, server: detsis, evidence: [detsis_search_birim]}
+  - {prefix: mcp__claude_ai_Health_Policy__, server: health-policy, evidence: [search]}
+  - {prefix: mcp__german-law__, server: german-law, evidence: [search_legislation]}
+  - {prefix: mcp__claude_ai_ich-guidelines__, server: ich-guidelines, evidence: [ich_search, search, fetch]}
+  - {prefix: mcp__claude_ai_International_Treaty__, server: intl-treaty, evidence: [treaty_status]}
+  - {prefix: mcp__claude_ai_eudamed__, server: eudamed, evidence: [eudamed_search_devices]}
+  - {prefix: mcp__claude_ai_oecd__, server: oecd, evidence: [query_data]}
+  - {prefix: mcp__yok-akademik__, server: yok-akademik, evidence: [yok_search]}
+  - {prefix: mcp__yoktez__, server: yoktez, evidence: [search_yok_tez_detailed]}
+  - {prefix: mcp__yoktez-mcp__, server: yoktez, evidence: [search_yok_tez_detailed]}
+  - {prefix: mcp__literatur__, server: literatur, evidence: [tr_literatur_search_articles]}
+  - {prefix: mcp__openathens__, server: openathens, evidence: [oa_fetch_fulltext]}
+  - {prefix: mcp__claude_ai_eurlex__, server: eurlex, evidence: [eurlex_get_document]}
+  - {prefix: mcp__claude_ai_fedlex__, server: fedlex, evidence: [fedlex_search_laws]}
+  - {prefix: mcp__claude_ai_uk-legal__, server: uk-legal, evidence: [legislation_search]}
+  - {prefix: mcp__anamnesis__, server: anamnesis, evidence: [hybrid_query]}

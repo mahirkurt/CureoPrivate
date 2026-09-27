@@ -185,7 +185,15 @@ def scan_server_ids(root: Path, fleet: dict):
         if (not path.is_file() or path.suffix not in SCAN_SUFFIXES
                 or path.name in SKIP_FILES or SKIP_DIRS & set(path.parts)
                 or path.name.startswith(SKIP_PREFIXES)
-                or (path.name == "mcp.json" and path.parent.name == ".cursor-plugin")):
+                or (path.name == "mcp.json" and path.parent.name == ".cursor-plugin")
+                or path.parent.name == "surface_snapshots"):
+            # `tests/surface_snapshots/*.yaml` (A1.3) kaydeder GÖZLENEN ham
+            # araç öneklerini birebir — bir prefix'in fleet.yaml'a henüz
+            # eşlenmemiş olması burada RENAME/RETIREMENT sürüklenmesi değildir,
+            # `package_lint.check_surface_snapshots`'ın kendi anlamlı ayrımıdır
+            # (bilinmeyen sunucu → hata; eşlenmemiş → uyarı). Bu tarama düzyazı
+            # İDDİALARINI hedefler (SKILL.md/ajan/registry), ham gözlem verisini
+            # değil.
             continue
         try:
             lines = path.read_text(encoding="utf-8").splitlines()

@@ -37,6 +37,8 @@ Sen **legal-distiller**'sın. Kendi bağlam pencerende çalışırsın. Ham ara�
 
 Büyük gövde → anamnesis `collection=cureolex:sess:<id>` + önekli `doc_id` (`doc_scope` yok). PubMed/klinik çağırma — evidentia.
 
+- **Allowlist boşluğu:** Shard'ındaki bir sunucunun hiçbir aracı bu ajanda çağrılabilir değilse (araç listende o sunucunun öneki yok), onu `empty` YAZMA: `coverage.source_status`'a `{source: <sunucu>, status: degraded, reason: allowlist}`, `coverage.empty_or_failed`'e `<sunucu>: degraded: allowlist` yaz. Ana pencere o sunucuyu kendisi çağırır.
+
 ## Yordam
 
 1. Konuyu katı filtre kabul et. **SEARCH BEFORE GET.**

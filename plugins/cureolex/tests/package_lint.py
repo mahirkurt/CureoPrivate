@@ -8,6 +8,8 @@ import json
 import re
 from pathlib import Path
 
+import yaml
+
 SNAKE = r"[a-z][a-z0-9]*(?:_[a-z0-9]+)+"
 _MCP_PREFIX = re.compile(r"mcp__[A-Za-z0-9_-]+?__")
 _CALL = re.compile(r"(?<![\w.])(" + SNAKE + r")\(")
@@ -129,7 +131,64 @@ def check_forbidden_names(root: Path, fleet: dict):
     return errors, []
 
 
-CHECKS = [check_tool_names, check_forbidden_names]
+_GEN_TOOLS = re.compile(r"#\s*GEN:agent-tools BEGIN\s*\n(tools:[^\n]*)\n")
+
+
+def pattern_covers(pattern: str, prefix: str) -> bool:
+    """Claude Code allowlist kalıbı öneki karşılıyor mu? Büyük/küçük harf ve ayırıcı duyarlı."""
+    if pattern.endswith("*"):
+        return prefix.startswith(pattern[:-1])
+    return pattern == prefix
+
+
+def agent_patterns(path: Path) -> list:
+    if not path.is_file():
+        return []
+    m = _GEN_TOOLS.search(path.read_text(encoding="utf-8"))
+    if not m:
+        return []
+    return [t.strip() for t in m.group(1)[len("tools:"):].split(",") if t.strip()]
+
+
+def _shards(server: dict) -> list:
+    sh = server.get("shard")
+    return sh if isinstance(sh, list) else [sh]
+
+
+def agents_for_server(fleet: dict, server: str) -> list:
+    """Sunucunun shard'ını kapsayan ajan dosyaları (gen_fleet.gen_agent_tools ile aynı kural)."""
+    srv = next(s for s in fleet["servers"] if s["name"] == server)
+    vals = _shards(srv)
+    out = []
+    for blk in fleet.get("generated_blocks", []):
+        if blk.get("generator") != "agent_tools":
+            continue
+        shards = blk.get("config", {}).get("shards", [])
+        if (not shards) or "ALL" in vals or any(v in shards for v in vals):
+            out.append(blk["file"])
+    return out
+
+
+def check_surface_snapshots(root: Path, fleet: dict):
+    errors, warnings = [], []
+    names = {s["name"] for s in fleet.get("servers", [])}
+    for f in sorted((root / "tests" / "surface_snapshots").glob("*.yaml")):
+        doc = yaml.safe_load(f.read_text(encoding="utf-8")) or {}
+        for e in doc.get("entries", []):
+            prefix, srv = e["prefix"], e.get("server")
+            if srv is None:
+                warnings.append((f.name, f"{prefix}: sunucuya eşlenmedi — araç listesi görülmeli"))
+                continue
+            if srv not in names:
+                errors.append((f.name, f"{prefix}: '{srv}' fleet.yaml'da sunucu değil"))
+                continue
+            for agent in agents_for_server(fleet, srv):
+                if not any(pattern_covers(p, prefix) for p in agent_patterns(root / agent)):
+                    errors.append((f.name, f"{prefix} ({srv}) → {agent} allowlist'inde karşılık yok"))
+    return errors, warnings
+
+
+CHECKS = [check_tool_names, check_forbidden_names, check_surface_snapshots]
 
 
 def run_all(root: Path, fleet: dict):

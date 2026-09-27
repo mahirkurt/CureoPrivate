@@ -69,9 +69,14 @@
             "required": ["source", "status"],
             "properties": {
               "source": { "type": "string" },
-              "status": { "type": "string", "enum": ["examined_empty","failed","partial","rate_limited","skipped","auth_missing"] },
+              "status": { "type": "string", "enum": ["examined_empty","failed","partial","rate_limited","skipped","auth_missing","degraded"] },
               "attempts": { "type": "integer", "minimum": 0 },
-              "detail": { "type": "string" }
+              "detail": { "type": "string" },
+              "reason": {
+                "type": "string",
+                "enum": ["allowlist", "fallback_tools", "fulltext_unavailable"],
+                "description": "4.1: status=degraded nedeni — allowlist: ajanın araç listesinde sunucunun öneki yok (ana pencere çağırır); fallback_tools: yalnız search/fetch sunuluyor; fulltext_unavailable: tam metin katmanı erişilemedi."
+              }
             }
           }
         }

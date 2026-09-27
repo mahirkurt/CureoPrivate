@@ -301,6 +301,10 @@ def server_prefixes(s, plugin=None):
        "TİTCK Data"→T_TCK_Data, "Yargı"→Yarg, "Türk Patent"→T_rk_Patent).
        Görünen ad bir İNSAN TERCİHİ olduğu için mekanik türetilemez → ampirik
        olarak gözlenmiş adlar fleet.yaml'da `tool_prefixes` ile AÇIKÇA yazılır.
+    5. **Cowork** hesap bağlayıcısını `mcp__<Görünen_Ad>__` olarak yükler — claude.ai
+       biçiminin `claude_ai_` öneksiz hâli (gözlem: Cowork inceleme raporu, 2026-09-27:
+       mcp__Mevzuat__, mcp__T_TCK__, mcp__DETS_S__, mcp__YokTez_MCP__). Bu biçim her
+       `mcp__claude_ai_<X>__` için MEKANİK türetilir (`_with_cowork_forms`).
 
     Bu ayrım kritik: ajanların `tools:` frontmatter'ı SERT bir allowlist'tir —
     model öneki yorumla kapatamaz. Önek eşleşmezse sunucu ajan için YOKTUR.
@@ -318,11 +322,22 @@ def server_prefixes(s, plugin=None):
             out.append(hyphen)
     if s.get("tool_prefixes"):
         out += [p for p in s["tool_prefixes"] if p not in out]
-        return out
-    out += [f"mcp__{n}__", f"mcp__claude_ai_{n}__"]
-    title = "_".join(w.capitalize() for w in re.split(r"[-_ ]+", n) if w)
-    if title != n:
-        out.append(f"mcp__claude_ai_{title}__")
+    else:
+        out += [f"mcp__{n}__", f"mcp__claude_ai_{n}__"]
+        title = "_".join(w.capitalize() for w in re.split(r"[-_ ]+", n) if w)
+        if title != n:
+            out.append(f"mcp__claude_ai_{title}__")
+    return _with_cowork_forms(out)
+
+
+def _with_cowork_forms(prefixes):
+    """Her `mcp__claude_ai_<X>__` için Cowork biçimi `mcp__<X>__` (yoksa) eklenir."""
+    out = list(prefixes)
+    for p in prefixes:
+        if p.startswith("mcp__claude_ai_"):
+            cowork = "mcp__" + p[len("mcp__claude_ai_"):]
+            if cowork not in out:
+                out.append(cowork)
     return out
 
 
@@ -349,7 +364,7 @@ def gen_agent_tools(fleet, cfg):
     tools += [f"{p}*" for s in picked for p in server_prefixes(s, plug)]
     if cfg.get("companions"):
         tools += [f"{p}*" for c in fleet.get("companions", [])
-                  for p in c.get("tool_prefixes", [])]
+                  for p in _with_cowork_forms(c.get("tool_prefixes", []))]
     return "tools: " + ", ".join(tools)
 
 

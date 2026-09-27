@@ -26,9 +26,10 @@ import re
 # `mcp__mevzuat__…`, `mcp__plugin_cureolex_mevzuat__…` veya `mcp__claude_ai_Mevzuat__…`
 # biçiminde gelebilir; bu yüzden sunucu-adı ALT DİZGESİ aranır, tam ad değil.
 # TİTCK claude.ai yüzeyinde `T_TCK` olarak görünür (görünen-ad bozulması) → ikisi de var.
+# DETSİS claude.ai/Cowork yüzeyinde `DETS_S` olarak görünür (İ düşer).
 _FLEET_NAMES = (
     r"mevzuat|mevzuat[-_]bilgisi|resmi[-_]?gazete|saglikbakanligi|saglik[-_]mcp|"
-    r"titck|t_tck|tbmm|detsis|"
+    r"titck|t_tck|tbmm|detsis|dets_s|"
     r"health[-_]?policy|german[-_]?law|eurlex|fedlex|uk[-_]?legal|ich[-_]?guidelines|"
     r"intl[-_]?treaty|international[-_]?treaty|eudamed|oecd|"
     r"yok[-_]?akademik|yoktez|yok_tez|literatur|"

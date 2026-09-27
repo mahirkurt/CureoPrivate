@@ -46,6 +46,10 @@ servers:
   # ── S1 · TR çekirdek ───────────────────────────────────────────────────────
   - name: mevzuat
     url: https://mevzuat.cureonics.com/mcp
+    tool_prefixes:
+      - mcp__mevzuat__
+      - mcp__claude_ai_mevzuat__
+      - mcp__claude_ai_Mevzuat__  # 2026-09-27 gözlem: Cowork raporu
     tier: primary
     auth_env: MEVZUAT_MCP_API_KEY
     shard: S1
@@ -104,6 +108,7 @@ servers:
     tool_prefixes:
       - mcp__titck__
       - mcp__claude_ai_T_TCK_Data__
+      - mcp__claude_ai_T_TCK__  # 2026-09-27 gözlem: HP Claude Code, 2026-09-24/27
     tier: primary
     auth_env: TITCK_MCP_API_KEY
     shard: S1
@@ -186,6 +191,11 @@ servers:
 
   - name: saglikbakanligi
     url: https://saglik-mcp.cureonics.com/mcp
+    tool_prefixes:
+      - mcp__saglikbakanligi__
+      - mcp__claude_ai_saglikbakanligi__
+      - mcp__claude_ai_Saglikbakanligi__
+      - mcp__saglikbakanligi-mcp__  # 2026-09-27 gözlem: HP (kullanıcı düzeyi)
     tier: primary
     auth_env: SAGLIK_BAKANLIGI_MCP_API_KEY
     shard: S1
@@ -208,6 +218,12 @@ servers:
 
   - name: detsis
     url: https://detsis.cureonics.com/mcp
+    tool_prefixes:
+      - mcp__detsis__
+      - mcp__claude_ai_detsis__
+      - mcp__claude_ai_Detsis__
+      - mcp__detsis-mcp__  # 2026-09-27 gözlem: HP (kullanıcı düzeyi) / Cowork raporu
+      - mcp__claude_ai_DETS_S__  # 2026-09-27 gözlem: HP (kullanıcı düzeyi) / Cowork raporu
     tier: support
     auth_env: DETSIS_MCP_API_KEY
     shard: S1
@@ -452,6 +468,12 @@ servers:
 
   - name: yoktez
     url: https://yoktezmcp.fastmcp.app/mcp
+    tool_prefixes:
+      - mcp__yoktez__
+      - mcp__claude_ai_yoktez__
+      - mcp__claude_ai_Yoktez__
+      - mcp__yoktez-mcp__  # 2026-09-27 gözlem: HP / Cowork raporu
+      - mcp__claude_ai_YokTez_MCP__  # 2026-09-27 gözlem: HP / Cowork raporu
     tier: doctrine
     auth_env: null
     shard: S3

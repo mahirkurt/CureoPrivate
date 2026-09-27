@@ -104,7 +104,7 @@ cases:
     given: "Bir reform gerekçesi Türk doktrinine dayandırılıyor."
     expect:
       - "yok-akademik YALNIZ künye/metadata sağlar — gerekçede alıntılanabilir metin ondan gelmez."
-      - "literatur (DergiPark) search_articles → pdf_to_html ile tam metin getirmeli."
+      - "literatur (DergiPark) tr_literatur_search_articles → tr_literatur_read_article ile tam metin getirmeli."
       - "literatur erişilemezse doktrin katmanı metadata-only'ye düşer ve manifestoda 'degraded: tam metin yok' yazılmalı — içerik uydurulmamalı."
 
   - id: FR-12-mevzuat-birincil-dusukse-yedek-devralir
@@ -399,7 +399,7 @@ cases:
       fedlex.cureonics.com canlı yüzeyinde Vernehmlassung araçları var.
     expect:
       - "fleet.yaml fedlex tools_used fedlex_get_open_consultations, fedlex_search_consultations, fedlex_get_consultation içerir."
-      - "Semantik sıra: fedlex_search_laws → fedlex_get_law_by_sr → (RIA paydaş/alternatif) open → search → get_consultation; event_id listeden, uydurulmaz."
+      - "Semantik sıra: fedlex_search_laws → fedlex_get_law_by_sr → (RIA paydaş/alternatif) fedlex_get_open_consultations → fedlex_search_consultations → fedlex_get_consultation; event_id listeden, uydurulmaz."
       - "Argümanlar params sarmalayıcısında (FR-22); Vernehmlassung TR 5210/DRAFT görüş usulü diye sunulmaz."
       - "conscious_excludes fedlex_peripheral yalnız recent_publications + termdat_get_concept; danışma üçlüsü exclude DEĞİL."
       - "lex-ria.md ve comparative-law-researcher fedlex Vernehmlassung sırasını yazar."

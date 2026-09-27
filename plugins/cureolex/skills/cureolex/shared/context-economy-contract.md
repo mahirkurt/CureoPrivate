@@ -53,7 +53,7 @@ Bir belge (kanun/yönetmelik/CELEX/ECLI/yabancı statute) **kararlı kimliğiyle
 Büyük bir belgeyi **asla** kör (`max_chars` limitsiz / tam PDF) getirme. Protokol:
 
 1. **Önce yapısal navigasyon** (hafif): `get_mevzuat_madde_tree` / `get_mevzuat_timeline` / `get_mevzuat_relations` ile hedef maddeyi/bölümü LOKALİZE et.
-2. **Yalnız hedef parçayı çek:** `madde_acikla(madde_no)` drill-down · `get_mevzuat_text(start_page,end_page / chunk_index,chunk_size / max_chars)` · `download_mevzuat_document(include_base64=false)` (yalnız URL — bağlam taşması yok).
+2. **Yalnız hedef parçayı çek:** `get_mevzuat_content` (madde ayrıştırma) / `search_within_mevzuat` (madde içi arama) drill-down · `get_mevzuat_text(start_page,end_page / chunk_index,chunk_size / max_chars)` · `download_mevzuat_document(include_base64=false)` (yalnız URL — bağlam taşması yok).
 3. **Tam-metin gerekiyorsa** (karşılaştırma, gerekçe, ex-post trend): Tier 2 anamnesis'e ingest → bounded query. Yabancı hukukta programatik kimlik (CELEX/ECLI/AKN section) + bölüm-düzeyi fetch; tam konsolide metni ana pencereye çekme.
 4. **RG OCR / taranmış PDF:** `rg_ocr_submit` → `rg_ocr_result` (async); sonucu > eşik ise anamnesis'e ingest.
 

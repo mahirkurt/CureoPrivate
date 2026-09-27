@@ -24,14 +24,14 @@ Sen **legal-distiller**'sın. Kendi bağlam pencerende çalışırsın. Ham ara�
 4. **TİTCK** (ilaç — cihaz/ÜTS DEĞİL): `list_datasets` (tazelik) → `search_titck_guidelines` → `search_drugs`/`get_drug`/`get_atc_hierarchy` → fiyat/md.23/off-label/scheduling/fees/recalls (konuya göre). Bayat `source_as_of` yaz. Cihaz → coverage `skipped: kapsam dışı (ÜTS wire değil; AB→eudamed/S2)`.
 5. **TBMM** (Mod 8 load-bearing; diğer modlarda çapraz): `tbmm_search_kanun_teklifi` → `tbmm_get_kanun_teklifi(sira_no)` (önerge+imza) → `tbmm_search_kanun` (locator; gövde mevzuat gerekçe) → komisyon search/get + `tbmm_list_komisyon_havale` → tutanak search/get (SPA `related_acik_erisim` = kütüphane zabıtı, canlı Genel Kurul DEĞİL) → `tbmm_get_milletvekili` → OA list/search/get. `tasari_teklif_sd.onerge` kullanma.
 6. **Sağlık Bakanlığı**: `sb_server_info` → `sb_list_birimler` → `sb_list_kategoriler` → belgeler/kılavuzlar/kurul → `sb_list_taslaklar` (manual_required) → `sb_search`/`sb_resolve_genelge` → `sb_get_document`.
-7. **DETSİS**: `detsis_server_info` → resolve/search → `get_kunye` → alt birimler/sayı → hizmetler/belgeler/mevzuatlar → değişiklikler → (kapatılan) `get_islem_kunye`.
+7. **DETSİS**: `detsis_server_info` → resolve/search → `detsis_get_kunye` → alt birimler/sayı → hizmetler/belgeler/mevzuatlar → değişiklikler → (kapatılan) `get_islem_kunye`.
 8. **intl-treaty (Md.90/5, atlanamaz):** `treaty_status` + `treaty_reservations` (ICESCR/ICCPR/CEDAW/CRC/CRPD + alias) → `coe_treaty_signatories`(164/211) → `intl_treaty_info` bir kez → **COMPARATIVE / Md.90/5 / ICESCR dosyalarında** `uhri_search` → `uhri_fetch_document` (treaty/coe yerine geçmez). `live_coe:false` = `degraded: snapshot`.
 9. **eurlex (G6, S1+S2):** `eurlex_browse_subjects` → `eurlex_search_documents` → `eurlex_lookup_celex` → `eurlex_get_document`/`get_relations`/`get_cases` (gerekirse SPARQL).
 
 ### S3 — Doktrin
 
-10. **yok-akademik:** search → profile/full_profile → publications/projects/theses/collaborators.
-11. **literatur:** `search_articles` → `pdf_to_html` → `get_article_references`.
+10. **yok-akademik:** search → profile/yok_get_full_profile → publications/projects/theses/collaborators.
+11. **literatur:** `tr_literatur_search_articles` → `tr_literatur_read_article` → `tr_literatur_get_article_references`.
 12. **yoktez:** `search_yok_tez_detailed` → `get_yok_tez_thesis_details` (G7) → `get_yok_tez_document_markdown` / `search_yok_tez_by_anabilim_dali`.
 13. **Yargı** (bağlıysa): AYM/Danıştay/Yargıtay reform-gerekçe sinyali; bağlı değilse coverage `skipped: companion bağlı değil`.
 

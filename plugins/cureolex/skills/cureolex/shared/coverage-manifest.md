@@ -36,7 +36,7 @@ Karşılaştırmalı katman
 Doktrin + tam-metin şelalesi
   yok-akademik         → hit 4   (ATMP regülasyon doktrin makaleleri — künye/metadata)
   yoktez               → hit 1   (ATMP hukuku doktora tezi, tez-no teyitli)
-  literatur            → hit 2   (DergiPark tam metin: 2 makale pdf_to_html)
+  literatur            → hit 2   (DergiPark tam metin: 2 makale tr_literatur_read_article)
   openathens           → skipped: oturum doğrulanmamış (Tier 3 lisanslı band kapalı)
   annas-reader         → skipped: şelale sırası korundu (Tier 4 yalnız Tier 3 denendikten sonra)
 Companion

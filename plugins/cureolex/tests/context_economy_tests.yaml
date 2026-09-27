@@ -55,7 +55,7 @@ cases:
       chunking: true
     assertions:
       - "Önce get_mevzuat_madde_tree ile hedef madde LOKALİZE edilmeli (hafif)."
-      - "Sonra yalnız hedef chunk çekilmeli (madde_acikla / get_mevzuat_text chunk_index/start_page-end_page/max_chars)."
+      - "Sonra yalnız hedef chunk çekilmeli (get_mevzuat_content / search_within_mevzuat / get_mevzuat_text chunk_index/start_page-end_page/max_chars)."
       - "Tüm yönetmelik limitsiz max_chars ile ana pencereye çekilmemeli."
     rationale: "context-economy-contract §4 + references/16 §C."
 

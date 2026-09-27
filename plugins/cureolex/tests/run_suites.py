@@ -29,6 +29,7 @@ Kullanım:
   python3 tests/run_suites.py --quiet
 Çıkış: 0 temiz · 1 ihlal.
 """
+import os
 import argparse
 import json
 import re
@@ -41,6 +42,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent                                   # plugin kökü
 
 import validate_packs  # noqa: E402  (aynı dizin — kanonik mod listesi ve paket takma adları)
+import package_lint  # noqa: E402
 
 MODES = set(validate_packs.CANONICAL_MODES)
 GATES = set(validate_packs.GATES)                    # G0–G11 (4.0: G10 güncellik, G11 yargı tutarlılığı)
@@ -255,6 +257,22 @@ def main(argv=None) -> int:
         issues.append(("PAKETLER", "tests/validate_packs.py ihlal buldu — ayrıntı: "
                                    "python3 tests/validate_packs.py"))
 
+    # [8] Paket denetimleri (tests/package_lint.py) — hayalet araç adı ve sonradan
+    #     eklenen denetimler. Uyarılar çıkış kodunu etkilemez.
+    lint_errors, lint_warnings = package_lint.run_all(ROOT, fleet)
+    for ctx, msg in lint_errors:
+        issues.append(("LINT", f"{ctx}: {msg}"))
+
+    # [9] Denetimlerin birim testleri — CI yalnız run_suites.py'yi koşar; tests/test_*.py
+    #     burada keşfedilip koşulur ki denetimin kendisi de regresyona karşı korunsun.
+    import unittest
+    ut = unittest.defaultTestLoader.discover(str(HERE), pattern="test_*.py", top_level_dir=str(HERE))
+    with open(os.devnull, "w") as devnull:
+        ut_res = unittest.TextTestRunner(stream=devnull, verbosity=0).run(ut)
+    if not ut_res.wasSuccessful():
+        issues.append(("LINT", f"birim testleri: {len(ut_res.failures) + len(ut_res.errors)} "
+                               f"başarısız — python3 -m unittest discover -s tests -v"))
+
     if not a.quiet:
         by_name = {_Named(s).name: s for s in suites}
         for name in sorted(by_name):
@@ -275,6 +293,15 @@ def main(argv=None) -> int:
                 print(f"      · {m}")
         else:
             print("✓ yüzey wiring                        ok")
+        lint = [m for f, m in issues if f == "LINT"]
+        if lint:
+            print("\n⚠ paket denetimleri")
+            for m in lint:
+                print(f"      · {m}")
+        else:
+            print("✓ paket denetimleri                   ok")
+        for ctx, msg in lint_warnings:
+            print(f"      ~ uyarı {ctx}: {msg}")
         print(f"\n{'İHLAL VAR' if issues else 'SÜİTLER TEMİZ'} — "
               f"{total} vaka / {len(suites)} süit denetlendi"
               + ("" if jsonschema else "  (jsonschema yok → fixture doğrulaması ATLANDI)"))

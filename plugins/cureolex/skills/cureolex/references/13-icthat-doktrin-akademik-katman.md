@@ -483,17 +483,17 @@ Kongre bildiri kitapları akademik atıf değerinde.
 ### 10.1. Senaryo: "Aydınlatılmış Onam Yönetmeliği Revizyonu — İçtihat + Doktrin Temellendirmesi"
 
 ```
-Hukuki Veritabanları MCP → search_yargitay
+Hukuki Veritabanları MCP — Yargıtay içtihat araması
    daire: "13"
    query: "aydınlatılmış onam"
    yıl: 2018-2024
    → Yargıtay 13. HD aydınlatılmış onam doktrin gelişimi
    
-Hukuki Veritabanları MCP → search_aym_birey_basvuru
+Hukuki Veritabanları MCP — AYM bireysel başvuru araması
    query: "aydınlatılmış onam tedavi"
    → AYM bireysel başvuru içtihatı
    
-Hukuki Veritabanları MCP → search_aihm
+Hukuki Veritabanları MCP — AİHM Türkiye kararları araması
    anahtar: "informed consent"
    ülke: "Turkey"
    → AİHM Türkiye paralel kararlar
@@ -516,13 +516,13 @@ Fetch → coe.int Oviedo Konvansiyonu Md. 5-9
 ### 10.2. Senaryo: "İlaç Patent Davası — Yargıtay + ABAD Sentezi"
 
 ```
-Hukuki Veritabanları MCP → search_yargitay
+Hukuki Veritabanları MCP — Yargıtay içtihat araması
    daire: "11"
    query: "ilaç patent ihlal"
    yıl: 2018-2024
    → Yargıtay 11. HD ilaç patent içtihatı
    
-Hukuki Veritabanları MCP → search_abad
+Hukuki Veritabanları MCP — ABAD paralel karar araması
    query: "pharmaceutical patent SPC"
    → ABAD ilaç patent içtihatı (C-557/16, C-688/19, vd.)
    
@@ -544,25 +544,25 @@ Mevzuat MCP → "Sınai Mülkiyet Kanunu" + "Beşeri Tıbbi Ürünler"
 > **Amaç:** Bireysel uyuşmazlıklardan doğan yargısal sinyalleri (sağlık hakkı, ilaç erişimi, etkili başvuru, ölçülülük, belirlilik) **toplulaştırılmış politika girdisine** dönüştürerek SUT/HTA geri ödeme kriterlerinin, karar gerekçelendirme standardının, itiraz mekanizmasının ve ex post değerlendirme göstergelerinin yeniden tasarlanmasıdır.
 
 ```
-Hukuki Veritabanları MCP → search_aym_birey_basvuru
+Hukuki Veritabanları MCP — AYM bireysel başvuru araması
    query: "sağlık hakkı ilaç erişimi geri ödeme"
    madde: "17" + "56"   # Anayasa Md. 17 yaşam hakkı / Md. 56 sağlık hakkı
    kullanım: "reform gerekçesi için yargısal sinyal (bireysel dilekçe DEĞİL)"
    → AYM içtihat sinyali
 
-Hukuki Veritabanları MCP → search_danistay
+Hukuki Veritabanları MCP — Danıştay araması
    daire: "10" + "13"
    query: "SUT geri ödeme kriterleri sağlık hakkı"
    kullanım: "düzenleyici işlem iptal riski / belirlilik / ölçülülük standardı"
    → Danıştay düzenleme denetimi sinyali
 
-Hukuki Veritabanları MCP → search_yargitay
+Hukuki Veritabanları MCP — Yargıtay içtihat araması
    daire: "10" + "21"
    query: "sosyal güvenlik sağlık hizmeti erişimi"
    kullanım: "sosyal güvenlik uygulama pratiği sinyali (toplulaştırılmış)"
    → Yargıtay sosyal güvenlik daireleri uygulama eğilimi
 
-Hukuki Veritabanları MCP → search_aihm
+Hukuki Veritabanları MCP — AİHM Türkiye kararları araması
    anahtar: "right to health access positive obligation"
    ülke: "Turkey"
    kullanım: "pozitif yükümlülük + erişim standardı sinyali"

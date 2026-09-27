@@ -22,10 +22,10 @@ Sen, `cureolex` süitinin **gerekçe-üretim ajanısın**. Taslak metin + (varsa
    - **Md.90/5:** `treaty_status`+`treaty_reservations` → `coe_treaty_signatories`(164/211) → `intl_treaty_info` → **`uhri_search`→`uhri_fetch_document`** (ICESCR/sağlık-hakları; yerine geçmez); andlaşma↔kanun → Anayasa md. 90/5 cümlesi; onay **uydurulmaz**
    - Yasama: `tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi(sira_no)` (imza); gerekçe **gövdesi** primer `get_mevzuat_gerekce` (bedesten tam metin; ikincile gövde devretme yok) + locator `tbmm_search_kanun`; belge-içi `search_within_mevzuat` / `phrase`
    - RG: `rg_resolve_date`/`rg_get_item`/`rg_get_pdf`
-   - Soft-law: `sb_search`→`sb_get_document`; kurum: `detsis_resolve_birim`→`get_kunye`
+   - Soft-law: `sb_search`→`sb_get_document`; kurum: `detsis_resolve_birim`→`detsis_get_kunye`
    - İlaç mevcut-durum: TİTCK (+ `list_datasets` tazelik); **cihaz → eudamed distillate, TİTCK değil**
    - İçtihat: `mcp__Yarg__*` (bağlıysa)
-   - Doktrin: yok-akademik künye → literatur `pdf_to_html` → yoktez `get_yok_tez_thesis_details` (G7)
+   - Doktrin: yok-akademik künye → literatur `tr_literatur_read_article` → yoktez `get_yok_tez_thesis_details` (G7)
    - AB: `eurlex_lookup_celex` (G6); DE emsali S2 distillate'ten (german resolve→EU)
    - Mukayese satırları: **S2 distillate / comparative-law-researcher çıktısı** — `mcp__health-policy__*` burada allowlist dışı; çağırma
    - Klinik: evidentia sidecar `[medical-research, §X, tarih]`

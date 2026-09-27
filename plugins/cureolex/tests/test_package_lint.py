@@ -38,6 +38,10 @@ class ToolReferenceTests(unittest.TestCase):
     def test_unbackticked_chain(self):
         self.assertIn("pdf_to_html", pl.tool_references("search_articles → pdf_to_html ile tam metin"))
 
+    def test_mcp_call_key_is_a_reference(self):
+        refs = pl.tool_references("mcp_call: search_aym_norm_denetimi\n   query: x")
+        self.assertIn("search_aym_norm_denetimi", refs)
+
     def test_plain_backticked_field_is_not_a_reference(self):
         self.assertEqual(pl.tool_references("alan `as_of_date` zorunlu"), set())
 

@@ -13,6 +13,10 @@ _MCP_PREFIX = re.compile(r"mcp__[A-Za-z0-9_-]+?__")
 _CALL = re.compile(r"(?<![\w.])(" + SNAKE + r")\(")
 _CHAIN_LEFT = re.compile(r"(?<![\w.])`?(" + SNAKE + r")(?:\([^)\n]*\))?`?\s*(?:→|->)")
 _CHAIN_RIGHT = re.compile(r"(?:→|->)\s*`?(" + SNAKE + r")(?![\w.])")
+# YAML/pseudo-call anahtarı: `mcp_call: <ad>` — bir çağrı biçimidir (spec §1.3
+# başarı ölçütü 2: "çağrı biçiminde anılan her araç adı"). Yalnız bu anahtarla
+# dar tutulur; genel `<kelime>: <kelime>` biçimini yakalamaz.
+_MCP_CALL_KEY = re.compile(r"(?<![\w.])mcp_call:\s*`?(" + SNAKE + r")")
 
 TOOL_SCAN_GLOBS = ("skills/**/*.md", "agents/*.md", "commands/*.md", "tests/*.yaml")
 SCHEMA_GLOBS = ("skills/*/schemas/*.json", "jurisdictions/_schema/*.json")
@@ -49,10 +53,11 @@ NON_TOOL_IDENTIFIERS: set = {
 
 
 def tool_references(text: str) -> set:
-    """Metindeki araç atıfları: çağrı biçimi `ad(` ya da `→`/`->` zinciri halkası."""
+    """Metindeki araç atıfları: çağrı biçimi `ad(`, `→`/`->` zinciri halkası ya da
+    `mcp_call: ad` YAML/pseudo-call anahtarı."""
     text = _MCP_PREFIX.sub(" ", text)
     return (set(_CALL.findall(text)) | set(_CHAIN_LEFT.findall(text))
-            | set(_CHAIN_RIGHT.findall(text)))
+            | set(_CHAIN_RIGHT.findall(text)) | set(_MCP_CALL_KEY.findall(text)))
 
 
 def known_tools(fleet: dict) -> set:

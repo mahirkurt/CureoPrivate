@@ -458,7 +458,8 @@ servers:
     modes: [ALL]
     gate: G7
     tools_used: [search_yok_tez_detailed, get_yok_tez_thesis_details,
-                 get_yok_tez_document_markdown, search_yok_tez_by_anabilim_dali]
+                 get_yok_tez_document_markdown, search_yok_tez_by_anabilim_dali,
+                 list_yok_tez_anabilim_dali]
     role: >-
       YÖK Ulusal Tez Merkezi tam-metin — tez-düzeyi Türk hukuk/tıp doktrini
       (gerekçe akademik dayanağı, ANALYZE doktrin taraması) + G7 YÖK-Tez ATIF

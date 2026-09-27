@@ -254,31 +254,31 @@ Aşağıdaki isim ve eserler, Türk sağlık hukuku alanında en sık atıf alan
 
 ```
 # AYM bireysel başvuru taraması
-mcp_call: search_aym_birey_basvuru
+Hukuki Veritabanları MCP — AYM bireysel başvuru araması
    query: "sağlık hakkı tedavi reddi"
    tarih_baslangic: 2018-01-01
    tarih_bitis: 2024-12-31
    madde: "17"     # Anayasa Md. 17 yaşam hakkı
 
 # AYM norm denetimi taraması  
-mcp_call: search_aym_norm_denetimi
+Hukuki Veritabanları MCP — AYM norm denetimi araması
    query: "TİTCK düzenleyici işlemi"
    karar_turu: "İPTAL"
 
 # Danıştay genel arama
-mcp_call: search_danistay
+Hukuki Veritabanları MCP — Danıştay araması
    query: "ruhsat iptali"
    daire: "13"     # 13. Daire
    tarih_baslangic: 2020-01-01
 
 # Yargıtay genel arama
-mcp_call: search_yargitay
+Hukuki Veritabanları MCP — Yargıtay içtihat araması
    query: "malpraktis tazminat"
    daire: "13"     # 13. HD
    karar_yili: 2022
 
 # AİHM Türkiye kararları
-mcp_call: search_aihm_turkey
+Hukuki Veritabanları MCP — AİHM Türkiye kararları araması
    madde: "Article 2"
    anahtar: "healthcare"
 ```

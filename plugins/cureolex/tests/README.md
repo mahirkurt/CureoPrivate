@@ -48,7 +48,7 @@ cases:
 
 | Süit | Kapsanan |
 |------|----------|
-| `routing_tests.yaml` | 3.x'in 12 modu için sınıflandırma + medical-research tetikleme seviyesi |
+| `routing_tests.yaml` | 12 moddan 9'u için sınıflandırma + medical-research tetikleme seviyesi (REGULATORY_MATURITY/TRANSPOSITION/RELIANCE_FRAMEWORK için vaka yok) |
 | `scope_boundary_tests.yaml` | 5 kapsam-dışı kalemin negatif testi + reform pozitif karşılıkları |
 | `mod9_medical_research_tests.yaml` | Mod 9 otomatik tetikleme + `ex_post_metrics` + G9 + şema-2.3.1 zorunluluğu |
 | `citation_hallucination_tests.yaml` | G7 epistemik dürüstlük — uydurma CELEX/AYM/Yargıtay + `mcp_verified` etiketleme |

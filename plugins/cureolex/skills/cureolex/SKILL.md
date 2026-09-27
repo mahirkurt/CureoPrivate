@@ -155,14 +155,14 @@ Bu plugin **bağımsızdır** (ikisi de yokken 12 mod çalışır); ancak bu iki
 
 ## 6. Scope Guard — kapsam sınırı
 
-**Bağlam karar verir, terim değil.** KAPSAM İÇİ = mevzuat *reformu* (12 mod). YÖNLENDİR:
+**Bağlam karar verir, terim değil.** KAPSAM İÇİ = mevzuat *reformu* (12 mod). Aşağıdakiler KAPSAM DIŞIDIR — cureolex çıktısı üretmez, hiçbir skill'e yönlendirilmez:
 
-| Konu | Yönlendir |
+| Konu | Sonuç |
 |---|---|
-| Bireysel SGK ödeme reddi davası · AYM bireysel başvuru (sağlık) · kompasyonel kullanım talebi · hekim malpraktis savunması | `saglik-sigorta` / `onko-erisim` skill'leri |
-| Promosyonel materyal denetimi (detail aid, leave-behind, MLR, speaker bureau, CME) | `promo-censor` skill'i |
+| Bireysel SGK ödeme reddi davası · AYM bireysel başvuru (sağlık) · kompasyonel kullanım talebi · hekim malpraktis savunması | kapsam dışı |
+| Promosyonel materyal denetimi (detail aid, leave-behind, MLR, speaker bureau, CME) | kapsam dışı |
 
-Şüphede **yönlendir, çıktı üretme**. İçtihat kaynakları reform-**gerekçe** sinyalidir; dava dilekçesi üretimi için DEĞİL.
+Şüphede **çıktı üretme**, kullanıcıya kapsam dışı olduğunu söyle. İçtihat kaynakları reform-**gerekçe** sinyalidir; dava dilekçesi üretimi için DEĞİL.
 
 ## 7. Çıktı sözleşmesi — kapsam manifestosu + no-fabrication + confidence_label
 

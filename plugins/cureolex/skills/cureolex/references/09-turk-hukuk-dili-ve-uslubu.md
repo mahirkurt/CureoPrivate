@@ -1002,7 +1002,7 @@ R9 sürüm tarihçesi:
 - v2.3: 1.256 satır (+260 satır doktrinel derinleşme)
 - **v2.4: 1.011 satır** (-245 satır litigation saflaştırma)
 
-**v2.4 Saflaştırma Gerekçesi:** Cureolex'ın amacı **Türkiye'de sağlık mevzuatının her düzlemde reform, değişiklik ve yeniden yazımı**. Yargısal ilam formatları (§4.4-4.6 BAM/Yargıtay/AYM) ve sağlık davaları/disiplin yazışması uyarlamaları (§13.4-13.7) bu amacın **dışında**dır; bireysel hak arama bağlamı saglik-sigorta ve onko-erisim skill'lerinde değerlendirilir.
+**v2.4 Saflaştırma Gerekçesi:** Cureolex'ın amacı **Türkiye'de sağlık mevzuatının her düzlemde reform, değişiklik ve yeniden yazımı**. Yargısal ilam formatları (§4.4-4.6 BAM/Yargıtay/AYM) ve sağlık davaları/disiplin yazışması uyarlamaları (§13.4-13.7) bu amacın **dışında**dır; bireysel hak arama bağlamı kapsam dışıdır — cureolex çıktısı üretmez.
 
 **Atıf kaynakları (v2.3'ten korunan):**
 - *6100 sayılı HMK Genel Gerekçesi*, RG 4/2/2011 S. 27836 — Md. 27, Md. 297 alt-bölümleri
@@ -1011,7 +1011,7 @@ R9 sürüm tarihçesi:
 - Centel, N., Zafer, H. (2024). *Ceza Muhakemesi Hukuku* (21. Bası). Beta Yayınları.
 
 **v2.4'te kaldırılan atıf kaynakları (litigation odaklı):**
-- ~Akkan, M. (2019). *Hukuk Dili ve Adli Yazışmalar*. Ünite 5 + Ünite 7~ → saglik-sigorta skill'inde değerlendirilebilir
+- ~Akkan, M. (2019). *Hukuk Dili ve Adli Yazışmalar*. Ünite 5 + Ünite 7~ → kapsam dışı (bireysel hak-arama/dava — cureolex reform çıktısı üretmez)
 - ~Adliye Yazı İşleri Yönetmelikleri (4 yönetmelik)~ → litigation skill kapsamı
 
 ---

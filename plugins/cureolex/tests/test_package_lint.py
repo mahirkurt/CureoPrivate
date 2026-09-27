@@ -77,5 +77,24 @@ class CheckToolNamesTests(unittest.TestCase):
         self.assertEqual(pl.check_tool_names(root, FLEET)[0], [])
 
 
+class ForbiddenNamesTests(unittest.TestCase):
+    def test_forbidden_name_is_reported(self):
+        root = make_root({"skills/cureolex/SKILL.md": "Bireysel dava → saglik-sigorta"})
+        errors, _ = pl.check_forbidden_names(root, FLEET)
+        self.assertTrue(any("saglik-sigorta" in m for _, m in errors))
+
+    def test_case_insensitive(self):
+        root = make_root({"README.md": "PROMO-CENSOR"})
+        self.assertTrue(pl.check_forbidden_names(root, FLEET)[0])
+
+    def test_exempt_files_are_skipped(self):
+        root = make_root({"CHANGELOG.md": "3.x: onko-erisim yönlendirmesi vardı"})
+        self.assertEqual(pl.check_forbidden_names(root, FLEET)[0], [])
+
+    def test_binary_like_files_are_skipped(self):
+        root = make_root({"docs/logo.png": "onko-erisim"})
+        self.assertEqual(pl.check_forbidden_names(root, FLEET)[0], [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -115,7 +115,7 @@ cureolex/
 
 - **İnsan denetimi her çıktıda zorunludur.** Bu plugin karar-destek üretir, resmî hukuki mütalaa değil.
 - **Tam-filo + temiz-kopya:** tüm araçlar çalışır ama ham getirim `legal-distiller` alt-ajanında toplanır; ana bağlama yalnız damıtılmış sonuç + kapsam kanıtı gelir.
-- **Kapsam:** reform/norm-üretim. Bireysel hak-arama (SGK red, AYM başvuru, malpraktis) → `saglik-sigorta`/`onko-erisim`; promosyon denetimi → `promo-censor`.
+- **Kapsam:** reform/norm-üretim. Bireysel hak-arama (SGK red, AYM başvuru, malpraktis) ve promosyon denetimi kapsam dışıdır — cureolex çıktısı üretmez, hiçbir skill'e yönlendirilmez.
 
 ## Lisans
 

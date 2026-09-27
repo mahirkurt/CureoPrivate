@@ -119,7 +119,7 @@ case_law:
   - id: tr.court.aym
     name: "Anayasa Mahkemesi (norm denetimi + içtihat)"
     use: "Belirlilik/ölçülülük + sağlık hakkı reform gerekçe sinyali"
-    scope_note: "Bireysel başvuru DİLEKÇESİ üretimi KAPSAM DIŞI (→ onko-erisim)."
+    scope_note: "Bireysel başvuru DİLEKÇESİ üretimi KAPSAM DIŞI (cureolex çıktısı üretmez)."
     access: { url: "https://www.anayasa.gov.tr/", mcp_server: yargi }
     verification: yargi_mcp
   - id: tr.court.danistay

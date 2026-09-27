@@ -44,10 +44,10 @@ Mod belirsizse, kullanıcıya kısa bir netleştirme sorusu sor (ör. "Mevcut bi
 
 ## 3. Scope Guard (her yönlendirmeden önce)
 
-Cureolex yalnız **mevzuat reformu/üretimi** içindir. Şu talepler **kapsam dışıdır → yönlendir, çıktı üretme**:
+Cureolex yalnız **mevzuat reformu/üretimi** içindir. Şu talepler **kapsam dışıdır — cureolex çıktısı üretmez, hiçbir skill'e yönlendirilmez**:
 
-- Bireysel SGK ödeme reddi davası · AYM bireysel başvuru (sağlık) · kompasyonel kullanım · malpraktis savunması → `saglik-sigorta` / `onko-erisim`.
-- Promosyonel materyal denetimi (detail aid, MLR, speaker bureau, CME) → `promo-censor`.
+- Bireysel SGK ödeme reddi davası · AYM bireysel başvuru (sağlık) · kompasyonel kullanım · malpraktis savunması.
+- Promosyonel materyal denetimi (detail aid, MLR, speaker bureau, CME).
 
 ## 4. Çekirdek doktrini hatırlat (yeni kullanıcıya)
 

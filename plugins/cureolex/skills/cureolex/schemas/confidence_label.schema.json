@@ -70,13 +70,10 @@
       "description": "Kapsam-dışı kalemlerin reddi (Scope Guard). Çıktı bireysel SGK/AYM savunması, TİTCK dava dilekçesi, ADACLIN-tipi savunma veya promosyonel PASS/FAIL üretmediğini teyit eder.",
       "type": "string"
     },
-    "out_of_scope_redirect": {
-      "description": "İstem kapsam-dışıysa yönlendirilen skill(ler).",
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["saglik-sigorta", "onko-erisim", "promo-censor"]
-      }
+    "out_of_scope_category": {
+      "description": "İstem kapsam-dışıysa türü. Yönlendirme yapılmaz; cureolex çıktı üretmez.",
+      "type": "string",
+      "enum": ["bireysel_hak_arama", "promosyon_denetimi"]
     },
     "jurisdiction_pack": {
       "description": "4.0: çıktıyı üreten yargı bölgesi paketi. status=draft ise combined_confidence en fazla LOW (CC-6).",

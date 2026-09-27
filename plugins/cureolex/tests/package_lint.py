@@ -104,7 +104,32 @@ def check_tool_names(root: Path, fleet: dict):
     return errors, []
 
 
-CHECKS = [check_tool_names]
+# Pakette GEÇMEYECEK adlar. Kaldırılmış yönlendirme hedefleri (kullanıcı kararı,
+# 2026-09-27) ve eklenmemesi gereken olası hedefler. Sonraki görevler ad ekler.
+FORBIDDEN_NAMES = ["saglik-sigorta", "onko-erisim", "promo-censor", "ius-salutis",
+                   "hayat-kaza-sigorta"]
+# Adı bilerek taşıyan dosyalar: tarihçe ve bu denetimin kendisi/testleri.
+FORBIDDEN_EXEMPT = {"CHANGELOG.md", "tests/package_lint.py", "tests/test_package_lint.py",
+                    "hooks/test_hooks.py"}
+TEXT_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".py", ".txt", ".toml"}
+
+
+def check_forbidden_names(root: Path, fleet: dict):
+    errors = []
+    for p in sorted(root.rglob("*")):
+        if not p.is_file() or p.suffix not in TEXT_SUFFIXES:
+            continue
+        rel = str(p.relative_to(root))
+        if rel in FORBIDDEN_EXEMPT:
+            continue
+        low = p.read_text(encoding="utf-8", errors="replace").lower()
+        for name in FORBIDDEN_NAMES:
+            if name in low:
+                errors.append((rel, f"yasak ad '{name}' geçiyor"))
+    return errors, []
+
+
+CHECKS = [check_tool_names, check_forbidden_names]
 
 
 def run_all(root: Path, fleet: dict):

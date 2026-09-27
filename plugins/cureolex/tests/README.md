@@ -38,7 +38,7 @@ cases:
 | `expect.mode` | Beklenen cureolex modu (12 kanonik moddan biri ya da bir paketin `mode_aliases` takma adı) veya `out_of_scope` |
 | `expect.medical_research` | `mandatory` / `conditional` / `none` (R14 §1.2) |
 | `expect.routed_to` | `cureolex` veya `out_of_scope` |
-| `expect.redirect` | Kapsam-dışıysa hedef skill(ler): `saglik-sigorta` / `onko-erisim` / `promo-censor` |
+| `expect.out_of_scope_category` | Kapsam-dışıysa tür: `bireysel_hak_arama` / `promosyon_denetimi` (yönlendirme YOK; cureolex çıktı üretmez) |
 | `expect.must_not_produce` | Üretilmemesi gereken çıktı türleri (Scope Guard) |
 | `expect.gates` | İlgili kapıların beklenen sonucu: `PASS` / `FAIL` / `CONDITIONAL` |
 | `expect.required_sections` | Modun zorunlu kıldığı medical-research bölümleri |

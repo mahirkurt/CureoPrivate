@@ -4,7 +4,6 @@ Bu dosya, **medical-research v7.1 skill'inin composition-runbook.md §10 (Data T
 
 - §10.1 medical-research → carbon-html-report ✅ tanımlı
 - §10.2 medical-research → carbon-pptx ✅ tanımlı
-- §10.3 medical-research → onko-erisim ✅ tanımlı
 - §10.4 medical-research → lex-mercator ✅ tanımlı
 - §10.5 medical-research → **cureolex** ❌ tanımlanmamış
 

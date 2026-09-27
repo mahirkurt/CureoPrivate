@@ -677,5 +677,55 @@ check("30KB+ yönlendirme collection kullanır, doc_scope önermez",
       rc == 0 and "collection" in str(out).lower()
       and "doc_scope=" not in str(out).lower())
 
+print("== scope_guard.py (kendi talep; hiçbir skill'e yönlendirme yok) ==")
+
+
+def _sg(prompt):
+    rc, out = run("scope_guard.py", {"prompt": prompt})
+    return rc, (out or {}).get("hookSpecificOutput", {}).get("additionalContext", "")
+
+
+_YASAK_ADLAR = ("saglik-sigorta", "onko-erisim", "promo-censor", "ius-salutis", "hayat-kaza-sigorta")
+
+rc, c = _sg("SGK emicizumab ödeme reddine karşı dava dilekçesi hazırla, mevzuat dayanaklarıyla.")
+check("kendi talebi: bireysel dava → uyarı", rc == 0 and "bireysel hak-arama" in c)
+check("uyarı hiçbir skill adı taşımaz", bool(c) and not any(n in c for n in _YASAK_ADLAR))
+
+rc, c = _sg("SGK'nın reddine itiraz için AYM bireysel başvuru yapacağım; mevzuatı özetle.")
+check("kesme işaretli kendi talebi → uyarı (tek tırnak çıkarılmaz)", "bireysel hak-arama" in c)
+
+rc, c = _sg("Bu ilacın detail aid promosyon materyalini tanıtım yönetmeliğine göre denetle.")
+check("promosyon denetimi → uyarı", "promosyon materyali" in c)
+
+rc, c = _sg("Şu kalıbı düzelt: `SGK.{0,20}red` — scope_guard.py yönetmelik bağlamında yanlış tetikleniyor.")
+check("satır içi kod içindeki kalıp → sessiz", c == "")
+
+rc, c = _sg('Rapordaki "SGK/SUT reddi" ifadesi kalıpla eşleşmiş; hook mevzuat reformu için düzeltilmeli.')
+check("çift tırnaklı alıntı → sessiz", c == "")
+
+rc, c = _sg("> SGK ödeme reddi davası açılacak\n\nBu alıntıyı taşıyan notun hook hatasını düzelt, yönetmelik bağlamında.")
+check("> alıntı satırı → sessiz", c == "")
+
+rc, c = _sg("```\nSGK reddi dava dilekçesi\n```\nYukarıdaki test verisini yönetmelik testine ekle.")
+check("kod bloğu → sessiz", c == "")
+
+# İnceleme raporunun biçimi (2026-09-27 Cowork raporundan kısaltılmış temsilî örnek).
+_RAPOR = ("## Cureolex 4.0.0 incelemesi\n\n**Özet.** Güncelleme bağlanmış; paket mimarisi sağlam.\n\n"
+          "### Yeni bulgular\n\n**Y2.** Hook, yapıştırılan metindeki SGK/SUT reddi ifadesiyle eşleşti; "
+          "yönetmelik bağlamında yanlış tetik.\n")
+rc, c = _sg(_RAPOR)
+check("belge biçimli rapor, ilk düzyazı paragrafı temiz → sessiz", c == "")
+
+# Temsilî devir notu (gerçek notun birebir metni değil; biçimi taşır).
+_DEVIR = ("# Devir notu — cureolex hook\n\nYapılacak: mevzuat paketinin testlerini güncelle.\n\n"
+          "## Bağlam\n\n- Kullanıcı örneği: SGK ödeme reddi davası için dilekçe istendi\n"
+          "- Yönetmelik bağlamı: SUT değişikliği\n")
+rc, c = _sg(_DEVIR)
+check("devir notu (madde listesindeki örnek) → sessiz", c == "")
+
+rc, c = _sg("# Dava hazırlığı\n\nSGK ödeme reddine karşı dava dilekçesi yaz, mevzuat dayanaklarıyla.\n\n"
+            "## Ek\n\nBelgeler ekte.")
+check("belge biçimli ama ilk düzyazı paragrafı gerçek talep → uyarı", "bireysel hak-arama" in c)
+
 print(f"\nTOPLAM: {PASS} PASS / {FAIL} FAIL")
 sys.exit(1 if FAIL else 0)

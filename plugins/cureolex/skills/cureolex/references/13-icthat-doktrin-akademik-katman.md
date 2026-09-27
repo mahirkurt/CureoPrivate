@@ -539,7 +539,7 @@ Mevzuat MCP → "Sınai Mülkiyet Kanunu" + "Beşeri Tıbbi Ürünler"
 
 ### 10.3. Senaryo: "SUT/HTA Geri Ödeme Politikası Reformu — AYM + Danıştay İçtihat Sinyali"
 
-> ⛔ **Kapsam ayrımı.** Bu senaryo bireysel SGK ödeme reddi davası, ihtiyati tedbir talebi, esas dava dilekçesi veya AYM bireysel başvuru formu **üretmez**. Bireysel hak arama dosyaları `saglik-sigorta` / `onko-erisim` skill'lerine aittir.
+> ⛔ **Kapsam ayrımı.** Bu senaryo bireysel SGK ödeme reddi davası, ihtiyati tedbir talebi, esas dava dilekçesi veya AYM bireysel başvuru formu **üretmez**. Bireysel hak arama dosyaları kapsam dışıdır — cureolex çıktısı üretmez.
 >
 > **Amaç:** Bireysel uyuşmazlıklardan doğan yargısal sinyalleri (sağlık hakkı, ilaç erişimi, etkili başvuru, ölçülülük, belirlilik) **toplulaştırılmış politika girdisine** dönüştürerek SUT/HTA geri ödeme kriterlerinin, karar gerekçelendirme standardının, itiraz mekanizmasının ve ex post değerlendirme göstergelerinin yeniden tasarlanmasıdır.
 

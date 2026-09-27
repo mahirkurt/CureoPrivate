@@ -252,7 +252,7 @@ Aşağıda Cureolex + medical-research birleşik pipeline'ları detaylanmaktadı
 
 **Senaryo:** TİTCK düzenlemesinin Danıştay iptal riski ve reform gerekçesi açısından değerlendirilmesi (mevzuat tutarlılığı + 5210 uyum + bilimsel dayanak analizi).
 
-> ⚠️ **Kapsam dışı:** Dava savunma dilekçesi, Bakanlık avukatlığı defans paketi, bilirkişi sunum deck'i ve somut dava stratejisi cureolex kapsamı DIŞINDADIR (→ saglik-sigorta/ilgili hukuk birimi). Burada yalnızca düzenlemenin **reform/iptal-riski analizi** yapılır.
+> ⚠️ **Kapsam dışı:** Dava savunma dilekçesi, Bakanlık avukatlığı defans paketi, bilirkişi sunum deck'i ve somut dava stratejisi cureolex kapsamı DIŞINDADIR (→ kapsam dışı: bireysel hak-arama/dava — cureolex reform çıktısı üretmez). Burada yalnızca düzenlemenin **reform/iptal-riski analizi** yapılır.
 
 **Pipeline:**
 
@@ -279,7 +279,7 @@ Aşağıda Cureolex + medical-research birleşik pipeline'ları detaylanmaktadı
 
 ### 3.3. ~~Pipeline P-3: SGK Ödeme Reddi Bireysel Başvuru~~ — DEPRECATED / KAPSAM DIŞI (v2.5.2)
 
-> ⛔ **KAPSAM DIŞI — v2.5.2'de DEPRECATED.** Bu pipeline bireysel SGK ödeme reddi → AYM bireysel başvuru üretimini tanımlıyordu; bu, v2.4 saflaştırma kararı uyarınca cureolex kapsamı DIŞINDADIR ve `saglik-sigorta` / `onko-erisim` skill'lerine aittir. Aşağıdaki adımlar yalnızca **tarihsel kayıt** olarak bırakılmıştır; cureolex tarafından **çalıştırılmaz**. cureolex yalnızca SUT/HTA **geri ödeme politikası reformu** (Mod 1/6/9) bağlamında devreye girer; bireysel başvuru formu veya savunma ÜRETMEZ.
+> ⛔ **KAPSAM DIŞI — v2.5.2'de DEPRECATED.** Bu pipeline bireysel SGK ödeme reddi → AYM bireysel başvuru üretimini tanımlıyordu; bu, v2.4 saflaştırma kararı uyarınca cureolex kapsamı DIŞINDADIR (bireysel hak-arama/dava — cureolex reform çıktısı üretmez). Aşağıdaki adımlar yalnızca **tarihsel kayıt** olarak bırakılmıştır; cureolex tarafından **çalıştırılmaz**. cureolex yalnızca SUT/HTA **geri ödeme politikası reformu** (Mod 1/6/9) bağlamında devreye girer; bireysel başvuru formu veya savunma ÜRETMEZ.
 >
 > **In-scope reform karşılığı (P-3'ün yerini alan):** "SUT geri ödeme kriterini kanıt temelli reforme eden tebliğ taslağı + Bütçe Etki Formu" → Mod 1 (DRAFT) + Mod 6 (RIA) + medical-research §7/§9/§14 (HTA delili reform gerekçesi olarak).
 
@@ -361,7 +361,7 @@ Aşağıda Cureolex + medical-research birleşik pipeline'ları detaylanmaktadı
 
 ### 3.7. ~~Pipeline P-7: TİTCK ADACLIN-Tipi Çoklu Red Savunma Paketi~~ — DEPRECATED / KAPSAM DIŞI (v2.5.3)
 
-> ⛔ **KAPSAM DIŞI — v2.5.3'te DEPRECATED.** Bu pipeline ürün-spesifik/bireysel TİTCK red savunma paketi (Bilimsel Kurul sözlü savunması) üretimine yönelikti; bu cureolex kapsamı DIŞINDADIR (→ onko-erisim/ilgili başvuru sahibi). Aşağıdaki adımlar yalnızca **tarihsel kayıt**; cureolex tarafından **çalıştırılmaz**.
+> ⛔ **KAPSAM DIŞI — v2.5.3'te DEPRECATED.** Bu pipeline ürün-spesifik/bireysel TİTCK red savunma paketi (Bilimsel Kurul sözlü savunması) üretimine yönelikti; bu cureolex kapsamı DIŞINDADIR (→ kapsam dışı: bireysel hak-arama/dava — cureolex reform çıktısı üretmez). Aşağıdaki adımlar yalnızca **tarihsel kayıt**; cureolex tarafından **çalıştırılmaz**.
 >
 > **In-scope reform karşılığı:** TİTCK başvuru/red süreçlerinin **usul standardı veya mevzuat reformu** analizi → Mod 1 (DRAFT) / Mod 3 (ANALYZE) / Mod 6 (RIA).
 
@@ -458,7 +458,7 @@ bilgileri... [medical-research § 4]
 
 **Çağrı koşulu:** Denetlenen metin bir promosyonel materyal DEĞİL, sağlık/tanıtım/klinik araştırma/geri ödeme mevzuatı reform taslağı ise ve taslak klinik veya compliance gerekçesi içeriyorsa.
 
-**Kapsam dışı:** Detail aid, leave-behind, e-detailing, MLR onayı, speaker bureau, CME governance ve materyal PASS/FAIL denetimi → `promo-censor`.
+**Kapsam dışı:** Detail aid, leave-behind, e-detailing, MLR onayı, speaker bureau, CME governance ve materyal PASS/FAIL denetimi → kapsam dışı (promosyon materyali denetimi).
 
 **Beklenen medical-research bölümleri:**
 - § 15.e (Compliance stack — EFPIA + IFPMA + FCPA + İEİS)
@@ -467,13 +467,12 @@ bilgileri... [medical-research § 4]
 
 **Cureolex tüketim noktaları:**
 - **21-noktalı 5210 uyum denetimine çapraz katman:** Medical-research § 15 ile 5210 denetimi çapraz doğrulanır
-- **Önemli ek:** `promo-censor` skill ile birleşim noktası — medical-research → promo-censor → cureolex
 
 ### 4.5. Mod 5 (OPINE) — Medical-Research Handoff
 
 **Çağrı koşulu:** Reform sürecinde klinik/HTA içerikli kurum/paydaş görüşü, TBMM komisyonu bilimsel mütalaası, yönetmelik değişikliği görüşü veya SUT/HTA politika reformu değerlendirmesi gerekiyorsa.
 
-**Kapsam dışı:** Bireysel SGK ödeme reddi, bireysel tedavi reddi, AYM bireysel başvuru formu, kompasyonel kullanım talebi → saglik-sigorta/onko-erisim.
+**Kapsam dışı:** Bireysel SGK ödeme reddi, bireysel tedavi reddi, AYM bireysel başvuru formu, kompasyonel kullanım talebi → kapsam dışı (bireysel hak-arama/dava — cureolex reform çıktısı üretmez).
 
 **Beklenen medical-research bölümleri:**
 - § 14.a (HTA ajans-ajans matriksi) — NICE/CADTH/PBAC/IQWiG/HAS/ICER
@@ -548,7 +547,7 @@ bilgileri... [medical-research § 4]
 
 **Sidecar zorunluluğu:** `ex_post_metrics` alanı dolu olmalıdır; eksikse cross-skill gate **G9 CONDITIONAL/FAIL** döner (bkz. §15.1 G9 satırı + §6.3 Mod 9 notu).
 
-**Kapsam dışı:** Bireysel SGK ödeme reddi sonrası tazminat/dava değerlendirmesi, hasta özelinde erişim dosyası → `saglik-sigorta`/`onko-erisim`. Mod 9 yalnızca **politika/mevzuat düzeyinde** ex post değerlendirme üretir.
+**Kapsam dışı:** Bireysel SGK ödeme reddi sonrası tazminat/dava değerlendirmesi, hasta özelinde erişim dosyası → kapsam dışı (bireysel hak-arama/dava — cureolex reform çıktısı üretmez). Mod 9 yalnızca **politika/mevzuat düzeyinde** ex post değerlendirme üretir.
 
 ---
 
@@ -849,7 +848,7 @@ composes_with:
         replaces_deprecated: "P-3 SGK Ödeme Reddi Bireysel Başvuru (bkz §3.3 — KAPSAM DIŞI)"
         modes: [DRAFT, RIA, EX_POST_EVALUATION]
         scope: "policy_reform_only"
-        peer_skills: [onko-erisim, carbon-html-report]
+        peer_skills: [carbon-html-report]
       - name: "P-4 Health Regulation DRAFT — TİTCK"
         modes: [DRAFT]
         peer_skills: [carbon-html-report]
@@ -943,7 +942,7 @@ Birleşik bir Cureolex + medical-research çıktısının kalite kabul kriterler
 
 **Test 2 (NEGATİF — Scope Guard): Bireysel SGK Ödeme Reddi / AYM**
 - Sorgu: "Trastuzumab deruksetkan T-DXd SGK ödeme reddi bireysel başvuru"
-- Beklenen: cureolex **AKTİVE OLMAZ**; istem kapsam dışı tespit edilir ve `saglik-sigorta`/`onko-erisim` skill'ine yönlendirilir (SKILL.md §2 Scope Guard). Eski P-3 pipeline **DEPRECATED**'tir.
+- Beklenen: cureolex **AKTİVE OLMAZ**; istem kapsam dışı tespit edilir ve kullanıcıya kapsam dışı olduğu söylenir (bireysel hak-arama/dava — cureolex reform çıktısı üretmez; SKILL.md §2 Scope Guard). Eski P-3 pipeline **DEPRECATED**'tir.
 - Doğrulama: Hiçbir OPINE/AYM çıktısı üretilmez; yalnızca yönlendirme mesajı döner. In-scope karşılığı: "SUT geri ödeme kriteri reformu tebliğ taslağı" (Mod 1+6).
 
 **Test 3: TİTCK Yönetmelik İptal Riski / Reform Savunulabilirliği Analizi**
@@ -1481,7 +1480,7 @@ v2.2'de tanımlanan 8 pipeline'a (P-1 ila P-8) **8 yeni pipeline** eklenir. P-9 
 
 **Senaryo:** Biyobenzer extrapolation ve geri ödeme kriterlerine ilişkin SUT/HTA politika reformu (genel düzenleme düzeyinde).
 
-> ⚠️ **Kapsam dışı:** Belirli bir ürün için bireysel geri ödeme reddi savunması cureolex kapsamı DIŞINDADIR (→ onko-erisim/saglik-sigorta). Burada yalnızca **politika/mevzuat reformu** ele alınır.
+> ⚠️ **Kapsam dışı:** Belirli bir ürün için bireysel geri ödeme reddi savunması cureolex kapsamı DIŞINDADIR (→ kapsam dışı: bireysel hak-arama/dava — cureolex reform çıktısı üretmez). Burada yalnızca **politika/mevzuat reformu** ele alınır.
 
 **Akış:** medical-research § 7 (Cochrane biyobenzer SR) + § 8 (pivotal biyobenzer trial) + § 13.b (EMA biyobenzer rehberi) + § 14 (HTA biyobenzer fiyat müzakeresi) → cureolex Mod 1 (DRAFT) / Mod 6 (RIA) — *biyobenzer extrapolation/geri ödeme politikası reform metni*
 
@@ -1549,7 +1548,7 @@ Medical-research + cureolex sürüm kombinasyonları için uyumluluk haritası.
 - **Cureolex v2.0 + v2.1**: Medical-research'ün doğrudan çağrımı **resmi entegrasyon olmaksızın** mümkündür; R14 olmadığı için handoff manuel yapılır.
 - **Cureolex v2.2**: R14 ilk sürüm; medical-research **v7.1 ile** çalışır. v6.0/v7.0'a graceful degrade desteklenmez (AdisInsight § 19 eksik).
 - **Cureolex v2.3**: R14 v2 ile; sidecar JSON v2.3 şeması zorunlu; medical-research v7.1 ile minimum, v7.2 hazır olduğunda yeniden teyit gerekli.
-- **Cureolex v2.4 – v2.6.0**: Kapsam saflaştırma (v2.4 — bireysel hak arama → `saglik-sigorta`/`onko-erisim`) + programatik veri katmanı (v2.5) + kapsam/routing ve R14 entegrasyon tutarlılığı (v2.5.3–v2.6.0) eklendi; medical-research **v7.1 ile doğrulanmıştır**; sidecar JSON v2.3.1 şeması; Mod 9 (EX_POST_EVALUATION) için `ex_post_metrics` alanı zorunlu; **v2.6.0 ile şema-doğrulanan üretim test/harness katmanı** (`schemas/` JSON Schema + `tests/` davranış süitleri + `source_registry.yaml` + `programmatic_source_healthcheck.yaml`) eklendi. v7.2 hazır olduğunda Bölüm 9 composability sözleşmesi yeniden teyit edilmelidir.
+- **Cureolex v2.4 – v2.6.0**: Kapsam saflaştırma (v2.4 — bireysel hak arama kapsam dışı; cureolex reform çıktısı üretmez) + programatik veri katmanı (v2.5) + kapsam/routing ve R14 entegrasyon tutarlılığı (v2.5.3–v2.6.0) eklendi; medical-research **v7.1 ile doğrulanmıştır**; sidecar JSON v2.3.1 şeması; Mod 9 (EX_POST_EVALUATION) için `ex_post_metrics` alanı zorunlu; **v2.6.0 ile şema-doğrulanan üretim test/harness katmanı** (`schemas/` JSON Schema + `tests/` davranış süitleri + `source_registry.yaml` + `programmatic_source_healthcheck.yaml`) eklendi. v7.2 hazır olduğunda Bölüm 9 composability sözleşmesi yeniden teyit edilmelidir.
 
 ### 17.3. Versiyon Sapma Yönetimi (Graceful Degradation)
 
@@ -1905,8 +1904,6 @@ R14 v2.2: 969 satır → R14 v2.3: ~1.800 satır → **R14 v2.3-r1: ~2.060 satı
 - Medical-research v7.2 ile yeniden teyit
 - Sidecar JSON şemasının Türkçe ek alanlarla genişletilmesi (`turkish_legislation_refs`, `yargi_ictihat_chain`)
 - ATC kodu + ICD-11 entegre dispatch tablosu
-- Promo-censor skill ile üçlü entegrasyon (medical-research § 15 + cureolex Mod 4 + promo-censor) — materyal PASS/FAIL hükmü promo-censor'a aittir; cureolex yalnızca tanıtım mevzuatı reform metni girdisi sağlar
-- Onko-erisim skill ile entegrasyon (yalnızca toplulaştırılmış SUT/HTA reform politika sinyali; bireysel erişim/P-3 KAPSAM DIŞI)
 - Auto-orchestration: cureolex'tan medical-research'e otomatik request üretimi + sidecar otomatik tüketim (cureolex v2.4 hedefi)
 
 ---

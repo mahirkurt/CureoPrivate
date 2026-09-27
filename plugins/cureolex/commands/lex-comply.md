@@ -1,6 +1,6 @@
 ---
 name: lex-comply
-description: Mod 4 COMPLY — bir reform metninin 5210 uyum denetimi (R6b 21-nokta yürütülebilir rubrik; her kontrol PASS/FAIL/CONDITIONAL/N/A + test + düzeltme + risk ağırlığı). Yalnız YENİ reform metnini denetler; promosyon materyali DEĞİL (→ promo-censor). Argüman = denetlenecek taslak metin.
+description: Mod 4 COMPLY — bir reform metninin 5210 uyum denetimi (R6b 21-nokta yürütülebilir rubrik; her kontrol PASS/FAIL/CONDITIONAL/N/A + test + düzeltme + risk ağırlığı). Yalnız YENİ reform metnini denetler; promosyon materyali DEĞİL — kapsam dışı, cureolex çıktısı üretmez. Argüman = denetlenecek taslak metin.
 argument-hint: <denetlenecek taslak — dosya yolu veya yapıştırılan metin>
 ---
 
@@ -12,7 +12,7 @@ Hedef metin: **$ARGUMENTS**
 
 ## Yürütme
 
-1. **Scope Guard (§6).** Promosyonel/MLR denetimi → `promo-censor`.
+1. **Scope Guard (§6).** Promosyonel/MLR denetimi kapsam dışıdır — cureolex çıktısı üretmez.
 2. **Tam-filo (G0).** `legal-distiller` ile Mod 4 server-listesi (mevzuat load-bearing; resmi-gazete/titck/saglikbakanligi/Yarg/karşılaştırmalı çapraz).
 3. **R6b 21-nokta rubriği uygula** — her kontrol (K-1…K-21) test prosedürü + PASS/FAIL/CONDITIONAL/N/A + düzeltme + risk ağırlığı. **K-1 (üst-norm) önce**; Md.90/5 ayağı `treaty_status`/`treaty_reservations` + `coe_treaty_signatories`(164/211) + `intl_treaty_info` — onay icat edilmez. FAIL ise dur → kapsamlı revizyon.
 4. **Eşikler:** tümü PASS/N-A & CONDITIONAL≤3, FAIL=0 → YAYINA HAZIR; 1 yüksek-risk FAIL → düzeltme zorunlu; FAIL≥2 → kapsamlı revizyon; FAIL≥5 veya K-1/K-17 FAIL → tasarımı yeniden gözden geçir.

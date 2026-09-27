@@ -62,7 +62,7 @@ cases:
       must_not_produce: ["promosyonel materyal PASS/FAIL denetimi"]
     assertions:
       - "Mod COMPLY olmalı (reform metni uyum denetimi)."
-      - "Çıktı MEVZUAT METNİNİN uyumunu denetlemeli; bir promosyonel materyalin PASS/FAIL'ını DEĞİL (→ promo-censor)."
+      - "Çıktı MEVZUAT METNİNİN uyumunu denetlemeli; bir promosyonel materyalin PASS/FAIL'ını DEĞİL (kapsam dışı)."
     rationale: "SKILL.md §6 COMPLY (reform metni denetimi) + R14 §1.2; promosyonel materyal denetimi kapsam-dışı."
 
   - id: ROUTE-005
@@ -76,7 +76,7 @@ cases:
     assertions:
       - "Mod OPINE olmalı."
       - "SUT/HTA/ICER sinyali medical-research'ü §14.f için zorunlu kılar."
-      - "Çıktı POLİTİKA reformu görüşü olmalı; bireysel red savunması DEĞİL (→ onko-erisim/saglik-sigorta)."
+      - "Çıktı POLİTİKA reformu görüşü olmalı; bireysel red savunması DEĞİL (kapsam dışı)."
     rationale: "R14 §1.2 OPINE — SUT/HTA reform görüşü; bireysel hak arama kapsam-dışı (v2.4)."
 
   - id: ROUTE-006

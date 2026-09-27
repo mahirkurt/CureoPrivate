@@ -532,29 +532,8 @@ servers:
       kalıcı URL diye cache'lenmez; SHA-256/provenance evidence_ledger'a yazılır.
     degrade: >-
       Oturum düşük/anahtar yoksa manifestoda 'degraded: lisanslı band kapalı'.
-      ŞELALE DİSİPLİNİ: openathens'in yokluğu annas-reader'ı OTOMATİK AÇMAZ — son
-      çare yalnız openathens denendikten sonra ve açık gerekçeyle kullanılır.
-
-  - name: annas-reader
-    url: https://annas.cureonics.com/mcp
-    tier: fulltext
-    auth_env: ANNAS_MCP_API_KEY
-    shard: S4
-    modes: [COMPARATIVE_LAW, ANALYZE]
-    gate: G6
-    tools_used: [book_search, article_search, get_document_info, read_document,
-                 search_in_document, download_document]
-    role: >-
-      SON-ÇARE tam-metin (Tier 4, efemer-RAG reader) — lisanslı band (openathens
-      Tier 3) getiremeyince. Out-of-print hukuk monografı, erişilemeyen yabancı
-      doktrin. YALNIZ ANALİZ İÇİN: getirilen tam metin yeniden yayımlanmaz, çıktıya
-      gövde olarak kopyalanmaz; yalnız atıf + damıtılmış bulgu üretir. Bounded
-      okuma için reader araçları; orijinal PDF/EPUB ve diğer desteklenen dosya için
-      `download_document(id=<DOI|32-hex MD5>)` kullanılır. Opaque resource_link kısa
-      ömürlüdür; derhal tüketilir ve SHA-256/provenance kaydedilir.
-    degrade: >-
-      Erişilemezse ilgili doktrin satırı 'manual_required' (kaynak künyesi + erişim
-      yolu) yazılır — asla uydurma içerik.
+      openathens'ten sonra başka tam-metin katmanı YOKTUR: erişilemezse satır
+      `degraded: tam metin erişilemedi` + künye yazılır, metin asla uydurulmaz.
 
   - name: eurlex
     url: https://eurlex.cureonics.com/mcp

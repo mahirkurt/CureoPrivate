@@ -83,14 +83,13 @@ cases:
       - "Çözüm olarak `python3 tools/fleetkit/gen_fleet.py` göstermeli."
       - "Bu kapı, filonun tekrar sekiz yerde elle tutulmaya kaymasını engeller."
 
-  - id: FR-09-selale-sirasi-otomatik-atlanmaz
+  - id: FR-09-tam-metin-tek-katman-erisilemezse-degrade
     given: >-
       Mod 7 karşılaştırmalı analizde yabancı doktrin tam metni gerekiyor ve
       openathens oturumu düşük/erişilemez.
     expect:
-      - "annas-reader OTOMATİK açılmamalı — şelale sırası (Tier 3 → Tier 4) korunur."
       - "openathens satırı 'degraded: lisanslı band kapalı' olarak manifestoda görünmeli."
-      - "annas-reader kullanılacaksa açık gerekçe + 'yalnız analiz' notu taşımalı; getirilen tam metin çıktıya gövde olarak KOPYALANMAMALI."
+      - "openathens'ten sonra başka tam-metin katmanı YOKTUR: manifestoda 'degraded: tam metin erişilemedi' + künye yazılmalı, metin bellekten doldurulmamalı."
 
   - id: FR-10-yoktez-wire-g7-hard-pass
     given: "Bir DRAFT/ANALYZE çıktısı YÖK-Tez atfı içeriyor."

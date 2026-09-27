@@ -1,6 +1,6 @@
 ---
 name: lex-connectors
-description: Cureolex tam-filo bağlantı durumu — wire edilmiş 21 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+description: Cureolex tam-filo bağlantı durumu — wire edilmiş 20 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
 ---
@@ -37,7 +37,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
    - **TR primer/idari** (`primary`/`secondary`/`support`, shard S1): mevzuat · resmi-gazete · titck · tbmm · saglikbakanligi · detsis
    - **Karşılaştırmalı/uluslararası** (`comparative`, shard S2): health-policy (**semantic_search** doğal-dil çok-dilli keşif US/JP/AU/CN + 8 ülke fetch + legal_distill) · german-law · **eurlex (G6 CELEX)** · **fedlex (CH)** · **uk-legal (UK içtihat/Hansard)** · ich-guidelines · intl-treaty · eudamed · oecd
    - **Doktrin** (`doctrine`, shard S3): yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması — v3.5.0'da wire'landı, artık companion DEĞİL) · **literatur** (DergiPark makale tam-metni)
-   - **Tam-metin şelalesi** (`fulltext`, shard S4): **openathens** (Tier 3 lisanslı) → **annas-reader** (Tier 4 son çare, yalnız analiz). Şelale sırasını raporda belirt.
+   - **Tam-metin** (`fulltext`, shard S4): **openathens** (Tier 3 lisanslı, tek katman). Erişilemezse `degraded: tam metin erişilemedi`.
    - **Büyük-veri substratı** (`substrate`): anamnesis — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
    - **Companion (wire edilemez — claude.ai connector):** Yargı · Open Law (UK) · Ansvar
    - **Delegasyon:** evidentia (klinik kanıt) · sci-audit (atıf-adli + dil)
@@ -50,7 +50,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
    - `fedlex erişilemiyor ⇒ Mod 7 CH birincil-metin satırı ep.fedlex_sparql + Ansvar çerçeve-taramasına degrade`
    - `yoktez erişilemiyor ⇒ G7 YÖK-Tez atıf doğrulaması yapılamaz; tez atıfları illustrative_placeholder_not_verified → KULLANILMAZ`
    - `literatur erişilemiyor ⇒ doktrin metadata-only'ye düşer (atıf yapılabilir, içerik alıntılanamaz)`
-   - `openathens erişilemiyor ⇒ lisanslı band kapalı; annas-reader OTOMATİK AÇILMAZ (şelale sırası korunur)`
+   - `openathens erişilemiyor ⇒ lisanslı band kapalı; başka tam-metin katmanı YOKTUR ⇒ degraded: tam metin erişilemedi`
    - `evidentia kurulu değil ⇒ klinik iddialar unverified` · `sci-audit kurulu değil ⇒ çıktı-QA manuel`
 
 6. **Yapılandırma bütünlüğünü de bildir.** Filo `fleet.yaml`'den türetilir; bütünlük kapısı repo-düzeyi bir GELİŞTİRME aracıdır (kurulu plugin'de bulunmaz). Kaynak depoda çalışıyorsan:
@@ -86,7 +86,6 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
 | `yoktez` | doctrine | _(public — anahtar yok)_ |
 | `literatur` | doctrine | `TR_LITERATUR_MCP_API_KEY` |
 | `openathens` | fulltext | `OPENATHENS_MCP_API_KEY` |
-| `annas-reader` | fulltext | `ANNAS_MCP_API_KEY` |
 | `eurlex` | comparative | `EURLEX_MCP_API_KEY` |
 | `fedlex` | comparative | `FEDLEX_MCP_API_KEY` |
 | `uk-legal` | comparative | `UK_LEGAL_MCP_API_KEY` |

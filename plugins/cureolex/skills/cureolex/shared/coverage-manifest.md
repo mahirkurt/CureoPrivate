@@ -4,7 +4,7 @@
 
 ## Kurallar
 
-- Wire edilmiş **21 MCP** + **3 companion** (Yarg/Open_Law/Ansvar — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
+- Wire edilmiş **20 MCP** + **3 companion** (Yarg/Open_Law/Ansvar — satırları HER manifestoda zorunlu, bağlı olsun olmasın) + **evidentia** (klinik-boyut varsa) + **sci-audit** (her çıktı) için **birer satır**.
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false`) · `skipped: <gerekçe>` (anahtar yok / mod için N/A).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.
@@ -33,12 +33,11 @@ Karşılaştırmalı katman
   intl-treaty          → degraded: snapshot  (treaty_status ICESCR/ICCPR/CEDAW/CRC/CRPD + coe_treaty_signatories Oviedo 164 / MEDICRIME 211; live_coe:false; intl_treaty_info bir kez)
   eudamed              → empty   (ATMP ilaç sınıfı — cihaz DB N/A, yine de tarandı)
   oecd                 → hit 1   (sağlık Ar-Ge harcama göstergesi — RIA girdisi)
-Doktrin + tam-metin şelalesi
+Doktrin + tam-metin
   yok-akademik         → hit 4   (ATMP regülasyon doktrin makaleleri — künye/metadata)
   yoktez               → hit 1   (ATMP hukuku doktora tezi, tez-no teyitli)
   literatur            → hit 2   (DergiPark tam metin: 2 makale tr_literatur_read_article)
   openathens           → skipped: oturum doğrulanmamış (Tier 3 lisanslı band kapalı)
-  annas-reader         → skipped: şelale sırası korundu (Tier 4 yalnız Tier 3 denendikten sonra)
 Companion
   Yarg                 → hit 2   (Danıştay 10.D ruhsat iptali emsali)
   Open_Law             → skipped: companion bağlı değil ⇒ UK metni ep.legislation_uk (G6'yı düşürmez)

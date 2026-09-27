@@ -125,9 +125,9 @@ check("çıkış 0 + geçerli hook JSON", rc == 0 and bool(ctx))
 check("konvansiyon enjeksiyonu (TAM-FİLO + NO-FABRICATION + companion zorunluluğu)",
       all(s in ctx for s in ("TAM-FİLO", "NO-FABRICATION", "ZORUNLU üyeleridir")))
 check("delegasyon kurulum algısı satırı", "[preflight/delegasyon]" in ctx or "KURULU" in ctx)
-check("tam-metin şelalesi invaryantı enjekte edilir (openathens→annas sırası)",
-      all(s in ctx for s in ("TAM-METİN ŞELALESİ", "YALNIZ ANALİZ",
-                             "oa_fetch_pdf", "download_document", "SHA-256")))
+check("tam-metin: tek katman openathens; son çare okuyucu YOK",
+      all(s in ctx for s in ("TAM-METİN", "oa_fetch_pdf", "tam metin erişilemedi", "SHA-256"))
+      and "annas" not in ctx.lower() and "download_document" not in ctx)
 
 # ── Lock + prob tümleşimi (v3.5.0) ────────────────────────────────────────
 _L = {"counts": {"servers": 22, "gated": 19, "public": 3,

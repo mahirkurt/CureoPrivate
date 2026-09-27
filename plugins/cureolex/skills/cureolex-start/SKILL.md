@@ -18,7 +18,7 @@ Bu skill, Cureolex süitinin giriş kapısıdır: **tam-filo durumunu kontrol ed
 
 ## 1. Önce tam-filo durumunu göster
 
-Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı / hepsi çalışıyor mu" diye sorduysa, **`/lex-connectors`** komutunu çalıştır — 21 wire'lı MCP + companion + evidentia/sci-audit'in canlı erişilebilirliğini raporlar (SessionStart preflight çıktısıyla tutarlı). **Web yüzeyinde** (`claude.ai`, ChatGPT) Python hook ve `fleet_probe.py` **yoktur**: `CONNECTORS.md` yüzey matrisini göster, kullanıcının elle eklediği connector'ları sor, canlı `ok` iddia etme.
+Kullanıcı süitle ilk kez çalışıyorsa veya "connector'larım bağlı mı / hepsi çalışıyor mu" diye sorduysa, **`/lex-connectors`** komutunu çalıştır — 20 wire'lı MCP + companion + evidentia/sci-audit'in canlı erişilebilirliğini raporlar (SessionStart preflight çıktısıyla tutarlı). **Web yüzeyinde** (`claude.ai`, ChatGPT) Python hook ve `fleet_probe.py` **yoktur**: `CONNECTORS.md` yüzey matrisini göster, kullanıcının elle eklediği connector'ları sor, canlı `ok` iddia etme.
 
 ## 2. Niyet → mod/komut yönlendirmesi
 

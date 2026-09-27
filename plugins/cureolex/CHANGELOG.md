@@ -22,7 +22,7 @@ Cursor native MCP Bearer `${env:VAR}` process-env interpolasyonu (`.cursor-plugi
 
 ## 3.8.4
 
-Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → 21 server.
+Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → o zamanki sunucu sayısı 21'e çıktı (annas-reader'ın 2026-09-27'de kaldırılmasıyla güncel sayı 20'dir).
 
 ## 3.8.3
 

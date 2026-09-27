@@ -66,13 +66,13 @@ def conventions(lock) -> str:
         "substratı (Tier 2, collection=cureolex:sess:<id> + önekli doc_id; doc_scope "
         "YOKTUR; G0–G11 aynı sess, lib varsayılan değil) + kanonik cache "
         "(bir-kez-getir) + kör-getirme-yok chunking. "
-        "(7) TAM-METİN ŞELALESİ — doktrin tam metni için önce lisanslı band "
-        "(openathens Tier 3): metin/RAG için oa_fetch_fulltext, orijinal provider PDF için "
-        "oa_fetch_pdf(doi|url). annas-reader (Tier 4) YALNIZ o denendikten sonra, açık "
-        "gerekçeyle ve YALNIZ ANALİZ için; bounded reader veya orijinal PDF/EPUB/etc. "
-        "için download_document(id=DOI|MD5). Kısa-ömürlü resource_link derhal tüketilir, "
-        "kalıcı kaynak diye cache'lenmez; DOI/MD5+SHA-256 evidence_ledger'a yazılır. "
-        "Getirilen metin çıktıya gövde olarak kopyalanmaz. shared/context-economy-contract.md."
+        "(7) TAM-METİN — doktrin tam metni için tek katman lisanslı banttır (openathens "
+        "Tier 3): metin/RAG için oa_fetch_fulltext, orijinal provider PDF için "
+        "oa_fetch_pdf(doi|url). Erişilemezse satır `degraded: tam metin erişilemedi` + "
+        "künye yazılır; metin bellekten doldurulmaz. Kısa-ömürlü resource_link derhal "
+        "tüketilir, kalıcı kaynak diye cache'lenmez; DOI + SHA-256 evidence_ledger'a "
+        "yazılır. Getirilen metin çıktıya gövde olarak kopyalanmaz. "
+        "shared/context-economy-contract.md."
     ).format(n=n_srv, nc=len(comps), cd=comp_desc)
 
 

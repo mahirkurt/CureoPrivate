@@ -138,13 +138,6 @@
       "sensitive": true,
       "required": false
     },
-    "annas_reader_api_key": {
-      "type": "string",
-      "title": "annas-reader API key",
-      "description": "NOT: .mcp.json header'ı ${ANNAS_MCP_API_KEY} ortam değişkenini okur (host'ta userConfig→env fallback sözdizimi belgelenmemiş). Buraya değer girerseniz AYNI ZAMANDA onu ${ANNAS_MCP_API_KEY} olarak da dışa aktarmanız gerekir (ör. `doppler run -p cureohub -c dev_personal -- claude`); yalnız bu alanı doldurmak header'ı beslemez.",
-      "sensitive": true,
-      "required": false
-    },
     "eurlex_api_key": {
       "type": "string",
       "title": "eurlex API key",

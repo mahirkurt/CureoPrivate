@@ -3,8 +3,8 @@
   "plugin": "cureolex",
   "plugin_version": "4.0.0",
   "counts": {
-    "servers": 21,
-    "gated": 20,
+    "servers": 20,
+    "gated": 19,
     "public": 1,
     "companions": 3,
     "delegations": 2
@@ -192,18 +192,6 @@
         "EX_POST_EVALUATION",
         "REGULATORY_MATURITY",
         "RELIANCE_FRAMEWORK"
-      ],
-      "gate": "G6"
-    },
-    {
-      "name": "annas-reader",
-      "url": "https://annas.cureonics.com/mcp",
-      "tier": "fulltext",
-      "auth_env": "ANNAS_MCP_API_KEY",
-      "shard": "S4",
-      "modes": [
-        "COMPARATIVE_LAW",
-        "ANALYZE"
       ],
       "gate": "G6"
     },

@@ -1,6 +1,6 @@
 # CONNECTORS.md — cureolex yüzey ve connector sözleşmesi
 
-> **Normatif.** Wire edilmiş 21 hukuk/regülasyon MCP + 3 companion (Yargı · Open
+> **Normatif.** Wire edilmiş 20 hukuk/regülasyon MCP + 3 companion (Yargı · Open
 > Law · Ansvar) için uç listesi, auth modeli ve **hangi ajan yüzeyinin neyi
 > otomatik bağladığı** burada sabittir. `.mcp.json` bu dosyadaki roster'dan
 > üretilir (`fleet.yaml` → `python3 tools/fleetkit/gen_fleet.py`). Anahtar
@@ -14,7 +14,7 @@ yüzeye göre ayrı bağlanır.
 
 ## 1. Yüzey matrisi
 
-| Yüzey | Skill / komut / ajan | 21 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
+| Yüzey | Skill / komut / ajan | 20 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
 |---|---|---|---|---|
 | **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -p cureohub -c dev_personal -- claude` |
 | **Cursor** | marketplace / GitHub plugin | `.cursor-plugin/mcp.json` auto-wire (`plugin-cureolex-<server>`) | çalışır (`python3`) | Süreç ortamında Doppler adları (`${env:VAR}`). `doppler run … -- cursor` veya `dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor restart. `${VAR}` plugin-variable paste formu **kullanılmaz**. |
@@ -72,7 +72,6 @@ userConfig→env fallback sözdiziminin belgelenmemiş olmasından gelir.
 | `yoktez` | `https://yoktezmcp.fastmcp.app/mcp` | public | — | doctrine |
 | `literatur` | `https://literatur.cureonics.com/mcp` | Bearer | `TR_LITERATUR_MCP_API_KEY` | doctrine |
 | `openathens` | `https://openathens.cureonics.com/mcp` | Bearer | `OPENATHENS_MCP_API_KEY` | fulltext |
-| `annas-reader` | `https://annas.cureonics.com/mcp` | Bearer | `ANNAS_MCP_API_KEY` | fulltext |
 | `eurlex` | `https://eurlex.cureonics.com/mcp` | Bearer | `EURLEX_MCP_API_KEY` | comparative |
 | `fedlex` | `https://fedlex.cureonics.com/mcp` | Bearer | `FEDLEX_MCP_API_KEY` | comparative |
 | `uk-legal` | `https://uk-law.cureonics.com/mcp` | Bearer | `UK_LEGAL_MCP_API_KEY` | comparative |

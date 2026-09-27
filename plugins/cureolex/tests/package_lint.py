@@ -109,7 +109,7 @@ def check_tool_names(root: Path, fleet: dict):
 # Pakette GEÇMEYECEK adlar. Kaldırılmış yönlendirme hedefleri (kullanıcı kararı,
 # 2026-09-27) ve eklenmemesi gereken olası hedefler. Sonraki görevler ad ekler.
 FORBIDDEN_NAMES = ["saglik-sigorta", "onko-erisim", "promo-censor", "ius-salutis",
-                   "hayat-kaza-sigorta"]
+                   "hayat-kaza-sigorta", "annas"]
 # Adı bilerek taşıyan dosyalar: tarihçe ve bu denetimin kendisi/testleri.
 FORBIDDEN_EXEMPT = {"CHANGELOG.md", "tests/package_lint.py", "tests/test_package_lint.py",
                     "hooks/test_hooks.py"}

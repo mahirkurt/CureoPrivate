@@ -1,6 +1,6 @@
 # Cureolex — Bağlam Ekonomisi ve Büyük-Veri Sözleşmesi
 
-**Problem:** cureolex **tam-filo** çalışır — 21 kaynak MCP + companion + evidentia her sorguda ateşlenir. Bu, ham hâliyle **onlarca büyük belge** (tam kanun metinleri, madde ağaçları, RG OCR, yabancı statute'lar, tam gerekçeler) üretir; hepsini ana bağlam penceresine dökmek pencereyi taşırır ve **eksik/tutarsız** norm-üretimine yol açar. Bu sözleşme, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştıran **zorunlu** disiplindir.
+**Problem:** cureolex **tam-filo** çalışır — 20 kaynak MCP + companion + evidentia her sorguda ateşlenir. Bu, ham hâliyle **onlarca büyük belge** (tam kanun metinleri, madde ağaçları, RG OCR, yabancı statute'lar, tam gerekçeler) üretir; hepsini ana bağlam penceresine dökmek pencereyi taşırır ve **eksik/tutarsız** norm-üretimine yol açar. Bu sözleşme, "hepsi çalışsın" ile "bağlamı boğma"yı uzlaştıran **zorunlu** disiplindir.
 
 **Değişmez:** ana pencere yalnız (a) kullanıcı talebi, (b) mod planı, (c) G0 kapsam manifestosu, (d) damıtılmış zarflar (`retrieval_distillate`), (e) `evidence_ledger`, (f) nihai artefakt tutar. **Ham araç çıktısı ana pencerede ASLA akıl yürütülmez.**
 
@@ -29,16 +29,16 @@ kaynağı `fleet.yaml`'dır (`tests/run_suites.py` ve `check_drift` sapmayı yak
 | **S1 — TR çekirdek** | mevzuat · resmi-gazete · titck · tbmm · saglikbakanligi · detsis · **intl-treaty (Md.90/5, shard S1+S2)** | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
 | **S2 — Karşılaştırmalı** | health-policy · german-law · **eurlex (G6)** · **fedlex (CH)** · **uk-legal** · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law UK · Ansvar companion) | `comparative-law-researcher` |
 | **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı companion) | `legal-distiller` · `gerekce-drafter` |
-| **S4 — Tam-metin şelalesi** | **openathens** (`oa_fetch_fulltext` / `oa_fetch_pdf`, Tier 3 lisanslı) → **annas-reader** (reader / `download_document`, Tier 4 son çare) | `comparative-law-researcher` |
+| **S4 — Tam-metin** | **openathens** (`oa_fetch_fulltext` / `oa_fetch_pdf`, Tier 3 lisanslı, tek katman) | `comparative-law-researcher` |
 | **ALL** | anamnesis (Tier 2 substrat — her shard'da erişilebilir) | tümü |
 
 > **S4 bir KLİNİK shard'ı DEĞİLDİR.** Klinik kanıt bir shard değil bir
 > **delegasyondur**: `evidentia` plugin'ine (`evidence-synthesizer`) gider ve
 > kendi bağlam penceresinde koşar; `fleet.lock.json`'da `delegations` altında
 > durur, `servers` altında değil. v3.5.5'e kadar bu tablo S4'ü "Klinik →
-> evidentia" diye etiketliyordu; sonuç olarak `openathens`, `annas-reader` ve
-> `literatur` **hiçbir distiller'a atanmamış** görünüyordu (2026-08-07 denetimi,
-> Ö-3). Etiket düzeltildi — üçü de artık sahipli.
+> evidentia" diye etiketliyordu; sonuç olarak `openathens` ve `literatur`
+> **hiçbir distiller'a atanmamış** görünüyordu (2026-08-07 denetimi,
+> Ö-3). Etiket düzeltildi — ikisi de artık sahipli.
 
 Shard'lar **paralel** dağıtılır (bağımsız görevler). Böylece tüm server'lar ateşlenir (tam-filo korunur) AMA hiçbir distiller penceresi taşmaz ve ana pencere yalnız 4 kompakt zarf görür.
 

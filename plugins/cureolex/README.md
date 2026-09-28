@@ -54,12 +54,12 @@ Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`
 Üç ajan yüzeyi **aynı paketi** yükler ama MCP/hook bağlama yolu farklıdır. Tam sözleşme: [`CONNECTORS.md`](CONNECTORS.md).
 
 ```bash
-# Claude Code
-doppler run -p cureohub -c dev_personal -- claude
+# Claude Code (önce bir kez `doppler setup` ile proje/yapılandırma seçilir)
+doppler run -- claude
 
 # Cursor — native wire `${env:VAR}` (process env). Paste formu değil.
 # Üç kapı: EURLEX_MCP_API_KEY, FEDLEX_MCP_API_KEY, UK_LEGAL_MCP_API_KEY
-# (Doppler cureohub/dev_personal). secrets.env gerideyse:
+# (Doppler yapılandırmanız). secrets.env gerideyse:
 #   bash dotfiles-ai/scripts/sync-doppler-env.sh
 # sonra Cursor'ı yeniden başlat; veya `doppler run … -- cursor`.
 ```

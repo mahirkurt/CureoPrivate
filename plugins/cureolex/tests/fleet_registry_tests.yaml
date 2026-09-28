@@ -7,7 +7,7 @@ description: >-
   bütünlüğünü kanıtlar, bu dosya CANLI gerçekliği kanıtlar.
 
   Koşum yardımcıları:
-    doppler run -p cureohub -c dev_personal -- python3 hooks/scripts/fleet_probe.py --fresh
+    doppler run -- python3 hooks/scripts/fleet_probe.py --fresh  # önce bir kez: doppler setup
     python3 tools/fleetkit/check_drift.py
 
 cases:
@@ -35,7 +35,7 @@ cases:
 
   - id: FR-03-env-adlari-doppler-da-var
     given: >-
-      fleet.yaml'deki her auth_env adı Doppler cureohub/dev_personal secret
+      fleet.yaml'deki her auth_env adı Doppler yapılandırmanızın secret
       listesinde aranır.
     expect:
       - "16 gated server'ın env adının TAMAMI Doppler'da bulunmalı."

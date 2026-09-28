@@ -114,7 +114,7 @@ def build_context(lock, probe: dict, plugins: dict) -> str:
                             for r in missing)
                 + ". Manifestoda 'skipped: anahtar yok' beyan edilir (tam-filo degrade "
                   "— çıktı durmaz). Çözüm: oturumu "
-                  "`doppler run -p cureohub -c dev_personal -- claude` ile başlat.")
+                  "`doppler run -- claude` ile başlat (önce bir kez `doppler setup`).")
     if down:
         ctx += ("\n[preflight] Şu server(lar) erişilemedi: "
                 + ", ".join("{} ({})".format(r["name"],

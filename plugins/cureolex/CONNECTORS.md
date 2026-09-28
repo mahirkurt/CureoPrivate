@@ -16,7 +16,7 @@ yüzeye göre ayrı bağlanır.
 
 | Yüzey | Skill / komut / ajan | 20 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
 |---|---|---|---|---|
-| **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -p cureohub -c dev_personal -- claude` |
+| **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -- claude` (önce bir kez `doppler setup`) |
 | **Cursor** | marketplace / GitHub plugin | `.cursor-plugin/mcp.json` auto-wire (`plugin-cureolex-<server>`) | çalışır (`python3`) | Süreç ortamında Doppler adları (`${env:VAR}`). `doppler run … -- cursor` veya `dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor restart. `${VAR}` plugin-variable paste formu **kullanılmaz**. |
 | **claude.ai** | plugin skills/komutlar yüklenebilir | **elle** Settings → Connectors | **koşmaz** | her gated URL için custom connector + Bearer/OAuth; G0 manifestosunu model yazar |
 | **ChatGPT** (Developer Mode) | Codex skill / `interface` | **elle** Settings → Connectors | **koşmaz** | Plus/Pro/… + Developer Mode; gated uçlarda OAuth veya Bearer; public uçlarda "No authentication" |
@@ -98,7 +98,7 @@ Public (Bearer yok): `yoktez`.
 Gated Bearer: süreç ortamındaki Doppler adı. Claude Code `${VAR}` okur. Cursor
 native wire (`.cursor-plugin/mcp.json`) **`${env:VAR}`** okur — IDE bunu plugin
 variable sanıp yapıştırma formu açmasın diye. Üç kapı adı `EURLEX_MCP_API_KEY` /
-`FEDLEX_MCP_API_KEY` / `UK_LEGAL_MCP_API_KEY` (Doppler `cureohub/dev_personal`).
+`FEDLEX_MCP_API_KEY` / `UK_LEGAL_MCP_API_KEY` (Doppler yapılandırmanız).
 Yerel `~/.dotfiles-ai/secrets/secrets.env` geride kaldıysa
 `dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor'ı yeniden başlat. Env'de
 yoksa Cursor "enter key" sorar; env varsa sormaz. Anahtar yoksa o katman
@@ -142,8 +142,9 @@ taşır; Claude Code biçimi `mcp__plugin_cureolex_<server>__*` kalır.
 ## 6. Auth özeti
 
 ```bash
-doppler run -p cureohub -c dev_personal -- claude
-doppler run -p cureohub -c dev_personal -- cursor
+# önce bir kez: doppler setup  (proje/yapılandırma seçimi)
+doppler run -- claude
+doppler run -- cursor
 ```
 
 Anahtar yok → o katman graceful degrade (`skipped: anahtar yok`), çıktı durmaz,

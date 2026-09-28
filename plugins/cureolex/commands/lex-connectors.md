@@ -28,7 +28,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
    | Durum | Anlamı | Aksiyon |
    |---|---|---|
    | `ok` | hazır, `initialize` 200 döndü | — |
-   | `auth_missing` | anahtar süreç ortamında yok (ağa çıkılmadı) — **meşru degrade** | `doppler run -p cureohub -c dev_personal -- claude` ile başlat |
+   | `auth_missing` | anahtar süreç ortamında yok (ağa çıkılmadı) — **meşru degrade** | `doppler run -- claude` ile başlat (önce bir kez `doppler setup`) |
    | `unauthorized` | sunucu 401/403 verdi — **YAPILANDIRMA ARIZASI, degrade değil** | `fleet.yaml`'i düzelt → `python3 tools/fleetkit/gen_fleet.py`; anahtar emekli olmuş olabilir |
    | `unreachable` | timeout / bağlantı hatası / 5xx | upstream sorunu; manifestoda `degraded: erişilemedi` |
    | `error` | 200 ama geçersiz JSON-RPC | sunucu sürümü uyumsuz olabilir |

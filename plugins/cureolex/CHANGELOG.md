@@ -35,7 +35,7 @@ Cursor native MCP Bearer `${env:VAR}` process-env interpolasyonu (`.cursor-plugi
 
 ## 3.8.4
 
-Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → o zamanki sunucu sayısı 21'e çıktı (annas-reader'ın 2026-09-27'de kaldırılmasıyla güncel sayı 20'dir).
+Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → 21 server.
 
 ## 3.8.3
 
@@ -51,7 +51,7 @@ Claude Code `plugin.json` agents dosya listesi; Türk Patent emekli → o zamank
 
 ## 3.8.0
 
-**fedlex + uk-legal wire'landı** (aynı desen; `mcp-oauth-gateway` genelleştirildi), Fedlex Swiss + Türk Patent companion'dan emekli → filo o kesitte 23-sunucu; o zamanki companion sayısı 3'tü (De Jure'nin 2026-09-27'de eklenmesiyle güncel sayı 4'tür). SSE yanıt çerçevesi artık JSON-RPC `id` ile seçilir (yanlış-yeşil onarımı) + fleet.yaml yinelenen-anahtar kapısı.
+**fedlex + uk-legal wire'landı** (aynı desen; `mcp-oauth-gateway` genelleştirildi), Fedlex Swiss + Türk Patent companion'dan emekli → filo o kesitte 23-sunucu / 3 companion; SSE yanıt çerçevesi artık JSON-RPC `id` ile seçilir (yanlış-yeşil onarımı) + fleet.yaml yinelenen-anahtar kapısı.
 
 ## 3.7.0
 

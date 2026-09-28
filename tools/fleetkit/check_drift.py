@@ -111,6 +111,13 @@ def scan_prose(root: Path, expected: int, companions: int, extra=()):
                and p.name not in SKIP_FILES and not SKIP_DIRS & set(p.parts)
                and not (p.name == "mcp.json" and p.parent.name == ".cursor-plugin")
                and not p.name.startswith(SKIP_PREFIXES)
+               # CHANGELOG.md is history: a past entry's "→ 21 server" correctly
+               # recorded that DAY's fleet size and is expected to read "wrong"
+               # once the fleet has since grown/shrunk. Only the SAYI (count)
+               # scan is exempt — scan_server_ids (identity drift) still covers
+               # CHANGELOG.md unchanged; a dead server id referenced there would
+               # still be caught.
+               and p.name != "CHANGELOG.md"
                and _readable(p)]
     out_extra = list(extra)
     for label, text in sources + out_extra:

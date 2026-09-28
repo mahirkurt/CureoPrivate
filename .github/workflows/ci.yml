@@ -63,6 +63,30 @@ jobs:
           done
           [ "$found" = 1 ] || echo "koşucu bulunamadı — atlandı"
 
+      # [3a] fleetkit'in kendi birim testleri (cache/prefix/hook-sözleşme/snapshot
+      #      davranışı) — check_drift/check_marketplace'in ALTINDAKİ yardımcı
+      #      modülleri, kapıların kendisinden bağımsız olarak regresyona karşı kilitler.
+      - name: fleetkit birim testleri
+        run: python3 -m unittest discover -s tools/fleetkit/tests -v
+
+      # [3b] Her plugin'in hook davranış matrisi (plugins/*/hooks/test_hooks.py).
+      #      Ölçüldü (2026-09-28): beş harnessin (cureolex, edupedia, evidentia,
+      #      historia-medicinae, vekayinuvis) tamamı yalnız pyyaml+jsonschema ile
+      #      ve `unshare -rn` altında ağsız temiz geçiyor — hiçbiri dışlanmadı.
+      #      rxpraxis/sci-audit/brand-ecosystem-core/fon-uzmani/bist-analyst'ın
+      #      hooks/test_hooks.py'si yok; glob onları zaten atlar.
+      - name: hook davranış matrisleri (plugin hook koşucuları)
+        run: |
+          set -e
+          found=0
+          for h in plugins/*/hooks/test_hooks.py; do
+            [ -e "$h" ] || continue
+            found=1
+            echo "── $h"
+            ( cd "$(dirname "$(dirname "$h")")" && python3 hooks/test_hooks.py )
+          done
+          [ "$found" = 1 ] || echo "hook koşucu bulunamadı — atlandı"
+
       # Kapıların kendileri de regresyona uğrayabilir. Bu adım kasıtlı bir
       # kusur enjekte edip kapının onu YAKALADIĞINI doğrular, sonra geri alır —
       # yani "yeşil CI" ile "gerçekten denetleyen CI"yı ayırır.

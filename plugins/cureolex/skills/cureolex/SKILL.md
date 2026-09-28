@@ -89,6 +89,8 @@ Wire edilmiş 20 server **`fleet.yaml`'de tanımlıdır ve `.mcp.json` ondan ür
 - **Karşılaştırmalı:** `mcp__health-policy__*` (semantic→govinfo/congress/…→fetch; ChatGPT search/fetch tools_used dışı), `mcp__german-law__*` (**resolve→provision→SONRA EU ailesi**; premium case_law conscious exclude), `mcp__eurlex__*` (browse→search→`eurlex_lookup_celex` G6), `mcp__uk-legal__*` (`legislation_search`→`_get_toc`→`_get_section` + case/Hansard), `mcp__fedlex__*` (params+search-before-get; **RIA:** SR get sonrası Vernehmlassung open/search/get — TR DRAFT usulü değil), `mcp__ich-guidelines__*` (**M4/M8 dosya-yapısı zorunlu**), `mcp__intl-treaty__*` (Md.90/5), `mcp__eudamed__*` (**cihaz; ÜTS/TİTCK değil**), `mcp__oecd__*` (9 araç; **RIA GOV_REG zorunlu** + HEA).
   - **Doğal-dil giriş kapısı:** önce `semantic_search`; keşif sonrası `govinfo_search`/`congress_search`/`japan_elaws_search`/`australia_legislation_search`/`china_law_recent`/`ecfr_versions` + ilgili fetch. Semantik = keşif, fetch = doğrulama.
 
+**Yüzeye göre araç kümesi (4.1).** Bir sunucunun `tools_used` araçları bu yüzeyde yoksa ama `tools_fallback` (ör. ich-guidelines: `search`, `fetch`) varsa onlarla devam et; G0 manifestosuna o satırı `degraded: yalnız search/fetch` yaz, distillate'te `{status: degraded, reason: fallback_tools}`.
+
 ### Anayasa Md. 90/5 — intl-treaty ateş listesi (zorunlu)
 
 COMPARATIVE_LAW, DRAFT/AMEND gerekçe (üst-norm), COMPLY (K-1) ve TBMM teklifi **atlanamaz**. Distiller (`legal-distiller` S1, `comparative-law-researcher` S2, `gerekce-drafter`, `compliance-auditor`) şu araçları **ateşler**:

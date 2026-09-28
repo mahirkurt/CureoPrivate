@@ -333,6 +333,9 @@ servers:
     gate: G6
     tools_used: [ich_server_info, ich_list_guidelines, ich_search,
                  ich_get_guideline, ich_guideline_history]
+    # 2026-09-27: Cowork'te bu sunucu yalnız search/fetch sunuyor (inceleme raporu Y5);
+    # HP claude.ai bağlayıcısında ich_* araçları da var. tools_used yoksa bunlarla devam.
+    tools_fallback: [search, fetch]
     role: >-
       ICH Q/S/E/M harmonizasyon rehberleri — norm-düzeyi benchmark.
       Semantik sıra: ich_server_info → ich_list_guidelines(category) →

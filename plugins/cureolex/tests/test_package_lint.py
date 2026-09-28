@@ -76,6 +76,14 @@ class CheckToolNamesTests(unittest.TestCase):
         root = make_root({"commands/c.md": "`search_decisions(q)`"})
         self.assertEqual(pl.check_tool_names(root, FLEET)[0], [])
 
+    def test_fallback_tools_are_known(self):
+        fleet = {"servers": [{"name": "ich-guidelines", "tools_used": ["ich_search"],
+                              "tools_fallback": ["search", "fetch"]}], "companions": []}
+        root = make_root({"skills/cureolex/SKILL.md": "`ich_search` yoksa `search_x` → `fetch`"})
+        errors, _ = pl.check_tool_names(root, fleet)
+        self.assertEqual([m for _, m in errors if "fetch" in m], [])
+        self.assertTrue(any("search_x" in m for _, m in errors))
+
 
 class SurfaceSnapshotTests(unittest.TestCase):
     def test_pattern_covers_exact_prefix(self):

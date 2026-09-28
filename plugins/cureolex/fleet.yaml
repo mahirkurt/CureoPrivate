@@ -70,7 +70,7 @@ servers:
       relations → search_within_mevzuat → get_mevzuat_gerekce →
       resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum
       adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup,
-      phrase, search_within, gerekçe tam metin). Tüm modların TR-mevzuat omurgası.
+      phrase, search_within_mevzuat, gerekçe tam metin). Tüm modların TR-mevzuat omurgası.
     degrade: >-
       Anahtar yoksa TR-mevzuat omurgası düşer — ikincil korpus YOKTUR (surucu.dev
       aynası 2026-09-12'de kaldırıldı: aynı upstream'i okuyordu, yani veri değil

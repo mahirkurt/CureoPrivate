@@ -177,6 +177,27 @@ class ForbiddenNamesTests(unittest.TestCase):
         self.assertTrue(any("anna's" in m for _, m in errors), errors)
 
 
+class ToolShorthandTests(unittest.TestCase):
+    """check_tool_shorthands: kısaltılmış/eski araç adı ('search_within') gerçek
+    aracın ('search_within_mevzuat') yerine kalıcılaşmışsa yakalar — 2026-09-28
+    T4: bu kısaltma fleet.yaml/skill/test dosyalarına sızmıştı."""
+
+    def test_shorthand_is_reported(self):
+        root = make_root({"skills/cureolex/references/x.md":
+                           "primer phrase/search_within/gerekçe"})
+        errors, _ = pl.check_tool_shorthands(root, FLEET)
+        self.assertTrue(any("search_within" in m for _, m in errors), errors)
+
+    def test_full_name_is_not_reported(self):
+        root = make_root({"skills/cureolex/references/x.md":
+                           "primer phrase/search_within_mevzuat/gerekçe"})
+        self.assertEqual(pl.check_tool_shorthands(root, FLEET)[0], [])
+
+    def test_changelog_is_exempt(self):
+        root = make_root({"CHANGELOG.md": "0.15.1 phrase/search_within/gerekçe"})
+        self.assertEqual(pl.check_tool_shorthands(root, FLEET)[0], [])
+
+
 class SecurityPolicyTests(unittest.TestCase):
     def test_missing_policy_is_reported(self):
         root = make_root({"skills/cureolex/SKILL.md": "---\nname: cureolex\n---\n",

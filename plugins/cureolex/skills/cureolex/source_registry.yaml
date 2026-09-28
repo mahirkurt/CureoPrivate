@@ -383,9 +383,9 @@ mcp_server:
     name: "Mevzuat MCP"
     role: >-
       Türk mevzuat metni doğrulama (DRAFT/ANALYZE). HP production 0.15.1+
-      (mevzuat.cureonics.com): bedesten NUMARA/`phrase`/`search_within`/tam gerekçe.
+      (mevzuat.cureonics.com): bedesten NUMARA/`phrase`/`search_within_mevzuat`/tam gerekçe.
       Semantik sıra: list_mevzuat_types → list_mevzuat_by_type/search →
-      get_mevzuat_detail → yapısal graf → search_within → content →
+      get_mevzuat_detail → yapısal graf → search_within_mevzuat → content →
       get_mevzuat_gerekce → resolve_resmi_gazete → list_kurumlar.
     verification: mevzuat_mcp
     note: "Conscious excludes / tam tools_used: fleet.yaml + coverage-manifest.md."

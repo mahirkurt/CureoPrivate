@@ -57,7 +57,7 @@
         "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
       },
       "_tier": "primary",
-      "_role": "PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover 2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz): list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun → get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/ relations → search_within_mevzuat → get_mevzuat_gerekce → resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup, phrase, search_within, gerekçe tam metin). Tüm modların TR-mevzuat omurgası."
+      "_role": "PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover 2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz): list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun → get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/ relations → search_within_mevzuat → get_mevzuat_gerekce → resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup, phrase, search_within_mevzuat, gerekçe tam metin). Tüm modların TR-mevzuat omurgası."
     },
     "resmi-gazete": {
       "type": "http",

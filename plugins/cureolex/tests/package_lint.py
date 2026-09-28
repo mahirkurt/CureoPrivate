@@ -131,6 +131,32 @@ def check_forbidden_names(root: Path, fleet: dict):
     return errors, []
 
 
+# Kısaltma → gerçek araç adı. Bir kısaltma dokümantasyona/testlere kalıcılaşırsa
+# modelin var-olmayan bir aracı çağırmasına (ya da kısaltmanın gerçek adla
+# karışmasına) yol açar — 2026-09-28: `search_within`, mevzuat sunucusunun
+# gerçek aracı `search_within_mevzuat`'ın kısaltması olarak fleet.yaml/skill/
+# test dosyalarında kalıcılaşmıştı. Sonraki görevler eşleme ekler.
+TOOL_SHORTHANDS = {"search_within": "search_within_mevzuat"}
+
+
+def check_tool_shorthands(root: Path, fleet: dict):
+    """TOOL_SHORTHANDS'taki her kısaltmanın çıplak (tam ad DEĞİL) hâlini metinde
+    arar — aynı dosya kümesi ve muafiyetler `check_forbidden_names` ile aynı:
+    CHANGELOG.md tarihseldir, o günkü metnin kısaltması geriye dönük düzeltilmez."""
+    errors = []
+    for p in sorted(root.rglob("*")):
+        if not p.is_file() or p.suffix not in TEXT_SUFFIXES:
+            continue
+        rel = str(p.relative_to(root))
+        if rel in FORBIDDEN_EXEMPT:
+            continue
+        text = p.read_text(encoding="utf-8", errors="replace")
+        for shorthand, full in TOOL_SHORTHANDS.items():
+            if re.search(r"\b" + re.escape(shorthand) + r"\b(?!_)", text):
+                errors.append((rel, f"araç kısaltması '{shorthand}' kullanılmış — gerçek ad '{full}'"))
+    return errors, []
+
+
 _GEN_TOOLS = re.compile(r"#\s*GEN:agent-tools BEGIN\s*\n(tools:[^\n]*)\n")
 
 
@@ -215,8 +241,8 @@ def check_security_policy(root: Path, fleet: dict):
     return errors, []
 
 
-CHECKS = [check_tool_names, check_forbidden_names, check_surface_snapshots,
-          check_description_length, check_security_policy]
+CHECKS = [check_tool_names, check_forbidden_names, check_tool_shorthands,
+          check_surface_snapshots, check_description_length, check_security_policy]
 
 
 def run_all(root: Path, fleet: dict):

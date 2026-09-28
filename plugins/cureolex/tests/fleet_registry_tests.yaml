@@ -389,7 +389,7 @@ cases:
       - "coverage-manifest.md conscious excludes tablosu fleet.yaml ile uyumlu (UHRI satırı yok)."
     rationale: >-
       v3.8.6: beş canlı yetenek (legislation_*, UHRI, fedlex consults, mevzuat
-      0.15.1 phrase/search_within/gerekçe, free-tier german EU) sıraya alındı;
+      0.15.1 phrase/search_within_mevzuat/gerekçe, free-tier german EU) sıraya alındı;
       conscious_excludes tek yerde; distiller izolasyonu araç kalıcı düşürmez.
 
   - id: FR-30-fedlex-ria-vernehmlassung

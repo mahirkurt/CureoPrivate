@@ -283,7 +283,7 @@ cases:
     rationale: "2026-08-18 httpx fix; conscious exclude uk_legislation_star kaldırıldı."
 
   - id: ROUTE-020
-    title: "DRAFT/TBMM — primer phrase + search_within + gerekçe gövdesi"
+    title: "DRAFT/TBMM — primer phrase + search_within_mevzuat + gerekçe gövdesi"
     given: "Yeni ATMP yönetmeliği genel gerekçesi; bedesten gerekçe ve belge-içi tarama gerekli."
     expect:
       mode: DRAFT

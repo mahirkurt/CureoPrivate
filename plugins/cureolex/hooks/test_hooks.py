@@ -6,6 +6,7 @@ Her vaka hook'u gerçek subprocess olarak, gerçek stdin sözleşmesiyle çağı
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -186,7 +187,7 @@ with tempfile.TemporaryDirectory() as _cd:
 
 print("== scope_guard.py (UserPromptSubmit) ==")
 rc, out = run("scope_guard.py", {"prompt": "SGK ödeme reddi davam için itiraz dilekçesi yaz"})
-check("kapsam-dışı (bireysel dava) → uyarı/yönlendirme", out is not None and rc == 0,
+check("kapsam-dışı (bireysel dava) → uyarı (yönlendirme yok)", out is not None and rc == 0,
       f"rc={rc} out={str(out)[:80]}")
 rc, out = run("scope_guard.py", {"prompt": "ATMP yönetmelik taslağı hazırla"})
 check("kapsam-içi (reform) → sessiz geçiş", rc == 0 and (out is None or not (out or {}).get("decision")))
@@ -231,7 +232,7 @@ check("hardcoded MANDATORY_ROWS sabiti kaldırıldı", "\nMANDATORY_ROWS = {" no
 check("kök hooks.json kopyası kaldırıldı (hooks/hooks.json kanonik)",
       not os.path.exists(os.path.join(ROOT, "hooks.json")))
 full = ("MADDE 1 - ... gerekçe ... Kapsam Manifestosu (G0): mevzuat → hit 3; Yarg → hit 2; "
-        "De_Jure → skipped: companion bağlı değil ⇒ G5 CONDITIONAL; "
+        "De_Jure → skipped: companion bağlı değil (Yargı bağlı, G5 düşmez); "
         "Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL; Ansvar → empty; "
         "Fedlex_Swiss → skipped: companion bağlı değil (CH satırı manual_required); "
         "YokTez → hit 1; Turk_Patent → skipped: mod için N/A (IP-boyut yok); evidentia → hit; "
@@ -660,6 +661,20 @@ _pre = [h.get("command", "") for ev in _hj["hooks"]["PreToolUse"]
         for h in ev["hooks"]]
 check("PreToolUse command is anamnesis_guard.py",
       any("anamnesis_guard.py" in c for c in _pre))
+
+# ── Matcher büyük/küçük harf (2026-09-27 nihai inceleme F4) ──────────────────
+# `mcp__.*anamnesis.*` yalnız küçük harf 'a' arar; Cowork/claude.ai üzerinden
+# gelen `mcp__Anamnesis__*` / `mcp__claude_ai_Anamnesis__*` biçimleri agent
+# allowlist'inde olsa da bu matcher'ı KAÇIRIR (guard/ledger sessizce devre dışı
+# kalır). `[Aa]namnesis` her iki biçimi de yakalamalı.
+_anam_matchers = ([ev.get("matcher", "") for ev in _hj["hooks"]["PreToolUse"]]
+                   + [ev.get("matcher", "") for ev in _hj["hooks"]["PostToolUse"]])
+_anam_matchers = [m for m in _anam_matchers if "namnesis" in m.lower()]
+check("en az bir PreToolUse/PostToolUse anamnesis matcher'ı var", bool(_anam_matchers))
+for _name in ("mcp__anamnesis__hybrid_query", "mcp__Anamnesis__hybrid_query",
+              "mcp__claude_ai_Anamnesis__hybrid_query"):
+    check(f"anamnesis matcher '{_name}' ile eşleşir",
+          all(re.fullmatch(m, _name) for m in _anam_matchers), f"matchers={_anam_matchers}")
 _stop = [h.get("command", "") for ev in _hj["hooks"]["Stop"] for h in ev["hooks"]]
 check("Stop has no anamnesis forget (yalnız stop_coverage)",
       all("anamnesis" not in c for c in _stop) and any("stop_coverage" in c for c in _stop))
@@ -727,6 +742,33 @@ check("devir notu (madde listesindeki örnek) → sessiz", c == "")
 rc, c = _sg("# Dava hazırlığı\n\nSGK ödeme reddine karşı dava dilekçesi yaz, mevzuat dayanaklarıyla.\n\n"
             "## Ek\n\nBelgeler ekte.")
 check("belge biçimli ama ilk düzyazı paragrafı gerçek talep → uyarı", "bireysel hak-arama" in c)
+
+# ── Regex sertleştirme (2026-09-27 nihai inceleme F3) ────────────────────────
+# Ölçülen: _TABLE (\s* satır atlıyor) → 40 KB boş satır 15.6 sn (hook zaman aşımı
+# 10 sn); _DQUOTE ile kapanmayan tek-satır tırnak → ~2.5 sn. İkisi de <1 sn'ye
+# düşmeli (regex sertleştirme + prompt[:20000] savunma tavanı).
+_table_bomb = "||\n" + ("\n" * 40000)
+t0 = time.monotonic()
+rc, out = run("scope_guard.py", {"prompt": _table_bomb})
+_dt_table = time.monotonic() - t0
+check("40KB patolojik tablo girdisi <1sn tamamlanır", _dt_table < 1.0,
+      f"dt={_dt_table:.3f}s rc={rc}")
+
+
+def _quote_bomb(n=48000, spacing=30):
+    unit = "“" + "x" * (spacing - 1)
+    return (unit * (n // spacing))[:n]
+
+
+t0 = time.monotonic()
+rc, out = run("scope_guard.py", {"prompt": _quote_bomb()})
+_dt_quote = time.monotonic() - t0
+check("48KB kapanmayan-tırnak girdisi <1sn tamamlanır", _dt_quote < 1.0,
+      f"dt={_dt_quote:.3f}s rc={rc}")
+
+rc, c = _sg("```\n## a\n## b\n```\nSGK ödeme reddine karşı dava dilekçesi yaz, mevzuat dayanaklarıyla.")
+check("kod bloğu içindeki başlıklar belge-biçimli SAYMAZ → yine de uyarı",
+      "bireysel hak-arama" in c, f"c={c[:120]!r}")
 
 print("== _turn_tools.py (FLEET_DATA_TOOL — Cowork önek tanıma) ==")
 import _turn_tools  # noqa: E402

@@ -823,7 +823,7 @@ mcp_comment: >-
   TAM-FİLO İLKESİ: server'ların TAMAMI her sorguda devreye alınır (G0 kapsam
   kapısı). PRİMER/İKİNCİL etiketi aktivasyon kapısı DEĞİL, sentezde otorite
   önceliğidir. Ağır getirim distiller alt-ajanlarında toplanır
-  (retrieve-don't-dump).   Companion'lar (Yargı/Open Law/Ansvar) claude.ai connector'ıdır —
+  (retrieve-don't-dump).   Companion'lar (Yargı/De Jure/Open Law/Ansvar) claude.ai connector'ıdır —
   wire edilemez. Fedlex 2026-08-08'de wire edildi.
   G6 CELEX taşıyıcısı wire'lı `eurlex`'tir. bkz. commands/lex-connectors.md.
 

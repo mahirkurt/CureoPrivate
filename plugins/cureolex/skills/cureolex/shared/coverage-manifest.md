@@ -8,7 +8,7 @@
 - Durum sözlüğü: `hit N` (N kayıt döndü) · `empty` (çalıştı, sonuç yok) · `degraded` (fetch fallback / `mcp_verified=false`) · `skipped: <gerekçe>` (anahtar yok / mod için N/A).
 - `skipped` gerekçesi zorunlu ve denetlenebilir olmalı ("anahtar yok", "saf idari norm — klinik-sıfır", "companion bağlı değil"). **Gerekçesiz skip yasak.**
 - **Kurulu/bağlı katman atlanamaz:** evidentia kuruluyken klinik-boyutlu sorguda, sci-audit kuruluyken herhangi bir çıktıda, companion bağlıyken tetiklenmiş bağlamda `skipped` yazmak **meşru değildir** (G0 FAIL — Stop hook tamamlatır). `skipped: … bağlı/kurulu değil` yalnız gerçek yoklukta doğrudur.
-- **Companion skip'inin kapı etkisi manifesto satırında görünür:** `Yarg → skipped: companion bağlı değil ⇒ G5 CONDITIONAL` · `De_Jure → skipped: companion bağlı değil ⇒ G5 CONDITIONAL (Yargı da bağlı değilse)` · `Open_Law → skipped: companion bağlı değil ⇒ UK metni ep.legislation_uk (G6'yı düşürmez)` · Ansvar skip'inde etkilenen yargı satırları `manual_required` kalır, tablodan silinmez.
+- **Companion skip'inin kapı etkisi manifesto satırında görünür:** `Yarg → skipped: companion bağlı değil ⇒ G5 CONDITIONAL (De Jure de bağlı değilse)` · `De_Jure → skipped: companion bağlı değil ⇒ G5 CONDITIONAL (Yargı da bağlı değilse)` · `Open_Law → skipped: companion bağlı değil ⇒ UK metni ep.legislation_uk (G6'yı düşürmez)` · Ansvar skip'inde etkilenen yargı satırları `manual_required` kalır, tablodan silinmez.
 - **Wire'lı Fedlex** companion DEĞİLDİR; manifesto karşılaştırmalı katmanında durur. CH bağlamı yoksa `skipped: mod için N/A`. G6 skip'i `eurlex → skipped/degraded` satırındadır.
 - Manifesto, `legal-distiller`'ın döndürdüğü `coverage` bloğundan türetilir; alt-ajan çağrılmadıysa doğrudan araç çağrılarından derlenir.
 

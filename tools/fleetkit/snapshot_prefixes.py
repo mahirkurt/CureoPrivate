@@ -42,9 +42,16 @@ def map_prefixes(tool_names, fleet):
 
 
 def merge(old, new_rows, surface, observed):
+    """Spec A1.3: her satırın KENDİ `observed`'ı olur. Bu koşuda taze görülen
+    (`new_rows`) satırlar CLI `--observed` değerini alır — aynı prefix daha önce
+    var olsa bile (yeniden gözlemlendi, stale kalmamalı). Bu koşuda dokunulmayan
+    eski satırlar KENDİ `observed`'larını korur; dosya-düzeyi `observed` yalnız
+    'son güncelleme' bilgisidir, satırların kendi `observed`'ını EZMEZ."""
     entries = {e["prefix"]: e for e in (old or {}).get("entries", [])}
     for r in new_rows:
-        entries[r["prefix"]] = r
+        row = dict(r)
+        row["observed"] = observed
+        entries[row["prefix"]] = row
     return {"surface": surface, "observed": observed, "entries": list(entries.values())}
 
 

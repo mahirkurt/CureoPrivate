@@ -12,7 +12,7 @@ Talep: **$ARGUMENTS**
 
 ## Yürütme
 
-1. **Scope Guard (§6).** Reform-dışıysa (bireysel dava/promosyon) → yönlendir, dur.
+1. **Scope Guard (§6).** Reform-dışıysa (bireysel dava/promosyon) → kapsam dışı olduğunu söyle, dur.
 2. **Tam-filo (G0, zorunlu).** Belirsiz manzara varsa önce kısa ANALYZE landscape distillate. Sonra `references/00-mod-pipelines.md` Mod 1 listesini `legal-distiller` + `comparative-law-researcher` shard'larına ver; **tools_used semantik sırası eksiksiz** (kalıcı alt küme yok).
 3. **Klinik boyut varsa → evidentia'ya delege et** (§5; zenginleştirilmiş sorgu, `epistemic_dual_label:true`).
 4. **DRAFT pipeline** (`00-mod-pipelines` Mod 1): üst-norm + **Md.90/5** → semantik tarama → mülga → AB/uluslararası (german **resolve→EU**; ich **M4/M8** dosya-yapısıysa; cihaz→eudamed) → içtihat+doktrin → Md.15 iskelet → yazım → yan belgeler → kaynakça → R9 QC.

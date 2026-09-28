@@ -45,7 +45,7 @@ Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`
 | Doktrin | S3 | yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması) · **literatur** (DergiPark makale tam-metni) |
 | Tam-metin (tek katman) | S4 | **openathens** (Tier 3: `oa_fetch_fulltext` / `oa_fetch_pdf`, tek katman — erişilemezse `degraded: tam metin erişilemedi`) |
 | Büyük-veri substratı | tümü | anamnesis (RAG/GraphRAG evidence_index — kaynak değil, bağlam-ekonomisi Tier 2) |
-| **Companion** (wire edilemez — claude.ai connector) | — | Yargı içtihat · Open Law (UK çapraz/HUDOC; statute = `uk-legal` `legislation_*`) · Ansvar (58-yargı tarama) |
+| **Companion** (wire edilemez — claude.ai connector) | — | Yargı içtihat · De Jure içtihat (Yargıtay/Danıştay/AYM; `search_decisions`→`lookup_decisions`→`get_decision`) · Open Law (UK çapraz/HUDOC; statute = `uk-legal` `legislation_*`) · Ansvar (58-yargı tarama) |
 
 19'u Bearer-gated, 1'i public (`yoktez`).
 
@@ -54,7 +54,7 @@ Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`
 Üç ajan yüzeyi **aynı paketi** yükler ama MCP/hook bağlama yolu farklıdır. Tam sözleşme: [`CONNECTORS.md`](CONNECTORS.md).
 
 ```bash
-# Claude Code (önce bir kez `doppler setup` ile proje/yapılandırma seçilir)
+# Claude Code (proje dizininde bir kez `doppler setup` ile proje/yapılandırma seçilir)
 doppler run -- claude
 
 # Cursor — native wire `${env:VAR}` (process env). Paste formu değil.
@@ -66,7 +66,7 @@ doppler run -- claude
 
 claude.ai ve ChatGPT (Developer Mode) `.mcp.json`'ı otomatik yüklemez: her uç `CONNECTORS.md` roster'ından **Settings → Connectors** ile eklenir. Python hook bu iki web yüzeyinde **koşmaz** — G0 kapsam manifestosunu model yazar.
 
-Auth'lu server'lar Bearer anahtarını süreç ortamından çözer. Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `skipped: anahtar yok`) — çıktı durmaz, asla uydurma yapılmaz. Anahtar env-var haritası: `/lex-connectors`. Companion connector'lar (Yargı/Open Law/Ansvar) connector ayarlarından eklenir. Fedlex wire'lıdır. Canlı filo sağlığı (Python'lu host): `/lex-connectors` veya `python3 hooks/scripts/fleet_probe.py --fresh`.
+Auth'lu server'lar Bearer anahtarını süreç ortamından çözer. Bir anahtar yoksa o katman **graceful degrade** eder (kapsam manifestosunda `skipped: anahtar yok`) — çıktı durmaz, asla uydurma yapılmaz. Anahtar env-var haritası: `/lex-connectors`. Companion connector'lar (Yargı/De Jure/Open Law/Ansvar) connector ayarlarından eklenir. Fedlex wire'lıdır. Canlı filo sağlığı (Python'lu host): `/lex-connectors` veya `python3 hooks/scripts/fleet_probe.py --fresh`.
 
 ## Mimari
 

@@ -3,6 +3,7 @@
 ## 4.1.0 — 2026-09-27
 
 - Alt-ajanlar Cowork'te de sunuculara ulaşır: üretici her claude.ai bağlayıcı öneki için Cowork biçimini (`mcp__<Görünen_Ad>__`) üretir; TİTCK, DETSİS, Sağlık Bakanlığı, Mevzuat ve YokTez'in gözlenen adları eklendi. Yüzey anlık görüntüleri ve sapma denetimi; erişilemeyen sunucu `degraded: allowlist` olarak bildirilir, ana pencere çağırır.
+- Paylaşılan üretici değişikliği evidentia'nın alt-ajan araç listesine de Cowork biçimini ekledi (evidentia 2.7.8).
 - Hayalet araç adları gerçek araçlarla değiştirildi; metinde anılan her araç adı denetlenir.
 - Kapsam koruyucusu yalnız kullanıcının kendi talebine bakar (alıntı, kod, belge gövdesi hariç) ve hiçbir skill'e yönlendirmez.
 - Flagship açıklaması 950 karakterin altına indi; sürüm geçmişi bu dosyaya taşındı.

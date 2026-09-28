@@ -28,7 +28,7 @@ kaynağı `fleet.yaml`'dır (`tests/run_suites.py` ve `check_drift` sapmayı yak
 |---|---|---|
 | **S1 — TR çekirdek** | mevzuat · resmi-gazete · titck · tbmm · saglikbakanligi · detsis · **intl-treaty (Md.90/5, shard S1+S2)** | `legal-distiller` · `compliance-auditor` · `gerekce-drafter` |
 | **S2 — Karşılaştırmalı** | health-policy · german-law · **eurlex (G6)** · **fedlex (CH)** · **uk-legal** · ich-guidelines · intl-treaty · eudamed · oecd (+Open Law UK · Ansvar companion) | `comparative-law-researcher` |
-| **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı companion) | `legal-distiller` · `gerekce-drafter` |
+| **S3 — Doktrin** | yok-akademik · yoktez · **literatur** (+Yargı/De Jure companion) | `legal-distiller` · `gerekce-drafter` |
 | **S4 — Tam-metin** | **openathens** (`oa_fetch_fulltext` / `oa_fetch_pdf`, Tier 3 lisanslı, tek katman) | `comparative-law-researcher` |
 | **ALL** | anamnesis (Tier 2 substrat — her shard'da erişilebilir) | tümü |
 
@@ -57,7 +57,7 @@ Büyük bir belgeyi **asla** kör (`max_chars` limitsiz / tam PDF) getirme. Prot
 3. **Tam-metin gerekiyorsa** (karşılaştırma, gerekçe, ex-post trend): Tier 2 anamnesis'e ingest → bounded query. Yabancı hukukta programatik kimlik (CELEX/ECLI/AKN section) + bölüm-düzeyi fetch; tam konsolide metni ana pencereye çekme.
 4. **RG OCR / taranmış PDF:** `rg_ocr_submit` → `rg_ocr_result` (async); sonucu > eşik ise anamnesis'e ingest.
 
-OpenAthens/Anna's dosya araçları base64 gövde değil kısa-ömürlü opaque
+OpenAthens dosya araçları base64 gövde değil kısa-ömürlü opaque
 `resource_link` + checksum/provenance döndürür. Link derhal tüketilir ve kalıcı cache'e
 girmez; cache anahtarı DOI/MD5 + SHA-256'dır. Tüketilen uzun dosya Tier 2 anamnesis'e ingest
 edilir, ana pencereye yalnız bounded dilim gelir.

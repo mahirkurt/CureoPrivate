@@ -70,7 +70,7 @@ cases:
     rationale: "Planın 1. önerisi: mod adları genelleşir, ulusal ad takma ad olarak korunur — 3.x kullanıcısı için gerileme yok."
 
   - id: TR-GOLD-003
-    title: "Güven tavanı — TR paketi (active, tüm bayraklar dayanaklı) HIGH'a izin verir"
+    title: "Güven tavanı — TR paketi (active, tüm bayraklar dayanaklı; has_case_law_api koşullu) HIGH'a izin verir"
     given: "Türkçe çıktı; TR paketi; DRAFT modu; tüm S1 bağlayıcıları wire'lı."
     expect:
       mode: DRAFT

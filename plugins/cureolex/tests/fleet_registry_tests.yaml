@@ -7,7 +7,7 @@ description: >-
   bütünlüğünü kanıtlar, bu dosya CANLI gerçekliği kanıtlar.
 
   Koşum yardımcıları:
-    doppler run -- python3 hooks/scripts/fleet_probe.py --fresh  # önce bir kez: doppler setup
+    doppler run -- python3 hooks/scripts/fleet_probe.py --fresh  # proje dizininde bir kez: doppler setup
     python3 tools/fleetkit/check_drift.py
 
 cases:

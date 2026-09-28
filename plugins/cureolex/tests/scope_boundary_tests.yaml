@@ -8,7 +8,8 @@ suite:
   description: >
     Cureolex'ın MEVZUAT REFORMU ekseninde kaldığını ve beş kapsam-dışı
     kalemi (manifest pipelines_disabled cross-skill sözleşmesi — v2.5.4 P0-2)
-    reddedip doğru skill'e yönlendirdiğini doğrular. Her negatif vakaya, aynı
+    reddettiğini doğrular (yönlendirme yok; cureolex çıktı üretmez, kapsam
+    dışı olduğunu söyler). Her negatif vakaya, aynı
     konunun MEŞRU reform kipindeki POZİTİF karşılığı eşlik eder; böylece
     Scope Guard'ın aşırı-reddetme (over-refusal) yapmadığı da test edilir.
   out_of_scope_contract:

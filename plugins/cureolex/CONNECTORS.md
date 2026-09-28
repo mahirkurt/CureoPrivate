@@ -16,7 +16,7 @@ yüzeye göre ayrı bağlanır.
 
 | Yüzey | Skill / komut / ajan | 20 wire'lı MCP | Python hook (SessionStart / Stop G0) | Ne yapmalısın |
 |---|---|---|---|---|
-| **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -- claude` (önce bir kez `doppler setup`) |
+| **Claude Code** | marketplace kurulumu | `.mcp.json` auto-wire | çalışır | `doppler run -- claude` (proje dizininde bir kez `doppler setup`) |
 | **Cursor** | marketplace / GitHub plugin | `.cursor-plugin/mcp.json` auto-wire (`plugin-cureolex-<server>`) | çalışır (`python3`) | Süreç ortamında Doppler adları (`${env:VAR}`). `doppler run … -- cursor` veya `dotfiles-ai/scripts/sync-doppler-env.sh` sonra Cursor restart. `${VAR}` plugin-variable paste formu **kullanılmaz**. |
 | **Cowork** | hesap skill'leri + plugin | `.mcp.json` **devrede değil** — hesap bağlayıcıları `mcp__<Görünen_Ad>__` önekiyle yüklenir (ör. `mcp__Mevzuat__`, `mcp__T_TCK__`) | çalışır | Bağlayıcıları claude.ai **Settings → Connectors**'tan ekle. Alt-ajan allowlist'leri Cowork biçimini içerir (4.1). Araç adları beklenenden farklıysa listeyi `tools/fleetkit/snapshot_prefixes.py cureolex cowork --observed "<tarih>" --write` ile anlık görüntüye işle ve `run_suites.py`'yi koş. |
 | **claude.ai** | plugin skills/komutlar yüklenebilir | **elle** Settings → Connectors | **koşmaz** | her gated URL için custom connector + Bearer/OAuth; G0 manifestosunu model yazar |
@@ -146,7 +146,7 @@ taşır; Claude Code biçimi `mcp__plugin_cureolex_<server>__*` kalır.
 ## 6. Auth özeti
 
 ```bash
-# önce bir kez: doppler setup  (proje/yapılandırma seçimi)
+# proje dizininde bir kez: doppler setup  (proje/yapılandırma seçimi)
 doppler run -- claude
 doppler run -- cursor
 ```

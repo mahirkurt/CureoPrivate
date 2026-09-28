@@ -24,7 +24,7 @@ Her sorguda 4 shard'ı **paralel** dağıt (bağımsız görevler — tek turda)
 > "Konu: <T>. S2 tam süpürme sırası: health-policy semantic_search→govinfo/congress/FR/japan_search/australia_search/china_law_recent→*_fetch/ecfr; german search→parse/validate→get_provision→currency→SONRA EU ailesi (premium case_law çağırma); eurlex browse→search→lookup→get/relations/cases; fedlex search(keywords)→fedlex_get_law_by_sr(params) (+RIA: open/search/get_consultation); **uk-legal legislation_search→_get_toc→_get_section**→case→judgment→hansard→bills→votes→committees→OSCOLA (Open Law çapraz/yedek); ich_server_info→list→search→get→history (+M4/M8); intl-treaty treaty→coe→info→**uhri_search→uhri_fetch_document**; eudamed (cihaz; ÜTS yok); oecd categories→dataflows→indicators→structure→query→url (**GOV_REG** RIA); Open_Law/Ansvar bağlıysa. Conscious exclude: german premium · ChatGPT alias · ÜTS · fedlex recent+termdat — UHRI/legislation_* exclude DEĞİL. Matris+coverage."
 
 **S3 — Doktrin/içtihat** (`legal-distiller`):
-> "Konu: <T>. yok-akademik search→profile/full→publications/projects/theses/collaborators; literatur search→tr_literatur_read_article→references; yoktez search→get_yok_tez_thesis_details (G7)→markdown; Yargı (bağlıysa). ≤10 bulgu + coverage."
+> "Konu: <T>. yok-akademik search→profile/full→publications/projects/theses/collaborators; literatur search→tr_literatur_read_article→references; yoktez search→get_yok_tez_thesis_details (G7)→markdown; Yargı ve/veya De Jure (search_decisions→lookup_decisions→get_decision; ikisi de bağlı değilse skipped). ≤10 bulgu + coverage."
 
 **S4 — Klinik** (evidentia `evidence-synthesizer` / `/evidentia`): zenginleştirilmiş sorgu (composition-contract §1).
 

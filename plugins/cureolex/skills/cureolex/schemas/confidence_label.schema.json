@@ -75,6 +75,12 @@
       "type": "string",
       "enum": ["bireysel_hak_arama", "promosyon_denetimi"]
     },
+    "out_of_scope_redirect": {
+      "type": "array",
+      "items": { "type": "string" },
+      "deprecated": true,
+      "description": "4.1'de kullanımdan kalktı; yeni çıktı yazmaz — yalnız 4.0 etiketlerinin geçerliliği için. Yerine out_of_scope_category."
+    },
     "jurisdiction_pack": {
       "description": "4.0: çıktıyı üreten yargı bölgesi paketi. status=draft ise combined_confidence en fazla LOW (CC-6).",
       "type": "object",

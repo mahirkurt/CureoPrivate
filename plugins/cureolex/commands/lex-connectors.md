@@ -28,7 +28,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
    | Durum | Anlamı | Aksiyon |
    |---|---|---|
    | `ok` | hazır, `initialize` 200 döndü | — |
-   | `auth_missing` | anahtar süreç ortamında yok (ağa çıkılmadı) — **meşru degrade** | `doppler run -- claude` ile başlat (önce bir kez `doppler setup`) |
+   | `auth_missing` | anahtar süreç ortamında yok (ağa çıkılmadı) — **meşru degrade** | `doppler run -- claude` ile başlat (proje dizininde bir kez `doppler setup`) |
    | `unauthorized` | sunucu 401/403 verdi — **YAPILANDIRMA ARIZASI, degrade değil** | `fleet.yaml`'i düzelt → `python3 tools/fleetkit/gen_fleet.py`; anahtar emekli olmuş olabilir |
    | `unreachable` | timeout / bağlantı hatası / 5xx | upstream sorunu; manifestoda `degraded: erişilemedi` |
    | `error` | 200 ama geçersiz JSON-RPC | sunucu sürümü uyumsuz olabilir |
@@ -39,11 +39,11 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
    - **Doktrin** (`doctrine`, shard S3): yok-akademik (künye) · **yoktez** (tez tam-metni + G7 atıf doğrulaması — v3.5.0'da wire'landı, artık companion DEĞİL) · **literatur** (DergiPark makale tam-metni)
    - **Tam-metin** (`fulltext`, shard S4): **openathens** (Tier 3 lisanslı, tek katman). Erişilemezse `degraded: tam metin erişilemedi`.
    - **Büyük-veri substratı** (`substrate`): anamnesis — RAG/GraphRAG evidence_index (kaynak değil, bağlam-ekonomisi Tier 2)
-   - **Companion (wire edilemez — claude.ai connector):** Yargı · Open Law (UK) · Ansvar
+   - **Companion (wire edilemez — claude.ai connector):** Yargı · De Jure · Open Law (UK) · Ansvar
    - **Delegasyon:** evidentia (klinik kanıt) · sci-audit (atıf-adli + dil)
 
 5. **Kapı etkisini göster.** Eksik katmanın maliyetini açıkça yaz:
-   - `Yargı bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat zinciri doğrulanamaz)`
+   - `Yargı ve De Jure ikisi de bağlı değil ⇒ G5 en fazla CONDITIONAL (içtihat zinciri doğrulanamaz); yalnız biri bağlıysa G5 düşmez`
    - `Open Law bağlı değil ⇒ UK çapraz yok; statute wire uk-legal legislation_* / ep.legislation_uk; G6'yı düşürmez (G6 = wire'lı eurlex)`
    - `Ansvar bağlı değil ⇒ Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL tarama satırları manual_required`
    - `eurlex erişilemiyor ⇒ G6 CONDITIONAL (CELEX yedeği ep.eurlex_sparql; german-law get_eu_basis CELEX üretmez)`

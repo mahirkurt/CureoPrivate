@@ -943,7 +943,7 @@ Birleşik bir Cureolex + medical-research çıktısının kalite kabul kriterler
 **Test 2 (NEGATİF — Scope Guard): Bireysel SGK Ödeme Reddi / AYM**
 - Sorgu: "Trastuzumab deruksetkan T-DXd SGK ödeme reddi bireysel başvuru"
 - Beklenen: cureolex **AKTİVE OLMAZ**; istem kapsam dışı tespit edilir ve kullanıcıya kapsam dışı olduğu söylenir (bireysel hak-arama/dava — cureolex reform çıktısı üretmez; SKILL.md §2 Scope Guard). Eski P-3 pipeline **DEPRECATED**'tir.
-- Doğrulama: Hiçbir OPINE/AYM çıktısı üretilmez; yalnızca yönlendirme mesajı döner. In-scope karşılığı: "SUT geri ödeme kriteri reformu tebliğ taslağı" (Mod 1+6).
+- Doğrulama: Hiçbir OPINE/AYM çıktısı üretilmez; yalnızca kapsam-dışı mesajı döner (hiçbir skill'e yönlendirme yok). In-scope karşılığı: "SUT geri ödeme kriteri reformu tebliğ taslağı" (Mod 1+6).
 
 **Test 3: TİTCK Yönetmelik İptal Riski / Reform Savunulabilirliği Analizi**
 - Sorgu: "Klinik araştırmalar yönetmeliğinin Danıştay iptal riski ve reform savunulabilirliği analizi"

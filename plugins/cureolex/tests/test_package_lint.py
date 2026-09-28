@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """package_lint birim testleri — run_suites.py [9] tarafından da koşulur."""
+import shutil
 import sys
 import tempfile
 import unittest
@@ -17,14 +18,25 @@ FLEET = {
     "companions": [{"name": "De Jure", "tools": ["search_decisions"]}],
 }
 
+# make_root() bir yardımcı fonksiyondur, TestCase metodu değil — self.addCleanup
+# kullanamaz. Oluşturduğu her geçici dizini burada biriktirip modül sonunda
+# tearDownModule ile temizler (2026-09-27 nihai inceleme F7: sızan tmp dizinleri).
+_TMP_ROOTS: list = []
+
 
 def make_root(files: dict) -> Path:
     root = Path(tempfile.mkdtemp())
+    _TMP_ROOTS.append(root)
     for rel, txt in files.items():
         p = root / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(txt, encoding="utf-8")
     return root
+
+
+def tearDownModule():
+    for root in _TMP_ROOTS:
+        shutil.rmtree(root, ignore_errors=True)
 
 
 class ToolReferenceTests(unittest.TestCase):
@@ -156,6 +168,13 @@ class ForbiddenNamesTests(unittest.TestCase):
     def test_binary_like_files_are_skipped(self):
         root = make_root({"docs/logo.png": "onko-erisim"})
         self.assertEqual(pl.check_forbidden_names(root, FLEET)[0], [])
+
+    def test_apostrophe_spelling_of_annas_is_reported(self):
+        """'annas' (kesme işaretsiz) yakalar ama 'Anna's dosya araçları' gibi kesme
+        işaretli yazımı kaçırırdı — bkz. shared/context-economy-contract.md F7."""
+        root = make_root({"skills/cureolex/shared/x.md": "OpenAthens/Anna's dosya araçları"})
+        errors, _ = pl.check_forbidden_names(root, FLEET)
+        self.assertTrue(any("anna's" in m for _, m in errors), errors)
 
 
 class SecurityPolicyTests(unittest.TestCase):

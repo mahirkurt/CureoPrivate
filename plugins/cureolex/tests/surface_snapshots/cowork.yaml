@@ -1,9 +1,9 @@
 surface: cowork
 observed: "2026-09-27 · Cowork inceleme raporu (Y1) — örnek gözlemler; tam liste snapshot_prefixes.py ile doldurulur"
 entries:
-  - {prefix: mcp__Mevzuat__, server: mevzuat, evidence: "rapor Y1 gözlemi"}
-  - {prefix: mcp__T_TCK__, server: titck, evidence: "rapor Y1 gözlemi"}
-  - {prefix: mcp__DETS_S__, server: detsis, evidence: "rapor Y1 gözlemi"}
-  - {prefix: mcp__YokTez_MCP__, server: yoktez, evidence: "rapor Y1 gözlemi"}
-  - {prefix: mcp__Health_Policy__, server: health-policy, evidence: "rapor Y1 gözlemi"}
-  - {prefix: mcp__TR_Dizin__, server: null, evidence: "rapor Y1 gözlemi — araç listesi görülmeden eşlenmez"}
+  - {prefix: mcp__Mevzuat__, server: mevzuat, observed: "2026-09-27 · Cowork Y1", evidence: ["rapor Y1 gözlemi"]}
+  - {prefix: mcp__T_TCK__, server: titck, observed: "2026-09-27 · Cowork Y1", evidence: ["rapor Y1 gözlemi"]}
+  - {prefix: mcp__DETS_S__, server: detsis, observed: "2026-09-27 · Cowork Y1", evidence: ["rapor Y1 gözlemi"]}
+  - {prefix: mcp__YokTez_MCP__, server: yoktez, observed: "2026-09-27 · Cowork Y1", evidence: ["rapor Y1 gözlemi"]}
+  - {prefix: mcp__Health_Policy__, server: health-policy, observed: "2026-09-27 · Cowork Y1", evidence: ["rapor Y1 gözlemi"]}
+  - {prefix: mcp__TR_Dizin__, server: null, observed: "2026-09-27 · Cowork Y1", evidence: ["rapor Y1 gözlemi — araç listesi görülmeden eşlenmez"]}

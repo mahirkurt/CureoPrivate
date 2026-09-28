@@ -35,6 +35,24 @@ class MapPrefixTests(unittest.TestCase):
         merged = sp.merge(old, new, surface="s", observed="o")
         self.assertEqual([e["prefix"] for e in merged["entries"]], ["mcp__A__", "mcp__B__"])
 
+    def test_merge_keeps_old_entry_observed(self):
+        """A1.3: her satırın KENDİ observed'ı olmalı — yeni koşum eski satırınkini ezmez."""
+        old = {"entries": [{"prefix": "mcp__A__", "server": "titck",
+                             "evidence": ["get_drug"], "observed": "2026-01-01 eski gözlem"}]}
+        new = [{"prefix": "mcp__B__", "server": None, "evidence": ["x_y"]}]
+        merged = sp.merge(old, new, surface="s", observed="2026-09-27 yeni gözlem")
+        by_prefix = {e["prefix"]: e for e in merged["entries"]}
+        self.assertEqual(by_prefix["mcp__A__"]["observed"], "2026-01-01 eski gözlem")
+        self.assertEqual(by_prefix["mcp__B__"]["observed"], "2026-09-27 yeni gözlem")
+
+    def test_merge_re_observed_prefix_gets_new_observed(self):
+        """Aynı prefix bu koşuda tekrar görüldüyse observed TAZELENIR (stale kalmaz)."""
+        old = {"entries": [{"prefix": "mcp__A__", "server": "titck",
+                             "evidence": ["get_drug"], "observed": "2026-01-01 eski gözlem"}]}
+        new = [{"prefix": "mcp__A__", "server": "titck", "evidence": ["get_drug", "search_drugs"]}]
+        merged = sp.merge(old, new, surface="s", observed="2026-09-27 yeni gözlem")
+        self.assertEqual(merged["entries"][0]["observed"], "2026-09-27 yeni gözlem")
+
 
 if __name__ == "__main__":
     unittest.main()

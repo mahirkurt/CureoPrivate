@@ -22,7 +22,7 @@ Bu yetkinlik, **Türkiye'de sağlık mevzuatının her düzlemde reform, değiş
 
 ## 0. Nasıl çalışılır (her modda)
 
-1. **Scope Guard'ı önce uygula (§6).** Şüphede yönlendir, çıktı üretme.
+1. **Scope Guard'ı önce uygula (§6).** Şüphede çıktı üretme; kapsam dışı olduğunu söyle.
 2. **Modu ve yargı bölgesi paketini belirle (§1, §1.5).** Kullanıcı komut verdiyse (`/lex-draft` vb.) mod sabittir; serbest metinse tetikleyicilere göre seç. Yargı bölgesi belirtilmemişse varsayılan **TR** paketidir (3.x davranışı); başka bir bölge istendiyse o paketi yükle — paket yoksa uydurma, `manual_required` + mevcut paket listesi.
 3. **TAM-FİLO devreye al (§3 — zorunlu, her sorgu).** Wire edilmiş **20 kaynak MCP + 4 companion**'un tamamı her sorguda taranır. Getirimi **≤4 paralel shard**'a böl (TR-çekirdek · karşılaştırmalı · doktrin · klinik), her shard'ı bir distiller alt-ajanına ver; ana bağlama yalnız kompakt `retrieval_distillate` + `coverage` döner. Bağlam ekonomisi ve büyük-veri disiplini **zorunludur** (§3.5) — ham veri ana pencereye girmez. Hiçbir server sessizce atlanmaz.
 4. **Üst-norm zincirini kur.** `mcp__mevzuat__get_anayasa` → dayanak kanun/CBK → yönetmelik. Primer arama: anahtar kelime **ve** kanun/mevzuat NUMARASI (`search_mevzuat` `mevzuat_no` veya yalnız-rakam query), `phrase` (bedesten Solr), belge-içi `search_within_mevzuat`. Ayrıntı: `references/07-mevzuat-mcp-workflow.md`. Canlı primer `mevzuat.cureonics.com` **0.15.1+** (HP cutover 2026-08): phrase / `search_within_mevzuat` / bedesten tam gerekçe mevcut — tool listesinde yoksa uydurma; yoklukta ikincil veya `manual_required`.

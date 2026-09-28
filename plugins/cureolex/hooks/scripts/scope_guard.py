@@ -38,7 +38,12 @@ _FENCE = re.compile(r"```.*?```", re.S)
 _INLINE = re.compile(r"`[^`\n]*`")
 _DQUOTE = re.compile(r"\"[^\"\n]*\"|“[^”\n]*”|«[^»\n]*»")
 _HEADING = re.compile(r"(?m)^\s{0,3}#{1,6}\s")
-_TABLE = re.compile(r"(?m)^\s*\|.*\|\s*$\n^\s*\|[\s:|-]+\|\s*$")
+# [ \t]* (NOT \s*) içinde: \s bir satır-içi karakter sınıfında yeni satırı da yutar —
+# tablo başlığından sonra gelen büyük bir boş-satır bloğu, motorun her konumda
+# `[\s:|-]+` ile geri-izleme (backtracking) yapmasına yol açar (ölçüldü: 40 KB boş
+# satır → 15.6 sn, hook zaman aşımı 10 sn). Yatay boşlukla sınırlamak satır atlamayı
+# engeller ve tek-geçişli (lineer) eşleşmeyi geri getirir.
+_TABLE = re.compile(r"(?m)^[ \t]*\|.*\|[ \t]*$\n^[ \t]*\|[ \t:|-]+\|[ \t]*$")
 _NON_PROSE = re.compile(r"^\s*(#{1,6}\s|\||[-*+]\s|\d+[.)]\s)")
 
 
@@ -60,12 +65,21 @@ def own_request_text(prompt: str) -> str:
     t = _INLINE.sub(" ", t)
     t = "\n".join(ln for ln in t.splitlines() if not ln.lstrip().startswith(">"))
     t = _DQUOTE.sub(" ", t)
-    if _document_shaped(prompt):
+    # Çit-ayıklanmış (fence-stripped) `t` üzerinde karar ver — ham `prompt` üzerinde
+    # karar verirse bir kod bloğu İÇİNDEKİ `##` satırları belge-biçimli sanılır ve
+    # asıl istem `_first_prose_paragraph` tarafından yanlışlıkla atlanabilir.
+    if _document_shaped(t):
         t = _first_prose_paragraph(t)
     return t
 
 
 def warning_for(prompt: str):
+    # Patolojik girdi savunması: yapıştırılan raporlar/belgeler onlarca KB olabilir;
+    # kullanıcının KENDİ talebi her zaman kısadır. Aşağıdaki regex'ler düzeltilmiş
+    # olsa da (bkz. _TABLE), tek regex'i unutmak veya yeni bir kalıp eklemek yine
+    # geri-izleme patlamasına yol açabilir — bu yüzden regex işinden ÖNCE sabit bir
+    # tavan uygula (savunma-derinliği, ölçülen sınırların çok üstünde).
+    prompt = prompt[:20000]
     own = own_request_text(prompt)
     if not own.strip() or not CONTEXT.search(own):
         return None

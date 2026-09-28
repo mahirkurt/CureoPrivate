@@ -173,9 +173,12 @@ hedef de eklenmez.
 4. TR paketi: `has_case_law_api: {value: conditional, requires_any_of: [Yargı,
    De Jure], basis: "Yargı (mcp__Yarg__*) veya De Jure (mcp__De_Jure__*) companion'ı —
    wire'lı değil; oturumdaki capability_probe kaydı belirler."}`.
-5. `validate_packs.py`: `value: true` olup dayanağı companion'a bağlı olan
-   (`requires_any_of` taşıyan ya da basis'i bir companion önekine atıf yapan) bayrak
-   → ihlal, çıkış 1. `conditional` + `requires_any_of` eksik → ihlal. Bozulma testi:
+   DE paketi: `has_case_law_api` → `conditional`, `requires_any_of: [Open Law]`.
+5. `validate_packs.py`: (a) `value: true` ise `basis` wire'lı bir fleet sunucusunun adını
+   (ya da `mcp__<ad>__` önekini) anmalıdır — anmıyorsa ihlal. (Rafine, 2026-09-27: DE
+   paketi companion'ı önekle değil adla anıyordu — "Open Law companion" — ve önek-temelli
+   kural onu kaçırırdı.) (b) `conditional` + `requires_any_of` eksik → ihlal (şema da
+   zorlar). (c) `requires_any_of` içindeki her ad bir companion olmalıdır. Bozulma testi:
    TR bayrağı `true`'ya çevrilince doğrulayıcı başarısız olmalı.
 6. Model-zamanı yoklama: `evidence_ledger.schema.json`'a `capability_probe` kayıt
    türü: `{flag, probed_at, requires_any_of, found: [önek], result: bool}`.

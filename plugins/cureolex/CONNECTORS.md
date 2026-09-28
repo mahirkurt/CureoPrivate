@@ -1,7 +1,7 @@
 # CONNECTORS.md — cureolex yüzey ve connector sözleşmesi
 
-> **Normatif.** Wire edilmiş 20 hukuk/regülasyon MCP + 3 companion (Yargı · Open
-> Law · Ansvar) için uç listesi, auth modeli ve **hangi ajan yüzeyinin neyi
+> **Normatif.** Wire edilmiş 20 hukuk/regülasyon MCP + 4 companion (Yargı · De
+> Jure · Open Law · Ansvar) için uç listesi, auth modeli ve **hangi ajan yüzeyinin neyi
 > otomatik bağladığı** burada sabittir. `.mcp.json` bu dosyadaki roster'dan
 > üretilir (`fleet.yaml` → `python3 tools/fleetkit/gen_fleet.py`). Anahtar
 > **değerleri** yazılmaz; yalnız env **adları** vardır.
@@ -77,6 +77,7 @@ userConfig→env fallback sözdiziminin belgelenmemiş olmasından gelir.
 | `uk-legal` | `https://uk-law.cureonics.com/mcp` | Bearer | `UK_LEGAL_MCP_API_KEY` | comparative |
 | `anamnesis` | `https://anamnesis-mcp.cureonics.workers.dev/mcp` | Bearer | `ANAMNESIS_MCP_API_KEY` | substrate |
 | **Yargı** | _(kararlı self-host URL yok)_ | OAuth | claude.ai / ChatGPT / Cursor **Settings → Connectors** | companion |
+| **De Jure** | _(kararlı self-host URL yok)_ | OAuth | claude.ai / ChatGPT / Cursor **Settings → Connectors** | companion |
 | **Open Law** | _(kararlı self-host URL yok)_ | OAuth | claude.ai / ChatGPT / Cursor **Settings → Connectors** | companion |
 | **Ansvar** | _(kararlı self-host URL yok)_ | OAuth | claude.ai / ChatGPT / Cursor **Settings → Connectors** | companion |
 <!-- GEN:connector-roster END -->

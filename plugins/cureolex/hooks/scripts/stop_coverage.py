@@ -93,18 +93,20 @@ HAS_CONFIDENCE = re.compile(r"(confidence[_ ]?label|combined_confidence|human_re
 # v3.5.0'da liste HARDCODE DEĞİL, fleet.lock.json'dan türetilir: yoktez
 # wire'landığı için companion olmaktan çıktı. 2026-08-08'de AYNI geçiş
 # Fedlex Swiss'te yaşandı — companion'dan wire'lı sunucuya geçti.
-# Zorunlu satır = companions + delegations (şu an 3 + 2 = 5).
+# Zorunlu satır = companions + delegations (şu an 4 + 2 = 6).
 _TOKEN_RX = {
     "Yargı": r"\bYarg",
+    "De Jure": r"De[_ ]?Jure",
     "Open Law": r"Open[_ ]?Law",
     "Ansvar": r"\bAnsvar",
     "evidentia": r"\bevidentia",
     "sci-audit": r"\bsci[- ]?audit",
 }
 
-# Lock okunamazsa kullanılacak asgari liste (fail-open) — 3 companion + 2 delegasyon.
+# Lock okunamazsa kullanılacak asgari liste (fail-open) — 4 companion + 2 delegasyon.
 _FALLBACK_ROWS = {
     "Yargı (companion — G5 içtihat)": re.compile(_TOKEN_RX["Yargı"], re.IGNORECASE),
+    "De Jure (companion — G5 içtihat, Yargı alternatifi)": re.compile(_TOKEN_RX["De Jure"], re.IGNORECASE),
     "Open Law (companion — UK birincil metin)": re.compile(_TOKEN_RX["Open Law"], re.IGNORECASE),
     "Ansvar (companion — Mod7 58-yargı)": re.compile(_TOKEN_RX["Ansvar"], re.IGNORECASE),
     "evidentia (klinik delegasyon)": re.compile(_TOKEN_RX["evidentia"], re.IGNORECASE),

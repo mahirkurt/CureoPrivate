@@ -693,6 +693,19 @@ companions:
       G5 en fazla CONDITIONAL — AYM belirlilik/iptal emsali, Danıştay idari-işlem
       ve Yargıtay zinciri doğrulanamaz.
 
+  - name: De Jure
+    # 2026-09-27: araç adları HP Claude Code oturumunda (mcp__claude_ai_De_Jure__*) görüldü.
+    tool_prefixes: ["mcp__De_Jure__", "mcp__claude_ai_De_Jure__"]
+    gate: G5
+    modes: [ALL]
+    tools: [search_decisions, lookup_decisions, get_decision, get_legislation,
+            get_article_history, start_deep_research, get_deep_research]
+    manifest_row: "De Jure (companion — G5 içtihat, Yargı alternatifi)"
+    degrade: >-
+      Yargı da bağlı değilse G5 en fazla CONDITIONAL. Karar künyesi yalnız
+      lookup_decisions ile doğrulandıysa yazılır; doğrulanamayan 'araçla
+      doğrulanamadı' işaretlenir — asla uydurma.
+
   - name: Open Law
     tool_prefixes: ["mcp__Open_Law__", "mcp__claude_ai_Open_Law__"]
     modes: [ALL]

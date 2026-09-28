@@ -60,13 +60,14 @@ Cureolex **bağımsız** bir plugin'dir: hiçbir dış plugin olmadan da 12 modu
 
 **sci-audit yoksa:** atıf-adli + imla denetimi manuel yapılır (cureolex kendi G3/G7 kapıları zaten çalışır); manifestoda `sci-audit → skipped: plugin kurulu değil`. Çıktı durmaz.
 
-## 3. Companion connector'lar — Yargı · Open Law · Ansvar (tam-filonun zorunlu üyeleri)
+## 3. Companion connector'lar — Yargı · De Jure · Open Law · Ansvar (tam-filonun zorunlu üyeleri)
 
-Bu üçü claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da wire EDİLMEZ — kararlı self-host URL'leri yoktur); **bağlı oldukları her oturumda tam-filonun zorunlu üyeleridir**, manifesto satırları her çıktıda mevcuttur ve kalite kapılarına bağlıdır. `/lex-connectors` durumlarını raporlar. **Fedlex 2026-08-08'de wire edildi** — companion tablosunda durmaz; CH birincil metin `mcp__fedlex__*`. Türk Patent wire'ı 2026-08-17'de emekli edildi. G6 CELEX taşıyıcısı wire'lı `mcp__eurlex__*`'tir. *(Önek notu: connector araç önekleri yüzeye göre `mcp__<Ad>__*` veya `mcp__claude_ai_<Ad>__*` görünebilir — eşleştirmeyi server adına göre yap.)*
+Bu dördü claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da wire EDİLMEZ — kararlı self-host URL'leri yoktur); **bağlı oldukları her oturumda tam-filonun zorunlu üyeleridir**, manifesto satırları her çıktıda mevcuttur ve kalite kapılarına bağlıdır. `/lex-connectors` durumlarını raporlar. **Fedlex 2026-08-08'de wire edildi** — companion tablosunda durmaz; CH birincil metin `mcp__fedlex__*`. Türk Patent wire'ı 2026-08-17'de emekli edildi. G6 CELEX taşıyıcısı wire'lı `mcp__eurlex__*`'tir. *(Önek notu: connector araç önekleri yüzeye göre `mcp__<Ad>__*` veya `mcp__claude_ai_<Ad>__*` görünebilir — eşleştirmeyi server adına göre yap.)*
 
 | Companion | Araç yüzeyi | Zorunlu tetik (bağlam) | Bağlı kapı | Bağlı değilse |
 |---|---|---|---|---|
 | **Yargı** | `mcp__Yarg__search_anayasa_unified` · `search_bedesten_unified` · `search_emsal_detailed_decisions` · `get_*_markdown` | İçtihat zinciri gereken HER an: ANALYZE 7-boyut iptal-riski · DRAFT/AMEND gerekçe dayanağı · COMPLY K-2 (AYM belirlilik)/K-17 · OPINE mütalaa · TBMM genel gerekçe · EX_POST yargı-pratiği | **G5** | G5 en fazla CONDITIONAL; kullanıcıya "Yargı connector'ını bağla" önerisi; içtihat iddiası `unverified` etiketli, asla uydurma |
+| **De Jure** | `mcp__De_Jure__search_decisions` · `lookup_decisions` · `get_decision` · `get_legislation` · `get_article_history` | Yargı'nın **alternatifi** — aynı G5 tetikleri; ikisi de bağlıysa çapraz teyit | **G5** | Yargı da bağlı değilse G5 en fazla CONDITIONAL; künye yalnız `lookup_decisions` ile doğrulandıysa yazılır |
 | **Open Law** | `mcp__Open_Law__lookup_statute` · `legislation_toc` · `search_caselaw` · `fetch_hudoc` | Mod 7 UK **çapraz/HUDOC** (statute birincil = wire `uk-legal` `legislation_*`). **AB/CELEX bu companion'da DEĞİL** — wire'lı `eurlex` | **null (G6 değil)** | Wire fail → `ep.legislation_uk`; G6'yı düşürmez |
 | **Ansvar** | `mcp__Ansvar__search(jurisdictions=…)` · `get_provision` · `list_coverage` · `validate_citation` | Mod 7'de CH/FR/IT/NL/SE/DK/FI/AT/PL veya diğer 58-yargı korpusu kapsamındaki ülke satırı · yatay çerçeve/standart (GDPR/NIS2/veri güvenliği) sorguları | Mod 7 kapsam bütünlüğü | O yargı satırı `manual_required` + kapsam-boşluğu beyanı; satır tablodan SİLİNMEZ. CH birincil metin wire'lı `fedlex`'tedir |
 
@@ -78,12 +79,12 @@ Bu üçü claude.ai connector'ı olarak bağlanır (`fleet.yaml`/`.mcp.json`'da 
 
 | Durum | Davranış | Manifesto satırı |
 |---|---|---|
-| evidentia + sci-audit kurulu, 3 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
+| evidentia + sci-audit kurulu, 4 companion bağlı | Tam kompozisyon | hepsi `hit`/`empty` (bağlam-dışı companion `skipped: mod için N/A`) |
 | evidentia kurulu ama klinik-boyutlu sorguda ÇAĞRILMADI | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
 | sci-audit kurulu ama çıktı denetimsiz teslim edildi | **G0 FAIL — meşru degrade değil** | Stop hook tamamlatır |
 | yalnız evidentia kurulu | Klinik tam, dil-QA manuel | `sci-audit → skipped: plugin kurulu değil` |
 | yalnız sci-audit kurulu | Dil-QA tam, klinik `unverified` uyarısı | `evidentia → skipped: plugin kurulu değil` |
-| companion bağlı değil | İlgili kapı CONDITIONAL / satır `manual_required`-degrade + kullanıcıya bağlama önerisi | `Yarg/Open_Law/Ansvar → skipped: companion bağlı değil ⇒ <kapı/satır etkisi>` |
+| companion bağlı değil | İlgili kapı CONDITIONAL / satır `manual_required`-degrade + kullanıcıya bağlama önerisi | `Yarg/De_Jure/Open_Law/Ansvar → skipped: companion bağlı değil ⇒ <kapı/satır etkisi>` |
 | ikisi de yok, companion'lar yok | cureolex tek başına (12 mod çalışır; G5 CONDITIONAL; G6 `eurlex`'e bağlı) | tümü `skipped` + gerekçe |
 
 **Değişmez:** hiçbir degrade durumu **uydurmaya** yol açmaz. Eksik katman = dürüst `unverified`/`skipped` beyanı, asla fabrikasyon. `skipped` yalnız (a) gerçek yokluk, (b) gerekçeli bağlam-dışılık ile meşrudur — kurulu/bağlı bir katmanın tetiklenmiş bağlamda atlanması her zaman ihlaldir. İnsan denetimi her hâlde zorunludur.

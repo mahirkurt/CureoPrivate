@@ -42,6 +42,23 @@
         "illustrative_placeholder_count": { "type": "integer", "minimum": 0 },
         "high_grade_count": { "type": "integer", "minimum": 0 }
       }
+    },
+    "capability_probes": {
+      "description": "4.1: koşu başında conditional yetenek bayraklarının canlı yoklaması. Kayıt yoksa bayrak false sayılır (kötümser).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["flag", "probed_at", "requires_any_of", "found", "result"],
+        "properties": {
+          "flag": { "type": "string" },
+          "probed_at": { "type": "string", "format": "date-time" },
+          "requires_any_of": { "type": "array", "items": { "type": "string" } },
+          "found": { "type": "array", "items": { "type": "string" },
+                     "description": "Araç listesinde bulunan önekler (ör. mcp__De_Jure__)." },
+          "result": { "type": "boolean" }
+        }
+      }
     }
   },
   "$defs": {

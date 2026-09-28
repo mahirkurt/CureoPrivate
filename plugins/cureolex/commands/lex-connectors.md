@@ -1,6 +1,6 @@
 ---
 name: lex-connectors
-description: Cureolex tam-filo bağlantı durumu — wire edilmiş 20 hukuk/regülasyon MCP + 3 companion (Yargı/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
+description: Cureolex tam-filo bağlantı durumu — wire edilmiş 20 hukuk/regülasyon MCP + 4 companion (Yargı/De Jure/Open Law/Ansvar) + evidentia/sci-audit zorunlu delegasyonun CANLI erişilebilirliğini gerçek MCP prob'uyla raporlar. Hangi katman hazır, hangisi anahtar bekliyor, hangisi yapılandırma arızası taşıyor gösterir. Argüman gerekmez ("taze" derseniz cache atlanır).
 argument-hint: (argüman gerekmez — "taze"/"fresh" derseniz 24 saatlik cache atlanır)
 allowed-tools: Read, Bash
 ---
@@ -91,6 +91,7 @@ Cureolex'ın **tam-filo ilkesi** (wire'lı tüm araçlar her sorguda çalışır
 | `uk-legal` | comparative | `UK_LEGAL_MCP_API_KEY` |
 | `anamnesis` | substrate | `ANAMNESIS_MCP_API_KEY` |
 | Yargı | companion | _(claude.ai connector — env anahtarı yok)_ |
+| De Jure | companion | _(claude.ai connector — env anahtarı yok)_ |
 | Open Law | companion | _(claude.ai connector — env anahtarı yok)_ |
 | Ansvar | companion | _(claude.ai connector — env anahtarı yok)_ |
 <!-- GEN:fleet-env-table END -->

@@ -14,7 +14,9 @@ denetler. run_suites.py davranış ŞARTNAMELERİNİ denetler; bu dosya PAKET VE
                      paket ailelerinin anahtarları bilinen aileler; beyan edilen K-n o aileye ait
   [P7] KOD           paket kodu ISO deseninde; ayrılmış istisna (UK) paket kodu olamaz;
                      ORG: kodları ISO alanıyla çakışmaz; eski takma adlar çözülür
-  [P8] MOD ADLARI    mode_aliases hedefleri kanonik mod; gate_params anahtarları G0–G11
+  [P8] YETENEK       (4.1) value:true ⇒ basis wire'lı sunucuyu anar; conditional ⇒
+                     requires_any_of bilinen companion'lar — iyimser beyan yasağı
+  [P8b] MOD ADLARI   mode_aliases hedefleri kanonik mod; gate_params anahtarları G0–G11
   [P9] ALTIN VAKALAR paketin golden_cases dosyası var; `pack_check` blokları deterministik
                      koşulur (G11 statik ihlal sayısı · güven tavanı)
   [P10] SÖZLEŞME     connector_contract.reference_mappings'teki her araç filoda tools_used
@@ -94,7 +96,38 @@ def s1_wired(pack) -> bool:
                for c in pack.get("connectors", []))
 
 
-def tavan_hesapla(pack, mode=None, output_language=None, rules_doc=None):
+def capability_value(caps, flag, probes=None):
+    """Bayrağın bu oturumdaki değeri. 'conditional' → yoklama kaydı; kayıt yoksa False (kötümser)."""
+    v = (caps.get(flag) or {}).get("value")
+    if v == "conditional":
+        return bool((probes or {}).get(flag, False))
+    return bool(v)
+
+
+def _mentions_wired(basis, servers):
+    return any(re.search(r"(?<![A-Za-z0-9])" + re.escape(n) + r"(?![A-Za-z0-9])", basis)
+               for n in servers)
+
+
+def capability_issues(pack, servers, companions):
+    """İyimser beyan yasağı (4.1): true → wire'lı dayanak; conditional → bilinen companion."""
+    out = []
+    for flag, cap in (pack.get("capabilities") or {}).items():
+        val = cap.get("value")
+        if val == "conditional":
+            req = cap.get("requires_any_of") or []
+            if not req:
+                out.append(f"{flag}: conditional ama requires_any_of yok")
+            for c in req:
+                if c not in companions:
+                    out.append(f"{flag}: requires_any_of '{c}' fleet.yaml'da companion değil")
+        elif val is True and not _mentions_wired(cap.get("basis", ""), servers):
+            out.append(f"{flag}: value true ama dayanak wire'lı bir sunucuyu anmıyor — "
+                       f"companion'a dayanıyorsa 'conditional' + requires_any_of")
+    return out
+
+
+def tavan_hesapla(pack, mode=None, output_language=None, rules_doc=None, probes=None):
     """Paketin yetenek bayraklarından güven TAVANINI hesapla.
 
     Döner: (tavan, [uygulanan kural kimlikleri]). Kurallar confidence_ceiling_rules.yaml'dan
@@ -110,7 +143,7 @@ def tavan_hesapla(pack, mode=None, output_language=None, rules_doc=None):
         w = r["when"]
         hit = False
         if "capability" in w:
-            hit = bool(caps.get(w["capability"], {}).get("value")) == bool(w["value"])
+            hit = capability_value(caps, w["capability"], probes) == bool(w["value"])
         elif "pack_status" in w:
             hit = pack.get("status") == w["pack_status"]
         elif "s1_connector_wired" in w:
@@ -252,6 +285,10 @@ def main(argv=None) -> int:
                 issues.append((ctx, f"'{s}' companion'dır — status wired olamaz"))
             if s in servers and c.get("status") == "companion":
                 issues.append((ctx, f"'{s}' wire'lı sunucudur — status companion olamaz"))
+
+        # [P8] Yetenek bayrağı dayanağı — iyimser beyan yasağı (4.1).
+        for m in capability_issues(pack, set(servers), set(companions)):
+            issues.append((ctx, m))
 
         # [P5] Parça aynası (yalnız paket shards beyan ediyorsa)
         for shard, names in (pack.get("shards") or {}).items():

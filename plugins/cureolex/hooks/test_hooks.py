@@ -214,23 +214,24 @@ rc, out = run("stop_coverage.py", {"last_assistant_message": partial, "stop_hook
 reason = (out or {}).get("reason", "")
 check("manifesto var ama companion/delegasyon satırları eksik → block + isim listesi",
       (out or {}).get("decision") == "block" and all(x in reason for x in (
-          "Yargı", "Open Law", "Ansvar",
+          "Yargı", "De Jure", "Open Law", "Ansvar",
           "evidentia", "sci-audit")))
 
 # ── Zorunlu satırlar lock'tan türer (v3.5.0) ──────────────────────────────
 _rows = stop_coverage.mandatory_rows()
-check("zorunlu satır sayısı = 3 companion + 2 delegasyon", len(_rows) == 5,
+check("zorunlu satır sayısı = 4 companion + 2 delegasyon", len(_rows) == 6,
       f"{len(_rows)}: {sorted(_rows)}")
 check("yoktez ARTIK zorunlu companion satırı değil (wire'landı)",
       not [k for k in _rows if "YokTez" in k or "YÖK-Tez" in k], sorted(_rows))
 check("lock yoksa gömülü listeye düşer (fail-open)",
-      len(stop_coverage.mandatory_rows({})) == 5)
+      len(stop_coverage.mandatory_rows({})) == 6)
 with open(os.path.join(SCRIPTS, "stop_coverage.py"), encoding="utf-8") as fh:
     _sc = fh.read()
 check("hardcoded MANDATORY_ROWS sabiti kaldırıldı", "\nMANDATORY_ROWS = {" not in _sc)
 check("kök hooks.json kopyası kaldırıldı (hooks/hooks.json kanonik)",
       not os.path.exists(os.path.join(ROOT, "hooks.json")))
 full = ("MADDE 1 - ... gerekçe ... Kapsam Manifestosu (G0): mevzuat → hit 3; Yarg → hit 2; "
+        "De_Jure → skipped: companion bağlı değil ⇒ G5 CONDITIONAL; "
         "Open_Law → skipped: companion bağlı değil ⇒ G6 CONDITIONAL; Ansvar → empty; "
         "Fedlex_Swiss → skipped: companion bağlı değil (CH satırı manual_required); "
         "YokTez → hit 1; Turk_Patent → skipped: mod için N/A (IP-boyut yok); evidentia → hit; "
@@ -733,6 +734,8 @@ check("Cowork DETSİS aracı filo verisi sayılır (DETS_S)",
       bool(_turn_tools.FLEET_DATA_TOOL.search("mcp__DETS_S__resolve_birim")))
 check("Cowork TİTCK aracı filo verisi sayılır (T_TCK)",
       bool(_turn_tools.FLEET_DATA_TOOL.search("mcp__T_TCK__search_drugs")))
+check("De Jure aracı filo verisi sayılır",
+      bool(_turn_tools.FLEET_DATA_TOOL.search("mcp__claude_ai_De_Jure__search_decisions")))
 
 print(f"\nTOPLAM: {PASS} PASS / {FAIL} FAIL")
 sys.exit(1 if FAIL else 0)

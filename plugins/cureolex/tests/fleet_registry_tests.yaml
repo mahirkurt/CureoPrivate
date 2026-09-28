@@ -46,8 +46,8 @@ cases:
     given: "fleet.yaml servers[] ve companions[] adları karşılaştırılır."
     expect:
       - "Kesişim BOŞ olmalı — bir ad hem wire'lı hem companion olamaz (validate_fleet bunu ValueError ile reddeder)."
-      - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 3 üye taşımalı (Yargı · Open Law · Ansvar)."
-      - "Stop hook'un zorunlu manifesto satırı sayısı 5 olmalı (3 companion + 2 delegasyon)."
+      - "yoktez YALNIZ servers[] içinde olmalı (v3.5.0 terfisi); companions[] 4 üye taşımalı (Yargı · De Jure · Open Law · Ansvar)."
+      - "Stop hook'un zorunlu manifesto satırı sayısı 6 olmalı (4 companion + 2 delegasyon)."
 
   - id: FR-05-preflight-401-i-ariza-olarak-bildirir
     given: >-
@@ -255,8 +255,8 @@ cases:
       için upstream `@cyanheads/eur-lex-mcp-server` (Apache-2.0) 0.9.8'e pinlenip
       HP'de 127.0.0.1:8316'da authless koşuyor, önünde tek-kiracılı OAuth 2.1
       kapısı (:8315 → eurlex.cureonics.com). Fork YOK. Kalan companion'lar
-      (Yargı / Open Law UK / Ansvar) claude.ai OAuth yüzeyidir — kararlı
-      self-host URL yok, wire edilemez.
+      (Yargı / De Jure / Open Law UK / Ansvar) claude.ai OAuth yüzeyidir —
+      kararlı self-host URL yok, wire edilemez.
 
   - id: FR-21-g6-artik-companion-a-bagli-degil
     given: >-

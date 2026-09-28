@@ -67,8 +67,9 @@ capabilities:
     value: false
     basis: "Begründung Bundestag Drucksache'de yayımlanır ama filoda getirim yolu yok: german-law get_preparatory_works upgradeRequired (ölçüldü 2026-08-08); DIP bağlayıcısı wire'lı değil."
   has_case_law_api:
-    value: true
-    basis: "Open Law companion search_de_caselaw — wire'lı DEĞİL; companion bağlı değilse G5 CONDITIONAL. Bu oturumda ölçülmedi."
+    value: conditional
+    requires_any_of: [Open Law]
+    basis: "Open Law companion search_de_caselaw — wire'lı değil; oturumdaki capability_probe kaydı belirler, kayıt yoksa false."
   has_authentic_translation:
     value: false
     basis: "Almanca tek geçerli dil; BMJ'nin İngilizce çevirileri resmî olmayan çevirilerdir."

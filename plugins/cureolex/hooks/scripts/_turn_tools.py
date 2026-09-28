@@ -22,7 +22,7 @@ import json
 import os
 import re
 
-# cureolex'in wire'lı 20 sunucusu + 3 companion. Araç adı yüzeye göre
+# cureolex'in wire'lı 20 sunucusu + 4 companion. Araç adı yüzeye göre
 # `mcp__mevzuat__…`, `mcp__plugin_cureolex_mevzuat__…` veya `mcp__claude_ai_Mevzuat__…`
 # biçiminde gelebilir; bu yüzden sunucu-adı ALT DİZGESİ aranır, tam ad değil.
 # TİTCK claude.ai yüzeyinde `T_TCK` olarak görünür (görünen-ad bozulması) → ikisi de var.
@@ -36,7 +36,7 @@ _FLEET_NAMES = (
     r"openathens|anamnesis|"
     # NOT: `\bYarg` KULLANILMAZ — araç adı `mcp__Yarg__…` biçiminde gelir ve `_`
     # kelime karakteri olduğu için "Yarg" öncesinde SINIR OLUŞMAZ (ölçüldü: test FAIL).
-    r"yarg|open[-_]?law|ansvar"
+    r"yarg|de[-_]?jure|open[-_]?law|ansvar"
 )
 # Saf teşhis/kimlik uçları RETRIEVAL DEĞİLDİR: bir sunucunun canlılığını yoklamak
 # (ör. bu denetimde `oa_server_info`) substantif hukuk araştırması başlatmaz ve G0

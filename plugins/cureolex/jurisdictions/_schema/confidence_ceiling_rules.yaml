@@ -33,7 +33,8 @@ rules:
     gate_effect: { G5: CONDITIONAL }
     reason: >-
       İçtihat programatik olarak erişilebilir değil. İçtihat zinciri eksik kalabilir;
-      G5 en fazla CONDITIONAL.
+      G5 en fazla CONDITIONAL. conditional bayrakta değer capability_probes kaydından gelir;
+      kayıt yoksa false.
 
   - id: CC-4
     when: { capability: has_explanatory_memoranda, value: false }

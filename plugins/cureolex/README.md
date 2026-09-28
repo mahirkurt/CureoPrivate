@@ -8,7 +8,7 @@ Sürüm geçmişi: [CHANGELOG.md](CHANGELOG.md).
 
 - **12 mod:** DRAFT · AMEND · ANALYZE · COMPLY · OPINE · RIA · COMPARATIVE_LAW · TBMM_KANUN_TEKLIFI/PARLIAMENTARY_BILL · EX_POST_EVALUATION · REGULATORY_MATURITY · TRANSPOSITION · RELIANCE_FRAMEWORK.
 - **Yargı bölgesi paketleri (4.0):** `jurisdictions/<kod>/jurisdiction_pack.yaml` — TR **active**; GB · DE · CH **draft** (çıktı en fazla LOW). Paket yetenek bayrakları güven tavanını belirler; wire'lı S1 bağlayıcısı + uzman paneli olmadan paket `active` olamaz. Ayrıntı: [`jurisdictions/README.md`](jurisdictions/README.md).
-- **Tam-filo aktivasyonu:** wire edilmiş **20 hukuk/regülasyon MCP + 3 zorunlu companion** (Yargı · Open Law · Ansvar) her sorguda çalışır; her çıktı **kapsam manifestosu (G0)** taşır — hangi server çalıştı/boş/degrade/atlandı (sessiz atlama yasak; bağlam-dışı companion satırı dürüstçe `skipped: mod için N/A`).
+- **Tam-filo aktivasyonu:** wire edilmiş **20 hukuk/regülasyon MCP + 4 zorunlu companion** (Yargı · De Jure · Open Law · Ansvar) her sorguda çalışır; her çıktı **kapsam manifestosu (G0)** taşır — hangi server çalıştı/boş/degrade/atlandı (sessiz atlama yasak; bağlam-dışı companion satırı dürüstçe `skipped: mod için N/A`).
 - **Bağlam ekonomisi + büyük-veri:** tam-filo ham veriyi ana pencereye dökmez — **3-katmanlı ekonomi** (Tier 0 ana pencere · Tier 1 ≤4 paralel distiller alt-ajanı · Tier 2 **anamnesis** RAG/GraphRAG substratı, `collection=cureolex:sess:<id>`) + **kanonik cache** (bir-kez-getir, G0–G11 aynı sess) + **kör-getirme-yok chunking** + **devre-kesici/extract-then-evict**. Büyük kanun/statute/OCR → anamnesis ingest→bounded query (`doc_scope` yoktur; atıf `doc_id::idx`). Sözleşme: `skills/cureolex/shared/context-economy-contract.md`.
 - **No-fabrication:** kanun/CELEX/AYM/Yargıtay/PMID asla uydurulmaz; her atıf MCP-doğrulanmış (`evidence_ledger`).
 - **Yumuşak delegasyon:** klinik kanıt → **evidentia**; atıf-adli + Türkçe dil → **sci-audit** (varsa; yoksa graceful degrade).
@@ -34,7 +34,7 @@ Sürüm geçmişi: [CHANGELOG.md](CHANGELOG.md).
 
 Serbest metinle de tetiklenir (skill `cureolex` + `cureolex-start` router). Oryantasyon için `/lex-connectors` veya "cureolex nedir".
 
-## Wire edilmiş MCP filosu (20 server + 3 companion)
+## Wire edilmiş MCP filosu (20 server + 4 companion)
 
 Filo **tek bir kaynaktan** tanımlanır: [`fleet.yaml`](fleet.yaml). `.mcp.json`, `fleet.lock.json`, `/lex-connectors` anahtar tablosu, distiller ajanlarının `tools:` kısıtı ve mod×server matrisi **ondan üretilir** (`python3 tools/fleetkit/gen_fleet.py`); `tools/fleetkit/check_drift.py` türetilmiş≠commit'li hâlini ve düzyazıdaki yanlış filo sayılarını CI'da yakalar. **`tools/fleetkit/` KURULU PLUGIN'DE BULUNMAZ** — kaynak depoya (`CureoPrivate`) ait bir GELİŞTİRME aracıdır; kurulu pakette türetme/kapı komutları çalıştırılamaz, `fleet.yaml` ve türevleri salt-okunur kanıttır.
 
@@ -78,7 +78,7 @@ cureolex/
 ├── .codex-plugin/plugin.json       # ChatGPT / Codex (inline mcpServers)
 ├── .codex-plugin/openai.yaml       # ChatGPT interface stub
 ├── CONNECTORS.md                   # yüzey matrisi + connector roster (üretilen tablo)
-├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (20 server + 3 companion)
+├── fleet.yaml                      # ★ FİLONUN TEK GERÇEK KAYNAĞI (20 server + 4 companion)
 ├── fleet.lock.json                 # üretilir — hook'ların okuduğu stdlib türev
 ├── .mcp.json                       # üretilir — 20 MCP + tam-filo rol notları
 ├── skills/

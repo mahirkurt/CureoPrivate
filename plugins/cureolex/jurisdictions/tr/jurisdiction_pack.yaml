@@ -90,8 +90,9 @@ capabilities:
     value: true
     basis: "mcp__mevzuat__get_mevzuat_gerekce (bedesten tam metin). KISMİ: bedesten gerekceId yoksa yalnız TBMM locator döner — gövde uydurulmaz."
   has_case_law_api:
-    value: true
-    basis: "Yargı companion (mcp__Yarg__*) — wire'lı DEĞİL; bağlı olmadığı oturumda G5 CONDITIONAL (CC-3 değil, SKILL.md G5 kuralı)."
+    value: conditional
+    requires_any_of: [Yargı, De Jure]
+    basis: "Yargı (mcp__Yarg__*) veya De Jure (mcp__De_Jure__*) companion'ı — wire'lı değil; oturumdaki capability_probe kaydı belirler, kayıt yoksa false."
   has_authentic_translation:
     value: false
     basis: "Türkçe tek hukuken geçerli dil; mevzuatın resmî (geçerli) başka dil sürümü yayımlanmaz."

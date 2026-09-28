@@ -76,11 +76,11 @@ capabilities:
     value: true
     basis: "legislation.gov.uk revised (konsolide) metin — uk-legal legislation_get_section; ukpga/1968/67 s.1 2026-08-18 doğrulandı."
   has_point_in_time:
-    value: true
-    basis: "ÖLÇÜLDÜ 2026-09-24: /ukpga/1968/67/section/1/2000-01-01/data.xml → 200, dct:valid 1999-12-27 (o tarihte geçerli sürüm). Yol ep.legislation_uk'tir, wire'lı araç değil."
+    value: false
+    basis: "ÖLÇÜLDÜ 2026-09-24: /ukpga/1968/67/section/1/2000-01-01/data.xml → 200, dct:valid 1999-12-27 (o tarihte geçerli sürüm) — ama yol ep.legislation_uk'tir (status: web_primary), wire'lı uk-legal aracında tarih parametresi YOK (bkz. connectors). Wire'lı bir sunucu bu yeteneği taşımadığı için false (iyimser beyan yasağı, 4.1 [P8])."
   has_explanatory_memoranda:
-    value: true
-    basis: "ÖLÇÜLDÜ 2026-09-24: /ukpga/2012/7/notes/contents → 200 'Health and Social Care Act 2012 - Explanatory Notes'. SI'lar için Explanatory Memorandum ayrı yayımlanır — SI yolu bu oturumda ölçülmedi."
+    value: false
+    basis: "ÖLÇÜLDÜ 2026-09-24: /ukpga/2012/7/notes/contents → 200 'Health and Social Care Act 2012 - Explanatory Notes'. SI'lar için Explanatory Memorandum ayrı yayımlanır — SI yolu bu oturumda ölçülmedi. Bu yetenek için connectors listesinde wire'lı (ya da web_primary) hiçbir bağlayıcı YOK; false (iyimser beyan yasağı, 4.1 [P8])."
   has_case_law_api:
     value: true
     basis: "uk-legal case_law_search (Find Case Law, TNA) wire'lı; Open Law companion çapraz."

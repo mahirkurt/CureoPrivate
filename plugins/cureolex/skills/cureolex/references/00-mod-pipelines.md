@@ -97,6 +97,7 @@ Bu matris, bir companion/server satırının hangi modda `skipped: mod için N/A
 | `uk-legal` (comparative) | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · | ✓ |
 | `anamnesis` (substrate) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Yargı** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **De Jure** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Open Law** (companion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Ansvar** (companion) | · | · | ✓ | · | · | ✓ | ✓ | · | · | · | ✓ | · |
 

@@ -78,7 +78,7 @@ capabilities:
     basis: "Bundesgericht içtihat araması filoda wire'lı değil; Ansvar CH çerçeve taraması içtihat API'si değildir."
   has_authentic_translation:
     value: true
-    basis: "de/fr/it eşit geçerli (Publikationsgesetz). ÖLÇÜLDÜ 2026-09-24: /eli/cc/2001/422/de → 200 — aynı eli/cc kimliği wire'lı fedlex_get_law_by_sr'nin (has_consolidated_text) döndürdüğü kimlikle özdeş, dil varyantı. rm yalnız kısmi ve bu pakette geçerli sayılmadı."
+    basis: "de/fr/it eşit geçerli (Publikationsgesetz). Wire'lı fedlex_get_law_by_sr aracının kendi şeması bunu taşır: params.language alanı enum [de, fr, it, rm] (varsayılan de) — ToolSearch ile şema doğrulandı (2026-09-27). ÖLÇÜLDÜ 2026-09-24: aynı SR 812.21 için /eli/cc/2001/422/de → 200 (varsayılan dil çağrısı); language=fr/it bu oturumda ayrıca çağrılmadı ama şemanın kendisi parametreyi taşır. rm şemada var ama Publikationsgesetz'te eşit-geçerli değildir, bu pakette geçerli sayılmadı."
 
 legistic_profile:
   id: ch-gesetzestechnische-richtlinien

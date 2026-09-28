@@ -62,6 +62,26 @@ class OptimisticFlagTests(unittest.TestCase):
             "value": "conditional", "requires_any_of": ["Yok"], "basis": "deneme dayanak metni"}}}
         self.assertTrue(self._issues(pack))
 
+    def test_turkish_inflection_is_not_a_false_wired_match(self):
+        # "mevzuatı" (mevzuat + Turkish suffix) must NOT count as naming the
+        # wired 'mevzuat' server — the dotless-ı is a Unicode word char, not a
+        # boundary. Regression for the ASCII-only boundary false-negative.
+        pack = {"capabilities": {"has_authentic_translation": {
+            "value": True,
+            "basis": "Senedd (Galler) mevzuatı İngilizce + Galce eşit geçerlidir."}}}
+        self.assertTrue(any("has_authentic_translation" in m for m in self._issues(pack)))
+
+    def test_true_on_mcp_prefix_basis_passes(self):
+        pack = {"capabilities": {"has_consolidated_text": {
+            "value": True,
+            "basis": "mcp__mevzuat__get_mevzuat_content — konsolide metin"}}}
+        self.assertEqual(self._issues(pack), [])
+
+    def test_true_on_hyphenated_server_name_passes(self):
+        pack = {"capabilities": {"has_case_law_api": {
+            "value": True, "basis": "uk-legal case_law_search wire'lı"}}}
+        self.assertEqual(self._issues(pack), [])
+
 
 if __name__ == "__main__":
     unittest.main()

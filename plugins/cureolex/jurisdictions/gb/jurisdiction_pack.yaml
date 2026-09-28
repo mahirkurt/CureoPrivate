@@ -85,8 +85,8 @@ capabilities:
     value: true
     basis: "uk-legal case_law_search (Find Case Law, TNA) wire'lı; Open Law companion çapraz."
   has_authentic_translation:
-    value: true
-    basis: "Senedd (Galler) mevzuatı İngilizce + Galce eşit geçerlidir. DİKKAT: Westminster Act'leri için geçerli dil yalnız İngilizcedir — Galce çıktı Westminster normu için çeviridir (CC-5 uygulanır)."
+    value: false
+    basis: "Senedd (Galler) mevzuatı hukuken İngilizce + Galce eşit geçerlidir (Government of Wales Act 2006 + Legislation (Wales) Act 2019) — ama bu oturumda bunu getiren/doğrulayan wire'lı bir filo aracı YOK: uk-legal'in tools_used listesinde (legislation_search/_get_toc/_get_section) dil/Galce parametresi belgelenmemiş, ölçülmedi. false (iyimser beyan yasağı, 4.1 [P8]). DİKKAT: Westminster Act'leri için geçerli dil yalnız İngilizcedir — Galce çıktı Westminster normu için çeviridir (CC-5 uygulanır)."
 
 legistic_profile:
   id: gb-opc-drafting-guidance

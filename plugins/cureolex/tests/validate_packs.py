@@ -105,7 +105,12 @@ def capability_value(caps, flag, probes=None):
 
 
 def _mentions_wired(basis, servers):
-    return any(re.search(r"(?<![A-Za-z0-9])" + re.escape(n) + r"(?![A-Za-z0-9])", basis)
+    # Unicode-aware sınır: Python str regex'inde \w Unicode'dur (ör. Türkçe 'ı' bir
+    # kelime karakteridir), bu yüzden ASCII [A-Za-z0-9] sınırı "mevzuatı" gibi çekimli
+    # biçimleri "mevzuat" sunucu adının anıldığı sanıp yanlış-pozitif üretiyordu.
+    # [^\W_] = alfasayısal VE alt çizgi değil; '_' ve '-' (ikisi de \W ailesinde ya da
+    # bilinçli istisna) geçerli sınır olarak kalır — mcp__mevzuat__ ve uk-legal çalışır.
+    return any(re.search(r"(?<![^\W_])" + re.escape(n) + r"(?![^\W_])", basis)
                for n in servers)
 
 

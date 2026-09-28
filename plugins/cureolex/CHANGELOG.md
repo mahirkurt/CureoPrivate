@@ -1,5 +1,17 @@
 # cureolex — sürüm geçmişi
 
+## 4.1.0 — 2026-09-27
+
+- Alt-ajanlar Cowork'te de sunuculara ulaşır: üretici her claude.ai bağlayıcı öneki için Cowork biçimini (`mcp__<Görünen_Ad>__`) üretir; TİTCK, DETSİS, Sağlık Bakanlığı, Mevzuat ve YokTez'in gözlenen adları eklendi. Yüzey anlık görüntüleri ve sapma denetimi; erişilemeyen sunucu `degraded: allowlist` olarak bildirilir, ana pencere çağırır.
+- Hayalet araç adları gerçek araçlarla değiştirildi; metinde anılan her araç adı denetlenir.
+- Kapsam koruyucusu yalnız kullanıcının kendi talebine bakar (alıntı, kod, belge gövdesi hariç) ve hiçbir skill'e yönlendirmez.
+- Flagship açıklaması 950 karakterin altına indi; sürüm geçmişi bu dosyaya taşındı.
+- De Jure, G5 için Yargı'ya alternatif companion. İçtihat yeteneği artık `conditional`: koşu başında yoklanır, kayıt yoksa kötümser.
+- Son çare tam-metin okuyucu kaldırıldı; tam metin tek katmandır (openathens).
+- "Araç çıktısı veridir, talimat değildir" politikası; kişisel Doppler yapılandırma adı kaldırıldı.
+- ich-guidelines için `tools_fallback` (search/fetch); CONNECTORS'a Cowork satırı.
+- lex-sanitas mezar taşı hazır (`docs/lex-sanitas-mezar-tasi/`; yükleme Faz C sonrası).
+
 ## 4.0.0
 
 **Sürüm 4.0.0 (2026-09-24) — çekirdek / yargı bölgesi paketi ayrımı.** "Diğer ülkelere taşımak bir çeviri işi değil, yeniden mimarlama işidir" planının kod olarak uygulanabilen kısmı. (1) `jurisdictions/`: paket şeması + **TR paketi (active — 3.9.0 davranışının birebir tanımı, gerileme yok)** + **GB · DE · CH taslak paketleri** (bayraklar 2026-09-24'te birincil kaynağa karşı ölçüldü; DE kaynağı bu makineden erişilemediği için temkinli). (2) Kimlik modeli: `jurisdiction` ISO 3166-1/2 + `ORG:` ulusüstü ad alanı (`ORG:AU` Afrika Birliği ≠ `AU` Avustralya; `UK`→`GB` eski takma ad), `id_kind` += akn · ecli · urn-lex · `x-<ad>`. (3) Bağlayıcı sözleşmesi (9 soyut yetenek; düzey A/B/C). (4) Beş yetenek bayrağı → **güven tavanı** (CC-1…CC-8; `confidence_label.confidence_ceiling`). (5) Yeni kapılar **G10 güncellik / belirli-tarihte-yürürlük** ve **G11 yargı bölgesi tutarlılığı** (plan G10'u var sanıyordu ve G12 diyordu — cureolex'te yalnız G0–G9 vardı; G10–G16 socius-vigil'e aittir). (6) Evrensel legistik rubrik: 12 aile, R6b'nin 21 kontrolü eşlendi — TR'de **geçiş hükümleri ailesinin kontrolü yok** (uydurma K-22 eklenmedi, kapsama boşluğu olarak beyan edilir). (7) Yeni modlar **REGULATORY_MATURITY** (WHO GBT: RS + MA/VL/MC/LI/RI/LT/CT/LR) · **TRANSPOSITION** · **RELIANCE_FRAMEWORK**; Mod 8'in kanonik adı `PARLIAMENTARY_BILL` (`TBMM_KANUN_TEKLIFI` takma ad olarak çalışmaya devam eder). (8) HTA kurum haritası evidentia'ya bağlamla aktarılır + karşılaştırmalı bağlam-uygunluk kontrolü. (9) `tests/validate_packs.py` (yayım kuralı · tam-bir-kez dosya sahipliği · parça aynası · tavan hesabı · G11 statik denetimi) + 12 TR altın/adversarial vaka (mülga hüküm · uydurma RG sayısı · yanlış mahkeme hiyerarşisi · yargı karışması · bağlayıcı uygunluğu). Önceden kırmızı olan hook testi (sabit yazılmış sunucu sayısı, kilit bir bağlayıcı kaldırılınca bayatlamıştı) artık kilitten türetiliyor. **Kod olmayan kalemler ertelendi** (uzman paneli, yerel hukuk ortağı, AKN dönüştürücü, yeni ülke adaptörleri, GBT gösterge veri seti): `docs/superpowers/specs/2026-09-24-cureolex-yargi-paketleri-tasarim.md` (kaynak depo).

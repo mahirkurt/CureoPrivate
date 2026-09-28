@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "cureolex",
   "displayName": "Cureolex",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Türkiye sağlık mevzuatı norm-üretimi: kanun, CBK, yönetmelik, tebliğ ve genelge taslağı, değişikliği, uyum denetimi, düzenleyici etki analizi, karşılaştırmalı analiz ve ex post değerlendirme. 12 mod, G0–G11 kalite kapıları, kanıt defteri ve no-fabrication; yargı bölgesinden bağımsız çekirdek + takılabilir yargı bölgesi paketleri (TR aktif). Karar-destek aracıdır, resmî hukuki mütalaa değildir. Sürüm geçmişi: CHANGELOG.md.",
   "author": {
     "name": "Cureonics",

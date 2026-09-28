@@ -218,7 +218,7 @@ bypass eder. **Regresyon testi:** `python3 hooks/test_hooks.py`.
 
 ---
 
-*AS IS; no warranty. Internal-use grant. **Plugin v2.7.7 / flagship skill `medical-research`
+*AS IS; no warranty. Internal-use grant. **Plugin v2.7.8 / flagship skill `medical-research`
 v9.0.7** — v9.0.7 Marmara EBSCO-first cascade + v9.0.2 ordered tool playbook (`execution-map.md`) binds MUST/SHOULD/MAY/OUT +
 `SKIP-REASON` for all 20 bundled servers. v9.0.0'da omurga, zorunlu 10-eksen domain matrisinden uçtan uca **PRISMA 2020 /
 PRISMA-ScR P0–P7 hattına** yeniden yazıldı; eski eksenler silinmedi, **opsiyonel, bağlam-tetiklemeli

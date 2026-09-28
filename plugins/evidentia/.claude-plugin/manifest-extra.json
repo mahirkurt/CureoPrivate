@@ -3,7 +3,7 @@
   "metadata": {
     "flagship_skill": "medical-research",
     "flagship_version": "9.0.7",
-    "plugin_version": "2.7.7",
+    "plugin_version": "2.7.8",
     "smp_manifest": "./skills/medical-research/skill-manifest.yaml",
     "connector_source_of_truth": "./CONNECTORS.md",
     "fleet_source_of_truth": "./fleet.yaml",

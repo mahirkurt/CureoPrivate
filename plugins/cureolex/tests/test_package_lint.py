@@ -77,11 +77,18 @@ class CheckToolNamesTests(unittest.TestCase):
         self.assertEqual(pl.check_tool_names(root, FLEET)[0], [])
 
     def test_fallback_tools_are_known(self):
+        # Direct assertion: known_tools() reads tools_fallback field
         fleet = {"servers": [{"name": "ich-guidelines", "tools_used": ["ich_search"],
                               "tools_fallback": ["search", "fetch"]}], "companions": []}
-        root = make_root({"skills/cureolex/SKILL.md": "`ich_search` yoksa `search_x` → `fetch`"})
-        errors, _ = pl.check_tool_names(root, fleet)
-        self.assertEqual([m for _, m in errors if "fetch" in m], [])
+        self.assertTrue({"search", "fetch"} <= pl.known_tools(fleet))
+
+        # End-to-end: underscored fallback name in tools_fallback must be recognized
+        fleet2 = {"servers": [{"name": "ich-guidelines", "tools_used": ["ich_search"],
+                               "tools_fallback": ["fallback_fetch"]}], "companions": []}
+        root = make_root({"skills/cureolex/SKILL.md": "`ich_search` yoksa `fallback_fetch(x)`, olmazsa `search_x(y)`"})
+        errors, _ = pl.check_tool_names(root, fleet2)
+        # fallback_fetch must be known (in tools_fallback), search_x must be unknown (ghost)
+        self.assertEqual([m for _, m in errors if "fallback_fetch" in m], [])
         self.assertTrue(any("search_x" in m for _, m in errors))
 
 

@@ -70,6 +70,17 @@ CASES_GUARD = [
     ("mcp__claude_ai_anamnesis__forget_document", "DENY"),           # unscoped wipe
     ("mcp__claude_ai_PubMed__search_articles", "ALLOW"),
     ("Read", "ALLOW"),
+    # Title_Case / Cowork-form server segments must normalise before the whitelist
+    # check, not escape it via a case-sensitive substring test (2026-09-28 fix).
+    ("mcp__nih-clinicaltables__ask_pipeworx", "DENY"),
+    ("mcp__claude_ai_Nih_Clinicaltables__ask_pipeworx", "DENY"),
+    ("mcp__Nih_Clinicaltables__ask_pipeworx", "DENY"),
+    ("mcp__plugin_evidentia_nih-clinicaltables__ask_pipeworx", "DENY"),
+    ("mcp__nih-clinicaltables__drugs", "ALLOW"),
+    ("mcp__claude_ai_Nih_Clinicaltables__drugs", "ALLOW"),
+    ("mcp__Nih_Clinicaltables__drugs", "ALLOW"),
+    ("mcp__plugin_evidentia_nih-clinicaltables__drugs", "ALLOW"),
+    ("mcp__Nlm_Rxnorm__rxnorm_interactions", "DENY"),   # D1, Cowork-form server segment
 ]
 
 # retrieve-don't-dump scenarios: (tool_name, result_chars, expected_decision, message_substring, label).

@@ -66,9 +66,42 @@ def broken_reason(base, tool):
     return None
 
 
+def _server_segment(tool):
+    """The `<server>` segment of `mcp__<server>__<tool>`, or None if malformed."""
+    parts = tool.split("__")
+    if len(parts) < 2 or parts[0] != "mcp":
+        return None
+    return parts[1]
+
+
+def _normalise_server(seg):
+    """lower-case, `_`→`-`, strip a leading `claude-ai-` or `plugin-<plugin>-`.
+
+    Cowork/claude.ai surfaces and MCP Apps advertise the SAME pipeworx-gateway
+    server under Title_Case / underscore forms — e.g. `Nih_Clinicaltables`,
+    `claude_ai_Nih_Clinicaltables`, `plugin_evidentia_nih-clinicaltables` — all of
+    which must resolve to the same `nih-clinicaltables` identity so the §2.6
+    allowlist actually applies to them (2026-09-28: a case-sensitive substring
+    check let Title_Case and Cowork forms through unchecked).
+    """
+    s = seg.lower().replace("_", "-")
+    if s.startswith("claude-ai-"):
+        s = s[len("claude-ai-"):]
+    elif s.startswith("plugin-"):
+        rest = s[len("plugin-"):]
+        _, _, after = rest.partition("-")
+        if after:
+            s = after
+    return s
+
+
 def pipeworx_server(tool):
+    seg = _server_segment(tool)
+    if seg is None:
+        return None
+    norm = _normalise_server(seg)
     for name in PIPEWORX_SERVERS:
-        if name in tool:
+        if norm == name or norm.endswith("-" + name):
             return name
     return None
 

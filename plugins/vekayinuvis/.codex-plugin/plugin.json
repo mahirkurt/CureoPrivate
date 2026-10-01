@@ -1,6 +1,6 @@
 {
   "name": "vekayinuvis",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "userConfig": {
     "smithery_api_key": {
       "type": "string",
@@ -274,7 +274,7 @@
         "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
       },
       "_tier": "legislative",
-      "_role": "mevzuat.gov.tr Türkiye Mevzuat Bilgi Sistemi — `search_mulga_mevzuat` (mülga kanun/KHK/CBK arşivi) + `get_mevzuat_gerekce` (madde gerekçesi metni) + `resolve_resmi_gazete` (RG çapraz-referans). KANUN_GEREKÇESİ modunun antecedant-mevzuat zincirinin (L4/L5) birincil kaynağı; resmigazete/tbmm ile aynı turda paralel. HP self-host (systemd), `/mcp` Bearer."
+      "_role": "mevzuat.gov.tr Türkiye Mevzuat Bilgi Sistemi — `search_mulga_mevzuat` (mülga kanun/KHK/CBK arşivi) + `get_mevzuat_gerekce` (madde gerekçesi metni) + `resolve_resmi_gazete` (RG çapraz-referans). KANUN_GEREKÇESİ modunun antecedant-mevzuat zincirinin (L4/L5) birincil kaynağı; resmigazete/tbmm ile aynı turda paralel. HP self-host (systemd), `/mcp` Bearer. search_all_mevzuat ile mevzuat.gov.tr + KAYSİS konu taraması; kurumsal yönerge/genelge için list_kaysis_types + search_kaysis_institutions → search_kaysis → get_kaysis_detail → get_kaysis_text. Güncel KAYSİS kaydı tarihsel yürürlük kanıtı değildir; belge_id ayrı kimliktir. Kaynak kapsamı, bilinmeyen total/has_more ve OCR/truncated sınırları korunur; references/kanun-gerekcesi-workflow.md §3.1.1 uygulanır."
     },
     "tbmm": {
       "type": "http",

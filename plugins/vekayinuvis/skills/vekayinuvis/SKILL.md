@@ -1,9 +1,10 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, cureolex composable. When in doubt USE."
-version: 3.5.0
-last_updated: 2026-09-14
+version: 3.5.1
+last_updated: 2026-10-01
 changelog:
+  - "3.5.1 (2026-10-01): Mevzuat MCP KAYSİS kurum/tür/arama/detay/PDF zinciri ve iki kaynaklı search_all_mevzuat, KANUN_GEREKÇESİ akışına eklendi. Kaynak coverage, bilinmeyen toplam, açık yürürlük etiketi ve PDF/OCR sınırları korunur; güncel katalog tarihsel yürürlük kanıtı sayılmaz."
   - "3.5.0 (2026-09-14): DEVARSIV v0.2.0 + FİLO/HOOK ONARIMLARI. (a) devlet-arşivleri 27→30 araç, katalog yetenek katmanı 7→8 grup: `devarsiv_fon_info` (Rehber 2017 EK III, 941 fon kodu), `devarsiv_yer_adi` (Yer Adları Sözlüğü, 66.466 madde), `devarsiv_relogin_prepare` (reCAPTCHA kotası dolunca rehberli e-Devlet yolu); degrade hook runbook'u sunucu zarfından okur, statik yedekte restart artık 1. adım değil (önce noVNC). (b) `literatur` ölü `literatur-mcp.surucu.dev` ucundan HP self-host `literatur.cureonics.com`a taşındı. (c) Stop hook MOD kapısı: filo aracına dokunmak yetmez, vekayinuvis modu oturumda açılmış olmalı. (d) anamnesis: SessionStart mandatı birlikte kurulu plugin'lerle çelişmeyecek şekilde kendi bağlamına sınırlandı; çekirdek vendor'a alındı (bayt-özdeşlik kapısı, `scoped_doc_id` normalizasyon kaçağı kapandı); peer-namespace pass-through."
   - "3.4.13 (2026-08-17): ANAMNESIS COLLECTION SÖZLEŞMESİ. Her ingest `collection=vekayinuvis:run:<12hex>` + `doc_id=vkrun:<12hex>:<kanonik>` (devarsiv:/yoktez:/doi:/iiif:). Phantom `doc_scope` kaldırıldı; kapsamsız hybrid_query/graph DENY, scoped ALLOW. Atıf `doc_id::idx`. Ledger `.claude/anamnesis-vekayinuvis.json`. Stop'ta silinmez; SessionEnd + `/vekayinuvis` + startup yalnız kendi collection'ını forget eder."
   - "3.4.12 (2026-08-14): TAM-METİN DOSYA TESLİMİ. OpenAthens'in provider-nötr `oa_fetch_pdf(doi|url)` aracı ile hesaba açık sağlayıcılardan orijinal PDF; Anna's Reader'ın `download_document(id=DOI|MD5)` aracı ile PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS teslimi wire edildi. Her ikisi de kısa-ömürlü opaque resource_link + SHA-256/provenance döndürür; link derhal tüketilir ve kalıcı URL diye cache'lenmez. Legal-first openathens→annas sırası ve yalnız-analiz telif kapısı korunur."
@@ -29,7 +30,7 @@ changelog:
 > connector tabloları pedagojik referans olarak korunmuştur; skill standalone
 > (plugin dışı) ortamda da çalışır.
 
-> **Sürüm**: v3.5.0 (Anamnesis collection=`vekayinuvis:run:<12hex>` + `vkrun:` önek;
+> **Sürüm**: v3.5.1 (KAYSİS + birleşik mevzuat taraması; Anamnesis collection=`vekayinuvis:run:<12hex>` + `vkrun:` önek;
 > çift-motor OCR→async job; v2.x tam-filo, bağlam ekonomisi ve marketplace
 > doctor/G0 enforcement davranışı korunur)
 >
@@ -288,13 +289,18 @@ tamamlar. Detaylı rol için CONNECTORS.md § 2.5.
 | Connector | Tool | Ne için | Öncelik |
 |---|---|---|---|
 | `resmigazete` | `rg_resolve_date`→`rg_get_item`, `rg_search`, `rg_list_recent`, `rg_ocr_submit`→`rg_ocr_result` | Erken-Cumhuriyet Resmî Gazete arşivi (`/eskiler/` 1920+) — tarih-bazlı ilan/kanun yayın kaydı + rg-ocr çift-motor taranmış sayfa metni | KANUN_GEREKÇESİ L4/L5; EVENT_RECONSTRUCTION dönem gazetesi |
-| `mevzuat` | `search_mulga_mevzuat`, `get_mevzuat_gerekce`, `resolve_resmi_gazete` | mevzuat.gov.tr — mülga kanun/KHK/CBK arşivi + madde gerekçesi + RG çapraz-referans | KANUN_GEREKÇESİ antecedant-mevzuat zinciri (L4/L5) — **zorunlu birincil** |
+| `mevzuat` | `search_all_mevzuat`, `search_kaysis`→`get_kaysis_detail`→`get_kaysis_text`; `search_mulga_mevzuat`, `get_mevzuat_gerekce`, `resolve_resmi_gazete` | mevzuat.gov.tr + KAYSİS kurum düzenlemeleri; mülga kanun/KHK/CBK + gerekçe + RG | KANUN_GEREKÇESİ antecedant-mevzuat zinciri (L4/L5) — **zorunlu birincil** |
 | `tbmm` | `tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi`, `tbmm_search_acik_erisim`/`tbmm_get_acik_erisim_document` | TBMM yasama tarihçesi — teklif→komisyon→kabul edilmiş kanun soyağacı + Açık Erişim DSpace (geç-Osmanlı/erken-Cumhuriyet zabıt) | KANUN_GEREKÇESİ L3/L4; SOURCE_HUNT DSpace kanıt-yoğunluğu |
 
 > **Tam-eşleşen üçlü tur:** KANUN_GEREKÇESİ modunda `resmigazete`/`mevzuat`/`tbmm`
 > `devlet-arsivleri` ile **aynı ilk paralel turda** çağrılır (§ 5.9). Anahtar
 > yoksa katman degrade eder → `web_search`/`web_fetch` fallback; sessiz
 > atlama yasak (G0).
+
+KAYSİS kurum/tür keşfi ve iki kaynaklı tarama için
+`references/kanun-gerekcesi-workflow.md` §3.1.1 yüklenir. `coverage`, ayrı
+kimlikler, açık yürürlük etiketi ve PDF/OCR sınırları korunur; bugünkü katalog
+geçmişteki yürürlüğe kanıt sayılmaz.
 
 ### 3.2 Akademik Connector Katmanı
 

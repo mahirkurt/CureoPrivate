@@ -17,7 +17,7 @@
 1. Üçlü mimari ve doktrin
 2. TİTCK MCP — 56 araç envanteri ve kullanım örüntüleri
 3. Türk Patent MCP — 6 araç envanteri ve kullanım örüntüleri
-4. Mevzuat MCP — 12 araç envanteri (v2.0.1 aktif)
+4. Mevzuat MCP — mevzuat.gov.tr + KAYSİS sözleşmesi
 5. Mod 13 akış diyagramı ve örüntüler
 6. Provenance damgası ve audit trail
 7. Bilinen sınırlamalar ve düşülen tuzaklar
@@ -33,7 +33,7 @@
 |---|---|---|---|---|
 | **TİTCK MCP** | `titck.cureonics.com` | 66 | TR beşeri tıbbi ürün master dataset + bağlı 19 dinamik modül (active ingredients, foreign ingredients, off-label, Madde 23, batch release, supply tracking, additional monitoring, withdrawal, reference prices, institutional fees, scheduling, regulation art.23) + 4 derived dataset (holders kanonik + SNOMED ingredient map + ICD-10 maps + drug-substance profile) | ✅ Aktif |
 | **Türk Patent MCP** | `markapatent-mcp.fastmcp.app` | 6 | TÜRKPATENT — patent + endüstriyel tasarım + ticari marka. Search + get_details her üç varlık için | ✅ Aktif |
-| **Mevzuat MCP** | `mevzuat.cureonics.com` (revision `00017-668`) | 12 | mevzuat.gov.tr — kanun/yönetmelik/tebliğ/genelge tam metin (SMK 6769, BTÜ Yönetmeliği, TİTCK kılavuzları, Cumhurbaşkanlığı kararları). MCP SDK 1.27.0, protocolVersion `2024-11-05` | ✅ Aktif (v2.0.1) |
+| **Mevzuat MCP** | `mevzuat.cureonics.com/mcp` | 29 | mevzuat.gov.tr + KAYSİS kurum belgeleri; arama, künye, madde/sürüm ve sınırlı PDF okuma | §4 kaynak/kimlik/kapsam sözleşmesi |
 
 ### 1.2. MCP-First doktrin (5 zorunlu kural)
 
@@ -53,7 +53,7 @@
 |---|---|
 | TİTCK MCP timeout / 5xx | İkinci deneme; iki kez başarısızsa `https://www.titck.gov.tr/` web fetch + audit notu |
 | Türk Patent MCP'de aranan başvuru numarası bulunamıyor | EPAAT (https://online.turkpatent.gov.tr/EPATT/) web fetch + audit notu |
-| Mevzuat MCP timeout / 5xx | İkinci deneme; iki kez başarısızsa `mevzuat.gov.tr` web fetch + audit notu |
+| Mevzuat kaynağı erişilemiyor | Başarılı diğer kaynak korunur; eksik kol `coverage` / tanı ile kaydedilir. Resmî URL’den doğrulama gerekiyorsa kaynak bazında audit notu; yokluk hükmü verilmez |
 | İçtihat metni gerek (Yargıtay/Danıştay/AYM) — Mevzuat MCP kapsamı dışı | UYAP / `karararama.yargitay.gov.tr` / `kararlarbilgibankasi.anayasa.gov.tr` web fetch + audit notu |
 | Gerçek-zamanlı haber/duyuru gerek (örn. yeni geri ödeme tebliği yayımlandı) | Web search + zaman damgası; kaynaklar TİTCK Resmî Duyurular + Resmî Gazete |
 | Audit trail için dış kaynak doğrulaması | Web fetch + provenance ile ek satır |
@@ -299,59 +299,103 @@ Mevcut MCP araçları bu ayrımı doğrudan filter parametresi olarak vermiyor; 
 
 ---
 
-## 4. Mevzuat MCP — 12 araç envanteri (v2.0.2 tam kategorize)
+## 4. Mevzuat MCP — iki resmî kaynak ve doğrulanmış araç adları
 
-### 4.1. Durum özeti
+### 4.1. Kaynak ve kimlik sözleşmesi
 
-- **Sunucu**: `https://mevzuat.cureonics.com/mcp`
-- **Cloud Run revision**: `mevzuat-mcp-00017-668`
-- **MCP SDK**: 1.27.0
-- **protocolVersion**: `2024-11-05`
-- **Araç sayısı**: 12
-- **Auth modeli**: OAuth challenge — yetkisiz çağrılar 401 döner (beklenen davranış); yetkili istemcilerde initialize + tools/list 200 application/json
-- **Kapsam**: kanun · yönetmelik · tebliğ · genelge · Cumhurbaşkanlığı kararı · Resmi Gazete entry · 1982 Anayasası özel desteği · mülga karşılaştırma · semantik agregat
-- **Envanter durumu** (v2.0.2): 12 araç 5 fonksiyonel kategoride tablolandı; kanonik snake_case function isimleri Claude.ai connector index re-sync sonrası teyit edilecek.
+Sunucu `https://mevzuat.cureonics.com/mcp` üzerinde mevzuat.gov.tr ile KAYSİS'i birlikte
+sunar. Buradaki araç adları 1 Ekim 2026 CureoHub kaynak sözleşmesini izler; istemcinin
+`tools/list` şemasıyla doğrula. Eski Cloud Run revision'ı ve tahminî İngilizce fonksiyon
+adları geçerli çağrı sözleşmesi değildir. Plugin'in
+[CONNECTORS.md §1.A.1](../../../CONNECTORS.md) metni normatiftir.
 
-### 4.2. 12-araç envanter tablosu
+- mevzuat.gov.tr: `{tertip}_{tur}_{no}`; detay/metin araçlarına sonuçtaki
+  `mevzuat_no`, `mevzuat_tur`, `mevzuat_tertip` alanları geçirilir.
+- KAYSİS: `kaysis:<belge_id>`; `belge_id` kanun numarası değildir. Tür ve kurum kodlarını
+  kendi keşif araçlarından al; diğer kaynağın kodunu dönüştürme.
+- Aynı başlık veya numara, kayıtların aynı hukukî belge olduğunu kanıtlamaz; iki kaynak
+  otomatik tekilleştirilmez. Künye tarihi, yürürlük durumu ve sürüm resmî belgeyle doğrulanır.
 
-#### Kategori A — Arama (3 araç)
+### 4.2. Kullanılan araçlar
 
-| # | Araç (TR açıklama) | Beklenen function | Kullanım |
-|---|---|---|---|
-| 10 | **mevzuat.gov.tr'de ara** | `search_mevzuat(query, ...)` | Genel full-text arama; ana giriş kapısı. SMK 6769, BTÜ Yönetmeliği, TİTCK kılavuzu, herhangi bir tebliğ/genelge için ilk çağrı |
-| 11 | **Mevzuat fihristinde ara** | `search_legislation_index(query, ...)` veya `search_fihrist(...)` | Hiyerarşik/yapısal arama — fihrist (table of contents) üzerinden. Resmî kategoriler: Kanun, KHK, Yönetmelik, Tebliğ, Genelge, Cumhurbaşkanlığı Kararı |
-| 12 | **Mülga mevzuatta ara** | `search_repealed_legislation(query, ...)` | Yürürlükten kalkmış mevzuat — 551 KHK, eski TTK, eski TBK, mülga yönetmelikler. Tarihsel yorum + SMK öncesi karşılaştırma için |
+| Amaç | Gerçek araç adı / giriş |
+|---|---|
+| Birleşik keşif | `search_all_mevzuat(query, page=1, limit_per_source=10)` |
+| KAYSİS tür / kurum keşfi | `list_kaysis_types()`; `search_kaysis_institutions(query)` |
+| KAYSİS filtreli arama | `search_kaysis(query, kurum_id?, turler?, mevzuat_no?, yururluk, page)` |
+| KAYSİS künye / PDF | `get_kaysis_detail(belge_id)`; `get_kaysis_text(belge_id, start_page, end_page, max_chars)` |
+| mevzuat.gov.tr arama | `search_mevzuat(query, ...)`; `search_mulga_mevzuat(query, ...)`; `search_mevzuat_fihristi(fihrist_turu, ...)` |
+| mevzuat.gov.tr detay / madde / PDF | `get_mevzuat_detail(...)`; `get_mevzuat_content(..., madde_no, max_chars)`; `get_mevzuat_text(...)` |
+| Tarih / sürüm | `get_onceki_metinler(...)`; `get_mevzuat_timeline(...)`; `get_mevzuat_madde_diff(...)` |
+| Tür / kurum / dosya | `list_mevzuat_types()`; `list_kurumlar()`; `list_mevzuat_by_type(tur, ...)`; `download_mevzuat_document(...)` |
+| mevzuat.gov.tr kanıt paketi | `build_mevzuat_semantic_context(query, ...)` — KAYSİS'i taramaz; tamlık iddiası taşımaz |
+| Anayasa / madde ağacı | `get_anayasa(...)`; `get_mevzuat_madde_tree(...)` — KAYSİS kaydına uygulanmaz |
+| ChatGPT yüzeyi | `Mevzuat:search(query, limit)` → `Mevzuat:fetch(id=<dönen id>)`; `search` adını connector önekiyle kullan |
 
-#### Kategori B — Detay erişim (4 araç)
+`shared/tool-manifest.json` içindeki regulatory/patent blokları yeni altı aracı ve
+kaynak okuma araçlarını başlangıçta yükler. Tarih/sürüm gibi ilave araç gerektiren işte
+ilgili gerçek şemaları da iş başlamadan yükle; fonksiyon adı veya parametre uydurma.
 
-| # | Araç (TR açıklama) | Beklenen function | Kullanım |
-|---|---|---|---|
-| 2 | **Ham mevzuat dosyası indir** | `download_raw_legislation_file(mevzuat_id)` | Orijinal PDF/DOCX dosyasını ham hâliyle indirir; arşivleme + audit trail için kanonik kayıt |
-| 4 | **Mevzuat HTML içeriği** | `get_legislation_html(mevzuat_id)` | Yapısal HTML — ana metnin başlık/madde yapısı korunur; rapora gömülecek alıntılar için tercih edilir |
-| 5 | **Mevzuat meta bilgisi** | `get_legislation_metadata(mevzuat_id)` | Tarih, sayı, Resmî Gazete referansı, çıkış mercii, mülga durumu, son değişiklik tarihi. Provenance damgası için zorunlu |
-| 6 | **Mevzuat metni (PDF → text)** | `get_legislation_text(mevzuat_id)` | PDF'den çıkarılmış düz metin; arama + alıntı + çapraz-referans için en kullanışlı format |
+### 4.3. Standart kullanım örüntüleri
 
-#### Kategori C — Tarih / mülga (1 araç)
+**M1 — Bilinen kanun maddesi:** `search_mevzuat(query="6769")` sonucundaki no/tür/tertip
+ile `get_mevzuat_detail` → `get_mevzuat_content(..., madde_no="85", max_chars=20000)`.
+Dönen maddenin içinden gerekli fıkrayı oku; arama başlığından hüküm üretme.
 
-| # | Araç (TR açıklama) | Beklenen function | Kullanım |
-|---|---|---|---|
-| 7 | **Önceki mevzuat metinleri** | `get_previous_legislation_versions(mevzuat_id)` veya `get_amendment_history(...)` | Versiyon zinciri: bir kanun/yönetmeliğin değişiklik tarihçesi. "Tarihte X'ti, güncel Y'dir" ayrımının kanonik kaynağı. SMK 6769'un madde-madde nasıl evrildiği, BTÜ Yönetmeliği 2022 revizyonunun öncesi-sonrası karşılaştırması için |
+**M2 — Tarihsel karşılaştırma:** `search_mulga_mevzuat(query="551")` ile kaydı keşfet;
+tarihî kimliği koru. `get_onceki_metinler` / `get_mevzuat_timeline` ile belgelenmiş
+sürümleri belirle; `get_mevzuat_content(..., as_of_date=<tarih>)` veya
+`get_mevzuat_madde_diff` kullan. Tarihî snapshot eksikse güncel metni tarihî diye sunma.
 
-#### Kategori D — Listeleme / Referans (2 araç)
+**M3 — Kurum yönergesi / genelgesi / rehberi:**
 
-| # | Araç (TR açıklama) | Beklenen function | Kullanım |
-|---|---|---|---|
-| 8 | **Mevzuatı türe göre listele** | `list_legislation_by_type(type_code, ...)` | Belirli tür kodu altındaki tüm mevzuatın listesi. Örnek: tüm Sağlık Bakanlığı tebliğleri, tüm farmasötik yönetmelikleri |
-| 9 | **Mevzuat tür kodları** | `get_legislation_type_codes()` | Sistemdeki tüm mevzuat tür kodları (kanun/KHK/yönetmelik/tebliğ/genelge/Cumhurbaşkanlığı kararı vb.) — `list_legislation_by_type` parametresi olarak kullanılır. Genellikle ilk session'da bir kez çağrılıp önbelleğe alınır |
+```text
+1. search_all_mevzuat(query="ruhsatlandırma", limit_per_source=10)
+2. list_kaysis_types()
+3. search_kaysis_institutions(query="sağlık")
+4. search_kaysis(query="ruhsatlandırma", kurum_id=<dönen id>, turler=<dönen tür kodları>)
+5. get_kaysis_detail(belge_id=<seçilen sonuç>)
+6. get_kaysis_text(belge_id=<aynı belge>, start_page=1, end_page=3, max_chars=20000)
+```
 
-#### Kategori E — Kompozit / Özel (2 araç)
+**M4 — Anayasa:** `get_anayasa` sayfa/karakter sınırlarıyla PDF okur; `article_no` veya
+`topic` parametresi yoktur. Belirli madde için `search_mevzuat(query="2709")` sonucundaki
+kimlikle `get_mevzuat_content(..., madde_no="17")` kullan.
 
-| # | Araç (TR açıklama) | Beklenen function | Kullanım |
-|---|---|---|---|
-| 1 | **Kapsamlı mevzuat semantik kanıt paketi** | `get_semantic_evidence_package(query/topic, ...)` | Üst-düzey agregat: bir konu için ilgili tüm mevzuat parçalarını semantik olarak toplar (örn. "Bolar istisnası" → SMK m. 85, BTÜ Yönetmeliği ilgili maddeler, TİTCK kılavuzu, ilgili Cumhurbaşkanlığı kararı). Mod 13 + Mod 5 + Mod 6 için **tek-çağrı çözüm** vakaları |
-| 3 | **1982 Anayasası** | `query_constitution_1982(article_no veya topic, ...)` | Anayasa-spesifik özel sorgu desteği. Md. 17 (yaşam hakkı), Md. 56 (sağlık hakkı), Md. 90 (uluslararası antlaşmalar), Md. 35 (mülkiyet) — ilaç erişim davalarında AYM bireysel başvuru argümanları için kanonik atıf |
+**M5 — Geniş araştırma:** önce `search_all_mevzuat` ile iki kaynağı keşfet. Mevzuat.gov.tr
+kolunda `build_mevzuat_semantic_context` kullanılabilir; KAYSİS kolunda M3 uygulanır.
+Kaynakların kanıtları ayrı tutulur, hiçbiri tek çağrıyla bütün mevzuatı kapsamaz.
 
-### 4.3. Çözülen sorun — content negotiation post-mortem (Lessons Learned)
+### 4.4. Kapsam, eksik belge ve sınırlı okuma
+
+`coverage` kayıtlarında `status`, `total`, `has_more`, `retrieved`, `returned`,
+`page_truncated` ve `diagnostics` korunur. Bir kaynak başarısızsa diğerinin sonuçları
+kullanılır, eksik kol raporlanır. `degraded` / `manual_required` / `error` veya bilinmeyen
+toplam "mevzuat yok" anlamına gelmez. Sağlıklı boş yanıt yalnız sorgulanan kapsamı anlatır.
+
+KAYSİS kaynak sayfası 50 kayıttır. `page_truncated=true` ise aynı `page` ile
+`search_kaysis` kullanarak sayfanın kalan adaylarını al; `has_more` sonraki sayfayı
+belirtir. Ortak arama 1–500 karakterdir; KAYSİS metni 3–160 karakter ve sayfa en fazla
+10000 olabilir. Aşımda yalnız bu kol gerekçeli `manual_required` olur. Sayısal ortak
+sorgu KAYSİS'te mevzuat numarası filtresine gider.
+
+PDF için `max_chars` 500–100000; önce dar sayfa aralığı seç. `selected_pages` ile
+`total_pages` birlikte okunur: `truncated=false` yalnız istenen aralığın sınır nedeniyle
+kesilmediğini söyler; okunabilirlik ve tüm belge kapsamı ayrıca doğrulanır. `missing_text_pages` / `ocr_required` varsa okunmayan sayfalardan hüküm üretme;
+otomatik OCR yapılmış sayma. Kaynak URL'si, erişim zamanı, PDF `sha256` değeri, hata
+zarfı ve okunan kapsam kanıt dosyasında saklanır. Erişim tarihi yürürlük tarihi değildir.
+
+### 4.5. Sağlık ve şema doğrulaması
+
+`initialize` başarısı araçların veya iki resmî kaynağın çalıştığını tek başına kanıtlamaz.
+Başlangıçtaki `tools/list` yeni altı aracı içermiyorsa eski istemci yüzeyini raporla;
+eksik araç çağrısını tahminî alias ile maskeleme. 401 erişim/yapılandırma sorunudur;
+başarılı HTTP yanıtında da `isError`, kaynak `status` ve `diagnostics` incelenir.
+
+### 4.6. Tarihsel content negotiation kaydı
+
+Bu tarihsel doğrulama güncel endpoint, araç sayısı veya deploy talimatı değildir;
+güncel sözleşme §4.1–4.5'tedir. Eski olay kaydı aşağıda korunmuştur.
 
 Bu blok skill'in v2.0.0 → v2.0.1 patch öyküsünü kayıt altına alır; benzer FastMCP/Claude.ai entegrasyon vakalarında referans olarak kullanılabilir.
 
@@ -376,62 +420,6 @@ Bu blok skill'in v2.0.0 → v2.0.1 patch öyküsünü kayıt altına alır; benz
 **Side-quest bulgu**: `gcloud` context başlangıçta yanlış projedeydi; doğru deploy projesi `gcp-deploy.mjs:16` içindeki `cureonics-ai-hub`. Çoklu-proje GCP organizasyonlarında bu klasik bir tuzak.
 
 **Genel ders (skill ekosistemine entegrasyon kuralı)**: Yeni bir MCP'yi `claude.ai`'ye bağlarken FastMCP-bazlı sunucularda **JSON response modu açık olmalı**; aksi halde streaming-yetenekli istemciler haricinde tool listesi sessizce boş görünür. SMP skill manifest'lerinde MCP konnektörlerinin sağlık kontrolü `tools_count > 0` doğrulamasını içermeli.
-
-### 4.4. Standart kullanım örüntüleri (v2.0.2)
-
-#### Örüntü M1 — Tek madde tam metni (Mod 5/6/13)
-
-```
-1. search_mevzuat(query="6769") → mevzuat_id (SMK 6769)
-2. get_legislation_metadata(mevzuat_id) → çıkış tarihi, R.G. ref, son değişiklik
-3. get_legislation_text(mevzuat_id) → tam metin
-4. (skill içi) madde no ile string search → m. 85/3 paragrafı
-5. Provenance: [Mevzuat MCP / get_legislation_text / SMK 6769 m.85 / 2026-05-01]
-```
-
-#### Örüntü M2 — Mülga karşılaştırma (Mod 1/2 — eski 551 KHK ↔ SMK 6769)
-
-```
-1. search_repealed_legislation(query="551") → eski 551 KHK mevzuat_id
-2. get_legislation_text(551_id) → mülga metin
-3. get_previous_legislation_versions(SMK_6769_id) → SMK değişiklik zinciri
-4. Side-by-side karşılaştırma (skill içi diff)
-```
-
-#### Örüntü M3 — Yönetmelik + tebliğ + genelge çapraz tarama (Mod 5/9)
-
-```
-1. get_legislation_type_codes() → tür kodları (genellikle session başında bir kez)
-2. list_legislation_by_type(type_code="yönetmelik", filter="farmasötik")
-3. list_legislation_by_type(type_code="tebliğ", filter="SUT")
-4. list_legislation_by_type(type_code="genelge", filter="TİTCK")
-5. her hit için get_legislation_metadata + get_legislation_html
-```
-
-#### Örüntü M4 — Anayasa atıfı (Mod 6/12 — onko-erisim ile composability)
-
-```
-1. query_constitution_1982(article_no="17")  → Yaşam hakkı tam metin
-2. query_constitution_1982(article_no="56")  → Sağlık hakkı tam metin
-3. query_constitution_1982(article_no="90")  → AİHS Md. 2 doğrudan uygulama dayanağı
-4. (downstream onko-erisim skill) AYM bireysel başvuru dilekçesi
-```
-
-#### Örüntü M5 — Kompozit semantik araştırma (Mod 13 — tek çağrı)
-
-```
-1. get_semantic_evidence_package(topic="Bolar istisnası ilaç patent")
-   → Otomatik agregat: SMK m. 85, BTÜ Yönetmeliği ilgili maddeler,
-     ilgili TİTCK kılavuzu, varsa Cumhurbaşkanlığı kararı, tebliğler
-2. (gerekiyorsa) sonuç içindeki her mevzuat_id için get_legislation_text
-   ile derinleşme
-```
-
-**Ne zaman M5 kullanılmalı?** Geniş, çapraz-mevzuat bağlam gerektiren stratejik sorgu (yeni rapor başlangıcı, M&A DD, mahkeme brifingi). **Ne zaman M1 yeterli?** Spesifik, bilinen-madde alıntısı (örn. "SMK m. 138/3 metni").
-
-### 4.5. Spesifik function isim teyidi
-
-Yukarıdaki tablodaki "Beklenen function" sütunu, MCP envanterinin standart FastMCP isimlendirme konvansiyonuna göre çıkarılmıştır. Kanonik snake_case isimler Claude.ai connector index re-sync sonrası `tool_search` ile teyit edilecek; gerekirse v2.0.3 kozmetik patch'i ile placeholder'lar kesin function adlarıyla değiştirilecek. Bu değişim **davranış değil**, salt isim doğrulaması olacak — kullanım örüntüleri (§4.4) zaten kategori-bazlı yazıldığı için stabil.
 
 ---
 
@@ -462,9 +450,9 @@ Yukarıdaki tablodaki "Beklenen function" sütunu, MCP envanterinin standart Fas
         └────────────┬──────────────────┘
                      ↓
         ┌────────────────────────┐
-        │ Mevzuat MCP (12 araç)  │
+        │ Mevzuat MCP (2 kaynak) │
         │ — kanun + yönetmelik   │
-        │ + tebliğ + genelge     │
+        │ + KAYSİS kurum belgesi │
         └────────────┬───────────┘
                      ↓
         ┌────────────────────────────────┐
@@ -550,8 +538,8 @@ Her TR veri noktası için:
 - `[TİTCK MCP / get_price_history / 8699XXXXXXXXX / 2026-05-01]`
 - `[Türk Patent MCP / search_patents / applicant=Roche, cpc=A61K9 / 2026-05-01]`
 - `[Türk Patent MCP / get_patent_details / TR2018/12345 / 2026-05-01]`
-- `[Mevzuat MCP / search_legislation / SMK 6769 / 2026-05-01]`
-- `[Mevzuat MCP / get_article / SMK 6769 m.85 / 2026-05-01]`
+- `[Mevzuat MCP / search_mevzuat / SMK 6769 / 2026-05-01]`
+- `[Mevzuat MCP / get_mevzuat_content / SMK 6769 m.85 / 2026-05-01]`
 - `[Mevzuat MCP timeout fallback / mevzuat.gov.tr web fetch / 2026-05-01]`
 - `[TİTCK MCP timeout fallback / titck.gov.tr web fetch / 2026-05-01]`
 
@@ -568,9 +556,9 @@ Her rapor `## Audit Trail` bölümü ile biter. Format:
 | 2 | Roche TR holder canonical id | TİTCK MCP | find_holder_by_alias("Roche") | 2026-05-01 |
 | 3 | rituximab biyobenzer kümesi | TİTCK MCP | find_biosimilar_group(SCT-...) | 2026-05-01 |
 | 4 | TR2018/12345 cihaz patenti | Türk Patent MCP | get_patent_details | 2026-05-01 |
-| 5 | SMK m. 85/3 Bolar metni | Mevzuat MCP | get_article(SMK 6769, m.85) | 2026-05-01 |
+| 5 | SMK m. 85/3 Bolar metni | Mevzuat MCP | get_mevzuat_content(mevzuat_no="6769", mevzuat_tur=1, mevzuat_tertip=<arama sonucu>, madde_no="85") | 2026-05-01 |
 
-**MCP üçgeni notu (v2.0.1)**: TR akışı tam MCP-first; Mevzuat MCP de aktif (12 araç, revision `mevzuat-mcp-00017-668`). Web fetch yalnız (i) MCP timeout/5xx audit-trail yedeği, (ii) Yargıtay/Danıştay/AYM içtihat (Mevzuat MCP kapsamı dışı) için kalır.
+**MCP üçgeni notu:** Mevzuat MCP iki kaynağı ayrı kimlik/kapsamla işler (§4). Erişilemeyen kaynak veya dosya için açık boşluk kaydı gerekir; içtihat bu connector kapsamı dışındadır.
 ```
 
 ---
@@ -605,7 +593,7 @@ Her rapor `## Audit Trail` bölümü ile biter. Format:
 
 ### 7.3. Mevzuat MCP
 
-- **Tuzak T-12 — Content negotiation (LESSONS LEARNED v2.0.1)**: FastMCP-bazlı sunucular varsayılan olarak `text/event-stream` Accept header'ı bekler. Claude.ai gibi `Accept: application/json` gönderen JSON-only istemcilere 406 dönerek `tools/list` boş gibi görünür — tool registry'de hiçbir sorun olmasa bile. **Çözüm**: FastMCP server'da JSON response modu açılmalıdır. Yeni MCP konnektörü kurarken `tools_count > 0` doğrulaması smoke test'te zorunludur. Detay: §4.3 post-mortem.
+- **Tuzak T-12 — Sağlık ≠ kaynak kapsamı:** `initialize` / `tools/list` başarılı olsa da içerik çağrısının `isError`, `coverage`, `status`, `diagnostics` alanları denetlenir. Tek kaynak hatası, boş sonuç veya tarama tamamlandı diye yorumlanmaz (§4.4–4.5).
 
 - **Tuzak T-12b — İçtihat ≠ Mevzuat MCP**: Yargıtay/Danıştay/AYM kararları **Mevzuat MCP kapsamı dışı**. Bu katman için `references/ictihat-emsal.md §1`'deki UYAP karar arama protokolü uygulanır (web fetch + tarih damgası). MCP envanteri sadece kanun/yönetmelik/tebliğ/genelge/Resmi Gazete üzerinedir.
 
@@ -696,11 +684,11 @@ Türk Patent MCP / search_trademarks(holder_name="Roche",
 → 1 sonuç: COLUMVI® başvuru 2023, tescil 2024
 
 [Adım 11 — Mevzuat MCP (aktif v2.0.1)]
-Mevzuat MCP / get_article(SMK 6769, m.83/4)
+Mevzuat MCP / get_mevzuat_content(mevzuat_no="6769", mevzuat_tur=1, mevzuat_tertip=<arama sonucu>, madde_no="83")
 → "Buluş basamağı: ..." [tam metin alıntı]
-Mevzuat MCP / get_article(SMK 6769, m.85/3)
+Mevzuat MCP / get_mevzuat_content(mevzuat_no="6769", mevzuat_tur=1, mevzuat_tertip=<arama sonucu>, madde_no="85")
 → "Bolar istisnası: ..." [tam metin alıntı]
-Provenance: [Mevzuat MCP / get_article / SMK 6769 m.85/3 / 2026-05-01]
+Provenance: [Mevzuat MCP / get_mevzuat_content / SMK 6769 m.85/3 / 2026-05-01]
 
 [Adım 12 — Çapraz-doğrulama]
 - Holder normalizasyonu: ✅ 4 alias → 1 kanonik
@@ -733,8 +721,8 @@ TR Regülatör + IP Dosyası rapor şablonuna geçiş
 | 7 | Additional monitoring | TİTCK MCP | find_additional_monitoring_for_drug | 2026-05-01 |
 | 8 | TR2019/XXXXX bispesifik patent | Türk Patent MCP | search_patents + get_patent_details | 2026-05-01 |
 | 9 | COLUMVI® marka | Türk Patent MCP | search_trademarks | 2026-05-01 |
-| 10 | SMK m. 83/4, m. 85/3 metni | Mevzuat MCP | get_article(SMK 6769) | 2026-05-01 |
+| 10 | SMK m. 83/4, m. 85/3 metni | Mevzuat MCP | get_mevzuat_content (kimlik arama sonucundan) | 2026-05-01 |
 
 ---
 
-*Bu dosya v2.0.1 ile Mevzuat MCP envanter teyidini yansıtır. 12 aracın spesifik isim ve parametre şemaları, Claude.ai connector index re-sync sonrası `tool_search` ile keşfedilip §4.4 tablosunda doldurulacaktır (v2.0.2 patch hedefi).*
+*Mevzuat sözleşmesi 1 Ekim 2026 CureoHub araç adları ve KAYSİS entegrasyonuyla güncellendi. Diğer connector örneklerinin tarihleri kendi ölçümlerine aittir; bu belge yeni bir canlı sağlık ölçümü sayılmaz.*

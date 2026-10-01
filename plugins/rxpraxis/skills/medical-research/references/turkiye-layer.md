@@ -13,7 +13,7 @@
 | # | Source | Native tool | Replaces (v7.1) |
 |---|---|---|---|
 | 1 | **TİTCK** drug master | `search_drugs`, `get_drug`, `get_atc_class_summary`, `find_*` | `Exa site:titck.gov.tr` |
-| 2 | **Mevzuat** (SUT, yönetmelik) | `search_mevzuat`, `get_mevzuat_text` | `Exa site:sgk.gov.tr OR resmigazete.gov.tr` |
+| 2 | **Mevzuat** (SUT, yönetmelik, KAYSİS kurum belgeleri) | `search_all_mevzuat`, `search_kaysis`, `get_kaysis_text`, `get_mevzuat_text` | `Exa site:sgk.gov.tr OR resmigazete.gov.tr` |
 | 3 | **YÖK Tez** | `search_yok_tez_detailed`, `get_yok_tez_document_markdown` | (retained) |
 | 4 | **EuropePMC** Turkish affiliation | `search_articles("(konu) AND AFF:\"Turkey\"")` | (retained) |
 | 5 | **TÜRKPATENT** | `search_patents`, `search_trademarks` | `Exa` patent scraping |
@@ -62,17 +62,33 @@ TİTCK: get_drug(record_id="<barcode>")   # full master record
 
 ---
 
-## 3. Mevzuat — Native Legislation (SUT, yönetmelik, kararname)
+## 3. Mevzuat — mevzuat.gov.tr ve KAYSİS
 
-```
-Mevzuat: search_mevzuat(query="Sağlık Uygulama Tebliği <konu>", tur=<type code>, page_size=10)
-   # ⚠️ aranacak_yer="baslik" REQUIRES a tur code (anti-scraping); else auto-downgrades to "tumu"
-Mevzuat: get_mevzuat_text(...) / get_mevzuat_content(...)   # full text / HTML-parsed article
-Mevzuat: get_mevzuat_madde_tree(...) / get_mevzuat_madde_diff(...)  # article tree / change history
-Mevzuat: get_anayasa(...)   # Constitution articles (e.g., Md. 17/56 for onko-erisim)
+Normatif akış: [CONNECTORS.md §1.A.1](../../../CONNECTORS.md).
+
+```text
+Mevzuat: search_all_mevzuat(query="Sağlık Uygulama Tebliği", limit_per_source=10)
+Mevzuat: list_kaysis_types()
+Mevzuat: search_kaysis_institutions(query="sağlık")
+Mevzuat: search_kaysis(query="yönerge", kurum_id=<dönen kurum_id>, turler=<dönen kodlar>)
+Mevzuat: get_kaysis_detail(belge_id=<seçilen belge_id>)
+Mevzuat: get_kaysis_text(belge_id=<seçilen belge_id>, start_page=1, end_page=3, max_chars=20000)
 ```
 
-Use for: SUT (Sağlık Uygulama Tebliği) coverage rules, Beşeri Tıbbi Ürünler Ruhsatlandırma Yönetmeliği, fiyat kararnameleri (Resmî Gazete), Madde-22/23 framework. Replaces `Exa site:sgk.gov.tr/resmigazete.gov.tr` scraping with authoritative full-text.
+mevzuat.gov.tr adayında `search_mevzuat` → dönen no/tür/tertip ile
+`get_mevzuat_text` / `get_mevzuat_content` kullanılır; madde ağacı ve sürüm araçları
+KAYSİS kaydına uygulanmaz. KAYSİS `kaysis:<belge_id>` kimliği, kurum ve tür kodları
+kaynağa özgüdür. ChatGPT `search` / `fetch` çiftinde de kimlik aynen korunur.
+
+Kaynak başına `coverage` ve `page_truncated` kontrol edilir; eksik/başarısız kaynak
+"mevzuat yok" diye yazılmaz. KAYSİS sayfası 50 kayıttır; sorgu boş veya 3–160 karakter,
+`page` 1–10000 aralığındadır. `has_more=null` tamamlanmış tarama değildir.
+PDF `selected_pages`, `total_pages`, `truncated`, `missing_text_pages` ve `ocr_required`
+ile değerlendirilir; istenen üç sayfanın okunması tam belge okuması sayılmaz.
+Kaynak URL'si, erişim zamanı ve SHA-256 korunur; hukuki yürürlük resmî belgeyle doğrulanır.
+
+SUT, ruhsatlandırma, fiyat kararnamesi veya kurum genelgesi ihtiyacında bu katmanı
+kullan; TİTCK ürün geri ödeme alanını mevzuat hükmünün tam metni yerine koyma.
 
 ---
 
@@ -117,7 +133,7 @@ Populate the sidecar `turkey_access_summary` from native sources:
 
 ## 7. Mandatory Türkiye Dörtlüsü (every query — SKILL.md Adım 1.D, v8.0)
 1. **TİTCK `search_drugs`** (native) — INN + brand.
-2. **Mevzuat `search_mevzuat`** (native) — SUT/yönetmelik when clinical/reimbursement context.
+2. **Mevzuat `search_all_mevzuat`** — klinik/geri ödeme sorusunun SUT, yönetmelik veya kurum yönergesi/genelgesi boyutu varsa; kaynak kapsamını §3 ile kaydet.
 3. **YÖK Tez `search_yok_tez_detailed`** — Türkçe + İngilizce.
 4. **EuropePMC `AFF:"Turkey"`** — Turkish-authored studies.
 Null-reporting: if all return empty, emit a **Türkiye Veri Boşluğu** block (do not silently omit).

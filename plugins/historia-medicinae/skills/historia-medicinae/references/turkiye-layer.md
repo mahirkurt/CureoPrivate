@@ -40,6 +40,51 @@ aparatı ve dört Türkiye-özgü Quellenkritik filtresi.
 
 ---
 
+### 2.1 KAYSİS kurumsal düzenleme katmanı
+
+Türkiye kurum/kamu sağlığı sorusunda `mevzuat:search_all_mevzuat(query="<konu>",
+page=1, limit_per_source=10)` ile mevzuat.gov.tr ve
+[KAYSİS KMS](https://kms.kaysis.gov.tr/) birlikte taranır. Kurumun yönerge,
+genelge veya kararlarını daraltmak için altı yeni aracın akışı şöyledir:
+
+```
+list_kaysis_types()
+search_kaysis_institutions(query="<kurum adı>")
+search_kaysis(query="<konu>", kurum_id=<dönen kurum_id>, yururluk="tumu", page=1)
+get_kaysis_detail(belge_id=<sonuçtaki belge_id>)
+get_kaysis_text(belge_id=<aynı belge_id>, start_page=1, end_page=3, max_chars=12000)
+```
+
+`turler` KAYSİS listesinden seçilir; mevzuat.gov.tr tür kodu kullanılmaz.
+Kurum sorgusu 3–160 karakter; `search_kaysis.query` boş veya 3–160 karakterdir.
+Numara için `query="", mevzuat_no="<numara>"`; sayfa 1–10000, kaynak sayfa
+boyu 50'dir. `yururluk="tumu"|"yururlukte"|"mulga"` filtredir; kaynakta
+açık durum etiketi yoksa bilinmiyor kalır. **Bugünkü KAYSİS kaydı tarihsel
+yürürlüğü kanıtlamaz.** Dönemin metni ve değişim zinciri RG/zabıt/arşivle teyit
+edilir; bugünkü kurumsal düzenleme geçmişe yansıtılmaz.
+
+`kaysis:<belge_id>` ile mevzuat.gov.tr `{tertip}_{tur}_{no}` ayrı kimliklerdir;
+aynı başlıklar otomatik birleştirilmez. KAYSİS kaydı `get_mevzuat_*`, madde/graf
+ve önceki metin araçlarına verilmez. ChatGPT `search` iki kaynaklıdır;
+`limit` toplam sonuç sınırıdır, `limit_per_source` kaynak başınadır.
+`fetch(id="kaysis:<belge_id>")` dönen kimlikle çalışır.
+
+Her `coverage` satırının `status`, `diagnostics`, `page`, `retrieved`,
+`returned`, `page_truncated`, `total`, `has_more` alanlarını kapsam kaydında
+koru. `degraded`/`manual_required`/`error` görünür boşluktur; erişilen kaynakla
+devam edilir. `total=null`/`has_more=null` bilinmeyendir; sıfır/false sayılmaz.
+Kısa/boş sayfa tarihsel kayıt yokluğu kanıtı değildir. `page_truncated=true`
+ise aynı sayfayı native kaynak aramasıyla tamamla; yalnız sonraki sayfaya geçme.
+
+Katalog künyesi tam metin değildir. PDF'de `selected_pages`, `truncated`,
+`ocr_required`, `missing_text_pages` ve `diagnostics` korunur; KAYSİS otomatik
+OCR yapmaz. Taranmış/eksik metin manuel doğrulama gerektirir.
+`truncated=false` yalnız seçilen sayfaların kesilmediğini söyler; belge bütünü
+okunmuş sayılmaz. Kaynak/PDF URL'si, `fetched_at`, SHA-256 ve sayfa konumu
+atıf kaydına alınır; `fetched_at` tarihsel yürürlük tarihi değildir.
+
+---
+
 ## 3. Devlet Arşivleri oturum kuralı
 
 `devlet-arsivleri` **tek-cihaz oturum kilidi** taşır. Her arşiv sorgusundan **önce**

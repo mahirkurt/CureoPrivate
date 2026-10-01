@@ -154,6 +154,51 @@ TUR 1 (paralel, 6-8 connector):
         → açık web: TBMM, Resmî Gazete, akademik blog, vd.
 ```
 
+### 3.1.1 Türkiye mevzuatı ve kurumsal düzenleme taraması
+
+L4/L5 taramasında aynı turda `mevzuat:search_all_mevzuat(query="<konu>",
+page=1, limit_per_source=10)` çağrılır. Bu, mevzuat.gov.tr ve
+[KAYSİS KMS](https://kms.kaysis.gov.tr/) kayıtlarını kaynak kimliklerini koruyarak
+getirir. Mülga kanun/gerekçe/RG zinciri mevcut araçlarla sürer; kurumun yönerge,
+genelge veya kararları için KAYSİS ayrıca daraltılır:
+
+```
+list_kaysis_types()
+search_kaysis_institutions(query="<kurum adı>")
+search_kaysis(query="<konu>", kurum_id=<dönen kurum_id>, yururluk="tumu", page=1)
+get_kaysis_detail(belge_id=<sonuçtaki belge_id>)
+get_kaysis_text(belge_id=<aynı belge_id>, start_page=1, end_page=3, max_chars=12000)
+```
+
+`turler` KAYSİS tür listesinden seçilir; mevzuat.gov.tr kodları aktarılmaz.
+Kurum arama sorgusu 3–160 karakterdir. `search_kaysis.query` boş veya 3–160
+karakterdir; numara için `query="", mevzuat_no="<numara>"` kullanılır.
+Sayfa 1–10000, kaynak sayfa boyu 50'dir. `yururluk` filtresi
+`tumu|yururlukte|mulga` kabul eder; açık kaynak etiketi yoksa durum bilinmiyor
+kalır. Güncel katalog, tarihsel bir tarihte yürürlük veya arşivin tamlığı kanıtı
+değildir; kronoloji dönemin RG nüshası, zabıt ve belge tarihiyle kurulur.
+
+`kaysis:<belge_id>` ve mevzuat.gov.tr `{tertip}_{tur}_{no}` ayrı tutulur; aynı
+başlıklar otomatik birleştirilmez. KAYSİS kimliği `get_mevzuat_*`, madde/graf,
+gerekçe veya önceki metin araçlarına verilmez. ChatGPT `search` iki kaynaklıdır
+ve `limit` toplam sınırdır; native `limit_per_source` kaynak başınadır. ChatGPT
+`fetch(id="kaysis:<belge_id>")` için kimlik arama sonucundan aynen alınır.
+
+G0 kaydında her `coverage` satırının `status`, `diagnostics`, `page`,
+`retrieved`, `returned`, `page_truncated`, `total`, `has_more` alanları korunur.
+`degraded`/`manual_required`/`error` görünür boşluktur; erişilen kaynakla devam
+edilir. `total=null`/`has_more=null` bilinmeyendir; sıfır/false değildir. Boş
+veya kısa sayfa, tarihsel düzenleme yokluğu kanıtı sayılmaz.
+`page_truncated=true` ise aynı sayfa native kaynak aramasıyla incelenir;
+yalnız sonraki sayfaya geçerek atlanan kayıtlar tamamlanmış sayılmaz.
+
+PDF'de `selected_pages`, `truncated`, `ocr_required`, `missing_text_pages` ve
+`diagnostics` atıf kaydına taşınır. KAYSİS otomatik OCR yapmaz; taranmış/eksik
+sayfa manuel doğrulama gerektirir. `truncated=false` yalnız seçilen sayfaları
+niteler; tüm belge okunmuş sayılmaz. Katalog künyesi tam metin değildir.
+Kaynak/PDF URL'si, `fetched_at`, SHA-256 ve sayfa konumu saklanır;
+`fetched_at` belgenin tarihsel yürürlük tarihi değildir.
+
 ### 3.2 TUR 2 — Triangülasyon ve Katmanlama
 
 Her bulgu beş katmandan (L1-L5) birine yerleştirilir. Her belge için:

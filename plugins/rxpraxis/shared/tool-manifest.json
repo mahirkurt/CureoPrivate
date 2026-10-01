@@ -77,7 +77,18 @@
         "TİTCK:find_equivalent_products_by_substance",
         "TİTCK:find_reference_prices_for_drug",
         "AdisInsight:get_drug",
-        "Mevzuat:search_mevzuat"
+        "Mevzuat:search_mevzuat",
+        "Mevzuat:search_all_mevzuat",
+        "Mevzuat:list_kaysis_types",
+        "Mevzuat:search_kaysis_institutions",
+        "Mevzuat:search_kaysis",
+        "Mevzuat:get_kaysis_detail",
+        "Mevzuat:get_kaysis_text",
+        "Mevzuat:get_mevzuat_detail",
+        "Mevzuat:get_mevzuat_content",
+        "Mevzuat:get_mevzuat_text",
+        "Mevzuat:search",
+        "Mevzuat:fetch"
       ],
       "collision_resolution": {
         "search_drugs": "DAİMA 'TİTCK:search_drugs'; ASLA AdisInsight'ınki.",
@@ -86,7 +97,7 @@
       "eviction_recovery": {
         "TİTCK": "search 'TİTCK search_drugs get_atc_class_summary reference_prices equivalent'",
         "AdisInsight": "search 'AdisInsight get_drug ATC'",
-        "Mevzuat": "search 'Mevzuat search_mevzuat SMK yönetmelik'"
+        "Mevzuat": "search 'Mevzuat search_all_mevzuat list_kaysis_types search_kaysis_institutions search_kaysis get_kaysis_detail get_kaysis_text search_mevzuat get_mevzuat_detail get_mevzuat_content get_mevzuat_text search fetch'"
       }
     },
 
@@ -98,14 +109,27 @@
         "Türk Patent:search_trademarks",
         "Türk Patent:search_designs",
         "TİTCK:find_first_in_class",
-        "TİTCK:get_atc_class_summary"
+        "TİTCK:get_atc_class_summary",
+        "Mevzuat:search_all_mevzuat",
+        "Mevzuat:list_kaysis_types",
+        "Mevzuat:search_kaysis_institutions",
+        "Mevzuat:search_kaysis",
+        "Mevzuat:get_kaysis_detail",
+        "Mevzuat:get_kaysis_text",
+        "Mevzuat:search_mevzuat",
+        "Mevzuat:get_mevzuat_detail",
+        "Mevzuat:get_mevzuat_content",
+        "Mevzuat:get_mevzuat_text",
+        "Mevzuat:search",
+        "Mevzuat:fetch"
       ],
       "collision_resolution": {
         "get_drug": "Patent komutunda TİTCK get_drug çağrılmaz; titck_canonical artefaktından OKU (canonical-cache §3)."
       },
       "eviction_recovery": {
         "Türk Patent": "search 'Türk Patent search_patents get_patent_details designs trademarks'",
-        "TİTCK": "search 'TİTCK first_in_class atc_class_summary'"
+        "TİTCK": "search 'TİTCK first_in_class atc_class_summary'",
+        "Mevzuat": "search 'Mevzuat search_all_mevzuat list_kaysis_types search_kaysis_institutions search_kaysis get_kaysis_detail get_kaysis_text search_mevzuat get_mevzuat_detail get_mevzuat_content get_mevzuat_text search fetch'"
       }
     },
 

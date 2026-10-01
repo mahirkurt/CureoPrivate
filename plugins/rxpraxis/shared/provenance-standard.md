@@ -24,6 +24,13 @@ her skill, kaynak tipine göre uygun damgayı uygular.
 ```
 Örnek: `[Mevzuat MCP / search_mevzuat / SMK 6769 / 2026-06-14]`
 
+KAYSİS kaydı için aynı gramerde `kaysis:<belge_id>` kullanılır; kanun numarası veya
+mevzuat.gov.tr tertip kimliğiyle değiştirilmez. Kanıt zarfında `source_url`,
+`retrieval_url`, `fetched_at`, indirilen PDF'in `sha256` değeri ve `selected_pages` /
+`total_pages` korunur. `truncated`, `missing_text_pages`, `ocr_required`, `status` ve
+`diagnostics` alıntının okunmuş kapsamını sınırlar. Birleşik aramanın iki kaynaklı
+`coverage` kaydı da saklanır; erişim tarihi yürürlük tarihi olarak kullanılmaz.
+
 ### 1.3 IQVIA MIDAS (yapısal provenance — alıntılanmaz, alana gömülür)
 ```yaml
 provenance:

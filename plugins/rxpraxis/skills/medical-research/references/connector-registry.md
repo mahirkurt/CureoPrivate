@@ -63,7 +63,7 @@ Keyword search also works for discovery (`ToolSearch "adisinsight drug pipeline"
 |---|---|---|---|
 | **Regulatory MCP** | `922d7cdc…` | `openfda_search` (endpoint enum: `drug/event`, `drug/label`, `drug/drugsfda`, `drug/enforcement`, device/*; `search` Lucene + `count` aggregation), `icd11_search`, `who_gho_query`, `health_canada_dpd`, `federal_register_search`, `eurlex_expert_search` | ⚠️ **Latency-prone (180 s timeout observed)** — call singly, retry, treat as skippable if non-critical |
 | **TİTCK** | `1a49b1bb…` | `search_drugs`, `get_drug`, `get_atc_class_summary`, `find_off_label_uses_for_drug`, `find_biosimilar_group`, `find_reference_prices_for_drug`, `compare_drug_to_alternatives`, `find_equivalent_products_by_substance`, `search_regulation_article23`, `find_authorization_cancellations_for_drug`, `get_price_history`, `get_withdrawal_trend`, `get_atc_hierarchy`, `search_off_label_uses` | **See `turkiye-layer.md`.** Türkiye Dörtlüsü now structural |
-| **Türk Mevzuat** | `fbf16a1a…` | `search_mevzuat` (needs `tur` code for `baslik` search), `get_mevzuat_text`, `get_mevzuat_content`, `get_anayasa`, `get_mevzuat_madde_tree`, `get_mevzuat_madde_diff` | SUT, yönetmelik, fiyat kararnamesi — native legislation |
+| **Türk Mevzuat** | `mevzuat.cureonics.com/mcp` | `search_all_mevzuat`, `list_kaysis_types`, `search_kaysis_institutions`, `search_kaysis`, `get_kaysis_detail`, `get_kaysis_text`; mevcut `search_mevzuat`, `get_mevzuat_text`, `get_mevzuat_content`, `get_anayasa`, madde/sürüm araçları; ChatGPT `search`/`fetch` | mevzuat.gov.tr + KAYSİS; iki kaynak kimliği ayrıdır. Kaynak başına `coverage`, sınırlı PDF okuma ve hata/boşluk ayrımı için `turkiye-layer.md` §3 ve plugin `CONNECTORS.md` §1.A.1. Mevzuat satırı 1 Ekim 2026 Hub araç sözleşmesiyle güncellendi. |
 | **TÜRKPATENT** | `ded65854…` | `search_patents` (title/applicant/IPC/CPC), `search_trademarks`, `search_designs`, `get_patent_details` | Turkey IP — pharmapatent composition |
 | **NPI Registry** | `64557ced…` | `npi_search`, `npi_lookup`, `npi_validate` | US PI/KOL verification (NPI-1 individual, NPI-2 org). US-only |
 | **annas-reader** | ⚠️ **NOT WIRED** in `.mcp.json` | Real surface (v0.1.0): `article_search`/`book_search` (structured envelope), `read_article`, `read_document`, `search_in_document`, `get_document_info`, `download_document(id=DOI\|md5)`, `annas_ingest_document`, `annas_server_info` | Full-text cascade tier 3 — **currently unavailable to this plugin**. The previously listed `article_download`/`book_download` are RETIRED upstream Go tool names and do not exist. ⚠️ Copyright: analysis only, no verbatim bulk reproduction |
@@ -120,6 +120,10 @@ Exa accepts only `query` (string) + `numResults` (≤20). No domain/freshness pa
 
 ## 5. Zero-Result Recovery Protocol (MANDATORY)
 
+Mevzuat için önce kaynak `coverage` / `status` / `diagnostics` kontrol edilir.
+`degraded` / `manual_required` / `error` veya bilinmeyen toplam, doğrulanmış sıfır değildir;
+başarılı kaynağın sonuçları korunur ve eksik kapsam gerekçesiyle yazılır.
+
 If any connector returns zero:
 1. Reformulate (synonyms, mechanism-level, broader category).
 2. Decompose by PICO component.
@@ -158,7 +162,7 @@ Guidelines/societies: `esmo.org, nccn.org, asco.org, hematology.org, ehaweb.org,
 Regulatory (prefer native first): `fda.gov, accessdata.fda.gov, ema.europa.eu, titck.gov.tr, sgk.gov.tr, resmigazete.gov.tr, pmda.go.jp`.
 Journals: `nejm.org, thelancet.com, jamanetwork.com, bmj.com, nature.com, bloodjournal.org, ascopubs.org, haematologica.org, annals.org`.
 HTA: `nice.org.uk, iqwig.de, has-sante.fr, cadth.ca, cda-amc.ca, pbac.pbs.gov.au, icer.org, tlv.se`.
-Türkiye: `titck.gov.tr, sgk.gov.tr, resmigazete.gov.tr, mevzuat.gov.tr, thd.org.tr, kanser.gov.tr, dergipark.org.tr, trdizin.gov.tr`.
+Türkiye: `titck.gov.tr, sgk.gov.tr, resmigazete.gov.tr, mevzuat.gov.tr, kms.kaysis.gov.tr, thd.org.tr, kanser.gov.tr, dergipark.org.tr, trdizin.gov.tr`.
 
 ---
 

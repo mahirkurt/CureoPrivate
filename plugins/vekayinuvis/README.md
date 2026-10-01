@@ -1,5 +1,10 @@
 # Vekayinüvis Plugin
 
+**3.5.1 (2026-10-01):** KANUN_GEREKÇESİ taraması mevzuat.gov.tr + KAYSİS ile
+genişledi. Kurumsal düzenleme/PDF keşfi, kaynak kapsamı ve OCR/sayfa sınırları
+[kanonik akışta](skills/vekayinuvis/references/kanun-gerekcesi-workflow.md) yer alır;
+güncel katalog kaydı tarihsel yürürlük kanıtı sayılmaz.
+
 > *Vekāyi'-nüvîs* (وقايع نويس): Osmanlı Devleti'nin resmî tarih yazıcısı —
 > arşivlere doğrudan erişimi olan akademik-bürokratik makam. Bu plugin, modern
 > araştırmacıya o makamın çağdaş dijital eş değerini sunar: çok-arşivli erişim,
@@ -21,7 +26,7 @@ sepet/arşiv/OCR akış-skill'i** sunar. Her mod bir slash-komut girişine sahip
 
 | Bileşen | Yol | Açıklama |
 |---------|-----|----------|
-| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.5.0) + 9 referans dosyası |
+| Flagship skill | `skills/vekayinuvis/SKILL.md` | 9-modlu tarih araştırma protokolü (v3.5.1) + 9 referans dosyası |
 | Oryantasyon skill | `skills/start/SKILL.md` | Connector preflight + mod/akış yönlendirme |
 | Mod skill'leri | `skills/{durum,kaynak-avi,arsiv-dalis,boa-katalog,olay,literatur,transkripsiyon,prosopografi,kronoloji,rapor,kanun-gerekce}/SKILL.md` | 11 önek-siz skill (eski `commands/vekayinuvis-*.md`'den göçtü; `olay`=EVENT_RECONSTRUCTION v3.1'de eklendi, bkz. **Sürüm 2.x → 3.0 Geçişi**) |
 | Akış skill'leri (yeni v3.0) | `skills/{satinalma,arsiv-oku,toplu-okuma}/SKILL.md` | eSatış sepeti + noVNC satın-alma → yerel arşiv okuma → async OCR zinciri (bkz. **Yeni Akışlar**) |

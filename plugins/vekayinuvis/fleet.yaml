@@ -9,7 +9,7 @@
 
 version: 2
 plugin: vekayinuvis
-plugin_version: "3.5.0"
+plugin_version: "3.5.1"
 
 servers:
   - name: ottoman-archives
@@ -178,12 +178,25 @@ servers:
     url: https://mevzuat.cureonics.com/mcp
     tier: legislative
     auth_env: MEVZUAT_MCP_API_KEY
+    tools_used: [search_mulga_mevzuat, get_mevzuat_gerekce, resolve_resmi_gazete,
+                 list_kaysis_types, search_kaysis_institutions, search_kaysis,
+                 get_kaysis_detail, get_kaysis_text, search_all_mevzuat]
     role: >-
       mevzuat.gov.tr Türkiye Mevzuat Bilgi Sistemi — `search_mulga_mevzuat` (mülga
       kanun/KHK/CBK arşivi) + `get_mevzuat_gerekce` (madde gerekçesi metni) +
       `resolve_resmi_gazete` (RG çapraz-referans). KANUN_GEREKÇESİ modunun
       antecedant-mevzuat zincirinin (L4/L5) birincil kaynağı; resmigazete/tbmm ile aynı
       turda paralel. HP self-host (systemd), `/mcp` Bearer.
+      search_all_mevzuat ile mevzuat.gov.tr + KAYSİS konu taraması; kurumsal
+      yönerge/genelge için list_kaysis_types + search_kaysis_institutions →
+      search_kaysis → get_kaysis_detail → get_kaysis_text. Güncel KAYSİS kaydı
+      tarihsel yürürlük kanıtı değildir; belge_id ayrı kimliktir. Kaynak kapsamı,
+      bilinmeyen total/has_more ve OCR/truncated sınırları korunur;
+      references/kanun-gerekcesi-workflow.md §3.1.1 uygulanır.
+    degrade: >-
+      coverage kaynak bazında beyan edilir; degraded/manual_required/error
+      ya da eksik sayfalama yokluk kanıtı değildir. Bir kaynak düşerse erişilen
+      kaynakla devam edilir; eksik metin veya yürürlük durumu uydurulmaz.
 
   - name: tbmm
     url: https://tbmm.cureonics.com/mcp

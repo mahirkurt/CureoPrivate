@@ -9,7 +9,7 @@
 
 version: 2
 plugin: rxpraxis
-plugin_version: "1.2.4"
+plugin_version: "1.2.5"
 
 servers:
   - name: titck
@@ -19,6 +19,26 @@ servers:
   - name: mevzuat
     url: https://mevzuat.cureonics.com/mcp
     auth_env: MEVZUAT_MCP_API_KEY
+    role: >-
+      mevzuat.gov.tr + KAYSİS kurum belgeleri. search_all_mevzuat iki kaynağı ayrı
+      coverage ile tarar; search_kaysis ve get_kaysis_detail/get_kaysis_text kurum
+      belgesini sınırlı PDF sayfalarıyla okur. list_kaysis_types ve
+      search_kaysis_institutions kaynak kodlarını keşfeder. kaysis:<belge_id> ile
+      {tertip}_{tur}_{no} kimliklerini dönüştürme; degraded/manual_required/error
+      veya bilinmeyen toplam yokluk kanıtı değildir. ChatGPT search/fetch iki kimliği korur.
+    tools_used:
+      - search_all_mevzuat
+      - list_kaysis_types
+      - search_kaysis_institutions
+      - search_kaysis
+      - get_kaysis_detail
+      - get_kaysis_text
+      - search_mevzuat
+      - get_mevzuat_detail
+      - get_mevzuat_content
+      - get_mevzuat_text
+      - search
+      - fetch
 
   - name: pubmed
     url: https://pubmed.mcp.claude.com/mcp

@@ -8,7 +8,7 @@
         "Authorization": "Bearer ${env:MEVZUAT_MCP_API_KEY}"
       },
       "_tier": "primary",
-      "_role": "PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover 2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz): list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun → get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/ relations → search_within_mevzuat → get_mevzuat_gerekce → resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup, phrase, search_within_mevzuat, gerekçe tam metin). Tüm modların TR-mevzuat omurgası."
+      "_role": "PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover 2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz): list_mevzuat_types → list_mevzuat_by_type / search_mevzuat|search_kanun → get_mevzuat_detail → get_mevzuat_content|text → madde_tree/diff/timeline/ relations → search_within_mevzuat → get_mevzuat_gerekce → resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup, phrase, search_within_mevzuat, gerekçe tam metin). Tüm modların TR-mevzuat omurgası. Konu taramasında search_all_mevzuat iki kaynağı ayrı kimliklerle arar; kurum düzenlemeleri için KAYSİS: list_kaysis_types + search_kaysis_institutions → search_kaysis → get_kaysis_detail → get_kaysis_text (bounded PDF). KAYSİS belge_id, mevzuat_no değildir; madde/graf/tarihçe araçları mevzuat.gov.tr kapsamındadır. coverage/status/diagnostics, bilinmeyen total/has_more, açık yururluk etiketi ve PDF OCR/truncated sınırları korunur (references/07 §1.1)."
     },
     "resmi-gazete": {
       "type": "http",

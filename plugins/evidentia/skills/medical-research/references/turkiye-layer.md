@@ -70,6 +70,14 @@ TİTCK: get_drug(record_id="<barcode>")   # full master record
 
 Evidentia does **not** wire a mevzuat connector. Do **not** call `search_mevzuat` / `search_kanun` / `get_mevzuat_*`. For SUT coverage rules, yönetmelik, fiyat kararnamesi, or Anayasa Md. 17/56 text, hand off to **`cureolex`**. TİTCK `reimbursement_status` remains the native TR access signal in this plugin.
 
+**KAYSİS destekli devir:** Kurum yönergesi, genelgesi, rehberi veya usul/esası gerektiğinde
+`cureolex` devrine mevzuat.gov.tr + KAYSİS kapsamını açıkça ekle. İstenen çıktı; ayrı kaynak
+kimlikleri (`{tertip}_{tur}_{no}` / `kaysis:<belge_id>`), resmî URL, erişim tarihi, okunan PDF
+sayfaları ve kaynak başına kapsam/hata bilgisidir. Eksik dosya veya `degraded` /
+`manual_required` kaynak, "hüküm yok" anlamına gelmez; `truncated=false` tüm PDF'in
+okunduğunu kanıtlamaz. Evidentia bu araçları kendi filosunda çağırmaz ve mevzuat
+bulgusunu klinik etkililik kanıtına dönüştürmez. Devir yapılamıyorsa boşluk açık kalır.
+
 ---
 
 ## 4. TÜRKPATENT — Turkey IP (jenerik/biyobenzer)

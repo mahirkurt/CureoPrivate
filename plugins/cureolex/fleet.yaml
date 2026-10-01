@@ -23,7 +23,7 @@
 
 version: 2
 plugin: cureolex
-plugin_version: "4.1.0"
+plugin_version: "4.1.1"
 
 # Düzyazıdaki "N MCP / N companion" iddialarını gerçek sayıyla karşılaştır.
 # cureolex bu sayıları G0 kapı ölçütü olarak kullandığı için açık.
@@ -61,7 +61,9 @@ servers:
                  get_anayasa, get_onceki_metinler, search_mulga_mevzuat,
                  search_mevzuat_fihristi, build_mevzuat_semantic_context,
                  resolve_resmi_gazete, get_mevzuat_text, download_mevzuat_document,
-                 get_mevzuat_content, search_within_mevzuat, list_kurumlar]
+                 get_mevzuat_content, search_within_mevzuat, list_kurumlar,
+                 list_kaysis_types, search_kaysis_institutions, search_kaysis,
+                 get_kaysis_detail, get_kaysis_text, search_all_mevzuat]
     role: >-
       PRİMER TR mevzuat — in-house HP self-host (v0.15.1+; production cutover
       2026-08, mevzuat.cureonics.com). Semantik sıra (atlanamaz):
@@ -71,11 +73,20 @@ servers:
       resolve_resmi_gazete; RIA yurtiçi benchmark list_mevzuat_by_type; kurum
       adları list_kurumlar. Yapısal yasama-grafı + bedesten (NUMARA lookup,
       phrase, search_within_mevzuat, gerekçe tam metin). Tüm modların TR-mevzuat omurgası.
+      Konu taramasında search_all_mevzuat iki kaynağı ayrı kimliklerle arar;
+      kurum düzenlemeleri için KAYSİS: list_kaysis_types +
+      search_kaysis_institutions → search_kaysis → get_kaysis_detail →
+      get_kaysis_text (bounded PDF). KAYSİS belge_id, mevzuat_no değildir;
+      madde/graf/tarihçe araçları mevzuat.gov.tr kapsamındadır.
+      coverage/status/diagnostics, bilinmeyen total/has_more, açık yururluk
+      etiketi ve PDF OCR/truncated sınırları korunur (references/07 §1.1).
     degrade: >-
       Anahtar yoksa TR-mevzuat omurgası düşer — ikincil korpus YOKTUR (surucu.dev
       aynası 2026-09-12'de kaldırıldı: aynı upstream'i okuyordu, yani veri değil
       yalnız çapraz-kontrol sağlıyordu, ve upstream kalıcı kapalıydı). Manifestoda
-      'skipped: anahtar yok'. Üst-norm zinciri kurulamazsa G2 CONDITIONAL.
+      'skipped: anahtar yok'. Bir upstream düşerse diğer kaynakla devam edilir;
+      coverage kaynak bazında raporlanır, boş sonuç yokluk kanıtı değildir.
+      Üst-norm zinciri kurulamazsa G2 CONDITIONAL.
 
   - name: resmi-gazete
     url: https://resmi-gazete-mcp.cureonics.workers.dev/mcp

@@ -38,9 +38,48 @@ Hücre: ● birincil/zorunlu · ○ koşullu/opsiyonel · — kullanılmaz.
 | Connector | Endpoint / Kaynak | Araç sayısı | MR | PI | PP | TS | RX | Notlar |
 |---|---|---|---|---|---|---|---|---|
 | **TİTCK MCP** *(kanonik — tek uç)* | `titck.cureonics.com/mcp` | 66 | ● | ● | ● | — | ● | **v1.2 — kod-düzeyi tek-sefer (§3), sunucunun İÇİNDE.** 2026-08-02'de önündeki Cloudflare Worker cache'i emekli edildi; önbellek (TTL + LRU + singleflight) Python sunucusuna taşındı, `scope_key` başına upstream çağrısı hâlâ ≤1. Uç artık **kapılıdır** (Bearer + OAuth 2.1). `titck-origin.cureonics.com` aynı servise ikinci addır — ayrı bir connector DEĞİL. Master record + holder + ATC/SNOMED + fiyat + eşdeğer/biyobenzer grup + Madde 23 + withdrawal + batch release + off-label. |
-| **Mevzuat MCP** | `mevzuat.cureonics.com/mcp` | 19 | ○ | ○ | ● | — | ● | SMK + yönetmelik + tebliğ + genelge + Resmi Gazete tam metin. 5 fonksiyonel kategori. İçtihat (Yargıtay/Danıştay/AYM) **kapsam dışı**. |
+| **Mevzuat MCP** | `mevzuat.cureonics.com/mcp` | 29 | ○ | ○ | ● | — | ● | mevzuat.gov.tr + KAYSİS kurum belgeleri; birleşik arama, künye, sınırlı PDF metni ve kaynak başına kapsam. Tüketim sözleşmesi §1.A.1. İçtihat **kapsam dışı**. |
 | **Türk Patent MCP** | `markapatent-mcp.fastmcp.app/mcp` | 6 | ○ | — | ● | — | ● | Patent + marka (Nice) + endüstriyel tasarım (Locarno). CPC/IPC + applicant + abstract. EP→TR validation. |
 | **YÖK Tez MCP** | `yoktezmcp.fastmcp.app/mcp` | 6 | ● | — | ○ | — | ● | TR + EN tez araması; TR-spesifik epidemiyoloji/prevalans için ikincil kaynak. |
+
+### 1.A.1 Mevzuat.gov.tr + KAYSİS tüketim sözleşmesi
+
+`mevzuat` aynı connector içinde iki ayrı resmî kaynağı sunar. Soru kanunla birlikte
+kurum yönergesi, genelgesi, rehberi veya usul/esas içeriyorsa `search_all_mevzuat`
+ile iki kaynağı tara; bilinen mevzuat.gov.tr kaydında mevcut araçları kullan.
+
+| Araç | Kullanım / sınır |
+|---|---|
+| `search_all_mevzuat(query, page=1, limit_per_source=10)` | Kaynak başına 1–50 aday ve ayrı `coverage`; aynı başlıklar tekilleştirilmez |
+| `list_kaysis_types()` | KAYSİS tür kodlarını kaynaktan keşfet |
+| `search_kaysis_institutions(query)` | 3–160 karakterle kurum keşfi; dönen `kurum_id` kullanılır |
+| `search_kaysis(query, kurum_id?, turler?, mevzuat_no?, yururluk, page)` | Metin boş veya 3–160 karakter; `yururluk=tumu/yururlukte/mulga`; kaynak sayfası 50 kayıt, `page` 1–10000 |
+| `get_kaysis_detail(belge_id)` | Adayın künyesi; katalog kaydı dosyanın erişilebilirliğini kanıtlamaz |
+| `get_kaysis_text(belge_id, start_page=1, end_page=3, max_chars=20000)` | Sınırlı PDF okuma; `max_chars` 500–100000, büyük belgede aralığı ihtiyaca göre ilerlet |
+
+**Kimlik:** mevzuat.gov.tr `{tertip}_{tur}_{no}`, KAYSİS `kaysis:<belge_id>` döndürür.
+`belge_id` mevzuat numarası değildir; kurum ve tür kodları kaynaklar arasında taşınmaz.
+ChatGPT `Mevzuat:search` ikisini birlikte arar; `Mevzuat:fetch(id=<dönen id>)` doğru
+kaynağa yönlenir. Çıplak `search` adı diğer connector'larla karışabileceğinden öneki koru.
+`search_mevzuat` ve semantik/madde/sürüm araçları yalnız mevzuat.gov.tr kapsamındadır.
+
+**Kapsam:** `coverage` içindeki her kaynağın `status`, `total`, `has_more`, `retrieved`,
+`returned`, `page_truncated` ve `diagnostics` alanlarını iç denetim kaydına geçir.
+`page_truncated=true` mevcut kaynak sayfasındaki adayların kesildiğini belirtir; tüm
+KAYSİS sayfası için aynı `page` ile `search_kaysis` çağır. `has_more` sonraki kaynak
+sayfasını gösterir. ChatGPT `limit` toplam sonuç sınırıdır; ortak önem puanı veya ulusal
+tamlık iddiası değildir. Tek kaynak hatası diğer kaynağın kanıtını silmez.
+`degraded`/`manual_required`/`error`, `total=null`, `has_more=null` veya dosya eksikliği
+"mevzuat yok" kanıtı değildir. Sağlıklı boşluk da yalnız sorgulanan kapsam içindir.
+Ortak sorgu 1–500 karakterdir; KAYSİS'in metin/sayfa sınırı dışındaysa o kol açıklamalı
+`manual_required` olur. Yalnız rakamlı ortak sorgu KAYSİS'e `mevzuat_no` olarak gider.
+
+**Metin ve provenance:** `source_url`, `retrieval_url`, `fetched_at`, `sha256`,
+`total_pages`, `selected_pages`, `truncated`, `missing_text_pages`, `ocr_required`,
+`status` ve `diagnostics` korunur. `truncated=false` istenen aralığın sınır nedeniyle
+kesilmediğini belirtir; okunabilirlik veya bütün PDF'in okunduğu garantisi değildir. Metin katmanı olmayan sayfa için otomatik OCR
+varsayma; okunamayan hükmü boşluktan üretme. Erişim tarihi yürürlük tarihi değildir.
+Büyük metinleri sınırlı bölümler halinde damıt; ana bağlama ham tam-metin dökme.
 
 ### 1.B Ticari / IQVIA MIDAS Katmanı (cross-country kalibrasyon)
 
@@ -184,6 +223,7 @@ Her fallback rapora caveat olarak kaydedilir (run_manifest + §Limitations).
 | **PubMed/Consensus** | ratelimit / timeout | Exa academic → Scholar Gateway → bioRxiv → Paper Search | `"PubMed rate-limit; <alt> triangulate"` |
 | **RegulatoryMCP (openFDA)** | latency stall | Tekil çağrı + 1 retry → skippable | `"Regulatory MCP gecikme; tekil+retry"` |
 | **Tavily** | 432 / error | Exa fallback | `"Tavily kotası; Exa-fallback"` |
+| **Mevzuat** | Kaynak hatası, erişilemeyen belge veya `manual_required` | Başarılı kaynak sonuçlarını koru; sorunlu kaynak için `diagnostics` doğrultusunda daraltma veya resmî belge URL’sinden doğrulama | `"Mevzuat kapsamı eksik; kaynak + neden"` — yokluk hükmü verme |
 
 ---
 

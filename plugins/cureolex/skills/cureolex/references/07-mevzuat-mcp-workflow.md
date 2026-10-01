@@ -13,15 +13,65 @@ Bu dosya, Mevzuat MCP'nin tool'larının mod bazlı **somut kullanım örüntül
 | `list_mevzuat_types` | — | Tür kod tablosu |
 | `list_mevzuat_by_type` | tür kodu, (sayfalama) | Sayfalı liste |
 | `search_mevzuat_fihristi` | Kanunlar/CBK fihristi araması | Fihrist sonuçları |
-| `get_mevzuat_detail` | mevzuat_id | Metadata + URL'ler |
-| `get_mevzuat_content` | iframe URL / madde drill-down | Düz metin + parsed madde |
-| `get_mevzuat_text` | mevzuat_id | PDF → düz metin |
+| `get_mevzuat_detail` | `mevzuat_no`, `mevzuat_tur`, `mevzuat_tertip?` | Metadata + URL'ler |
+| `get_mevzuat_content` | Aynı mevzuat üçlüsü, `madde_no?`, `max_chars` | Düz metin + parsed madde |
+| `get_mevzuat_text` | Aynı mevzuat üçlüsü, sayfa/karakter sınırı | PDF → düz metin |
 | `get_anayasa` | — | 1982 Anayasası tam metin |
 | `search_mulga_mevzuat` | query | Mülga mevzuat |
-| `get_onceki_metinler` | mevzuat_id | Eski sürümler |
-| `download_mevzuat_document` | mevzuat_id | doc/pdf base64 |
+| `get_onceki_metinler` | Aynı mevzuat üçlüsü | Eski sürümler |
+| `download_mevzuat_document` | Aynı mevzuat üçlüsü, `format`, `include_base64` | doc/pdf URL veya base64 |
 | `build_mevzuat_semantic_context` | konu kapsamı | Çok katmanlı bağlam |
 | `get_mevzuat_gerekce` | `kanun_no` / `gerekce_id` | TBMM locator + bedesten tam gerekçe metni |
+| `list_kaysis_types` | — | KAYSİS'e özgü tür kodları |
+| `search_kaysis_institutions` | `query` (3–160 karakter) | Kurum adı + `kurum_id` |
+| `search_kaysis` | `query`, `kurum_id?`, `turler?`, `mevzuat_no?`, `yururluk`, `page` | KAYSİS katalog kayıtları + kapsam/diagnostics |
+| `get_kaysis_detail` | `belge_id` | Künye, açık yürürlük etiketi, PDF erişim durumu |
+| `get_kaysis_text` | `belge_id`, `start_page`, `end_page?`, `max_chars` | PDF metni + provenance, OCR/kesilme durumu |
+| `search_all_mevzuat` | `query`, `page`, `limit_per_source` (1–50) | İki kaynaktan sonuçlar + `coverage` |
+
+### 1.1. İki kaynaklı keşif ve kaynak kimliği
+
+Konu taramasında `search_all_mevzuat(query="<konu>", page=1,
+limit_per_source=10)` ile mevzuat.gov.tr ve [KAYSİS KMS](https://kms.kaysis.gov.tr/)
+birlikte taranır. Kurumun yönerge/genelge/karar kataloğu için:
+
+```
+list_kaysis_types()
+search_kaysis_institutions(query="<kurum adı>")
+search_kaysis(query="<konu>", kurum_id=<dönen kurum_id>, yururluk="tumu", page=1)
+get_kaysis_detail(belge_id=<sonuçtaki belge_id>)
+get_kaysis_text(belge_id=<aynı belge_id>, start_page=1, end_page=3, max_chars=12000)
+```
+
+`turler` yalnız `list_kaysis_types` kodlarından seçilir; mevzuat.gov.tr tür kodları
+aktarılmaz. `search_kaysis` metin sorgusu boş veya 3–160 karakterdir; numara
+aranıyorsa `query="", mevzuat_no="<numara>"` kullanılır. Sayfa 1–10000, kaynak
+sayfa boyu 50'dir. `yururluk="tumu"|"yururlukte"|"mulga"` arama filtresidir;
+kaynaktaki açık etiket yoksa kayıt durumu **bilinmiyor** kalır.
+
+- **Kimlik:** `kaysis:<belge_id>` ile mevzuat.gov.tr `{tertip}_{tur}_{no}` ayrıdır.
+  Aynı başlıklı kayıtlar otomatik birleştirilmez; KAYSİS `belge_id` değeri
+  `get_mevzuat_*` veya madde/graf/tarihçe araçlarına gönderilmez. Bu araçlar ve
+  `build_mevzuat_semantic_context` mevzuat.gov.tr kapsamındadır.
+- **Kapsam:** Her kaynağın `coverage` içindeki `status`, `diagnostics`,
+  `page`, `retrieved`, `returned`, `page_truncated`, `total`, `has_more` alanları
+  G0 kaydına taşınır. `degraded`/`manual_required`/`error` görünür boşluktur;
+  sağlıklı kaynakla devam edilir. `total=null` veya `has_more=null` bilinmeyendir;
+  sıfır/false yapılmaz. Kısa sayfa veya limitli sonuç, taramanın tamamlandığı ya da
+  mevzuat bulunmadığı anlamına gelmez. `page_truncated=true` ise aynı kaynak
+  sayfasını native arama aracıyla tam incele; yalnız sonraki sayfaya geçmek kalan
+  kayıtları atlar.
+- **Metin ve atıf:** Katalog künyesi tam metin değildir. `selected_pages`,
+  `truncated`, `ocr_required`, `missing_text_pages`, `diagnostics` korunur.
+  KAYSİS otomatik OCR yapmaz; taranmış/boş metin katmanı veya eksik PDF için
+  manuel doğrulama gerekir. `truncated=false`, yalnız seçilen sayfaların
+  kesilmediğini gösterir; tüm belgenin okunduğu söylenmez. Kaynak/PDF URL'si,
+  `fetched_at`, SHA-256 ve sayfa konumu atıf kaydına alınır; `fetched_at`
+  yürürlük tarihi sayılmaz. Bugünkü kayıt belirli bir tarihteki yürürlüğü kanıtlamaz.
+- **ChatGPT yüzeyi:** `search` iki kaynaklıdır; `limit` toplam sonuç sınırıdır,
+  `search_all_mevzuat.limit_per_source` ise kaynak başınadır. Dönen kimlik aynen
+  `fetch(id="kaysis:<belge_id>")` veya `fetch(id="<tertip>_<tur>_<no>")` ile
+  kullanılır; native araçlar varsa yukarıdaki ayrıntılı akış tercih edilir.
 
 ## 2. Mod Bazlı İş Akışları
 
@@ -39,20 +89,21 @@ get_anayasa()
 ```
 search_mevzuat(query="beşeri tıbbi ürün ruhsat")
    → 1262 sayılı Kanun + 1 sayılı CBK md. 508 vd.
-get_mevzuat_detail(mevzuat_id=<1262>)
+get_mevzuat_detail(mevzuat_no=<sonuçtaki no>, mevzuat_tur=<tür>, mevzuat_tertip=<tertip>)
    → metadata + URL
-get_mevzuat_content(iframe URL)
+get_mevzuat_content(mevzuat_no=<aynı no>, mevzuat_tur=<tür>, mevzuat_tertip=<tertip>)
    → tam metin, özellikle dayanak maddesi
 ```
 
 **Adım 3 — Mevcut yatay mevzuat taraması:**
 ```
-search_mevzuat(query="beşeri tıbbi ürün")
-search_mevzuat(query="ileri tedavi")
-search_mevzuat(query="hücresel terapi")
-search_mevzuat(query="ATMP")
+search_all_mevzuat(query="beşeri tıbbi ürün")
+search_all_mevzuat(query="ileri tedavi")
+search_all_mevzuat(query="hücresel terapi")
+search_all_mevzuat(query="ATMP")
 ```
-→ Eğer "0 sonuç" çıkarsa, alanın hiç düzenlenmediği veya farklı bir terimle düzenlendiği anlaşılır.
+→ Kurum düzenlemeleri §1.1 ile ayrıca daraltılır. "0 sonuç" yokluk kanıtı değildir;
+kaynak erişimi, sayfalama ve alternatif terimler kontrol edilerek kapsam boşluğu yazılır.
 
 **Adım 4 — Mülga / önceki düzenlemeler:**
 ```
@@ -69,7 +120,7 @@ build_mevzuat_semantic_context(konu="beşeri tıbbi ürün ruhsatlandırma + ATM
 
 **Adım 6 — Benzer yönetmelik analizi (model):**
 ```
-get_mevzuat_detail(mevzuat_id=<Beşeri Tıbbi Ürünler Ruhsatlandırma Yönetmeliği>)
+get_mevzuat_detail(mevzuat_no=<bulunan yönetmelik no>, mevzuat_tur=<tür>, mevzuat_tertip=<tertip>)
 get_mevzuat_content(...)
 ```
 → Mevcut "klasik" ruhsat yönetmeliğini iskelet olarak alın; ATMP-spesifik adaptasyon yapın.
@@ -93,13 +144,13 @@ get_mevzuat_content(...)
 **Adım 1 — Hedef mevzuatı çek:**
 ```
 search_mevzuat(query="sağlık uygulama tebliği SUT")
-get_mevzuat_detail(mevzuat_id=<SUT>)
-get_mevzuat_content(iframe URL)
+get_mevzuat_detail(mevzuat_no=<bulunan SUT no>, mevzuat_tur=<tür>, mevzuat_tertip=<tertip>)
+get_mevzuat_content(mevzuat_no=<aynı no>, mevzuat_tur=<tür>, mevzuat_tertip=<tertip>)
 ```
 
 **Adım 2 — Önceki sürümler:**
 ```
-get_onceki_metinler(mevzuat_id=<SUT>)
+get_onceki_metinler(mevzuat_no=<aynı no>, mevzuat_tur=<tür>, mevzuat_tertip=<tertip>)
 ```
 → SUT yıllık değişikliklerle güncellenir; en son onaylı metni teyit edin.
 
@@ -257,6 +308,7 @@ list_mevzuat_by_type(<yönetmelik>)
 ## 3. Sık Karşılaşılan Sorunlar ve Çözümler
 
 ### 3.1. `search_mevzuat` 0 sonuç veriyor
+- `search_all_mevzuat` ile kaynakları ayrı raporlayın; kurum mevzuatı için §1.1'deki KAYSİS zincirini uygulayın
 - Kanun/mevzuat **numarası** biliyorsanız `mevzuat_no` veya yalnız-rakam `query` deneyin (0.15+)
 - Daha geniş anahtar kelime deneyin
 - `phrase=` ile tam ifade (bedesten Solr)
@@ -284,6 +336,10 @@ list_mevzuat_by_type(<yönetmelik>)
 ## 4. MCP Atıf Doğrulama Protokolü
 
 **KRİTİK:** Her atıf yapmadan önce şu doğrulama yapılır:
+
+Mevzuat.gov.tr kimlikleri için aşağıdaki beş adım uygulanır. KAYSİS kimlikleri
+için §1.1'deki `get_kaysis_detail` → `get_kaysis_text` ve kaynak yürürlük/provenance
+kontrolü uygulanır; KAYSİS'e mevzuat.gov.tr sürüm/tarihçe kapsamı atfedilmez.
 
 ```
 1. Mevzuatın adı doğru mu?           → get_mevzuat_detail

@@ -25,7 +25,13 @@ argument-hint: "[INN / barkod / ATC kodu / holder]"
    (canonical-cache-contract.md §3). **TİTCK MCP'yi bir kez** çağır.
 2. **Eşdeğer/biyobenzer grup:** `find_equivalent_products_by_substance` + doygunluk skoru.
 3. **Üç-otorite (pharmaintel):** FDA Drugs@FDA + EMA EPAR + MHRA + PMDA.
-4. **Mevzuat (opsiyonel):** ilgili SMK/yönetmelik tam metni (Mevzuat MCP).
+4. **Mevzuat (soru gerektiriyorsa):** `Mevzuat:search_all_mevzuat` ile kanun/yönetmelik
+   ve KAYSİS kurum belgelerini birlikte keşfet. Kurum/tür filtresi gerekiyorsa
+   `search_kaysis_institutions` + `list_kaysis_types` → `search_kaysis`; seçilen kaydı
+   `get_kaysis_detail` → sınırlı `get_kaysis_text` ile oku. mevzuat.gov.tr kaydında
+   dönen no/tür/tertip ile `get_mevzuat_detail` + `get_mevzuat_content` kullan.
+   İki kimlik alanını dönüştürme; kaynak başına `coverage`, kesilme ve OCR boşluklarını
+   bildir (CONNECTORS.md §1.A.1). Bir kaynağın erişilememesi "mevzuat yok" demek değildir.
 
 ## Çıktı
 `titck_canonical` JSON + okunabilir TR ürün kartı. Her veri noktası provenance damgalı

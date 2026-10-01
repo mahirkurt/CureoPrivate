@@ -1,5 +1,10 @@
 # Cureolex — Türkiye Sağlık Mevzuatı Reform Protokolü
 
+**4.1.1 (2026-10-01):** Mevzuat MCP üzerinden KAYSİS kurum mevzuatı ve iki
+kaynaklı arama eklendi. Kurum/tür keşfi → katalog → detay → sınırlı PDF okuma;
+kaynak kapsamı, açık yürürlük etiketi ve OCR/sayfa sınırları korunur.
+Akış: [Mevzuat MCP iş akışları](skills/cureolex/references/07-mevzuat-mcp-workflow.md).
+
 En ileri düzey **sağlık mevzuatı üretim/reform** plugin'i: Türkiye'de sağlık-farmasötik regülasyonunun her düzleminde — **kanun · CBK · Cumhurbaşkanı kararı · yönetmelik · tebliğ · genelge** — yeni mevzuat üretir, mevcut mevzuatı değiştirir, gerektiğinde çerçeveyi yeniden yazar. **5210 sayılı Yönetmelik + AYM belirlilik içtihadı + OECD Better Regulation + Anayasa Md.17/56/90/5 + ICESCR Md.12** çerçevesinde, **G0-G11 kalite kapıları** ve **no-fabrication** disipliniyle. **4.0'dan itibaren** Türkiye davranışı yargı bölgesinden bağımsız bir çekirdeğin üstünde **bir paket** olarak durur; başka ülkeler aynı çekirdeğe paket olarak takılır.
 
 Sürüm geçmişi: [CHANGELOG.md](CHANGELOG.md).

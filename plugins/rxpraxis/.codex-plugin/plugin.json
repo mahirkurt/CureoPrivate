@@ -1,6 +1,6 @@
 {
   "name": "rxpraxis",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Türkiye-merkezli farmasötik pazar zekâsı ve jenerik/biyobenzer fırsat tarama süiti. rxos orkestratörü (7-aşamalı deterministik boru hattı, G0-G6 kapıları) ile medical-research, pharmaintel, pharmapatent ve thoughtspot-roche kaynak-tipi skill'lerini tek bir paylaşılan connector sözleşmesi ve kanonik-artefakt önbelleği altında birleştirir. Retail/topluluk-eczanesi kanalı, oral + topikal küçük molekül, tüm terapötik alanlar. Hospital/IV kapsam dışı.",
   "author": {
     "name": "Cureonics",
@@ -55,7 +55,8 @@
       "url": "https://mevzuat.cureonics.com/mcp",
       "headers": {
         "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
-      }
+      },
+      "_role": "mevzuat.gov.tr + KAYSİS kurum belgeleri. search_all_mevzuat iki kaynağı ayrı coverage ile tarar; search_kaysis ve get_kaysis_detail/get_kaysis_text kurum belgesini sınırlı PDF sayfalarıyla okur. list_kaysis_types ve search_kaysis_institutions kaynak kodlarını keşfeder. kaysis:<belge_id> ile {tertip}_{tur}_{no} kimliklerini dönüştürme; degraded/manual_required/error veya bilinmeyen toplam yokluk kanıtı değildir. ChatGPT search/fetch iki kimliği korur."
     },
     "pubmed": {
       "type": "http",

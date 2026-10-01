@@ -1,5 +1,10 @@
 # Historia Medicinae
 
+**0.1.4 (2026-10-01):** Türkiye yasama katmanına KAYSİS kurum düzenlemeleri ve
+mevzuat.gov.tr ile birleşik arama eklendi. Kaynak kapsamı, PDF/OCR sınırları ve
+güncel kayıt ile tarihsel yürürlük ayrımı
+[Türkiye katmanında](skills/historia-medicinae/references/turkiye-layer.md) tanımlıdır.
+
 **Küresel tıp tarihi araştırma protokolü** — Mezopotamya ve Greko-Romen dünyadan İslâm
 geleneğine, Latin Batı'dan Güney ve Doğu Asya'ya, sömürge tıbbından çağdaş küresel sağlığa
 uzanan kapsamda birincil-kaynak-öncelikli araştırma ve iki dilli akademik rapor üretimi.

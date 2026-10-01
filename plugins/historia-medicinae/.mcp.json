@@ -116,7 +116,7 @@
         "Authorization": "Bearer ${MEVZUAT_MCP_API_KEY}"
       },
       "_tier": "legal-history",
-      "_role": "Türkiye yasama kolu — özellikle `search_mulga_mevzuat` (yürürlükten kalkmış sağlık mevzuatı) ve `get_mevzuat_gerekce`: 1219 sayılı Tababet ve Şuabatı Sanatlarının Tarzı İcrasına Dair Kanun (1928), 1593 Umumi Hıfzıssıhha Kanunu (1930) gibi kuruluş metinlerinin gerekçe ve zaman çizgisi."
+      "_role": "Türkiye yasama kolu — özellikle `search_mulga_mevzuat` (yürürlükten kalkmış sağlık mevzuatı) ve `get_mevzuat_gerekce`: 1219 sayılı Tababet ve Şuabatı Sanatlarının Tarzı İcrasına Dair Kanun (1928), 1593 Umumi Hıfzıssıhha Kanunu (1930) gibi kuruluş metinlerinin gerekçe ve zaman çizgisi. search_all_mevzuat iki kaynağı ayrı kimlikle tarar; KAYSİS kurumsal düzenleme keşfi list_kaysis_types + search_kaysis_institutions → search_kaysis → get_kaysis_detail → get_kaysis_text. Güncel katalog geçmişteki yürürlüğü kanıtlamaz. Kaynak kapsamı, açık yururluk etiketi, bilinmeyen total/has_more ve OCR/truncated sınırları references/turkiye-layer.md §2.1'e göre korunur."
     },
     "tbmm": {
       "type": "http",

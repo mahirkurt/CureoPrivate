@@ -1,8 +1,8 @@
 ---
 name: historia-medicinae
 description: "Küresel tıp tarihi araştırma orkestrasyon protokolü — Avrupa-merkezli olmayan, Mezopotamya/Mısır ve Greko-Romen dünyadan İslâm altın çağına, Latin Batı'dan Çin/Ayurveda geleneklerine, sömürge tıbbından çağdaş küresel sağlığa. Birincil kaynak (IIIF yazma/erken basma: Wellcome sayfa-içi tam-metin araması, Gallica, Internet Archive, Princeton, DPLA; Devlet Arşivleri) → ikincil (Bull Hist Med, Med Hist, Soc Hist Med, Isis, Osiris, DergiPark) → üçüncül (ansiklopedi, müze sayfası) kanıt hiyerarşisi. Tarihsel yasama birincil kaydı: Hansard 1803+, GovInfo/Congress, uluslararası sözleşmeler, TBMM zabıtları, Resmî Gazete. 11 mod — SOURCE_HUNT, MORBUS (salgın/hastalık biyografisi), INSTITUTIO (kurum/meslekleşme), CONCEPTUS (fikir/kavram tarihi), ETHICA (etik/karanlık bölümler), PROSOPOGRAPHIA, THERAPEUTICA, SANITAS_PUBLICA, HISTORIOGRAPHIA, EDITIO, RELATIO. Zorunlu disiplinler: retrospektif tanı karar prosedürü, Quellenkritik, presentizm/anakronizm koruması, anti-difüzyonizm. USE for tıp tarihi, medicine history, salgın tarihi, veba, kolera, 1918 gribi, çiçek eradikasyonu, humoralizm, miyazma, germ teorisi, hastane tarihi, bimaristan, tıp fakültesi tarihi, hekim biyografisi, Hipokrat, Galen, İbn Sînâ, Vesalius, anestezi, antisepsi, aşı tarihi, materia medica, Nürnberg Kodu, Tuskegee, öjeni, sömürge tıbbı, tıp etiği tarihi, tıp tarihyazımı, Foucault klinik. carbon-html-report ve sci-audit ile bileşir; Osmanlıca paleografi vekayinuvis'e delege edilir. When in doubt USE."
-version: 0.1.3
-last_updated: 2026-08-17
+version: 0.1.4
+last_updated: 2026-10-01
 ---
 
 # Historia Medicinae — Küresel Tıp Tarihi Araştırma Protokolü
@@ -202,6 +202,11 @@ noktadır** ve bibliyografik atıfla kapatılır, uydurma tanımlayıcıyla değ
 `mevzuat`/`tbmm`/`resmigazete` (TR). Bir kurumsallaşma veya politika sorusu sorulduğunda bu bant
 **atlanamaz**: ikincil literatürün "1858'de meslek tanımlandı" özeti yerine müzakerenin kendisi
 okunur.
+
+Türkiye kurum/politika sorgusunda `references/turkiye-layer.md` §2.1 yüklenir:
+`search_all_mevzuat` ile mevzuat.gov.tr + KAYSİS taraması ve kurum/PDF zinciri
+uygulanır. Kaynak kapsamı, açık yürürlük etiketi ve OCR/sayfa sınırları korunur;
+güncel katalog kaydı geçmişteki yürürlüğe kanıt sayılmaz.
 
 ### 5.5 Terminoloji — dikkatli kullanım
 

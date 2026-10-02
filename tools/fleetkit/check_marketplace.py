@@ -8,13 +8,13 @@ Claude Code marketplace sözleşmesine uyup uymadığını — yani GitHub'dan
 skill, agent, komut ve hook katmanlarının GERÇEKTEN yüklenip yüklenmeyeceğini.
 
 Yedi denetim (hepsi deterministik, hepsi offline):
-  [1] Katalog ↔ disk        marketplace.json plugin'leri ↔ plugins/*/ + zorunlu alanlar
-  [2] Skill frontmatter     name + description var mı, name == dizin adı mı
+  [1] Katalog ↔ disk        plugin'ler · zorunlu alanlar · açıklama eşitliği ve 500 sınırı
+  [2] Skill frontmatter     name == dizin adı mı · description var mı ve en fazla 1024 mü
   [3] Agent frontmatter     name + description var mı, name == dosya adı mı
   [4] Komut frontmatter     description var mı (yoksa /komut menüde boş görünür)
   [5] Hook sözleşmesi       platform şeması · olay · betik · host root · timeout · çıktı
   [6] Hook betiği sözdizimi her .py derleniyor mu
-  [7] Manifest yolları      plugin.json / .cursor-plugin bildirilen path gerçek ve `..`'suz
+  [7] Manifest sözleşmesi   claude.ai sync metadata'sı · yollar gerçek ve `..`'suz
 
 NEDEN VAR: bu katmanların hiçbiri türetilmiyor, dolayısıyla check_drift onları
 görmüyordu. Bir SKILL.md'nin `name`'i dizin adından saparsa skill sessizce
@@ -40,14 +40,15 @@ import yaml
 REPO = Path(__file__).resolve().parent.parent.parent
 CATALOG = REPO / ".claude-plugin" / "marketplace.json"
 
-# Claude Code'un tanıdığı hook olayları. Listede olmayan bir olay, kaydında
-# açıklayıcı bir `_comment` taşıyorsa BİLİNÇLİ ileri-uyum bahsi sayılır
-# (bilinmeyen olay zararsızca yoksayılır); taşımıyorsa yazım hatası muamelesi
-# görür — çünkü sessizce hiç çalışmayan bir hook, olmayan hooktan beterdir.
+# Claude Code'un tanıdığı hook olayları. Bilinmeyen olaylar yorum alanıyla
+# doğrulamayı geçemez; matcher grupları yalnız platformun tanıdığı alanları taşır.
 CLAUDE_VALID_EVENTS = {
-    "PreToolUse", "PostToolUse", "Stop", "SubagentStop", "SessionStart",
+    "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStop", "SessionStart",
     "SessionEnd", "UserPromptSubmit", "PreCompact", "Notification",
 }
+CLAUDE_MATCHER_FIELDS = {"matcher", "hooks"}
+PLUGIN_DESCRIPTION_MAX = 500
+SKILL_DESCRIPTION_MAX = 1024
 CURSOR_VALID_EVENTS = {
     "workspaceOpen", "sessionStart", "sessionEnd", "preToolUse", "postToolUse",
     "postToolUseFailure", "subagentStart", "subagentStop",
@@ -103,8 +104,18 @@ def frontmatter(path: Path):
         return {}
     if not isinstance(data, dict):
         raise BadFrontmatter(f"frontmatter mapping değil ({type(data).__name__})")
-    return {k: (" ".join(str(v).split()) if isinstance(v, str) else v)
-            for k, v in data.items()}
+    # YAML'nin folded/literal skalar anlamını koru. Boşlukları sonradan
+    # katlamak gerçek description uzunluğunu küçültüp sınır ihlalini gizler.
+    return data
+
+
+def _check_description(value, limit: int, label: str) -> list[str]:
+    """Açıklama sınırı UTF-8 baytları değil, ayrıştırılmış metnin karakterleridir."""
+    if not isinstance(value, str) or not value.strip():
+        return [f"{label}: description boş olmayan metin olmalı"]
+    if len(value) > limit:
+        return [f"{label}: description en fazla {limit} karakter olmalı ({len(value)})"]
+    return []
 
 
 def iter_command_hooks(node):
@@ -154,16 +165,21 @@ def _check_claude_hooks(root: Path, path: Path, doc: dict) -> list[str]:
         if event.startswith("_"):
             continue
         if event not in CLAUDE_VALID_EVENTS:
-            if "_comment" not in json.dumps(body, ensure_ascii=False):
-                issues.append(
-                    f"{label}: bilinmeyen olay '{event}' "
-                    f"(gerekçe `_comment`'i yok — yazım hatası mı?)"
-                )
+            issues.append(f"{label}: bilinmeyen olay '{event}'")
         if not isinstance(body, list):
             issues.append(f"{label}: Claude olayı '{event}' liste değil")
             continue
-        for group in body:
-            if not isinstance(group, dict) or not isinstance(group.get("hooks"), list):
+        for index, group in enumerate(body):
+            if not isinstance(group, dict):
+                issues.append(f"{label}: Claude olayı '{event}' matcher {index} mapping değil")
+                continue
+            extra = set(group) - CLAUDE_MATCHER_FIELDS
+            if extra:
+                issues.append(
+                    f"{label}: Claude olayı '{event}' matcher {index} "
+                    "desteklenmeyen alan(lar) → " + ", ".join(sorted(extra))
+                )
+            if not isinstance(group.get("hooks"), list):
                 issues.append(
                     f"{label}: Claude olayı '{event}' nested `hooks` listesi taşımıyor"
                 )
@@ -292,9 +308,22 @@ def check_catalog(catalog):
             if f not in p:
                 issues.append(f"{p.get('name', '?')}: katalog alanı eksik '{f}' "
                               f"(boolean — değeri false olabilir, ama BULUNMALI)")
+        issues.extend(_check_description(
+            p.get("description"), PLUGIN_DESCRIPTION_MAX,
+            f"{p.get('name', '?')}: katalog",
+        ))
         src = REPO / p.get("source", "").lstrip("./")
-        if p.get("source") and not (src / ".claude-plugin" / "plugin.json").is_file():
+        manifest_path = src / ".claude-plugin" / "plugin.json"
+        if p.get("source") and not manifest_path.is_file():
             issues.append(f"{p['name']}: source → {p['source']} altında plugin.json yok")
+        if manifest_path.is_file():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                # Bozuk manifesti check_plugin, dosya konumuyla raporlar.
+                continue
+            if isinstance(manifest, dict) and p.get("description") != manifest.get("description"):
+                issues.append(f"{p['name']}: katalog description ≠ plugin.json description")
     return issues
 
 
@@ -326,9 +355,9 @@ def check_plugin(root: Path):
         if d is None:
             issues.append(f"{rel}: frontmatter YOK — skill keşfedilemez")
             continue
-        for f in ("name", "description"):
-            if not d.get(f):
-                issues.append(f"{rel}: frontmatter '{f}' eksik")
+        if not d.get("name"):
+            issues.append(f"{rel}: frontmatter 'name' eksik")
+        issues.extend(_check_description(d.get("description"), SKILL_DESCRIPTION_MAX, str(rel)))
         if d.get("name") and d["name"] != sk.parent.name:
             issues.append(f"{rel}: name='{d['name']}' ≠ dizin '{sk.parent.name}'")
 
@@ -376,6 +405,9 @@ def check_plugin(root: Path):
             man = None
         if isinstance(man, dict):
             rel = str(man_path.relative_to(REPO))
+            issues.extend(_check_description(man.get("description"), PLUGIN_DESCRIPTION_MAX, rel))
+            if "$schema" in man:
+                issues.append(f"{rel}: Claude.ai sync SDK'sı `$schema` alanını desteklemiyor")
             for field in ("mcpServers", "hooks", "skills", "commands", "agents"):
                 if field in man:
                     _declared_path_ok(root, rel, field, man[field], issues)

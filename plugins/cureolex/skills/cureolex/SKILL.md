@@ -9,7 +9,7 @@ description: >-
   "1219 SK reform", "TİTCK yönetmelik", "SUT reform", "ATMP/HTA düzenlemesi", "5210 uyum denetimi", "düzenleyici etki
   analizi/DEA", "karşılaştırmalı analiz / AB karşılığı", "ex post değerlendirme", "WHO GBT olgunluk açığı", "AB
   direktifi aktarım tablosu", "reliance çerçevesi". Bireysel dava, hak-arama ve promosyon denetimi kapsam dışıdır.
-version: 4.1.1
+version: 4.1.2
 ---
 
 # Cureolex — Türkiye Sağlık Mevzuatı Reform Protokolü

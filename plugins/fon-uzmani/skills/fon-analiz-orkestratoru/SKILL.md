@@ -1,18 +1,16 @@
 ---
 name: fon-analiz-orkestratoru
 description: >-
-  fon-analiz-orkestratoru — fon-uzmani süitinin orkestratörü. Türkiye yatırım (YAT) +
-  emeklilik (EMK) fonları için sekiz-aşamalı deterministik boru hattı (Aşama 0 brief +
-  1-7 pipeline) ile altı kaynak-tipi sibling skill'i (fon-haritalama, quant-analiz,
-  piyasa-makro, regulasyon-uyum, portfoy-insa, izleme) G0-G7 kalite kapılarıyla orkestre
-  eder. Paylaşılan connector sözleşmesi (../../CONNECTORS.md), kanonik-artefakt önbelleği
-  (../../shared/canonical-cache-contract.md) ve deterministik kuant betikleri altında çift
-  sorguyu/çift-hesabı engeller. Beş mod: tek-fon derin analiz · kategori/tarama · çoklu-fon
-  karşılaştırma · portföy inşası (tahsis) · izleme listesi gözetimi. Çıktı KARAR-DESTEK;
-  SPK yatırım danışmanlığı DEĞİLDİR. USE for — fon analiz et, fon tara, fon karşılaştır,
-  portföy kur, fon izle, AFA analiz, emeklilik fonu seç, Sharpe/Sortino/maxDD, risk-getiri,
-  fon dağılımı, TER karşılaştırma, "hangi fon". EN — analyze a Turkish mutual/pension fund,
-  screen funds, compare funds, build a fund portfolio, monitor a fund watchlist. When in doubt USE.
+  Türkiye yatırım (YAT) ve emeklilik (EMK) fonlarında analiz, kategori taraması,
+  çoklu fon karşılaştırması, portföy inşası ve izleme taleplerini yönetir. Fon analizi,
+  hangi fon, emeklilik fonu seçimi, risk/getiri, Sharpe/Sortino/maxDD, fon dağılımı
+  ve TER karşılaştırmasında kullanılır; İngilizce analyze/screen/compare funds,
+  build a fund portfolio ve monitor a fund watchlist taleplerini de kapsar.
+  Sekiz aşamalı G0–G7 akışında fon-haritalama, quant-analiz, piyasa-makro,
+  regulasyon-uyum, portfoy-insa ve izleme skill'lerini orkestre eder. Paylaşılan
+  connector sözleşmesi, kanonik önbellek ve deterministik kuant betikleriyle
+  yinelenen sorgu/hesabı engeller; kaynaklı Türkçe karar-destek raporu üretir.
+  SPK yatırım danışmanlığı değildir; tekil menkul kıymet ve gün içi işlem kapsam dışıdır.
 version: 1.2.0
 last_updated: 2026-06-16
 changelog:

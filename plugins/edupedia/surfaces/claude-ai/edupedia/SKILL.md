@@ -2,7 +2,7 @@
 name: edupedia
 description: "TEDY edupedia — Türkiye Yüzyılı Maarif Modeli'ne hizalı etkileşimli öğrenim modüllerini tedy MCP orkestratörüyle üretir, derler ve tedy.online aile kataloğunda yayınlar. Modül, quiz, flashcard, sınav sorusu çözümü, kazanım bulma, modül kataloğu ve ilerleme isteklerinde kullan."
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   generated_from: surfaces/bootstrap.md
 ---
 

@@ -9,7 +9,7 @@
 
 version: 2
 plugin: sci-audit
-plugin_version: "0.2.4"
+plugin_version: "0.2.5"
 
 # 2026-08-17 — bibliyografik üçlü (OpenAlex / PubMed-EPMC / Semantic Scholar)
 # Evidentia self-host Worker URL'leriyle AYNI uca bakmak ZORUNLUDUR. İzolasyon

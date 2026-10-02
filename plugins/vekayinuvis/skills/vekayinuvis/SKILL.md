@@ -1,7 +1,7 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, cureolex composable. When in doubt USE."
-version: 3.5.1
+version: 3.5.2
 last_updated: 2026-10-01
 changelog:
   - "3.5.1 (2026-10-01): Mevzuat MCP KAYSİS kurum/tür/arama/detay/PDF zinciri ve iki kaynaklı search_all_mevzuat, KANUN_GEREKÇESİ akışına eklendi. Kaynak coverage, bilinmeyen toplam, açık yürürlük etiketi ve PDF/OCR sınırları korunur; güncel katalog tarihsel yürürlük kanıtı sayılmaz."

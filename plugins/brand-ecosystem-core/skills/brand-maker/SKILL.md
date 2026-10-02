@@ -1,28 +1,17 @@
 ---
 name: brand-maker
-description: >
-  Sector-agnostic verbal identity protocol generating 3–5 globally pronounceable,
-  trademark-defensible, LLM-discoverable, voice-first brand name finalists for
-  any category — B2B SaaS, consumer DTC, fintech, automotive, luxury, FMCG,
-  pharma. Five-step methodology: Strategic Decoding → Five-Category Brainstorm
-  (A/B/C/D/E) → SMILE+M Lab → Live Domain → Post-Digital Validation (6-axis
-  LLM/voice/entity/dilution/morpheme + opt-in regulated-sector checks) →
-  Report. v2.1 hardening: TWO-SOURCE live domain verification (RDAP+WHOIS — no
-  single-signal "available"; auronza/nortanza-class false-positives blocked),
-  a portfolio DIVERSITY GATE that blocks single-morpheme-family shortlists and
-  triggers a complementary round, two-axis SCORE discrimination (pronunciation
-  ease vs corporate brand strength — breaks the 95-100 ceiling), a NAIVE
-  first-reading perception layer (intended-etymology vs perceived-root, e.g.
-  Ortanza→"orta"=mediocre), and a pharma BRAND-name collision scan beyond INN
-  stems (e.g. Claranta→clarithromycin/Claritin). Each candidate ships with
-  EN+TR rationale, verification-status-stamped domain + WIPO trademark guidance.
-  Opt-in pharma INN check when pharma signals detected. USE for:
-  brand naming, marka ismi, isim önerisi, isim öner, naming brief, startup/
-  company/product name, sub-brand, rebrand, "yeni ürün için isim", "şirket
-  ismi öner", "marka ismi bul", verbal identity, sözel kimlik, portmanteau,
-  coined name, name validation — tech/SaaS/AI/fintech/pharma/DTC/FMCG/luxury/
-  automotive/media/fashion naming. Trigger when user describes a venture
-  without asking for a name.
+description: >-
+  Her sektörde marka, şirket, girişim, ürün ve alt marka isimlendirme, yeniden
+  adlandırma, sözel kimlik ve isim doğrulama için kullanılır; kullanıcı yalnız
+  girişimini tarif ettiğinde de tetiklenir. Küresel telaffuza uygun 3–5 finalist
+  üretir. Stratejik brief, beş isim kategorisi, SMILE+M/SCRATCH, fonetik kolaylık
+  ve marka gücü, Türkçe anlam/naif ilk okuma ve kısa liste çeşitliliğini değerlendirir.
+  LLM keşfedilebilirliği, sesli arama, varlık/marka çakışması ve morfem doygunluğunu
+  inceler. Alan adını iki canlı kaynakla doğrular; her adaya doğrulama durumu,
+  Türkçe/İngilizce gerekçe ve WIPO marka araştırması yönlendirmesi ekler. Pharma
+  sinyallerinde INN/USAN ve ilaç markası/LASA çakışma taramasını etkinleştirir.
+  İsim önerisi, naming brief, startup/company/product name, rebrand, verbal identity,
+  portmanteau ve coined name taleplerini kapsar.
 ---
 
 # brand-maker v2.1 — Global Verbal Identity Protocol (Post-Digital Era)

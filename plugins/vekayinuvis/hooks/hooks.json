@@ -91,7 +91,6 @@
     ],
     "PostToolUseFailure": [
       {
-        "_comment": "PostToolUseFailure kurulu Claude Code sürümünde tanınmayabilir — bilinmeyen event kaydı zararsızca yoksayılır; tanındığında devarsiv_* araç HATALARINDA da re-login runbook'u tetiklenir (PostToolUse ile aynı script/matcher).",
         "matcher": "^mcp__.*devarsiv.*",
         "hooks": [
           {

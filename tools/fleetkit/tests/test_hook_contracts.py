@@ -95,6 +95,35 @@ class HookContractTests(unittest.TestCase):
         path = self.write_hook_file("hooks.json", self.claude_doc())
         self.assertEqual([], self.validate(path, "claude"))
 
+    def test_claude_post_tool_use_failure_is_accepted(self) -> None:
+        self.write_script("claude_session.py", 'print(\'{"hookSpecificOutput": {}}\')\n')
+        doc = self.claude_doc()
+        doc["hooks"] = {"PostToolUseFailure": doc["hooks"]["SessionStart"]}
+        path = self.write_hook_file("hooks.json", doc)
+        self.assertEqual([], self.validate(path, "claude"))
+
+    def test_claude_rejects_unknown_matcher_fields(self) -> None:
+        self.write_script("claude_session.py", 'print(\'{"hookSpecificOutput": {}}\')\n')
+        for field in ("_comment", "unknownField"):
+            with self.subTest(field=field):
+                doc = self.claude_doc()
+                group = doc["hooks"]["SessionStart"][0]
+                group[field] = "gerekçe"
+                doc["hooks"] = {"PostToolUseFailure": [group]}
+                path = self.write_hook_file("hooks.json", doc)
+                issues = self.validate(path, "claude")
+                self.assertTrue(any(field in issue and "matcher 0" in issue for issue in issues))
+
+    def test_claude_comment_cannot_allow_unknown_event(self) -> None:
+        self.write_script("claude_session.py", 'print(\'{"hookSpecificOutput": {}}\')\n')
+        doc = self.claude_doc()
+        group = doc["hooks"]["SessionStart"][0]
+        group["_comment"] = "ileri uyum"
+        doc["hooks"] = {"UnknownEvent": [group]}
+        path = self.write_hook_file("hooks.json", doc)
+        issues = self.validate(path, "claude")
+        self.assertTrue(any("bilinmeyen olay 'UnknownEvent'" in issue for issue in issues))
+
     def test_claude_file_is_rejected_for_cursor(self) -> None:
         self.write_script("claude_session.py", 'print(\'{"hookSpecificOutput": {}}\')\n')
         path = self.write_hook_file("hooks.json", self.claude_doc())

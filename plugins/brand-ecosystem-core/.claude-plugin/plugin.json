@@ -1,9 +1,8 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "brand-ecosystem-core",
   "displayName": "Brand Ecosystem",
-  "version": "1.1.4",
-  "description": "The strategic, verbal and visual layers of the Brand Ecosystem v1.0 as one module: brand-audit, brand-platform, brand-story, brand-touchpoint and brand-launch, the brand-maker and brand-visual ecosystem companions, plus brand-maker (naming, v2.1 verification-hardened), brand-verify (live verification discipline), brand-visual (visual identity) and figma-forge (design-system to Figma). Adds a verification-guarantee hook layer and isolated critique subagents (diversity-auditor, naive-reader, brand-skeptic, trademark-examiner, etymology-verifier). Composes with the brand-voice plugin for the voice layer.",
+  "version": "1.1.5",
+  "description": "Marka stratejisi, isimlendirme, anlatı ve görsel kimlik geliştirme süiti. Marka denetimi, konumlandırma, kültürel ve dilsel tarama, canlı doğrulama, tasarım sistemi, Figma, temas noktaları ve lansmanı birleştirir. Bağımsız eleştiri ajanları ve kaynak doğrulama hook'ları içerir. /pipeline iş akışını yönetir; ses katmanı için brand-voice ile çalışır. Figma, GoDaddy ve Exa isteğe bağlıdır.",
   "author": {
     "name": "Cureonics",
     "url": "https://cureonics.com"

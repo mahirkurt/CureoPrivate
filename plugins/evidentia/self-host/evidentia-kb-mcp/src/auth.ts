@@ -32,6 +32,11 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://cursor.com", "https://www.cursor.com",
 ];
 const CODE_TTL_SECONDS = 600;               // invariant (4): 10-minute TTL
+// Advertised access-token lifetime + refresh-token TTL. The access token IS the static
+// MCP_API_KEY (it never actually expires); expires_in only tells the client when to run the
+// refresh grant. 3600 + no refresh_token made ChatGPT/Gemini re-prompt a full login hourly.
+const ACCESS_TTL_SECONDS = 30 * 24 * 3600;  // 2592000 (30 days)
+const REFRESH_TTL_SECONDS = 90 * 24 * 3600; // 7776000 (90 days)
 const REALM = "evidentia-kb-mcp";
 
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
@@ -89,27 +94,81 @@ async function hmac(secretHex: string, msg: string): Promise<string> {
   return b64urlEncode(sig);
 }
 
-interface CodePayload { ru: string; cc: string; exp: number; }
+interface CodePayload { typ?: string; ru: string; cc: string; exp: number; }
+interface RefreshPayload { typ: "refresh"; exp: number; n: string; kb: string; }
 
-async function mintCode(env: AuthEnv, ru: string, codeChallenge: string): Promise<string> {
-  const payload: CodePayload = { ru, cc: codeChallenge, exp: Math.floor(Date.now() / 1000) + CODE_TTL_SECONDS };
-  const body = b64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
+async function signPayload(env: AuthEnv, payload: object): Promise<string> {
+  const body = b64urlEncode(new TextEncoder().encode(JSON.stringify({ typ: "authorization_code", ...payload })));
   const mac = await hmac(env.AUTH_HMAC_SECRET, body);
   return `${body}.${mac}`;
 }
 
-async function verifyCode(env: AuthEnv, code: string): Promise<CodePayload | null> {
-  const dot = code.lastIndexOf(".");
+// Signature + TTL check shared by codes and refresh tokens. Callers MUST also check `typ`.
+async function verifySigned(env: AuthEnv, token: string): Promise<Record<string, unknown> | null> {
+  if (typeof token !== "string") return null;
+  const dot = token.lastIndexOf(".");
   if (dot < 0) return null;
-  const body = code.slice(0, dot);
-  const mac = code.slice(dot + 1);
+  const body = token.slice(0, dot);
+  const mac = token.slice(dot + 1);
   const expected = await hmac(env.AUTH_HMAC_SECRET, body);
   if (!constantTimeEqual(mac, expected)) return null;          // invariant (4)+(5)
-  let payload: CodePayload;
+  let payload: unknown;
   try { payload = JSON.parse(new TextDecoder().decode(b64urlDecodeToBytes(body))); }
   catch { return null; }
-  if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;  // TTL
-  return payload;
+  if (!payload || typeof payload !== "object") return null;
+  const p = payload as Record<string, unknown>;
+  if (typeof p.exp !== "number" || p.exp < Math.floor(Date.now() / 1000)) return null;  // TTL
+  return p;
+}
+
+async function mintCode(env: AuthEnv, ru: string, codeChallenge: string): Promise<string> {
+  const payload: CodePayload = {
+    typ: "authorization_code", ru, cc: codeChallenge, exp: Math.floor(Date.now() / 1000) + CODE_TTL_SECONDS,
+  };
+  return signPayload(env, payload);
+}
+
+async function verifyCode(env: AuthEnv, code: string): Promise<CodePayload | null> {
+  const p = await verifySigned(env, code);
+  // typ is mandatory (fleet contract 2026-10-19): a typ-less (pre-refresh) code or a refresh
+  // token (or any other explicit token type) must never reach the PKCE/code path.
+  if (!p || p.typ !== "authorization_code") return null;
+  return p as unknown as CodePayload;
+}
+
+// ---- refresh tokens: HMAC-signed (same secret as codes), typ-tagged, 90-day TTL -----
+// A signature is not encryption: the access token / MCP_API_KEY is NEVER embedded here.
+// The refresh grant re-issues the same static access token plus a rotated refresh token.
+//
+// Key binding (`kb`): the token is signed with AUTH_HMAC_SECRET, which does NOT change when
+// MCP_API_KEY is rotated — so without `kb` an old refresh token would keep working and would
+// be handed the NEW key. `kb` is a 32-hex HMAC fingerprint of the current key (not the key),
+// recomputed and constant-time compared on every refresh: rotation revokes every refresh token.
+async function keyBinding(env: AuthEnv): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(env.AUTH_HMAC_SECRET),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`kb:${env.MCP_API_KEY}`));
+  let hex = "";
+  for (const b of new Uint8Array(sig)) hex += b.toString(16).padStart(2, "0");
+  return hex.slice(0, 32);
+}
+
+async function mintRefresh(env: AuthEnv): Promise<string> {
+  const payload: RefreshPayload = {
+    typ: "refresh",
+    exp: Math.floor(Date.now() / 1000) + REFRESH_TTL_SECONDS,
+    n: b64urlEncode(crypto.getRandomValues(new Uint8Array(16))),
+    kb: await keyBinding(env),
+  };
+  return signPayload(env, payload);
+}
+
+async function verifyRefresh(env: AuthEnv, token: string): Promise<boolean> {
+  const p = await verifySigned(env, token);
+  if (!p || p.typ !== "refresh") return false;   // a code (no/other typ) is never a refresh token
+  if (typeof p.kb !== "string") return false;
+  return constantTimeEqual(p.kb, await keyBinding(env));   // invariant (5); rotation revokes
 }
 
 // ---- invariant (2): PKCE S256 verification ---------------------------------
@@ -165,7 +224,7 @@ function authorizationServer(url: URL): Response {
     token_endpoint: `${base}/oauth/token`,
     registration_endpoint: `${base}/oauth/register`,
     response_types_supported: ["code"],
-    grant_types_supported: ["authorization_code"],
+    grant_types_supported: ["authorization_code", "refresh_token"],
     code_challenge_methods_supported: ["S256"],   // invariant (2): S256 only advertised
     token_endpoint_auth_methods_supported: ["none"],
   });
@@ -185,7 +244,7 @@ async function registerStub(req: Request): Promise<Response> {
   return json({
     client_id: REALM,
     token_endpoint_auth_method: "none",
-    grant_types: ["authorization_code"],
+    grant_types: ["authorization_code", "refresh_token"],
     response_types: ["code"],
     redirect_uris,
   }, 201);
@@ -242,10 +301,27 @@ async function authorizeSubmit(req: Request, url: URL, env: AuthEnv): Promise<Re
   return new Response(null, { status: 302, headers: { location: loc.toString(), "cache-control": "no-store" } });
 }
 
-// ---- POST /oauth/token : verify code + PKCE, issue access_token ------------
+// ---- POST /oauth/token : verify code + PKCE (or refresh), issue access_token -
+// Same response shape for both grants. json() already sets cache-control: no-store.
+async function tokenResponse(env: AuthEnv): Promise<Response> {
+  // single-tenant: the issued access token IS the MCP_API_KEY (the real gate).
+  return json({
+    access_token: env.MCP_API_KEY,
+    token_type: "Bearer",
+    expires_in: ACCESS_TTL_SECONDS,
+    refresh_token: await mintRefresh(env),
+  }, 200, { pragma: "no-cache" });
+}
+
 async function tokenExchange(req: Request, env: AuthEnv): Promise<Response> {
   const form = await req.formData();
   const grant = String(form.get("grant_type") || "");
+  if (grant === "refresh_token") {
+    if (!(await verifyRefresh(env, String(form.get("refresh_token") || "")))) {
+      return json({ error: "invalid_grant", error_description: "refresh token invalid or expired" }, 400);
+    }
+    return tokenResponse(env);
+  }
   const code = String(form.get("code") || "");
   const redirectUri = String(form.get("redirect_uri") || "");
   const verifier = String(form.get("code_verifier") || "");
@@ -259,8 +335,7 @@ async function tokenExchange(req: Request, env: AuthEnv): Promise<Response> {
   if (!verifier || !(await pkceS256Matches(verifier, payload.cc))) {        // invariant (2)
     return json({ error: "invalid_grant", error_description: "PKCE verify failed" }, 400);
   }
-  // single-tenant: the issued access token IS the MCP_API_KEY (the real gate).
-  return json({ access_token: env.MCP_API_KEY, token_type: "Bearer", expires_in: 3600 });
+  return tokenResponse(env);
 }
 
 // ---- Bearer guard for /mcp + /sse ------------------------------------------
@@ -328,4 +403,6 @@ export async function handleOAuth(req: Request, env: AuthEnv): Promise<Response>
   return json({ error: "not_found" }, 404);
 }
 
-export const __testing = { escHtml, constantTimeEqual, redirectAllowed, mintCode, verifyCode, pkceS256Matches };
+export const __testing = {
+  escHtml, constantTimeEqual, redirectAllowed, mintCode, verifyCode, pkceS256Matches, mintRefresh, verifyRefresh,
+};

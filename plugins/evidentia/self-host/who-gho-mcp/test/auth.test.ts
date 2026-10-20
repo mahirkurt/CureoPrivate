@@ -233,3 +233,203 @@ describe("POST /oauth/authorize - pasted-key whitespace (regression)", () => {
     expect((await res.json() as any).error).toBe("access_denied");
   });
 });
+
+// ---- refresh_token grant (2026-10-19) ----------------------------------------
+// Measured: ChatGPT/Gemini connectors re-prompted for a full OAuth login every hour, because
+// /oauth/token said `expires_in: 3600`, never issued a refresh_token, and answered the
+// refresh grant with `unsupported_grant_type`. These pin the fixed contract.
+describe("OAuth refresh_token grant (long-lived connectors)", () => {
+  const b64u = (s: string) => btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const decodeBody = (tok: string) => {
+    const body = tok.slice(0, tok.lastIndexOf("."));
+    const pad = body.length % 4 === 0 ? "" : "=".repeat(4 - (body.length % 4));
+    return JSON.parse(atob(body.replace(/-/g, "+").replace(/_/g, "/") + pad));
+  };
+  async function signWithSecret(payload: unknown): Promise<string> {
+    const body = b64u(JSON.stringify(payload));
+    const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(ENV.AUTH_HMAC_SECRET),
+      { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(body));
+    let s = ""; for (const b of new Uint8Array(sig)) s += String.fromCharCode(b);
+    return `${body}.${b64u(s)}`;
+  }
+  const tokenReq = (params: Record<string, string>) => handleOAuth(new Request("https://w.example/oauth/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params),
+  }), ENV);
+  async function exchangeCode(): Promise<Response> {
+    const verifier = "refresh-suite-verifier";
+    const code = await mintCode(ENV, "https://claude.ai/cb", await pkcePair(verifier));
+    return tokenReq({ grant_type: "authorization_code", code, redirect_uri: "https://claude.ai/cb", code_verifier: verifier });
+  }
+  async function freshRefreshToken(): Promise<string> {
+    const body = await (await exchangeCode()).json() as any;
+    return body.refresh_token as string;
+  }
+
+  it("metadata advertises refresh_token; DCR grant_types includes it", async () => {
+    const meta = await (await handleOAuth(
+      new Request("https://w.example/.well-known/oauth-authorization-server"), ENV)).json() as any;
+    expect(meta.grant_types_supported).toEqual(["authorization_code", "refresh_token"]);
+    const reg = await handleOAuth(new Request("https://w.example/oauth/register", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ redirect_uris: ["https://claude.ai/cb"] }),
+    }), ENV);
+    expect(reg.status).toBe(201);
+    expect(((await reg.json()) as any).grant_types).toEqual(["authorization_code", "refresh_token"]);
+  });
+
+  it("code exchange -> expires_in 30 days + a signed refresh_token, no-store/no-cache", async () => {
+    const res = await exchangeCode();
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("pragma")).toBe("no-cache");
+    const body = await res.json() as any;
+    expect(body.access_token).toBe(ENV.MCP_API_KEY);
+    expect(body.token_type).toBe("Bearer");
+    expect(body.expires_in).toBe(2592000);
+    expect(typeof body.refresh_token).toBe("string");
+    const p = decodeBody(body.refresh_token);
+    expect(p.typ).toBe("refresh");
+    const now = Math.floor(Date.now() / 1000);
+    expect(p.exp).toBeGreaterThanOrEqual(now + 7776000 - 5);
+    expect(p.exp).toBeLessThanOrEqual(now + 7776000 + 5);
+    expect(typeof p.n).toBe("string");
+  });
+
+  it("refresh grant -> 200, same access_token, NEW refresh_token, same response shape", async () => {
+    const rt = await freshRefreshToken();
+    const res = await tokenReq({ grant_type: "refresh_token", refresh_token: rt });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("pragma")).toBe("no-cache");
+    const body = await res.json() as any;
+    expect(body.access_token).toBe(ENV.MCP_API_KEY);
+    expect(body.token_type).toBe("Bearer");
+    expect(body.expires_in).toBe(2592000);
+    expect(typeof body.refresh_token).toBe("string");
+    expect(body.refresh_token).not.toBe(rt);
+    expect(decodeBody(body.refresh_token).typ).toBe("refresh");
+  });
+
+  it("a refresh token is NOT a valid Bearer on /mcp", async () => {
+    const rt = await freshRefreshToken();
+    const denied = requireBearer(new Request("https://w.example/mcp", {
+      method: "POST", headers: { authorization: `Bearer ${rt}` },
+    }), ENV);
+    expect(denied).not.toBeNull();
+    expect(denied!.status).toBe(401);
+  });
+
+  it("tampered refresh token -> invalid_grant", async () => {
+    const rt = await freshRefreshToken();
+    const tampered = rt.slice(0, -2) + (rt.endsWith("aa") ? "bb" : "aa");
+    const res = await tokenReq({ grant_type: "refresh_token", refresh_token: tampered });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+  });
+
+  it("expired refresh token -> invalid_grant", async () => {
+    const expired = await signWithSecret({ typ: "refresh", exp: Math.floor(Date.now() / 1000) - 10, n: "x" });
+    const res = await tokenReq({ grant_type: "refresh_token", refresh_token: expired });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+  });
+
+  it("missing refresh token -> invalid_grant", async () => {
+    const res = await tokenReq({ grant_type: "refresh_token" });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+  });
+
+  it("an authorization code is never accepted as a refresh token", async () => {
+    const code = await mintCode(ENV, "https://claude.ai/cb", await pkcePair("v"));
+    const res = await tokenReq({ grant_type: "refresh_token", refresh_token: code });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+  });
+
+  it("a refresh token is never accepted as an authorization code", async () => {
+    const rt = await freshRefreshToken();
+    expect(await verifyCode(ENV, rt)).toBeNull();
+    const res = await tokenReq({
+      grant_type: "authorization_code", code: rt, redirect_uri: "https://claude.ai/cb", code_verifier: "v",
+    });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+  });
+
+  it("the refresh token does not embed the API key (a signature is not encryption)", async () => {
+    const rt = await freshRefreshToken();
+    expect(rt).not.toContain(ENV.MCP_API_KEY);
+    const body = rt.slice(0, rt.lastIndexOf("."));
+    const pad = body.length % 4 === 0 ? "" : "=".repeat(4 - (body.length % 4));
+    const plain = atob(body.replace(/-/g, "+").replace(/_/g, "/") + pad);
+    expect(plain).not.toContain(ENV.MCP_API_KEY);
+    expect(plain).not.toContain(ENV.AUTH_HMAC_SECRET);
+  });
+
+  it("other grant types still answer unsupported_grant_type", async () => {
+    const res = await tokenReq({ grant_type: "client_credentials" });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("unsupported_grant_type");
+  });
+});
+
+// Refresh tokens are signed with AUTH_HMAC_SECRET, not with MCP_API_KEY. Without a key
+// binding, rotating MCP_API_KEY would leave every old refresh token valid — and it would
+// keep handing out the NEW key. The payload therefore carries `kb`, a 32-hex HMAC
+// fingerprint of the current key (never the key itself), recomputed on every refresh.
+describe("OAuth refresh_token - MCP_API_KEY rotation revokes old refresh tokens", () => {
+  const refreshWith = (env: AuthEnv, rt: string) => handleOAuth(new Request("https://w.example/oauth/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: rt }),
+  }), env);
+  const payloadOf = (tok: string) => {
+    const body = tok.slice(0, tok.lastIndexOf("."));
+    const pad = body.length % 4 === 0 ? "" : "=".repeat(4 - (body.length % 4));
+    return JSON.parse(atob(body.replace(/-/g, "+").replace(/_/g, "/") + pad));
+  };
+  async function issue(env: AuthEnv): Promise<string> {
+    const verifier = "kb-suite-verifier";
+    const code = await mintCode(env, "https://claude.ai/cb", await pkcePair(verifier));
+    const res = await handleOAuth(new Request("https://w.example/oauth/token", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code", code, redirect_uri: "https://claude.ai/cb", code_verifier: verifier,
+      }),
+    }), env);
+    return ((await res.json()) as any).refresh_token as string;
+  }
+
+  it("carries a 32-hex key fingerprint, not the key", async () => {
+    const p = payloadOf(await issue(ENV));
+    expect(p.kb).toMatch(/^[0-9a-f]{32}$/);
+    expect(ENV.MCP_API_KEY).not.toContain(p.kb);
+  });
+
+  it("an old refresh token is invalid_grant after MCP_API_KEY rotation", async () => {
+    const rt = await issue(ENV);
+    const rotated: AuthEnv = { ...ENV, MCP_API_KEY: "key-rotated-cccccccccccccccccccccccccccccccccccccccccccccccccccc" };
+    const res = await refreshWith(rotated, rt);
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+    // ...while the un-rotated key still refreshes fine
+    expect((await refreshWith(ENV, rt)).status).toBe(200);
+  });
+
+  it("a correctly signed refresh token WITHOUT kb is rejected", async () => {
+    const b64u = (s: string) => btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const body = b64u(JSON.stringify({ typ: "refresh", exp: Math.floor(Date.now() / 1000) + 3600, n: "x" }));
+    const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(ENV.AUTH_HMAC_SECRET),
+      { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(body));
+    let s = ""; for (const b of new Uint8Array(sig)) s += String.fromCharCode(b);
+    const res = await refreshWith(ENV, `${body}.${b64u(s)}`);
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as any).error).toBe("invalid_grant");
+  });
+});

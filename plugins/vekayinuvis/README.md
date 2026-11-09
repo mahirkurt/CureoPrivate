@@ -89,9 +89,8 @@ katman tanımlarıyla birebir):
 **CONNECTORS.md § 1-3**.)
 
 `marmara-mcp` (Turcademy/hukuk tam-metin) v3.0'da **tasarlanmıştı ama
-kurulmadı** — `marmara.cureonics.com` DNS'i henüz yayınlanmamış (NXDOMAIN,
-2026-07-12 üç bağımsız çözümleyiciyle doğrulandı); v3.1 adayı olarak
-ertelendi (bkz. `CHANGELOG.md` [3.0.0]).
+hiç kurulmadı**; 2026-11-06'da plandan çıkarıldı (Marmara VETİS aboneliği
+sona erdi) ve artık planlanmıyor (bkz. `CHANGELOG.md` [3.5.3]).
 
 Auth'lu endpoint'ler bearer env var bekler; eksik anahtar veya kapalı oturum
 SessionStart preflight'ta görünür ve ilgili katman manifestoda gerekçeli

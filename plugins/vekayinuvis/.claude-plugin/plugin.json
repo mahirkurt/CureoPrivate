@@ -1,7 +1,7 @@
 {
   "name": "vekayinuvis",
   "displayName": "Vekayinüvis — Osmanlı/Türk Tarih Araştırma Protokolü",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "description": "Osmanlı ve Türk tarihi için birincil kaynak araştırma orkestratörü. Devlet Arşivleri kataloğu, belge görüntüleri ve OCR/HTR okumalarını tezler, literatür ve tarihsel mevzuatla birleştirir. IJMES/TDV İA çeviriyazısı, fon/kutu/gömlek atıfları, kapsam manifestosu ve anamnesis RAG/GraphRAG ile kaynak izlenebilirliğini korur. Osmanlıca okumalar araştırmacı doğrulamasına tabidir; belge satın alma ödemesini kullanıcı yapar.",
   "author": {
     "name": "Cureonics",

@@ -21,7 +21,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
 | `regulatory_snapshot` | İlk openfda (self-host) çağrısı (openFDA/ICD-11) | epidemiyoloji, güvenlik, kodlama adımları |
 | `terminology_map` | İlk `med-terminologies`/`nlm-rxnorm`/`nih-clinicaltables` | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar taraması | KOL haritası, ağ analizi |
-| `evidence_index` | İlk anamnesis `ingest_document` — dual-write `collection=evidentia:run:<run_id>` + `doc_id=evrun:<run_id>:<DOI>` (Tier 3 openathens `oa_fetch_fulltext` veya tüketilmiş `oa_fetch_pdf` dosyası · Tier 4 Wiley · Tier 5 annas reader veya tüketilmiş `download_document` dosyası · yüklenen PDF). Kısa-ömürlü resource link değil DOI/MD5 + SHA-256/provenance saklanır. Koşu bitince `forget_collection` — kalıcı kütüphane değil | sentez, tam-metin, scoped `hybrid_query(collection=…)` / önekli `semantic_search` — **ham metin değil, indeks** |
+| `evidence_index` | İlk anamnesis `ingest_document` — dual-write `collection=evidentia:run:<run_id>` + `doc_id=evrun:<run_id>:<DOI>` (Tier 4 openathens `oa_fetch_fulltext` veya tüketilmiş `oa_fetch_pdf` dosyası · Tier 5 Wiley · Tier 6 annas reader veya tüketilmiş `download_document` dosyası · yüklenen PDF). Kısa-ömürlü resource link değil DOI/MD5 + SHA-256/provenance saklanır. Koşu bitince `forget_collection` — kalıcı kütüphane değil | sentez, tam-metin, scoped `hybrid_query(collection=…)` / önekli `semantic_search` — **ham metin değil, indeks** |
 | `working_set_ledger` | PostToolUse `working_set_ledger.py` — P1/P2 search (+ fulltext) sonuçlarından PMID\|DOI\|NCT upsert; yol `.claude/evidentia-run/<run_id>/ledger.json` (+ `hits.jsonl`, `screening_table.jsonl`). **Anamnesis `evidentia-anamnesis-run.json` doc_id ledger'ından ayrı** (münhasırlık bozulmaz). P1: `list_docs` → `reconcile_anamnesis_ledger` (missing_extractions / orphans). P2: `coverage_gate.py` Completeness Gate advisory | Completeness Gate v2 coverage%; P3/P4/P6 status geçişleri; synthesizer `coverage` bloğu (`n_include`/`n_cited`/`n_skipped_reasoned`/`uncovered[]`) |
 
 ---
@@ -55,7 +55,7 @@ o artefakttan **okur**. Aynı sorgu iki kez yapılmaz. Bu, `medical-research`'ü
   `skip_reason`, `anamnesis_doc_id?`, `cited_chunks[]`, `extraction_gap?`. Completeness Gate v2:
   `coverage = cited_or_skipped_with_reason / include_set` (standard floor **0.90**).
   Synthesizer dönüşü: `{n_include, n_cited, n_skipped_reasoned, coverage, uncovered[]}`.
-  Anamnesis doc_id ledger ile **birleştirilmez**; `reconcile_anamnesis_ledger` yalnız bağlar (per-hit title; `ebsco_get` LWW; bare DOI/PMID/NCT/`record_id` ↔ `anamnesis_doc_id`).
+  Anamnesis doc_id ledger ile **birleştirilmez**; `reconcile_anamnesis_ledger` yalnız bağlar (per-hit title; tam-metin araçları LWW; bare DOI/PMID/NCT/eski `record_id` ↔ `anamnesis_doc_id`).
   **P3 ölçüm (eval-only):** `skills/medical-research/evals/context_economy_synth.py` —
   sentetik 40 makale; doğru ledger kullanımında `skip_silent_rate=0`; coverage_gate
   uncovered ID'leri listeler (`CONTEXT-ECONOMY-P3.md`).

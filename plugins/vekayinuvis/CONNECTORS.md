@@ -30,13 +30,10 @@ Katman etiketleri artık aktivasyon kapısı değil, sentezde **rol/otorite** ay
   (bir kaynak değil; `${CLAUDE_PLUGIN_ROOT}/shared/context-economy-contract.md` Tier 2).
 
 > **v3.0 filo genişlemesi notu.** `marmara-mcp` (Turcademy/hukuk tam-metin
-> Tier-3b, spec §4.4) canlı-probe'da `marmara.cureonics.com` **NXDOMAIN**
-> döndürdüğü için (2026-07-12, üç bağımsız çözümleyiciyle doğrulandı — DNS
-> kaydı henüz yayınlanmamış) bu turda **wire edilmedi**; `detsis` için
-> tasarlanan koşullu-probe disiplini marmara'ya da uygulandı. HISTORIOGRAPHY
-> tam-metin şelalesi bu nedenle şimdilik `openathens→annas-reader` (2 katman)
-> olarak kalır; `marmara` DNS/tunnel yayınlandığında `openathens→marmara→
-> annas-reader`'a genişletilecek (v3.1 adayı).
+> Tier-3b, spec §4.4) hiç **wire edilmedi** ve 2026-11-06'da **plandan
+> çıkarıldı** (Marmara VETİS aboneliği sona erdi, servis emekli); artık
+> planlanmıyor. HISTORIOGRAPHY tam-metin şelalesi `openathens→annas-reader`
+> (2 katman) olarak kalır.
 
 Bir server'ın anahtarı yoksa / oturumu düşükse **graceful degrade** eder ve
 **G0 kapsam manifestosunda** dürüstçe beyan edilir (`skipped`/`degraded`) —
@@ -122,8 +119,8 @@ L3–L5 katmanlarını canlı bağlar (§ 7). Rol tanımı spec §4.4 tablosunda
 
 **Filo genişlemesi durumu (2026-07-12 canlı probe):** dördü de `/mcp` 401 (auth
 gate = canlı) döndü — `curl -o /dev/null -w "%{http_code}" https://<host>/mcp`.
-`marmara-mcp` aynı probe setinde **NXDOMAIN** döndürdüğü için bu turda
-wire edilmedi (bkz. § 1 not); `detsis` (destekleyici, § 3) 401 ile canlı
+`marmara-mcp` aynı probe setinde **NXDOMAIN** döndürdü, hiç wire edilmedi
+ve 2026-11-06'da plandan çıkarıldı (bkz. § 1 not); `detsis` (destekleyici, § 3) 401 ile canlı
 doğrulandı ve wire edildi.
 
 ---
@@ -328,7 +325,7 @@ keychain'ine yazılır (settings.json'a değil).
 | `MANUSCRIPT_TRANSCRIBE` | BOA belgesi → `devarsiv_ocr_*` (Transleyt); harici IIIF → `devarsiv_ocr_image` | ottoman-archives eScriptorium = MATBU korpus + segmentasyon (0.479, el yazması motoru değil) |
 | `PROSOPOGRAPHY` | **devlet-arsivleri** (DH.SAİD Sicill-i Ahval katalog kaydı) + ottoman-archives (get_islam_ansiklopedisi) + yoktez + **yok-akademik** (modern akademisyen) + **detsis** (`detsis_resolve_birim`→`detsis_get_gecmis_birim`→`detsis_list_milestones`→`detsis_get_mevzuatlar` — kurumsal/teşkilat prosopografisi; **Cumhuriyet-sınırlı: Osmanlı teşkilatına inmez**) + **openathens/annas-reader** (biyografik monograf/Sicill-i Osmânî tam-metin) + web_fetch | consensus/paper-search |
 | `EVENT_RECONSTRUCTION` | ottoman-archives (IIIF gazete) + **devlet-arsivleri** (dönem belge kayıtları; geniş/çok-belgeli olay → **deep_search→deep_result**; boş sonuçtan önce **coverage**) + **resmigazete** (`/eskiler/` dönem yayın kaydı, erken-Cumhuriyet) + literatur + paper-search + tavily | exa/tavily |
-| `HISTORIOGRAPHY` | **literatur** (DergiPark tam-metin) + **openathens** (lisanslı kitap/makale tam-metin) + **annas-reader** (son-çare monograf/makale) + paper-search + consensus + scholar-gateway + ottoman-archives (search_dergipark) + **yok-akademik** (ekol/uzman haritası) — tam-metin şelalesi `openathens→annas-reader`; `marmara` (Turcademy/hukuk Tier-3b, `openathens→marmara→annas-reader`) **wire bekliyor** (§ 1 not, DNS yayınlanmadı) | exa |
+| `HISTORIOGRAPHY` | **literatur** (DergiPark tam-metin) + **openathens** (lisanslı kitap/makale tam-metin) + **annas-reader** (son-çare monograf/makale) + paper-search + consensus + scholar-gateway + ottoman-archives (search_dergipark) + **yok-akademik** (ekol/uzman haritası) — tam-metin şelalesi `openathens→annas-reader` (`marmara` 2026-11-06'da plandan çıkarıldı, § 1 not) | exa |
 | `CHRONOLOGY_CONVERSION` | ottoman-archives (convert_date, parse_ottoman_date, calc_ebced, tarih_dusur) | — |
 | `ACADEMIC_REPORT` | tüm katmanların birleşimi (devlet-arsivleri + ottoman-archives + yoktez + literatur + akademik companion + yasama/mevzuat katmanı) | katman degrade |
 | `KANUN_GEREKÇESİ` | **devlet-arsivleri** (BCA lâyiha/BOA İrade katalog kayıtları — L1–L4) + ottoman-archives (Düstûr/İA) + yoktez + literatur/paper-search (L5) + **resmigazete** (`rg_resolve_date`→`rg_get_item`, erken-Cumhuriyet yayın kaydı — L4/L5) + **mevzuat** (`search_mulga_mevzuat`+`get_mevzuat_gerekce` — antecedant mevzuat zinciri, L4/L5) + **tbmm** (`tbmm_search_kanun_teklifi`→`tbmm_get_kanun_teklifi` — teklif→kanun soyağacı, L3/L4); sağlık alanında medical-history.md | web_search/web_fetch (kalan boşluk) |

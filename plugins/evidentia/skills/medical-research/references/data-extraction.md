@@ -33,9 +33,8 @@ değer asla üretilmez (bkz. §4).
 
 ## 2. Tam-metin akışı — retrieve-don't-dump
 
-1. **Cascade** — `fulltext-retrieval.md` §2 (Tier 1–6, legal-first) ile tam metin edinilir
-   (EPMC OA → Paper Search → Marmara EBSCO [Tier 3 lisanslı birinci] → OpenAthens/Millet
-   [Tier 4 lisanslı ikinci] → Wiley [Tier 5] → annas-mcp [Tier 6 son çare] → pubmed-epmc
+1. **Cascade** — `fulltext-retrieval.md` §2 (legal-first) ile tam metin edinilir
+   (EPMC OA → Paper Search → OpenAthens/Millet [Tier 4 lisanslı birinci] → Wiley [Tier 5] → annas-mcp [Tier 6 son çare] → pubmed-epmc
    Unpaywall [Tier 7]).
 2. **Ham gövde bağlama YASAK.** Eşik üstü çıktı (≥3 KB fulltext / ≥8 KB bulk) → **sentez
    yasağı**: gövdeyi GRADE/çıkarım girdisi yapma. Yalnız ingest + bounded retrieve.

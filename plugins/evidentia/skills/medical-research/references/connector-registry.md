@@ -2,7 +2,7 @@
 
 **Replaces:** `connector-api.md` (v7.1).
 **Loaded:** ALWAYS, before any `tool_search` / connector call (Adım 0).
-**Order of fire:** `execution-map.md` (MUST/SHOULD/MAY/OUT + `SKIP-REASON`) binds *when* each of the 20 bundled servers and 13 companions runs. This file is the verified tool table; the playbook is the sequence. Silent skip is a Completeness Gate failure.
+**Order of fire:** `execution-map.md` (MUST/SHOULD/MAY/OUT + `SKIP-REASON`) binds *when* each of the 19 bundled servers and 13 companions runs. This file is the verified tool table; the playbook is the sequence. Silent skip is a Completeness Gate failure.
 **Status:** Every tool name and parameter below was **verified by live MCP probe on 9 June 2026.** Where a connector was probed and behaved differently from prior documentation, the verified behavior is authoritative.
 
 ---
@@ -68,9 +68,8 @@ P2 (retrieval/dedup), and P4 (full-text enrichment when abstract is insufficient
 
 | Connector | Server | Verified primary tools | Notes |
 |---|---|---|---|
-| **marmara-ebsco** (self-host) | `ebsco.cureonics.com/mcp` (Bearer `${MARMARA_EBSCO_MCP_API_KEY}`) | `ebsco_server_info`, `ebsco_list_databases`, `ebsco_search`, `ebsco_get(record_id, prefer, collection?, doc_id?)` — **4 tools** | Full-text cascade **Tier 3 — LICENSED FIRST** (Marmara VETİS → EBSCOhost; before OpenAthens). Search then get; pass Evidentia `collection`/`doc_id` when ingesting. Miss/manual_required → SKIP-REASON then Tier 4 (never silent skip). Deploy is operator gate. |
-| **openathens** (self-host) | `openathens.cureonics.com/mcp` (Bearer `${OPENATHENS_MCP_API_KEY}`) | `oa_resolve`, `oa_fetch_fulltext` (text/ingest; collection?), **`oa_fetch_pdf(doi\|url)`**, **`oa_verify_access`**, `oa_session_status`, `oa_list_databases`, `oa_batch_submit`/`oa_batch_result`, `search`/`fetch` — **11 tools measured 2026-08-14** | Full-text cascade **Tier 4 — LICENSED SECOND** (after Marmara EBSCO; ahead of annas); Millet Kütüphanesi/OpenAthens SAML. Resource links short-lived. |
-| **annas-reader** (bundled, gated) | `annas.cureonics.com/mcp` — **9 tools measured 2026-08-14** | Reader path + **`download_document(id=DOI\|32-hex MD5)`** | Full-text cascade **Tier 6 — LAST RESORT** (after licensed band: EBSCO Tier 3 + OpenAthens Tier 4 + Wiley Tier 5). Copyright: analysis only |
+| **openathens** (self-host) | `openathens.cureonics.com/mcp` (Bearer `${OPENATHENS_MCP_API_KEY}`) | `oa_resolve`, `oa_fetch_fulltext` (text/ingest; collection?), **`oa_fetch_pdf(doi\|url)`**, **`oa_verify_access`**, `oa_session_status`, `oa_list_databases`, `oa_batch_submit`/`oa_batch_result`, `search`/`fetch` — **11 tools measured 2026-08-14** | Full-text cascade **Tier 4 — LICENSED FIRST** (ahead of annas); Millet Kütüphanesi/OpenAthens SAML. Resource links short-lived. |
+| **annas-reader** (bundled, gated) | `annas.cureonics.com/mcp` — **9 tools measured 2026-08-14** | Reader path + **`download_document(id=DOI\|32-hex MD5)`** | Full-text cascade **Tier 6 — LAST RESORT** (after licensed band: OpenAthens Tier 4 + Wiley Tier 5). Copyright: analysis only |
 | **Unpaywall** (via `pubmed-epmc` bundled tool) | `pubmed.cureonics.com/mcp` (CureoHub HP self-host) | `pubmed_fetch_fulltext` (EuropePMC + Unpaywall legal-OA resolution) | Legal-OA full-text alternative to the annas gray-area rung; see §2.1 PubMed-EPMC row above |
 
 **RAG substrate (retrieve-don't-dump, part of the core — not enrichment-gated):**

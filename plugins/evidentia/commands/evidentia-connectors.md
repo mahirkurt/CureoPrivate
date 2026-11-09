@@ -1,5 +1,5 @@
 ---
-description: Connector preflight + roster tazeleme + canlı G-PROBE. 20 bundled sunucu + 13 companion'ı PRISMA faz sırasıyla (execution-map) yürür; claude.ai vs Claude Code yüzeyini ayırır; G-BUNDLE/G-IDENTITY/G-PROBE çalıştırır.
+description: Connector preflight + roster tazeleme + canlı G-PROBE. 19 bundled sunucu + 13 companion'ı PRISMA faz sırasıyla (execution-map) yürür; claude.ai vs Claude Code yüzeyini ayırır; G-BUNDLE/G-IDENTITY/G-PROBE çalıştırır.
 argument-hint: "[opsiyonel: yenile | probe | grup-adı]"
 allowed-tools: Bash(python:*), Bash(curl:*)
 ---
@@ -10,7 +10,7 @@ allowed-tools: Bash(python:*), Bash(curl:*)
 
 Normatif sıra: [`execution-map.md`](../skills/medical-research/references/execution-map.md)
 (MUST/SHOULD/MAY/OUT). Envanter: [`CONNECTORS.md`](../CONNECTORS.md). Filo SSOT: `fleet.yaml`
-→ **20 server** (11 gated / 9 public) + **13 companion**. Mevzuat yok.
+→ **19 server** (10 gated / 9 public) + **13 companion**. Mevzuat yok.
 
 ## 1. Yüzey-Bilinçli Bağlanırlık (faz sırasıyla yürü)
 
@@ -28,7 +28,6 @@ Her satır: ✅ bağlı / ⚠️ manuel-gerekli / 🔴 eksik → fallback (`exec
 | 2 | `pubmed-epmc` | P1.2 MUST | gated `PUBMED_MCP_API_KEY` |
 | 3 | `semantic-scholar` | P1.3 MUST | gated `SEMANTICSCHOLAR_MCP_API_KEY` |
 | 4 | `evidentia-kb` | P0 SHOULD | gated; unreachable = map-only |
-| 5 | `marmara-ebsco` | P4.T3 MUST try | gated `MARMARA_EBSCO_MCP_API_KEY` |
 | 6 | `openathens` | P4.T4 MUST try | gated; challenge_required → T5/T6 |
 | 7 | `annas-reader` | P4.T6 MUST* | gated; last resort after licensed band |
 | 8 | `anamnesis` | P4+P6 MUST* | gated; exclusive `evidentia:run:<id>` |

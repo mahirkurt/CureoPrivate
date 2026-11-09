@@ -14,7 +14,7 @@ description: >
   derleme, kapsam derleme, PRISMA, PICO, PECO, screening, risk of bias, GRADE, kanıt
   sentezi, meta-analiz, dahil hariç kriterleri.
 metadata:
-  version: 9.0.7
+  version: 9.0.8
 ---
 
 > ## 🧩 Plugin entegrasyon notu (evidentia)
@@ -29,13 +29,13 @@ metadata:
 >   **tek-sefer fetch / kanonik artefakt** disiplini (TİTCK tek-sefer kuralı; openfda
 >   tekil+retry+skippable; **working_set_ledger** + `hits.jsonl`). Connector **sırası**>   `references/execution-map.md` playbook'udur.
 >
-> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.7**
+> **Sürüm/ad:** Skill kanonik adını (`medical-research`) korur (ADR-05); sürüm **9.0.8**
 > (v9 = 10-eksen zorunlu yükleyici → **P0–P7 PRISMA hattı + opsiyonel zenginleştirme sınıflandırıcısı**;
 > web tier / OSINT ekseni kaldırılmıştı — saf yapısal-kanıt korunur; 9.0.5 = P0 ledger/dump;
-> 9.0.6 = Anamnesis reconcile + multi-query hybrid + coverage gate; 9.0.7 = working-set ledger per-hit title binding + EBSCO/reconcile anamnesis_doc_id fix).
+> 9.0.6 = Anamnesis reconcile + multi-query hybrid + coverage gate; 9.0.7 = working-set ledger per-hit title binding + EBSCO/reconcile anamnesis_doc_id fix; 9.0.8 = marmara-ebsco emekli, OpenAthens ilk lisanslı deneme).
 > Plugin sürümü skill'den ayrıdır.
 
-# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.7 (medical-research)
+# ⚠️ MANDATORY EXECUTION PROTOCOL — v9.0.8 (medical-research)
 
 **This block is read and applied before any other structure. It runs on every invocation.**
 
@@ -214,7 +214,7 @@ J-STAGE via REST (`extended-api.md`), native `openfda:openfda_search` (drugsfda 
 
 **E. Guidelines & HTA / Epidemiology** — society-guideline PDFs (NICE/ESMO/NCCN/Cochrane) and HTA bodies have **no native MCP** → **documented gap (VERİ YOK)**, never web-scraped. Epidemiology (MAY, Adım 0.5.K): ICD-11 via `openfda` or `med-terminologies.icd11_search`; US via **PopHIVE** (**US-ONLY**); global/TR burden via **`who-gho`**; cancer via **`globocan`** (modelled + `ui`); **IHME/GBD** still a gap. Operator-supplied PDFs → anamnesis ingest.
 
-**Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first 7-tier)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **marmara-ebsco `ebsco_search` → `ebsco_get(record_id, collection?, doc_id?)` (Tier 3 — LICENSED VETİS EBSCOhost, FIRST paywall gate; miss → SKIP-REASON then continue)** → **openathens `oa_verify_access`/`oa_resolve` + `oa_fetch_fulltext` or `oa_fetch_pdf` (Tier 4 — Millet Kütüphanesi, SECOND licensed gate)** → Wiley (auth, Tier 5) → **annas-reader reader flow or `download_document(id=DOI|MD5)` (Tier 6 — LAST RESORT after licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (Unpaywall legal-OA, Tier 7). Pass `collection=evidentia:run:<id>` + `evrun:` doc_id into Hub fetch tools when accepted. File tools' opaque `resource_link`s: consume promptly. Copyright: analysis only; CC-BY freely quotable; no web scraping.
+**Full-Text Retrieval (when abstract insufficient — `fulltext-retrieval.md`; legal-first)** — EPMC `get_full_text_article`/`get_copyright_status` (Tier 1 PMC OA) → PaperSearch `read_pubmed_paper` (Tier 2) → **openathens `oa_verify_access`/`oa_resolve` + `oa_fetch_fulltext` or `oa_fetch_pdf` (Tier 4 — Millet Kütüphanesi, FIRST licensed gate; miss → SKIP-REASON then continue)** → Wiley (auth, Tier 5) → **annas-reader reader flow or `download_document(id=DOI|MD5)` (Tier 6 — LAST RESORT after licensed band)** → pubmed-epmc `pubmed_fetch_fulltext` (Unpaywall legal-OA, Tier 7). Pass `collection=evidentia:run:<id>` + `evrun:` doc_id into Hub fetch tools when accepted. File tools' opaque `resource_link`s: consume promptly. Copyright: analysis only; CC-BY freely quotable; no web scraping.
 
 ## Adım 2: Generosity Principle (depth ≠ dump)
 
@@ -286,7 +286,7 @@ Adım 0.1 `completeness_gate: lenient|standard|strict`. **Four** mandatory sub-c
 
 1. **Always-on core fired in playbook order** — confirm every MUST/SHOULD rung in
    `execution-map.md` ran, or carries a `SKIP-REASON`. A silently-skipped core connector is a
-   gate failure. All 20 bundled servers are used, MAY+`enrichment_off`, or OUT+`out_of_scope`.
+   gate failure. All 19 bundled servers are used, MAY+`enrichment_off`, or OUT+`out_of_scope`.
 2. **De-skew decision log** — reconcile the `coverage_set`: a domain enrichment module NOT run
    because it was judged irrelevant is a LOGGED de-skew decision (Ops sidecar), NOT a gap; a module
    that IS relevant but was missed by keyword signals IS a gap → load it.
@@ -310,7 +310,7 @@ Adım 0.1 `completeness_gate: lenient|standard|strict`. **Four** mandatory sub-c
 5. **Anamnesis reconcile (P1 — before P4 extract / P6 synthesize)** —
    `list_docs(collection=evidentia:run:<id>)` ↔ working-set ledger via
    `reconcile_anamnesis_ledger` (hook on list_docs / hybrid PreToolUse / SessionStart resume).
-   Links `evrun:` / bare DOI|PMID|NCT / EBSCO `record_id` → `anamnesis_doc_id` (search titles are per-hit; `ebsco_get` overwrites). Close `missing_extractions`; investigate `orphans`. **Multi-query MUST:**
+   Links `evrun:` / bare DOI|PMID|NCT / legacy `record_id` → `anamnesis_doc_id` (search titles are per-hit; full-text fetches overwrite). Close `missing_extractions`; investigate `orphans`. **Multi-query MUST:**
    `hybrid_query(collection=…, query=…, queries=[≥2])` — single-query synthesis forbidden
    (PreToolUse advisory).
 - Produce a gap list (Ops sidecar). If non-empty: load + address each gap, then re-check.
@@ -358,9 +358,9 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 | `screening.md` | P3 | Two-stage screening, exclusion logging, conflict resolution |
 | `data-extraction.md` | P4 | Extraction tables, numerical outcome capture, Extended-Tier recipes |
 | `risk-of-bias.md` | P5 | RoB2 / ROBINS-I / QUADAS-2 / Newcastle-Ottawa |
-| `execution-map.md` | P1/P2 (before first MCP call) | Ordered MUST/SHOULD/MAY/OUT playbook for all 20 bundled servers + 13 companions; skip-reason template |
+| `execution-map.md` | P1/P2 (before first MCP call) | Ordered MUST/SHOULD/MAY/OUT playbook for all 19 bundled servers + 13 companions; skip-reason template |
 | `extended-api.md` | P2 (as needed) | Native-MCP-first + Python REST fallback (PubChem/DOAJ/J-STAGE/…) |
-| `fulltext-retrieval.md` | P2/P4 (as needed) | Legal-first 7-tier: EPMC PMC OA → Paper Search → Marmara EBSCO (Tier 3) → OpenAthens/Millet (Tier 4) → Wiley (Tier 5) → annas-reader (Tier 6 last resort) → pubmed-epmc Unpaywall (Tier 7) |
+| `fulltext-retrieval.md` | P2/P4 (as needed) | Legal-first: EPMC PMC OA → Paper Search → OpenAthens/Millet (Tier 4) → Wiley (Tier 5) → annas-reader (Tier 6 last resort) → pubmed-epmc Unpaywall (Tier 7) |
 | Optional enrichment layers (`oncology/hematology/regulatory-science/hta/medaffairs-ops/immunology/neurology/rare-disease/drug-intelligence-layer.md`, `regulatory-intelligence.md`, `turkiye-layer.md`) | per Adım 0.5 | Domain deep-dive + appraisal checklist + native wiring (NON-mandatory) |
 | `skill-manifest.yaml` | tooling / audit | Standalone SMP manifest (runtime.mcp_servers, composition, verification gates) |
 | `composition-runbook.md` / `benchmark-suite.md` / `benchmark-protocol.md` / `v8-wiring-patch.md` | large query / cross-skill / dev / historical | Pipelines, eval harness, wiring history |
@@ -372,6 +372,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 
 | Version | Date | Changes |
 |---|---|---|
+| **9.0.8** | **Nov 2026** | `marmara-ebsco` retired 2026-11-06 (subscription ended; service and source deleted) and removed from the fleet: 19 bundled servers. OpenAthens (Tier 4) is now the FIRST licensed attempt; tier numbers are preserved and Tier 3 stays empty. Licensed order: OpenAthens → Wiley → Annas. Hooks keep recognising legacy `ebsco_*` ids and `marmara:*` prefixes so old run ledgers remain readable. |
 | **9.0.7** | **Aug 2026** | Working-set ledger QA fix (Marmara EBSCO): per-hit title binding (no batch title broadcast); `ebsco_get` last-write-wins title + `anamnesis_doc_id`; `reconcile_anamnesis_ledger` matches bare DOI/PMID/NCT, `evrun:` peel, and EBSCO `record_id` when collection-scoped ingest omits prefix; list_docs `id` field. |
 | **9.0.6** | **Aug 2026** | Context-economy P1+P2: `reconcile_anamnesis_ledger` (list_docs↔ledger; missing_extractions/orphans); multi-query `hybrid_query` mandatory (advisory); `coverage_gate` auto Completeness Gate (soft DENY via `EVIDENTIA_COVERAGE_ENFORCE=1`); synthesizer required `coverage` block (`n_include`/`n_cited`/`n_skipped_reasoned`/`uncovered[]`); OpenAthens/EBSCO pass-through vs annas gap documented. **P3 eval (no doctrine bump):** offline synthetic 40-paper harness `evals/context_economy_synth.py` — `skip_silent_rate=0` on correct ledger; Gate surfaces uncovered; RDD dump proxy (see `evals/CONTEXT-ECONOMY-P3.md`). |
 | **9.0.5** | **Aug 2026** | Context-economy P0: working-set ledger (PMID\|DOI\|NCT) under `.claude/evidentia-run/<id>/`; retrieve-don't-dump floors 3 KB/8 KB + **synthesis forbidden**; Completeness Gate v2 article coverage (standard ≥0.90); ID-first P1/P2; Cömertlik = depth≠dump; screening scratch file. |
@@ -394,7 +395,7 @@ clinical evidence or incidence. β-candidate connectors are not wired until prob
 ```yaml
 skill_manifest_protocol: 1.0
 skill_name: medical-research
-skill_version: 9.0.7
+skill_version: 9.0.8
 produces:
   - prisma-systematic-review-markdown (P0–P7; PRISMA flow diagram + Summary-of-Findings)
   - clean-copy-report (journal-grade reader-facing article; tooling/telemetry/viz carried
@@ -415,7 +416,7 @@ connectors_used:
   clinical_ddi: [drugddx]   # NOT a pairwise engine — cross-validate
   regulatory_epi: [openfda(openFDA+ICD11), PopHIVE(US), who-gho(global/TR), globocan(cancer), ema(EU); IHME/GBD = documented gap]
   turkiye: [TİTCK, TÜRKPATENT, YÖKTez]
-  fulltext: [EuropePMC PMC, PaperDownload, MarmaraEBSCO(Tier3 licensed first), OpenAthens(Tier4 licensed), Wiley(auth Tier5), annas-reader(Tier6 last-resort), pubmed-epmc(Unpaywall Tier7)]   # legal-first 7-tier; order EBSCO→OA→Wiley→Annas
+  fulltext: [EuropePMC PMC, PaperDownload, OpenAthens(Tier4 licensed first), Wiley(auth Tier5), annas-reader(Tier6 last-resort), pubmed-epmc(Unpaywall Tier7)]   # legal-first; Tier3 retired, numbers preserved; order OA→Wiley→Annas
 composes_with:
   - carbon-html-report | carbon-pptx (consume sidecar)
   - onko-erisim | saglik-sigorta | pharmapatent | pharmaintel | cureolex | promo-censor

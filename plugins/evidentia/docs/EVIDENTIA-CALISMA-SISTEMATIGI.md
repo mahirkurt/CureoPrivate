@@ -3,8 +3,8 @@
 > **Sürüm:** plugin **2.7.2** · flagship skill `medical-research` **9.0.2** · connector canlı
 > re-probe **2026-08-14** (`CONNECTORS.md` §9) · belge güncellemesi **2026-08-18**.
 > **Bu sürümün headline'ı:** P0–P7 **ordered tool playbook** (`execution-map.md`) —
-> 20 bundled sunucu MUST/SHOULD/MAY/OUT + `SKIP-REASON`; sessiz atlama yok. Tam-metin
-> kademesi **legal-first 7-katman** (Marmara EBSCO Tier 3 → OpenAthens Tier 4 → Wiley Tier 5 → annas Tier 6 son çare).
+> 19 bundled sunucu MUST/SHOULD/MAY/OUT + `SKIP-REASON`; sessiz atlama yok. Tam-metin
+> kademesi **legal-first** (OpenAthens Tier 4 → Wiley Tier 5 → annas Tier 6 son çare).
 > **Amaç:** evidentia'nın herhangi bir tıbbi/klinik literatür sorusunu nasıl alıp, hangi
 > aşamalardan geçirip, **PRISMA 2020 / PRISMA-ScR P0–P7 hattı** üzerinden doğrulanmış kanıt
 > sentezine dönüştürdüğünü uçtan uca tarif etmek.
@@ -153,8 +153,7 @@ SUT/mevzuat metni bu plugin'de yok → `cureolex`. + α-katman **TİTCK** (kanon
 - **evidentia-kb** — `kb_search` semantik-recall takviyesi (opsiyonel, graceful-degrade).
 
 **HP self-host (Python + Playwright + FastMCP):**
-- **marmara-ebsco** — tam-metin **Tier 3 (lisanslı BİRİNCİ, VETİS EBSCOhost)**; deploy kapısı
-- **openathens** — tam-metin **Tier 4 (lisanslı İKİNCİ, Millet Kütüphanesi)**; **CANLI**
+- **openathens** — tam-metin **Tier 4 (lisanslı BİRİNCİ, Millet Kütüphanesi)**; **CANLI**
   `openathens.cureonics.com/mcp` (`openathens-mcp`, 2026-07-03; hardened OAuth 2.1 + Bearer,
   `OPENATHENS_MCP_API_KEY`). Cumhurbaşkanlığı Millet Kütüphanesi üzerinden gerçek OpenAthens
   SP-initiated SAML federasyonu → ProQuest/EBSCO/ScienceDirect/Wiley/Nature/Springer/JSTOR/
@@ -170,21 +169,21 @@ SUT/mevzuat metni bu plugin'de yok → `cureolex`. + α-katman **TİTCK** (kanon
   (Springer/Nature) → **gerçek tam metin**; anti-bot'lu (Wiley/Elsevier/OUP/Sage/T&F) → non-interactive
   CF challenge kendiliğinden geçer (çoğu tam metin verir); yalnız interactive reCAPTCHA/Turnstile →
   `challenge_required` (host + operatör noVNC ipucu, `manual_required`'dan ayrı) → operatör `oa-vnc.sh`
-  ile çözer, `cf_clearance` kalıcı. Bağlı değilse cascade Tier 4/5'e düşer.
+  ile çözer, `cf_clearance` kalıcı. Bağlı değilse cascade Tier 5/6'ya düşer.
 
-### 3.7 Tam-metin kademesi (legal-first, 6 katman — ilk başarıda dur)
+### 3.7 Tam-metin kademesi (legal-first — ilk başarıda dur)
 Bir DOI/PMID için tam metin **legal-first** merdivende çözülür (`fulltext-retrieval.md` v9.0;
-ücretsiz-OA → **lisanslı band** → gri-alan son çare). **İlkeler:** meşru lisanslı kopya (Tier 3)
-daima gri-alan annas'tan (Tier 5) önce denenir; annas asla birincil paywall kapısı değildir.
+ücretsiz-OA → **lisanslı band** → gri-alan son çare). **İlkeler:** meşru lisanslı kopya (Tier 4)
+daima gri-alan annas'tan (Tier 6) önce denenir; annas asla birincil paywall kapısı değildir.
 
 | Tier | Kaynak | Rol |
 |---|---|---|
 | **1** | EuropePMC PMC (`get_copyright_status` → `get_full_text_article`) | Ücretsiz açık erişim (native); önce lisans belirle |
 | **2** | Paper Search download (`read_pubmed_paper`) | PMC metin çıkarımı |
-| **3** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → metin için `oa_fetch_fulltext`, sağlayıcı PDF'si için `oa_fetch_pdf`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); sağlayıcı-nötr; bağlı değilse atla; anti-bot v2: Xvfb headed profil non-interactive CF challenge'ı geçer, interactive → `challenge_required` (operatör noVNC) |
-| **4** | **Wiley** (`authenticate`, OAuth) | OpenAthens'ın kapsamadığı yayıncı tam metni (Cochrane/Wiley); hâlâ **lisanslı band** içinde |
-| **5** | **annas-reader** (okuma: `read_article` / `search_in_document`+`read_document`; orijinal dosya: `download_document(id=<DOI|MD5>)`) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 3+4) getiremeyince; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS; copyright-kapılı |
-| **6** | **pubmed-epmc** (`pubmed_fetch_fulltext`) | Unpaywall yasal-OA son süpürme |
+| **4** | **OpenAthens / Millet Kütüphanesi** (`oa_resolve` → metin için `oa_fetch_fulltext`, sağlayıcı PDF'si için `oa_fetch_pdf`) | **LİSANSLI kurumsal — birincil paywall kapısı** (legal-first); sağlayıcı-nötr; bağlı değilse atla; anti-bot v2: Xvfb headed profil non-interactive CF challenge'ı geçer, interactive → `challenge_required` (operatör noVNC) |
+| **5** | **Wiley** (`authenticate`, OAuth) | OpenAthens'ın kapsamadığı yayıncı tam metni (Cochrane/Wiley); hâlâ **lisanslı band** içinde |
+| **6** | **annas-reader** (okuma: `read_article` / `search_in_document`+`read_document`; orijinal dosya: `download_document(id=<DOI|MD5>)`) | **Gri-alan gölge kütüphane — SON ÇARE**, yalnız lisanslı band (Tier 4+5) getiremeyince; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS; copyright-kapılı |
+| **7** | **pubmed-epmc** (`pubmed_fetch_fulltext`) | Unpaywall yasal-OA son süpürme |
 
 Getirilen metin veya dosya **anamnesis'e `ingest_document`** edilir →
 `semantic_search`/`hybrid_query` (uzun metin bağlama dökülmez; indekslenir, sınırlı paket çekilir —
@@ -321,9 +320,8 @@ China, Japan, Germany, Brazil, Korea]: EPMC AFF:"{ülke}"` (coğrafi genişlik �
 Türkiye-pazarı** (TR bağlamı/modülü aktifken) — TİTCK + YÖK Tez + EPMC AFF:"Turkey".
 **E. Kılavuzlar & HTA/Epidemiyoloji** — native-API'siz kaynak = belgelenmiş boşluk (web-scrape
 yok); ICD-11 openfda ile, ABD sürveyansı PopHIVE ile. **Tam-metin** (özet yetersizse) —
-**legal-first 7-katman** (§3.7): EPMC `get_copyright_status`/`get_full_text_article` (Tier 1) →
-Paper Search (Tier 2) → **Marmara EBSCO** (Tier 3, lisanslı birinci; `ebsco_search`→`ebsco_get`) →
-**OpenAthens/Millet Kütüphanesi** (Tier 4, lisanslı ikinci; metin için `oa_fetch_fulltext`,
+**legal-first** (§3.7): EPMC `get_copyright_status`/`get_full_text_article` (Tier 1) →
+Paper Search (Tier 2) → **OpenAthens/Millet Kütüphanesi** (Tier 4, lisanslı birinci; metin için `oa_fetch_fulltext`,
 sağlayıcı PDF'si için `oa_fetch_pdf`) → Wiley (Tier 5) → **annas** (Tier 6, SON ÇARE; okuma
 veya `download_document`) → pubmed-epmc Unpaywall (Tier 7 süpürme).
 
@@ -368,7 +366,7 @@ sonraki adımlar oradan **okur**. Çift connector sorgusu engellenir.
 | `regulatory_snapshot` | İlk openfda + **PopHIVE** | epidemiyoloji modülü, güvenlik, kodlama |
 | `terminology_map` | İlk Extended Tier-K | normalizasyon, cross-country eşleme |
 | `kol_graph` | İlk OpenAlex/S2/EPMC yazar | KOL haritası (`/evidentia-kol`), ağ |
-| `evidence_index` | İlk anamnesis ingest (Tier 3 openathens `oa_fetch_fulltext`/`oa_fetch_pdf` · Wiley · annas okuma/`download_document` · yüklenen PDF/EPUB) | P4/P6 sentez, tam-metin — **indeks, ham metin değil**; DOI/MD5 + SHA-256 + provenance korunur |
+| `evidence_index` | İlk anamnesis ingest (Tier 4 openathens `oa_fetch_fulltext`/`oa_fetch_pdf` · Wiley · annas okuma/`download_document` · yüklenen PDF/EPUB) | P4/P6 sentez, tam-metin — **indeks, ham metin değil**; DOI/MD5 + SHA-256 + provenance korunur |
 
 **Tekil kurallar:** TİTCK tek-sefer (barcode bir kez) · openfda tekil+1retry+skippable · PopHIVE
 US-only + birebir-aktar · Tier-K ilk-liveness-sonrası yeniden-probe yok.
@@ -409,7 +407,7 @@ eder; yoksa ledger `forget_document`. `forget_by_prefix` API değildir. Stop-hoo
 |---|---|
 | `/evidentia` | Uçtan uca P0→P7 koşumu (herhangi bir tıbbi araştırma sorusu; kanonik artefaktları üretir). |
 | `/evidentia-protocol` | P0–P1: soru-tipi sınıflama, PICO/PECO + uygunluk kriterleri, veritabanı-başına MeSH/Emtree arama stratejisi. |
-| `/evidentia-fulltext` | Legal-first tam-metin kademesi (§3.7): EPMC→Paper Search→**Marmara EBSCO** (Tier 3)→**OpenAthens** (Tier 4)→Wiley→**annas** (Tier 6)→Unpaywall. |
+| `/evidentia-fulltext` | Legal-first tam-metin kademesi (§3.7): EPMC→Paper Search→**OpenAthens** (Tier 4)→Wiley→**annas** (Tier 6)→Unpaywall. |
 | `/evidentia-synthesize` | P4+P6: `evidence-synthesizer` alt-ajanını çağırır (anamnesis RAG/GraphRAG, ağır fan-out izolasyonu). |
 | `/evidentia-appraise` | P5–P6: verilen çalışma setine tasarıma-göre RoB2/ROBINS-I/QUADAS-2/Newcastle-Ottawa/PROBAST uygular, sonuç-bazlı GRADE + SoF üretir. |
 | `/evidentia-kol` | KOL haritası — **opsiyonel zenginleştirme modülü**; yalnız KOL/uzman-ağı bağlamlı sorularda (OpenAlex → S2 → EPMC → NPI → YÖK Akademik). |
@@ -506,6 +504,8 @@ PASSED` beklenir) + `rag_quality.py` (G-RAG) + `scripts/g_probe.py`/`scripts/g_b
   `oa_fetch_pdf(doi|url)`; annas Tier 5'e `download_document(id=<DOI|MD5>)` eklendi. İki araç da
   dosyayı kısa-ömürlü opaque `resource_link` + checksum/provenance ile verir; link kalıcı olarak
   cache'lenmez, uzun belge anamnesis'e ingest edilir.
+- **2026-11-06 Marmara emekliliği:** `marmara-ebsco` (Tier 3) abonelik bitince filodan çıkarıldı
+  (19 bundled sunucu). OpenAthens (Tier 4) ilk lisanslı denemedir; numaralar korunur, Tier 3 boştur.
 - **İki kopya:** `evidentia-cc/` (git'siz build/deploy workspace) ↔ `CureoPrivate/plugins/evidentia/`
   (kanonik, git-izli katalog). Düzenle cc → aynala CP → commit **yalnız CP** (main). Self-host
   CF worker'ları (anamnesis/drugddx/openfda/evidentia-kb) `evidentia-cc/self-host/`'tan wrangler
@@ -518,6 +518,6 @@ PASSED` beklenir) + `rag_quality.py` (G-RAG) + `scripts/g_probe.py`/`scripts/g_b
 `skills/medical-research/references/connector-registry.md` (§2.6 Extended Tier-K + §8 Probe Log) ·
 `skills/medical-research/references/output-templates.md` (①–⑧ iskelet + sidecar) ·
 `skills/medical-research/references/prisma-reporting.md` (PRISMA akış + SoF) ·
-`skills/medical-research/references/fulltext-retrieval.md` (legal-first 7-katman tam-metin kademesi) ·
+`skills/medical-research/references/fulltext-retrieval.md` (legal-first tam-metin kademesi) ·
 `shared/canonical-cache-contract.md` (tek-sefer) · `evals/check_integrity.py` (kapılar). Çakışmada bu
 otoriter dosyalar üstündür.*

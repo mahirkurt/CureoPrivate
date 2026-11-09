@@ -43,7 +43,7 @@ CONVENTIONS = (
     "soyağacı + Açık Erişim DSpace) — KANUN_GEREKÇESİ omurgası; TAM-METİN ŞELALESİ (kitap+makale): "
     "`openathens` (Tier 3 lisanslı: metin/RAG oa_fetch_fulltext; orijinal provider PDF "
     "oa_fetch_pdf) → `annas-reader` (Tier 4 son çare: bounded reader; orijinal PDF/EPUB/etc. "
-    "download_document; yalnız analiz; `marmara` Tier 3b wire bekliyor — DNS yayınlanmadı). "
+    "download_document; yalnız analiz). "
     "Kısa-ömürlü resource_link derhal tüketilir; DOI/MD5 + SHA-256/provenance saklanır. "
     "Getirilen tam-metin > eşik → anamnesis ingest "
     "(collection=`vekayinuvis:run:<12hex>` + doc_id `vkrun:<12hex>:<kanonik>`; "

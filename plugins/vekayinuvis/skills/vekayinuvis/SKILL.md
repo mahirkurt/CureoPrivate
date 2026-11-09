@@ -1,7 +1,7 @@
 ---
 name: vekayinuvis
 description: "Osmanlı/Türk tarih araştırma orkestrasyon protokolü. Ottoman Archives MCP (33 kaynak — BOA, Süleymaniye, İSAM, IRCICA, BCA, Topkapı, TDV İA, YokTez + Gallica, BL, BSB, Princeton, Yale, Walters, QDL, LoC, IA, Europeana), eScriptorium HTR, Hicri-Rumî-Miladi çevirici, ebced + akademik katman (Exa, Tavily, Paper Search, Consensus). Birincil-kaynak-öncelikli (HAT, Cevdet, Mühimme, Tahrir, vakfiye, şer'iye sicili, salname) → ikincil (Belleten, OTAM, IJMES) → tertier (TDV İA, EI3) triangülasyonu. IJMES/TDV İA çeviriyazı, Chicago atıf. 9 mod — SOURCE_HUNT, ARCHIVE_DEEP_DIVE, MANUSCRIPT_TRANSCRIBE, PROSOPOGRAPHY, EVENT_RECONSTRUCTION, HISTORIOGRAPHY, CHRONOLOGY_CONVERSION, ACADEMIC_REPORT, KANUN_GEREKÇESİ. USE for Osmanlı arşiv, vakfiye, mühimme/tahrir, şer'iye sicili, salname, Tanzimat, Meşrutiyet, erken Cumhuriyet, Osmanlıca yazma HTR, ebced, vekayinâme, prosopografi, kanun gerekçesi, Düstûr, TBMM zaptı, Tıbbiye-i Şâhâne, 1219, Hıfzıssıhha. carbon-html-report, cureolex composable. When in doubt USE."
-version: 3.5.2
+version: 3.5.3
 last_updated: 2026-10-01
 changelog:
   - "3.5.1 (2026-10-01): Mevzuat MCP KAYSİS kurum/tür/arama/detay/PDF zinciri ve iki kaynaklı search_all_mevzuat, KANUN_GEREKÇESİ akışına eklendi. Kaynak coverage, bilinmeyen toplam, açık yürürlük etiketi ve PDF/OCR sınırları korunur; güncel katalog tarihsel yürürlük kanıtı sayılmaz."
@@ -541,10 +541,8 @@ akışı; orijinal PDF/EPUB/etc. `download_document(id=DOI|MD5)`; yalnız analiz
 Dosya araçlarının opaque `resource_link`'i kısa ömürlüdür: derhal tüketilir,
 kalıcı kaynak diye cache'lenmez; DOI/MD5 + format + SHA-256/provenance saklanır ve uzun
 dosya anamnesis'e ingest edilerek bounded sorgulanır.
-Tasarım hedefi Tier-3b olarak `openathens→marmara→annas-reader` (marmara-mcp: Turcademy Türkçe
-monograf + hukuk DB'leri); `marmara` bu turda **wire edilmedi** (`marmara.cureonics.com`
-NXDOMAIN, 2026-07-12 probe — CONNECTORS.md § 1) → şelale şimdilik iki katmanlı
-(`openathens→annas-reader`); wire edildiğinde otomatik üç katmana genişler.
+Şelale iki katmanlıdır (`openathens→annas-reader`). Planlanan `marmara` Tier-3b hiç wire
+edilmedi ve 2026-11-06'da plandan çıkarıldı (CONNECTORS.md § 1); artık planlanmıyor.
 Getirilen tam-metin > eşik → **anamnesis'e ingest** → bounded query (§ 3.5).
 Çıktı: ekol haritası (modernleşme, dünya-sistemi, post-kolonyal Osmanlı
 çalışmaları), ana tartışma eksenleri, dönüm noktası eserler, son 10 yılın eğilimi.

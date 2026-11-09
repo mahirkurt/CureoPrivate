@@ -9,7 +9,7 @@
 
 version: 2
 plugin: vekayinuvis
-plugin_version: "3.5.2"
+plugin_version: "3.5.3"
 
 servers:
   - name: ottoman-archives

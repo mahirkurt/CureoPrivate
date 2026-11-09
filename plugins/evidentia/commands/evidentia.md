@@ -14,7 +14,7 @@ Kullanıcı sorusu: **$ARGUMENTS**
 ## Yürütme — PRISMA yaşam döngüsü (P0–P7)
 
 Normatif sıra: [`skills/medical-research/references/execution-map.md`](../skills/medical-research/references/execution-map.md)
-(MUST/SHOULD/MAY/OUT + `SKIP-REASON`; 20 bundled + 13 companion; sessiz atlama yok).
+(MUST/SHOULD/MAY/OUT + `SKIP-REASON`; 19 bundled + 13 companion; sessiz atlama yok).
 
 1. **P0 Protokol** (`references/prisma-protocol.md`) — soru-tipini sınıfla; PICO/PECO + uygunluk
    kriterleri; derleme tipi. **SHOULD** `evidentia-kb.kb_search` (booster; kapı değil).

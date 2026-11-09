@@ -26,8 +26,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/vekayinuvis_doctor.py" --topic "$TOPIC" -
 
 3. Çıktıyı özetle:
    - 17 zorunlu server satırı var mı? (çekirdek 3 · akademik 6 · tam-metin 2 ·
-     yasama/mevzuat 3 · destekleyici 2 · substrat 1; `marmara` bu turda wire
-     edilmedi — manifestoya dahil değil, bkz. CONNECTORS.md § 1 not.)
+     yasama/mevzuat 3 · destekleyici 2 · substrat 1; `marmara` 2026-11-06'da
+     plandan çıkarıldı — manifestoya dahil değil, bkz. CONNECTORS.md § 1 not.)
    - Hangi connector `hit`, hangisi `degraded`, hangisi `skipped`?
    - `devlet-arsivleri` için `devarsiv_session_status` canlı probe sonucunu bildir
      (`session alive` veya `session_required`).

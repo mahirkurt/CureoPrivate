@@ -1,5 +1,11 @@
 # Changelog — Vekayinüvis Plugin
 
+## 3.5.3 — 2026-11-06
+
+- **`marmara` plandan çıkarıldı.** Hiç wire edilmemiş Tier-3b (`marmara-mcp`) artık
+  planlanmıyor: Marmara VETİS aboneliği sona erdi, servis ve kaynağı silindi. Tam-metin
+  şelalesi `openathens→annas-reader` olarak kalır; filo ve manifesto (17 server) değişmedi.
+
 ## 3.5.0 — 2026-09-14
 
 MINOR: tüketici sözleşmesi genişledi (yeni araçlar) — geriye dönük uyumlu.

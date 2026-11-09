@@ -84,7 +84,7 @@
       "_tier": "O",
       "_trust": "operator self-host (HP systemd — hardened OAuth 2.1 + Bearer; yok-akademik/annas ile aynı desen)",
       "_probe": "2026-08-14 CANLI · 11 araç · oa_fetch_pdf provider-nötr orijinal PDF teslimi doğrulandı",
-      "_role": "Tam-metin cascade Tier 3 — LİSANSLI kurumsal (annas Tier 5'in ÖNÜNDE): metin/RAG için oa_fetch_fulltext; orijinal sağlayıcı PDF'i için oa_fetch_pdf(doi|url) → kısa-ömürlü opaque resource_link + SHA-256/provenance. Link derhal tüketilir, kalıcı kaynak diye cache'lenmez. Key ${OPENATHENS_MCP_API_KEY} Doppler'da."
+      "_role": "Tam-metin cascade Tier 4 — LİSANSLI kurumsal (annas Tier 6'nın ÖNÜNDE): metin/RAG için oa_fetch_fulltext; orijinal sağlayıcı PDF'i için oa_fetch_pdf(doi|url) → kısa-ömürlü opaque resource_link + SHA-256/provenance. Link derhal tüketilir, kalıcı kaynak diye cache'lenmez. Key ${OPENATHENS_MCP_API_KEY} Doppler'da."
     },
     "annas-reader": {
       "type": "http",
@@ -92,7 +92,7 @@
       "_tier": "O",
       "_trust": "operator self-host (HP Docker, hardened OAuth 2.1 + Bearer)",
       "_probe": "2026-08-14 CANLI · 11 araç · download_document PDF/EPUB ve desteklenen diğer dosyalar için doğrulandı",
-      "_role": "Tam-metin cascade Tier 5 — SON ÇARE: bounded analiz için reader araçları; orijinal PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS için download_document(id=DOI|MD5) → kısa-ömürlü resource_link + SHA-256. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. Telif: yalnız analiz, toplu birebir çoğaltma yok."
+      "_role": "Tam-metin cascade Tier 6 — SON ÇARE: bounded analiz için reader araçları; orijinal PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS için download_document(id=DOI|MD5) → kısa-ömürlü resource_link + SHA-256. Link derhal tüketilir; uzun dosya anamnesis'e ingest edilir. Telif: yalnız analiz, toplu birebir çoğaltma yok."
     },
 
     "__TIER_A__auth_required__env_placeholder": "🟡 Tier-A AÇIK/web tier YOK — RegulatoryMCP (openFDA/ICD-11/WHO GHO) v1.4.0'da kaldırıldı; openFDA + ICD-11 artık openfda self-host Tier-O'dan (yukarıda). Bu satır tarihsel iskelet olarak korunur.",

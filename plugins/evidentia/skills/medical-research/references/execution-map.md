@@ -1,10 +1,10 @@
-# Execution Map — Ordered PRISMA Tool Playbook (v9.0.7)
+# Execution Map — Ordered PRISMA Tool Playbook (v9.0.8)
 
 **Loaded:** before the first MCP call of a review (P1+). Completeness Gate v2 re-reads this
 file. **Binding:** which connector fires, in which order, for what purpose is decided
 here — not by convenience. Silent skip is a gate failure.
 
-**Fleet SSOT:** `../../fleet.yaml` → **20 servers** (11 gated / 9 public) + **13 companions**
+**Fleet SSOT:** `../../fleet.yaml` → **19 servers** (10 gated / 9 public) + **13 companions**
 (account-level; not in `.mcp.json`; Cursor may not load them). No mevzuat MCP.
 
 **Claude vs self-host (prefer wired fleet when both exist):**
@@ -50,8 +50,7 @@ Do **not** invent a result. `companion_unloaded` is honest (directory/OAuth; not
 | 2 | `pubmed-epmc` | P1.2 | MUST | MeSH + PubMed/EPMC search; P4 Tier 1/7 full-text |
 | 3 | `semantic-scholar` | P1.3 | MUST | Citation graph / influential citations (secondary) |
 | 4 | `evidentia-kb` | P0/Adım 0.4 | SHOULD | Skill-routing booster (`kb_search`); never a gate |
-| 5 | `marmara-ebsco` | P4.T3 | MUST* | Licensed full-text FIRST (VETİS EBSCOhost; before OpenAthens/annas) |
-| 6 | `openathens` | P4.T4 | MUST* | Licensed full-text SECOND (Millet Kütüphanesi; before Wiley/annas) |
+| 6 | `openathens` | P4.T4 | MUST* | Licensed full-text FIRST (Millet Kütüphanesi; before Wiley/annas) |
 | 7 | `annas-reader` | P4.T6 | MUST* | Last-resort grey full-text after licensed band |
 | 8 | `anamnesis` | P4+P6 | MUST* | Exclusive-run RAG (`evidentia:run:<id>` + `evrun:`) |
 | 9 | `openfda` | P4/P7 | MAY 0.5.C/K | FDA label/FAERS/enforcement + ICD-11 |
@@ -84,8 +83,8 @@ if the Worker is unreachable — then summarise, never dump).
 | Scite | P1.9 / P3 | SHOULD | Primary-source cross-check (DEĞİŞMEZ 4) |
 | AdisInsight | P1.10 / P2 / P7 | MAY 0.5.I | drug-intel appendix omitted |
 | YÖK Tez | P1.11 | SHOULD | TR thesis hole → Türkiye Veri Boşluğu |
-| Wiley | P4.T5 | SHOULD | OAuth; after EBSCO+OpenAthens miss, before annas |
-| Literatür | P4 | MAY TR | marmara-ebsco → openathens → annas cascade |
+| Wiley | P4.T5 | SHOULD | OAuth; after OpenAthens miss, before annas |
+| Literatür | P4 | MAY TR | openathens → annas cascade |
 | SNOMED CT Terminology | P4 coding | MAY | `med-terminologies` + `openfda` ICD-11; TİTCK for TR drugs |
 | BioRender | P7 visual | MAY | Text-only report; never evidence |
 
@@ -130,7 +129,7 @@ per MUST/SHOULD rung (Adım 2 Cömertlik — call or `SKIP-REASON`, not raw-body
 | 1.10 | AdisInsight companion | `search_drugs` (real schema — `drug-intelligence-layer.md`) | MAY 0.5.I |
 | 1.11 | YÖK Tez companion | `search_yok_tez_detailed` (TR **and** EN) | SHOULD |
 
-**OUT at P1:** `marmara-ebsco`, `openathens`, `annas-reader`, `anamnesis`, `titck`, `yok-akademik`,
+**OUT at P1:** `openathens`, `annas-reader`, `anamnesis`, `titck`, `yok-akademik`,
 `openfda`, `ema`, `pophive`, `who-gho`, `globocan`, `drugddx`, pipeworx trio,
 `iuphar-gtopdb` — unless Adım 0.5 already flagged coding/drug and MeSH needs
 `med-terminologies.atc_classify` / `map_icd10_to_icd11` (**MAY**, after 1.2).
@@ -167,14 +166,13 @@ Per included (or `maybe`) record, **in order**:
 |---|---|---|---|
 | T1 | PubMed / `pubmed-epmc` | `get_copyright_status` / `pubmed_fetch_fulltext` / EPMC `get_full_text_article` | MUST try |
 | T2 | Paper Search companion | `read_pubmed_paper` | SHOULD |
-| T3 | `marmara-ebsco` | `ebsco_search(query, full_text_only?)` → `ebsco_get(record_id, collection?, doc_id?)` | MUST try |
 | T4 | `openathens` | `oa_verify_access` → `oa_fetch_fulltext` (text/RAG; collection?) or `oa_fetch_pdf` | MUST try |
 | T5 | Wiley companion | `authenticate` then publisher full-text | SHOULD |
-| T6 | `annas-reader` | `article_search`→`read_article`; file: `download_document(id=DOI\|MD5)` | MUST try if T1–T5 failed |
+| T6 | `annas-reader` | `article_search`→`read_article`; file: `download_document(id=DOI\|MD5)` | MUST try if T1, T2, T4, T5 failed |
 | T7 | `pubmed-epmc` | `pubmed_fetch_fulltext` Unpaywall sweep | MUST try if still empty |
 
-Success at Ti → later tiers `SKIP-REASON already_canonical`. **EBSCO miss/fail/challenge
-MUST be logged before OpenAthens** (no silent Tier-3 skip). Copyright gate binds every
+Success at Ti → later tiers `SKIP-REASON already_canonical`. **OpenAthens miss/fail/challenge
+MUST be logged before Wiley/annas** (no silent Tier-4 skip). Copyright gate binds every
 tier (`fulltext-retrieval.md`). Do not bulk-download copyrighted PDFs.
 
 **Anamnesis (MUST after any non-short full text):**
@@ -249,7 +247,7 @@ P7 close: hook prefers `forget_collection`. Do not `forget_document` the world.
 Before finalising:
 
 1. Every **MUST** row ran **or** has a `SKIP-REASON`.
-2. Every bundled server (20) is either used in its home phase, tagged MAY+`enrichment_off`,
+2. Every bundled server (19) is either used in its home phase, tagged MAY+`enrichment_off`,
    or tagged OUT+`out_of_scope` for that phase. **No silent omission.**
 3. Companions: used, or `companion_unloaded` / degrade note.
 4. Anamnesis queries (if any ingest happened) used `collection=evidentia:run:<id>`

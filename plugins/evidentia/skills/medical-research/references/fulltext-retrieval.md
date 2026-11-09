@@ -1,8 +1,8 @@
-# Full-Text Retrieval Cascade (v9.0.3)
+# Full-Text Retrieval Cascade (v9.0.8)
 
 **Loaded:** P4 (and P2 when abstract is insufficient). Feeds **P4 Data Extraction**
 (`data-extraction.md`): full text is retrieved here, then extracted into the `evidence_table`
-— never dumped raw into context. **Playbook:** `execution-map.md` P4 T1–T7 (MUST* cascade;
+— never dumped raw into context. **Playbook:** `execution-map.md` P4 T1, T2, T4–T7 (MUST* cascade;
 stop at first success; later tiers `already_canonical`). After ingest: Anamnesis exclusive-run
 `collection=evidentia:run:<id>` + `evrun:` dual-write; scoped `hybrid_query` MUST if corpus
 non-empty. Do not invent `doc_scope`.
@@ -13,18 +13,17 @@ Full text is resolved in **descending order of legal cleanliness**, and the ladd
 the first tier that delivers:
 
 1. **Free open-access** (Tier 1–2, Tier 7 sweep) — CC-BY/CC0 or legal-OA; freely quotable.
-2. **Licensed institutional access** (Tier 3 **Marmara EBSCO** → Tier 4 **OpenAthens/Millet
-   Kütüphanesi** → Tier 5 **Wiley**) — the operator's *own legitimate subscription*; analysis/
-   extraction only. **User-mandated licensed order:** EBSCO → OpenAthens → (Wiley) → Annas.
+2. **Licensed institutional access** (Tier 4 **OpenAthens/Millet Kütüphanesi** → Tier 5
+   **Wiley**) — the operator's *own legitimate subscription*; analysis/extraction only.
+   **User-mandated licensed order:** OpenAthens → (Wiley) → Annas.
 3. **Grey-area shadow library** (Tier 6 **annas-reader**) — **LAST RESORT**, entered only when the
-   licensed band (Tier 3 + Tier 4 + Tier 5) cannot supply the item.
+   licensed band (Tier 4 + Tier 5) cannot supply the item.
 
-> **Marmara EBSCO is tried before OpenAthens; OpenAthens before annas.** A legitimate licensed
-> copy is always tried before the grey-area annas (Tier 6). EBSCO miss/fail/challenge MUST be
-> recorded as `SKIP-REASON` before falling through — never a silent skip of Tier 3.
+> **OpenAthens is tried before annas.** A legitimate licensed copy is always tried before the
+> grey-area annas (Tier 6). OpenAthens miss/fail/challenge MUST be recorded as `SKIP-REASON`
+> before falling through — never a silent skip of Tier 4.
 
-**Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **marmara-ebsco**
-(HP category server — target `ebsco.cureonics.com/mcp`, §Tier 3), **openathens**
+**Connectors:** EuropePMC (`8f314cbe…`), Paper Search/Download (`660e91bd…`), **openathens**
 (HP self-host — **LIVE** `openathens.cureonics.com/mcp`, §Tier 4), Wiley (`bio-research:wiley`, OAuth), **annas-reader**
 (verified, last-resort), **pubmed-epmc** (`pubmed_fetch_fulltext` — EuropePMC + Unpaywall legal-OA).
 
@@ -36,11 +35,13 @@ Trigger during **P4** when the abstract is insufficient for extraction/appraisal
 - SR/meta-analysis: forest-plot data, GRADE/SoF tables, heterogeneity (I²).
 - RoB (P5): the methods/limitations section a design-specific tool (RoB2/ROBINS-I/QUADAS-2) needs.
 - Methodology grounding (GRADE, Cochrane Handbook, PRISMA, AMSTAR-2).
-Limit to the **top 3–5 most decision-relevant** items; do not bulk-fetch (§Tier 3–4 pacing).
+Limit to the **top 3–5 most decision-relevant** items; do not bulk-fetch (§Tier 4 pacing).
 
 ---
 
 ## 2. The Cascade (in order — stop at first success)
+
+> Tier 3 (Marmara EBSCO) 2026-11-06'da emekli; numaralar korunur.
 
 ### Tier 1 — EuropePMC PMC (free open access, native)
 ```
@@ -56,41 +57,10 @@ PaperSearch: read_pubmed_paper(paper_id="<PMID/PMCID>")   # extracts text
 PaperSearch: download_pubmed / download_biorxiv / download_semantic
 ```
 
-### Tier 3 — Marmara EBSCO (LICENSED institutional — FIRST paywall gate)
-**Status:** connector `marmara-ebsco` — HP category server over shared VETİS session
-(`ebsco.cureonics.com/mcp`, port 8222; `MARMARA_EBSCO_MCP_API_KEY`). Live (2026-08-19):
-HP systemd + tunnel + DNS; `/health` + `tools/list` (4 tools). Wired in fleet `.mcp.json`
-(Claude Code `${VAR}`) and `.cursor-plugin/mcp.json` (Cursor `${env:VAR}`). Unreachable /
-missing key → `SKIP-REASON unreachable` then Tier 4 (never silent skip). Distinct from
-`marmara-clinical` (ClinicalKey/UTD).
-
-**Coverage:** Marmara Üniversitesi VETİS → EBSCOhost (`db_id=426`); default search spans **all**
-subscribed databases discovered at landing. Full text only when `downloadLinks` expose PDF/HTML
-(never constructed URLs).
-
-```
-marmara-ebsco: ebsco_server_info()                 # version, opid, database_count, caveat
-marmara-ebsco: ebsco_list_databases(filter?="…")   # discovered subscribed DB codes/names
-marmara-ebsco: ebsco_search(query="<DOI|title|keywords>", full_text_only=true, max_results=5)
-                                                   # → results[].record_id (+ metadata)
-marmara-ebsco: ebsco_get(record_id="…", prefer="pdf",
-                         collection="evidentia:run:<run_id>",
-                         doc_id="evrun:<run_id>:<DOI|record_id>")
-                                                   # PDF/HTML extract → anamnesis or short quote
-```
-- **Check then fetch:** always `ebsco_search` first; no hit / `no_results` / `no_fulltext_link` /
-  `manual_required` / `session_invalid` / `landing_incomplete` → record `SKIP-REASON` with the
-  envelope reason, then Tier 4. Do **not** invent a `record_id`.
-- **Anamnesis:** pass `collection` + `doc_id` into `ebsco_get` when available; omitted collection
-  mints `marmara:run:<sha1-8>`. Prefer Evidentia exclusive-run identity so P4/P6 hybrid stays
-  scoped. Raw verbatim is never dumped to context.
-- **Pacing:** human-jitter delay is server-side; keep per-run volume modest (same spirit as
-  OpenAthens caps — protect the institutional account).
-
-### Tier 4 — OpenAthens / Millet Kütüphanesi (LICENSED institutional — second paywall gate)
+### Tier 4 — OpenAthens / Millet Kütüphanesi (LICENSED institutional — FIRST paywall gate)
 **Status:** connector `openathens` — HP self-host **LIVE** (`openathens.cureonics.com/mcp`, hardened
 OAuth 2.1 + Bearer; `openathens-mcp` deployed 2026-07-03, real OpenAthens SP-initiated SAML
-federation via Millet Kütüphanesi). Tried **after** Marmara EBSCO (Tier 3). If the connector is
+federation via Millet Kütüphanesi). First licensed attempt. If the connector is
 NOT bound in the session, **skip Tier 4 → Tier 5/6** (graceful degrade, no silent skip of the
 ladder). **Live coverage reality (anti-bot v2, 2026-07-13):** fetches run a
 **headed** Chromium under Xvfb with a persistent profile (real browser fingerprint + a stored
@@ -134,12 +104,12 @@ openathens: oa_session_status()                           # session warmth / pen
 
 ### Tier 5 — Wiley (publisher full text, OAuth-gated)
 `Wiley:authenticate` → publisher full text (Cochrane Library, Wiley journals) for publishers the
-EBSCO/OpenAthens tiers do not cover. Graceful skip if unauthenticated. (Still inside the
+OpenAthens tier does not cover. Graceful skip if unauthenticated. (Still inside the
 **licensed band**, after OpenAthens, before annas — does not invert the user-mandated
-EBSCO → OpenAthens → Annas spine.)
+OpenAthens → Annas spine.)
 
 ### Tier 6 — annas-reader (shadow library — LAST RESORT, after the licensed band)
-**Entered only when the licensed band (Tier 3 Marmara EBSCO + Tier 4 OpenAthens + Tier 5 Wiley)
+**Entered only when the licensed band (Tier 4 OpenAthens + Tier 5 Wiley)
 cannot supply the item.** Grey-area; legal-first doctrine keeps it last.
 ⚠️ **Re-measured 2026-08-14:** the wired `annas-reader` exposes nine tools. Its bounded
 reader remains the preferred analysis path; `download_document` adds original-file delivery when
@@ -187,10 +157,10 @@ last legal-OA sweep). If still no legal copy exists, **note the gap and stop** �
 ---
 
 ## 3. Copyright Gate (MANDATORY — G-COPYRIGHT)
-Applies identically to Tier 3 (Marmara EBSCO), Tier 4 (OpenAthens), Tier 5 (Wiley), Tier 6 (annas):
+Applies identically to Tier 4 (OpenAthens), Tier 5 (Wiley), Tier 6 (annas):
 - **Always** run EPMC `get_copyright_status` before quoting any article at length.
 - **Open access (CC-BY/CC0):** quotation with attribution permitted.
-- **Licensed / shadow full text (EBSCO · OpenAthens · Wiley · annas):** use for **analysis, extraction of
+- **Licensed / shadow full text (OpenAthens · Wiley · annas):** use for **analysis, extraction of
   facts and numbers, and paraphrase only**. Do **NOT** reproduce large verbatim blocks, whole
   figures, or whole tables. Extracted data points (HR, CI, n, endpoints) are **facts, not
   copyrightable expression** — report them with citation.
@@ -216,7 +186,7 @@ annas (Tier 6).
 Extracted full-text data points feed the **`evidence_table`** (P4 `data-extraction.md`: effect
 size + 95% CI, N, outcomes), the **GRADE/SoF** synthesis (P6), and the study-characteristics table
 (P7). Tag each extracted value with citation + access path
-`[tam metin: PMC OA | Marmara-EBSCO:<db> | OpenAthens:<db> | Wiley | annas analiz | Unpaywall OA]` +
+`[tam metin: PMC OA | OpenAthens:<db> | Wiley | annas analiz | Unpaywall OA]` +
 license note + the anamnesis `doc_id::idx` provenance where ingested.
 
 ---
@@ -224,24 +194,19 @@ license note + the anamnesis `doc_id::idx` provenance where ingested.
 ## 6. Known limitations
 1. **File delivery is link-based** — `oa_fetch_pdf` and `download_document` return validated,
    short-lived opaque resource links plus checksum/provenance metadata. Consume promptly; context
-   sees only the anamnesis-indexed, provenance-stamped slice, never a base64 dump. Marmara EBSCO
-   delivers extracted text (PDF/HTML) via `ebsco_get` + anamnesis, not a client-side resource_link.
+   sees only the anamnesis-indexed, provenance-stamped slice, never a base64 dump.
 2. **Copyright** — the dominant constraint; default to paraphrase + data extraction.
-3. **Marmara EBSCO key / reachability** — endpoint live (`ebsco.cureonics.com`); host process
-   must expose `MARMARA_EBSCO_MCP_API_KEY` (Doppler `cureohub/dev_personal`). Missing key or
-   unreachable → Tier 4.
-4. **OpenAthens LIVE, partial publisher coverage** — `openathens-mcp` is deployed
+3. **OpenAthens LIVE, partial publisher coverage** — `openathens-mcp` is deployed
    (`openathens.cureonics.com/mcp`) with working OpenAthens SP-initiated SAML federation. Full-text
    extraction succeeds for federation publishers *without* a browser anti-bot wall (Springer,
    Nature, …); anti-bot publishers usually clear non-interactive CF; interactive challenge →
    `challenge_required`.
-5. **Anna's DOI↔content fidelity is not guaranteed** — always reconcile the Crossref header with
+4. **Anna's DOI↔content fidelity is not guaranteed** — always reconcile the Crossref header with
    the returned body before extraction.
-6. **No mevzuat in this cascade** — legislation is out of Evidentia scope (hand off to cureolex).
-7. **`collection` / `doc_id` pass-through matrix (P1 verified):**
+5. **No mevzuat in this cascade** — legislation is out of Evidentia scope (hand off to cureolex).
+6. **`collection` / `doc_id` pass-through matrix (P1 verified):**
    - **OpenAthens `oa_fetch_fulltext`** — **PASS** (`collection` + `doc_id` optional; omit →
      mint `openathens:run:<sha1-8>`). Evidentia MUST pass `evidentia:run:<id>` + `evrun:…`.
-   - **Marmara EBSCO `ebsco_get`** — **PASS** (same contract; omit → `marmara:run:<sha1-8>`).
    - **annas `read_article` / `download_document` / `read_document`** — **GAP**: schemas accept
      only `doi`/`id`/`md5` (+ page bounds). No `collection`/`doc_id`. After ephemeral read,
      **MUST** `anamnesis.ingest_document(collection=evidentia:run:<id>, doc_id=evrun:<id>:<DOI>)`

@@ -1,7 +1,7 @@
 {
   "name": "evidentia",
   "displayName": "Evidentia",
-  "version": "2.7.10",
+  "version": "2.7.11",
   "description": "Tüm tıbbi soru tipleri için PRISMA 2020 ve PRISMA-ScR sistematik/kapsam derlemesi motoru. Protokol ve PICO'dan arama, tam metin getirme, tarama, veri çıkarımı, yanlılık riski ve GRADE değerlendirmesine; PRISMA akışına ve bulgu özetine uzanır. Kaynak izlenebilirliği, kapsam manifestosu ve anamnesis RAG/GraphRAG kullanır. İlaç, HTA, KOL, Türkiye pazarı ve epidemiyoloji katmanları isteğe bağlıdır; eksik kanıt uydurulmaz.",
   "author": {
     "name": "operator (Cureonics fleet)",

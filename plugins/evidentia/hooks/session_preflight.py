@@ -49,11 +49,11 @@ except Exception:  # probe module absent/broken → env layer still runs
 # Human-readable "why this connector matters" notes. Purely cosmetic: a connector
 # missing from this map is still reported, just without an editorial aside.
 WHY = {
-    "openathens": "tam-metin Tier 3 lisanslı",
+    "openathens": "tam-metin Tier 4 lisanslı",
     "anamnesis": "RAG/GraphRAG substratı",
     "evidentia-kb": "kb_search recall booster",
     "openfda": "openFDA + WHO ICD-11",
-    "annas-reader": "tam-metin Tier 5 son çare",
+    "annas-reader": "tam-metin Tier 6 son çare",
     "yok-akademik": "YÖK akademisyen profilleri",
     "titck-cache": "Türkiye Dörtlüsü latency fallback",
 }

@@ -11,7 +11,7 @@
 > **Güncel:** 2026-08-18 · evidentia plugin **v2.7.2** / flagship skill `medical-research` **v9.0.2**
 > · CureoPrivate `plugins/evidentia`
 > · **ChatGPT custom-connector uyumu** (orijinal **4 CF self-host Worker**, 2026-06-30 canlı doğrulandı; bkz. Kurulum yolu **C**)
-> · **openathens (HP self-host) full-text Tier-3**: 11 araç; metin + sağlayıcı-nötr orijinal PDF
+> · **openathens (HP self-host) full-text Tier-4**: 11 araç; metin + sağlayıcı-nötr orijinal PDF
 > (`oa_fetch_fulltext`/`oa_fetch_pdf`). **annas-reader Tier-6 son çare**: 11 araç; okuma +
 > PDF/EPUB ve desteklenen diğer formatlar (`download_document`).
 >
@@ -45,7 +45,7 @@
 | **semantic-scholar** | `semanticscholar.cureonics.com/mcp` | ✅ | `SEMANTICSCHOLAR_MCP_API_KEY` | CureoHub HP self-host `:8323` (Worker undeploy 2026-08-17) |
 | **annas-reader** | `annas.cureonics.com/mcp` | ✅ | `ANNAS_MCP_API_KEY` | Operatör-bağlı HP self-host (Docker); static-Bearer veya OAuth. 11 araç: Tier-6 son çare okuma + `download_document(id=<DOI\|MD5>)`; PDF/EPUB/MOBI/AZW/DjVu/FB2/CBZ/CBR/XPS kısa-ömürlü opaque link + SHA-256, yalnız analiz. |
 | **yok-akademik** | `yok-akademik.cureonics.com/mcp` | ✅ | `YOK_AKADEMIK_MCP_API_KEY` | Operatör-bağlı HP self-host; OAuth 2.1 + Bearer |
-| **openathens** (self-host) | `openathens.cureonics.com/mcp` | ✅ | `OPENATHENS_MCP_API_KEY` | Operatör-bağlı HP self-host (systemd); OAuth 2.1 + Bearer. 11 araç: tam-metin **Tier 3 LİSANSLI**; `oa_fetch_fulltext` + sağlayıcı-nötr `oa_fetch_pdf(doi\|url)` (kısa-ömürlü opaque link + PDF doğrulama/SHA-256; 100 MiB tavanı). annas'ın önünde, legal-öncelikli. |
+| **openathens** (self-host) | `openathens.cureonics.com/mcp` | ✅ | `OPENATHENS_MCP_API_KEY` | Operatör-bağlı HP self-host (systemd); OAuth 2.1 + Bearer. 11 araç: tam-metin **Tier 4 LİSANSLI**; `oa_fetch_fulltext` + sağlayıcı-nötr `oa_fetch_pdf(doi\|url)` (kısa-ömürlü opaque link + PDF doğrulama/SHA-256; 100 MiB tavanı). annas'ın önünde, legal-öncelikli. |
 
 > **Suite bağlamı (evidentia dışı):** `CUREONICS_SUITE_MCP_KEY` — fon-mcp/titck-mcp/mevzuat-mcp'nin
 > additive suite kapısı (CureoSuite bundle). evidentia self-host worker'larıyla ilgisizdir; burada

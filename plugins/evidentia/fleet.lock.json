@@ -1,10 +1,10 @@
 {
   "_generated": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: fleet.yaml → python3 tools/fleetkit/gen_fleet.py",
   "plugin": "evidentia",
-  "plugin_version": "2.7.10",
+  "plugin_version": "2.7.11",
   "counts": {
-    "servers": 20,
-    "gated": 11,
+    "servers": 19,
+    "gated": 10,
     "public": 9,
     "companions": 13,
     "delegations": 0
@@ -87,12 +87,6 @@
       "url": "https://yok-akademik.cureonics.com/mcp",
       "tier": "O",
       "auth_env": "YOK_AKADEMIK_MCP_API_KEY"
-    },
-    {
-      "name": "marmara-ebsco",
-      "url": "https://ebsco.cureonics.com/mcp",
-      "tier": "O",
-      "auth_env": "MARMARA_EBSCO_MCP_API_KEY"
     },
     {
       "name": "openathens",
@@ -199,7 +193,7 @@
         "mcp__claude_ai_Literatur__"
       ],
       "manifest_row": "Literatür/DergiPark (companion — TR tam-metin)",
-      "degrade": "TR tam-metin marmara-ebsco → openathens → annas şelalesine degrade eder."
+      "degrade": "TR tam-metin openathens → annas şelalesine degrade eder."
     },
     {
       "name": "Wiley",
@@ -208,7 +202,7 @@
         "mcp__wiley__"
       ],
       "manifest_row": "Wiley (companion — OAuth-gated publisher full-text, cascade Tier 5)",
-      "degrade": "Tier 5 atlanır; Marmara EBSCO (Tier 3) / OpenAthens (Tier 4) miss sonrası annas (Tier 6) yürür. Statik .mcp.json URL'si ve operatör sırrı YOK — claude.ai / Cursor Settings → Connectors ile bağlanır; bağlanmamışsa graceful skip + not (kimlik icat edilmez)."
+      "degrade": "Tier 5 atlanır; OpenAthens (Tier 4) miss sonrası annas (Tier 6) yürür. Statik .mcp.json URL'si ve operatör sırrı YOK — claude.ai / Cursor Settings → Connectors ile bağlanır; bağlanmamışsa graceful skip + not (kimlik icat edilmez)."
     },
     {
       "name": "bioRxiv",
